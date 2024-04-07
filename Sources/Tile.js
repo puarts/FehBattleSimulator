@@ -172,16 +172,16 @@ class Tile extends BattleMapElement {
         if (!value) {
             return;
         }
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this.divineVein = Number(splited[i]); ++i; }
-        if (Number.isInteger(Number(splited[i]))) { this.divineVeinGroup = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.divineVein = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.divineVeinGroup = Number(values[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) { this._type = Number(splited[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this._type = Number(values[i]); ++i; }
     }
 
     get serialId() {
@@ -715,7 +715,7 @@ class Tile extends BattleMapElement {
 
         if (!ignoresUnits) {
             if (!unit.canActivatePass()) {
-                if (this._placedUnit != null && unit.groupId != this._placedUnit.groupId) {
+                if (this._placedUnit != null && unit.groupId !== this._placedUnit.groupId) {
                     // 敵ユニットだったらオブジェクトと同じ扱い
                     return CanNotReachTile;
                 }
@@ -724,7 +724,7 @@ class Tile extends BattleMapElement {
                 // 隣接マスに進軍阻止持ちがいるか確認
                 for (let tile1Space of this.neighbors) {
                     if (tile1Space.isEnemyUnitAvailable(unit)
-                        && tile1Space.placedUnit.canActivateObstractToAdjacentTiles(unit)
+                        && tile1Space.placedUnit.canActivateObstructToAdjacentTiles(unit)
                     ) {
                         if (weight === CanNotReachTile || this.obj instanceof Wall) {
                             return CanNotReachTile;
@@ -735,7 +735,7 @@ class Tile extends BattleMapElement {
                     // 2マス以内に進軍阻止持ちがいるか確認
                     for (let tile2Spaces of tile1Space.neighbors) {
                         if (tile2Spaces.isEnemyUnitAvailable(unit)
-                            && tile2Spaces.placedUnit.canActivateObstractToTilesIn2Spaces(unit)
+                            && tile2Spaces.placedUnit.canActivateObstructToTilesIn2Spaces(unit)
                         ) {
                             if (weight === CanNotReachTile || this.obj instanceof Wall) {
                                 return CanNotReachTile;
@@ -883,13 +883,13 @@ class TilePriorityContext {
 
         let defensiveTileWeight = 0;
         if (this.isDefensiveTile) { defensiveTileWeight = 1; }
-        if (assistUnit.support == Support.Pivot) {
+        if (assistUnit.support === Support.Pivot) {
             this.priorityToAssist =
                 defensiveTileWeight * 10000000
                 - this.enemyThreat * 1000000
                 + this.tilePriority;
         }
-        else if (assistUnit.supportInfo.assistType == AssistType.Move) {
+        else if (assistUnit.supportInfo.assistType === AssistType.Move) {
             let teleportationRequirementWeight = 0;
             let requiredMovementCount = this.requiredMovementCount;
             if (this.isTeleportationRequired) {

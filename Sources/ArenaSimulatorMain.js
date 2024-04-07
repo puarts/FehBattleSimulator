@@ -29,7 +29,7 @@ function initAetherRaidBoard(
         if (!isArenaMap(g_appData.mapKind)) {
             g_appData.setGameMode(GameMode.Arena);
             g_appData.setMapKind(MapType.Arena_1);
-            removeBreakableWallsFromTrashbox();
+            removeBreakableWallsFromTrashBox();
             changeMap();
             resetPlacement();
             updateAllUi();

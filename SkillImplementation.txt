@@ -137,7 +137,7 @@ if (this.__isSolo(targetUnit) || calcPotentialDamage) {}
 周囲Nマス以内にいる、最も近い敵
 for (let unit of this.__findNearestEnemies(<unit>, <N>)) {}
 
-周囲からのバフ[周囲XXの味方は, YY以内の味方は]
+周囲からのバフ(紋章効果など)[周囲XXの味方は, YY以内の味方は]
 updateUnitSpurFromAlliesFuncMap.set(skillId,
     function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
         // 周囲2マス以内
@@ -751,7 +751,41 @@ targetUnit.battleContext.invalidatesHeal= true;
 unit.addStatusEffect(StatusEffectType.DeepWounds);
 
 【回復不可】を60%無効
-targetUnit.battleContext.nullInvalidatesHealRatio = 0.6
+targetUnit.battleContext.nullInvalidatesHealRatio = 0.6;
+
+杖の補助スキルによる回復量
+calcHealAmountFuncMap.set(skillId,
+    function (supporterUnit, supportTargetUnit) {
+        // 攻撃の50%。最低8
+        return MathUtil.ensureMin(Math.trunc(supporterUnit.getAtkInPrecombat() * 0.5), 8);
+    }
+);
+
+[応援回復]
+このスキルは「応援」として扱われる[応援扱いの回復補助]
+getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap.set(skillId, _ => AssistType.Heal);
+RALLY_HEAL_SKILL_SET.add(skillId);
+// とりあえずプレーヤーなら強制的に応援できる。
+canRallyForciblyByPlayerFuncMap.set(skillId, _ => true);
+calcHealAmountFuncMap.set(skillId,
+    function (supporterUnit, supportTargetUnit) {
+        return MathUtil.ensureMin(Math.trunc(supporterUnit.getAtkInPrecombat() * 0.5), 8);
+    }
+);
+対象の攻撃、魔防＋6[応援のバフ]
+RALLY_BUFF_AMOUNT_MAP.set(skillId, [6, 0, 0, 6]);
+[応援回復時にステータスを付与できるか]
+canAddStatusEffectByRallyFuncMap.set(skillId,
+
+    function (supporterUnit, targetUnit) {
+        return !targetUnit.hasStatusEffect(StatusEffectType.NeutralizesPenalties);
+    }
+);
+このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない
+noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+
+[回復補助の閾値]
+PRECOMBAT_HEAL_THRESHOLD_MAP.set(skillId, 10);
 
 敵の奥義カウント変動量-1(キャンセル)
 targetUnit.battleContext.reducesCooldownCount = true;
@@ -839,9 +873,13 @@ targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += N;
 
 敵の最初の攻撃前に敵の奥義発動カウント+N(奥義発動カウントの最大値は超えない)[竜眼]
 enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
+自分の最初の攻撃前に自分の奥義発動カウント+N
+targetUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
 
 敵の最初の攻撃前に自分の奥義発動カウント-N(Nは自然数)
 targetUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += N;
+自分の最初の攻撃前に敵の奥義発動カウント-N
+enemyUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += N;
 
 奥義ダメージ+N
 __init__applySpecialSkillEffect() {
@@ -1226,11 +1264,21 @@ function isRefreshSupportSkill(skillId) {return true;}
 
 移動系補助(体当たり、引き戻し、回り込み等)を使用した時、または自分に使用された時
 applyMovementAssistSkillFuncMap.set(skillId,
-    function (unit1, unit2) {
+    function (assistUnit, targetUnit) {
     }
 );
 または
 __applyMovementAssistSkill() {}
+
+[応援の強化量]
+RALLY_BUFF_AMOUNT_MAP.set(skillId, [6, 0, 0, 6]);
+
+// 応援時にステータス付与が可能か
+canAddStatusEffectByRallyFuncMap.set(skillId,
+    function (supporterUnit, targetUnit) {
+        return !targetUnit.hasPositiveStatusEffect(StatusEffectType.XXX);
+    }
+);
 
 応援を使用した時、または自分に使用された時
 // 使用した時
@@ -1255,6 +1303,17 @@ applySupportSkillForSupporterFuncMap.set(skillId,
         }
     }
 );
+
+「その後」以降の効果は、その効果が発動後Nターンの間発動しない
+// 補助の場合
+this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+if (supporterUnit.restSupportSkillAvailableTurn === 0) {
+    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
+    supporterUnit.restSupportSkillAvailableTurn = 3;
+    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+} else {
+    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
+}
 
 // 共謀系[強制応援]
 // 応援をかける側
@@ -1342,7 +1401,7 @@ canActivateObstructToAdjacentTilesFuncMap.set(skillId,
 );
 
 進軍阻止(2マス)
-canActivateObstractToTilesIn2SpacesFuncMap.set(skillId,
+canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
     function (unit, moveUnit) {
         return true;
     }
@@ -1391,12 +1450,10 @@ enumerateTeleportTilesForUnitFuncMap.set(skillId,
 );
 // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
 enumerateTeleportTilesForAllyFuncMap.set(skillId,
-    function(targetUnit, allyUnit) {
-        // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
-        if (targetUnit.distance(allyUnit) <= 2) {
-            return this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
-        } else {
-            return this.__enumerateNoTiles();
+    function* (targetUnit, allyUnit) {
+        if (allyUnit.hpPercentage <= 60 ||
+            allyUnit.isCombatDone || allyUnit.isSupportDone) {
+            yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
         }
     }
 );
@@ -1477,10 +1534,7 @@ Unit.js
 const StatusEffectType = {
     XXX: YYY, // XXX
 }
-function statusEffectTypeToIconFilePath(value) {
-    case StatusEffectType.XXX:
-    return g_imageRootPath + "XXX.png";
-}
+function statusEffectTypeToIconFilePath(value) {}
 /// ステータス効果が不利なステータス効果であるかどうかを判定
 // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
 // 有利な場合は不要
@@ -1499,6 +1553,15 @@ tile.reserveDivineVein(DivineVeinType.Green, unit.groupId);
 
 予約された天脈を付与
 g_appData.map.applyReservedDivineVein();
+
+[炎撃による天脈]
+applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+    function (targetUnit, enemyUnit) {
+        if (targetUnit.battleContext.initiatesCombat) {
+            this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
+        }
+    }
+);
 
 出典の配列を返す
 unit.getOrigins();

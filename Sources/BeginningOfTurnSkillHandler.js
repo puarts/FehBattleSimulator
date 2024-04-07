@@ -683,7 +683,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 if (found) {
-                    skillOwner.applyAtkBuff(6);
+                    skillOwner.reserveToApplyAtkBuff(6);
                 }
             }
                 break;
@@ -825,8 +825,8 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.WindGenesis:
                 if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
-                    skillOwner.applyAtkBuff(6);
-                    skillOwner.applySpdBuff(6);
+                    skillOwner.reserveToApplyAtkBuff(6);
+                    skillOwner.reserveToApplySpdBuff(6);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Desperation);
                 }
                 break;
@@ -863,8 +863,8 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.HeirToLight:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                    skillOwner.applyAtkBuff(6);
-                    skillOwner.applySpdBuff(6);
+                    skillOwner.reserveToApplyAtkBuff(6);
+                    skillOwner.reserveToApplySpdBuff(6);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                 }
@@ -967,8 +967,8 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.DarklingGuardian:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                    skillOwner.applyDefBuff(6);
-                    skillOwner.applyResBuff(6);
+                    skillOwner.reserveToApplyDefBuff(6);
+                    skillOwner.reserveToApplyResBuff(6);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.WarpBubble);
                 }
@@ -978,13 +978,13 @@ class BeginningOfTurnSkillHandler {
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3)) {
                     if (!isWeaponTypeBreathOrBeast(unit.weaponType)) {
                         found = true;
-                        unit.applyAtkBuff(6);
-                        unit.applySpdBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
+                        unit.reserveToApplySpdBuff(6);
                     }
                 }
                 if (found) {
-                    skillOwner.applyAtkBuff(6);
-                    skillOwner.applySpdBuff(6);
+                    skillOwner.reserveToApplyAtkBuff(6);
+                    skillOwner.reserveToApplySpdBuff(6);
                 }
                 break;
             }
@@ -995,8 +995,8 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.IcyMaltet:
                 if (skillOwner.dragonflower >= 10) {
-                    skillOwner.applyAtkBuff(6);
-                    skillOwner.applyDefBuff(6);
+                    skillOwner.reserveToApplyAtkBuff(6);
+                    skillOwner.reserveToApplyDefBuff(6);
                 }
                 break;
             case PassiveB.TrueDragonWall: {
@@ -1054,15 +1054,15 @@ class BeginningOfTurnSkillHandler {
                 if (this.globalBattleContext.isCurrentTurnIn(2, 5)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                         if (this.__isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit)) {
-                            unit.applyAllBuff(6);
+                            unit.reserveToApplyAllBuffs(6);
                         }
                     }
                 }
                 break;
             case Weapon.ShadowBreath:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                    unit.applyAtkBuff(6);
-                    unit.applyResBuff(6);
+                    unit.reserveToApplyAtkBuff(6);
+                    unit.reserveToApplyResBuff(6);
                     unit.reserveToAddStatusEffect(StatusEffectType.EnGarde);
                 }
                 break;
@@ -1092,13 +1092,13 @@ class BeginningOfTurnSkillHandler {
                     let count = 0;
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         count++;
-                        unit.applyAtkBuff(6);
-                        unit.applySpdBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
+                        unit.reserveToApplySpdBuff(6);
                         unit.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                     }
                     if (count > 0) {
-                        skillOwner.applyAtkBuff(6);
-                        skillOwner.applySpdBuff(6);
+                        skillOwner.reserveToApplyAtkBuff(6);
+                        skillOwner.reserveToApplySpdBuff(6);
                         skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                     }
                 }
@@ -1118,9 +1118,9 @@ class BeginningOfTurnSkillHandler {
                 let removedCount = this.globalBattleContext.RemovedUnitCountsInCombat[skillOwner.groupId];
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
                     if (skillOwner.partnerHeroIndex === unit.heroIndex) {
-                        unit.applyAtkBuff(6);
-                        unit.applyDefBuff(6);
-                        unit.applyResBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
+                        unit.reserveToApplyDefBuff(6);
+                        unit.reserveToApplyResBuff(6);
                         unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackPlus);
                         if (removedCount >= 1) {
                             unit.reserveToReduceSpecialCount(2);
@@ -1133,7 +1133,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.SeireiNoHogu:
                 if (skillOwner.isWeaponSpecialRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
-                        unit.applySpdBuff(6);
+                        unit.reserveToApplySpdBuff(6);
                     }
                 }
                 break;
@@ -1151,8 +1151,8 @@ class BeginningOfTurnSkillHandler {
             case Weapon.TomeOfReason:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                        unit.applyDefBuff(6);
-                        unit.applyResBuff(6);
+                        unit.reserveToApplyDefBuff(6);
+                        unit.reserveToApplyResBuff(6);
                     }
                 }
                 break;
@@ -1167,8 +1167,8 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.StaffOfTheSaint:
                 for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                    u.applyDefBuff(6);
-                    u.applyResBuff(6);
+                    u.reserveToApplyDefBuff(6);
+                    u.reserveToApplyResBuff(6);
                 }
                 this.__applySkillToEnemiesInCross(skillOwner,
                     unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= this.__getStatusEvalUnit(skillOwner).getEvalResInPrecombat() - 1,
@@ -1202,7 +1202,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.RapidCrierBow:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getAtkInPrecombat() + this.__getStatusEvalUnit(x).getSpdInPrecombat(),
-                    x => { x.applyAtkBuff(6); x.applySpdBuff(6); }
+                    x => { x.reserveToApplyAtkBuff(6); x.reserveToApplySpdBuff(6); }
                 );
                 break;
             case Weapon.NidavellirLots:
@@ -1212,8 +1212,8 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.GoddessBearer:
                 if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                    skillOwner.applyAtkBuff(7);
-                    skillOwner.applySpdBuff(7);
+                    skillOwner.reserveToApplyAtkBuff(7);
+                    skillOwner.reserveToApplySpdBuff(7);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.AirOrders);
                 }
@@ -1225,7 +1225,7 @@ class BeginningOfTurnSkillHandler {
                         found = true;
                     }
                     if (found) {
-                        skillOwner.applyAllBuff(4);
+                        skillOwner.reserveToApplyAllBuffs(4);
                     }
                     if (skillOwner.isWeaponSpecialRefined) {
                         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {
@@ -1256,13 +1256,13 @@ class BeginningOfTurnSkillHandler {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                         found = true;
                         if (skillOwner.partnerHeroIndex === unit.heroIndex) {
-                            unit.applyAtkBuff(6);
-                            unit.applyDefBuff(6);
+                            unit.reserveToApplyAtkBuff(6);
+                            unit.reserveToApplyDefBuff(6);
                         }
                     }
                     if (found) {
-                        skillOwner.applyAtkBuff(6);
-                        skillOwner.applyDefBuff(6);
+                        skillOwner.reserveToApplyAtkBuff(6);
+                        skillOwner.reserveToApplyDefBuff(6);
                     }
                 }
                 break;
@@ -1288,7 +1288,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.RauarLionPlus:
             case Weapon.BlarLionPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
-                    unit.applyAtkBuff(6);
+                    unit.reserveToApplyAtkBuff(6);
                 }
                 break;
             case Weapon.PunishmentStaff:
@@ -1296,7 +1296,7 @@ class BeginningOfTurnSkillHandler {
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
                         unit.reserveToAddStatusEffect(StatusEffectType.CancelAffinity);
-                        unit.applyAtkBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
                     }
                 }
                 break;
@@ -1313,12 +1313,12 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.ShellpointLancePlus:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
-                    skillOwner.applyDefBuff(6);
+                    skillOwner.reserveToApplyDefBuff(6);
                 }
                 break;
             case Weapon.TridentPlus:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
-                    skillOwner.applyAtkBuff(6);
+                    skillOwner.reserveToApplyAtkBuff(6);
                 }
                 break;
             case Weapon.WeddingBellAxe:
@@ -1331,17 +1331,17 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Special.ShiningEmblem:
                 if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
-                    skillOwner.applyAllBuff(6);
+                    skillOwner.reserveToApplyAllBuffs(6);
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, false)) {
-                        unit.applyAtkBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
                     }
                 }
                 break;
             case PassiveC.AtkSpdMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyAtkBuff(6);
-                        unit.applySpdBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
+                        unit.reserveToApplySpdBuff(6);
                     },
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
@@ -1351,8 +1351,8 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.AtkResMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyAtkBuff(6);
-                        unit.applyResBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
+                        unit.reserveToApplyResBuff(6);
                     },
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
@@ -1362,8 +1362,8 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.AtkDefMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyAtkBuff(6);
-                        unit.applyDefBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
+                        unit.reserveToApplyDefBuff(6);
                     },
                     unit => {
                         unit.reserveToApplyAtkDebuff(-6);
@@ -1373,8 +1373,8 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.SpdDefMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applySpdBuff(6);
-                        unit.applyDefBuff(6);
+                        unit.reserveToApplySpdBuff(6);
+                        unit.reserveToApplyDefBuff(6);
                     },
                     unit => {
                         unit.reserveToApplySpdDebuff(-6);
@@ -1384,8 +1384,8 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.SpdResMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applySpdBuff(6);
-                        unit.applyResBuff(6);
+                        unit.reserveToApplySpdBuff(6);
+                        unit.reserveToApplyResBuff(6);
                     },
                     unit => {
                         unit.reserveToApplySpdDebuff(-6);
@@ -1395,8 +1395,8 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.DefResMenace:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyDefBuff(6);
-                        unit.applyResBuff(6);
+                        unit.reserveToApplyDefBuff(6);
+                        unit.reserveToApplyResBuff(6);
                     },
                     unit => {
                         unit.reserveToApplyDefDebuff(-6);
@@ -1406,10 +1406,10 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.SurtrsPortent:
                 this.__applyMenace(skillOwner,
                     unit => {
-                        unit.applyAtkBuff(5);
-                        unit.applySpdBuff(5);
-                        unit.applyDefBuff(5);
-                        unit.applyResBuff(5);
+                        unit.reserveToApplyAtkBuff(5);
+                        unit.reserveToApplySpdBuff(5);
+                        unit.reserveToApplyDefBuff(5);
+                        unit.reserveToApplyResBuff(5);
                     },
                     unit => {
                         unit.reserveToApplyAtkDebuff(-5);
@@ -1430,9 +1430,9 @@ class BeginningOfTurnSkillHandler {
                             unit.reserveToApplySpdDebuff(-5);
                             unit.reserveToApplyResDebuff(-5);
                         }
-                        skillOwner.applyAtkBuff(5);
-                        skillOwner.applySpdBuff(5);
-                        skillOwner.applyResBuff(5);
+                        skillOwner.reserveToApplyAtkBuff(5);
+                        skillOwner.reserveToApplySpdBuff(5);
+                        skillOwner.reserveToApplyResBuff(5);
                     }
                 }
                 break;
@@ -1507,6 +1507,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.KiaStaff: {
                 let candidates = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 4, false));
                 let negativeStatusCandidates = candidates.filter(unit => unit.hasNegativeStatusEffect());
+                /** @type {Unit[]} */
                 let targets = (negativeStatusCandidates.length === 0 ? candidates : negativeStatusCandidates)
                     .reduce((a, c) => {
                         if (a.length === 0) return [c];
@@ -1520,8 +1521,8 @@ class BeginningOfTurnSkillHandler {
                         return a;
                     }, []);
                 for (let target of targets) {
-                    target.applyAtkBuff(6);
-                    target.applySpdBuff(6);
+                    target.reserveToApplyAtkBuff(6);
+                    target.reserveToApplySpdBuff(6);
                     target.reserveToResetDebuffs();
 
                     // キアの杖の効果が重なると2回目の実行で対象が変化してしまうので予約する
@@ -1677,7 +1678,7 @@ class BeginningOfTurnSkillHandler {
             }
                 break;
             case Weapon.Mafu:
-                if (this.globalBattleContext.currentTurn == 3) {
+                if (this.globalBattleContext.currentTurn === 3) {
                     let amount = skillOwner.isWeaponRefined ? 7 : 5;
                     let units = this.enumerateUnitsWithinSpecifiedRange(
                         skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, amount, 99);
@@ -1719,20 +1720,20 @@ class BeginningOfTurnSkillHandler {
                         if (unit.partnerHeroIndex === skillOwner.heroIndex ||
                             skillOwner.partnerHeroIndex === unit.heroIndex) {
                             found = true;
-                            unit.applyAtkBuff(6);
-                            unit.applySpdBuff(6);
+                            unit.reserveToApplyAtkBuff(6);
+                            unit.reserveToApplySpdBuff(6);
                             unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                         }
                     }
                     if (found) {
-                        skillOwner.applyAtkBuff(6);
-                        skillOwner.applySpdBuff(6);
+                        skillOwner.reserveToApplyAtkBuff(6);
+                        skillOwner.reserveToApplySpdBuff(6);
                         skillOwner.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                     }
                 }
                 break;
             case Weapon.GroomsWings:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     for (let unit of this.__getPartnersInSpecifiedRange(skillOwner, 100)) {
                         unit.reserveToReduceSpecialCount(1);
                     }
@@ -1741,9 +1742,10 @@ class BeginningOfTurnSkillHandler {
             case Weapon.Merikuru: {
                 let refined = skillOwner.isWeaponRefined;
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage >= refined ? 25 : 50) {
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                    let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                    for (let unit of units) {
                         if (isPhysicalWeaponType(unit.weaponType)) {
-                            unit.applyAllBuff(refined ? 6 : 4);
+                            unit.reserveToApplyAllBuffs(refined ? 6 : 4);
                         }
                     }
                 }
@@ -1753,7 +1755,7 @@ class BeginningOfTurnSkillHandler {
                 this.__applyHyosyoNoBreath(skillOwner);
                 break;
             case PassiveB.KodoNoHukanGusu3:
-                if (this.globalBattleContext.currentTurn % 2 == 0) {
+                if (this.globalBattleContext.currentTurn % 2 === 0) {
                     this.__applyPlusTie(skillOwner);
                 }
                 break;
@@ -1799,7 +1801,7 @@ class BeginningOfTurnSkillHandler {
             case Weapon.Forukuvangu:
                 if (!skillOwner.isWeaponSpecialRefined) {
                     if (this.__getStatusEvalUnit(skillOwner).hpPercentage <= 50) {
-                        skillOwner.applyAtkBuff(5);
+                        skillOwner.reserveToApplyAtkBuff(5);
                     }
                 }
                 break;
@@ -1931,8 +1933,8 @@ class BeginningOfTurnSkillHandler {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner, true)) {
                     if (this.__isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit)) {
                         unit.reserveToReduceSpecialCount(1);
-                        unit.applyDefBuff(6);
-                        unit.applyResBuff(6);
+                        unit.reserveToApplyDefBuff(6);
+                        unit.reserveToApplyResBuff(6);
                     }
                 }
                 break;
@@ -1948,67 +1950,67 @@ class BeginningOfTurnSkillHandler {
             case Weapon.RantanNoTsuePlus:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getAtkInPrecombat(),
-                    x => { x.applyResBuff(5); x.applyDefBuff(5); });
+                    x => { x.reserveToApplyResBuff(5); x.reserveToApplyDefBuff(5); });
                 break;
             case Weapon.YujoNoHanaNoTsuePlus:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getSpdInPrecombat(),
-                    x => { x.applyAtkBuff(5); x.applyDefBuff(5); });
+                    x => { x.reserveToApplyAtkBuff(5); x.reserveToApplyDefBuff(5); });
                 break;
             case PassiveC.AtkOpening3:
-                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getAtkInPrecombat(), x => x.applyAtkBuff(6));
+                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getAtkInPrecombat(), x => x.reserveToApplyAtkBuff(6));
                 break;
             case PassiveC.SpdOpening3:
-                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getSpdInPrecombat(), x => x.applySpdBuff(6));
+                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getSpdInPrecombat(), x => x.reserveToApplySpdBuff(6));
                 break;
             case PassiveC.DefOpening3:
-                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getDefInPrecombat(), x => x.applyDefBuff(6));
+                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getDefInPrecombat(), x => x.reserveToApplyDefBuff(6));
                 break;
             case PassiveC.ResOpening3:
-                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getResInPrecombat(), x => x.applyResBuff(6));
+                this.__applyOpeningSkill(skillOwner, x => this.__getStatusEvalUnit(x).getResInPrecombat(), x => x.reserveToApplyResBuff(6));
                 break;
             case PassiveC.SpdDefGap3:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getSpdInPrecombat() + this.__getStatusEvalUnit(x).getDefInPrecombat(),
-                    x => { x.applySpdBuff(5); x.applyDefBuff(5); }
+                    x => { x.reserveToApplySpdBuff(5); x.reserveToApplyDefBuff(5); }
                 );
                 break;
             case PassiveC.SpdResGap3:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getSpdInPrecombat() + this.__getStatusEvalUnit(x).getResInPrecombat(),
-                    x => { x.applySpdBuff(5); x.applyResBuff(5); }
+                    x => { x.reserveToApplySpdBuff(5); x.reserveToApplyResBuff(5); }
                 );
                 break;
             case PassiveC.AtkResGap3:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getAtkInPrecombat() + this.__getStatusEvalUnit(x).getResInPrecombat(),
-                    x => { x.applyAtkBuff(5); x.applyResBuff(5); }
+                    x => { x.reserveToApplyAtkBuff(5); x.reserveToApplyResBuff(5); }
                 );
                 break;
             case PassiveC.AtkDefGap3:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getAtkInPrecombat() + this.__getStatusEvalUnit(x).getDefInPrecombat(),
-                    x => { x.applyAtkBuff(5); x.applyDefBuff(5); }
+                    x => { x.reserveToApplyAtkBuff(5); x.reserveToApplyDefBuff(5); }
                 );
                 break;
             case PassiveC.DefResGap3:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getDefInPrecombat() + this.__getStatusEvalUnit(x).getResInPrecombat(),
-                    x => { x.applyDefBuff(5); x.applyResBuff(5); }
+                    x => { x.reserveToApplyDefBuff(5); x.reserveToApplyResBuff(5); }
                 );
                 break;
             case PassiveC.AtkSpdGap3:
                 this.__applyOpeningSkill(skillOwner,
                     x => this.__getStatusEvalUnit(x).getAtkInPrecombat() + this.__getStatusEvalUnit(x).getSpdInPrecombat(),
-                    x => { x.applyAtkBuff(5); x.applySpdBuff(5); }
+                    x => { x.reserveToApplyAtkBuff(5); x.reserveToApplySpdBuff(5); }
                 );
                 break;
-            case PassiveC.SpdDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applySpdBuff(5); }); break;
-            case PassiveC.SpdResOath3: this.__applyOathSkill(skillOwner, x => { x.applyResBuff(5); x.applySpdBuff(5); }); break;
-            case PassiveC.AtkSpdOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applySpdBuff(5); }); break;
-            case PassiveC.AtkSpdOath4: this.__applyOath4Skill(skillOwner, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
-            case PassiveC.AtkDefOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyDefBuff(5); }); break;
-            case PassiveC.AtkResOath3: this.__applyOathSkill(skillOwner, x => { x.applyAtkBuff(5); x.applyResBuff(5); }); break;
+            case PassiveC.SpdDefOath3: this.__applyOathSkill(skillOwner, x => { x.reserveToApplyDefBuff(5); x.reserveToApplySpdBuff(5); }); break;
+            case PassiveC.SpdResOath3: this.__applyOathSkill(skillOwner, x => { x.reserveToApplyResBuff(5); x.reserveToApplySpdBuff(5); }); break;
+            case PassiveC.AtkSpdOath3: this.__applyOathSkill(skillOwner, x => { x.reserveToApplyAtkBuff(5); x.reserveToApplySpdBuff(5); }); break;
+            case PassiveC.AtkSpdOath4: this.__applyOath4Skill(skillOwner, x => { x.reserveToApplyAtkBuff(6); x.reserveToApplySpdBuff(6); }); break;
+            case PassiveC.AtkDefOath3: this.__applyOathSkill(skillOwner, x => { x.reserveToApplyAtkBuff(5); x.reserveToApplyDefBuff(5); }); break;
+            case PassiveC.AtkResOath3: this.__applyOathSkill(skillOwner, x => { x.reserveToApplyAtkBuff(5); x.reserveToApplyResBuff(5); }); break;
             case PassiveC.AtkResOath4: this.__applyOath4Skill(skillOwner, x => { x.applyAtkBuff(6); x.applyResBuff(6); }); break;
             case PassiveC.DefResOath3: this.__applyOathSkill(skillOwner, x => { x.applyDefBuff(5); x.applyResBuff(5); }); break;
             case PassiveC.UpheavalPlus:
@@ -2275,12 +2277,12 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case PassiveB.SDrink:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reserveToReduceSpecialCount(1);
                 }
                 break;
             case PassiveS.OgiNoKodou:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     this.writeDebugLog(skillOwner.getNameWithGroup() + "の奥義の鼓動により奥義発動カウント-1");
                     skillOwner.reserveToReduceSpecialCount(1);
                 }
@@ -2376,7 +2378,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.ThreatenAtkSpd3:
                 this.__applyThreatenSkill(skillOwner,
                     x => {
-                        skillOwner.applyAtkBuff(5); skillOwner.applySpdBuff(5);
+                        skillOwner.reserveToApplyBuffs(5, 5, 0, 0);
                         x.reserveToApplyAtkDebuff(-5); x.reserveToApplySpdDebuff(-5);
                     });
                 break;
@@ -2420,8 +2422,9 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.ThreatenAtkDef3:
                 this.__applyThreatenSkill(skillOwner,
                     x => {
-                        skillOwner.applyAtkBuff(5); skillOwner.applyDefBuff(5);
-                        x.reserveToApplyAtkDebuff(-5); x.reserveToApplyDefDebuff(-5);
+                        skillOwner.reserveToApplyBuffs(5, 0, 5, 0);
+                        x.reserveToApplyAtkDebuff(-5);
+                        x.reserveToApplyDefDebuff(-5);
                     });
                 break;
             case Weapon.GunshiNoFusho:
@@ -2824,7 +2827,7 @@ class BeginningOfTurnSkillHandler {
                     unit => { unit.reserveToApplyAtkDebuff(-5); unit.reserveToApplySpdDebuff(-5); }); break;
             case PassiveC.ArmorMarch3:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 1, false)) {
-                    if (unit.moveType == MoveType.Armor) {
+                    if (unit.moveType === MoveType.Armor) {
                         this.writeLog(unit.getNameWithGroup() + "は重装の行軍により移動値+1");
                         unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                         this.writeLog(skillOwner.getNameWithGroup() + "は重装の行軍により移動値+1");
@@ -2873,13 +2876,13 @@ class BeginningOfTurnSkillHandler {
         }
         switch (skillId) {
             case Weapon.InspiritedSpear:
-                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (skillOwner.isInCrossWithOffset(unit, 1)) {
-                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
-                        if (isNormalAttackSpecial(skillOwner.special) &&
-                            this.__getStatusEvalUnit(skillOwner).specialCount <= 1 &&
-                            unit.getEvalDefInPrecombat() < skillOwner.getEvalDefInPrecombat()) {
-                            unit.reserveToIncreaseSpecialCount(1);
+                for (let enemyUnit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
+                    if (skillOwner.isInCrossWithOffset(enemyUnit, 1)) {
+                        enemyUnit.reserveToAddStatusEffect(StatusEffectType.Guard);
+                        if (isNormalAttackSpecial(enemyUnit.special) &&
+                            enemyUnit.statusEvalUnit.specialCount <= 1 &&
+                            skillOwner.isHigherDefInPrecombat(enemyUnit)) {
+                            enemyUnit.reserveToIncreaseSpecialCount(1);
                         }
                     }
                 }
@@ -2932,30 +2935,12 @@ class BeginningOfTurnSkillHandler {
         switch (skillId) {
             case PassiveC.FutureFocused:
                 if (this.isOddTurn) {
-                    let units = [];
-                    let distance = Number.MAX_SAFE_INTEGER;
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                        let inCross =
-                            skillOwner.posX === unit.posX ||
-                            skillOwner.posY === unit.posY;
-                        if (!inCross) {
-                            continue;
-                        }
-                        let d = skillOwner.distance(unit);
-                        if (d > distance) {
-                            continue;
-                        } else if (d === distance) {
-                            units.push(unit);
-                        } else {
-                            units = [unit]
-                            distance = d;
-                        }
-                    }
-                    for (let unit of units) {
-                        if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3) {
-                            unit.endAction();
-                        }
-                    }
+                    let enemyUnits = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+                    let unitsInCross = GeneratorUtil.filter(enemyUnits, u => skillOwner.isInCrossOf(u));
+                    /** @type {Unit[]} */
+                    let nearestUnits= IterUtil.minElements(unitsInCross, u => skillOwner.distance(u));
+                    let lowerRes = u => skillOwner.isHigherResInPrecombat(u, u.distance(skillOwner) * 3);
+                    nearestUnits.filter(lowerRes).forEach(u => u.endAction());
                 }
                 break;
         }
@@ -3277,28 +3262,58 @@ class BeginningOfTurnSkillHandler {
         }
     }
     __applyWaveSkill(skillOwnerUnit, divisionTwoRemainder, applyBuffFunc) {
-        if ((this.globalBattleContext.currentTurn % 2) == divisionTwoRemainder) {
+        if ((this.globalBattleContext.currentTurn % 2) === divisionTwoRemainder) {
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwnerUnit, 1, true)) {
                 applyBuffFunc(unit);
             }
         }
     }
+
     __applyTacticSkill(skillOwnerUnit, applyBuffFunc) {
+        let unitsMap = this.#groupByUnits(
+            this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit, true),
+            unit => unit.moveType
+        );
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwnerUnit, 2)) {
-            if (this.__isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit)) {
-                applyBuffFunc(unit);
+            let moveType = unit.moveType;
+            if (unitsMap.has(moveType) &&
+                unitsMap.get(moveType).length > 3) {
+                continue;
+            }
+            applyBuffFunc(unit);
+        }
+    }
+
+    /**
+     * ユニットをグループに分ける
+     * @template T
+     * @param {Unit[] | Generator<Unit>} units
+     * @param {(unit: Unit) => T} keyFunc
+     * @returns {Map<T, Unit[]>}
+     */
+    #groupByUnits(units, keyFunc) {
+        let unitsMap = new Map();
+        for (let unit of units) {
+            let key = keyFunc(unit);
+            if (unitsMap.has(key)) {
+                unitsMap.get(key).push(unit);
+            } else {
+                unitsMap.set(key, [unit]);
             }
         }
+        return unitsMap;
     }
 
     __isMoveTypeCountOnTeamIsLessThanOrEqualTo2(unit) {
         let sameMoveTypeCount = 1;
         for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit)) {
-            if (otherUnit.moveType == unit.moveType) { ++sameMoveTypeCount; }
+            if (otherUnit.moveType === unit.moveType) {
+                ++sameMoveTypeCount;
+            }
         }
-        if (sameMoveTypeCount <= 2) { return true; }
-        return false;
+        return sameMoveTypeCount <= 2;
     }
+
     __applyHyosyoNoBreath(skillOwner) {
         for (let unit of this.__findNearestEnemies(skillOwner, 4)) {
             unit.reserveToApplyAllDebuff(-4);
@@ -3355,6 +3370,10 @@ class BeginningOfTurnSkillHandler {
     __findMinStatusUnits(unitGroup, getStatusFunc) {
         return this._unitManager.findMinStatusUnits(unitGroup, getStatusFunc);
     }
+
+    /**
+     * @return {Generator<Unit>}
+     */
     enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
     }
@@ -3363,12 +3382,18 @@ class BeginningOfTurnSkillHandler {
         return this._unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces);
     }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
 
-    enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit) {
-        return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit);
+    /**
+     * @returns {Generator<Unit>}
+     */
+    enumerateUnitsInDifferentGroupOnMap(unit) {
+        return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
     }
 
     enumerateUnitsWithinSpecifiedRange(posX, posY, unitGroup, rangeHorLength, rangeVerLength) {
@@ -3442,6 +3467,11 @@ class BeginningOfTurnSkillHandler {
     __isNextToOtherUnitsExcept(unit, exceptCondition) {
         return this._unitManager.isNextToAlliesExcept(unit, exceptCondition);
     }
+
+    /**
+     * @param {Unit} unit
+     * @returns {Unit}
+     */
     __getStatusEvalUnit(unit) {
         return unit.snapshot != null ? unit.snapshot : unit;
     }

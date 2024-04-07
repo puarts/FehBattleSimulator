@@ -62,6 +62,7 @@ const Hero = {
     HarmonizedIgrene: 1079,
     DuoLyon: 1086,
     HarmonizedChloe: 1097,
+    DuoRobin: 1109,
 };
 
 const IvStateOptions = [
@@ -180,6 +181,7 @@ const StatusEffectType = {
     ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent: 59, // 「ダメージを〇〇%軽減」を半分無効
     TimesGrip: 60, // 時の陥穽
     AfterStartOfTurnSkillsTriggerActionEndsImmediately: 61, // ターン開始後スキル発動後、即座に行動終了
+    HushSpectrum: 62, // 七色の囁き
 };
 
 const NotReserved = -2;
@@ -232,6 +234,7 @@ const NEGATIVE_STATUS_EFFECT_SET = new Set([
     StatusEffectType.NeutralizeUnitSurvivesWith1HP,
     StatusEffectType.TimesGrip,
     StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately,
+    StatusEffectType.HushSpectrum,
 ]);
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
@@ -306,6 +309,7 @@ const STATUS_EFFECT_FILE_NAME_MAP = new Map([
     [StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent, "ReduceReduceDamageByX.webp"],
     [StatusEffectType.TimesGrip, "TimesGrip.webp"],
     [StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately, "AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp"],
+    [StatusEffectType.HushSpectrum, "HushSpectrum.webp"],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

@@ -1799,6 +1799,15 @@ const Weapon = {
     // https://www.youtube.com/watch?v=87T3lhxU78I&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=YNOIY95CX_Q&ab_channel=NintendoMobile
     EmblemRagnell: 2834, // 蒼炎の勇者の剣
+
+    // 超英雄「不思議な出会い」
+    // https://www.youtube.com/watch?v=EuwsPh1xru0&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=UsOQmElHxKM&t=2s&ab_channel=NintendoMobile
+    FellWarTome: 2837, // 戦神の魔書
+    ExaltsWarStaff: 2840, // 戦神の聖杖
+    NewWarAxe: 2844, // 戦神の戦斧
+    DraconicPacts: 2841, // 邪痕と聖痕の竜血
+    HeavyWarAxe: 2845, // 戦神の護斧
 };
 
 const Support = {
@@ -1903,6 +1912,8 @@ const Support = {
     Return: 1607, // リターン
     NudgePlus: 1737, // プッシュ+
     Nudge: 1738, // プッシュ
+
+    MagicShieldPlus: 2839, // マジックシールド+
 };
 
 const Special = {
@@ -2273,6 +2284,7 @@ const PassiveA = {
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
     // 専用A
+    FellWyrmscale: 2842, // 邪竜の暗鱗
     EmblemsMiracle: 2797, // 紋章の奇跡
     Obsession: 2785, // 執着
     GrayIllusion: 2773, // 鈍色の迷夢
@@ -2354,10 +2366,10 @@ const PassiveA = {
     AtkSpdClash3: 2308, // 攻撃速さの激突3
     AtkSpdClash4: 2170, // 攻撃速さの激突4
 
-    AtkDefClash3: 9999, // 攻撃守備の激突3
+    // AtkDefClash3: 9999, // 攻撃守備の激突3
     AtkDefClash4: 2207, // 攻撃守備の激突4
 
-    SpdDefClash3: 9999, // 速さ守備の激突3
+    // SpdDefClash3: 9999, // 速さ守備の激突3
     SpdDefClash4: 2403, // 速さ守備の激突4
 
     // 秘奥
@@ -2373,7 +2385,7 @@ const PassiveA = {
     SpdResFinish3: 2318, // 速さ魔防の秘奥3
     SpdResFinish4: 2259, // 速さ魔防の秘奥4
 
-    DefResFinish3: 9999, // 守備魔防の秘奥3
+    DefResFinish3: 2846, // 守備魔防の秘奥3
     DefResFinish4: 2306, // 守備魔防の秘奥4
 
     // 離撃
@@ -2518,6 +2530,7 @@ const PassiveB = {
     DefCantrip3: 1471,
     ResCantrip3: 1589,
 
+    // 連携
     AtkSpdLink2: 1133, // 攻撃速さの連携2
     AtkSpdLink3: 648, // 攻撃速さの連携3
     AtkResLink3: 760,
@@ -2525,6 +2538,7 @@ const PassiveB = {
     SpdDefLink3: 860, // 速さ守備の連携3
     SpdResLink3: 650, // 速さ魔防の連携3
     DefResLink3: 651, // 守備魔防の連携3
+    AtkSpdLink4: 2843, // 攻撃速さの連携4
 
     Swordbreaker3: 618, // 剣殺し3
     Lancebreaker3: 619,
@@ -2805,6 +2819,7 @@ const PassiveB = {
 
     // 奥の手
     Gambit4: 2554, // 奥の手4
+    MagicGambit4: 2838, // 奥の手・魔道4
 
     // 猛襲
     AerialManeuvers: 2589, // 空からの猛襲

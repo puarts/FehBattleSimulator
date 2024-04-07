@@ -187,7 +187,7 @@ class DamageCalculator {
      * ダメージ計算を行います。
      * @param  {Unit} atkUnit 攻撃をするユニットです。
      * @param  {Unit} defUnit 攻撃を受けるユニットです。
-     * @param  {DamageType} 潜在ダメージ計算かどうかを指定します。
+     * @param  {DamageType} damageType 潜在ダメージ計算かどうかを指定します。
      */
     calcCombatResult(atkUnit, defUnit, damageType) {
         // 初期化
@@ -221,9 +221,8 @@ class DamageCalculator {
 
         for (let func of this.__enumerateCombatFuncs(atkUnit, defUnit, result, context)) {
             func();
-            if (damageType == DamageType.ActualDamage
-                && this.__isAnyoneDead(atkUnit, defUnit)
-            ) {
+            if (damageType === DamageType.ActualDamage &&
+                this.__isAnyoneDead(atkUnit, defUnit)) {
                 break;
             }
         }
@@ -614,7 +613,7 @@ class DamageCalculator {
     }
 
     /**
-     * 一回分の攻撃ダメージを計算します。
+     * 一回分の攻撃ダメージを計算します。2回攻撃の場合は2回。
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {DamageCalcContext} context
@@ -638,11 +637,11 @@ class DamageCalculator {
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
 
-        let atkCountPerAttack = atkUnit.battleContext.getAttackCount(context.isCounterattack);
+        let atkCountPerCombat = atkUnit.battleContext.getAttackCount(context.isCounterattack);
         // 神速追撃の場合は2回攻撃は発動しない
         if (context.isPotentFollowupAttack) {
-            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerAttack} → ${1}`);
-            atkCountPerAttack = 1;
+            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerCombat} → ${1}`);
+            atkCountPerCombat = 1;
         }
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.getTotalSpecialAddDamage();
@@ -729,7 +728,7 @@ class DamageCalculator {
             context,
             atkUnit,
             defUnit,
-            atkCountPerAttack,
+            atkCountPerCombat,
             damage,
             specialDamage,
             invalidatesDamageReductionExceptSpecialOnSpecialActivation,
@@ -776,7 +775,7 @@ class DamageCalculator {
             }
             this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
             this.writeDebugLog(
-                `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerAttack}`);
+                `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerCombat}`);
             this.writeDebugLog(`合計ダメージ:${totalDamage}`);
         }
 
@@ -792,7 +791,7 @@ class DamageCalculator {
             }
         }
 
-        return new OneAttackResult(damage, specialAddDamage, atkCountPerAttack);
+        return new OneAttackResult(damage, specialAddDamage, atkCountPerCombat);
     }
 
     /**
@@ -1595,74 +1594,46 @@ class DamageCalculator {
         }
     }
 
-    __applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial) {
-        for (let skillId of atkUnit.enumerateSkills()) {
+    __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial) {
+        for (let skillId of targetUnit.enumerateSkills()) {
             let funcMap = applySkillEffectsPerAttackFuncMap;
             if (funcMap.has(skillId)) {
                 let func = funcMap.get(skillId);
                 if (typeof func === "function") {
-                    func.call(this, atkUnit, defUnit, canActivateAttackerSpecial);
+                    func.call(this, targetUnit, enemyUnit, canActivateAttackerSpecial);
                 } else {
                     console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                 }
             }
             switch (skillId) {
                 case Weapon.GustyWarBow:
-                    if (atkUnit.battleContext.weaponSkillCondSatisfied) {
-                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
-                            atkUnit.battleContext.additionalDamagePerAttack += 7;
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let isSpecialCharged = targetUnit.hasSpecial && targetUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                            targetUnit.battleContext.additionalDamagePerAttack += 7;
                         }
                     }
                     break;
                 case Weapon.SisterlyWarAxe:
-                    if (atkUnit.battleContext.weaponSkillCondSatisfied && canActivateAttackerSpecial) {
-                        defUnit.battleContext.preventedDefenderSpecialPerAttack = true;
-                        atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = true;
-                    }
-                    break;
-                // 秘奥3共通効果(固定ダメージ)
-                case PassiveA.AtkSpdFinish3:
-                case PassiveA.AtkDefFinish3:
-                case PassiveA.AtkResFinish3:
-                case PassiveA.SpdResFinish3:
-                case PassiveA.DefResFinish3:
-                    if (atkUnit.battleContext.passiveASkillCondSatisfied) {
-                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
-                            atkUnit.battleContext.additionalDamagePerAttack += 5;
-                        }
+                    if (targetUnit.battleContext.weaponSkillCondSatisfied && canActivateAttackerSpecial) {
+                        enemyUnit.battleContext.preventedDefenderSpecialPerAttack = true;
+                        targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = true;
                     }
                     break;
                 case Weapon.Sekuvaveku:
-                    if (atkUnit.isWeaponRefined && atkUnit.battleContext.weaponSkillCondSatisfied) {
-                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
-                            atkUnit.battleContext.additionalDamagePerAttack += 5;
-                            atkUnit.battleContext.healedHpByAttackPerAttack += 7;
-                        }
-                    }
-                    break;
-                // 秘奥4共通効果(固定ダメージ、固定回復)
-                case PassiveA.AtkSpdFinish4:
-                case PassiveA.AtkDefFinish4:
-                case PassiveA.AtkResFinish4:
-                case PassiveA.SpdResFinish4:
-                case PassiveA.DefResFinish4:
-                case PassiveA.VerdictOfSacae:
-                    if (atkUnit.battleContext.passiveASkillCondSatisfied) {
-                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
-                            atkUnit.battleContext.additionalDamagePerAttack += 5;
-                            atkUnit.battleContext.healedHpByAttackPerAttack += 7;
+                    if (targetUnit.isWeaponRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        let isSpecialCharged = targetUnit.hasSpecial && targetUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                            targetUnit.battleContext.additionalDamagePerAttack += 5;
+                            targetUnit.battleContext.healedHpByAttackPerAttack += 7;
                         }
                     }
                     break;
                 case Special.GodlikeReflexes:
-                    if (atkUnit.getEvalSpdInCombat(defUnit) >= defUnit.getEvalSpdInCombat(atkUnit) - 4) {
-                        let isSpecialCharged = atkUnit.hasSpecial && atkUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || atkUnit.battleContext.isSpecialActivated) {
-                            atkUnit.battleContext.additionalDamagePerAttack += Math.trunc(atkUnit.getSpdInCombat(defUnit) * 0.15);
+                    if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 4) {
+                        let isSpecialCharged = targetUnit.hasSpecial && targetUnit.tmpSpecialCount === 0;
+                        if (isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                            targetUnit.battleContext.additionalDamagePerAttack += Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.15);
                         }
                     }
                     break;
@@ -1670,7 +1641,22 @@ class DamageCalculator {
         }
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {DamageCalcContext} context
+     */
     __applySkillEffectsPerCombat(targetUnit, enemyUnit, context) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
+            if (isNormalAttackSpecial(targetUnit.special)) {
+                let n = 2;
+                if (targetUnit.battleContext.isTwiceAttackActivating() ||
+                    targetUnit.isReducedMaxSpecialCount()) {
+                    n = 1;
+                }
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack += n;
+            }
+        }
         for (let skillId of targetUnit.enumerateSkills()) {
             let funcMap = applySkillEffectsPerCombatFuncMap;
             if (funcMap.has(skillId)) {

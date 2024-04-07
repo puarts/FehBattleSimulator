@@ -122,6 +122,7 @@ class AssistableUnitInfo {
         this.targetUnit = targetUnit;
         this.assistableTiles = [];
 
+        // noinspection JSUnusedGlobalSymbols
         this.hasThreatenedByEnemyStatus = targetUnit.actionContext.hasThreatenedByEnemyStatus;
         this.hasThreatensEnemyStatus = targetUnit.actionContext.hasThreatensEnemyStatus;
         this.amountOfStatsActuallyBuffed = 0;
@@ -138,11 +139,17 @@ class AssistableUnitInfo {
         this.rallyUpTargetPriority = 0;
 
         this.bestTileToAssist = null;
-        this.hasStatAndNonstatDebuff = 0;
+        this.hasStatAndNonStatDebuff = 0;
     }
 
     calcAssistTargetPriority(assistUnit, isPrecombat = true) {
-        switch (assistUnit.supportInfo.assistType) {
+        let assistType = assistUnit.supportInfo.assistType;
+        // TODO: 検証する。とりあえずHPが減っていた場合は回復スキルとして扱う
+        let skillId = assistUnit.support;
+        if (isRallyHealSkill(skillId)) {
+            assistType = this.targetUnit.isFullHp ? AssistType.Rally : AssistType.Heal;
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 this.assistTargetPriority = this.__calcRefreshTargetPriority();
                 break;
@@ -158,6 +165,13 @@ class AssistableUnitInfo {
             case AssistType.Restore:
                 this.assistTargetPriority = this.__calcRestoreTargetPriority(assistUnit);
                 break;
+        }
+        if (isRallyHealSkill(skillId)) {
+            // 応援より回復優先
+            if (assistType === AssistType.Heal) {
+                // TODO: 適切な数値に修正する
+                this.assistTargetPriority *= 10000000;
+            }
         }
     }
 
@@ -217,11 +231,11 @@ class AssistableUnitInfo {
     }
 
     __calcRallyTargetPriority(assistUnit, isPrecombat) {
-        this.hasStatAndNonstatDebuff = 0;
+        this.hasStatAndNonStatDebuff = 0;
         if (assistUnit.support === Support.HarshCommandPlus) {
             // 一喝+は弱化と状態異常の両方が付与されてるユニットが最優先
-            if (this.targetUnit.hasStatDebuff() && this.targetUnit.hasNonstatDebuff()) {
-                this.hasStatAndNonstatDebuff = 1;
+            if (this.targetUnit.hasStatDebuff() && this.targetUnit.hasNonStatDebuff()) {
+                this.hasStatAndNonStatDebuff = 1;
             }
         }
 
@@ -234,7 +248,7 @@ class AssistableUnitInfo {
             this.amountOfStatsActuallyBuffed = calcBuffAmount(assistUnit, this.targetUnit);
         }
 
-        return this.hasStatAndNonstatDebuff * 1000000
+        return this.hasStatAndNonStatDebuff * 1000000
             + this.amountOfStatsActuallyBuffed * 300000
             - this.distanceFromClosestEnemy * 3000
             + this.visibleStatTotal * 10
@@ -247,6 +261,7 @@ class ActionContext {
     constructor() {
         // 補助のコンテキスト
         this.assistPriority = 0;
+        /** @type {AssistableUnitInfo[]} */
         this.assistableUnitInfos = [];
         this.hasThreatenedByEnemyStatus = false;
         this.hasThreatensEnemyStatus = false;
@@ -324,8 +339,7 @@ class ActionContext {
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
     constructor(id = "", name = "",
-                unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry,
-                icon = "") {
+                unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
         // Unitはマップ上で作るので利便性のために初期値0にしておく
         this.setPos(0, 0);
@@ -458,6 +472,8 @@ class Unit extends BattleMapElement {
         this.passiveS = -1;
         this.passiveX = -1;
         this.captain = -1;
+        // TODO: 削除
+        // noinspection JSUnusedGlobalSymbols
         this.deffensiveTile = false; // 防御床
         this.setMoveCountFromMoveType();
 
@@ -484,6 +500,9 @@ class Unit extends BattleMapElement {
         this.isAttackDone = false;
         // このターン戦闘を行なったか
         this.isCombatDone = false;
+        // このターン補助を行ったか
+        this.isSupportDone = false;
+
         this.isBonusChar = false;
 
         this.statusEffects = [];
@@ -494,21 +513,29 @@ class Unit extends BattleMapElement {
         this.perTurnStatuses = [];
         this.distanceFromClosestEnemy = -1;
 
+        /** @type {SkillInfo} */
         this.weaponInfo = null;
+        /** @type {SkillInfo} */
         this.supportInfo = null;
+        /** @type {SkillInfo} */
         this.specialInfo = null;
 
         /** @type {SkillInfo} */
         this.passiveAInfo = null;
+        /** @type {SkillInfo} */
         this.passiveBInfo = null;
+        /** @type {SkillInfo} */
         this.passiveCInfo = null;
+        /** @type {SkillInfo} */
         this.passiveSInfo = null;
+        /** @type {SkillInfo} */
         this.passiveXInfo = null;
         /** @type {SkillInfo} */
         this.captainInfo = null;
 
-        this.partnerHeroIndex = 0;
-        this.emblemHeroIndex = 0;
+        // indexが0の英雄が存在するので-1で初期化する
+        this.partnerHeroIndex = -1;
+        this.emblemHeroIndex = -1;
         this.partnerLevel = PartnerLevel.None; // 支援レベル
 
         this.isTransformed = false; // 化身
@@ -536,9 +563,6 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
 
-        // バックアップ
-        this.tilesMapForDivineVein = new Map();
-
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
         this.isOncePerMapSpecialActivated = false;
 
@@ -565,6 +589,8 @@ class Unit extends BattleMapElement {
          **/
         this.isPairUpUnit = false;
 
+        // TODO: 削除
+        // noinspection JSUnusedGlobalSymbols
         this.blessingCount = 2;
 
         // 査定計算用
@@ -580,6 +606,7 @@ class Unit extends BattleMapElement {
         this.passiveBSp = 0;
         this.passiveCSp = 0;
         this.passiveSSp = 0;
+        // noinspection JSUnusedGlobalSymbols
         this.passiveXSp = 0;
 
         // 攻撃可能なタイル
@@ -609,10 +636,12 @@ class Unit extends BattleMapElement {
         this.isCantoActivating = false; // 再移動中かどうか
 
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
+        // noinspection JSUnusedGlobalSymbols
         this.originalMerge = 0;
+        // noinspection JSUnusedGlobalSymbols
         this.originalDragonflower = 0;
 
-        this.warFundsCost; // ロキの盤上遊戯で購入に必要な軍資金
+        this.warFundsCost = 0; // ロキの盤上遊戯で購入に必要な軍資金
 
         this.originalTile = null; // 護り手のように一時的に移動する際に元の位置を記録しておく用
 
@@ -647,10 +676,6 @@ class Unit extends BattleMapElement {
      */
     get isCaptain() {
         return this.slotOrder === 0;
-    }
-
-    get fromPos() {
-        return [this.fromPosX, this.fromPosY];
     }
 
     get statusEvalUnit() {
@@ -1103,6 +1128,7 @@ class Unit extends BattleMapElement {
         if (this.hasPairUpUnit) {
             // ValueDelimiter の入れ子は対応していないのでURIに圧縮してしまう
             const pairUpUnitSetting = this.pairUpUnit.turnWideStatusToString();
+            // noinspection JSUnresolvedReference
             compressedPairUpUnitSetting = LZString.compressToEncodedURIComponent(pairUpUnitSetting);
         }
         return this.heroIndex
@@ -1201,6 +1227,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restWeaponSkillAvailableTurn
             + ValueDelimiter + this.restSupportSkillAvailableTurn
             + ValueDelimiter + this.restPassiveBSkillAvailableTurn
+            + ValueDelimiter + boolToInt(this.isSupportDone)
             ;
     }
 
@@ -1211,200 +1238,59 @@ class Unit extends BattleMapElement {
         if (!value) {
             return;
         }
-        let splited = value.split(ValueDelimiter);
-        let elemCount = splited.length;
+        let values = value.split(ValueDelimiter);
+        let elemCount = values.length;
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) {
-            this.heroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.weapon = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.support = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.special = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveA = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveB = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveC = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveS = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing1 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing2 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing3 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.merge = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.dragonflower = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.emblemHeroMerge = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ivHighStat = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ivLowStat = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.summonerLevel = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isBonusChar = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.weaponRefinement = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.partnerHeroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.emblemHeroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.partnerLevel = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.slotOrder = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing4 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.hpAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resAdd = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing5 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.grantedBlessing = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isResplendent = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.level = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.rarity = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.initPosX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.initPosY = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.hpMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.atkMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.spdMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.defMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.resMult = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.defGrowthRate = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isFinite(Number(splited[i]))) {
-            this.resGrowthRate = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing6 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ascendedAsset = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.captain = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveX = Number(splited[i]);
-            ++i;
-        }
+        // TODO: リファクタリング
+        if (Number.isInteger(Number(values[i]))) { this.heroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.weapon = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.support = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.special = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveA = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveB = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveC = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveS = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing1 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing2 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing3 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.merge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.dragonflower = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.emblemHeroMerge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ivHighStat = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ivLowStat = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.summonerLevel = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isBonusChar = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.weaponRefinement = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.partnerHeroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.emblemHeroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.partnerLevel = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.slotOrder = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing4 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.hpAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing5 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.grantedBlessing = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isResplendent = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.level = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.rarity = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.initPosX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.initPosY = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.hpMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.atkMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.spdMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.defMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.resMult = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.defGrowthRate = Number(values[i]); ++i; }
+        if (Number.isFinite(Number(values[i]))) { this.resGrowthRate = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing6 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ascendedAsset = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.captain = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
         if (i < elemCount) {
-            this.__setPairUpUnitFromCompressedUri(splited[i]);
-            ++i;
+            this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
     }
 
@@ -1414,6 +1300,7 @@ class Unit extends BattleMapElement {
             return;
         }
 
+        // noinspection JSUnresolvedReference
         let decompressed = LZString.decompressFromEncodedURIComponent(settingText);
         this.pairUpUnit.fromTurnWideStatusString(decompressed);
     }
@@ -1422,184 +1309,53 @@ class Unit extends BattleMapElement {
         if (!value) {
             return;
         }
-        let splited = value.split(ValueDelimiter);
+        let values = value.split(ValueDelimiter);
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ownerType = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.posX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.posY = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isActionDone = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.hp = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this._moveCount = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.specialCount = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.setStatusEffectsFromString(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isTransformed = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForSpecial = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isDuoOrHarmonicSkillActivatedInThisTurn = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.duoOrHarmonizedSkillActivationCount = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForSupport = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForPassiveB = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.moveCountAtBeginningOfTurn = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForWeapon = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForWeapon2 = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isEnemyActionTriggered = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForShieldEffect = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.setPerTurnStatusesFromString(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.distanceFromClosestEnemy = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.movementOrder = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.moveCountForCanto = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isCantoActivatedInCurrentTurn = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForFallenStar = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOneTimeActionActivatedForDeepStar = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.restMoveCount = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isOncePerMapSpecialActivated = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isAttackDone = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isCantoActivating = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.fromPosX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.fromPosY = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isCombatDone = intToBool(Number(splited[i]));
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.restWeaponSkillAvailableTurn = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.restSupportSkillAvailableTurn = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.restPassiveBSkillAvailableTurn = Number(splited[i]);
-            ++i;
-        }
+        if (Number.isInteger(Number(values[i]))) { this.ownerType = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posY = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isActionDone = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.hp = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this._moveCount = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.specialCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.setStatusEffectsFromString(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isTransformed = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForSpecial = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isDuoOrHarmonicSkillActivatedInThisTurn = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.duoOrHarmonizedSkillActivationCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForSupport = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForPassiveB = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.moveCountAtBeginningOfTurn = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForWeapon = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForWeapon2 = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isEnemyActionTriggered = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForShieldEffect = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.setPerTurnStatusesFromString(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.distanceFromClosestEnemy = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.movementOrder = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.moveCountForCanto = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isCantoActivatedInCurrentTurn = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForDeepStar = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restMoveCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isAttackDone = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isCantoActivating = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.fromPosX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.fromPosY = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isCombatDone = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restWeaponSkillAvailableTurn = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restSupportSkillAvailableTurn = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restPassiveBSkillAvailableTurn = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isSupportDone = intToBool(Number(values[i])); ++i; }
     }
 
 
@@ -1655,195 +1411,59 @@ class Unit extends BattleMapElement {
     }
 
     fromString(value) {
-        let splited = value.split(ValueDelimiter);
+        if (!value) {
+            return;
+        }
+        let values = value.split(ValueDelimiter);
 
         let i = 0;
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ownerType = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.posX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.posY = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.heroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.weapon = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.support = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.special = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveA = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveB = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveC = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveS = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing1 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing2 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.blessing3 = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.merge = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.dragonflower = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.emblemHeroMerge = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ivHighStat = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.ivLowStat = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.summonerLevel = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isBonusChar = toBoolean(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.weaponRefinement = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isActionDone = toBoolean(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.hp = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resBuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.atkDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.spdDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.defDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.resDebuff = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this._moveCount = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.specialCount = Number(splited[i]);
-            ++i;
-        }
-        this.setStatusEffectsFromString(splited[i]);
-        ++i;
-        if (Number.isInteger(Number(splited[i]))) {
-            this.partnerHeroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.emblemHeroIndex = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.partnerLevel = Number(splited[i]);
-            ++i;
-        }
-        if (splited[i] !== undefined) {
-            this.isTransformed = toBoolean(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.slotOrder = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.isResplendent = toBoolean(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.moveCountAtBeginningOfTurn = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.level = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.rarity = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.initPosX = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.initPosY = Number(splited[i]);
-            ++i;
-        }
-        if (Number.isInteger(Number(splited[i]))) {
-            this.passiveX = Number(splited[i]);
-            ++i;
-        }
+        if (Number.isInteger(Number(values[i]))) { this.ownerType = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.posY = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.heroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.weapon = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.support = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.special = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveA = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveB = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveC = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveS = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing1 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing2 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.blessing3 = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.merge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.dragonflower = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.emblemHeroMerge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ivHighStat = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.ivLowStat = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.summonerLevel = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isBonusChar = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.weaponRefinement = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isActionDone = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.hp = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resBuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resDebuff = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this._moveCount = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.specialCount = Number(values[i]); ++i; }
+        this.setStatusEffectsFromString(values[i]); ++i;
+        if (Number.isInteger(Number(values[i]))) { this.partnerHeroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.emblemHeroIndex = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.partnerLevel = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isTransformed = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.slotOrder = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isResplendent = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.moveCountAtBeginningOfTurn = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.level = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.rarity = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.initPosX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.initPosY = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -2008,20 +1628,6 @@ class Unit extends BattleMapElement {
 
     isRangedWeaponType() {
         return isRangedWeaponType(this.weaponType);
-    }
-
-    addBlessing() {
-        if (this.blessingCount === 5) {
-            return;
-        }
-        ++this.blessingCount;
-    }
-
-    removeBlessing() {
-        if (this.blessingCount === 1) {
-            return;
-        }
-        --this.blessingCount;
     }
 
     /**
@@ -2308,6 +1914,7 @@ class Unit extends BattleMapElement {
             + this.getResDebuffInCombat();
     }
 
+    // noinspection JSUnusedGlobalSymbols
     getDebuffsInCombat() {
         return [
             this.getAtkDebuffInCombat(),
@@ -2324,6 +1931,9 @@ class Unit extends BattleMapElement {
         return this.atkBuff + this.spdBuff + this.defBuff + this.resBuff;
     }
 
+    /**
+     * @returns {[number, number, number, number]}
+     */
     get buffs() {
         if (this.isPanicEnabled) {
             return [-this.atkBuff, -this.spdBuff, -this.defBuff, -this.resBuff];
@@ -2331,6 +1941,9 @@ class Unit extends BattleMapElement {
         return [this.atkBuff, this.spdBuff, this.defBuff, this.resBuff];
     }
 
+    /**
+     * @returns {[number, number, number, number]}
+     */
     getBuffs(considerPanic = true) {
         if (considerPanic) {
             return this.buffs;
@@ -2353,6 +1966,10 @@ class Unit extends BattleMapElement {
         return false;
     }
 
+    /**
+     * @param {number} type - EffectiveType
+     * @return {boolean}
+     */
     hasEffective(type) {
         if (this.isWeaponEffectiveAgainst(type)) {
             return true;
@@ -2378,6 +1995,29 @@ class Unit extends BattleMapElement {
             return;
         }
         this.reservedStatusEffects.push(statusEffect);
+    }
+
+    reserveToApplyAtkBuff(value) {
+        this.reservedAtkBuff = Math.max(this.reservedAtkBuff, value);
+    }
+
+    reserveToApplySpdBuff(value) {
+        this.reservedSpdBuff = Math.max(this.reservedSpdBuff, value);
+    }
+
+    reserveToApplyDefBuff(value) {
+        this.reservedDefBuff = Math.max(this.reservedDefBuff, value);
+    }
+
+    reserveToApplyResBuff(value) {
+        this.reservedResBuff = Math.max(this.reservedResBuff, value);
+    }
+
+    reserveToApplyAllBuffs(value) {
+        this.reserveToApplyAtkBuff(value);
+        this.reserveToApplySpdBuff(value);
+        this.reserveToApplyDefBuff(value);
+        this.reserveToApplyResBuff(value);
     }
 
     reserveToClearNegativeStatusEffects() {
@@ -2410,7 +2050,7 @@ class Unit extends BattleMapElement {
     }
 
     // 弱化以外の状態異常が付与されているか
-    hasNonstatDebuff() {
+    hasNonStatDebuff() {
         for (let effect of this.statusEffects) {
             if (isNegativeStatusEffect(effect)) {
                 return true;
@@ -2421,53 +2061,26 @@ class Unit extends BattleMapElement {
 
     // 弱化が付与されているか
     hasStatDebuff() {
-        if ((!this.battleContext.invalidatesOwnAtkDebuff && this.atkDebuff < 0)
-            || (!this.battleContext.invalidatesOwnSpdDebuff && this.spdDebuff < 0)
-            || (!this.battleContext.invalidatesOwnResDebuff && this.resDebuff < 0)
-            || (!this.battleContext.invalidatesOwnDefDebuff && this.defDebuff < 0)
-        ) {
-            return true;
-        }
+        let debuffs = this.getDebuffs();
+        let invalidations = this.battleContext.getDebuffInvalidations();
+        return invalidations.some((invalidates, i) => debuffs[i] < 0 && !invalidates);
     }
 
     // 状態異常が付与されているか
     hasNegativeStatusEffect() {
-        return this.hasNonstatDebuff() || this.hasStatDebuff();
+        return this.hasNonStatDebuff() || this.hasStatDebuff();
     }
 
     hasPositiveStatusEffect(enemyUnit = null) {
-        for (let effect of this.statusEffects) {
-            if (isPositiveStatusEffect(effect)) {
-                return true;
-            }
+        if (this.statusEffects.some(e => isPositiveStatusEffect(e))) {
+            return true;
         }
-
-        if (enemyUnit != null) {
-            if ((!enemyUnit.battleContext.invalidatesAtkBuff && this.atkBuff > 0)
-                || (!enemyUnit.battleContext.invalidatesSpdBuff && this.spdBuff > 0)
-                || (!enemyUnit.battleContext.invalidatesResBuff && this.resBuff > 0)
-                || (!enemyUnit.battleContext.invalidatesDefBuff && this.defBuff > 0)
-            ) {
-                return true;
-            }
-        } else {
-            return this.atkBuff > 0 ||
-                this.spdBuff > 0 ||
-                this.defBuff > 0 ||
-                this.resBuff > 0;
-        }
-
-        return false;
+        let buffs = enemyUnit == null ? this.buffs : this.getBuffsInCombat(enemyUnit);
+        return buffs.some(buff => buff > 0);
     }
 
     __getPositiveStatusEffects(statusEffects) {
-        let result = [];
-        for (let effect of statusEffects) {
-            if (isPositiveStatusEffect(effect)) {
-                result.push(effect);
-            }
-        }
-        return result;
+        return statusEffects.filter(e => isPositiveStatusEffect(e));
     }
 
     getPositiveStatusEffects() {
@@ -2475,13 +2088,7 @@ class Unit extends BattleMapElement {
     }
 
     getNegativeStatusEffects() {
-        let result = [];
-        for (let effect of this.statusEffects) {
-            if (isNegativeStatusEffect(effect)) {
-                result.push(effect);
-            }
-        }
-        return result;
+        return this.statusEffects.filter(e => isNegativeStatusEffect(e));
     }
 
     /**
@@ -2560,7 +2167,7 @@ class Unit extends BattleMapElement {
     }
 
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
-    canActivateObstractToTilesIn2Spaces(moveUnit) {
+    canActivateObstructToTilesIn2Spaces(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
             let funcMap = canActivateObstructToTilesIn2SpacesFuncMap;
@@ -2587,7 +2194,7 @@ class Unit extends BattleMapElement {
     }
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
-    canActivateObstractToAdjacentTiles(moveUnit) {
+    canActivateObstructToAdjacentTiles(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
             let funcMap = canActivateObstructToAdjacentTilesFuncMap;
@@ -2619,24 +2226,12 @@ class Unit extends BattleMapElement {
     }
 
     get isBuffed() {
-        if (this.isPanicEnabled) {
-            return false;
-        }
-        return this.atkBuff > 0 ||
-            this.spdBuff > 0 ||
-            this.defBuff > 0 ||
-            this.resBuff > 0;
+        return this.isPanicEnabled ? false : this.getBuffs(false).some(b => b > 0);
     }
 
     // 強化無効を考慮
     isBuffedInCombat(enemyUnit) {
-        if (this.isPanicEnabled) {
-            return false;
-        }
-        return this.getAtkBuffInCombat(enemyUnit) > 0 ||
-            this.getSpdBuffInCombat(enemyUnit) > 0 ||
-            this.getDefBuffInCombat(enemyUnit) > 0 ||
-            this.getResBuffInCombat(enemyUnit) > 0;
+        return this.isPanicEnabled ? false : this.getBuffsInCombat(enemyUnit).some(b => b > 0);
     }
 
     get isDebuffed() {
@@ -2644,6 +2239,18 @@ class Unit extends BattleMapElement {
             this.spdDebuff < 0 ||
             this.defDebuff < 0 ||
             this.resDebuff < 0;
+    }
+
+    /**
+     * @returns {[number, number, number, number]}
+     */
+    getDebuffs() {
+        return [
+            this.atkDebuff,
+            this.spdDebuff,
+            this.defDebuff,
+            this.resDebuff,
+        ];
     }
 
     get isSpecialCountMax() {
@@ -2693,35 +2300,6 @@ class Unit extends BattleMapElement {
         this.snapshot.battleContext.invalidatesDefBuff = this.battleContext.invalidatesDefBuff;
         this.snapshot.battleContext.invalidatesResBuff = this.battleContext.invalidatesResBuff;
     }
-
-    /**
-     * @param  {Unit} enemyUnit
-     */
-    getAtkIncrementInCombat(enemyUnit) {
-        return this.getAtkInCombat(enemyUnit) - this.getAtkInPrecombat();
-    }
-
-    /**
-     * @param  {Unit} enemyUnit
-     */
-    getSpdIncrementInCombat(enemyUnit) {
-        return this.getSpdInCombat(enemyUnit) - this.getSpdInPrecombat();
-    }
-
-    /**
-     * @param  {Unit} enemyUnit
-     */
-    getDefIncrementInCombat(enemyUnit) {
-        return this.getDefInCombat(enemyUnit) - this.getDefInPrecombat();
-    }
-
-    /**
-     * @param  {Unit} enemyUnit
-     */
-    getResIncrementInCombat(enemyUnit) {
-        return this.getResInCombat(enemyUnit) - this.getResInPrecombat();
-    }
-
 
     resetBuffs() {
         this.atkBuff = 0;
@@ -2889,32 +2467,17 @@ class Unit extends BattleMapElement {
         let maxStatuses = [StatusType.Atk];
         let unit = this;
         let maxValue = unit.getAtkInPrecombat() - 15; // 攻撃は-15して比較
-        {
-            let value = unit.getSpdInPrecombat();
+        let statuses = [
+            [unit.getSpdInPrecombat(), StatusType.Spd],
+            [unit.getDefInPrecombat(), StatusType.Def],
+            [unit.getResInPrecombat(), StatusType.Res],
+        ];
+        for (let [value, type] of statuses) {
             if (value > maxValue) {
-                maxStatuses = [StatusType.Spd];
+                maxStatuses = [type];
                 maxValue = value;
             } else if (value === maxValue) {
-                maxStatuses.push(StatusType.Spd);
-            }
-        }
-        {
-            let value = unit.getDefInPrecombat();
-            if (value > maxValue) {
-                maxStatuses = [StatusType.Def];
-                maxValue = value;
-            } else if (value === maxValue) {
-                maxStatuses.push(StatusType.Def);
-            }
-        }
-        {
-            let value = unit.getResInPrecombat();
-            if (value > maxValue) {
-                maxStatuses = [StatusType.Res];
-                // noinspection JSUnusedAssignment
-                maxValue = value;
-            } else if (value === maxValue) {
-                maxStatuses.push(StatusType.Res);
+                maxStatuses.push(type);
             }
         }
         return maxStatuses;
@@ -2983,7 +2546,7 @@ class Unit extends BattleMapElement {
 
     applyDefResBuffs(def, res = def) {
         this.applyDefBuff(def);
-        this.applyResBuff(def);
+        this.applyResBuff(res);
     }
 
     reserveToApplyAtkDebuff(amount) {
@@ -3028,12 +2591,7 @@ class Unit extends BattleMapElement {
 
     applyReservedSpecialCount() {
         this.specialCount += this.reservedSpecialCount;
-        if (this.specialCount >= this.maxSpecialCount) {
-            this.specialCount = this.maxSpecialCount;
-        }
-        if (this.specialCount < 0) {
-            this.specialCount = 0;
-        }
+        this.specialCount = MathUtil.ensureMinMax(this.specialCount, 0, this.maxSpecialCount);
         this.reservedSpecialCount = 0;
     }
 
@@ -3077,25 +2635,15 @@ class Unit extends BattleMapElement {
     }
 
     modifySpecialCount() {
-        if (this.specialCount > Number(this.maxSpecialCount)) {
-            this.specialCount = Number(this.maxSpecialCount);
-        } else if (Number(this.specialCount) < 0) {
-            this.specialCount = 0;
-        }
+        this.specialCount = MathUtil.ensureMinMax(this.specialCount, 0, Number(this.maxSpecialCount));
     }
 
     increaseSpecialCount(amount) {
-        this.specialCount = Number(this.specialCount) + amount;
-        if (this.specialCount > Number(this.maxSpecialCount)) {
-            this.specialCount = Number(this.maxSpecialCount);
-        }
+        this.specialCount = MathUtil.ensureMax(Number(this.specialCount) + amount, Number(this.maxSpecialCount));
     }
 
     reduceSpecialCount(amount) {
-        this.specialCount = Number(this.specialCount) - amount;
-        if (Number(this.specialCount) < 0) {
-            this.specialCount = 0;
-        }
+        this.specialCount = MathUtil.ensureMin(Number(this.specialCount) - amount, 0);
     }
 
     reduceSpecialCountToZero() {
@@ -3127,11 +2675,7 @@ class Unit extends BattleMapElement {
 
     applyReservedBuffs() {
         this.applyBuffs(this.reservedAtkBuff, this.reservedSpdBuff, this.reservedDefBuff, this.reservedResBuff);
-
-        this.reservedAtkBuff = 0;
-        this.reservedSpdBuff = 0;
-        this.reservedDefBuff = 0;
-        this.reservedResBuff = 0;
+        this.resetReservedBuffs();
     }
 
     resetReservedBuffs() {
@@ -3147,10 +2691,7 @@ class Unit extends BattleMapElement {
         this.defDebuff = this.reservedDefDebuff;
         this.resDebuff = this.reservedResDebuff;
 
-        this.reservedAtkDebuff = 0;
-        this.reservedSpdDebuff = 0;
-        this.reservedDefDebuff = 0;
-        this.reservedResDebuff = 0;
+        this.resetReservedDebuffs();
     }
 
     resetReservedDebuffs() {
@@ -3200,30 +2741,14 @@ class Unit extends BattleMapElement {
     }
 
     modifyHp(leavesOneHp = false) {
-        if (this.hp > this.maxHpWithSkills) {
-            this.hp = this.maxHpWithSkills;
-        } else if (this.hp <= 0) {
-            if (leavesOneHp) {
-                this.hp = 1;
-            } else {
-                this.hp = 0;
-            }
-        }
+        this.hp = MathUtil.ensureMinMax(this.hp, leavesOneHp ? 1 : 0, this.maxHpWithSkills);
     }
 
     takeDamage(damageAmount, leavesOneHp = false) {
         if (this.isDead) {
             return;
         }
-        let hp = this.hp - damageAmount;
-        if (hp < 1) {
-            if (leavesOneHp) {
-                hp = 1;
-            } else {
-                hp = 0;
-            }
-        }
-        this.hp = hp;
+        this.hp = MathUtil.ensureMin(this.hp - damageAmount, leavesOneHp ? 1 : 0);
     }
 
     healFull() {
@@ -3262,21 +2787,33 @@ class Unit extends BattleMapElement {
     }
 
     get hasHealAssist() {
+        if (isRallyHealSkill(this.support)) {
+            return false;
+        }
         return this.supportInfo != null
             && this.supportInfo.assistType === AssistType.Heal;
     }
 
     get hasDonorHealAssist() {
+        if (isRallyHealSkill(this.support)) {
+            return false;
+        }
         return this.supportInfo != null
             && this.supportInfo.assistType === AssistType.DonorHeal;
     }
 
     get hasRestoreAssist() {
+        if (isRallyHealSkill(this.support)) {
+            return false;
+        }
         return this.supportInfo != null
             && this.supportInfo.assistType === AssistType.Restore;
     }
 
     get hasRallyAssist() {
+        if (isRallyHealSkill(this.support)) {
+            return true;
+        }
         return this.supportInfo != null
             && this.supportInfo.assistType === AssistType.Rally;
     }
@@ -3314,7 +2851,9 @@ class Unit extends BattleMapElement {
         return Math.round((100 * this.hp / this.maxHpWithSkills) * 100) / 100;
     }
 
-    /// 戦闘のダメージ計算時の残りHPです。戦闘のダメージ計算のみで使用できます。
+    /**
+     * 戦闘のダメージ計算時の残りHPです。戦闘のダメージ計算のみで使用できます。
+     */
     get restHpPercentage() {
         if (this.restHp >= this.maxHpWithSkills) {
             return 100;
@@ -3322,7 +2861,9 @@ class Unit extends BattleMapElement {
         return 100 * this.restHp / this.maxHpWithSkills;
     }
 
-    /// ターン開始時スキルで使用する残りのHP割合です。
+    /**
+     * ターン開始時スキルで使用する残りのHP割合です。
+     */
     get restHpPercentageAtBeginningOfTurn() {
         if (this.hp >= this.maxHpWithSkills) {
             return 100;
@@ -3612,35 +3153,27 @@ class Unit extends BattleMapElement {
     }
 
     /// 装備中の武器名を取得します。
+    // noinspection JSUnusedGlobalSymbols
     getWeaponName() {
-        if (this.weaponInfo == null) {
-            return "‐";
-        }
-        return this.weaponInfo.name;
+        return this.weaponInfo == null ? "‐" : this.weaponInfo.name;
     }
 
     /// 装備中のAスキル名を取得します。
+    // noinspection JSUnusedGlobalSymbols
     getPassiveAName() {
-        if (this.passiveAInfo == null) {
-            return "‐";
-        }
-        return this.passiveAInfo.name;
+        return this.passiveAInfo == null ? "‐" : this.passiveAInfo.name;
     }
 
     /// 装備中の聖印名を取得します。
+    // noinspection JSUnusedGlobalSymbols
     getPassiveSName() {
-        if (this.passiveSInfo == null) {
-            return "‐";
-        }
-        return this.passiveSInfo.name;
+        return this.passiveSInfo == null ? "‐" : this.passiveSInfo.name;
     }
 
     /// 装備中の聖印名を取得します。
+    // noinspection JSUnusedGlobalSymbols
     getPassiveXName() {
-        if (this.passiveXInfo == null) {
-            return "‐";
-        }
-        return this.passiveXInfo.name;
+        return this.passiveXInfo == null ? "‐" : this.passiveXInfo.name;
     }
 
     getVisibleStatusTotal() {
@@ -3695,10 +3228,8 @@ class Unit extends BattleMapElement {
     }
 
     __getBuffMultiply() {
-        if (!this.canNullPanic() && this.hasPanic) {
-            return -1;
-        }
-        return 1;
+        let isPanic = this.hasPanic && !this.canNullPanic();
+        return isPanic ? -1 : 1;
     }
 
     canNullPanic() {
@@ -3770,7 +3301,8 @@ class Unit extends BattleMapElement {
     }
 
     getAtkBuffInCombat(enemyUnit) {
-        let invalidates = enemyUnit !== null &&
+        let invalidates =
+            enemyUnit !== null &&
             enemyUnit.battleContext.invalidatesAtkBuff ||
             enemyUnit.hasStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
         return this.__getBuffInCombat(
@@ -3813,6 +3345,9 @@ class Unit extends BattleMapElement {
         );
     }
 
+    /**
+     * @returns {[number, number, number, number]}
+     */
     getBuffsInCombat(enemyUnit) {
         return [
             this.getAtkBuffInCombat(enemyUnit),
@@ -3978,6 +3513,26 @@ class Unit extends BattleMapElement {
         return this.getResInPrecombat() + this.__getEvalResAdd();
     }
 
+    /**
+     * 守備がn以上高いかどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherDefInPrecombat(enemyUnit, n = 0) {
+        return this.getEvalDefInPrecombat() > enemyUnit.getEvalDefInPrecombat() + n;
+    }
+
+    /**
+     * 魔防がn以上高いかどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherResInPrecombat(enemyUnit, n = 0) {
+        return this.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat() + n;
+    }
+
     __getEvalDefAdd() {
         switch (this.passiveS) {
             default:
@@ -3993,6 +3548,7 @@ class Unit extends BattleMapElement {
         return 0;
     }
 
+    // TODO: 削除する
     hasSkill(skillId) {
         return this.weapon === skillId
             || this.support === skillId
@@ -4351,11 +3907,13 @@ class Unit extends BattleMapElement {
     }
 
     /// 入力した成長率に対して、得意ステータスの上昇値を取得します。
+    // noinspection JSUnusedGlobalSymbols
     calcAssetStatusIncrement(growthRate) {
         return this.__calcGrowthValue(growthRate + 0.05) - this.__calcGrowthValue(growthRate) + 1;
     }
 
     /// 入力した成長率に対して、不得意ステータスの減少値を取得します。
+    // noinspection JSUnusedGlobalSymbols
     calcFlowStatusDecrement(growthRate) {
         return this.__calcGrowthValue(growthRate - 0.05) - this.__calcGrowthValue(growthRate) - 1;
     }
@@ -4714,15 +4272,6 @@ class Unit extends BattleMapElement {
         return this.passiveAInfo.isDuel4();
     }
 
-
-    get totalPureGrowthRate() {
-        return Number(this.hpGrowthRate)
-            + Number(this.atkGrowthRate)
-            + Number(this.spdGrowthRate)
-            + Number(this.defGrowthRate)
-            + Number(this.resGrowthRate);
-    }
-
     /**
      * @param  {number} majorSeason=SeasonType.None
      * @param  {number} minorSeason=SeasonType.None
@@ -4821,10 +4370,6 @@ class Unit extends BattleMapElement {
         totalSp += this.passiveSInfo != null ? this.passiveSInfo.sp : 0;
         totalSp += this.passiveXInfo != null ? this.passiveXInfo.sp : 0;
         return totalSp;
-    }
-
-    calcArenaTotalSpScore() {
-        return calcArenaTotalSpScore(this.getTotalSp());
     }
 
     /**
@@ -4956,8 +4501,8 @@ class Unit extends BattleMapElement {
         this.passiveA = heroInfo.passiveA;
         this.passiveB = heroInfo.passiveB;
         this.passiveC = heroInfo.passiveC;
-        // this.passiveS = PassiveS.None;
-        // this.passiveX = PassiveX.None;
+        // this.passiveS = heroInfo.passiveS;
+        this.passiveX = heroInfo.passiveX;
     }
 
     hasMovementAssist() {
@@ -5292,6 +4837,7 @@ class Unit extends BattleMapElement {
     }
 
     /// テレポート系スキルを所持していたり、状態が付与されていて、テレポートが可能な状態かどうかを判定します。
+    // noinspection JSUnusedGlobalSymbols
     canTeleport() {
         if (this.hasStatusEffect(StatusEffectType.AirOrders)) {
             return true;
@@ -5324,10 +4870,19 @@ class Unit extends BattleMapElement {
         return false;
     }
 
-    /// 応援や一喝を実行可能かどうかを返します。
+    /**
+     * 応援や一喝を実行可能かどうかを返します。
+     * @returns {boolean}
+     */
     canRallyTo(targetUnit, buffAmountThreshold) {
         let assistUnit = this;
-        switch (assistUnit.support) {
+        let skillId = assistUnit.support;
+        if (canAddStatusEffectByRallyFuncMap.has(skillId)) {
+            // TODO: 以下を検証する
+            // ステータスを付与できないのであればバフをかけられようとも応援しない。
+            return canAddStatusEffectByRallyFuncMap.get(skillId).call(this, assistUnit, targetUnit);
+        }
+        switch (skillId) {
             case Support.HarshCommandPlus:
                 if (targetUnit.hasNegativeStatusEffect()) {
                     return true;
@@ -5336,17 +4891,17 @@ class Unit extends BattleMapElement {
             case Support.HarshCommand:
                 return this.__canExecuteHarshCommand(targetUnit);
             default:
-                if ((getAtkBuffAmount(assistUnit.support) - targetUnit.atkBuff) >= buffAmountThreshold) {
+                if ((getAtkBuffAmount(skillId) - targetUnit.atkBuff) >= buffAmountThreshold) {
                     return true;
                 }
-                if ((getSpdBuffAmount(assistUnit.support) - targetUnit.spdBuff) >= buffAmountThreshold) {
+                if ((getSpdBuffAmount(skillId) - targetUnit.spdBuff) >= buffAmountThreshold) {
                     return true;
                 }
-                if ((getDefBuffAmount(assistUnit.support) - targetUnit.defBuff) >= buffAmountThreshold) {
+                if ((getDefBuffAmount(skillId) - targetUnit.defBuff) >= buffAmountThreshold) {
                     return true;
                 }
                 // noinspection RedundantIfStatementJS
-                if ((getResBuffAmount(assistUnit.support) - targetUnit.resBuff) >= buffAmountThreshold) {
+                if ((getResBuffAmount(skillId) - targetUnit.resBuff) >= buffAmountThreshold) {
                     return true;
                 }
                 return false;
@@ -5540,18 +5095,6 @@ class Unit extends BattleMapElement {
         return false;
     }
 
-    /// 神罰の杖を発動可能か調べます。
-    canActivateWrathfulStaff() {
-        let atkWeaponInfo = atkUnit.weaponInfo;
-        let passiveBInfo = atkUnit.passiveBInfo;
-
-        // 神罰の杖
-        return (atkWeaponInfo != null && atkWeaponInfo.wrathfulStaff)
-            || (passiveBInfo != null && passiveBInfo.wrathfulStaff)
-            || (atkUnit.weaponRefinement === WeaponRefinementType.WrathfulStaff);
-    }
-
-
     /**
      * ユニットを中心とした縦〇列と横〇列に自身がいるかどうかを取得します。
      * 例えば縦3列の場合はoffset=1, 5列の場合はoffset=2。
@@ -5570,7 +5113,31 @@ class Unit extends BattleMapElement {
         return this.posX === unit.posX || this.posY === unit.posY;
     }
 
-    /// 指定したユニットの指定した距離以内に自身がいるかどうかを取得します。
+    /**
+     * ユニットを中心とした縦横N,Mマスに自身がいるかどうかを取得します。
+     * @param {Unit} unit
+     * @param {number} x
+     * @param {number} y
+     */
+    isInRectangle(unit, x, y) {
+        let xOffset = (x - 1) / 2;
+        let yOffset = (y - 1) / 2;
+        return (unit.posX - xOffset <= this.posX && this.posX <= unit.posX + xOffset)
+            && (unit.posY - yOffset <= this.posY && this.posY <= unit.posY + yOffset);
+    }
+
+    /**
+     * ユニットを中心とした縦横Nマスに自身がいるかどうかを取得します。
+     * @param {Unit} unit
+     * @param {number} n
+     */
+    isInSquare(unit, n) {
+        return this.isInRectangle(unit, n, n);
+    }
+
+    /**
+     * 指定したユニットの指定した距離以内に自身がいるかどうかを取得します。
+     */
     isWithinSpecifiedDistanceFrom(unit, spaces) {
         let diffX = Math.abs(this.posX - unit.posX);
         let diffY = Math.abs(this.posY - unit.posY);
@@ -5579,7 +5146,9 @@ class Unit extends BattleMapElement {
     }
 
 
-    /// ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
+    /**
+     * ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
+     */
     canDisableAttackOrderSwapSkill(restHpPercentage, defUnit) {
         for (let skillId of this.enumerateSkills()) {
             let funcMap = canDisableAttackOrderSwapSkillFuncMap;
@@ -5800,6 +5369,21 @@ class Unit extends BattleMapElement {
         return false;
     }
 
+    /**
+     * キラー効果などで奥義カウントの最大値が減らされているかどうか
+     */
+    isReducedMaxSpecialCount() {
+        return this.maxSpecialCount < this.specialInfo.specialCount;
+    }
+
+    hasNormalAttackSpecial() {
+        return isNormalAttackSpecial(this.special);
+    }
+
+    hasDefenseSpecial() {
+        return isDefenseSpecial(this.special);
+    }
+
     // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
     static calcAttackerMoveDistance(unit1, unit2) {
         let unit = unit1.battleContext.initiatesCombat ? unit1 : unit2;
@@ -5861,12 +5445,25 @@ function calcBuffAmount(assistUnit, targetUnit) {
     return totalBuffAmount;
 }
 
-/// @brief 回復補助の回復量を取得します。
-/// @param {Unit} assistUnit 補助者のユニット
-/// @param {Unit} targetUnit 補助対象のユニット
+/**
+ * @brief 回復補助の回復量を取得します。
+ * @param {Unit} assistUnit 補助者のユニット
+ * @param {Unit} targetUnit 補助対象のユニット
+ * TODO: マジックシールドについて調査する
+ */
 function calcHealAmount(assistUnit, targetUnit) {
     let healAmount = 0;
-    switch (assistUnit.support) {
+    let skillId = assistUnit.support;
+    let funcMap = calcHealAmountFuncMap;
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            healAmount += func.call(this, assistUnit, targetUnit);
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
+    switch (skillId) {
         case Support.Heal:
             healAmount = 5;
             break;
@@ -5934,8 +5531,6 @@ function calcHealAmount(assistUnit, targetUnit) {
                 healAmount = 15;
             }
             break;
-        default:
-            return 0;
     }
     if (targetUnit.currentDamage < healAmount) {
         return targetUnit.currentDamage;
@@ -5944,6 +5539,7 @@ function calcHealAmount(assistUnit, targetUnit) {
 }
 
 /// Tier 1 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
+// noinspection JSUnusedLocalSymbols
 function isDebufferTier1(attackUnit, targetUnit) {
     return attackUnit.weapon === Weapon.Hlidskjalf;
 }

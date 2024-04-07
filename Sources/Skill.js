@@ -190,8 +190,16 @@ function isRallyUp(support) {
     }
 }
 
-/// 応援スキルの攻撃の強化量を取得します。
+/** @type {Map<number|string, [number, number, number, number]>} */
+const RALLY_BUFF_AMOUNT_MAP = new Map();
+
+/**
+ * 応援スキルの攻撃の強化量を取得します。
+ */
 function getAtkBuffAmount(support) {
+    if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Atk];
+    }
     switch (support) {
         case Support.RallyAttack:
             return 4;
@@ -218,6 +226,9 @@ function getAtkBuffAmount(support) {
 
 /// 応援スキルの速さの強化量を取得します。
 function getSpdBuffAmount(support) {
+    if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Spd];
+    }
     switch (support) {
         case Support.RallySpeed:
             return 4;
@@ -244,6 +255,9 @@ function getSpdBuffAmount(support) {
 
 /// 応援スキルの守備の強化量を取得します。
 function getDefBuffAmount(support) {
+    if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Def];
+    }
     switch (support) {
         case Support.RallyUpDef:
             return 4;
@@ -270,6 +284,9 @@ function getDefBuffAmount(support) {
 
 /// 応援スキルの魔防の強化量を取得します。
 function getResBuffAmount(support) {
+    if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Res];
+    }
     switch (support) {
         case Support.RallyUpRes:
             return 4;
@@ -294,9 +311,17 @@ function getResBuffAmount(support) {
     }
 }
 
-/// 回復系の補助スキルの戦闘前補助実行可能な回復量を取得します。
-/// https://vervefeh.github.io/FEH-AI/charts.html#chartF
+/** @type {Map<number, number>} */
+const PRECOMBAT_HEAL_THRESHOLD_MAP = new Map();
+
+/**
+ * 回復系の補助スキルの戦闘前補助実行可能な回復量を取得します。
+ * https://vervefeh.github.io/FEH-AI/charts.html#chartF
+ */
 function getPrecombatHealThreshold(support) {
+    if (PRECOMBAT_HEAL_THRESHOLD_MAP.has(support)) {
+        return PRECOMBAT_HEAL_THRESHOLD_MAP.get(support);
+    }
     switch (support) {
         case Support.MaidensSolace:
         case Support.Sacrifice:
@@ -457,6 +482,11 @@ function isNormalAttackSpecial(special) {
 /// 再行動補助スキルかどうかを判定します。
 const refreshSupportSkillSet = new Set();
 
+/**
+ * 応援扱いの回復サポートスキルIDの集合
+ */
+const RALLY_HEAL_SKILL_SET = new Set();
+
 function isRefreshSupportSkill(skillId) {
     if (refreshSupportSkillSet.has(skillId)) {
         return true;
@@ -480,6 +510,13 @@ function isRefreshSupportSkill(skillId) {
         default:
             return false;
     }
+}
+
+/**
+ * 応援扱いの回復サポートスキルかどうかを返す
+ */
+function isRallyHealSkill(skillId) {
+    return RALLY_HEAL_SKILL_SET.has(skillId);
 }
 
 const BowWeaponTypeTable = {}
@@ -760,6 +797,23 @@ function weaponTypeToString(weaponType) {
     }
 }
 
+function canRallyForciblyByPlayer(unit) {
+    let skillId = unit.support;
+    let funcMap = canRallyForciblyByPlayerFuncMap;
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            let result = func.call(this, unit);
+            if (result) {
+                return true;
+            }
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
+    return false;
+}
+
 /// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
 function canRallyForcibly(skill, unit) {
     let skillId = skill;
@@ -857,7 +911,6 @@ TeleportationSkillDict[Weapon.FlowerLance] = 0;
 TeleportationSkillDict[Weapon.FujinYumi] = 0;
 TeleportationSkillDict[Weapon.Gurimowaru] = 0;
 TeleportationSkillDict[Weapon.ApotheosisSpear] = 0;
-TeleportationSkillDict[Weapon.AstralBreath] = 0;
 TeleportationSkillDict[Weapon.Noatun] = 0;
 TeleportationSkillDict[Weapon.HinokaNoKounagitou] = 0;
 TeleportationSkillDict[Weapon.IzunNoKajitsu] = 0;
@@ -1027,7 +1080,6 @@ WeaponTypesAddAtk2AfterTransform[Weapon.JinroOuNoTsumekiba] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.OkamijoouNoKiba] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.ShirasagiNoTsubasa] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SeijuNoKeshinHiko] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.BridesFang] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.GroomsWings] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.SkyPirateClaw] = 0;
 WeaponTypesAddAtk2AfterTransform[Weapon.TwinCrestPower] = 0;
@@ -1069,7 +1121,6 @@ const BeastCommonSkillMap =
 
             // 旧世代歩行
             [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
-            [Weapon.BridesFang, BeastCommonSkillType.Infantry],
             [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
 
             // 次世代騎馬
@@ -1430,39 +1481,56 @@ const StatusIndex = {
 // TODO: ここから下の内容を別ファイルに分ける
 // FuncMap
 // noinspection DuplicatedCode
-/** @type {Map<String, (target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
+/** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySpecialDamageReductionPerAttackFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
 const calcMoveCountForCantoFuncMap = new Map();
 const evalSpdAddFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, defUnit: Unit, atkUnit: Unit) => void>} */
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applySkillForBeginningOfTurnFuncMap = new Map();
 const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
 const setOnetimeActionActivatedFuncMap = new Map();
 const applySkillEffectFromAlliesFuncMap = new Map();
 const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, enemyAlly: Unit, potentialDamage: boolean) => void>} */
 const updateUnitSpurFromEnemyAlliesFuncMap = new Map();
 const applyRefreshFuncMap = new Map();
 const applySkillEffectsPerCombatFuncMap = new Map();
 const initApplySpecialSkillEffectFuncMap = new Map();
 const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 // 応援後のスキル
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySkillsAfterRallyForSupporterFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
-// 移動補助スキル後(スキル使用者、被使用者両者入れ替えて呼び出される)
+/**
+ * 移動補助スキル後(スキル使用者、被使用者両者入れ替えて呼び出される)
+ * @type {Map<number|string, (this: BattleSimulatorBase, skillOwner: Unit, ally: Unit) => void>}
+ */
 const applyMovementAssistSkillFuncMap = new Map();
 // 2023年11月時点では片方にだけかかるスキルは存在しない
 // const applyMovementAssistSkillForSupporterFuncMap = new Map();
 // const applyMovementAssistSkillForTargetUnitFuncMap = new Map();
 // サポートスキル後
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit, supportTile: Tile) => void>} */
 const applySupportSkillForSupporterFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit, supportTile: Tile) => void>} */
 const applySupportSkillForTargetUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
 const canRallyForciblyFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
+const canRallyForciblyByPlayerFuncMap = new Map();
 const canRalliedForciblyFuncMap = new Map();
+/** @type {Map<number|string, (u: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectAfterCombatForUnitFuncMap = new Map();
 const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, ally: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const updateUnitSpurFromAlliesFuncMap = new Map();
 const canActivateObstructToAdjacentTilesFuncMap = new Map();
 const canActivateObstructToTilesIn2SpacesFuncMap = new Map();
@@ -1494,16 +1562,26 @@ const canDisableAttackOrderSwapSkillFuncMap = new Map();
 const calcFixedAddDamageFuncMap = new Map();
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
 const applyMovementSkillAfterCombatFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
 const applyPotentSkillEffectFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, canActivateAttackerSpecial: boolean) => void>} */
 const applySkillEffectsPerAttackFuncMap = new Map();
 const applySkillEffectAfterSetAttackCountFuncMap = new Map();
 const canActivateSaveSkillFuncMap = new Map();
 const selectReferencingResOrDefFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleMap, target: Unit, ally: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForAllyFuncMap = new Map();
 const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
 const hasPathfinderEffectFuncMap = new Map();
 const applySkillEffectFromEnemyAlliesFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, attackTarget: Unit) => void>} */
 const applyAttackSkillEffectAfterCombatFuncMap = new Map();
-/** @type {Map<String, (supporter: Unit, target: Unit) => void>} */
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySpecialSkillEffectWhenHealingFuncMap = new Map();
+/** @type {Map<number|string, (this: any, supporter: Unit, target: Unit) => boolean>} */
+const canAddStatusEffectByRallyFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit) => number>} */
+const getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, supporter: Unit, target: Unit) => number>} */
+const calcHealAmountFuncMap = new Map();

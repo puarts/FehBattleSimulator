@@ -41,6 +41,25 @@ const ModuleLoadState = {
     Loaded: 2,
 };
 
+/**
+ * アシストタイプを決定する。ステータスが付与できる場合は応援。そうでない場合は回復として振る舞う。
+ * @param {Unit} assistUnit
+ * @param {Unit} targetUnit
+ * @return {number}
+ */
+function determineAssistType(assistUnit, targetUnit) {
+    let skillId = assistUnit.support;
+    if (isRallyHealSkill(skillId)) {
+        if (canAddStatusEffectByRallyFuncMap.has(skillId)) {
+            if (canAddStatusEffectByRallyFuncMap.get(skillId).call(this, assistUnit, targetUnit)) {
+                return AssistType.Rally;
+            }
+        }
+        return AssistType.Heal;
+    }
+    return assistUnit.supportInfo.assistType;
+}
+
 /// シミュレーター本体です。
 class BattleSimulatorBase {
     constructor(additionalMethods = null) {
@@ -163,7 +182,7 @@ class BattleSimulatorBase {
             },
             mapChanged: function () {
                 // g_appData.clearReservedSkillsForAllUnits();
-                removeBreakableWallsFromTrashbox();
+                removeBreakableWallsFromTrashBox();
                 changeMap();
                 switch (appData.gameMode) {
                     case GameMode.Arena:
@@ -1083,9 +1102,9 @@ class BattleSimulatorBase {
     __areSameOrigin(unit, targetOrigins) {
         let origins = unit.heroInfo.origin.split('|');
         for (let origin of origins) {
-            let isMonsyoNoNazo = origin.indexOf("紋章の謎") >= 0;
+            let includesEmblem = origin.indexOf("紋章の謎") >= 0;
             for (let targetOrigin of targetOrigins) {
-                if (isMonsyoNoNazo) {
+                if (includesEmblem) {
                     if (targetOrigin.indexOf("紋章の謎") >= 0) {
                         return true;
                     }
@@ -1145,6 +1164,17 @@ class BattleSimulatorBase {
             return;
         }
         switch (duoUnit.heroIndex) {
+            case Hero.DuoRobin:
+                // 自分と自分を中心とした
+                // 縦7x横7マスにいる味方に
+                // 七色の叫び）、
+                // 【デュアルアタック】の状態を付与
+                for (let ally of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
+                    if (ally.isInSquare(duoUnit, 7)) {
+                        ally.addStatusEffects([StatusEffectType.RallySpectrum, StatusEffectType.DualStrike]);
+                    }
+                }
+                break;
             case Hero.HarmonizedChloe:
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Incited);
@@ -1464,12 +1494,12 @@ class BattleSimulatorBase {
             case Hero.DuoPeony:
                 {
                     let highestHpUnits = [];
-                    let heigestHp = 0;
+                    let highestHp = 0;
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 1, false)) {
                         if (unit.isActionDone) {
-                            if (unit.hp > heigestHp) {
+                            if (unit.hp > highestHp) {
                                 highestHpUnits = [unit];
-                                heigestHp = unit.hp;
+                                highestHp = unit.hp;
                             }
                             else if (unit.hp === highestHp) {
                                 highestHpUnits.push(unit);
@@ -1732,6 +1762,7 @@ class BattleSimulatorBase {
         if (this.tesseractLoadState === ModuleLoadState.NotLoaded) {
             self.tesseractLoadState = ModuleLoadState.Loading;
             self.writeSimpleLogLine("Tesseract の初期化開始..");
+            // noinspection SpellCheckingInspection
             importJs("https://unpkg.com/tesseract.js@1.0.19/dist/tesseract.min.js", x => {
                 self.tesseractLoadState = ModuleLoadState.Loaded;
                 self.writeSimpleLogLine("Tesseract の初期化完了");
@@ -2782,9 +2813,10 @@ class BattleSimulatorBase {
             yield unit;
         }
     }
+
     /**
      * @param  {Function} predicator=null
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     * enumerateAllUnitsOnMap(predicator = null) {
         for (let unit of this.vm.units) {
@@ -3052,9 +3084,9 @@ class BattleSimulatorBase {
     }
 
     writeWarningLine(log) {
-        let warnning = "<span style='font-size:10px;color:#d05000'>" + log + '</span><br/>';
-        this.vm.damageCalcLog += warnning;
-        this.writeSimpleLogLine(warnning);
+        let warning = "<span style='font-size:10px;color:#d05000'>" + log + '</span><br/>';
+        this.vm.damageCalcLog += warning;
+        this.writeSimpleLogLine(warning);
     }
 
     writeLog(log) {
@@ -3728,7 +3760,7 @@ class BattleSimulatorBase {
     }
 
     __canDebuff2PointsOfDefOrRes(attackUnit, targetUnit) {
-        let unit = new Unit("", "", UnitGroupType.Ally, 0, "");
+        let unit = new Unit("", "", UnitGroupType.Ally, 0);
         unit.defDebuff = targetUnit.defDebuff;
         unit.resDebuff = targetUnit.resDebuff;
 
@@ -4212,30 +4244,8 @@ class BattleSimulatorBase {
             // console.log(unit.getNameWithGroup() + ": moveCount=" + unit.moveCount);
 
             // 比翼や双界スキル発動カウントリセット
-            unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
-            if (unit.heroIndex === Hero.YoungPalla
-                || unit.heroIndex === Hero.DuoSigurd
-                || unit.heroIndex === Hero.DuoEirika
-                || unit.heroIndex === Hero.DuoSothis
-                || unit.heroIndex === Hero.DuoYmir
-            ) {
-                if (this.isOddTurn) {
-                    unit.duoOrHarmonizedSkillActivationCount = 0;
-                }
-            }
-            else if (unit.heroIndex === Hero.SummerMia
-                || unit.heroIndex === Hero.SummerByleth
-                || unit.heroIndex === Hero.PirateVeronica
-                || unit.heroIndex === Hero.DuoHilda
-                || unit.heroIndex === Hero.DuoNina
-                || unit.heroIndex === Hero.DuoAskr
-                || unit.heroIndex === Hero.HarmonizedTiki
-                || unit.heroIndex === Hero.DuoKagero
-            ) {
-                if (this.data.currentTurn % 3 === 1) {
-                    unit.duoOrHarmonizedSkillActivationCount = 0;
-                }
-            }
+            this.#resetDuoOrHarmonizedSkill(unit);
+
             // "「その後」以降の効果は、その効果が発動後3ターンの間発動しない"処理
             if (unit.restSupportSkillAvailableTurn >= 1) {
                 unit.restSupportSkillAvailableTurn--;
@@ -4246,9 +4256,34 @@ class BattleSimulatorBase {
         }
     }
 
+    #resetDuoOrHarmonizedSkill(unit) {
+        unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
+        if (unit.heroIndex === Hero.YoungPalla ||
+            unit.heroIndex === Hero.DuoSigurd ||
+            unit.heroIndex === Hero.DuoEirika ||
+            unit.heroIndex === Hero.DuoSothis ||
+            unit.heroIndex === Hero.DuoYmir) {
+            if (this.isOddTurn) {
+                unit.duoOrHarmonizedSkillActivationCount = 0;
+            }
+        } else if (unit.heroIndex === Hero.SummerMia ||
+            unit.heroIndex === Hero.SummerByleth ||
+            unit.heroIndex === Hero.PirateVeronica ||
+            unit.heroIndex === Hero.DuoHilda ||
+            unit.heroIndex === Hero.DuoNina ||
+            unit.heroIndex === Hero.DuoAskr ||
+            unit.heroIndex === Hero.HarmonizedTiki ||
+            unit.heroIndex === Hero.DuoKagero) {
+            if (this.data.currentTurn % 3 === 1) {
+                unit.duoOrHarmonizedSkillActivationCount = 0;
+            }
+        }
+    }
+
     __initializeAllUnitsOnMapPerTurn(units) {
         for (let unit of units) {
             unit.isCombatDone = false;
+            unit.isSupportDone = false;
         }
     }
 
@@ -4340,7 +4375,7 @@ class BattleSimulatorBase {
         return priority;
     }
 
-    __calcAssistPriorityForPostcombat(unit) {
+    __calcAssistPriorityForPostCombat(unit) {
         let assistTypePriority = 0;
         if ((!unit.isWeaponEquipped && unit.hasRefreshAssist)
             || (!unit.isWeaponEquipped && unit.hasHealAssist)
@@ -4898,16 +4933,16 @@ class BattleSimulatorBase {
 
             let tmpWinCount = 0;
             let attackerUnit = this.vm.durabilityTestIsAllyUnitOffence ? targetUnit : enemyUnit;
-            let deffenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
+            let defenceUnit = this.vm.durabilityTestIsAllyUnitOffence ? enemyUnit : targetUnit;
 
             let log = `${attackerUnit.getNameWithGroup()}の状態変化: ${attackerUnit.statusEffectsToDisplayString()}<br/>`;
-            log += `${deffenceUnit.getNameWithGroup()}の状態変化: ${deffenceUnit.statusEffectsToDisplayString()}<br/>`;
+            log += `${defenceUnit.getNameWithGroup()}の状態変化: ${defenceUnit.statusEffectsToDisplayString()}<br/>`;
 
             using_(new ScopedStopwatch(time => elapsedMillisecForCombat += time), () => {
                 for (let i = 0; i < this.vm.durabilityTestBattleCount; ++i) {
                     let damageType = this.vm.durabilityTestCalcPotentialDamage ?
                         DamageType.PotentialDamage : DamageType.ActualDamage;
-                    this.calcDamageTemporary(attackerUnit, deffenceUnit, null, damageType);
+                    this.calcDamageTemporary(attackerUnit, defenceUnit, null, damageType);
                     targetUnit.hp = targetUnit.restHp;
                     targetUnit.specialCount = targetUnit.tmpSpecialCount;
                     if (enemyUnit.restHp === 0) {
@@ -5223,7 +5258,7 @@ class BattleSimulatorBase {
             return false;
         }
         this.writeLogLine("■戦闘後補助の計算------------");
-        if (this.simulatePostcombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
+        if (this.simulatePostCombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
         }
 
@@ -5276,7 +5311,7 @@ class BattleSimulatorBase {
             return false;
         }
         this.writeLogLine("■戦闘後補助の計算------------");
-        if (this.simulatePostcombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
+        if (this.simulatePostCombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
         }
 
@@ -5330,7 +5365,7 @@ class BattleSimulatorBase {
         }
 
         this.writeLogLine("■戦闘後補助の計算------------");
-        if (this.simulatePostcombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
+        if (this.simulatePostCombatAssist(assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
         }
 
@@ -5350,7 +5385,7 @@ class BattleSimulatorBase {
         return true;
     }
 
-    simulatePostcombatAssist(assistEnemyUnits, enemyUnits, allyUnits) {
+    simulatePostCombatAssist(assistEnemyUnits, enemyUnits, allyUnits) {
         // コンテキスト初期化
         this.__prepareActionContextForAssist(enemyUnits, allyUnits, false);
         for (let unit of assistEnemyUnits) {
@@ -5361,7 +5396,7 @@ class BattleSimulatorBase {
 
         // 補助優先度を計算
         for (let unit of assistEnemyUnits) {
-            unit.actionContext.assistPriority = this.__calcAssistPriorityForPostcombat(unit);
+            unit.actionContext.assistPriority = this.__calcAssistPriorityForPostCombat(unit);
         }
 
         assistEnemyUnits.sort(function (a, b) {
@@ -5374,13 +5409,13 @@ class BattleSimulatorBase {
         for (let i = 0; i < assistEnemyUnits.length; ++i) {
             let assistUnit = assistEnemyUnits[i];
             this.writeLogLine(assistUnit.getNameWithGroup() + "の補助資格を評価-----");
-            if (!this.__canActivatePostcombatAssist(assistUnit, allyUnits)) {
+            if (!this.__canActivatePostCombatAssist(assistUnit, allyUnits)) {
                 this.writeLogLine(assistUnit.getNameWithGroup() + "は補助資格なし");
                 continue;
             }
 
             // 補助を実行可能な味方を取得
-            this.__setBestTargetAndTiles(assistUnit, false, (targetUnit, tile) => this.__canBeActivatedPostcombatAssist(assistUnit, targetUnit, tile));
+            this.__setBestTargetAndTiles(assistUnit, false, (targetUnit, tile) => this.__canBeActivatedPostCombatAssist(assistUnit, targetUnit, tile));
             if (assistUnit.actionContext.bestTargetToAssist == null) {
                 this.writeLogLine(assistUnit.getNameWithGroup() + "の補助可能な味方がいない");
                 continue;
@@ -5435,8 +5470,8 @@ class BattleSimulatorBase {
             }
 
             if (blockableTiles.length > 0) {
-                let bodyblockTile = this.__selectBestTileToAssistFromTiles(blockableTiles, assistUnit);
-                this.__enqueueMoveCommand(assistUnit, bodyblockTile, true);
+                let bodyBlockTile = this.__selectBestTileToAssistFromTiles(blockableTiles, assistUnit);
+                this.__enqueueMoveCommand(assistUnit, bodyBlockTile, true);
             }
             else {
                 let bestTileToAssist = assistUnit.actionContext.bestTileToAssist;
@@ -5493,6 +5528,11 @@ class BattleSimulatorBase {
         unit.distanceFromClosestEnemy = unit.placedTile.calculateDistanceToClosestEnemyTile(unit);
     }
 
+    /**
+     * @param {Unit[]|Generator<Unit>} allyUnits
+     * @param {Unit[]|Generator<Unit>} enemyUnits
+     * @param {boolean} triggersAction
+     */
     __prepareActionContextForAssist(allyUnits, enemyUnits, triggersAction = true) {
         using_(new ScopedStopwatch(time => this.writeDebugLogLine("行動計算コンテキストの初期化: " + time + " ms")), () => {
             for (let unit of allyUnits) {
@@ -5562,27 +5602,27 @@ class BattleSimulatorBase {
 
         let isActionActivated = false;
         for (let i = 0; i < assistableUnits.length; ++i) {
-            let unit = assistableUnits[i];
-            this.writeDebugLogLine(unit.getNameWithGroup() + "の補助資格を評価");
-            if (!this.__canActivatePrecombatAssist(unit, allyUnits)) {
-                this.writeDebugLogLine(unit.getNameWithGroup() + "は補助資格なし");
+            let assistableUnit = assistableUnits[i];
+            this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "の補助資格を評価");
+            if (!this.__canActivatePrecombatAssist(assistableUnit, allyUnits)) {
+                this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "は補助資格なし");
                 continue;
             }
 
-            this.__setBestTargetAndTiles(unit, true, (targetUnit, tile) => this.__canBeActivatedPrecombatAssist(unit, targetUnit, tile));
-            if (unit.actionContext.bestTargetToAssist == null) {
-                this.writeDebugLogLine(unit.getNameWithGroup() + "の補助可能な味方がいない");
+            this.__setBestTargetAndTiles(assistableUnit, true, (targetUnit, tile) => this.__canBeActivatedPrecombatAssist(assistableUnit, targetUnit, tile));
+            if (assistableUnit.actionContext.bestTargetToAssist == null) {
+                this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "の補助可能な味方がいない");
                 continue;
             }
 
             if (slotOrderDependentIndices.includes(i)) {
-                this.writeWarningLine(`${unit.getNameWithGroup()}の補助行動順はスロット順で変わる可能性があります。`);
+                this.writeWarningLine(`${assistableUnit.getNameWithGroup()}の補助行動順はスロット順で変わる可能性があります。`);
             }
 
-            let bestTargetToAssist = unit.actionContext.bestTargetToAssist;
-            let bestTileToAssist = unit.actionContext.bestTileToAssist;
+            let bestTargetToAssist = assistableUnit.actionContext.bestTargetToAssist;
+            let bestTileToAssist = assistableUnit.actionContext.bestTileToAssist;
 
-            this.__enqueueSupportCommand(unit, bestTileToAssist, bestTargetToAssist);
+            this.__enqueueSupportCommand(assistableUnit, bestTileToAssist, bestTargetToAssist);
             isActionActivated = true;
             break;
         }
@@ -5618,7 +5658,7 @@ class BattleSimulatorBase {
      * @param  {boolean} evaluatesAfflictorDraw=false
      * @return {boolean}
      */
-    __evalulateIs5DamageDealtOrWin(
+    __evaluateIs5DamageDealtOrWin(
         unit, enemyUnits, ignores5DamageDealt = false,
         evaluatesAfflictorDraw = false
     ) {
@@ -5641,6 +5681,9 @@ class BattleSimulatorBase {
                     let damageDealt = combatResult.atkUnit_normalAttackDamage * attackCount;
                     this.writeDebugLogLine(unit.getNameWithGroup() + "から" + attackableUnitInfo.targetUnit.getNameWithGroup() + "へのダメージ=" + damageDealt);
                     if (damageDealt >= 5) {
+                        // if (unit.support === Support.MagicShieldPlus) {
+                        //     return false;
+                        // }
                         this.writeDebugLogLine(unit.getNameWithGroup() + "は5ダメージ以上与えられるので補助資格なし");
                         return true;
                     }
@@ -5657,29 +5700,38 @@ class BattleSimulatorBase {
 
         return false;
     }
-    __canBeActivatedPrecombatAssist(unit, targetUnit, tile) {
+
+    /**
+     * @param {Unit} assistUnit
+     * @param {Unit} targetUnit
+     * @param {Tile} tile
+     */
+    __canBeActivatedPrecombatAssist(assistUnit, targetUnit, tile) {
         // 補助を実行可能な味方を取得
-        switch (unit.supportInfo.assistType) {
+        // TODO: 検証する。
+        let assistType = determineAssistType(assistUnit, targetUnit);
+        let skillId = assistUnit.support;
+        switch (assistType) {
             case AssistType.Refresh:
                 return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
             case AssistType.Rally:
                 // todo: ちゃんと実装する
                 return !targetUnit.isActionDone
                     && targetUnit.actionContext.hasThreatensEnemyStatus
-                    && unit.canRallyTo(targetUnit, 2);
+                    && assistUnit.canRallyTo(targetUnit, 2);
             case AssistType.Heal:
-                if (unit.support === Support.Sacrifice ||
-                    unit.support === Support.MaidensSolace) {
-                    let assisterEnemyThreat = unit.placedTile.getEnemyThreatFor(unit.groupId);
+                if (skillId === Support.Sacrifice ||
+                    skillId === Support.MaidensSolace) {
+                    let assisterEnemyThreat = assistUnit.placedTile.getEnemyThreatFor(assistUnit.groupId);
                     let targetEnemyThreat = targetUnit.placedTile.getEnemyThreatFor(targetUnit.groupId);
                     if (assisterEnemyThreat > targetEnemyThreat) {
                         return false;
                     }
                 }
-                return (targetUnit.canHeal(getPrecombatHealThreshold(unit.support)));
+                return (targetUnit.canHeal(getPrecombatHealThreshold(skillId)));
             case AssistType.Restore:
                 return targetUnit.hasNegativeStatusEffect()
-                    || (targetUnit.canHeal(getPrecombatHealThreshold(unit.support)));
+                    || (targetUnit.canHeal(getPrecombatHealThreshold(skillId)));
             case AssistType.DonorHeal:
                 {
                     if (targetUnit.hasStatusEffect(StatusEffectType.DeepWounds)
@@ -5687,18 +5739,18 @@ class BattleSimulatorBase {
                         return false;
                     }
 
-                    let assisterEnemyThreat = unit.placedTile.getEnemyThreatFor(unit.groupId);
+                    let assisterEnemyThreat = assistUnit.placedTile.getEnemyThreatFor(assistUnit.groupId);
                     let targetEnemyThreat = targetUnit.placedTile.getEnemyThreatFor(targetUnit.groupId);
                     if (assisterEnemyThreat > targetEnemyThreat) {
                         return false;
                     }
 
-                    let result = this.__getUserLossHpAndTargetHealHpForDonorHeal(unit, targetUnit);
+                    let result = this.__getUserLossHpAndTargetHealHpForDonorHeal(assistUnit, targetUnit);
                     if (!result.success || result.targetHealHp < result.userLossHp) {
                         return false;
                     }
 
-                    switch (unit.support) {
+                    switch (skillId) {
                         case Support.ArdentSacrifice:
                             if (result.targetHealHp < 10) {
                                 return false;
@@ -5716,12 +5768,12 @@ class BattleSimulatorBase {
                     return true;
                 }
             default:
-                this.writeErrorLine("戦闘前補助が未実装のスキル: " + unit.supportInfo.name);
+                this.writeErrorLine("戦闘前補助が未実装のスキル: " + assistUnit.supportInfo.name);
                 return false;
         }
     }
 
-    __canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile) {
+    __canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile) {
         // 双界だと行動制限が解除されていないと使用しないっぽい
         if (!g_appData.examinesEnemyActionTriggered(unit)) {
             return false;
@@ -5740,8 +5792,9 @@ class BattleSimulatorBase {
             && canBeMovedIntoLessEnemyThreat;
     }
 
-    __canBeActivatedPostcombatAssist(unit, targetUnit, tile) {
-        switch (unit.supportInfo.assistType) {
+    __canBeActivatedPostCombatAssist(unit, targetUnit, tile) {
+        let assistType = determineAssistType(unit, targetUnit);
+        switch (assistType) {
             case AssistType.Refresh:
                 return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
             case AssistType.Heal:
@@ -5755,7 +5808,7 @@ class BattleSimulatorBase {
                     || unit.support === Support.NudgePlus
                     || unit.support === Support.Nudge
                 ) {
-                    return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
+                    return this.__canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile);
                 }
                 return false;
             case AssistType.Restore:
@@ -5778,7 +5831,7 @@ class BattleSimulatorBase {
                         && canBeBuffedAtLeast2;
                 }
             case AssistType.Move:
-                return this.__canBeActivatedPostcombatMovementAssist(unit, targetUnit, tile);
+                return this.__canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile);
             case AssistType.DonorHeal:
                 {
                     // 双界だと行動制限が解除されていないと使用しないっぽい
@@ -5826,9 +5879,18 @@ class BattleSimulatorBase {
         return { success: true, userLossHp: userLossHp, targetHealHp: targetHealHp };
     }
 
-    __canActivatePostcombatAssist(unit, enemyUnits) {
+    __canActivatePostCombatAssist(unit, allyUnits) {
         // todo: ちゃんと実装する
-        switch (unit.supportInfo.assistType) {
+        let assistType = unit.supportInfo.assistType;
+        for (let ally of allyUnits) {
+            assistType = determineAssistType(unit, ally);
+            // TODO: 応援と回復の優先順を検証する
+            // 応援可能な味方がいた場合には応援
+            if (assistType === AssistType.Rally) {
+                break;
+            }
+        }
+        switch (assistType) {
             case AssistType.Refresh:
                 return true;
             case AssistType.Heal:
@@ -5862,11 +5924,22 @@ class BattleSimulatorBase {
         }
 
         // todo: ちゃんと実装する
-        switch (unit.supportInfo.assistType) {
+        let assistType = unit.supportInfo.assistType;
+        let skillId = unit.support;
+        let funcMap = getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap;
+        if (funcMap.has(skillId)) {
+            let func = funcMap.get(skillId);
+            if (typeof func === "function") {
+                assistType = func.call(this, unit);
+            } else {
+                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            }
+        }
+        switch (assistType) {
             case AssistType.Refresh:
-                return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits);
+                return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits);
             case AssistType.Rally:
-                return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, false, true);
+                return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, false, true);
             case AssistType.Heal:
                 {
                     if (unit.support === Support.Sacrifice ||
@@ -5876,11 +5949,11 @@ class BattleSimulatorBase {
                         }
                     }
                     let ignores5DamageDealt = unit.support !== (Support.Sacrifice || Support.MaidensSolace);
-                    return !this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt);
+                    return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt);
                 }
             case AssistType.Restore:
                 {
-                    if (this.__evalulateIs5DamageDealtOrWin(unit, enemyUnits, true)) {
+                    if (this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, true)) {
                         return false;
                     }
                     return this.__isThereAllyThreatensEnemyStatus(unit);
@@ -6090,15 +6163,15 @@ class BattleSimulatorBase {
                         }
 
                         let potentialDamageDealt = combatResult.atkUnit_normalAttackDamage * combatResult.atkUnit_totalAttackCount;
-                        let chacePriorityValue = potentialDamageDealt - 5 * turnRange;
+                        let chasePriorityValue = potentialDamageDealt - 5 * turnRange;
                         let priorityValue =
-                            chacePriorityValue * 10 +
+                            chasePriorityValue * 10 +
                             allyUnit.slotOrder;
                         this.writeDebugLogLine(`- 優先度=${priorityValue}(ターン距離=${turnRange}`
                             + `, 通常攻撃ダメージ=${combatResult.atkUnit_normalAttackDamage}`
                             + `, 攻撃回数=${combatResult.atkUnit_totalAttackCount}`
                             + `, 潜在ダメージ=${potentialDamageDealt}`
-                            + `, 追跡優先度=${chacePriorityValue}`
+                            + `, 追跡優先度=${chasePriorityValue}`
                             + `, slotOrder=${allyUnit.slotOrder})`
                         );
                         if (priorityValue > maxPriorityValue) {
@@ -6257,7 +6330,7 @@ class BattleSimulatorBase {
                     }
                 }
 
-                this.__enqueueSupportCommand(unit, pivotContext.tile, pivotContext.targetUnit);
+                this.__enqueueSupportCommand(unit, pivotContext?.tile, pivotContext?.targetUnit);
             }
             else if (bestTileToMove === unit.placedTile) {
                 this.writeDebugLogLine(unit.getNameWithGroup() + "の最適な移動マスは現在のマスなので移動しない");
@@ -6993,7 +7066,7 @@ class BattleSimulatorBase {
         return Array.from(this.map.enumerateBreakableStructureTiles(groupId));
     }
 
-    __findBestTileToBreakBlock(unit, bestTileToMove, movabableTiles) {
+    __findBestTileToBreakBlock(unit, bestTileToMove, movableTiles) {
         if (!unit.hasWeapon) {
             return null;
         }
@@ -7016,7 +7089,7 @@ class BattleSimulatorBase {
             if (distOfBlockToTarget === CanNotReachTile || distOfBlockToTarget < distOfBestTileToTarget) {
                 let context = new TilePriorityContext(blockTile, unit);
                 for (let tile of g_appData.map.enumerateAttackableTiles(unit, blockTile)) {
-                    if (!movabableTiles.includes(tile)) {
+                    if (!movableTiles.includes(tile)) {
                         continue;
                     }
 
@@ -7362,7 +7435,7 @@ class BattleSimulatorBase {
             let target = targetInfo.targetUnit;
             let context = attacker.actionContext.attackEvalContexts[target];
             this.writeDebugLogLine(order + ": " + target.getNameWithGroup()
-                + ", attackTargetPriorty=" + context.attackTargetPriorty
+                + ", attackTargetPriority=" + context.attackTargetPriorty
                 + ", isDebufferTier1=" + context.isDebufferTier1
                 + ", isDebufferTier2=" + context.isDebufferTier2
                 + ", combatResult=" + combatResultToString(context.combatResult)
@@ -7406,7 +7479,7 @@ class BattleSimulatorBase {
         for (let attacker of attackers) {
             let context = attacker.actionContext.attackEvalContexts[target];
             this.writeDebugLogLine(order + ": " + attacker.getNameWithGroup()
-                + ", attackTargetPriorty=" + context.attackTargetPriorty
+                + ", attackTargetPriority=" + context.attackTargetPriorty
                 + ", combatResult=" + combatResultToString(context.combatResult)
                 + ", isDebufferTier1=" + context.isDebufferTier1
                 + ", isDebufferTier2=" + context.isDebufferTier2
@@ -7673,11 +7746,28 @@ class BattleSimulatorBase {
             default:
                 {
                     this.__setBestAssistTiles(assistUnit, isAssistableUnitFunc, acceptTileFunc);
-                    if (assistUnit.actionContext.assistableUnitInfos.length === 0) {
+                    // TODO: 検証する
+                    /** @type {AssistableUnitInfo[]} */
+                    let infos = [];
+                    for (let info of assistUnit.actionContext.assistableUnitInfos) {
+                        let skillId = assistUnit.support;
+                        if (isRallyHealSkill(skillId)) {
+                            if (info.targetUnit.restHpPercentage < 100) {
+                                infos.push(info);
+                            } else if (canAddStatusEffectByRallyFuncMap.has(skillId)) {
+                                if (canAddStatusEffectByRallyFuncMap.get(skillId).call(this, assistUnit, info.targetUnit)) {
+                                    infos.push(info);
+                                }
+                            }
+                        } else {
+                            infos.push(info);
+                        }
+                    }
+                    if (infos.length === 0) {
                         return;
                     }
 
-                    let bestTargetUnitInfo = this.__selectBestAssistTarget(assistUnit, assistUnit.actionContext.assistableUnitInfos, acceptTileFunc, isPrecombat);
+                    let bestTargetUnitInfo = this.__selectBestAssistTarget(assistUnit, infos, isPrecombat);
                     assistUnit.actionContext.bestTargetToAssist = bestTargetUnitInfo.targetUnit;
                     assistUnit.actionContext.bestTileToAssist = bestTargetUnitInfo.bestTileToAssist;
                 }
@@ -7685,6 +7775,11 @@ class BattleSimulatorBase {
         }
     }
 
+    /**
+     * @param {Unit} assistUnit
+     * @param {AssistableUnitInfo[]|Generator<AssistableUnitInfo>} assistableUnitInfos
+     * @param {boolean} isPrecombat
+     */
     __selectBestAssistTarget(assistUnit, assistableUnitInfos, isPrecombat) {
         // 補助対象を選択
         this.writeDebugLogLine("最適な補助対象を選択");
@@ -7703,7 +7798,7 @@ class BattleSimulatorBase {
             this.writeDebugLogLine(order + ": " + info.targetUnit.getNameWithGroup()
                 + ", assistTargetPriority=" + info.assistTargetPriority
                 + ", hasThreatensEnemyStatus=" + info.hasThreatensEnemyStatus
-                + ", hasStatAndNonstatDebuff=" + info.hasStatAndNonstatDebuff
+                + ", hasStatAndNonStatDebuff=" + info.hasStatAndNonStatDebuff
                 + ", amountOfStatsActuallyBuffed=" + info.amountOfStatsActuallyBuffed
                 + ", amountHealed=" + info.amountHealed
                 + ", isTeleportationRequired=" + info.isTeleportationRequired
@@ -8204,7 +8299,7 @@ class BattleSimulatorBase {
      * @param  {Unit} unit
      * @param  {Unit} targetUnit
      * @param  {Function} movementAssistCalcFunc
-     * @param  {Boolean} applysMovementSkill=true
+     * @param  {Boolean} applesMovementSkill=true
      * @param  {Boolean} movesTargetUnit=true
      * @param  {Boolean} executesTrap=true
      */
@@ -8212,7 +8307,7 @@ class BattleSimulatorBase {
         unit,
         targetUnit,
         movementAssistCalcFunc,
-        applysMovementSkill = true,
+        applesMovementSkill = true,
         movesTargetUnit = true,
         executesTrap = true,
     ) {
@@ -8264,7 +8359,7 @@ class BattleSimulatorBase {
         unit.setFromPos(unitFromX, unitFromY);
         targetUnit.setFromPos(targetUnitFromX, targetUnitFromY);
 
-        if (applysMovementSkill) {
+        if (applesMovementSkill) {
             this.__applyMovementAssistSkill(unit, targetUnit);
             this.__applyMovementAssistSkill(targetUnit, unit);
         }
@@ -8283,22 +8378,22 @@ class BattleSimulatorBase {
         }
     }
 
-    __applyMovementAssistSkill(unit, targetUnit) {
-        for (let skillId of unit.enumerateSkills()) {
+    __applyMovementAssistSkill(assistUnit, targetUnit) {
+        for (let skillId of assistUnit.enumerateSkills()) {
             let funcMap = applyMovementAssistSkillFuncMap;
             if (funcMap.has(skillId)) {
                 let func = funcMap.get(skillId);
                 if (typeof func === "function") {
-                    func.call(this, unit, targetUnit);
+                    func.call(this, assistUnit, targetUnit);
                 } else {
                     console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
                 }
             }
             switch (skillId) {
                 case Weapon.RetainersReport:
-                    if (unit.isWeaponSpecialRefined) {
-                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
-                            if (this.__isInCross(unit, u) ||
+                    if (assistUnit.isWeaponSpecialRefined) {
+                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(assistUnit)) {
+                            if (this.__isInCross(assistUnit, u) ||
                                 this.__isInCross(targetUnit, u)) {
                                 u.applyDebuffs(-7, 0, -7, -7);
                                 u.addStatusEffect(StatusEffectType.Guard);
@@ -8308,7 +8403,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case Weapon.EverlivingBreath: {
-                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true));
+                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(assistUnit, 2, true));
                     units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
                     // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
                     let unitSet = new Set(units);
@@ -8319,36 +8414,36 @@ class BattleSimulatorBase {
                     break;
                 }
                 case Weapon.AzureLance:
-                    if (unit.isWeaponSpecialRefined) {
-                        unit.applyAtkBuff(6);
-                        unit.applySpdBuff(6);
+                    if (assistUnit.isWeaponSpecialRefined) {
+                        assistUnit.applyAtkBuff(6);
+                        assistUnit.applySpdBuff(6);
                         targetUnit.applyAtkBuff(6);
                         targetUnit.applySpdBuff(6);
-                        unit.heal(10);
+                        assistUnit.heal(10);
                         targetUnit.heal(10);
                     }
                     break;
                 case Weapon.DestinysBow:
                     if (g_appData.currentTurn <= 4) {
-                        if (!unit.isOneTimeActionActivatedForWeapon) {
-                            unit.reduceSpecialCount(1);
+                        if (!assistUnit.isOneTimeActionActivatedForWeapon) {
+                            assistUnit.reduceSpecialCount(1);
                             targetUnit.reduceSpecialCount(1);
-                            unit.isOneTimeActionActivatedForWeapon = true;
+                            assistUnit.isOneTimeActionActivatedForWeapon = true;
                         }
                     }
                     break;
                 case Weapon.GerberaAxe:
-                    unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                    assistUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                     targetUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                     break;
                 case Weapon.Sogun:
-                    if (unit.isWeaponRefined) {
-                        unit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                    if (assistUnit.isWeaponRefined) {
+                        assistUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
                         targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
                     }
                     break;
                 case PassiveB.AtkSpdSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applyAtkDebuff(-6);
                         u.applySpdDebuff(-6);
                     }
@@ -8358,7 +8453,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.AtkDefSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applyAtkDebuff(-6);
                         u.applyDefDebuff(-6);
                     }
@@ -8368,7 +8463,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.AtkResSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applyDebuffs(-6, 0, 0, -6);
                     }
                     for (let u of this.__findNearestEnemies(targetUnit, 4)) {
@@ -8376,7 +8471,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.SpdResSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applySpdDebuff(-6);
                         u.applyResDebuff(-6);
                     }
@@ -8386,7 +8481,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.SpdDefSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applySpdDebuff(-6);
                         u.applyDefDebuff(-6);
                     }
@@ -8396,7 +8491,7 @@ class BattleSimulatorBase {
                     }
                     break;
                 case PassiveB.DefResSnag3:
-                    for (let u of this.__findNearestEnemies(unit, 4)) {
+                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
                         u.applyDefDebuff(-6);
                         u.applyResDebuff(-6);
                     }
@@ -8406,14 +8501,14 @@ class BattleSimulatorBase {
                     }
                     break;
                 case Weapon.TrasenshiNoTsumekiba:
-                    if (!unit.isWeaponRefined) {
-                        this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-4));
+                    if (!assistUnit.isWeaponRefined) {
+                        this.__applyDebuffToEnemiesWithin2Spaces(assistUnit, x => x.applyAllDebuff(-4));
                         this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-4));
                     } else {
-                        this.__applyDebuffToEnemiesWithin2Spaces(unit, x => x.applyAllDebuff(-5));
+                        this.__applyDebuffToEnemiesWithin2Spaces(assistUnit, x => x.applyAllDebuff(-5));
                         this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-5));
-                        if (unit.isWeaponSpecialRefined) {
-                            let units = Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 2));
+                        if (assistUnit.isWeaponSpecialRefined) {
+                            let units = Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(assistUnit, 2));
                             units = units.concat(Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)));
                             // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
                             let unitSet = new Set(units);
@@ -8427,43 +8522,43 @@ class BattleSimulatorBase {
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
                         ally.applyAllBuff(4);
                     }
-                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, false)) {
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(assistUnit, 2, false)) {
                         ally.applyAllBuff(4);
                     }
                     break;
                 case PassiveB.AtkSpdLink2:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyAtkBuff(4); x.applySpdBuff(4); });
                     break;
                 case Weapon.OrdinNoKokusyo:
                 case Weapon.KinranNoSyo:
-                    if (unit.isWeaponSpecialRefined) {
-                        this.__applyLinkSkill(unit, targetUnit,
+                    if (assistUnit.isWeaponSpecialRefined) {
+                        this.__applyLinkSkill(assistUnit, targetUnit,
                             x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
                     }
                     break;
                 case PassiveB.AtkSpdLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
                     break;
                 case PassiveB.AtkDefLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyAtkBuff(6); x.applyDefBuff(6); });
                     break;
                 case PassiveB.AtkResLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyAtkBuff(6); x.applyResBuff(6); });
                     break;
                 case PassiveB.SpdDefLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applySpdBuff(6); x.applyDefBuff(6); });
                     break;
                 case PassiveB.SpdResLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applySpdBuff(6); x.applyResBuff(6); });
                     break;
                 case PassiveB.DefResLink3:
-                    this.__applyLinkSkill(unit, targetUnit,
+                    this.__applyLinkSkill(assistUnit, targetUnit,
                         x => { x.applyDefBuff(6); x.applyResBuff(6); });
                     break;
             }
@@ -8784,6 +8879,10 @@ class BattleSimulatorBase {
         return result;
     }
 
+    /**
+     * @param {Unit} supporterUnit
+     * @param {Unit} targetUnit
+     */
     __applyRally(supporterUnit, targetUnit) {
         let isBuffed = false;
         let supportId = supporterUnit.support;
@@ -8791,11 +8890,18 @@ class BattleSimulatorBase {
         if (targetUnit.applySpdBuff(getSpdBuffAmount(supportId))) { isBuffed = true; }
         if (targetUnit.applyDefBuff(getDefBuffAmount(supportId))) { isBuffed = true; }
         if (targetUnit.applyResBuff(getResBuffAmount(supportId))) { isBuffed = true; }
-        if (!isBuffed) {
-            isBuffed = supporterUnit.canRallyForcibly();
-        }
-        if (!isBuffed) {
-            isBuffed = targetUnit.canRalliedForcibly();
+        isBuffed |= supporterUnit.canRallyForcibly();
+        isBuffed |= targetUnit.canRalliedForcibly();
+        for (let skillId of supporterUnit.enumerateSkills()) {
+            let funcMap = canAddStatusEffectByRallyFuncMap;
+            if (funcMap.has(skillId)) {
+                let func = funcMap.get(skillId);
+                if (typeof func === "function") {
+                    isBuffed |= func.call(this, supporterUnit, targetUnit);
+                } else {
+                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                }
+            }
         }
 
         if (isBuffed) {
@@ -9145,6 +9251,7 @@ class BattleSimulatorBase {
             if (supporterUnit.supportInfo.assistType === AssistType.Refresh) {
                 supporterUnit.battleContext.isRefreshActivated = true;
             }
+            supporterUnit.isSupportDone = true;
             if (!supporterUnit.isActionDone) {
                 // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
@@ -9331,7 +9438,8 @@ class BattleSimulatorBase {
             return false;
         }
 
-        switch (supporterUnit.supportInfo.assistType) {
+        let assistType = determineAssistType(supporterUnit, targetUnit);
+        switch (assistType) {
             case AssistType.Refresh:
                 return canRefreshTo(targetUnit);
             case AssistType.Rally:
@@ -9416,7 +9524,12 @@ class BattleSimulatorBase {
     }
 
     __applySupportSkill(supporterUnit, targetUnit) {
-        switch (supporterUnit.supportInfo.assistType) {
+        let assistType = supporterUnit.supportInfo.assistType;
+        if (isRallyHealSkill(supporterUnit.support)) {
+            assistType = AssistType.Rally;
+        }
+        let result = false;
+        switch (assistType) {
             case AssistType.Refresh:
                 return this.__applyRefresh(supporterUnit, targetUnit);
             case AssistType.Heal:
@@ -9432,8 +9545,7 @@ class BattleSimulatorBase {
                         targetUnit.clearNegativeStatusEffects();
                     }
                     return healAmount > 0 || this.__executeHarshCommand(targetUnit);
-                }
-                else {
+                } else {
                     let isActivated = this.__applyHeal(supporterUnit, targetUnit);
                     switch (supporterUnit.support) {
                         case Support.RescuePlus:
@@ -9470,7 +9582,14 @@ class BattleSimulatorBase {
                     case Support.GoldSerpent:
                         return this.__applyGoldSerpent(supporterUnit, targetUnit);
                     default:
-                        return this.__applyRally(supporterUnit, targetUnit);
+                        result = this.__applyRally(supporterUnit, targetUnit);
+                        if (isRallyHealSkill(supporterUnit.support)) {
+                            this.__applyHeal(supporterUnit, targetUnit);
+                            // TODO: 検証する
+                            // ひとまずプレーヤーは強制的に補助が成功するとする
+                            result = true;
+                        }
+                        return result;
                 }
             case AssistType.Move:
                 return this.__applyMovementAssist(supporterUnit, targetUnit,
@@ -9563,8 +9682,7 @@ class BattleSimulatorBase {
                 // 味方全員の行動が終了したので敵ターンへ
                 this.simulateBeginningOfEnemyTurn();
             }
-        }
-        else {
+        } else {
             if (!this.__isThereActionableEnemyUnit()) {
                 // 敵全員の行動が終了したので自ターンへ
                 this.simulateBeginningOfAllyTurn();
@@ -9979,7 +10097,7 @@ function changeMap() {
     updateMap();
 }
 
-function removeBreakableWallsFromTrashbox() {
+function removeBreakableWallsFromTrashBox() {
     for (let structure of g_appData.map.enumerateBreakableWalls()) {
         moveStructureToEmptyTileOfMap(structure);
     }

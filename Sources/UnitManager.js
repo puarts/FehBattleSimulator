@@ -29,14 +29,14 @@ class UnitManager {
 
     /**
      * @param  {number} groupId
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInSpecifiedGroup(groupId) {
         return this.enumerateUnitsWithPredicator(x => x.groupId == groupId);
     }
     /**
      * @param  {number} groupId
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInSpecifiedGroupOnMap(groupId) {
         return this.enumerateUnitsWithPredicator(x => x.isOnMap && x.groupId == groupId);
@@ -44,24 +44,25 @@ class UnitManager {
     /**
      * @param  {Unit} targetUnit
      * @param  {Boolean} withTargetUnit=false
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
         return this.enumerateUnitsWithPredicator(x =>
-            x.groupId == targetUnit.groupId
-            && (withTargetUnit || x != targetUnit)
+            x.groupId === targetUnit.groupId
+            && (withTargetUnit || x !== targetUnit)
         );
     }
 
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInDifferentGroup(targetUnit) {
         let targetGroup = targetUnit.getEnemyGroupId();
         return this.enumerateUnitsInSpecifiedGroup(targetGroup);
     }
+
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateAllUnitsOnMap() {
         return this.enumerateUnitsWithPredicator(x => x.isOnMap);
@@ -270,7 +271,7 @@ class UnitManager {
     }
 
     __createDefaultUnit(id, unitGroupType) {
-        return new Unit(id, "", unitGroupType, MoveType.Infantry, "");
+        return new Unit(id, "", unitGroupType, MoveType.Infantry);
     }
 
     findNearestEnemies(targetUnit, distLimit = 100) {

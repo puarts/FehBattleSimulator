@@ -44,6 +44,10 @@ class PostCombatSkillHander {
     enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit) {
         return this._unitManager.enumerateUnitsInDifferentGroupOnMap(unit, withTargetUnit);
     }
+
+    /**
+     * @returns {Generator<Unit>}
+     */
     enumerateAllUnitsOnMap() {
         return this._unitManager.enumerateAllUnitsOnMap();
     }
@@ -265,11 +269,6 @@ class PostCombatSkillHander {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
                         unit.applyDefBuff(2);
                         unit.applyResBuff(2);
-                    }
-                    break;
-                case Weapon.BridesFang:
-                    if (attackUnit.battleContext.isSpecialActivated) {
-                        attackUnit.specialCount -= 1;
                     }
                     break;
                 case Weapon.SpendthriftBowPlus:
