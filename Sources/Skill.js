@@ -1,36 +1,41 @@
-/// @file
-/// @brief スキル情報の定義とそれに関連するクラス、関数等の定義です。
+/**
+ * @file
+ * @brief スキル情報の定義とそれに関連するクラス、関数等の定義です。
+ */
 
-const WeaponTypeAttackRangeDict = {};
-WeaponTypeAttackRangeDict[WeaponType.Sword] = 1;
-WeaponTypeAttackRangeDict[WeaponType.Lance] = 1;
-WeaponTypeAttackRangeDict[WeaponType.Axe] = 1;
-WeaponTypeAttackRangeDict[WeaponType.RedBreath] = 1;
-WeaponTypeAttackRangeDict[WeaponType.BlueBreath] = 1;
-WeaponTypeAttackRangeDict[WeaponType.GreenBreath] = 1;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessBreath] = 1;
-WeaponTypeAttackRangeDict[WeaponType.RedBeast] = 1;
-WeaponTypeAttackRangeDict[WeaponType.BlueBeast] = 1;
-WeaponTypeAttackRangeDict[WeaponType.GreenBeast] = 1;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessBeast] = 1;
-WeaponTypeAttackRangeDict[WeaponType.RedTome] = 2;
-WeaponTypeAttackRangeDict[WeaponType.BlueTome] = 2;
-WeaponTypeAttackRangeDict[WeaponType.GreenTome] = 2;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessTome] = 2;
-WeaponTypeAttackRangeDict[WeaponType.RedBow] = 2;
-WeaponTypeAttackRangeDict[WeaponType.BlueBow] = 2;
-WeaponTypeAttackRangeDict[WeaponType.GreenBow] = 2;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessBow] = 2;
-WeaponTypeAttackRangeDict[WeaponType.RedDagger] = 2;
-WeaponTypeAttackRangeDict[WeaponType.BlueDagger] = 2;
-WeaponTypeAttackRangeDict[WeaponType.GreenDagger] = 2;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessDagger] = 2;
-WeaponTypeAttackRangeDict[WeaponType.Staff] = 2;
-WeaponTypeAttackRangeDict[WeaponType.None] = 0;
+const WEAPON_TYPE_ATTACK_RANGE_MAP = new Map([
+    [WeaponType.Sword, 1],
+    [WeaponType.Lance, 1],
+    [WeaponType.Axe, 1],
+    [WeaponType.RedBreath, 1],
+    [WeaponType.BlueBreath, 1],
+    [WeaponType.GreenBreath, 1],
+    [WeaponType.ColorlessBreath, 1],
+    [WeaponType.RedBeast, 1],
+    [WeaponType.BlueBeast, 1],
+    [WeaponType.GreenBeast, 1],
+    [WeaponType.ColorlessBeast, 1],
+    [WeaponType.RedTome, 2],
+    [WeaponType.BlueTome, 2],
+    [WeaponType.GreenTome, 2],
+    [WeaponType.ColorlessTome, 2],
+    [WeaponType.RedBow, 2],
+    [WeaponType.BlueBow, 2],
+    [WeaponType.GreenBow, 2],
+    [WeaponType.ColorlessBow, 2],
+    [WeaponType.RedDagger, 2],
+    [WeaponType.BlueDagger, 2],
+    [WeaponType.GreenDagger, 2],
+    [WeaponType.ColorlessDagger, 2],
+    [WeaponType.Staff, 2],
+    [WeaponType.None, 0],
+]);
 
-/// 指定した武器種の射程を取得します。
+/**
+ * 指定した武器種の射程を取得します。
+ */
 function getAttackRangeOfWeaponType(weaponType) {
-    return WeaponTypeAttackRangeDict[weaponType];
+    return WEAPON_TYPE_ATTACK_RANGE_MAP.get(weaponType);
 }
 
 function getWeaponTypeOrder(weaponType) {
@@ -60,105 +65,97 @@ function getWeaponTypeOrder(weaponType) {
         WeaponType.ColorlessBow,
         WeaponType.ColorlessDagger,
     ];
-    let i = 0;
-    for (let type of weaponTypes) {
-        if (type === weaponType) {
-            return i;
-        }
-        ++i;
-    }
-    return -1;
+    return weaponTypes.findIndex(type => type === weaponType);
 }
+
+const TYPE_TO_STRING_MAP = new Map([
+    [WeaponRefinementType.None, "-"],
+    [WeaponRefinementType.Hp5_Atk2, "HP+5 攻撃+2"],
+    [WeaponRefinementType.Hp5_Spd3, "HP+5 速さ+3"],
+    [WeaponRefinementType.Hp5_Def4, "HP+5 守備+4"],
+    [WeaponRefinementType.Hp5_Res4, "HP+5 魔防+4"],
+    [WeaponRefinementType.Hp2_Atk1, "HP+2 攻撃+1"],
+    [WeaponRefinementType.Hp2_Spd2, "HP+2 速さ+2"],
+    [WeaponRefinementType.Hp2_Def3, "HP+2 守備+3"],
+    [WeaponRefinementType.Hp2_Res3, "HP+2 魔防+3"],
+    [WeaponRefinementType.Special_Hp3, "HP+3 特殊"],
+    [WeaponRefinementType.Special, "特殊"],
+    [WeaponRefinementType.WrathfulStaff, "神罰の杖"],
+    [WeaponRefinementType.DazzlingStaff, "幻惑の杖"],
+]);
 
 // noinspection JSUnusedGlobalSymbols
 function weaponRefinementTypeToString(type) {
-    switch (type) {
-        case WeaponRefinementType.None:
-            return "-";
-        case WeaponRefinementType.Hp5_Atk2:
-            return "HP+5 攻撃+2";
-        case WeaponRefinementType.Hp5_Spd3:
-            return "HP+5 速さ+3";
-        case WeaponRefinementType.Hp5_Def4:
-            return "HP+5 守備+4";
-        case WeaponRefinementType.Hp5_Res4:
-            return "HP+5 魔防+4";
-        case WeaponRefinementType.Hp2_Atk1:
-            return "HP+2 攻撃+1";
-        case WeaponRefinementType.Hp2_Spd2:
-            return "HP+2 速さ+2";
-        case WeaponRefinementType.Hp2_Def3:
-            return "HP+2 守備+3";
-        case WeaponRefinementType.Hp2_Res3:
-            return "HP+2 魔防+3";
-        case WeaponRefinementType.Special_Hp3:
-            return "HP+3 特殊";
-        case WeaponRefinementType.Special:
-            return "特殊";
-        case WeaponRefinementType.WrathfulStaff:
-            return "神罰の杖";
-        case WeaponRefinementType.DazzlingStaff:
-            return "幻惑の杖";
-    }
+    return TYPE_TO_STRING_MAP.get(type) || "-";
 }
 
-// スキルIDが被らないようにプレフィックスをつける
+/**
+ * スキルIDが被らないようにする
+ * @param {number} emblemHeroIndex
+ * @returns {number}
+ */
 function getEmblemHeroSkillId(emblemHeroIndex) {
-    return `e_${emblemHeroIndex}`;
+    // TODO: 定数として切り出す
+    return 1_000_000 + emblemHeroIndex;
 }
 
-const EmblemHeroSet = new Set(Object.values(EmblemHero));
+const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
 
-const PhysicalWeaponTypeDict = {};
-PhysicalWeaponTypeDict[WeaponType.Sword] = 0;
-PhysicalWeaponTypeDict[WeaponType.Lance] = 0;
-PhysicalWeaponTypeDict[WeaponType.Axe] = 0;
-PhysicalWeaponTypeDict[WeaponType.RedBeast] = 0;
-PhysicalWeaponTypeDict[WeaponType.BlueBeast] = 0;
-PhysicalWeaponTypeDict[WeaponType.GreenBeast] = 0;
-PhysicalWeaponTypeDict[WeaponType.ColorlessBeast] = 0;
-PhysicalWeaponTypeDict[WeaponType.RedBow] = 0;
-PhysicalWeaponTypeDict[WeaponType.BlueBow] = 0;
-PhysicalWeaponTypeDict[WeaponType.GreenBow] = 0;
-PhysicalWeaponTypeDict[WeaponType.ColorlessBow] = 0;
-PhysicalWeaponTypeDict[WeaponType.RedDagger] = 0;
-PhysicalWeaponTypeDict[WeaponType.BlueDagger] = 0;
-PhysicalWeaponTypeDict[WeaponType.GreenDagger] = 0;
-PhysicalWeaponTypeDict[WeaponType.ColorlessDagger] = 0;
+const PHYSICAL_WEAPON_TYPE_SET = new Set([
+    WeaponType.Sword,
+    WeaponType.Lance,
+    WeaponType.Axe,
+    WeaponType.RedBeast,
+    WeaponType.BlueBeast,
+    WeaponType.GreenBeast,
+    WeaponType.ColorlessBeast,
+    WeaponType.RedBow,
+    WeaponType.BlueBow,
+    WeaponType.GreenBow,
+    WeaponType.ColorlessBow,
+    WeaponType.RedDagger,
+    WeaponType.BlueDagger,
+    WeaponType.GreenDagger,
+    WeaponType.ColorlessDagger,
+]);
 
-/// 武器タイプが物理系の武器であるかを判定します。
+/**
+ * 武器タイプが物理系の武器であるかを判定します。
+ */
 function isPhysicalWeaponType(weaponType) {
-    return weaponType in PhysicalWeaponTypeDict;
+    return PHYSICAL_WEAPON_TYPE_SET.has(weaponType);
 }
 
-/// 武器錬成タイプが特殊錬成であるかを判定します。
+/**
+ * 武器錬成タイプが特殊錬成であるかを判定します。
+ */
 function isWeaponSpecialRefined(weaponRefinementType) {
-    switch (weaponRefinementType) {
-        case WeaponRefinementType.Special:
-        case WeaponRefinementType.Special_Hp3:
-            return true;
-        default:
-            return false;
-    }
+    return weaponRefinementType === WeaponRefinementType.Special
+        || weaponRefinementType === WeaponRefinementType.Special_Hp3;
 }
 
-const FiresweepWeaponDict = {};
-FiresweepWeaponDict[Weapon.SoleilsShine] = 0;
-FiresweepWeaponDict[Weapon.MiraiNoSeikishiNoYari] = 0;
-FiresweepWeaponDict[Weapon.FiresweepSword] = 0;
-FiresweepWeaponDict[Weapon.FiresweepSwordPlus] = 0;
-FiresweepWeaponDict[Weapon.FiresweepLance] = 0;
-FiresweepWeaponDict[Weapon.FiresweepLancePlus] = 0;
-FiresweepWeaponDict[Weapon.FiresweepBow] = 0;
-FiresweepWeaponDict[Weapon.FiresweepBowPlus] = 0;
-FiresweepWeaponDict[Weapon.FiresweepAxePlus] = 0;
+const FIRESWEEP_WEAPON_SET = new Set([
+    Weapon.SoleilsShine,
+    Weapon.MiraiNoSeikishiNoYari,
+    Weapon.FiresweepSword,
+    Weapon.FiresweepSwordPlus,
+    Weapon.FiresweepLance,
+    Weapon.FiresweepLancePlus,
+    Weapon.FiresweepBow,
+    Weapon.FiresweepBowPlus,
+    Weapon.FiresweepAxePlus,
+]);
 
-/// 自身、敵共に反撃不可になる武器であるかどうかを判定します。
+/**
+ * 自身、敵共に反撃不可になる武器であるかどうかを判定します。
+ */
 function isFiresweepWeapon(weapon) {
-    return weapon in FiresweepWeaponDict;
+    return weapon in FIRESWEEP_WEAPON_SET;
 }
 
-/// 補助スキルの射程を取得します。
+/**
+ * 補助スキルの射程を取得します。
+ */
 function getAssistRange(support) {
     switch (support) {
         case Support.None:
@@ -173,21 +170,22 @@ function getAssistRange(support) {
     }
 }
 
-/// 補助スキルが大応援かどうかを判定します。
+const RALLY_UP_SET = new Set([
+    Support.RallyUpSpd,
+    Support.RallyUpAtk,
+    Support.RallyUpAtkPlus,
+    Support.RallyUpSpdPlus,
+    Support.RallyUpDef,
+    Support.RallyUpDefPlus,
+    Support.RallyUpRes,
+    Support.RallyUpResPlus,
+]);
+
+/**
+ * 補助スキルが大応援かどうかを判定します。
+ */
 function isRallyUp(support) {
-    switch (support) {
-        case Support.RallyUpSpd:
-        case Support.RallyUpAtk:
-        case Support.RallyUpAtkPlus:
-        case Support.RallyUpSpdPlus:
-        case Support.RallyUpDef:
-        case Support.RallyUpDefPlus:
-        case Support.RallyUpRes:
-        case Support.RallyUpResPlus:
-            return true;
-        default:
-            return false;
-    }
+    return RALLY_UP_SET.has(support);
 }
 
 /** @type {Map<number|string, [number, number, number, number]>} */
@@ -224,7 +222,9 @@ function getAtkBuffAmount(support) {
     }
 }
 
-/// 応援スキルの速さの強化量を取得します。
+/**
+ * 応援スキルの速さの強化量を取得します。
+ */
 function getSpdBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
         return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Spd];
@@ -253,7 +253,9 @@ function getSpdBuffAmount(support) {
     }
 }
 
-/// 応援スキルの守備の強化量を取得します。
+/**
+ * 応援スキルの守備の強化量を取得します。
+ */
 function getDefBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
         return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Def];
@@ -282,7 +284,9 @@ function getDefBuffAmount(support) {
     }
 }
 
-/// 応援スキルの魔防の強化量を取得します。
+/**
+ * 応援スキルの魔防の強化量を取得します。
+ */
 function getResBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
         return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Res];
@@ -354,47 +358,47 @@ function getPrecombatHealThreshold(support) {
     }
 }
 
-const RangedAttackSpecialDict = {};
-RangedAttackSpecialDict[Special.GrowingFlame] = 0;
-RangedAttackSpecialDict[Special.GrowingLight] = 0;
-RangedAttackSpecialDict[Special.GrowingWind] = 0;
-RangedAttackSpecialDict[Special.GrowingThunder] = 0;
-RangedAttackSpecialDict[Special.BlazingFlame] = 0;
-RangedAttackSpecialDict[Special.BlazingLight] = 0;
-RangedAttackSpecialDict[Special.BlazingWind] = 0;
-RangedAttackSpecialDict[Special.BlazingThunder] = 0;
-RangedAttackSpecialDict[Special.RisingFlame] = 0;
-RangedAttackSpecialDict[Special.RisingLight] = 0;
-RangedAttackSpecialDict[Special.RisingWind] = 0;
-RangedAttackSpecialDict[Special.RisingThunder] = 0;
-RangedAttackSpecialDict[Special.GiftedMagic] = 0;
+const RANGED_ATTACK_SPECIAL_SET = new Set([
+    Special.GrowingFlame,
+    Special.GrowingLight,
+    Special.GrowingWind,
+    Special.GrowingThunder,
+    Special.BlazingFlame,
+    Special.BlazingLight,
+    Special.BlazingWind,
+    Special.BlazingThunder,
+    Special.RisingFlame,
+    Special.RisingLight,
+    Special.RisingWind,
+    Special.RisingThunder,
+    Special.GiftedMagic,
+]);
 
-/// 範囲奥義かどうかを判定します。
+/**
+ * 範囲奥義かどうかを判定します。
+ */
 function isRangedAttackSpecial(special) {
-    return special in RangedAttackSpecialDict;
+    return RANGED_ATTACK_SPECIAL_SET.has(special);
 }
 
-const RangedAttackSpecialDamageRateDict = {};
-RangedAttackSpecialDamageRateDict[Special.GrowingFlame] = 1;
-RangedAttackSpecialDamageRateDict[Special.GrowingLight] = 1;
-RangedAttackSpecialDamageRateDict[Special.GrowingWind] = 1;
-RangedAttackSpecialDamageRateDict[Special.GrowingThunder] = 1;
-RangedAttackSpecialDamageRateDict[Special.BlazingFlame] = 1.5;
-RangedAttackSpecialDamageRateDict[Special.BlazingLight] = 1.5;
-RangedAttackSpecialDamageRateDict[Special.BlazingWind] = 1.5;
-RangedAttackSpecialDamageRateDict[Special.BlazingThunder] = 1.5;
-RangedAttackSpecialDamageRateDict[Special.RisingFlame] = 1;
-RangedAttackSpecialDamageRateDict[Special.RisingLight] = 1;
-RangedAttackSpecialDamageRateDict[Special.RisingWind] = 1;
-RangedAttackSpecialDamageRateDict[Special.RisingThunder] = 1;
-RangedAttackSpecialDamageRateDict[Special.GiftedMagic] = 0.8;
+const RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP = new Map([
+    [Special.GrowingFlame, 1],
+    [Special.GrowingLight, 1],
+    [Special.GrowingWind, 1],
+    [Special.GrowingThunder, 1],
+    [Special.BlazingFlame, 1.5],
+    [Special.BlazingLight, 1.5],
+    [Special.BlazingWind, 1.5],
+    [Special.BlazingThunder, 1.5],
+    [Special.RisingFlame, 1],
+    [Special.RisingLight, 1],
+    [Special.RisingWind, 1],
+    [Special.RisingThunder, 1],
+    [Special.GiftedMagic, 0.8],
+]);
 
 function getRangedAttackSpecialDamageRate(special) {
-    let rate = RangedAttackSpecialDamageRateDict[special];
-    if (rate) {
-        return rate;
-    }
-    return 0;
+    return RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.get(special) || 0;
 }
 
 const DefenseSpecialDict = {};
@@ -584,29 +588,31 @@ function isRangedWeaponType(weaponType) {
     return !isMeleeWeaponType(weaponType);
 }
 
-const MeleeWeaponTypeTable = {};
-MeleeWeaponTypeTable[WeaponType.Sword] = 0;
-MeleeWeaponTypeTable[WeaponType.Axe] = 0;
-MeleeWeaponTypeTable[WeaponType.Lance] = 0;
-MeleeWeaponTypeTable[WeaponType.RedBeast] = 0;
-MeleeWeaponTypeTable[WeaponType.BlueBeast] = 0;
-MeleeWeaponTypeTable[WeaponType.GreenBeast] = 0;
-MeleeWeaponTypeTable[WeaponType.ColorlessBeast] = 0;
-MeleeWeaponTypeTable[WeaponType.RedBreath] = 0;
-MeleeWeaponTypeTable[WeaponType.BlueBreath] = 0;
-MeleeWeaponTypeTable[WeaponType.GreenBreath] = 0;
-MeleeWeaponTypeTable[WeaponType.ColorlessBreath] = 0;
-MeleeWeaponTypeTable[WeaponType.Breath] = 0;
-MeleeWeaponTypeTable[WeaponType.Beast] = 0;
+const MELEE_WEAPON_TYPE_SET = new Set([
+    WeaponType.Sword,
+    WeaponType.Axe,
+    WeaponType.Lance,
+    WeaponType.RedBeast,
+    WeaponType.BlueBeast,
+    WeaponType.GreenBeast,
+    WeaponType.ColorlessBeast,
+    WeaponType.RedBreath,
+    WeaponType.BlueBreath,
+    WeaponType.GreenBreath,
+    WeaponType.ColorlessBreath,
+    WeaponType.Breath,
+    WeaponType.Beast,
+]);
 
 /// 武器タイプが1距離射程の武器であるかを判定します。
 function isMeleeWeaponType(weaponType) {
-    return weaponType in MeleeWeaponTypeTable;
+    return MELEE_WEAPON_TYPE_SET.has(weaponType);
 }
 
 /// 武器タイプが竜、もしくは獣であるかを判定します。
 function isWeaponTypeBreathOrBeast(type) {
-    return isWeaponTypeBeast(type) || isWeaponTypeBreath(type);
+    return isWeaponTypeBeast(type)
+        || isWeaponTypeBreath(type);
 }
 
 /// 武器タイプが継承可能であるかを判定します。

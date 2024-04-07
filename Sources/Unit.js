@@ -725,11 +725,12 @@ class Unit extends BattleMapElement {
     }
 
     isPartner(ally) {
-        return this.partnerHeroIndex === ally.heroIndex || ally.partnerHeroIndex === this.heroIndex;
+        return this.partnerHeroIndex === ally.heroIndex
+            || ally.partnerHeroIndex === this.heroIndex;
     }
 
     canActivateCanto() {
-        return !(!this.isActionDone || this.isCantoActivatedInCurrentTurn);
+        return this.isActionDone && !this.isCantoActivatedInCurrentTurn;
     }
 
     /// 再移動が発動可能なら発動します。

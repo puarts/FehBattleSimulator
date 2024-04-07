@@ -4648,8 +4648,8 @@
 {
     let skillId = Special.GiftedMagic2;
     // 範囲奥義
-    RangedAttackSpecialDict[skillId] = 0;
-    RangedAttackSpecialDamageRateDict[skillId] = 1;
+    RANGED_ATTACK_SPECIAL_SET.add(skillId);
+    RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.set(skillId, 1);
 
     // 十字範囲
     enumerateRangedSpecialTilesFuncMap.set(skillId,
