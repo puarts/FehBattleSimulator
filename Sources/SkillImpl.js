@@ -1713,7 +1713,7 @@
 // しろいはるのゆめ
 {
     let skillId = Support.SpringsDream;
-    refreshSupportSkillSet.add(skillId);
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
     applyRefreshFuncMap.set(skillId,
         function (skillOwnerUnit, targetUnit) {
             /** @type {[Unit]} */
@@ -2932,7 +2932,7 @@
 // こわいゆめ・神
 {
     let skillId = Support.FrightfulDreamPlus;
-    refreshSupportSkillSet.add(skillId);
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
     applyRefreshFuncMap.set(skillId,
         function (skillOwnerUnit, targetUnit) {
             /** @type {[Unit]} */
@@ -7302,7 +7302,7 @@
 // あまいゆめ・神
 {
     let skillId = Support.SweetDreamsPlus;
-    refreshSupportSkillSet.add(skillId);
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
     applyRefreshFuncMap.set(skillId,
         function (skillOwnerUnit, targetUnit) {
             targetUnit.applyAllBuff(5);

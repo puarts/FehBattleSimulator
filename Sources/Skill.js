@@ -483,38 +483,34 @@ function isNormalAttackSpecial(special) {
     return special in NormalAttackSpecialDict;
 }
 
-/// 再行動補助スキルかどうかを判定します。
-const refreshSupportSkillSet = new Set();
+/**
+ * 再行動補助スキルかどうかを判定します。
+ */
+const REFRESH_SUPPORT_SKILL_SET = new Set([
+    Support.DragonsDance,
+    Support.CallToFlame,
+    Support.Sing,
+    Support.Dance,
+    Support.GrayWaves,
+    Support.GentleDream,
+    Support.GentleDreamPlus,
+    Support.TenderDream,
+    Support.WhimsicalDream,
+    Support.SweetDreams,
+    Support.CloyingDreams,
+    Support.FrightfulDream,
+    Support.HarrowingDream,
+    Support.Play,
+]);
+
+function isRefreshSupportSkill(skillId) {
+    return REFRESH_SUPPORT_SKILL_SET.has(skillId);
+}
 
 /**
  * 応援扱いの回復サポートスキルIDの集合
  */
 const RALLY_HEAL_SKILL_SET = new Set();
-
-function isRefreshSupportSkill(skillId) {
-    if (refreshSupportSkillSet.has(skillId)) {
-        return true;
-    }
-    switch (skillId) {
-        case Support.DragonsDance:
-        case Support.CallToFlame:
-        case Support.Sing:
-        case Support.Dance:
-        case Support.GrayWaves:
-        case Support.GentleDream:
-        case Support.GentleDreamPlus:
-        case Support.TenderDream:
-        case Support.WhimsicalDream:
-        case Support.SweetDreams:
-        case Support.CloyingDreams:
-        case Support.FrightfulDream:
-        case Support.HarrowingDream:
-        case Support.Play:
-            return true;
-        default:
-            return false;
-    }
-}
 
 /**
  * 応援扱いの回復サポートスキルかどうかを返す
@@ -1095,8 +1091,10 @@ function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
     return weapon in WeaponTypesAddAtk2AfterTransform;
 }
 
-// 化身による共通の効果
-// TODO 残りも実装する
+/**
+ * 化身による共通の効果
+ * TODO 残りも実装する
+ */
 const BeastCommonSkillType = {
     Infantry: 0, // 初期の歩行近接
     Infantry2: 1, // アシュ以降の歩行近接
@@ -1412,48 +1410,6 @@ class SkillInfo {
             default:
                 return "";
         }
-    }
-}
-
-class MathUtil {
-    /**
-     * 「最低min、最大max」した値を返す。
-     * @param {number} value
-     * @param {number} min
-     * @param {number} max
-     * @returns {number}
-     */
-    static ensureMinMax(value, min, max) {
-        let v = value;
-        v = MathUtil.ensureMin(v, min);
-        v = MathUtil.ensureMax(v, max);
-        return v;
-    }
-
-    /**
-     * 「最低min」した値を返す。
-     * @param {number} value
-     * @param {number} min
-     * @returns {number}
-     */
-    static ensureMin(value, min) {
-        return Math.max(value, min);
-    }
-
-    /**
-     * 「最大max」した値を返す。
-     * @param {number} value
-     * @param {number} max
-     * @returns {number}
-     */
-    static ensureMax(value, max) {
-        return Math.min(value, max);
-    }
-}
-
-class DebugUtil {
-    static getSkillName(unit, info) {
-        return `${unit.nameWithGroup}の${info.name}`;
     }
 }
 
