@@ -598,9 +598,9 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
 {
     let skillId = Special.SSS;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    // NormalAttackSpecialDict[skillId] = 0;
+    // NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     // 守備奥義
-    // DefenseSpecialDict[skillId] = 0;
+    // DEFENSE_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     // countNSpecials.push(skillId);

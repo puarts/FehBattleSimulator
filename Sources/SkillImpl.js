@@ -683,7 +683,7 @@
 // 星竜のブレス
 {
     let skillId = Weapon.AstralBreath;
-    TeleportationSkillDict[skillId] = 0;
+    TELEPORTATION_SKILL_SET.add(skillId);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -815,7 +815,7 @@
 {
     let skillId = Special.GreatAether;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count4Specials.push(skillId);
@@ -1025,7 +1025,7 @@
 {
     let skillId = Special.SacredWind;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count2Specials.push(skillId);
@@ -2212,7 +2212,7 @@
     noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count2Specials.push(skillId);
@@ -2245,7 +2245,7 @@
     noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count2Specials.push(skillId);
@@ -2278,7 +2278,7 @@
     noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count3Specials.push(skillId);
@@ -2334,7 +2334,7 @@
 {
     let skillId = Special.DragonsRoar;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count3Specials.push(skillId);
@@ -2594,7 +2594,7 @@
     noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count3Specials.push(skillId);
@@ -3040,7 +3040,7 @@
 {
     let skillId = Special.SeidrShellPlus;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count3Specials.push(skillId);
@@ -3493,7 +3493,7 @@
 {
     let skillId = Special.LodestarRush;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count2Specials.push(skillId);
@@ -3862,7 +3862,7 @@
 {
     let skillId = Special.ArmsOfTheThree;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count2Specials.push(skillId);
@@ -4684,7 +4684,7 @@
 {
     let skillId = Special.NegatingFang2;
     // 守備奥義
-    DefenseSpecialDict[skillId] = 0;
+    DEFENSE_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count3Specials.push(skillId);
@@ -5222,7 +5222,7 @@
 {
     let skillId = Special.SupremeHeaven;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count2Specials.push(skillId);
@@ -5327,7 +5327,7 @@
 {
     let skillId = Special.NoQuarter;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count3Specials.push(skillId);
@@ -5446,7 +5446,7 @@
 {
     let skillId = Special.ArmoredBlaze;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count3Specials.push(skillId);
@@ -6223,7 +6223,7 @@
 {
     let skillId = Special.TimeIsLight;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     count3Specials.push(skillId);
@@ -6350,7 +6350,7 @@
 {
     let skillId = Special.LightIsTime;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -6584,7 +6584,7 @@
             }
         }
     );
-    TeleportationSkillDict[skillId] = 0;
+    TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function (unit) {
             return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
@@ -7039,7 +7039,7 @@
 // 白夜忍の薙刀+
 {
     let skillId = Weapon.KumoNaginataPlus;
-    TeleportationSkillDict[skillId] = 0;
+    TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function (unit) {
             return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
@@ -7157,7 +7157,7 @@
 // 白夜忍の和弓+
 {
     let skillId = Weapon.KumoYumiPlus;
-    TeleportationSkillDict[skillId] = 0;
+    TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function (unit) {
             return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
@@ -7263,7 +7263,7 @@
 // 漆黒の月光
 {
     let skillId = Special.LightlessLuna;
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             targetUnit.battleContext.specialSufferPercentage = 80;

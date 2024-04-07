@@ -401,86 +401,90 @@ function getRangedAttackSpecialDamageRate(special) {
     return RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.get(special) || 0;
 }
 
-const DefenseSpecialDict = {};
-DefenseSpecialDict[Special.Nagatate] = 0;
-DefenseSpecialDict[Special.Otate] = 0;  // 大盾
-DefenseSpecialDict[Special.Kotate] = 0; // 小盾
-DefenseSpecialDict[Special.Seitate] = 0; // 聖盾
-DefenseSpecialDict[Special.Seii] = 0;  // 聖衣
-DefenseSpecialDict[Special.Seikabuto] = 0; // 聖兜
-DefenseSpecialDict[Special.IceMirror] = 0;
-DefenseSpecialDict[Special.IceMirror2] = 0;
-DefenseSpecialDict[Special.FrostbiteMirror] = 0;
-DefenseSpecialDict[Special.NegatingFang] = 0;
-DefenseSpecialDict[Special.GodlikeReflexes] = 0;
-DefenseSpecialDict[Special.Miracle] = 0;
+const DEFENSE_SPECIAL_SET = new Set([
+    Special.Nagatate,
+    Special.Otate,  // 大盾
+    Special.Kotate, // 小盾
+    Special.Seitate, // 聖盾
+    Special.Seii,  // 聖衣
+    Special.Seikabuto, // 聖兜
+    Special.IceMirror,
+    Special.IceMirror2,
+    Special.FrostbiteMirror,
+    Special.NegatingFang,
+    Special.GodlikeReflexes,
+    Special.Miracle,
+]);
 
-/// 防御系の奥義かどうかを判定します。
+/**
+ * 防御系の奥義かどうかを判定します。
+ */
 function isDefenseSpecial(special) {
-    return special in DefenseSpecialDict;
+    return DEFENSE_SPECIAL_SET.has(special);
 }
 
-const NormalAttackSpecialDict = {};
-NormalAttackSpecialDict[Special.DragonBlast] = 0;
-NormalAttackSpecialDict[Special.Flare] = 0;
-NormalAttackSpecialDict[Special.Moonbow] = 0;
-NormalAttackSpecialDict[Special.Luna] = 0;
-NormalAttackSpecialDict[Special.Aether] = 0;
-NormalAttackSpecialDict[Special.LunaFlash] = 0;
-NormalAttackSpecialDict[Special.LunarFlash2] = 0;
-NormalAttackSpecialDict[Special.Glimmer] = 0;
-NormalAttackSpecialDict[Special.Deadeye] = 0;
-NormalAttackSpecialDict[Special.Astra] = 0;
-NormalAttackSpecialDict[Special.ArmoredBeacon] = 0;
-NormalAttackSpecialDict[Special.ArmoredFloe] = 0;
-NormalAttackSpecialDict[Special.Bonfire] = 0;
-NormalAttackSpecialDict[Special.Ignis] = 0;
-NormalAttackSpecialDict[Special.Iceberg] = 0;
-NormalAttackSpecialDict[Special.Glacies] = 0;
-NormalAttackSpecialDict[Special.CircletOfBalance] = 0;
-NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
-NormalAttackSpecialDict[Special.ChivalricAura] = 0; // グランベルの騎士道
-NormalAttackSpecialDict[Special.DraconicAura] = 0;
-NormalAttackSpecialDict[Special.DragonFang] = 0;
-NormalAttackSpecialDict[Special.Enclosure] = 0; // 閉界
-NormalAttackSpecialDict[Special.Sirius] = 0; // 天狼
-NormalAttackSpecialDict[Special.SiriusPlus] = 0; // 天狼
-NormalAttackSpecialDict[Special.RupturedSky] = 0; // 破天
-NormalAttackSpecialDict[Special.TwinBlades] = 0; // 双刃
-NormalAttackSpecialDict[Special.Taiyo] = 0;
-NormalAttackSpecialDict[Special.Yuyo] = 0;
-NormalAttackSpecialDict[Special.RegnalAstra] = 0; // 剣姫の流星
-NormalAttackSpecialDict[Special.ImperialAstra] = 0; // 剣皇の流星
-NormalAttackSpecialDict[Special.VitalAstra] = 0; // 心流星
-NormalAttackSpecialDict[Special.SupremeAstra] = 0; // 無双の流星
-NormalAttackSpecialDict[Special.OpenTheFuture] = 0; // 開世
-NormalAttackSpecialDict[Special.Fukusyu] = 0; // 復讐
-NormalAttackSpecialDict[Special.Kessyu] = 0; // 血讐
-NormalAttackSpecialDict[Special.Kagetsuki] = 0; // 影月
-NormalAttackSpecialDict[Special.Setsujoku] = 0; // 雪辱
-NormalAttackSpecialDict[Special.Hyouten] = 0; // 氷点
-NormalAttackSpecialDict[Special.Youkage] = 0; // 陽影
-NormalAttackSpecialDict[Special.Hotarubi] = 0; // 蛍火
-NormalAttackSpecialDict[Special.ShiningEmblem] = 0; // 光炎の紋章
-NormalAttackSpecialDict[Special.HonoNoMonsyo] = 0; // 炎の紋章
-NormalAttackSpecialDict[Special.HerosBlood] = 0;
-NormalAttackSpecialDict[Special.KuroNoGekko] = 0; // 黒の月光
-NormalAttackSpecialDict[Special.Lethality] = 0; // 滅殺
-NormalAttackSpecialDict[Special.AoNoTenku] = 0; // 蒼の天空
-NormalAttackSpecialDict[Special.RadiantAether2] = 0; // 蒼の天空・承
-NormalAttackSpecialDict[Special.MayhemAether] = 0; // 暴の天空
-NormalAttackSpecialDict[Special.Hoshikage] = 0; // 星影
-NormalAttackSpecialDict[Special.Fukuryu] = 0; // 伏竜
-NormalAttackSpecialDict[Special.BlueFrame] = 0; // ブルーフレイム
-NormalAttackSpecialDict[Special.SeidrShell] = 0; // 魔弾
-NormalAttackSpecialDict[Special.BrutalShell] = 0; // 凶弾
-NormalAttackSpecialDict[Special.RighteousWind] = 0;
-NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
-NormalAttackSpecialDict[Special.DevinePulse] = 0;
+const NORMAL_ATTACK_SPECIAL_SET = new Set([
+    Special.DragonBlast,
+    Special.Flare,
+    Special.Moonbow,
+    Special.Luna,
+    Special.Aether,
+    Special.LunaFlash,
+    Special.LunarFlash2,
+    Special.Glimmer,
+    Special.Deadeye,
+    Special.Astra,
+    Special.ArmoredBeacon,
+    Special.ArmoredFloe,
+    Special.Bonfire,
+    Special.Ignis,
+    Special.Iceberg,
+    Special.Glacies,
+    Special.CircletOfBalance,
+    Special.HolyKnightAura,
+    Special.ChivalricAura, // グランベルの騎士道
+    Special.DraconicAura,
+    Special.DragonFang,
+    Special.Enclosure, // 閉界
+    Special.Sirius, // 天狼
+    Special.SiriusPlus, // 天狼
+    Special.RupturedSky, // 破天
+    Special.TwinBlades, // 双刃
+    Special.Taiyo,
+    Special.Yuyo,
+    Special.RegnalAstra, // 剣姫の流星
+    Special.ImperialAstra, // 剣皇の流星
+    Special.VitalAstra, // 心流星
+    Special.SupremeAstra, // 無双の流星
+    Special.OpenTheFuture, // 開世
+    Special.Fukusyu, // 復讐
+    Special.Kessyu, // 血讐
+    Special.Kagetsuki, // 影月
+    Special.Setsujoku, // 雪辱
+    Special.Hyouten, // 氷点
+    Special.Youkage, // 陽影
+    Special.Hotarubi, // 蛍火
+    Special.ShiningEmblem, // 光炎の紋章
+    Special.HonoNoMonsyo, // 炎の紋章
+    Special.HerosBlood,
+    Special.KuroNoGekko, // 黒の月光
+    Special.Lethality, // 滅殺
+    Special.AoNoTenku, // 蒼の天空
+    Special.RadiantAether2, // 蒼の天空・承
+    Special.MayhemAether, // 暴の天空
+    Special.Hoshikage, // 星影
+    Special.Fukuryu, // 伏竜
+    Special.BlueFrame, // ブルーフレイム
+    Special.SeidrShell, // 魔弾
+    Special.BrutalShell, // 凶弾
+    Special.RighteousWind,
+    Special.SublimeHeaven,
+    Special.DevinePulse,
+]);
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
-    return special in NormalAttackSpecialDict;
+    return NORMAL_ATTACK_SPECIAL_SET.has(special);
 }
 
 /**
@@ -519,67 +523,84 @@ function isRallyHealSkill(skillId) {
     return RALLY_HEAL_SKILL_SET.has(skillId);
 }
 
-const BowWeaponTypeTable = {}
-BowWeaponTypeTable[WeaponType.RedBow] = 0;
-BowWeaponTypeTable[WeaponType.BlueBow] = 0;
-BowWeaponTypeTable[WeaponType.GreenBow] = 0;
-BowWeaponTypeTable[WeaponType.ColorlessBow] = 0;
-BowWeaponTypeTable[WeaponType.Bow] = 0;
+const BOW_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedBow,
+    WeaponType.BlueBow,
+    WeaponType.GreenBow,
+    WeaponType.ColorlessBow,
+    WeaponType.Bow,
+]);
 
-/// 武器タイプが弓であるかを判定します。
+/**
+ * 武器タイプが弓であるかを判定します。
+ */
 function isWeaponTypeBow(type) {
-    return type in BowWeaponTypeTable;
+    return BOW_WEAPON_TYPE_SET.has(type);
 }
 
-const DaggerWeaponTypeTable = {}
-DaggerWeaponTypeTable[WeaponType.RedDagger] = 0;
-DaggerWeaponTypeTable[WeaponType.BlueDagger] = 0;
-DaggerWeaponTypeTable[WeaponType.GreenDagger] = 0;
-DaggerWeaponTypeTable[WeaponType.ColorlessDagger] = 0;
-DaggerWeaponTypeTable[WeaponType.Dagger] = 0;
+const DAGGER_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedDagger,
+    WeaponType.BlueDagger,
+    WeaponType.GreenDagger,
+    WeaponType.ColorlessDagger,
+    WeaponType.Dagger,
+]);
 
-/// 武器タイプが暗器であるかを判定します。
+/**
+ * 武器タイプが暗器であるかを判定します。
+ */
 function isWeaponTypeDagger(type) {
-    return type in DaggerWeaponTypeTable;
+    return DAGGER_WEAPON_TYPE_SET.has(type);
 }
 
-const TomeWeaponTypeTable = {}
-TomeWeaponTypeTable[WeaponType.RedTome] = 0;
-TomeWeaponTypeTable[WeaponType.BlueTome] = 0;
-TomeWeaponTypeTable[WeaponType.GreenTome] = 0;
-TomeWeaponTypeTable[WeaponType.ColorlessTome] = 0;
-TomeWeaponTypeTable[WeaponType.Tome] = 0;
+const TOME_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedTome,
+    WeaponType.BlueTome,
+    WeaponType.GreenTome,
+    WeaponType.ColorlessTome,
+    WeaponType.Tome,
+]);
 
-/// 武器タイプが魔法であるかを判定します。
+/**
+ * 武器タイプが魔法であるかを判定します。
+ */
 function isWeaponTypeTome(type) {
-    return type in TomeWeaponTypeTable;
+    return TOME_WEAPON_TYPE_SET.has(type);
 }
 
-const BreathWeaponTypeTable = {}
-BreathWeaponTypeTable[WeaponType.RedBreath] = 0;
-BreathWeaponTypeTable[WeaponType.BlueBreath] = 0;
-BreathWeaponTypeTable[WeaponType.GreenBreath] = 0;
-BreathWeaponTypeTable[WeaponType.ColorlessBreath] = 0;
-BreathWeaponTypeTable[WeaponType.Breath] = 0;
+const BREATH_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedBreath,
+    WeaponType.BlueBreath,
+    WeaponType.GreenBreath,
+    WeaponType.ColorlessBreath,
+    WeaponType.Breath,
+]);
 
-/// 武器タイプが竜であるかを判定します。
+/**
+ * 武器タイプが竜であるかを判定します。
+ */
 function isWeaponTypeBreath(type) {
-    return type in BreathWeaponTypeTable;
+    return BREATH_WEAPON_TYPE_SET.has(type);
 }
 
-const BeastWeaponTypeTable = {}
-BeastWeaponTypeTable[WeaponType.RedBeast] = 0;
-BeastWeaponTypeTable[WeaponType.BlueBeast] = 0;
-BeastWeaponTypeTable[WeaponType.GreenBeast] = 0;
-BeastWeaponTypeTable[WeaponType.ColorlessBeast] = 0;
-BeastWeaponTypeTable[WeaponType.Beast] = 0;
+const BEAST_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedBeast,
+    WeaponType.BlueBeast,
+    WeaponType.GreenBeast,
+    WeaponType.ColorlessBeast,
+    WeaponType.Beast,
+]);
 
-/// 武器タイプが獣であるかを判定します。
+/**
+ * 武器タイプが獣であるかを判定します。
+ */
 function isWeaponTypeBeast(type) {
-    return type in BeastWeaponTypeTable;
+    return BEAST_WEAPON_TYPE_SET.has(type);
 }
 
-/// 武器タイプが2距離射程の武器であるかを判定します。
+/**
+ * 武器タイプが2距離射程の武器であるかを判定します。
+ */
 function isRangedWeaponType(weaponType) {
     return !isMeleeWeaponType(weaponType);
 }
@@ -600,18 +621,24 @@ const MELEE_WEAPON_TYPE_SET = new Set([
     WeaponType.Beast,
 ]);
 
-/// 武器タイプが1距離射程の武器であるかを判定します。
+/**
+ * 武器タイプが1距離射程の武器であるかを判定します。
+ */
 function isMeleeWeaponType(weaponType) {
     return MELEE_WEAPON_TYPE_SET.has(weaponType);
 }
 
-/// 武器タイプが竜、もしくは獣であるかを判定します。
+/**
+ * 武器タイプが竜、もしくは獣であるかを判定します。
+ */
 function isWeaponTypeBreathOrBeast(type) {
     return isWeaponTypeBeast(type)
         || isWeaponTypeBreath(type);
 }
 
-/// 武器タイプが継承可能であるかを判定します。
+/**
+ * 武器タイプが継承可能であるかを判定します。
+ */
 function isInheritableWeaponType(targetType, types) {
     for (let type of types) {
         if (type === targetType) {
@@ -655,148 +682,73 @@ function isInheritableWeaponType(targetType, types) {
     return false;
 }
 
-const WeaponTypeToColorType = {};
-WeaponTypeToColorType[WeaponType.Sword] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedTome] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedBreath] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedBeast] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedBow] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedDagger] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.Lance] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueTome] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueBreath] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueBeast] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueBow] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueDagger] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.Axe] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenTome] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenBreath] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenBeast] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenBow] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenDagger] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.Staff] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessTome] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessBreath] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessBeast] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessBow] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessDagger] = ColorType.Colorless;
+const WEAPON_TYPE_TO_COLOR_MAP = new Map([
+    [WeaponType.Sword, ColorType.Red],
+    [WeaponType.RedTome, ColorType.Red],
+    [WeaponType.RedBreath, ColorType.Red],
+    [WeaponType.RedBeast, ColorType.Red],
+    [WeaponType.RedBow, ColorType.Red],
+    [WeaponType.RedDagger, ColorType.Red],
+    [WeaponType.Lance, ColorType.Blue],
+    [WeaponType.BlueTome, ColorType.Blue],
+    [WeaponType.BlueBreath, ColorType.Blue],
+    [WeaponType.BlueBeast, ColorType.Blue],
+    [WeaponType.BlueBow, ColorType.Blue],
+    [WeaponType.BlueDagger, ColorType.Blue],
+    [WeaponType.Axe, ColorType.Green],
+    [WeaponType.GreenTome, ColorType.Green],
+    [WeaponType.GreenBreath, ColorType.Green],
+    [WeaponType.GreenBeast, ColorType.Green],
+    [WeaponType.GreenBow, ColorType.Green],
+    [WeaponType.GreenDagger, ColorType.Green],
+    [WeaponType.Staff, ColorType.Colorless],
+    [WeaponType.ColorlessTome, ColorType.Colorless],
+    [WeaponType.ColorlessBreath, ColorType.Colorless],
+    [WeaponType.ColorlessBeast, ColorType.Colorless],
+    [WeaponType.ColorlessBow, ColorType.Colorless],
+    [WeaponType.ColorlessDagger, ColorType.Colorless],
+]);
 
 function getColorFromWeaponType(weaponType) {
-    return WeaponTypeToColorType[weaponType];
+    return WEAPON_TYPE_TO_COLOR_MAP.get(weaponType);
 }
 
+const STRING_TO_WEAPON_TYPE_MAP = new Map([
+    ["剣", WeaponType.Sword],
+    ["槍", WeaponType.Lance],
+    ["斧", WeaponType.Axe],
+    ["無魔", WeaponType.ColorlessTome],
+    ["赤魔", WeaponType.RedTome],
+    ["青魔", WeaponType.BlueTome],
+    ["緑魔", WeaponType.GreenTome],
+    ["赤竜", WeaponType.RedBreath],
+    ["青竜", WeaponType.BlueBreath],
+    ["緑竜", WeaponType.GreenBreath],
+    ["無竜", WeaponType.ColorlessBreath],
+    ["杖", WeaponType.Staff],
+    ["暗器", WeaponType.ColorlessDagger],
+    ["赤暗器", WeaponType.RedDagger],
+    ["青暗器", WeaponType.BlueDagger],
+    ["緑暗器", WeaponType.GreenDagger],
+    ["弓", WeaponType.ColorlessBow],
+    ["赤弓", WeaponType.RedBow],
+    ["青弓", WeaponType.BlueBow],
+    ["緑弓", WeaponType.GreenBow],
+    ["赤獣", WeaponType.RedBeast],
+    ["青獣", WeaponType.BlueBeast],
+    ["緑獣", WeaponType.GreenBeast],
+    ["獣", WeaponType.ColorlessBeast],
+]);
+
+const WEAPON_TYPE_TO_STRING_MAP =
+    new Map([...STRING_TO_WEAPON_TYPE_MAP.entries()].map(([key, value]) => [value, key]));
+
 function stringToWeaponType(input) {
-    switch (input) {
-        case "剣":
-            return WeaponType.Sword;
-        case "槍":
-            return WeaponType.Lance;
-        case "斧":
-            return WeaponType.Axe;
-        case "無魔":
-            return WeaponType.ColorlessTome;
-        case "赤魔":
-            return WeaponType.RedTome;
-        case "青魔":
-            return WeaponType.BlueTome;
-        case "緑魔":
-            return WeaponType.GreenTome;
-        case "赤竜":
-            return WeaponType.RedBreath;
-        case "青竜":
-            return WeaponType.BlueBreath;
-        case "緑竜":
-            return WeaponType.GreenBreath;
-        case "無竜":
-            return WeaponType.ColorlessBreath;
-        case "杖":
-            return WeaponType.Staff;
-        case "暗器":
-            return WeaponType.ColorlessDagger;
-        case "赤暗器":
-            return WeaponType.RedDagger;
-        case "青暗器":
-            return WeaponType.BlueDagger;
-        case "緑暗器":
-            return WeaponType.GreenDagger;
-        case "弓":
-            return WeaponType.ColorlessBow;
-        case "赤弓":
-            return WeaponType.RedBow;
-        case "青弓":
-            return WeaponType.BlueBow;
-        case "緑弓":
-            return WeaponType.GreenBow;
-        case "赤獣":
-            return WeaponType.RedBeast;
-        case "青獣":
-            return WeaponType.BlueBeast;
-        case "緑獣":
-            return WeaponType.GreenBeast;
-        case "獣":
-            return WeaponType.ColorlessBeast;
-        default:
-            return WeaponType.None;
-    }
+    return STRING_TO_WEAPON_TYPE_MAP.get(input) ?? WeaponType.None;
 }
 
 function weaponTypeToString(weaponType) {
-    switch (weaponType) {
-        case WeaponType.Sword:
-            return "剣";
-        case WeaponType.ColorlessTome:
-            return "無魔";
-        case WeaponType.RedTome:
-            return "赤魔";
-        case WeaponType.RedBreath:
-            return "赤竜";
-        case WeaponType.RedBeast:
-            return "赤獣";
-        case WeaponType.RedBow:
-            return "赤弓";
-        case WeaponType.RedDagger:
-            return "赤暗器";
-        case WeaponType.Lance:
-            return "槍";
-        case WeaponType.BlueTome:
-            return "青魔";
-        case WeaponType.BlueBreath:
-            return "青竜";
-        case WeaponType.BlueBeast:
-            return "青獣";
-        case WeaponType.BlueBow:
-            return "青弓";
-        case WeaponType.BlueDagger:
-            return "青暗器";
-        case WeaponType.Axe:
-            return "斧";
-        case WeaponType.GreenTome:
-            return "緑魔";
-        case WeaponType.GreenBreath:
-            return "緑竜";
-        case WeaponType.GreenBeast:
-            return "緑獣";
-        case WeaponType.GreenBow:
-            return "緑弓";
-        case WeaponType.GreenDagger:
-            return "緑暗器";
-        case WeaponType.Staff:
-            return "杖";
-        case WeaponType.ColorlessBreath:
-            return "竜";
-        case WeaponType.ColorlessBeast:
-            return "獣";
-        case WeaponType.ColorlessBow:
-            return "弓";
-        case WeaponType.ColorlessDagger:
-            return "暗器";
-        case WeaponType.Breath:
-            return "竜石";
-        case WeaponType.Beast:
-            return "獣";
-        default:
-            return "不明";
-    }
+    return WEAPON_TYPE_TO_STRING_MAP.get(weaponType) ?? "不明";
 }
 
 function canRallyForciblyByPlayer(unit) {
@@ -816,7 +768,9 @@ function canRallyForciblyByPlayer(unit) {
     return false;
 }
 
-/// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
+/**
+ * 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
+ */
 function canRallyForcibly(skill, unit) {
     let skillId = skill;
     let funcMap = canRallyForciblyFuncMap;
@@ -900,47 +854,53 @@ function canRalliedForcibly(skillId, unit) {
     }
 }
 
-/// 戦闘前に発動するスペシャルであるかどうかを判定します。
+/**
+ * 戦闘前に発動するスペシャルであるかどうかを判定します。
+ */
 function isPrecombatSpecial(special) {
     return isRangedAttackSpecial(special);
 }
 
-// 二分探索したいだけで値はどうでもいいので0を入れておきます
-const TeleportationSkillDict = {};
-TeleportationSkillDict[PassiveC.TipTheScales] = 0;
-TeleportationSkillDict[Weapon.LanceOfHeroics] = 0;
-TeleportationSkillDict[Weapon.FlowerLance] = 0;
-TeleportationSkillDict[Weapon.FujinYumi] = 0;
-TeleportationSkillDict[Weapon.Gurimowaru] = 0;
-TeleportationSkillDict[Weapon.ApotheosisSpear] = 0;
-TeleportationSkillDict[Weapon.Noatun] = 0;
-TeleportationSkillDict[Weapon.HinokaNoKounagitou] = 0;
-TeleportationSkillDict[Weapon.IzunNoKajitsu] = 0;
-TeleportationSkillDict[PassiveB.TeniNoKona] = 0;
-TeleportationSkillDict[PassiveB.Kyuen2] = 0;
-TeleportationSkillDict[PassiveB.Kyuen3] = 0;
-TeleportationSkillDict[PassiveB.WingsOfMercy4] = 0;
-TeleportationSkillDict[PassiveB.Ridatsu3] = 0;
-TeleportationSkillDict[PassiveB.EscapeRoute4] = 0;
-TeleportationSkillDict[PassiveB.KyokugiHiKo1] = 0;
-TeleportationSkillDict[PassiveB.KyokugiHiKo2] = 0;
-TeleportationSkillDict[PassiveB.KyokugiHiKo3] = 0;
-TeleportationSkillDict[PassiveB.HentaiHiko1] = 0;
-TeleportationSkillDict[PassiveB.HentaiHiko2] = 0;
-TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
-TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
-TeleportationSkillDict[PassiveC.Guidance4] = 0;
-TeleportationSkillDict[PassiveC.SoaringGuidance] = 0;
-TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
-TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
-TeleportationSkillDict[Weapon.SilentPower] = 0;
+const TELEPORTATION_SKILL_SET = new Set([
+    PassiveC.TipTheScales,
+    Weapon.LanceOfHeroics,
+    Weapon.FlowerLance,
+    Weapon.FujinYumi,
+    Weapon.Gurimowaru,
+    Weapon.ApotheosisSpear,
+    Weapon.Noatun,
+    Weapon.HinokaNoKounagitou,
+    Weapon.IzunNoKajitsu,
+    PassiveB.TeniNoKona,
+    PassiveB.Kyuen2,
+    PassiveB.Kyuen3,
+    PassiveB.WingsOfMercy4,
+    PassiveB.Ridatsu3,
+    PassiveB.EscapeRoute4,
+    PassiveB.KyokugiHiKo1,
+    PassiveB.KyokugiHiKo2,
+    PassiveB.KyokugiHiKo3,
+    PassiveB.HentaiHiko1,
+    PassiveB.HentaiHiko2,
+    PassiveB.HentaiHiko3,
+    PassiveC.SorakaranoSendo3,
+    PassiveC.Guidance4,
+    PassiveC.SoaringGuidance,
+    PassiveC.HikonoSendo3,
+    PassiveC.OpeningRetainer,
+    Weapon.SilentPower,
+]);
 
-/// テレポート効果を持つスキルであるかどうかを判定します。
+/**
+ * テレポート効果を持つスキルであるかどうかを判定します。
+ */
 function isTeleportationSkill(skillId) {
-    return skillId in TeleportationSkillDict;
+    return TELEPORTATION_SKILL_SET.has(skillId);
 }
 
-/// 天駆の道の効果を持つスキルかどうか
+/**
+ * 天駆の道の効果を持つスキルかどうか
+ */
 function hasPathfinderEffect(skillId) {
     let funcMap = hasPathfinderEffectFuncMap;
     if (funcMap.has(skillId)) {
@@ -964,7 +924,9 @@ function hasPathfinderEffect(skillId) {
     }
 }
 
-/// 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合を0～1で返します。
+/**
+ * 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合を0～1で返します。
+ */
 function getSelfDamageDealtRateToAddSpecialDamage(skillId) {
     switch (skillId) {
         case Special.Fukusyu:
