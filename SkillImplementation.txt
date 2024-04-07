@@ -57,14 +57,8 @@ applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
 applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {}
 
 獣の共通の化身スキル
-WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
-もしくは
-const WeaponTypesAddAtk2AfterTransform = {};
-WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
-const BeastCommonSkillMap =
-    new Map([
-            [Weapon.XXX, BeastCommonSkillType.YYY], // 歩行、騎馬を実装済み
+WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
 
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
@@ -603,8 +597,8 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
     // DEFENSE_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    // countNSpecials.push(skillId);
-    // inheritableCountNSpecials.push(skillId);
+    // COUNT2_SPECIALS.push(skillId);
+    // INHERITABLE_COUNT2.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -782,7 +776,7 @@ canAddStatusEffectByRallyFuncMap.set(skillId,
     }
 );
 このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない
-noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
 [回復補助の閾値]
 PRECOMBAT_HEAL_THRESHOLD_MAP.set(skillId, 10);
@@ -830,9 +824,9 @@ atkUnit.battleContext.increaseCooldownCountForAttack = true;
 targetUnit.battleContext.increaseCooldownCountForBoth();
 
 補助スキルを使用したとき、自身の奥義発動変動量は常に0
-noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 このスキル使用時の奥義発動変動量は常に0
-noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCountFuncMap.set(skillId,
@@ -1085,7 +1079,7 @@ targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPreco
 // 範囲奥義を除くステータス参照固定ダメージ
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     if (isPrecombat) return;
-    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Spd, 0.2);
+    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
 });
 もしくは
 DamageCalculatorWrapper.js
@@ -1114,7 +1108,7 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
 マリア算など[ステータス参照の固定ダメージ軽減、固定ダメージ]
 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
-        this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def, 0.25);
+        this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def, 0.25);
     }
 );
 

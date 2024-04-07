@@ -5363,7 +5363,7 @@ class Unit extends BattleMapElement {
 
     __hasSaveSkills() {
         for (let skillId of this.enumerateSkills()) {
-            if (SaveSkills.has(skillId)) {
+            if (SAVE_SKILLS_SET.has(skillId)) {
                 return true;
             }
         }

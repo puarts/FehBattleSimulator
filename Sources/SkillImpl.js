@@ -44,7 +44,7 @@
                 // ダメージ+守備の20%(範囲奥義を除く)、
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Def, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Def, 0.2);
                 });
                 // 攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)
                 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
@@ -108,7 +108,7 @@
                 // 自分が与えるダメージ＋攻撃の15%（範囲奥義を除く）、かつ
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Atk, 0.15);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Atk, 0.15);
                 });
                 // 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
                 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
@@ -348,7 +348,7 @@
                 // - ダメージ＋魔防の20％（範囲奥義を除く）
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Res, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
                 });
             }
         }
@@ -503,7 +503,7 @@
         }
     );
     // （このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない）
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 }
 
 // ハデスΩ
@@ -546,8 +546,8 @@
 // 狼花嫁の牙
 {
     let skillId = Weapon.BridesFang;
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Infantry);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -818,8 +818,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count4Specials.push(skillId);
-    inheritableCount4Specials.push(skillId);
+    COUNT4_SPECIALS.push(skillId);
+    INHERITABLE_COUNT4_SPECIALS.push(skillId);
 
     applySkillEffectsPerCombatFuncMap.set(skillId,
         function (targetUnit, enemyUnit, context) {
@@ -958,8 +958,8 @@
         }
     );
     // ターン開始時、竜、獣以外の味方と隣接していない場合、化身状態になる(そうでない場合、化身状態を解除)化身状態なら、攻撃+2、かつ敵から攻撃された時、距離に関係なく反撃する
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Armor);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Armor);
 }
 
 // 禿鷹の弓+
@@ -1028,8 +1028,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -1229,7 +1229,7 @@
                     unit.reserveToAddStatusEffect(StatusEffectType.Guard);
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
                         for (let skillId of ally.enumerateSkills()) {
-                            if (SaveSkills.has(skillId)) {
+                            if (SAVE_SKILLS_SET.has(skillId)) {
                                 ally.reserveToAddStatusEffect(StatusEffectType.Guard);
                             }
                         }
@@ -1433,7 +1433,7 @@
                     enemyUnit.atkSpur -= 7;
                     targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                         (targetUnit, enemyUnit, calcPotentialDamage) => {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Atk, 0.15);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Atk, 0.15);
                         }
                     );
                     targetUnit.battleContext.applyAttackSkillEffectAfterCombatFuncs.push(
@@ -1931,7 +1931,7 @@
                         targetUnit.addAllSpur(4);
                         targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                             if (isPrecombat) return;
-                            this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Spd, 0.2);
+                            this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
                         });
                     }
                 }
@@ -2209,14 +2209,14 @@
 // 恐慌の聖光
 {
     let skillId = Special.HolyPanic;
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2242,14 +2242,14 @@
 // 抑制の聖光
 {
     let skillId = Special.LightsRestraint;
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2275,14 +2275,14 @@
 // 重圧の聖光
 {
     let skillId = Special.HolyPressure;
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2337,8 +2337,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2591,14 +2591,14 @@
 // 輝映の聖光
 {
     let skillId = Special.GlitterOfLight;
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -3043,8 +3043,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -3375,7 +3375,7 @@
 {
     let skillId = PassiveC.DarklingDragon;
     // 護り手
-    SaveSkills.add(skillId);
+    SAVE_SKILLS_SET.add(skillId);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -3496,8 +3496,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -3865,8 +3865,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -3944,8 +3944,8 @@
 // 刃の葬り手の爪
 {
     let skillId = Weapon.QuietingClaw;
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Flying);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Flying);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -4687,8 +4687,8 @@
     DEFENSE_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     // 奥義によるダメージ軽減
     applyDamageReductionRatioBySpecialFuncMap.set(skillId,
@@ -5039,8 +5039,8 @@
             }
         }
     );
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
 }
 
 // 死の瘴気
@@ -5225,8 +5225,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -5330,8 +5330,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -5449,8 +5449,8 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -6166,8 +6166,8 @@
             }
         }
     );
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
 }
 
 // 癒し手の心
@@ -6226,7 +6226,7 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {

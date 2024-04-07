@@ -196,7 +196,7 @@ const RALLY_BUFF_AMOUNT_MAP = new Map();
  */
 function getAtkBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Atk];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Atk];
     }
     switch (support) {
         case Support.RallyAttack:
@@ -227,7 +227,7 @@ function getAtkBuffAmount(support) {
  */
 function getSpdBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Spd];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Spd];
     }
     switch (support) {
         case Support.RallySpeed:
@@ -258,7 +258,7 @@ function getSpdBuffAmount(support) {
  */
 function getDefBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Def];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Def];
     }
     switch (support) {
         case Support.RallyUpDef:
@@ -289,7 +289,7 @@ function getDefBuffAmount(support) {
  */
 function getResBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Res];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Res];
     }
     switch (support) {
         case Support.RallyUpRes:
@@ -939,40 +939,46 @@ function getSelfDamageDealtRateToAddSpecialDamage(skillId) {
     }
 }
 
-const TriangleAdeptDict = {};
-TriangleAdeptDict[PassiveA.AishoGekika3] = 0;
-TriangleAdeptDict[Weapon.AsahiNoKen] = 0;
-TriangleAdeptDict[Weapon.AsahiNoKenPlus] = 0;
-TriangleAdeptDict[Weapon.SoukaiNoYari] = 0;
-TriangleAdeptDict[Weapon.SoukaiNoYariPlus] = 0;
-TriangleAdeptDict[Weapon.ShinryokuNoOno] = 0;
-TriangleAdeptDict[Weapon.ShinryokuNoOnoPlus] = 0;
-TriangleAdeptDict[Weapon.WakakiMogyuNoYari] = 0;
-TriangleAdeptDict[Weapon.WakakiKurohyoNoKen] = 0;
-TriangleAdeptDict[Weapon.ShinginNoSeiken] = 0;
-TriangleAdeptDict[Weapon.YoheidanNoSenfu] = 0;
+const TRIANGLE_ADEPT_SET = new Set([
+    PassiveA.AishoGekika3,
+    Weapon.AsahiNoKen,
+    Weapon.AsahiNoKenPlus,
+    Weapon.SoukaiNoYari,
+    Weapon.SoukaiNoYariPlus,
+    Weapon.ShinryokuNoOno,
+    Weapon.ShinryokuNoOnoPlus,
+    Weapon.WakakiMogyuNoYari,
+    Weapon.WakakiKurohyoNoKen,
+    Weapon.ShinginNoSeiken,
+    Weapon.YoheidanNoSenfu,
+]);
 
-/// 相性激化3の効果を標準で発動できるすきるかどうかを判定します。
+/**
+ * 相性激化3の効果を標準で発動できるすきるかどうかを判定します。
+ */
 function isTriangleAdeptSkill(skillId) {
-    return skillId in TriangleAdeptDict;
+    return TRIANGLE_ADEPT_SET.has(skillId);
 }
 
-const EvalSpdAddDict = {};
-EvalSpdAddDict[PassiveB.BindingNecklacePlus] = 7;
-EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
-EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
-EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
-EvalSpdAddDict[PassiveB.Spurn4] = 7;
-EvalSpdAddDict[PassiveB.CloseCall4] = 7;
-EvalSpdAddDict[PassiveB.Repel4] = 7;
-EvalSpdAddDict[PassiveB.BeastSense4] = 7;
-EvalSpdAddDict[Weapon.SharpWarSword] = 10;
+const EVAL_SPD_ADD_MAP = new Map([
+    [PassiveB.BindingNecklacePlus, 7],
+    [PassiveS.HayasaNoKyosei1, 5],
+    [PassiveS.HayasaNoKyosei2, 8],
+    [PassiveS.HayasaNoKyosei3, 10],
+    [PassiveB.Spurn4, 7],
+    [PassiveB.CloseCall4, 7],
+    [PassiveB.Repel4, 7],
+    [PassiveB.BeastSense4, 7],
+    [Weapon.SharpWarSword, 10],
+]);
 
-/// 速さ比較時の速さ加算値を取得します。
+/**
+ * 速さ比較時の速さ加算値を取得します。
+ */
 function getEvalSpdAdd(unit) {
     let amount = 0;
     for (let skillId of unit.enumerateSkills()) {
-        let value = EvalSpdAddDict[skillId];
+        let value = EVAL_SPD_ADD_MAP.get(skillId);
         amount += value ? value : 0;
         let funcMap = evalSpdAddFuncMap;
         if (funcMap.has(skillId)) {
@@ -994,63 +1000,67 @@ function getEvalSpdAdd(unit) {
     return amount;
 }
 
-const EvalResAddDict = {};
-EvalResAddDict[PassiveS.MaboNoKyosei1] = 5;
-EvalResAddDict[PassiveS.MaboNoKyosei2] = 8;
-EvalResAddDict[PassiveS.MaboNoKyosei3] = 10;
+const EVAL_RES_ADD_MAP = new Map([
+    [PassiveS.MaboNoKyosei1, 5],
+    [PassiveS.MaboNoKyosei2, 8],
+    [PassiveS.MaboNoKyosei3, 10],
+]);
 
-/// 魔防比較時の速さ加算値を取得します。
+/**
+ * 魔防比較時の速さ加算値を取得します。
+ */
 function getEvalResAdd(passiveS) {
-    let value = EvalResAddDict[passiveS];
+    let value = EVAL_RES_ADD_MAP.get(passiveS);
     return value ? value : 0;
 }
 
-const WeaponTypesAddAtk2AfterTransform = {};
-WeaponTypesAddAtk2AfterTransform[Weapon.DreamHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.ArcaneNihility] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.Ravager] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.WaryRabbitFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.KeenRabbitFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.FangOfFinality] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.HeraldingHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.EnclosingClaw] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.SparklingFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.EbonPirateClaw] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.CrossbonesClaw] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.ResolvedFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.RefreshedFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.RenewedFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.RaydreamHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.BrightmareHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.NightmareHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.BrazenCatFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TaguelFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TaguelChildFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.FoxkitFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.NewBrazenCatFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.NewFoxkitFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.KarasuOuNoHashizume] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TakaouNoHashizume] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.YoukoohNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.JunaruSenekoNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.ShishiouNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TrasenshiNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.JinroMusumeNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.JinroOuNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.OkamijoouNoKiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.ShirasagiNoTsubasa] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.SeijuNoKeshinHiko] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.GroomsWings] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.SkyPirateClaw] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TwinCrestPower] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.IlluminatingHorn] = 0;
+const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
+    Weapon.DreamHorn,
+    Weapon.ArcaneNihility,
+    Weapon.Ravager,
+    Weapon.WaryRabbitFang,
+    Weapon.KeenRabbitFang,
+    Weapon.FangOfFinality,
+    Weapon.HeraldingHorn,
+    Weapon.EnclosingClaw,
+    Weapon.FieryFang,
+    Weapon.RoyalHatariFang,
+    Weapon.HornOfOpening,
+    Weapon.PolishedFang,
+    Weapon.SparklingFang,
+    Weapon.EbonPirateClaw,
+    Weapon.CrossbonesClaw,
+    Weapon.ResolvedFang,
+    Weapon.RefreshedFang,
+    Weapon.RenewedFang,
+    Weapon.RaydreamHorn,
+    Weapon.BrightmareHorn,
+    Weapon.NightmareHorn,
+    Weapon.BrazenCatFang,
+    Weapon.TaguelFang,
+    Weapon.TaguelChildFang,
+    Weapon.FoxkitFang,
+    Weapon.NewBrazenCatFang,
+    Weapon.NewFoxkitFang,
+    Weapon.KarasuOuNoHashizume,
+    Weapon.TakaouNoHashizume,
+    Weapon.YoukoohNoTsumekiba,
+    Weapon.JunaruSenekoNoTsumekiba,
+    Weapon.ShishiouNoTsumekiba,
+    Weapon.TrasenshiNoTsumekiba,
+    Weapon.JinroMusumeNoTsumekiba,
+    Weapon.JinroOuNoTsumekiba,
+    Weapon.OkamijoouNoKiba,
+    Weapon.ShirasagiNoTsubasa,
+    Weapon.SeijuNoKeshinHiko,
+    Weapon.GroomsWings,
+    Weapon.SkyPirateClaw,
+    Weapon.TwinCrestPower,
+    Weapon.IlluminatingHorn,
+]);
 
 function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
-    return weapon in WeaponTypesAddAtk2AfterTransform;
+    return WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.has(weapon);
 }
 
 /**
@@ -1067,83 +1077,82 @@ const BeastCommonSkillType = {
     Cavalry2: 6, // TODO: 次世代騎馬なのか魔器だけなのか確認する
 }
 
-const BeastCommonSkillMap =
-    new Map(
-        [
-            // 次世代歩行
-            [Weapon.HeraldingHorn, BeastCommonSkillType.Infantry2],
-            [Weapon.FieryFang, BeastCommonSkillType.Infantry2],
-            [Weapon.WildTigerFang, BeastCommonSkillType.Infantry2],
-            [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
-            [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
-            [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
-            [Weapon.IlluminatingHorn, BeastCommonSkillType.Infantry2],
+const BEAST_COMMON_SKILL_MAP = new Map([
+    // 次世代歩行
+    [Weapon.HeraldingHorn, BeastCommonSkillType.Infantry2],
+    [Weapon.FieryFang, BeastCommonSkillType.Infantry2],
+    [Weapon.WildTigerFang, BeastCommonSkillType.Infantry2],
+    [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
+    [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
+    [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
+    [Weapon.IlluminatingHorn, BeastCommonSkillType.Infantry2],
 
-            // 錬成すると次世代歩行
-            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
-            [Weapon.OkamijoouNoKiba, BeastCommonSkillType.Infantry2IfRefined],
-            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
-            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+    // 錬成すると次世代歩行
+    [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+    [Weapon.OkamijoouNoKiba, BeastCommonSkillType.Infantry2IfRefined],
+    [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+    [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
 
-            // 旧世代歩行
-            [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
-            [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
+    // 旧世代歩行
+    [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
+    [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
 
-            // 次世代騎馬
-            [Weapon.ArcaneNihility, BeastCommonSkillType.Cavalry2],
-            [Weapon.DreamHorn, BeastCommonSkillType.Cavalry2],
+    // 次世代騎馬
+    [Weapon.ArcaneNihility, BeastCommonSkillType.Cavalry2],
+    [Weapon.DreamHorn, BeastCommonSkillType.Cavalry2],
 
-            // 騎馬
-            [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],
-            [Weapon.KeenRabbitFang, BeastCommonSkillType.Cavalry],
-            [Weapon.SparklingFang, BeastCommonSkillType.Cavalry],
-            [Weapon.RefreshedFang, BeastCommonSkillType.Cavalry],
-            [Weapon.RaydreamHorn, BeastCommonSkillType.Cavalry],
-            [Weapon.BrightmareHorn, BeastCommonSkillType.Cavalry],
-            [Weapon.NightmareHorn, BeastCommonSkillType.Cavalry],
-            [Weapon.BrazenCatFang, BeastCommonSkillType.Cavalry],
-            [Weapon.NewBrazenCatFang, BeastCommonSkillType.Cavalry],
-            [Weapon.NewFoxkitFang, BeastCommonSkillType.Cavalry],
-            [Weapon.FoxkitFang, BeastCommonSkillType.Cavalry],
-            [Weapon.TaguelFang, BeastCommonSkillType.Cavalry],
-            [Weapon.TaguelChildFang, BeastCommonSkillType.Cavalry],
-            [Weapon.YoukoohNoTsumekiba, BeastCommonSkillType.Cavalry],
-            [Weapon.JunaruSenekoNoTsumekiba, BeastCommonSkillType.Cavalry],
-        ]
-    );
+    // 騎馬
+    [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],
+    [Weapon.KeenRabbitFang, BeastCommonSkillType.Cavalry],
+    [Weapon.SparklingFang, BeastCommonSkillType.Cavalry],
+    [Weapon.RefreshedFang, BeastCommonSkillType.Cavalry],
+    [Weapon.RaydreamHorn, BeastCommonSkillType.Cavalry],
+    [Weapon.BrightmareHorn, BeastCommonSkillType.Cavalry],
+    [Weapon.NightmareHorn, BeastCommonSkillType.Cavalry],
+    [Weapon.BrazenCatFang, BeastCommonSkillType.Cavalry],
+    [Weapon.NewBrazenCatFang, BeastCommonSkillType.Cavalry],
+    [Weapon.NewFoxkitFang, BeastCommonSkillType.Cavalry],
+    [Weapon.FoxkitFang, BeastCommonSkillType.Cavalry],
+    [Weapon.TaguelFang, BeastCommonSkillType.Cavalry],
+    [Weapon.TaguelChildFang, BeastCommonSkillType.Cavalry],
+    [Weapon.YoukoohNoTsumekiba, BeastCommonSkillType.Cavalry],
+    [Weapon.JunaruSenekoNoTsumekiba, BeastCommonSkillType.Cavalry],
+]);
 
-const AdvantageousAgainstColorlessWeaponTable = {};
-AdvantageousAgainstColorlessWeaponTable[Weapon.EtherealBreath] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.KinsekiNoSyo] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.GunshiNoRaisyo] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.KokukarasuNoSyo] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.GunshiNoFusho] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.Blarraven] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.BlarravenPlus] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.Gronnraven] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.GronnravenPlus] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.Rauarraven] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.RauarravenPlus] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.YukyuNoSyo] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.Nagurufaru] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.TomeOfOrder] = 0;
+const ADVANTAGEOUS_AGAINST_COLORLESS_WEAPON_SET = new Set([
+    Weapon.EtherealBreath,
+    Weapon.KinsekiNoSyo,
+    Weapon.GunshiNoRaisyo,
+    Weapon.KokukarasuNoSyo,
+    Weapon.GunshiNoFusho,
+    Weapon.Blarraven,
+    Weapon.BlarravenPlus,
+    Weapon.Gronnraven,
+    Weapon.GronnravenPlus,
+    Weapon.Rauarraven,
+    Weapon.RauarravenPlus,
+    Weapon.YukyuNoSyo,
+    Weapon.Nagurufaru,
+    Weapon.TomeOfOrder,
+]);
 
 function isAdvantageousForColorless(weapon) {
-    return weapon in AdvantageousAgainstColorlessWeaponTable;
+    return ADVANTAGEOUS_AGAINST_COLORLESS_WEAPON_SET.has(weapon);
 }
 
-const BreakerSkillToTargetWeaponTypeTable = {};
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Swordbreaker3] = WeaponType.Sword;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Lancebreaker3] = WeaponType.Lance;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Axebreaker3] = WeaponType.Axe;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Bowbreaker3] = WeaponType.ColorlessBow;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Daggerbreaker3] = WeaponType.ColorlessDagger;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.RedTomebreaker3] = WeaponType.RedTome;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.BlueTomebreaker3] = WeaponType.BlueTome;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.GreenTomebreaker3] = WeaponType.GreenTome;
+const BREAKER_SKILL_TO_TARGET_WEAPON_TYPE_MAP = new Map([
+    [PassiveB.Swordbreaker3, WeaponType.Sword],
+    [PassiveB.Lancebreaker3, WeaponType.Lance],
+    [PassiveB.Axebreaker3, WeaponType.Axe],
+    [PassiveB.Bowbreaker3, WeaponType.ColorlessBow],
+    [PassiveB.Daggerbreaker3, WeaponType.ColorlessDagger],
+    [PassiveB.RedTomebreaker3, WeaponType.RedTome],
+    [PassiveB.BlueTomebreaker3, WeaponType.BlueTome],
+    [PassiveB.GreenTomebreaker3, WeaponType.GreenTome],
+]);
 
 function getBreakerSkillTargetWeaponType(breakerSkillId) {
-    return BreakerSkillToTargetWeaponTypeTable[breakerSkillId];
+    return BREAKER_SKILL_TO_TARGET_WEAPON_TYPE_MAP.get(breakerSkillId);
 }
 
 /**
@@ -1156,17 +1165,17 @@ function __createValueDict(sourceDict) {
     return valueDict;
 }
 
-const WeaponValueDict = __createValueDict(Weapon);
-const SupportValueDict = __createValueDict(Support);
-const SpecialValueDict = __createValueDict(Special);
-const PassiveAValueDict = __createValueDict(PassiveA);
-const PassiveBValueDict = __createValueDict(PassiveB);
-const PassiveCValueDict = __createValueDict(PassiveC);
-const PassiveSValueDict = __createValueDict(PassiveS);
-const PassiveXValueDict = __createValueDict(PassiveX);
-const CaptainValueDict = __createValueDict(Captain);
+const WEAPON_VALUE_DICT = __createValueDict(Weapon);
+const SUPPORT_VALUE_DICT = __createValueDict(Support);
+const SPECIAL_VALUE_DICT = __createValueDict(Special);
+const PASSIVE_A_VALUE_DICT = __createValueDict(PassiveA);
+const PASSIVE_B_VALUE_DICT = __createValueDict(PassiveB);
+const PASSIVE_C_VALUE_DICT = __createValueDict(PassiveC);
+const PASSIVE_S_VALUE_DICT = __createValueDict(PassiveS);
+const PASSIVE_X_VALUE_DICT = __createValueDict(PassiveX);
+const CAPTAIN_VALUE_DICT = __createValueDict(Captain);
 
-const SaveSkills = new Set([
+const SAVE_SKILLS_SET = new Set([
     PassiveC.WoefulUpheaval,
     PassiveC.WithEveryone2,
     PassiveC.AsFarSave3,
@@ -1179,7 +1188,9 @@ const SaveSkills = new Set([
     PassiveC.DrNearSave3,
 ]);
 
-/// スキル情報です。ユニットの初期化等に使用します。
+/**
+ * スキル情報です。ユニットの初期化等に使用します。
+ */
 class SkillInfo {
     /**
      * @param  {String} id
@@ -1319,23 +1330,23 @@ class SkillInfo {
         }
         switch (this.type) {
             case SkillType.Weapon:
-                return this.id in WeaponValueDict;
+                return this.id in WEAPON_VALUE_DICT;
             case SkillType.Support:
-                return this.id in SupportValueDict;
+                return this.id in SUPPORT_VALUE_DICT;
             case SkillType.Special:
-                return this.id in SpecialValueDict;
+                return this.id in SPECIAL_VALUE_DICT;
             case SkillType.PassiveA:
-                return this.id in PassiveAValueDict;
+                return this.id in PASSIVE_A_VALUE_DICT;
             case SkillType.PassiveB:
-                return this.id in PassiveBValueDict;
+                return this.id in PASSIVE_B_VALUE_DICT;
             case SkillType.PassiveC:
-                return this.id in PassiveCValueDict;
+                return this.id in PASSIVE_C_VALUE_DICT;
             case SkillType.PassiveS:
-                return this.id in PassiveSValueDict;
+                return this.id in PASSIVE_S_VALUE_DICT;
             case SkillType.PassiveX:
-                return this.id in PassiveXValueDict;
+                return this.id in PASSIVE_X_VALUE_DICT;
             case SkillType.Captain:
-                return this.id in CaptainValueDict;
+                return this.id in CAPTAIN_VALUE_DICT;
             default:
                 throw new Error("Invalid skill type");
         }
@@ -1375,27 +1386,24 @@ class SkillInfo {
     }
 }
 
-const count2Specials = [];
-const inheritableCount2Specials = [];
-const count3Specials = [];
-const inheritableCount3Specials = [];
-const count4Specials = [];
-const inheritableCount4Specials = [];
+const COUNT2_SPECIALS = [];
+const INHERITABLE_COUNT2_SPECIALS = [];
+const COUNT3_SPECIALS = [];
+const INHERITABLE_COUNT3_SPECIALS = [];
+const COUNT4_SPECIALS = [];
+const INHERITABLE_COUNT4_SPECIALS = [];
 
 // 補助時に奥義発動カウントを進めないスキル
-const noEffectOnSpecialCooldownChargeOnSupportSkillSet = new Set();
-{
-    let skills = [
-        Support.RescuePlus, Support.Rescue,
-        Support.ReturnPlus, Support.Return,
-        Support.NudgePlus, Support.Nudge,
-    ];
-    for (let skill of skills) {
-        noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skill);
-    }
-}
+const NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET = new Set([
+    Support.RescuePlus,
+    Support.Rescue,
+    Support.ReturnPlus,
+    Support.Return,
+    Support.NudgePlus,
+    Support.Nudge,
+]);
 
-const StatusIndex = {
+const STATUS_INDEX = {
     Atk: 0,
     Spd: 1,
     Def: 2,

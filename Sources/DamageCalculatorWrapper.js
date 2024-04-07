@@ -2156,7 +2156,7 @@ class DamageCalculatorWrapper {
 
     __applyTransformedSkillEffects(atkUnit, defUnit) {
         if (atkUnit.isTransformed) {
-            switch (BeastCommonSkillMap.get(atkUnit.weapon)) {
+            switch (BEAST_COMMON_SKILL_MAP.get(atkUnit.weapon)) {
                 case BeastCommonSkillType.Cavalry:
                     if (!atkUnit.isWeaponRefined) {
                         // <通常効果>
@@ -9875,7 +9875,7 @@ class DamageCalculatorWrapper {
     __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
         {
             let damage = 0;
-            switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
+            switch (BEAST_COMMON_SKILL_MAP.get(targetUnit.weapon)) {
                 case BeastCommonSkillType.Infantry2:
                     damage = 7;
                     break;
@@ -12012,12 +12012,12 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.FairFightBlade:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def, 0.25);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def, 0.25);
                         }
                         break;
                     case Weapon.RadiantAureola:
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Res);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Res);
                         }
                         break;
                     case Weapon.BaraNoYari:
@@ -12091,7 +12091,7 @@ class DamageCalculatorWrapper {
                     case Weapon.KouketsuNoSensou:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                                this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Atk);
+                                this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Atk);
                             }
                         }
                         break;
@@ -12139,7 +12139,7 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.DreamingSpear:
                         if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Res);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Res);
                         }
                         break;
                     case Weapon.BouryakuNoSenkyu:
@@ -12180,12 +12180,12 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.PastelPoleaxe:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def);
                         }
                         break;
                     case Weapon.IlluminatingHorn:
                         if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def);
                         }
                         break;
                     case Weapon.Tangurisuni:
@@ -12286,7 +12286,7 @@ class DamageCalculatorWrapper {
                     case Weapon.MoonGradivus:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                                this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def);
+                                this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def);
                             }
                         }
                         break;
@@ -14935,7 +14935,7 @@ class DamageCalculatorWrapper {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         // 獣の共通武器スキル
-        switch (BeastCommonSkillMap.get(targetUnit.weapon)) {
+        switch (BEAST_COMMON_SKILL_MAP.get(targetUnit.weapon)) {
             case Weapon.TeatimesEdge:
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     enemyUnit.battleContext.reducesCooldownCount = false;

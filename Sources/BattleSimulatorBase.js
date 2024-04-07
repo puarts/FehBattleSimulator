@@ -9219,7 +9219,7 @@ class BattleSimulatorBase {
                 // 奥義カウントを進める
                 let reduceAmount = 1;
                 for (let skillId of supporterUnit.enumerateSkills()) {
-                    if (noEffectOnSpecialCooldownChargeOnSupportSkillSet.has(skillId)) {
+                    if (NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.has(skillId)) {
                         reduceAmount = 0;
                         break;
                     }
