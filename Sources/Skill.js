@@ -1393,7 +1393,9 @@ const INHERITABLE_COUNT3_SPECIALS = [];
 const COUNT4_SPECIALS = [];
 const INHERITABLE_COUNT4_SPECIALS = [];
 
-// 補助時に奥義発動カウントを進めないスキル
+/**
+ * 補助時に奥義発動カウントを進めないスキル
+ */
 const NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET = new Set([
     Support.RescuePlus,
     Support.Rescue,

@@ -683,6 +683,8 @@
 // 星竜のブレス
 {
     let skillId = Weapon.AstralBreath;
+    // 速さ+3
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
     TELEPORTATION_SKILL_SET.add(skillId);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
@@ -691,6 +693,23 @@
                 // <通常効果>
             } else {
                 // <錬成効果>
+                // ターン開始時、周囲3マス以内に自分と支援を結んでいる相手がいる時、自分と、周囲3マス以内の支援相手の速さ、守備、魔防+6、【回避】を付与(1ターン)
+                let applySkill = u => {
+                    u.reserveToApplyBuffs(0, 6, 6, 7);
+                    u.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                }
+                let found = false;
+                /** @type {Generator<Unit>} */
+                let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3);
+                for (let ally of allies) {
+                    if (ally.isPartner(skillOwner)) {
+                        found = true;
+                        applySkill(ally);
+                    }
+                }
+                if (found) {
+                    applySkill(skillOwner);
+                }
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
                 }
@@ -706,8 +725,32 @@
                 }
             } else {
                 // <錬成効果>
+                // 周囲3マス以内に味方がいる時、戦闘中、自身の攻撃、速さ、守備、魔防+5、戦闘後、7回復
+                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                    targetUnit.addAllSpur(5);
+                    targetUnit.battleContext.healedHpAfterCombat += 7;
+                }
                 if (targetUnit.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
+                    // 戦闘開始時、自身のHPが25%以上なら、
+                    if (targetUnit.battleContext.restHpPercentage >= 25) {
+                        // 戦闘中、攻撃、速さ、守備、魔防+4、
+                        targetUnit.addAllSpur(4);
+                        // さらに、攻撃、速さ、守備、魔防が増加、
+                        // 増加値は、攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離(最大4)、
+                        let amount = MathUtil.ensureMax(targetUnit.distance(enemyUnit), 4);
+                        targetUnit.addAllSpur(amount);
+                        // ダメージ+○、○は、自分と周囲2マス以内にいる味方のうち強化の合計値が最も高い値(範囲奥義を除く)、
+                        let buffSum =
+                            targetUnit.getBuffsInCombat(enemyUnit).reduce((p, c) => p + c);
+                        let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                        let getBuffSum = u => u.getBuffs().reduce((p, c) => p + c);
+                        let maxBuffSum = IterUtil.maxValue(allies, getBuffSum, buffSum);
+                        targetUnit.battleContext.additionalDamage += maxBuffSum;
+                        // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    }
                 }
             }
         }
@@ -718,6 +761,13 @@
                 for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
                     if (ally.isPartner(unit)) {
                         yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
+                    }
+                }
+            } else {
+                // 自分と支援を結んでいる相手の周囲2マス以内のマスに移動可能
+                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                    if (ally.isPartner(unit)) {
+                        yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
                     }
                 }
             }
