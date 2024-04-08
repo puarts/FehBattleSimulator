@@ -1789,6 +1789,11 @@ class DamageCalculator {
         return unit.battleContext.canActivateNonSpecialMiracleAndHeal;
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {number} healedHp
+     * @param {Unit} enemyUnit
+     */
     __heal(unit, healedHp, enemyUnit) {
         if (enemyUnit.battleContext.invalidatesHeal || unit.hasStatusEffect(StatusEffectType.DeepWounds)) {
             healedHp = Math.trunc(healedHp * unit.battleContext.nullInvalidatesHealRatio);

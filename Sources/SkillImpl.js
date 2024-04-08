@@ -7559,7 +7559,7 @@
     let skillId = Special.Flare;
     applySkillEffectsPerCombatFuncMap.set(skillId,
         function (targetUnit, enemyUnit, context) {
-            if (targetUnit.battleContext.restHpPercentage >= 70) {
+            if (targetUnit.restHpPercentage >= 70) {
                 let res = enemyUnit.getResInCombat(targetUnit);
                 targetUnit.battleContext.addSpecialAddDamage(Math.trunc(res * 0.6));
             } else {

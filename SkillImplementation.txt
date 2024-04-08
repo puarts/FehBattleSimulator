@@ -217,6 +217,13 @@ enemyUnit.battleContext.restHpPercentage >= N
 ターン開始時、自身のHPがN%以上なら
 skillOwner.restHpPercentageAtBeginningOfTurn >= N
 
+[戦闘中のHP]
+targetUnit.restHp
+targetUnit.restHpPercentage
+// targetUnit.battleContext.restHp
+// targetUnit.battleContext.restHpPercentage
+// ではない
+
 速さの差を比較するスキルの比較判定時、自身の速さ+Nとして判定[虚勢]
 evalSpdAddFuncMap.set(skillId, function (unit) {
     return 7;
