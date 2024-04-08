@@ -188,7 +188,7 @@
             if (targetUnit.battleContext.initiatesCombat ||
                 this.__isThereAllyIn2Spaces(targetUnit)) {
                 // - 戦闘中、攻撃、速さ、守備、魔防が16一敵の奥義発動カウントの最大値x2だけ増加（最低8、敵が奥義を装備していない時も8）、
-                let amount = MathUtil.ensureMin(16 - targetUnit.maxSpecialCount * 2, 8);
+                let amount = MathUtil.ensureMin(16 - enemyUnit.maxSpecialCount * 2, 8);
                 if (enemyUnit.special === Special.None) {
                     amount = 8;
                 }
