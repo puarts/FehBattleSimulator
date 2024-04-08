@@ -3109,7 +3109,7 @@
         return g_appData.currentTurn <= 4;
     });
     calcMoveCountForCantoFuncMap.set(skillId, function () {
-        return 3;
+        return g_appData.currentTurn <= 4 ? 3 : 0;
     });
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
