@@ -349,15 +349,7 @@ class PostCombatSkillHander {
             }
         }
         for (let skillId of targetUnit.enumerateSkills()) {
-            let funcMap = applySkillEffectAfterCombatForUnitFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, targetUnit, enemyUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            getSkillFunc(skillId, applySkillEffectAfterCombatForUnitFuncMap)?.call(this, targetUnit, enemyUnit);
             switch (skillId) {
                 case Weapon.FathersSonAxe:
                     if (targetUnit.isWeaponSpecialRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {

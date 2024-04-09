@@ -1430,10 +1430,10 @@ const STATUS_INDEX = {
 // TODO: ここから下の内容を別ファイルに分ける
 
 /**
- * @template F
+ * @template {F | undefined} F
  * @param {number|string} skillId
  * @param {Map<number|string, F>} funcMap
- * @returns {F|undefined}
+ * @returns {F}
  */
 function getSkillFunc(skillId, funcMap) {
     // 錬成先が登録されている
@@ -1459,7 +1459,9 @@ function getSkillFunc(skillId, funcMap) {
 const applySpecialDamageReductionPerAttackFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectForUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, unit: Unit) => boolean>} */
 const canActivateCantoFuncMap = new Map();
+/** @type {Map<number|string, (this: Unit) => number>} */
 const calcMoveCountForCantoFuncMap = new Map();
 const evalSpdAddFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, defUnit: Unit, atkUnit: Unit) => void>} */

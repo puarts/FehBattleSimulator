@@ -2322,15 +2322,7 @@ class DamageCalculatorWrapper {
             if (skillFunc) {
                 skillFunc(targetUnit, enemyUnit, calcPotentialDamage);
             }
-            let funcMap = applySkillEffectForUnitFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, targetUnit, enemyUnit, calcPotentialDamage);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            getSkillFunc(skillId, applySkillEffectForUnitFuncMap)?.call(this, targetUnit, enemyUnit, calcPotentialDamage);
         }
     }
 
@@ -9872,19 +9864,26 @@ class DamageCalculatorWrapper {
         return total;
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} isPrecombat
+     */
     __calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
         {
             let damage = 0;
-            switch (BEAST_COMMON_SKILL_MAP.get(targetUnit.weapon)) {
-                case BeastCommonSkillType.Infantry2:
-                    damage = 7;
-                    break;
-                case BeastCommonSkillType.Infantry:
-                    damage = 10;
-                    break;
-                case BeastCommonSkillType.Infantry2IfRefined:
-                    damage = targetUnit.isWeaponRefined ? 7 : 10;
-                    break;
+            for (let skillId of targetUnit.enumerateWeaponSkills()) {
+                switch (BEAST_COMMON_SKILL_MAP.get(skillId)) {
+                    case BeastCommonSkillType.Infantry2:
+                        damage = 7;
+                        break;
+                    case BeastCommonSkillType.Infantry:
+                        damage = 10;
+                        break;
+                    case BeastCommonSkillType.Infantry2IfRefined:
+                        damage = targetUnit.isWeaponRefined ? 7 : 10;
+                        break;
+                }
             }
             if (targetUnit.isTransformed) {
                 targetUnit.battleContext.additionalDamageOfSpecial += damage;

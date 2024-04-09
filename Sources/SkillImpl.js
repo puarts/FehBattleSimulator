@@ -523,6 +523,80 @@
     );
 }
 
+// 狼花嫁の牙 特殊錬成
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.BridesFang);
+    // HP+3
+    // 化身時、【再移動(残り+1)】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return unit.isTransformed;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // 再移動残り+1
+        return this.restMoveCount + 1;
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、化身状態になる条件を満たしていれば、自分に「自分が移動可能な地形を平地のように移動可能」、「移動+1」(重複しない)を付与(1ターン)
+            if (skillOwner.isTransformed) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら戦闘中、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 敵の攻撃、速さ、守備-4、
+                enemyUnit.addSpursWithoutRes(-4);
+                // 自身の奥義発動時、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(範囲奥義を除く)、
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                // 戦闘後、自分は、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+// 狼花嫁の牙 錬成
+{
+    let skillId = getRefinementSkillId(Weapon.BridesFang);
+    // 奥義が発動しやすい(発動カウント-1)
+    // ターン開始時、竜、獣以外の味方と隣接していない場合化身状態になる(そうでない場合、化身状態を解除)
+    // 化身状態なら、攻撃+2、かつ奥義発動時、奥義によるダメージ+7、戦闘中、敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry2);
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、奥義発動カウント-1
+            skillOwner.reserveToReduceSpecialCount(1);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、敵の攻撃、速さ、守備-5、
+                enemyUnit.addSpursWithoutRes(-5);
+                // 自分が最初に受けた攻撃と2回攻撃のダメージを40%軽減、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 戦闘(または戦闘前)で奥義を発動した場合、戦闘後、奥義発動カウント-2
+            if (targetUnit.battleContext.isSpecialActivated) {
+                targetUnit.specialCount -= 2;
+            }
+        }
+    );
+}
+
 // 狼花嫁の牙
 {
     let skillId = Weapon.BridesFang;

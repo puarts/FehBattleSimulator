@@ -701,10 +701,14 @@ NormalAttackSpecialDict か DefenseSpecialDict を選択
 __init__applySpecialSkillEffect() {}
 
 戦闘後、奥義発動カウント-N
-__applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
-  targetUnit.specialCount -= N;
-}
-
+applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
+    function (attackUnit, attackTargetUnit) {
+        // 奥義をは発動した場合
+        if (attackUnit.battleContext.isSpecialActivated) {
+            attackUnit.specialCount -= N;
+        }
+    }
+);
 
 戦闘後、敵の周囲2マスの敵に7ダメージ[死の吐息]
 __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {

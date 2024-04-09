@@ -187,15 +187,7 @@ class BeginningOfTurnSkillHandler {
         // ターン開始スキル不可である場合は処理を終える
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
-        let funcMap = applySkillForBeginningOfTurnFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                func.call(this, skillOwner);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        getSkillFunc(skillId, applySkillForBeginningOfTurnFuncMap)?.call(this, skillOwner);
         switch (skillId) {
             case Weapon.PaydayPouch: {
                 let count = this.__countAlliesWithinSpecifiedSpaces(skillOwner, 2);

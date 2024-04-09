@@ -6723,16 +6723,8 @@ class BattleSimulatorBase {
 
         // スキル毎の追加条件
         for (let skillId of unit.enumerateSkills()) {
-            let funcMap = canActivateCantoFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    if (func.call(this, unit)) {
-                        return true;
-                    }
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
+            if (getSkillFunc(skillId, canActivateCantoFuncMap)?.call(this, unit)) {
+                return true;
             }
             switch (skillId) {
                 case Weapon.PaydayPouch: // 再移動条件
