@@ -133,13 +133,12 @@
     // - 戦闘中、自分の最初の攻撃前に自分の奥義発動カウント＋1（奥義発動カウントの最大値は超えない）
     // - さらに、自分の奥義発動カウントの最大値が本来より減少している時（奥義が発動しやすい時）、かつ敵が攻撃時に発動する奥義を装備している時、
     // - 戦闘中、自分の最初の攻撃前に敵の奥義発動カウントー1
-    /** @type {(this: BattleSimulatorBase, skillOwner: Unit, ally: Unit) => void} */
-    let func = function (skillOwner, ally) {
+    /** @type {(this: BattleSimulatorBase, skillOwner: Unit) => void} */
+    let func = function (skillOwner) {
         skillOwner.reduceSpecialCount(1);
         let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
         for (let enemy of enemies) {
-            if (enemy.isInCrossWithOffset(skillOwner, 1) ||
-                enemy.isInCrossWithOffset(ally, 1)) {
+            if (enemy.isInCrossWithOffset(skillOwner, 1)) {
                 enemy.addStatusEffect(StatusEffectType.HushSpectrum);
             }
         }
@@ -147,13 +146,13 @@
     // 使用した時
     applySkillsAfterRallyForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit) {
-            func.call(this, supporterUnit, targetUnit);
+            func.call(this, supporterUnit);
         }
     );
     // 使用された時
     applySkillsAfterRallyForTargetUnitFuncMap.set(skillId,
         function (supporterUnit, targetUnit) {
-            func.call(this, targetUnit, supporterUnit);
+            func.call(this, targetUnit);
         }
     );
     applyMovementAssistSkillFuncMap.set(skillId,
@@ -163,23 +162,26 @@
     );
     // 応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、または、行動済みの自分に使用された時、
     // - 自分を行動可能にする（1ターンに1回のみ）
-    let actionFunc = skillOwner => {
+
+    /** @type {(this: BattleSimulatorBase, owner: Unit) => void} */
+    let actionFunc = function(skillOwner) {
         if (!skillOwner.isActionDone) {
             return;
         }
         if (!skillOwner.isOneTimeActionActivatedForWeapon) {
             skillOwner.isOneTimeActionActivatedForWeapon = true;
+            this.writeDebugLogLine(`${DebugUtil.getSkillName(skillOwner, skillOwner.weaponInfo)}により${skillOwner.nameWithGroup}は再行動`);
             skillOwner.isActionDone = false;
         }
     };
     applySupportSkillForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
-            actionFunc(supporterUnit);
+            actionFunc.call(this, supporterUnit);
         }
     );
     applySupportSkillForTargetUnitFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
-            actionFunc(targetUnit);
+            actionFunc.call(this, targetUnit);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
