@@ -5378,7 +5378,7 @@ class Unit extends BattleMapElement {
      * キラー効果などで奥義カウントの最大値が減らされているかどうか
      */
     isReducedMaxSpecialCount() {
-        return this.maxSpecialCount < this.specialInfo.specialCount;
+        return this.maxSpecialCount < this.specialInfo?.specialCount ?? 0;
     }
 
     hasNormalAttackSpecial() {
