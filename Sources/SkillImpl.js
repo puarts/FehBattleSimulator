@@ -509,34 +509,14 @@
 // ハデスΩ
 {
     let skillId = Weapon.HadesuOmega;
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
-        }
-    );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (targetUnit.battleContext.initiatesCombat) {
-                    targetUnit.addAtkSpdSpurs(4);
-                    if (targetUnit.hasSpecial &&
-                        targetUnit.statusEvalUnit.specialCount === 0) {
-                        targetUnit.atkSpur += 6;
-                    }
-                }
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
+            // <通常効果>
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addAtkSpdSpurs(4);
+                if (targetUnit.hasSpecial &&
+                    targetUnit.statusEvalUnit.specialCount === 0) {
+                    targetUnit.atkSpur += 6;
                 }
             }
         }
@@ -548,40 +528,18 @@
     let skillId = Weapon.BridesFang;
     WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
     BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry);
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
-        }
-    );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                    enemyUnit.addSpursWithoutRes(-5);
-                }
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // <通常効果>
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addSpursWithoutRes(-5);
             }
         }
     );
     applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit) {
-            if (!attackUnit.weaponRefinement) {
-                if (attackUnit.battleContext.isSpecialActivated) {
-                    attackUnit.specialCount -= 1;
-                }
+            if (attackUnit.battleContext.isSpecialActivated) {
+                attackUnit.specialCount -= 1;
             }
         }
     );
@@ -592,66 +550,66 @@
     let skillId = Weapon.DanielMadeBow;
     updateUnitSpurFromAlliesFuncMap.set(skillId,
         function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // 周囲2マス以内
-                if (targetUnit.distance(allyUnit) <= 2) {
-                    targetUnit.atkSpur += 5;
-                }
+            // 周囲2マス以内
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.atkSpur += 5;
             }
         }
     );
     updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             // enemyAllyUnitからのスキルなので錬成判定に注意
-            if (!enemyAllyUnit.isWeaponRefined) {
-                // <通常効果>
-                if (targetUnit.distance(enemyAllyUnit) <= 2) {
-                    targetUnit.atkSpur -= 5;
-                }
-            } else {
-                // <錬成効果>
-                if (enemyAllyUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
-        }
-    );
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
-        }
-    );
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // <通常効果>
+            if (targetUnit.distance(enemyAllyUnit) <= 2) {
+                targetUnit.atkSpur -= 5;
             }
         }
     );
 }
 
-// 暗黒の聖書
+// 暗黒の聖書(特殊錬成)
 {
-    let skillId = Weapon.DarkScripture;
+    let skillId = getSpecialRefinementSkillId(Weapon.DarkScripture);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <特殊錬成効果>
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、敵の攻撃、速さ、魔防-4、
+                enemyUnit.addSpursWithoutDef(-4);
+                // 敵は追撃不可、
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                // 自分が与えるダメージ+魔防の20%(範囲奥義を除く)、
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
+                });
+                // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    // 魔防参照
+                    return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                });
+            }
+        }
+    );
+    // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+}
+
+// 暗黒の聖書(錬成)
+{
+    let skillId = getRefinementSkillId(Weapon.DarkScripture);
     // 攻撃+3
-    /** @type {(this: BeginningOfTurnSkillHandler, skillOwner: Unit) => void} */
     // 自軍ターン開始時、および、敵軍ターン開始時、
     // 自分を中心とした縦3列と横3列にいる魔防が「自分の魔防+5」より低い敵の攻撃、魔防-7、
     // 【混乱】、【回復不可】、「奥義以外の「敵の致死攻撃を受けた時、ダメージをHPが1残るように軽減」する効果を無効」を付与(敵の次回行動終了時まで)
-    let applySkill = function(skillOwner) {
+    /** @type {(this: BeginningOfTurnSkillHandler, skillOwner: Unit) => void} */
+    let applySkill = function (skillOwner) {
         /** @type {Generator<Unit>} */
         let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
         for (let enemy of enemies) {
@@ -667,74 +625,119 @@
     }
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                applySkill.call(this, skillOwner);
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
+            applySkill.call(this, skillOwner);
         }
     );
     applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-            if (skillOwner.isWeaponRefined) {
-                applySkill.call(this, skillOwner);
+            applySkill.call(this, skillOwner);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <錬成効果>
+            // 敵から攻撃された時、または、周囲1マス以内に味方がいない時、
+            if (enemyUnit.battleContext.initiatesCombat ||
+                !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                // 戦闘中、敵の攻撃、魔防-6、速さ-4、
+                enemyUnit.addSpurs(-6, -4, 0, -6);
+                // 自分は絶対追撃
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+}
+
+// 暗黒の聖書
+{
+    let skillId = Weapon.DarkScripture;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <通常効果>
+            if (calcPotentialDamage ||
+                !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                enemyUnit.addAtkResSpurs(-6);
+            }
+            if (!enemyUnit.hasEffective(EffectiveType.Dragon)) {
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+}
+
+// 星竜のブレス(特殊錬成)
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.AstralBreath);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <特殊錬成効果>
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // さらに、攻撃、速さ、守備、魔防が増加、
+                // 増加値は、攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離(最大4)、
+                let amount = MathUtil.ensureMax(targetUnit.distance(enemyUnit), 4);
+                targetUnit.addAllSpur(amount);
+                // ダメージ+○、○は、自分と周囲2マス以内にいる味方のうち強化の合計値が最も高い値(範囲奥義を除く)、
+                let buffSum =
+                    targetUnit.getBuffsInCombat(enemyUnit).reduce((p, c) => p + c);
+                let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                let getBuffSum = u => u.getBuffs().reduce((p, c) => p + c);
+                let maxBuffSum = IterUtil.maxValue(allies, getBuffSum, buffSum);
+                targetUnit.battleContext.additionalDamage += maxBuffSum;
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+    );
+}
+
+// 星竜のブレス(錬成)
+{
+    let skillId = getRefinementSkillId(Weapon.AstralBreath);
+    TELEPORTATION_SKILL_SET.add(skillId);
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // <錬成効果>
+            // ターン開始時、周囲3マス以内に自分と支援を結んでいる相手がいる時、自分と、周囲3マス以内の支援相手の速さ、守備、魔防+6、【回避】を付与(1ターン)
+            let applySkill = u => {
+                u.reserveToApplyBuffs(0, 6, 6, 7);
+                u.reserveToAddStatusEffect(StatusEffectType.Dodge);
+            }
+            let found = false;
+            /** @type {Generator<Unit>} */
+            let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3);
+            for (let ally of allies) {
+                if (ally.isPartner(skillOwner)) {
+                    found = true;
+                    applySkill(ally);
+                }
+            }
+            if (found) {
+                applySkill(skillOwner);
             }
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (calcPotentialDamage ||
-                    !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                    enemyUnit.addAtkResSpurs(-6);
-                }
-                if (!enemyUnit.hasEffective(EffectiveType.Dragon)) {
-                    targetUnit.battleContext.followupAttackPriorityIncrement++;
-                }
-            } else {
-                // <錬成効果>
-                // 敵から攻撃された時、または、周囲1マス以内に味方がいない時、
-                if (enemyUnit.battleContext.initiatesCombat ||
-                    !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                    // 戦闘中、敵の攻撃、魔防-6、速さ-4、
-                    enemyUnit.addSpurs(-6, -4, 0, -6);
-                    // 自分は絶対追撃
-                    targetUnit.battleContext.followupAttackPriorityIncrement++;
-                }
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                    // 戦闘開始時、自身のHPが25%以上なら、
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        // 戦闘中、敵の攻撃、速さ、魔防-4、
-                        enemyUnit.addSpursWithoutDef(-4);
-                        // 敵は追撃不可、
-                        enemyUnit.battleContext.followupAttackPriorityDecrement--;
-                        // 自分が与えるダメージ+魔防の20%(範囲奥義を除く)、
-                        targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                            if (isPrecombat) return;
-                            this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
-                        });
-                        // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
-                        targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
-                            // 魔防参照
-                            return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
-                        });
-                    }
-                }
+            // <錬成効果>
+            // 周囲3マス以内に味方がいる時、戦闘中、自身の攻撃、速さ、守備、魔防+5、戦闘後、7回復
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
             }
         }
     );
-    // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
-    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
-        function (defUnit, atkUnit) {
-            if (defUnit.isWeaponSpecialRefined) {
-                let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function* (unit) {
+            // 自分と支援を結んでいる相手の周囲2マス以内のマスに移動可能
+            for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                if (ally.isPartner(unit)) {
+                    yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
+                }
             }
         }
     );
@@ -746,89 +749,19 @@
     // 速さ+3
     // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
     TELEPORTATION_SKILL_SET.add(skillId);
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                // ターン開始時、周囲3マス以内に自分と支援を結んでいる相手がいる時、自分と、周囲3マス以内の支援相手の速さ、守備、魔防+6、【回避】を付与(1ターン)
-                let applySkill = u => {
-                    u.reserveToApplyBuffs(0, 6, 6, 7);
-                    u.reserveToAddStatusEffect(StatusEffectType.Dodge);
-                }
-                let found = false;
-                /** @type {Generator<Unit>} */
-                let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3);
-                for (let ally of allies) {
-                    if (ally.isPartner(skillOwner)) {
-                        found = true;
-                        applySkill(ally);
-                    }
-                }
-                if (found) {
-                    applySkill(skillOwner);
-                }
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
-        }
-    );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (!calcPotentialDamage && this.__isTherePartnerInSpace3(targetUnit)) {
-                    targetUnit.addAllSpur(5);
-                }
-            } else {
-                // <錬成効果>
-                // 周囲3マス以内に味方がいる時、戦闘中、自身の攻撃、速さ、守備、魔防+5、戦闘後、7回復
-                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                    targetUnit.addAllSpur(5);
-                    targetUnit.battleContext.healedHpAfterCombat += 7;
-                }
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                    // 戦闘開始時、自身のHPが25%以上なら、
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        // 戦闘中、攻撃、速さ、守備、魔防+4、
-                        targetUnit.addAllSpur(4);
-                        // さらに、攻撃、速さ、守備、魔防が増加、
-                        // 増加値は、攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離(最大4)、
-                        let amount = MathUtil.ensureMax(targetUnit.distance(enemyUnit), 4);
-                        targetUnit.addAllSpur(amount);
-                        // ダメージ+○、○は、自分と周囲2マス以内にいる味方のうち強化の合計値が最も高い値(範囲奥義を除く)、
-                        let buffSum =
-                            targetUnit.getBuffsInCombat(enemyUnit).reduce((p, c) => p + c);
-                        let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
-                        let getBuffSum = u => u.getBuffs().reduce((p, c) => p + c);
-                        let maxBuffSum = IterUtil.maxValue(allies, getBuffSum, buffSum);
-                        targetUnit.battleContext.additionalDamage += maxBuffSum;
-                        // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
-                        targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                        targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                    }
-                }
+            // <通常効果>
+            if (!calcPotentialDamage && this.__isTherePartnerInSpace3(targetUnit)) {
+                targetUnit.addAllSpur(5);
             }
         }
     );
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function* (unit) {
-            if (!unit.isWeaponRefined) {
-                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                    if (ally.isPartner(unit)) {
-                        yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
-                    }
-                }
-            } else {
-                // 自分と支援を結んでいる相手の周囲2マス以内のマスに移動可能
-                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                    if (ally.isPartner(unit)) {
-                        yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
-                    }
+            for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                if (ally.isPartner(unit)) {
+                    yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
                 }
             }
         }
