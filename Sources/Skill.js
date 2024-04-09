@@ -92,11 +92,26 @@ function weaponRefinementTypeToString(type) {
 /**
  * スキルIDが被らないようにする
  * @param {number} emblemHeroIndex
- * @returns {number}
+ * @returns {string}
  */
 function getEmblemHeroSkillId(emblemHeroIndex) {
-    // TODO: 定数として切り出す
-    return 1_000_000 + emblemHeroIndex;
+    return `e_${emblemHeroIndex}`;
+}
+
+/**
+ * @param {number|string} id
+ * @returns {string}
+ */
+function getRefinementSkillId(id) {
+    return `r_${id}`;
+}
+
+/**
+ * @param {number|string} id
+ * @returns {string}
+ */
+function getSpecialRefinementSkillId(id) {
+    return `sr_${id}`;
 }
 
 const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
@@ -1413,6 +1428,31 @@ const STATUS_INDEX = {
 }
 
 // TODO: ここから下の内容を別ファイルに分ける
+
+/**
+ * @template F
+ * @param {number|string} skillId
+ * @param {Map<number|string, F>} funcMap
+ * @returns {F|undefined}
+ */
+function getSkillFunc(skillId, funcMap) {
+    // 錬成先が登録されている
+    // 何も返さない
+    if (funcMap.has(getRefinementSkillId(skillId)) ||
+        funcMap.has(getSpecialRefinementSkillId(skillId))) {
+        return undefined;
+    }
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            return func;
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
+    return undefined;
+}
+
 // FuncMap
 // noinspection DuplicatedCode
 /** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */

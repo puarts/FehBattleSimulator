@@ -4112,84 +4112,86 @@ class Unit extends BattleMapElement {
         return this.currentDamage >= requiredHealAmount;
     }
 
-    * enumerateSkillInfos() {
-        if (this.weaponInfo != null) {
-            yield this.weaponInfo;
-        }
-        if (this.supportInfo != null) {
-            yield this.supportInfo;
-        }
-        if (this.specialInfo != null) {
-            yield this.specialInfo;
-        }
-        if (this.passiveAInfo != null) {
-            yield this.passiveAInfo;
-        }
-        if (this.passiveBInfo != null) {
-            yield this.passiveBInfo;
-        }
-        if (this.passiveCInfo != null) {
-            yield this.passiveCInfo;
-        }
-        if (this.passiveSInfo != null) {
-            yield this.passiveSInfo;
-        }
-        if (this.passiveXInfo != null) {
-            yield this.passiveXInfo;
-        }
-        if (this.isCaptain && this.captainInfo != null) {
-            yield this.captainInfo;
+    /**
+     * @returns {Generator<SkillInfo>}
+     */
+    * #enumerateSkillInfo(info) {
+        if (info != null) {
+            yield info;
         }
     }
 
+    /**
+     * @returns {Generator<SkillInfo>}
+     */
+    * enumerateSkillInfos() {
+        let infos = [
+            this.weaponInfo,
+            this.supportInfo,
+            this.specialInfo,
+            this.passiveAInfo,
+            this.passiveBInfo,
+            this.passiveCInfo,
+            this.passiveSInfo,
+            this.passiveXInfo,
+        ];
+        for(let info of infos) {
+            yield* this.#enumerateSkillInfo(info);
+        }
+        if (this.isCaptain) {
+            yield* this.#enumerateSkillInfo(this.captainInfo);
+        }
+    }
+
+    /**
+     * @param {number} id
+     * @param {boolean} canRefine
+     * @returns {Generator<number|string>}
+     */
+    * #enumerateSkills(id, canRefine = false) {
+        if (id !== NoneValue) {
+            yield id;
+            if (canRefine) {
+                if (this.isWeaponRefined) {
+                    yield getRefinementSkillId(id);
+                }
+                if (this.isWeaponSpecialRefined) {
+                    yield getSpecialRefinementSkillId(id);
+                }
+            }
+        }
+    }
+
+    /**
+     * @returns {Generator<number|string>}
+     */
     * enumerateSkills() {
-        if (this.weapon !== NoneValue) {
-            yield this.weapon;
-        }
-        if (this.support !== NoneValue) {
-            yield this.support;
-        }
-        if (this.special !== NoneValue) {
-            yield this.special;
-        }
-        if (this.passiveA !== NoneValue) {
-            yield this.passiveA;
-        }
-        if (this.passiveB !== NoneValue) {
-            yield this.passiveB;
-        }
-        if (this.passiveC !== NoneValue) {
-            yield this.passiveC;
-        }
-        if (this.passiveS !== NoneValue) {
-            yield this.passiveS;
-        }
-        if (this.passiveX !== NoneValue) {
-            yield this.passiveX;
-        }
-        if (this.isCaptain && this.captain !== NoneValue) {
-            yield this.captain;
+        yield* this.#enumerateSkills(this.weapon, true);
+        yield* this.#enumerateSkills(this.support);
+        yield* this.#enumerateSkills(this.special);
+        // passiveA-X
+        yield* this.enumeratePassiveSkills()
+        if (this.isCaptain) {
+            yield* this.#enumerateSkills(this.captain);
         }
         if (this.emblemHeroIndex > 0) {
             yield getEmblemHeroSkillId(this.emblemHeroIndex);
         }
     }
 
+    /**
+     * @returns {Generator<number|string>}
+     */
     * enumeratePassiveSkills() {
-        if (this.passiveA !== NoneValue) {
-            yield this.passiveA;
-        }
-        if (this.passiveB !== NoneValue) {
-            yield this.passiveB;
-        }
-        if (this.passiveC !== NoneValue) {
-            yield this.passiveC;
-        }
-        if (this.passiveS !== NoneValue) {
-            yield this.passiveS;
-        }
-        if (this.passiveX !== NoneValue) {
-            yield this.passiveX;
+        let passives = [
+            this.passiveA,
+            this.passiveB,
+            this.passiveC,
+            this.passiveS,
+            this.passiveX,
+        ];
+        for (let passive of passives) {
+            yield* this.#enumerateSkills(passive);
         }
     }
 
@@ -4727,7 +4729,9 @@ class Unit extends BattleMapElement {
         return this.canHavePairUpUnit && this.pairUpUnit != null && this.pairUpUnit.heroInfo != null;
     }
 
-    /// ステータスにスキルの加算値を加算します。
+    /**
+     * ステータスにスキルの加算値を加算します。
+     */
     updateStatusBySkillsExceptWeapon() {
         for (let skillInfo of this.enumerateSkillInfos()) {
             if (skillInfo === this.weaponInfo) {
