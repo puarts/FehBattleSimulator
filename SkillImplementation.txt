@@ -183,7 +183,7 @@ applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
     function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
         // 絶対追撃を受ける
         if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
-            targetUnit.battleContext.followupAttackPriorityIncrement++;
+            enemyUnit.battleContext.followupAttackPriorityIncrement++;
         }
     }
 );

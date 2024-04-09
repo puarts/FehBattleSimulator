@@ -545,6 +545,71 @@
     );
 }
 
+// ダニエルの錬弓(特殊錬成)
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.DanielMadeBow);
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、自分と周囲2マス以内の味方の攻撃、速さ+6、【魔刃】、「戦闘中、奥義発動カウント変動量+1(同系統効果複数時、最大値適用)」を付与(1ターン)
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                /** @type {Generator<Unit>} */
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let targetUnit of targetUnits) {
+                    targetUnit.reserveToApplyBuffs(6, 6, 0, 0);
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                }
+
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、攻撃、守備+5
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkDefSpurs(5);
+            }
+        }
+    );
+}
+
+// ダニエルの錬弓(錬成)
+{
+    let skillId = getRefinementSkillId(Weapon.DanielMadeBow);
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    // 周囲4マスの味方は、戦闘中、攻撃、守備+5
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 4) {
+                targetUnit.addAtkDefSpurs(5);
+            }
+        }
+    );
+    // 周囲4マスの敵は、戦闘中、攻撃、守備-5、
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // enemyAllyUnitからのスキルなので錬成判定に注意
+            // <通常効果>
+            if (targetUnit.distance(enemyAllyUnit) <= 4) {
+                targetUnit.addAtkDefSpurs(-5);
+            }
+        }
+    );
+    // 周囲4マスの敵は、戦闘中、攻撃、守備-5、
+    // 絶対追撃を受ける
+    applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // 絶対追撃を受ける
+            if (targetUnit.distance(enemyAllyUnit) <= 4) {
+                enemyUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+}
+
 // ダニエルの錬弓
 {
     let skillId = Weapon.DanielMadeBow;
