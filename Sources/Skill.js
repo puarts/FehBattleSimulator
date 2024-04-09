@@ -767,38 +767,16 @@ function weaponTypeToString(weaponType) {
 }
 
 function canRallyForciblyByPlayer(unit) {
-    let skillId = unit.support;
-    let funcMap = canRallyForciblyByPlayerFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            let result = func.call(this, unit);
-            if (result) {
-                return true;
-            }
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
-    }
-    return false;
+    return getSkillFunc(unit.support, canRallyForciblyByPlayerFuncMap)?.call(this, unit) ?? false;
 }
 
 /**
  * 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
  */
 function canRallyForcibly(skill, unit) {
-    let skillId = skill;
-    let funcMap = canRallyForciblyFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            let result = func.call(this, unit);
-            if (result) {
-                return true;
-            }
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
+    let func = getSkillFunc(skill, canRallyForciblyFuncMap);
+    if (func?.call(this, unit) ?? false) {
+        return true;
     }
     switch (skill) {
         case Support.GoldSerpent:
@@ -829,17 +807,8 @@ function canRallyForcibly(skill, unit) {
 }
 
 function canRalliedForcibly(skillId, unit) {
-    let funcMap = canRalliedForciblyFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            let result = func.call(this, unit);
-            if (result) {
-                return true;
-            }
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
+    if (getSkillFunc(skillId, canRalliedForciblyFuncMap)?.call(this, unit) ?? false) {
+        return true;
     }
     switch (skillId) {
         case Support.GoldSerpent:
@@ -917,16 +886,8 @@ function isTeleportationSkill(skillId) {
  * 天駆の道の効果を持つスキルかどうか
  */
 function hasPathfinderEffect(skillId) {
-    let funcMap = hasPathfinderEffectFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            if (func.call(this)) {
-                return true;
-            }
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
+    if (getSkillFunc(skillId, hasPathfinderEffectFuncMap)?.call(this) ?? false) {
+        return true;
     }
     switch (skillId) {
         case PassiveB.TwinSkyWing:
@@ -993,17 +954,8 @@ const EVAL_SPD_ADD_MAP = new Map([
 function getEvalSpdAdd(unit) {
     let amount = 0;
     for (let skillId of unit.enumerateSkills()) {
-        let value = EVAL_SPD_ADD_MAP.get(skillId);
-        amount += value ? value : 0;
-        let funcMap = evalSpdAddFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                amount += func.call(this, unit);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        amount += EVAL_SPD_ADD_MAP.get(skillId) ?? 0;
+        amount += getSkillFunc(skillId, evalSpdAddFuncMap)?.call(this, unit) ?? 0;
         switch (skillId) {
             case Weapon.NewBrazenCatFang:
                 if (unit.isWeaponSpecialRefined) {
@@ -1454,7 +1406,6 @@ function getSkillFunc(skillId, funcMap) {
 }
 
 // FuncMap
-// noinspection DuplicatedCode
 /** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySpecialDamageReductionPerAttackFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
@@ -1463,20 +1414,29 @@ const applySkillEffectForUnitFuncMap = new Map();
 const canActivateCantoFuncMap = new Map();
 /** @type {Map<number|string, (this: Unit) => number>} */
 const calcMoveCountForCantoFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, owner: Unit) => number>} */
 const evalSpdAddFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, defUnit: Unit, atkUnit: Unit) => void>} */
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
 /** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applySkillForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: Unit) => void>} */
 const setOnetimeActionActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, ally: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectFromAlliesFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, ally: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, enemyAlly: Unit, potentialDamage: boolean) => void>} */
 const updateUnitSpurFromEnemyAlliesFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applyRefreshFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySkillEffectsPerCombatFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const initApplySpecialSkillEffectFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, atkUnit: Unit, defUnit: Unit) => void>} */
 const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 // 応援後のスキル
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
@@ -1500,61 +1460,88 @@ const applySupportSkillForTargetUnitFuncMap = new Map();
 const canRallyForciblyFuncMap = new Map();
 /** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
 const canRallyForciblyByPlayerFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
 const canRalliedForciblyFuncMap = new Map();
 /** @type {Map<number|string, (u: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForUnitFuncMap = new Map();
 /** @type {Map<number|string, (this: PostCombatSkillHander, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectAfterCombatForUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, ally: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const updateUnitSpurFromAlliesFuncMap = new Map();
+/** @type {Map<number|string, (this: Unit, moveUnit: Unit) => boolean>} */
 const canActivateObstructToAdjacentTilesFuncMap = new Map();
+/** @type {Map<number|string, (this: Unit, moveUnit: Unit) => boolean>} */
 const canActivateObstructToTilesIn2SpacesFuncMap = new Map();
 // 切り込みなど移動スキル終了後に発動するスキル効果
+/** @type {Map<number|string, (this: Unit, atkUnit: Unit, defUnit: Unit, tileToAttack: Tile) => void>} */
 const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
 // 優先度の高い再行動スキルの評価
-// noinspection DuplicatedCode
+/** @type {Map<number|string, (this: Unit, atkUnit: Unit, defUnit: Unit, tileToAttack: Tile) => void>} */
 const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
-// thisはUnit
+/** @type {Map<number|string, (this: Unit) => void>} */
 const applyEndActionSkillsFuncMap = new Map();
-// thisはUnit
+/** @type {Map<number|string, (this: Unit) => void>} */
 const applySkillsAfterCantoActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler) => boolean>} */
 const hasTransformSkillsFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, assistUnit: Unit, target: Unit, assitTile: Tile) => MovementAssistResult>} */
 const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, assistUnit: Unit, target: Unit, tile: Tile) => void>} */
 const findTileAfterMovementAssistFuncMap = new Map();
-// thisはUnit
+/** @type {Map<number|string, (this: Unit) => number>} */
 const resetMaxSpecialCountFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, attackUnit: Unit, lossesInCombat: boolean, result: CombatResult) => boolean>} */
 const isAfflictorFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, defUnit: Unit, atkUnit: Unit, attackRange: number) => void>} */
 const applyDamageReductionRatioBySpecialFuncMap = new Map();
 // TODO: リファクタリングする
+/** @type {Map<number|string, (this: DamageCalculator, defUnit: Unit, atkUnit: Unit) => void>} */
 const activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, atkUnit: Unit, defUnit: Unit) => number>} */
 const addSpecialDamageAfterDefenderSpecialActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleMap, targetTile: Tile) => Generator<Tile>>} */
 const enumerateRangedSpecialTilesFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, target: Unit, attackCount: number) => void>} */
 const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
-// thisはUnit
+/** @type {Map<number|string, (this: Unit, restHpPercentage: number, defUnit: Unit) => boolean>} */
 const canDisableAttackOrderSwapSkillFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, atkUnit: Unit, defUnit: Unit, isPrecombat: boolean) => void>} */
 const calcFixedAddDamageFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, atkUnit: Unit, attackTarget: Unit, executesTrap: boolean) => boolean>} */
 const applyMovementSkillAfterCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applyPotentSkillEffectFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, canActivateAttackerSpecial: boolean) => void>} */
 const applySkillEffectsPerAttackFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectAfterSetAttackCountFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, atkUnit: Unit, ally: Unit) => boolean>} */
 const canActivateSaveSkillFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, atkUnit: Unit, defUnit: Unit) => void>} */
 const selectReferencingResOrDefFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleMap, target: Unit, ally: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForAllyFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, target: Unit) => void>} */
 const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: Window) => boolean>} */
 const hasPathfinderEffectFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, enemyAlly: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 /** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, attackTarget: Unit) => void>} */
 const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySpecialSkillEffectWhenHealingFuncMap = new Map();
+// TODO: リファクタリングする
 /** @type {Map<number|string, (this: any, supporter: Unit, target: Unit) => boolean>} */
 const canAddStatusEffectByRallyFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit) => number>} */

@@ -136,15 +136,8 @@ class BeginningOfTurnSkillHandler {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             let hasTransformSkills = false;
             for (let skillId of skillOwner.enumerateSkills()) {
-                let funcMap = hasTransformSkillsFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        hasTransformSkills |= func.call(this);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
+                let func = getSkillFunc(skillId, hasTransformSkillsFuncMap);
+                hasTransformSkills |= func?.call(this) ?? false;
                 switch (skillId) {
                     case PassiveB.BeastAgility3:
                     case PassiveB.BeastNTrace3:
@@ -2857,15 +2850,7 @@ class BeginningOfTurnSkillHandler {
     applyEnemySkillForBeginningOfTurn(skillId, skillOwner) {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
-        let funcMap = applyEnemySkillForBeginningOfTurnFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                func.call(this, skillOwner);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        getSkillFunc(skillId, applyEnemySkillForBeginningOfTurnFuncMap)?.call(this, skillOwner);
         switch (skillId) {
             case Weapon.InspiritedSpear:
                 for (let enemyUnit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
@@ -2915,15 +2900,7 @@ class BeginningOfTurnSkillHandler {
     }
 
     applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {
-        let funcMap = applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                func.call(this, skillOwner);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        getSkillFunc(skillId, applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap)?.call(this, skillOwner);
         switch (skillId) {
             case PassiveC.FutureFocused:
                 if (this.isOddTurn) {
@@ -2977,15 +2954,11 @@ class BeginningOfTurnSkillHandler {
     }
 
     applyHealSkillForBeginningOfTurn(skillId, skillOwner) {
-        let funcMap = applyHealSkillForBeginningOfTurnFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                func.call(this, skillOwner);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        getSkillFunc(skillId, applyHealSkillForBeginningOfTurnFuncMap)?.call(this, skillOwner);
+        this.#applyHealSkillForBeginningOfTurn(skillId, skillOwner);
+    }
+
+    #applyHealSkillForBeginningOfTurn(skillId, skillOwner) {
         switch (skillId) {
             case Weapon.DriftingGracePlus:
             case Weapon.LuminousGracePlus:
@@ -3035,7 +3008,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.AnyaryuNoBreath:
                 if (!skillOwner.isWeaponRefined) {
-                    if (this.globalBattleContext.currentTurn == 4) {
+                    if (this.globalBattleContext.currentTurn === 4) {
                         let count = 0;
                         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
                             unit.reserveTakeDamage(10);
@@ -3063,17 +3036,17 @@ class BeginningOfTurnSkillHandler {
             case Weapon.FalchionAwakening:
             case Weapon.KiriNoBreath:
             case PassiveB.Renewal1:
-                if ((this.globalBattleContext.currentTurn + 1) % 4 == 0) {
+                if ((this.globalBattleContext.currentTurn + 1) % 4 === 0) {
                     skillOwner.reserveHeal(10);
                 }
                 break;
             case PassiveB.Renewal2:
-                if ((this.globalBattleContext.currentTurn + 1) % 3 == 0) {
+                if ((this.globalBattleContext.currentTurn + 1) % 3 === 0) {
                     skillOwner.reserveHeal(10);
                 }
                 break;
             case PassiveB.Renewal3:
-                if ((this.globalBattleContext.currentTurn + 1) % 2 == 0) {
+                if ((this.globalBattleContext.currentTurn + 1) % 2 === 0) {
                     skillOwner.reserveHeal(10);
                 }
                 break;
@@ -3098,8 +3071,7 @@ class BeginningOfTurnSkillHandler {
                     if (damage > maxDamage) {
                         maxDamage = damage;
                         targetUnits = [unit];
-                    }
-                    else if (damage == maxDamage) {
+                    } else if (damage === maxDamage) {
                         targetUnits.push(unit);
                     }
                 }
@@ -3110,7 +3082,7 @@ class BeginningOfTurnSkillHandler {
             }
                 break;
             case PassiveB.SDrink:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reserveHeal(99);
                 }
                 break;
@@ -3134,7 +3106,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.Mafu:
-                if (this.globalBattleContext.currentTurn == 3) {
+                if (this.globalBattleContext.currentTurn === 3) {
                     let units = this.enumerateUnitsWithinSpecifiedRange(
                         skillOwner.posX, skillOwner.posY, skillOwner.enemyGroupId, 5, 99);
                     for (let unit of units) {
@@ -3152,7 +3124,7 @@ class BeginningOfTurnSkillHandler {
                     this.globalBattleContext.currentTurn === 3;
                 if (turnCond) {
                     let groupId = UnitGroupType.Enemy;
-                    if (skillOwner.groupId == UnitGroupType.Enemy) {
+                    if (skillOwner.groupId === UnitGroupType.Enemy) {
                         groupId = UnitGroupType.Ally;
                     }
                     let units = this.enumerateUnitsWithinSpecifiedRange(
@@ -3164,7 +3136,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             }
             case PassiveC.UpheavalPlus:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
                         unit.reserveTakeDamage(10);
                     }
@@ -3172,7 +3144,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.Upheaval:
             case PassiveC.WoefulUpheaval:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
                         unit.reserveTakeDamage(7);
                     }

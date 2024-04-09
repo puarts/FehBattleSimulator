@@ -255,15 +255,8 @@ class PostCombatSkillHander {
             func(attackUnit, attackTargetUnit);
         }
         for (let skillId of attackUnit.enumerateSkills()) {
-            let funcMap = applyAttackSkillEffectAfterCombatFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, attackUnit, attackTargetUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            let func = getSkillFunc(skillId, applyAttackSkillEffectAfterCombatFuncMap);
+            func?.call(this, attackUnit, attackTargetUnit);
             switch (skillId) {
                 case Weapon.KyupidNoYaPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
@@ -696,7 +689,7 @@ class PostCombatSkillHander {
                 case PassiveA.AtkDefPush3:
                 case PassiveA.AtkResPush3:
                     this.writeDebugLogLine("渾身3を評価: 戦闘前のHP=" + targetUnit.battleContext.hpBeforeCombat);
-                    if (targetUnit.battleContext.hpBeforeCombat == targetUnit.maxHpWithSkills) {
+                    if (targetUnit.battleContext.hpBeforeCombat === targetUnit.maxHpWithSkills) {
                         this.writeLogLine("渾身3による1ダメージ");
                         targetUnit.reserveTakeDamage(1);
                     }
@@ -914,372 +907,366 @@ class PostCombatSkillHander {
             func(attackUnit, attackTargetUnit);
         }
         for (let skillId of attackUnit.enumerateSkills()) {
-            let funcMap = applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, attackUnit, attackTargetUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
+            let func = getSkillFunc(skillId, applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap);
+            func?.call(this, attackUnit, attackTargetUnit);
+            this.#applyAnAttackSkillEffectAfterCombatNeverthelessDeadForUnit(skillId, attackUnit, attackTargetUnit);
+        }
+        this.#applyDaggerSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit);
+    }
+
+    #applyDaggerSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
+        if (attackUnit.hasDagger7Effect()) {
+            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -7);
+        } else if (attackUnit.hasDagger6Effect()) {
+            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -6);
+        } else if (attackUnit.hasDagger5Effect()) {
+            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -5);
+        } else if (attackUnit.hasDagger4Effect()) {
+            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -4);
+        } else if (attackUnit.hasDagger3Effect()) {
+            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -3);
+        } else if (attackUnit.weapon === Weapon.PoisonDaggerPlus) {
+            if (attackTargetUnit.moveType === MoveType.Infantry) {
+                attackTargetUnit.applyDefDebuff(-6);
+                attackTargetUnit.applyResDebuff(-6);
             }
-            switch (skillId) {
-                case Weapon.Kvasir:
-                    if (attackUnit.battleContext.restHpPercentage >= 25) {
+        } else if (attackUnit.weapon === Weapon.PoisonDagger) {
+            if (attackTargetUnit.moveType === MoveType.Infantry) {
+                attackTargetUnit.applyDefDebuff(-4);
+                attackTargetUnit.applyResDebuff(-4);
+            }
+        }
+    }
+
+    #applyAnAttackSkillEffectAfterCombatNeverthelessDeadForUnit(skillId, attackUnit, attackTargetUnit) {
+        switch (skillId) {
+            case Weapon.Kvasir:
+                if (attackUnit.battleContext.restHpPercentage >= 25) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.addStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+                break;
+            case Weapon.IncurablePlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.reserveTakeDamage(7);
+                    unit.addStatusEffect(StatusEffectType.DeepWounds);
+                }
+                break;
+            case Weapon.DuskDawnStaff:
+                if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackTargetUnit, 2)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                    }
+                }
+                break;
+            case Weapon.AsameiNoTanken:
+                if (attackUnit.isWeaponSpecialRefined) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.reserveTakeDamage(5);
+                        unit.addStatusEffect(StatusEffectType.Exposure);
+                    }
+                }
+                break;
+            case Weapon.SoothingScent:
+                if (attackUnit.battleContext.weaponSkillCondSatisfied) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.reserveTakeDamage(10);
+                    }
+                }
+                break;
+            case Weapon.CaringConch:
+                if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackUnit)) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.addStatusEffect(StatusEffectType.Guard);
+                    }
+                }
+                break;
+            case Weapon.QuickMulagir:
+                if (attackUnit.isWeaponSpecialRefined) {
+                    if (attackUnit.battleContext.initiatesCombat) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.addStatusEffect(StatusEffectType.Panic);
+                            unit.reserveTakeDamage(7);
                         }
                     }
-                    break;
-                case Weapon.IncurablePlus:
+                }
+                break;
+            case Weapon.BoneCarverPlus:
+                if (attackUnit.battleContext.restHpPercentage >= 25) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.reserveTakeDamage(7);
+                    }
+                }
+                break;
+            case Weapon.SerpentineStaffPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.addStatusEffect(StatusEffectType.DeepWounds);
+                }
+                break;
+            case Weapon.FlamelickBreath:
+                if (attackUnit.battleContext.restHpPercentage >= 25) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.addStatusEffect(StatusEffectType.DeepWounds);
                     }
-                    break;
-                case Weapon.DuskDawnStaff:
-                    if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackTargetUnit, 2)) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                        }
+                }
+                break;
+            case Weapon.TigerSpirit:
+                if (attackUnit.battleContext.restHpPercentage >= 25) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.addStatusEffect(StatusEffectType.Panic);
                     }
-                    break;
-                case Weapon.AsameiNoTanken:
-                    if (attackUnit.isWeaponSpecialRefined) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.reserveTakeDamage(5);
-                            unit.addStatusEffect(StatusEffectType.Exposure);
-                        }
+                }
+                break;
+            case Weapon.FrostbiteBreath:
+                if (attackUnit.battleContext.restHpPercentage >= 25) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
                     }
-                    break;
-                case Weapon.SoothingScent:
-                    if (attackUnit.battleContext.weaponSkillCondSatisfied) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.reserveTakeDamage(10);
-                        }
-                    }
-                    break;
-                case Weapon.CaringConch:
-                    if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackUnit)) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.addStatusEffect(StatusEffectType.Guard);
-                        }
-                    }
-                    break;
-                case Weapon.QuickMulagir:
-                    if (attackUnit.isWeaponSpecialRefined) {
-                        if (attackUnit.battleContext.initiatesCombat) {
-                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                                unit.reserveTakeDamage(7);
-                            }
-                        }
-                    }
-                    break;
-                case Weapon.BoneCarverPlus:
+                }
+                break;
+            case Weapon.Scadi:
+                if (attackUnit.isWeaponSpecialRefined) {
                     if (attackUnit.battleContext.restHpPercentage >= 25) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                             unit.reserveTakeDamage(7);
                         }
                     }
-                    break;
-                case Weapon.SerpentineStaffPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.DeepWounds);
-                    }
-                    break;
-                case Weapon.FlamelickBreath:
-                    if (attackUnit.battleContext.restHpPercentage >= 25) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.addStatusEffect(StatusEffectType.DeepWounds);
-                        }
-                    }
-                    break;
-                case Weapon.TigerSpirit:
-                    if (attackUnit.battleContext.restHpPercentage >= 25) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.addStatusEffect(StatusEffectType.Panic);
-                        }
-                    }
-                    break;
-                case Weapon.FrostbiteBreath:
-                    if (attackUnit.battleContext.restHpPercentage >= 25) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                        }
-                    }
-                    break;
-                case Weapon.Scadi:
-                    if (attackUnit.isWeaponSpecialRefined) {
-                        if (attackUnit.battleContext.restHpPercentage >= 25) {
-                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                                unit.reserveTakeDamage(7);
-                            }
-                        }
-                    }
-                    break;
-                case Weapon.ObsessiveCurse:
-                    if (!attackUnit.isWeaponSpecialRefined) break;
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        this.writeLogLine(`${unit.getNameWithGroup()}は${attackUnit.weaponInfo.name}により7ダメージ、反撃不可の状態異常付与`);
-                        unit.reserveTakeDamage(7);
-                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                    }
-                    break;
-                case Weapon.Buryunhirude:
-                    if (!attackUnit.isWeaponRefined) {
-                        attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
-                    }
-                    break;
-                case PassiveC.Jagan:
-                case Weapon.GravityPlus:
-                case Weapon.Sangurizuru:
-                case Weapon.ElisesStaff:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 1, true)) {
-                        unit.addStatusEffect(StatusEffectType.Gravity);
-                    }
-                    break;
-                case Weapon.Gravity:
-                    attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
-                    break;
-                case Weapon.SpringtimeStaff:
-                    attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
-                    if (attackUnit.isWeaponSpecialRefined) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                            unit.reserveHeal(7);
-                        }
-                    }
-                    break;
-                case Weapon.SlowPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applySpdDebuff(-7);
-                    }
-                    break;
-                case Weapon.Slow:
-                    attackTargetUnit.applySpdDebuff(-6);
-                    break;
-                case Weapon.ElenasStaff:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAtkDebuff(-7);
-                        unit.applySpdDebuff(-7);
-                        if (attackUnit.isWeaponSpecialRefined) {
-                            unit.addStatusEffect(StatusEffectType.Panic);
-                        }
-                    }
-                    break;
-                case Weapon.FearPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAtkDebuff(-7);
-                    }
-                    break;
-                case Weapon.Fear:
-                    attackTargetUnit.applyAtkDebuff(-6);
-                    break;
-                case Weapon.Pesyukado: {
-                    let amount = attackUnit.isWeaponRefined ? 5 : 4;
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.applyAllBuff(amount);
-                    }
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAllDebuff(amount);
-                    }
-                    if (!attackUnit.isWeaponSpecialRefined) break;
-                    if (attackUnit.battleContext.restHpPercentage >= 25) {
-                        this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の特殊錬成ペシュカド発動");
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
-                            unit.specialCount += 1;
-                        }
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                            unit.specialCount -= 1;
-                        }
-                    }
-                    break;
                 }
-                case Weapon.Hlidskjalf:
+                break;
+            case Weapon.ObsessiveCurse:
+                if (!attackUnit.isWeaponSpecialRefined) break;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    this.writeLogLine(`${unit.getNameWithGroup()}は${attackUnit.weaponInfo.name}により7ダメージ、反撃不可の状態異常付与`);
+                    unit.reserveTakeDamage(7);
+                    unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                }
+                break;
+            case Weapon.Buryunhirude:
+                if (!attackUnit.isWeaponRefined) {
+                    attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
+                }
+                break;
+            case PassiveC.Jagan:
+            case Weapon.GravityPlus:
+            case Weapon.Sangurizuru:
+            case Weapon.ElisesStaff:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 1, true)) {
+                    unit.addStatusEffect(StatusEffectType.Gravity);
+                }
+                break;
+            case Weapon.Gravity:
+                attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
+                break;
+            case Weapon.SpringtimeStaff:
+                attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
+                if (attackUnit.isWeaponSpecialRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.applyAllBuff(4);
-                    }
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAllDebuff(-4);
-                    }
-                    break;
-                case Weapon.StaffOfLilies:
-                case Weapon.MerankoryPlus:
-                case Weapon.CandyStaff:
-                case Weapon.CandyStaffPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.setSpecialCountToMax();
-                        unit.addStatusEffect(StatusEffectType.Guard);
-                        if (skillId === Weapon.StaffOfLilies) {
-                            unit.applyAtkDebuff(-6);
-                            unit.applySpdDebuff(-6);
-                        }
-                    }
-                    break;
-                case Weapon.Candlelight:
-                    attackTargetUnit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                    break;
-                case Weapon.DotingStaff:
-                case Weapon.CandlelightPlus:
-                case Weapon.FlashPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                    }
-                    break;
-                case Weapon.Trilemma:
-                    attackTargetUnit.addStatusEffect(StatusEffectType.TriangleAdept);
-                    break;
-                case Weapon.TrilemmaPlus:
-                case Weapon.PunishmentStaff:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.TriangleAdept);
-                    }
-                    break;
-                case Weapon.AbsorbPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
                         unit.reserveHeal(7);
                     }
-                    break;
-                case Weapon.Sekuvaveku: {
-                    let spaces = attackUnit.isWeaponSpecialRefined ? 4 : 3
-                    if (this.__isThereAllyInSpecifiedSpaces(attackUnit, spaces)) {
-                        for (let unit of this.__findNearestAllies(attackUnit)) {
-                            unit.reserveTakeDamage(20);
-                        }
+                }
+                break;
+            case Weapon.SlowPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.applySpdDebuff(-7);
+                }
+                break;
+            case Weapon.Slow:
+                attackTargetUnit.applySpdDebuff(-6);
+                break;
+            case Weapon.ElenasStaff:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        unit.addStatusEffect(StatusEffectType.Panic);
                     }
                 }
-                    break;
-                case Weapon.Thjalfi:
-                    if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
-                        for (let unit of this.__findNearestAllies(attackUnit)) {
-                            unit.reserveTakeDamage(20);
-                        }
+                break;
+            case Weapon.FearPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.applyAtkDebuff(-7);
+                }
+                break;
+            case Weapon.Fear:
+                attackTargetUnit.applyAtkDebuff(-6);
+                break;
+            case Weapon.Pesyukado: {
+                let amount = attackUnit.isWeaponRefined ? 5 : 4;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                    unit.applyAllBuff(amount);
+                }
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.applyAllDebuff(amount);
+                }
+                if (!attackUnit.isWeaponSpecialRefined) break;
+                if (attackUnit.battleContext.restHpPercentage >= 25) {
+                    this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の特殊錬成ペシュカド発動");
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                        this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
+                        unit.specialCount += 1;
                     }
-                    break;
-                case Weapon.LightBreath:
-                case Weapon.LightBreathPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.applyAllBuff(5);
+                        unit.specialCount -= 1;
                     }
-                    break;
-                case Weapon.Ifingr:
-                    if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
-                        for (let unit of this.__findNearestAllies(attackUnit)) {
-                            unit.applyAllDebuff(-4);
-                        }
+                }
+                break;
+            }
+            case Weapon.Hlidskjalf:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                    unit.applyAllBuff(4);
+                }
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.applyAllDebuff(-4);
+                }
+                break;
+            case Weapon.StaffOfLilies:
+            case Weapon.MerankoryPlus:
+            case Weapon.CandyStaff:
+            case Weapon.CandyStaffPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.setSpecialCountToMax();
+                    unit.addStatusEffect(StatusEffectType.Guard);
+                    if (skillId === Weapon.StaffOfLilies) {
+                        unit.applyAtkDebuff(-6);
+                        unit.applySpdDebuff(-6);
                     }
-                    break;
-                case Weapon.GhostNoMadosyo:
-                case Weapon.GhostNoMadosyoPlus:
-                case Weapon.MonstrousBow:
-                case Weapon.MonstrousBowPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                }
+                break;
+            case Weapon.Candlelight:
+                attackTargetUnit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                break;
+            case Weapon.DotingStaff:
+            case Weapon.CandlelightPlus:
+            case Weapon.FlashPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                }
+                break;
+            case Weapon.Trilemma:
+                attackTargetUnit.addStatusEffect(StatusEffectType.TriangleAdept);
+                break;
+            case Weapon.TrilemmaPlus:
+            case Weapon.PunishmentStaff:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.addStatusEffect(StatusEffectType.TriangleAdept);
+                }
+                break;
+            case Weapon.AbsorbPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
+                    unit.reserveHeal(7);
+                }
+                break;
+            case Weapon.Sekuvaveku: {
+                let spaces = attackUnit.isWeaponSpecialRefined ? 4 : 3
+                if (this.__isThereAllyInSpecifiedSpaces(attackUnit, spaces)) {
+                    for (let unit of this.__findNearestAllies(attackUnit)) {
+                        unit.reserveTakeDamage(20);
                     }
-                    break;
-                case Weapon.Panic:
-                case Weapon.LegionsAxe:
-                case Weapon.RoroNoOnoPlus:
-                    attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
-                    break;
-                case Weapon.GrimasTruth:
-                    if (!attackUnit.isWeaponRefined) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                            unit.applyAtkBuff(5);
-                            unit.applySpdBuff(5);
-                        }
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.applyAtkDebuff(-5);
-                            unit.applySpdDebuff(-5);
-                        }
+                }
+            }
+                break;
+            case Weapon.Thjalfi:
+                if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
+                    for (let unit of this.__findNearestAllies(attackUnit)) {
+                        unit.reserveTakeDamage(20);
                     }
-                    break;
-                case Weapon.DeathlyDagger:
-                    if (attackUnit.isWeaponRefined) {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.reserveTakeDamage(10);
-                            unit.applyDefDebuff(-7);
-                            unit.applyResDebuff(-7);
-                        }
+                }
+                break;
+            case Weapon.LightBreath:
+            case Weapon.LightBreathPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                    unit.applyAllBuff(5);
+                }
+                break;
+            case Weapon.Ifingr:
+                if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
+                    for (let unit of this.__findNearestAllies(attackUnit)) {
+                        unit.applyAllDebuff(-4);
                     }
-                    else {
-                        if (attackUnit.battleContext.initiatesCombat) {
-                            attackTargetUnit.reserveTakeDamage(7);
-                        }
-                        attackTargetUnit.applyDefDebuff(-7);
-                        attackTargetUnit.applyResDebuff(-7);
-                    }
-                    break;
-                case Weapon.PainPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        this.writeLogLine(unit.getNameWithGroup() + "は" + attackUnit.weaponInfo.name + "により10ダメージ");
-                        unit.reserveTakeDamage(10);
-                    }
-                    break;
-                case Weapon.SneeringAxe:
-                    {
-                        attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
-                    }
-                    break;
-                case Weapon.MitteiNoAnki:
+                }
+                break;
+            case Weapon.GhostNoMadosyo:
+            case Weapon.GhostNoMadosyoPlus:
+            case Weapon.MonstrousBow:
+            case Weapon.MonstrousBowPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.addStatusEffect(StatusEffectType.Panic);
+                }
+                break;
+            case Weapon.Panic:
+            case Weapon.LegionsAxe:
+            case Weapon.RoroNoOnoPlus:
+                attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
+                break;
+            case Weapon.GrimasTruth:
+                if (!attackUnit.isWeaponRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.applyDefBuff(6);
-                        unit.applyResBuff(6);
+                        unit.applyAtkBuff(5);
+                        unit.applySpdBuff(5);
                     }
-                    break;
-                case Weapon.DokuNoKen:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        this.writeLogLine(unit.getNameWithGroup() + "は" + attackUnit.weaponInfo.name + "により10ダメージ、反撃不可の状態異常付与");
+                        unit.applyAtkDebuff(-5);
+                        unit.applySpdDebuff(-5);
+                    }
+                }
+                break;
+            case Weapon.DeathlyDagger:
+                if (attackUnit.isWeaponRefined) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.reserveTakeDamage(10);
-                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                        if (attackUnit.isWeaponSpecialRefined) {
-                            unit.addStatusEffect(StatusEffectType.Discord);
-                        }
+                        unit.applyDefDebuff(-7);
+                        unit.applyResDebuff(-7);
                     }
-                    break;
-                case Weapon.PanicPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                } else {
+                    if (attackUnit.battleContext.initiatesCombat) {
+                        attackTargetUnit.reserveTakeDamage(7);
                     }
-                    break;
-                case Weapon.SaizoNoBakuenshin:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAllDebuff(-6);
-                    }
-                    break;
-                case Weapon.MeikiNoBreath:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAtkDebuff(-7);
-                        unit.applySpdDebuff(-7);
-                    }
-                    break;
+                    attackTargetUnit.applyDefDebuff(-7);
+                    attackTargetUnit.applyResDebuff(-7);
+                }
+                break;
+            case Weapon.PainPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    this.writeLogLine(unit.getNameWithGroup() + "は" + attackUnit.weaponInfo.name + "により10ダメージ");
+                    unit.reserveTakeDamage(10);
+                }
+                break;
+            case Weapon.SneeringAxe: {
+                attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
             }
-        }
-
-        if (attackUnit.hasDagger7Effect()) {
-            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -7);
-        }
-        else if (attackUnit.hasDagger6Effect()) {
-            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -6);
-        }
-        else if (attackUnit.hasDagger5Effect()) {
-            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -5);
-        }
-        else if (attackUnit.hasDagger4Effect()) {
-            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -4);
-        }
-        else if (attackUnit.hasDagger3Effect()) {
-            this.__applyDaggerEffect(attackUnit, attackTargetUnit, -3);
-        } else if (attackUnit.weapon == Weapon.PoisonDaggerPlus) {
-            if (attackTargetUnit.moveType == MoveType.Infantry) {
-                attackTargetUnit.applyDefDebuff(-6);
-                attackTargetUnit.applyResDebuff(-6);
-            }
-        } else if (attackUnit.weapon == Weapon.PoisonDagger) {
-            if (attackTargetUnit.moveType == MoveType.Infantry) {
-                attackTargetUnit.applyDefDebuff(-4);
-                attackTargetUnit.applyResDebuff(-4);
-            }
+                break;
+            case Weapon.MitteiNoAnki:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
+                    unit.applyDefBuff(6);
+                    unit.applyResBuff(6);
+                }
+                break;
+            case Weapon.DokuNoKen:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    this.writeLogLine(unit.getNameWithGroup() + "は" + attackUnit.weaponInfo.name + "により10ダメージ、反撃不可の状態異常付与");
+                    unit.reserveTakeDamage(10);
+                    unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                    if (attackUnit.isWeaponSpecialRefined) {
+                        unit.addStatusEffect(StatusEffectType.Discord);
+                    }
+                }
+                break;
+            case Weapon.PanicPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.addStatusEffect(StatusEffectType.Panic);
+                }
+                break;
+            case Weapon.SaizoNoBakuenshin:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.applyAllDebuff(-6);
+                }
+                break;
+            case Weapon.MeikiNoBreath:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
+                    unit.applyAtkDebuff(-7);
+                    unit.applySpdDebuff(-7);
+                }
+                break;
         }
     }
 
@@ -1289,15 +1276,8 @@ class PostCombatSkillHander {
             attackUnit.reserveHeal(99);
         }
         for (let skillId of attackUnit.enumerateSkills()) {
-            let funcMap = applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, attackUnit, attackTargetUnit, attackCount);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            let func = getSkillFunc(skillId, applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap);
+            func?.call(this, attackUnit, attackTargetUnit, attackCount);
             switch (skillId) {
                 case Special.LifeUnending:
                     if (attackUnit.battleContext.isSpecialMiracleAndHealAcitivated) {

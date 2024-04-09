@@ -733,7 +733,9 @@ class Unit extends BattleMapElement {
         return this.isActionDone && !this.isCantoActivatedInCurrentTurn;
     }
 
-    /// 再移動が発動可能なら発動します。
+    /**
+     * 再移動が発動可能なら発動します。
+     */
     activateCantoIfPossible(moveCountForCanto, cantoControlledIfCantoActivated) {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return;
@@ -754,28 +756,25 @@ class Unit extends BattleMapElement {
             }
             // 再移動発動直後スキル
             for (let skillId of this.enumerateSkills()) {
-                let funcMap = applySkillsAfterCantoActivatedFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        func.call(this, moveCountForCanto, cantoControlledIfCantoActivated);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
+                let func = getSkillFunc(skillId, applySkillsAfterCantoActivatedFuncMap);
+                func?.call(this, moveCountForCanto, cantoControlledIfCantoActivated);
             }
             // 同時タイミングに付与された天脈を消滅させる
             g_appData.map.applyReservedDivineVein();
         }
     }
 
-    /// 再移動の発動を終了します。
+    /**
+     * 再移動の発動を終了します。
+     */
     deactivateCanto() {
         this.moveCountForCanto = 0;
         this.isCantoActivating = false;
     }
 
-    /// 再移動が発動しているとき、trueを返します。
+    /**
+     * 再移動が発動しているとき、trueを返します。
+     */
     isCantoActivated() {
         return this.isCantoActivating;
     }
@@ -2171,17 +2170,10 @@ class Unit extends BattleMapElement {
     canActivateObstructToTilesIn2Spaces(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = canActivateObstructToTilesIn2SpacesFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    if (func.call(this, this, moveUnit)) {
-                        hasSkills = true;
-                        break;
-                    }
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
+            let func = getSkillFunc(skillId, canActivateObstructToTilesIn2SpacesFuncMap);
+            if (func?.call(this, moveUnit) ?? false) {
+                hasSkills = true;
+                break;
             }
         }
         hasSkills |=
@@ -2198,17 +2190,10 @@ class Unit extends BattleMapElement {
     canActivateObstructToAdjacentTiles(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = canActivateObstructToAdjacentTilesFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    if (func.call(this, this, moveUnit)) {
-                        hasSkills = true;
-                        break;
-                    }
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
+            let func = getSkillFunc(skillId, canActivateObstructToAdjacentTilesFuncMap);
+            if (func?.call(this, moveUnit) ?? false) {
+                hasSkills = true;
+                break;
             }
         }
         hasSkills |=
@@ -2346,15 +2331,7 @@ class Unit extends BattleMapElement {
         }
 
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = setOnetimeActionActivatedFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            getSkillFunc(skillId, setOnetimeActionActivatedFuncMap)?.call(this);
             switch (skillId) {
                 case PassiveB.GuardBearing4:
                     // 各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時
@@ -2414,15 +2391,7 @@ class Unit extends BattleMapElement {
         // ここでは天脈の予約を行う
         // 同時タイミングに異なる複数の天脈が付与されていなければ天脈付与を確定させる
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = applyEndActionSkillsFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            getSkillFunc(skillId, applyEndActionSkillsFuncMap)?.call(this);
             switch (skillId) {
                 case Weapon.Vallastone:
                     for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
@@ -4799,15 +4768,7 @@ class Unit extends BattleMapElement {
             specialCountMax += this.weaponInfo.cooldownCount;
         }
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = resetMaxSpecialCountFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    specialCountMax += func.call(this);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            specialCountMax += getSkillFunc(skillId, resetMaxSpecialCountFuncMap)?.call(this) ?? 0;
             switch (skillId) {
                 case Weapon.CrimeanScepter:
                 case Weapon.DuskDawnStaff:
@@ -5163,16 +5124,9 @@ class Unit extends BattleMapElement {
      */
     canDisableAttackOrderSwapSkill(restHpPercentage, defUnit) {
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = canDisableAttackOrderSwapSkillFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    if (func.call(this, restHpPercentage, defUnit)) {
-                        return true;
-                    }
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
+            let func = getSkillFunc(skillId, canDisableAttackOrderSwapSkillFuncMap);
+            if (func?.call(this, restHpPercentage, defUnit) ?? false) {
+                return true;
             }
             switch (skillId) {
                 case Weapon.Queensblade:
@@ -5459,15 +5413,7 @@ function calcBuffAmount(assistUnit, targetUnit) {
 function calcHealAmount(assistUnit, targetUnit) {
     let healAmount = 0;
     let skillId = assistUnit.support;
-    let funcMap = calcHealAmountFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            healAmount += func.call(this, assistUnit, targetUnit);
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
-    }
+    healAmount += getSkillFunc(skillId, calcHealAmountFuncMap)?.call(this, assistUnit, targetUnit) ?? 0;
     switch (skillId) {
         case Support.Heal:
             healAmount = 5;
@@ -5592,16 +5538,9 @@ function isDebufferTier2(attackUnit, targetUnit) {
  */
 function isAfflictor(attackUnit, lossesInCombat, result) {
     for (let skillId of attackUnit.enumerateSkills()) {
-        let funcMap = isAfflictorFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                if (func.call(this, attackUnit, lossesInCombat, result)) {
-                    return true;
-                }
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
+        let func = getSkillFunc(skillId, isAfflictorFuncMap);
+        if (func?.call(this, attackUnit, lossesInCombat, result) ?? false) {
+            return true;
         }
         switch (skillId) {
             case Weapon.DuskDawnStaff:

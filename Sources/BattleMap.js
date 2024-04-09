@@ -1879,17 +1879,13 @@ class BattleMap {
         }
     }
 
+    /**
+     * @param {Tile} targetTile
+     * @param {number} special
+     * @returns {Generator<Tile>}
+     */
     * __enumerateRangedSpecialTiles(targetTile, special) {
-        let skillId = special;
-        let funcMap = enumerateRangedSpecialTilesFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                yield* func.call(this, targetTile);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        yield* getSkillFunc(special, enumerateRangedSpecialTilesFuncMap)?.call(this, targetTile) ?? [];
         switch (special) {
             case Special.RisingFlame:
             case Special.BlazingFlame:
@@ -1898,9 +1894,7 @@ class BattleMap {
                 }
                 break;
             case Special.GrowingFlame:
-                for (let tile of this.__enumerateRangedSpecialTiles(targetTile, Special.RisingFlame)) {
-                    yield tile;
-                }
+                yield* this.__enumerateRangedSpecialTiles(targetTile, Special.RisingFlame);
                 for (let x = targetTile.posX - 1; x <= targetTile.posX + 1; x += 2) {
                     for (let y = targetTile.posY - 1; y <= targetTile.posY + 1; y += 2) {
                         yield this.getTile(x, y);
@@ -1917,9 +1911,7 @@ class BattleMap {
                 }
                 break;
             case Special.GrowingLight:
-                for (let tile of this.__enumerateRangedSpecialTiles(targetTile, Special.RisingLight)) {
-                    yield tile;
-                }
+                yield* this.__enumerateRangedSpecialTiles(targetTile, Special.RisingLight);
                 yield this.getTile(targetTile.posX - 2, targetTile.posY);
                 yield this.getTile(targetTile.posX + 2, targetTile.posY);
                 yield this.getTile(targetTile.posX, targetTile.posY - 2);
@@ -1985,9 +1977,7 @@ class BattleMap {
         }
     }
 
-    *__enumerateTeleportTiles(
-        unit
-    ) {
+    * __enumerateTeleportTiles(unit) {
         if (unit.hasStatusEffect(StatusEffectType.AirOrders)) {
             yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
         }
@@ -2023,205 +2013,13 @@ class BattleMap {
         }
 
         for (let skillId of unit.enumerateSkills()) {
-            let funcMap = enumerateTeleportTilesForUnitFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    yield* func.call(this, unit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
-            switch (skillId) {
-                case PassiveB.AerialManeuvers:
-                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit); // 2, 2
-                    break;
-                case PassiveC.InevitableDeathPlus: {
-                    yield* this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
-                }
-                    break;
-                case PassiveC.TipTheScales: {
-                    let allyCondFunc = ally => ally.hasStatusEffect(StatusEffectType.RallySpectrum);
-                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
-                        unit, 5, 1, allyCondFunc
-                    );
-                }
-                    break;
-                case Weapon.DivineDraught:
-                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
-                        unit, 3, 2, ally => ally.isPartner(unit)
-                    );
-                    break;
-                case PassiveB.SoaringWings:
-                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
-                    break;
-                case PassiveB.DazzlingShift:
-                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
-                    break;
-                case Weapon.AstraBlade:
-                case Weapon.Death:
-                    if (unit.isWeaponSpecialRefined) {
-                        yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
-                    }
-                    break;
-                case Weapon.SilentPower:
-                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                        if (unit.partnerHeroIndex === ally.heroIndex) {
-                            yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
-                        }
-                    }
-                    break;
-                case Weapon.MagicRabbits:
-                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
-                    break;
-                case Weapon.TomeOfFavors:
-                    if (unit.isWeaponSpecialRefined) {
-                        for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                            if (isWeaponTypeBeast(ally.weaponType) && ally.heroInfo.canEquipRefreshSkill()) {
-                                yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
-                            }
-                        }
-                    }
-                    break;
-                case Weapon.FujinYumi:
-                    if (unit.isWeaponSpecialRefined) {
-                        if (unit.hpPercentage >= 50) {
-                            yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
-                        }
-                    }
-                    break;
-                case Weapon.NabataKunai:
-                case Weapon.LanceOfFrelia:
-                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
-                    break;
-                case Weapon.Gurimowaru:
-                    if (unit.isWeaponRefined) {
-                        yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
-                    } else {
-                        if (unit.hpPercentage >= 50) {
-                            yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
-                        }
-                    }
-                    break;
-                case PassiveB.TeniNoKona:
-                case Weapon.ApotheosisSpear:
-                    {
-                        let threshold = 50;
-                        if (skillId == PassiveB.TeniNoKona) {
-                            threshold = 80;
-                        } else if (skillId == Weapon.ApotheosisSpear) {
-                            threshold = 0;
-                        }
-                        if (unit.hpPercentage >= threshold) {
-                            yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
-                        }
-                    }
-                    break;
-                case PassiveB.WingsOfMercy4:
-                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                        for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)) {
-                            if (ally.hpPercentage <= 99) {
-                                for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1)) {
-                                    yield tile;
-                                }
-                            }
-                        }
-                        if (ally.hpPercentage <= 60) {
-                            yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
-                        }
-                    }
-                    break;
-                case PassiveB.Kyuen2:
-                case PassiveB.Kyuen3:
-                case Weapon.FlowerLance:
-                case Weapon.LanceOfHeroics:
-                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                        let threshold = 0;
-                        switch (skillId) {
-                            case PassiveB.Kyuen2:
-                                threshold = 40;
-                                break;
-                            case PassiveB.Kyuen3:
-                                threshold = 50;
-                                break;
-                            case Weapon.FlowerLance:
-                            case Weapon.LanceOfHeroics:
-                                threshold = 80;
-                                break;
-                        }
-                        if (ally.hpPercentage <= threshold) {
-                            yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
-                        }
-                    }
-                    break;
-                case Weapon.Noatun: {
-                    let threshold = 50;
-                    if (!unit.isWeaponRefined) {
-                        threshold = 40;
-                    }
-
-                    if (unit.hpPercentage <= threshold) {
-                        yield* this.__enumerateEscapeRoute(unit);
-                    }
-
-                    if (unit.isWeaponSpecialRefined) {
-                        if (unit.hpPercentage >= 50) {
-                            yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
-                        }
-                    }
-                }
-                    break;
-                case PassiveB.Ridatsu3:
-                    if (unit.hpPercentage <= 50) {
-                        yield* this.__enumerateEscapeRoute(unit);
-                    }
-                    break;
-                case PassiveB.EscapeRoute4:
-                    if (unit.hpPercentage <= 60) {
-                        yield* this.__enumerateEscapeRoute(unit);
-                    }
-                    if (unit.hpPercentage <= 99) {
-                        yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 3, 1);
-                    }
-                    break;
-                case PassiveB.KyokugiHiKo1:
-                case PassiveB.KyokugiHiKo2:
-                case PassiveB.KyokugiHiKo3:
-                    if (skillId == PassiveB.KyokugiHiKo3 ||
-                        skillId == PassiveB.KyokugiHiKo2 && unit.hpPercentage >= 50 ||
-                        skillId == PassiveB.KyokugiHiKo1 && unit.isFullHp) {
-                        let allyCondFunc = ally =>
-                            [MoveType.Armor, MoveType.Infantry, MoveType.Cavalry].includes(ally.moveType);
-                        yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
-                            unit, 2, 1, allyCondFunc
-                        );
-                    }
-                    break;
-                case PassiveB.HentaiHiko1:
-                case PassiveB.HentaiHiko2:
-                case PassiveB.HentaiHiko3:
-                    if (skillId == PassiveB.HentaiHiko3 ||
-                        skillId == PassiveB.HentaiHiko2 && unit.hpPercentage >= 50 ||
-                        skillId == PassiveB.HentaiHiko1 && unit.isFullHp) {
-                        yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
-                            unit, 2, 1, ally => ally.moveType === MoveType.Flying
-                        );
-                    }
-                    break;
-            }
+            yield* getSkillFunc(skillId, enumerateTeleportTilesForUnitFuncMap)?.call(this, unit) ?? [];
+            yield* this.#enumerateTeleportTilesForUnit(skillId, unit);
         }
 
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
             for (let skillId of ally.enumerateSkills()) {
-                let funcMap = enumerateTeleportTilesForAllyFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        yield* func.call(this, unit, ally);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
+                yield* getSkillFunc(skillId, enumerateTeleportTilesForAllyFuncMap)?.call(this, unit, ally) ?? [];
             }
         }
 
@@ -2236,7 +2034,7 @@ class BattleMap {
                         break;
                     case Weapon.HinokaNoKounagitou:
                         if (ally.isWeaponSpecialRefined) {
-                            if (unit.moveType == MoveType.Infantry || unit.moveType == MoveType.Flying) {
+                            if (unit.moveType === MoveType.Infantry || unit.moveType === MoveType.Flying) {
                                 yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
                             }
                         }
@@ -2252,22 +2050,22 @@ class BattleMap {
                         break;
                     case PassiveC.SorakaranoSendo3:
                         // 空からの先導
-                        if (unit.moveType == MoveType.Armor || unit.moveType == MoveType.Infantry) {
+                        if (unit.moveType === MoveType.Armor || unit.moveType === MoveType.Infantry) {
                             yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
                         }
                         break;
                     case PassiveC.Guidance4:
-                        if (unit.moveType == MoveType.Armor || unit.moveType == MoveType.Infantry) {
+                        if (unit.moveType === MoveType.Armor || unit.moveType === MoveType.Infantry) {
                             yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
                         }
                         break;
                     case PassiveC.SoaringGuidance:
-                        if (unit.moveType == MoveType.Infantry || unit.moveType == MoveType.Flying) {
+                        if (unit.moveType === MoveType.Infantry || unit.moveType === MoveType.Flying) {
                             yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
                         }
                         break;
                     case PassiveC.HikonoSendo3:
-                        if (unit.moveType == MoveType.Flying) {
+                        if (unit.moveType === MoveType.Flying) {
                             // 飛行の先導
                             if (ally.hasPassiveSkill(PassiveC.HikonoSendo3)) {
                                 yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
@@ -2276,6 +2074,185 @@ class BattleMap {
                         break;
                 }
             }
+        }
+    }
+
+    * #enumerateTeleportTilesForUnit(skillId, unit) {
+        switch (skillId) {
+            case PassiveB.AerialManeuvers:
+                yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit); // 2, 2
+                break;
+            case PassiveC.InevitableDeathPlus: {
+                yield* this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
+            }
+                break;
+            case PassiveC.TipTheScales: {
+                let allyCondFunc = ally => ally.hasStatusEffect(StatusEffectType.RallySpectrum);
+                yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+                    unit, 5, 1, allyCondFunc
+                );
+            }
+                break;
+            case Weapon.DivineDraught:
+                yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+                    unit, 3, 2, ally => ally.isPartner(unit)
+                );
+                break;
+            case PassiveB.SoaringWings:
+                yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
+                break;
+            case PassiveB.DazzlingShift:
+                yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+                break;
+            case Weapon.AstraBlade:
+            case Weapon.Death:
+                if (unit.isWeaponSpecialRefined) {
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
+                }
+                break;
+            case Weapon.SilentPower:
+                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                    if (unit.partnerHeroIndex === ally.heroIndex) {
+                        yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
+                    }
+                }
+                break;
+            case Weapon.MagicRabbits:
+                yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
+                break;
+            case Weapon.TomeOfFavors:
+                if (unit.isWeaponSpecialRefined) {
+                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                        if (isWeaponTypeBeast(ally.weaponType) && ally.heroInfo.canEquipRefreshSkill()) {
+                            yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
+                        }
+                    }
+                }
+                break;
+            case Weapon.FujinYumi:
+                if (unit.isWeaponSpecialRefined) {
+                    if (unit.hpPercentage >= 50) {
+                        yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+                    }
+                }
+                break;
+            case Weapon.NabataKunai:
+            case Weapon.LanceOfFrelia:
+                yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
+                break;
+            case Weapon.Gurimowaru:
+                if (unit.isWeaponRefined) {
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit);
+                } else {
+                    if (unit.hpPercentage >= 50) {
+                        yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+                    }
+                }
+                break;
+            case PassiveB.TeniNoKona:
+            case Weapon.ApotheosisSpear: {
+                let threshold = 50;
+                if (skillId === PassiveB.TeniNoKona) {
+                    threshold = 80;
+                } else if (skillId === Weapon.ApotheosisSpear) {
+                    threshold = 0;
+                }
+                if (unit.hpPercentage >= threshold) {
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+                }
+            }
+                break;
+            case PassiveB.WingsOfMercy4:
+                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)) {
+                        if (ally.hpPercentage <= 99) {
+                            for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1)) {
+                                yield tile;
+                            }
+                        }
+                    }
+                    if (ally.hpPercentage <= 60) {
+                        yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
+                    }
+                }
+                break;
+            case PassiveB.Kyuen2:
+            case PassiveB.Kyuen3:
+            case Weapon.FlowerLance:
+            case Weapon.LanceOfHeroics:
+                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                    let threshold = 0;
+                    switch (skillId) {
+                        case PassiveB.Kyuen2:
+                            threshold = 40;
+                            break;
+                        case PassiveB.Kyuen3:
+                            threshold = 50;
+                            break;
+                        case Weapon.FlowerLance:
+                        case Weapon.LanceOfHeroics:
+                            threshold = 80;
+                            break;
+                    }
+                    if (ally.hpPercentage <= threshold) {
+                        yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
+                    }
+                }
+                break;
+            case Weapon.Noatun: {
+                let threshold = 50;
+                if (!unit.isWeaponRefined) {
+                    threshold = 40;
+                }
+
+                if (unit.hpPercentage <= threshold) {
+                    yield* this.__enumerateEscapeRoute(unit);
+                }
+
+                if (unit.isWeaponSpecialRefined) {
+                    if (unit.hpPercentage >= 50) {
+                        yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+                    }
+                }
+            }
+                break;
+            case PassiveB.Ridatsu3:
+                if (unit.hpPercentage <= 50) {
+                    yield* this.__enumerateEscapeRoute(unit);
+                }
+                break;
+            case PassiveB.EscapeRoute4:
+                if (unit.hpPercentage <= 60) {
+                    yield* this.__enumerateEscapeRoute(unit);
+                }
+                if (unit.hpPercentage <= 99) {
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 3, 1);
+                }
+                break;
+            case PassiveB.KyokugiHiKo1:
+            case PassiveB.KyokugiHiKo2:
+            case PassiveB.KyokugiHiKo3:
+                if (skillId === PassiveB.KyokugiHiKo3 ||
+                    skillId === PassiveB.KyokugiHiKo2 && unit.hpPercentage >= 50 ||
+                    skillId === PassiveB.KyokugiHiKo1 && unit.isFullHp) {
+                    let allyCondFunc = ally =>
+                        [MoveType.Armor, MoveType.Infantry, MoveType.Cavalry].includes(ally.moveType);
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+                        unit, 2, 1, allyCondFunc
+                    );
+                }
+                break;
+            case PassiveB.HentaiHiko1:
+            case PassiveB.HentaiHiko2:
+            case PassiveB.HentaiHiko3:
+                if (skillId === PassiveB.HentaiHiko3 ||
+                    skillId === PassiveB.HentaiHiko2 && unit.hpPercentage >= 50 ||
+                    skillId === PassiveB.HentaiHiko1 && unit.isFullHp) {
+                    yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(
+                        unit, 2, 1, ally => ally.moveType === MoveType.Flying
+                    );
+                }
+                break;
         }
     }
 

@@ -1400,6 +1400,22 @@
     );
 }
 
+// 天照
+{
+    let skillId = Special.Tensho;
+    applySpecialSkillEffectWhenHealingFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            for (let allies of this.enumerateUnitsInTheSameGroupOnMap(supporterUnit, false)) {
+                if (allies === targetUnit) {
+                    continue;
+                }
+                allies.heal(10);
+            }
+            supporterUnit.setSpecialCountToMax();
+        }
+    );
+}
+
 // 祝福
 {
     let setSkill = (skillId, buffFunc) => {
@@ -4074,12 +4090,12 @@
     };
     let setSkill = (skillId, func, isBulwalk4) => {
         canActivateObstructToAdjacentTilesFuncMap.set(skillId,
-            function (unit, moveUnit) {
+            function (moveUnit) {
                 return true;
             }
         );
         canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
-            function (unit, moveUnit) {
+            function (moveUnit) {
                 return true;
             }
         );
@@ -7031,8 +7047,8 @@
         }
     );
     canActivateObstructToAdjacentTilesFuncMap.set(skillId,
-        function (unit, moveUnit) {
-            return unit.isWeaponSpecialRefined && moveUnit.isMeleeWeaponType();
+        function (moveUnit) {
+            return this.isWeaponSpecialRefined && moveUnit.isMeleeWeaponType();
         }
     );
     canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,

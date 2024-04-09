@@ -807,15 +807,8 @@ class DamageCalculator {
             fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
         }
         for (let skillId of atkUnit.enumerateSkills()) {
-            let funcMap = addSpecialDamageAfterDefenderSpecialActivatedFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    fixedAddDamage += func.call(this, atkUnit, defUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            let func = getSkillFunc(skillId, addSpecialDamageAfterDefenderSpecialActivatedFuncMap);
+            fixedAddDamage += func?.call(this, atkUnit, defUnit) ?? 0;
         }
         switch (atkUnit.special) {
             case Special.IceMirror:
@@ -1185,15 +1178,8 @@ class DamageCalculator {
             // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
             if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
                 for (let skillId of defUnit.enumerateSkills()) {
-                    let funcMap = applyDamageReductionRatiosWhenCondSatisfiedFuncMap;
-                    if (funcMap.has(skillId)) {
-                        let func = funcMap.get(skillId);
-                        if (typeof func === "function") {
-                            func.call(this, atkUnit, defUnit);
-                        } else {
-                            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                        }
-                    }
+                    let func = getSkillFunc(skillId, applyDamageReductionRatiosWhenCondSatisfiedFuncMap);
+                    func?.call(this, atkUnit, defUnit);
                     switch (skillId) {
                         case Special.DragonBlast:
                             if (defUnit.tmpSpecialCount === 0 ||
@@ -1557,29 +1543,20 @@ class DamageCalculator {
      */
     #applySpecialDamageReductionPerAttack(targetUnit, enemyUnit, context) {
         for (let skillId of targetUnit.enumerateSkills()) {
-            let funcMap = applySpecialDamageReductionPerAttackFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, targetUnit, enemyUnit, context);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            let func = getSkillFunc(skillId, applySpecialDamageReductionPerAttackFuncMap);
+            func?.call(this, targetUnit, enemyUnit, context);
         }
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {DamageCalcContext} context
+     */
     applySkillEffectAfterSpecialActivated(targetUnit, enemyUnit, context) {
         for (let skillId of targetUnit.enumerateSkills()) {
-            let funcMap = applySkillEffectAfterSpecialActivatedFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, targetUnit, enemyUnit, context);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            let func = getSkillFunc(skillId, applySkillEffectAfterSpecialActivatedFuncMap);
+            func?.call(this, targetUnit, enemyUnit, context);
             switch (skillId) {
                 case Special.SupremeAstra:
                     if (!targetUnit.isOneTimeActionActivatedForSpecial) {
@@ -1596,15 +1573,8 @@ class DamageCalculator {
 
     __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial) {
         for (let skillId of targetUnit.enumerateSkills()) {
-            let funcMap = applySkillEffectsPerAttackFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, targetUnit, enemyUnit, canActivateAttackerSpecial);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            let func = getSkillFunc(skillId, applySkillEffectsPerAttackFuncMap);
+            func?.call(this, targetUnit, enemyUnit, canActivateAttackerSpecial);
             switch (skillId) {
                 case Weapon.GustyWarBow:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
@@ -1658,15 +1628,7 @@ class DamageCalculator {
             }
         }
         for (let skillId of targetUnit.enumerateSkills()) {
-            let funcMap = applySkillEffectsPerCombatFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, targetUnit, enemyUnit, context);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            getSkillFunc(skillId, applySkillEffectsPerCombatFuncMap)?.call(this, targetUnit, enemyUnit, context);
         }
     }
 
@@ -1838,15 +1800,8 @@ class DamageCalculator {
 
         if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
             for (let skillId of defUnit.enumerateSkills()) {
-                let funcMap = activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        func.call(this, defUnit, atkUnit);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
+                let func = getSkillFunc(skillId, activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap);
+                func?.call(this, defUnit, atkUnit);
             }
             switch (defUnit.special) {
                 case Special.IceMirror2:

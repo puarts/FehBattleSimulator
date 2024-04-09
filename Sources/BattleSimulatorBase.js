@@ -3542,30 +3542,16 @@ class BattleSimulatorBase {
         // 優先度の高い再行動スキルの評価
         if (atkUnit.isAlive) {
             for (let skillId of atkUnit.enumerateSkills()) {
-                let funcMap = applyHighPriorityAnotherActionSkillEffectFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        func.call(this, atkUnit, defUnit, tileToAttack);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
+                let func = getSkillFunc(skillId, applyHighPriorityAnotherActionSkillEffectFuncMap);
+                func?.call(this, atkUnit, defUnit, tileToAttack);
             }
         }
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         if (atkUnit.isAlive) {
             for (let skillId of atkUnit.enumerateSkills()) {
-                let funcMap = applySkillEffectAfterMovementSkillsActivatedFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        func.call(this, atkUnit, defUnit, tileToAttack);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
+                let func = getSkillFunc(skillId, applySkillEffectAfterMovementSkillsActivatedFuncMap);
+                func?.call(this, atkUnit, defUnit, tileToAttack);
                 switch (skillId) {
                     case PassiveB.GoldUnwinding: {
                         let logMessage = `${atkUnit.nameWithGroup}のBスキル効果発動可能まで残り${atkUnit.restPassiveBSkillAvailableTurn}ターン`;
@@ -3805,37 +3791,30 @@ class BattleSimulatorBase {
         let isMoved = false;
         let executesTrap = false; // トラップは迅雷や再移動の発動後に評価する必要がある
         for (let skillId of atkUnit.enumerateSkills()) {
-            let funcMap = applyMovementSkillAfterCombatFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    isMoved = func.call(this, atkUnit, attackTargetUnit, executesTrap);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            let func = getSkillFunc(skillId, applyMovementSkillAfterCombatFuncMap);
+            isMoved |= func?.call(this, atkUnit, attackTargetUnit, executesTrap) ?? false;
             switch (skillId) {
                 case PassiveB.Repel4:
                 case PassiveB.KaihiTatakikomi3:
                 case PassiveB.Tatakikomi:
-                    isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    isMoved |= this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterShove(unit, target, tile),
                         false, true, executesTrap);
                     break;
                 case PassiveB.Kirikomi:
-                    isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    isMoved |= this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterSwap(unit, target, tile),
                         false, true, executesTrap);
                     break;
                 case PassiveB.Hikikomi:
-                    isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    isMoved |= this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile),
                         false, true, executesTrap);
                     break;
                 case PassiveB.KaihiIchigekiridatsu3:
                 case PassiveB.CloseCall4:
                 case PassiveB.Ichigekiridatsu:
-                    isMoved = this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    isMoved |= this.__applyMovementAssist(atkUnit, attackTargetUnit,
                         (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile),
                         false, false, executesTrap);
                     break;
@@ -5926,15 +5905,8 @@ class BattleSimulatorBase {
         // todo: ちゃんと実装する
         let assistType = unit.supportInfo.assistType;
         let skillId = unit.support;
-        let funcMap = getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                assistType = func.call(this, unit);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        let func = getSkillFunc(skillId, getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap);
+        assistType = func?.call(this, unit) ?? assistType;
         switch (assistType) {
             case AssistType.Refresh:
                 return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits);
@@ -8367,188 +8339,208 @@ class BattleSimulatorBase {
 
     __applyMovementAssistSkill(assistUnit, targetUnit) {
         for (let skillId of assistUnit.enumerateSkills()) {
-            let funcMap = applyMovementAssistSkillFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, assistUnit, targetUnit);
+            getSkillFunc(skillId, applyMovementAssistSkillFuncMap)?.call(this, assistUnit, targetUnit);
+            this.#applyMovementAssistSkill(skillId, assistUnit, targetUnit);
+        }
+    }
+
+    #applyMovementAssistSkill(skillId, assistUnit, targetUnit) {
+        switch (skillId) {
+            case Weapon.RetainersReport:
+                if (assistUnit.isWeaponSpecialRefined) {
+                    for (let u of this.enumerateUnitsInDifferentGroupOnMap(assistUnit)) {
+                        if (this.__isInCross(assistUnit, u) ||
+                            this.__isInCross(targetUnit, u)) {
+                            u.applyDebuffs(-7, 0, -7, -7);
+                            u.addStatusEffect(StatusEffectType.Guard);
+                            u.addStatusEffect(StatusEffectType.Exposure);
+                        }
+                    }
+                }
+                break;
+            case Weapon.EverlivingBreath: {
+                let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(assistUnit, 2, true));
+                units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
+                // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
+                let unitSet = new Set(units);
+                for (let u of unitSet) {
+                    u.heal(10);
+                    u.clearNegativeStatusEffects();
+                }
+                break;
+            }
+            case Weapon.AzureLance:
+                if (assistUnit.isWeaponSpecialRefined) {
+                    assistUnit.applyAtkBuff(6);
+                    assistUnit.applySpdBuff(6);
+                    targetUnit.applyAtkBuff(6);
+                    targetUnit.applySpdBuff(6);
+                    assistUnit.heal(10);
+                    targetUnit.heal(10);
+                }
+                break;
+            case Weapon.DestinysBow:
+                if (g_appData.currentTurn <= 4) {
+                    if (!assistUnit.isOneTimeActionActivatedForWeapon) {
+                        assistUnit.reduceSpecialCount(1);
+                        targetUnit.reduceSpecialCount(1);
+                        assistUnit.isOneTimeActionActivatedForWeapon = true;
+                    }
+                }
+                break;
+            case Weapon.GerberaAxe:
+                assistUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                targetUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                break;
+            case Weapon.Sogun:
+                if (assistUnit.isWeaponRefined) {
+                    assistUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                    targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
+                }
+                break;
+            case PassiveB.AtkSpdSnag3:
+                for (let u of this.__findNearestEnemies(assistUnit, 4)) {
+                    u.applyAtkDebuff(-6);
+                    u.applySpdDebuff(-6);
+                }
+                for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                    u.applyAtkDebuff(-6);
+                    u.applySpdDebuff(-6);
+                }
+                break;
+            case PassiveB.AtkDefSnag3:
+                for (let u of this.__findNearestEnemies(assistUnit, 4)) {
+                    u.applyAtkDebuff(-6);
+                    u.applyDefDebuff(-6);
+                }
+                for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                    u.applyAtkDebuff(-6);
+                    u.applyDefDebuff(-6);
+                }
+                break;
+            case PassiveB.AtkResSnag3:
+                for (let u of this.__findNearestEnemies(assistUnit, 4)) {
+                    u.applyDebuffs(-6, 0, 0, -6);
+                }
+                for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                    u.applyDebuffs(-6, 0, 0, -6);
+                }
+                break;
+            case PassiveB.SpdResSnag3:
+                for (let u of this.__findNearestEnemies(assistUnit, 4)) {
+                    u.applySpdDebuff(-6);
+                    u.applyResDebuff(-6);
+                }
+                for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                    u.applySpdDebuff(-6);
+                    u.applyResDebuff(-6);
+                }
+                break;
+            case PassiveB.SpdDefSnag3:
+                for (let u of this.__findNearestEnemies(assistUnit, 4)) {
+                    u.applySpdDebuff(-6);
+                    u.applyDefDebuff(-6);
+                }
+                for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                    u.applySpdDebuff(-6);
+                    u.applyDefDebuff(-6);
+                }
+                break;
+            case PassiveB.DefResSnag3:
+                for (let u of this.__findNearestEnemies(assistUnit, 4)) {
+                    u.applyDefDebuff(-6);
+                    u.applyResDebuff(-6);
+                }
+                for (let u of this.__findNearestEnemies(targetUnit, 4)) {
+                    u.applyDefDebuff(-6);
+                    u.applyResDebuff(-6);
+                }
+                break;
+            case Weapon.TrasenshiNoTsumekiba:
+                if (!assistUnit.isWeaponRefined) {
+                    this.__applyDebuffToEnemiesWithin2Spaces(assistUnit, x => x.applyAllDebuff(-4));
+                    this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-4));
                 } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+                    this.__applyDebuffToEnemiesWithin2Spaces(assistUnit, x => x.applyAllDebuff(-5));
+                    this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-5));
+                    if (assistUnit.isWeaponSpecialRefined) {
+                        let units = Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(assistUnit, 2));
+                        units = units.concat(Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)));
+                        // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
+                        let unitSet = new Set(units);
+                        for (let u of unitSet) {
+                            u.increaseSpecialCount(1);
+                        }
+                    }
                 }
-            }
-            switch (skillId) {
-                case Weapon.RetainersReport:
-                    if (assistUnit.isWeaponSpecialRefined) {
-                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(assistUnit)) {
-                            if (this.__isInCross(assistUnit, u) ||
-                                this.__isInCross(targetUnit, u)) {
-                                u.applyDebuffs(-7, 0, -7, -7);
-                                u.addStatusEffect(StatusEffectType.Guard);
-                                u.addStatusEffect(StatusEffectType.Exposure);
-                            }
-                        }
-                    }
-                    break;
-                case Weapon.EverlivingBreath: {
-                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(assistUnit, 2, true));
-                    units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
-                    // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
-                    let unitSet = new Set(units);
-                    for (let u of unitSet) {
-                        u.heal(10);
-                        u.clearNegativeStatusEffects();
-                    }
-                    break;
+                break;
+            case Weapon.RazuwarudoNoMaiken:
+                for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
+                    ally.applyAllBuff(4);
                 }
-                case Weapon.AzureLance:
-                    if (assistUnit.isWeaponSpecialRefined) {
-                        assistUnit.applyAtkBuff(6);
-                        assistUnit.applySpdBuff(6);
-                        targetUnit.applyAtkBuff(6);
-                        targetUnit.applySpdBuff(6);
-                        assistUnit.heal(10);
-                        targetUnit.heal(10);
-                    }
-                    break;
-                case Weapon.DestinysBow:
-                    if (g_appData.currentTurn <= 4) {
-                        if (!assistUnit.isOneTimeActionActivatedForWeapon) {
-                            assistUnit.reduceSpecialCount(1);
-                            targetUnit.reduceSpecialCount(1);
-                            assistUnit.isOneTimeActionActivatedForWeapon = true;
-                        }
-                    }
-                    break;
-                case Weapon.GerberaAxe:
-                    assistUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
-                    targetUnit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
-                    break;
-                case Weapon.Sogun:
-                    if (assistUnit.isWeaponRefined) {
-                        assistUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
-                        targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus);
-                    }
-                    break;
-                case PassiveB.AtkSpdSnag3:
-                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
-                        u.applyAtkDebuff(-6);
-                        u.applySpdDebuff(-6);
-                    }
-                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
-                        u.applyAtkDebuff(-6);
-                        u.applySpdDebuff(-6);
-                    }
-                    break;
-                case PassiveB.AtkDefSnag3:
-                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
-                        u.applyAtkDebuff(-6);
-                        u.applyDefDebuff(-6);
-                    }
-                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
-                        u.applyAtkDebuff(-6);
-                        u.applyDefDebuff(-6);
-                    }
-                    break;
-                case PassiveB.AtkResSnag3:
-                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
-                        u.applyDebuffs(-6, 0, 0, -6);
-                    }
-                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
-                        u.applyDebuffs(-6, 0, 0, -6);
-                    }
-                    break;
-                case PassiveB.SpdResSnag3:
-                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
-                        u.applySpdDebuff(-6);
-                        u.applyResDebuff(-6);
-                    }
-                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
-                        u.applySpdDebuff(-6);
-                        u.applyResDebuff(-6);
-                    }
-                    break;
-                case PassiveB.SpdDefSnag3:
-                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
-                        u.applySpdDebuff(-6);
-                        u.applyDefDebuff(-6);
-                    }
-                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
-                        u.applySpdDebuff(-6);
-                        u.applyDefDebuff(-6);
-                    }
-                    break;
-                case PassiveB.DefResSnag3:
-                    for (let u of this.__findNearestEnemies(assistUnit, 4)) {
-                        u.applyDefDebuff(-6);
-                        u.applyResDebuff(-6);
-                    }
-                    for (let u of this.__findNearestEnemies(targetUnit, 4)) {
-                        u.applyDefDebuff(-6);
-                        u.applyResDebuff(-6);
-                    }
-                    break;
-                case Weapon.TrasenshiNoTsumekiba:
-                    if (!assistUnit.isWeaponRefined) {
-                        this.__applyDebuffToEnemiesWithin2Spaces(assistUnit, x => x.applyAllDebuff(-4));
-                        this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-4));
-                    } else {
-                        this.__applyDebuffToEnemiesWithin2Spaces(assistUnit, x => x.applyAllDebuff(-5));
-                        this.__applyDebuffToEnemiesWithin2Spaces(targetUnit, x => x.applyAllDebuff(-5));
-                        if (assistUnit.isWeaponSpecialRefined) {
-                            let units = Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(assistUnit, 2));
-                            units = units.concat(Array.from(this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2)));
-                            // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
-                            let unitSet = new Set(units);
-                            for (let u of unitSet) {
-                                u.increaseSpecialCount(1);
-                            }
-                        }
-                    }
-                    break;
-                case Weapon.RazuwarudoNoMaiken:
-                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
-                        ally.applyAllBuff(4);
-                    }
-                    for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(assistUnit, 2, false)) {
-                        ally.applyAllBuff(4);
-                    }
-                    break;
-                case PassiveB.AtkSpdLink2:
+                for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(assistUnit, 2, false)) {
+                    ally.applyAllBuff(4);
+                }
+                break;
+            case PassiveB.AtkSpdLink2:
+                this.__applyLinkSkill(assistUnit, targetUnit,
+                    x => {
+                        x.applyAtkBuff(4);
+                        x.applySpdBuff(4);
+                    });
+                break;
+            case Weapon.OrdinNoKokusyo:
+            case Weapon.KinranNoSyo:
+                if (assistUnit.isWeaponSpecialRefined) {
                     this.__applyLinkSkill(assistUnit, targetUnit,
-                        x => { x.applyAtkBuff(4); x.applySpdBuff(4); });
-                    break;
-                case Weapon.OrdinNoKokusyo:
-                case Weapon.KinranNoSyo:
-                    if (assistUnit.isWeaponSpecialRefined) {
-                        this.__applyLinkSkill(assistUnit, targetUnit,
-                            x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
-                    }
-                    break;
-                case PassiveB.AtkSpdLink3:
-                    this.__applyLinkSkill(assistUnit, targetUnit,
-                        x => { x.applyAtkBuff(6); x.applySpdBuff(6); });
-                    break;
-                case PassiveB.AtkDefLink3:
-                    this.__applyLinkSkill(assistUnit, targetUnit,
-                        x => { x.applyAtkBuff(6); x.applyDefBuff(6); });
-                    break;
-                case PassiveB.AtkResLink3:
-                    this.__applyLinkSkill(assistUnit, targetUnit,
-                        x => { x.applyAtkBuff(6); x.applyResBuff(6); });
-                    break;
-                case PassiveB.SpdDefLink3:
-                    this.__applyLinkSkill(assistUnit, targetUnit,
-                        x => { x.applySpdBuff(6); x.applyDefBuff(6); });
-                    break;
-                case PassiveB.SpdResLink3:
-                    this.__applyLinkSkill(assistUnit, targetUnit,
-                        x => { x.applySpdBuff(6); x.applyResBuff(6); });
-                    break;
-                case PassiveB.DefResLink3:
-                    this.__applyLinkSkill(assistUnit, targetUnit,
-                        x => { x.applyDefBuff(6); x.applyResBuff(6); });
-                    break;
-            }
+                        x => {
+                            x.applyAtkBuff(6);
+                            x.applySpdBuff(6);
+                        });
+                }
+                break;
+            case PassiveB.AtkSpdLink3:
+                this.__applyLinkSkill(assistUnit, targetUnit,
+                    x => {
+                        x.applyAtkBuff(6);
+                        x.applySpdBuff(6);
+                    });
+                break;
+            case PassiveB.AtkDefLink3:
+                this.__applyLinkSkill(assistUnit, targetUnit,
+                    x => {
+                        x.applyAtkBuff(6);
+                        x.applyDefBuff(6);
+                    });
+                break;
+            case PassiveB.AtkResLink3:
+                this.__applyLinkSkill(assistUnit, targetUnit,
+                    x => {
+                        x.applyAtkBuff(6);
+                        x.applyResBuff(6);
+                    });
+                break;
+            case PassiveB.SpdDefLink3:
+                this.__applyLinkSkill(assistUnit, targetUnit,
+                    x => {
+                        x.applySpdBuff(6);
+                        x.applyDefBuff(6);
+                    });
+                break;
+            case PassiveB.SpdResLink3:
+                this.__applyLinkSkill(assistUnit, targetUnit,
+                    x => {
+                        x.applySpdBuff(6);
+                        x.applyResBuff(6);
+                    });
+                break;
+            case PassiveB.DefResLink3:
+                this.__applyLinkSkill(assistUnit, targetUnit,
+                    x => {
+                        x.applyDefBuff(6);
+                        x.applyResBuff(6);
+                    });
+                break;
         }
     }
 
@@ -8556,232 +8548,278 @@ class BattleSimulatorBase {
         applyBuffFunc(unit);
         applyBuffFunc(targetUnit);
     }
+
     /**
-     * @param  {Unit} skillOwnerUnit
-     * @param  {Unit} targetUnit
+     * @param  {Unit} supportUnit
+     * @param  {Unit} supportTargetUnit
      */
-    __applyRefresh(skillOwnerUnit, targetUnit) {
-        if (targetUnit == null) { return false; }
-        targetUnit.isActionDone = false;
-        for (let skillId of skillOwnerUnit.enumerateSkills()) {
-            let funcMap = applyRefreshFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, skillOwnerUnit, targetUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
-            switch (skillId) {
-                case Weapon.NightmaresEgg:
-                    targetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2)) {
-                        if (unit === skillOwnerUnit) { continue; }
-                        unit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
-                    }
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
-                        if (skillOwnerUnit.posX === unit.posX ||
-                            skillOwnerUnit.posY === unit.posY ||
-                            targetUnit.posX === unit.posX ||
-                            targetUnit.posY === unit.posY) {
-                            unit.addStatusEffect(StatusEffectType.Panic);
-                        }
-                    }
-                    break;
-                case Weapon.SevenfoldGifts:
-                    targetUnit.applyAllBuff(6);
-                    targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus)
-                    break;
-                case Support.CallToFlame:
-                    targetUnit.applyAtkBuff(6);
-                    targetUnit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
-                    if (isWeaponTypeBreath(targetUnit.weaponType)) {
-                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                    }
-                    break;
-                case Support.Play:
-                    if (skillOwnerUnit.weapon === Weapon.HyosyoNoBreath) {
-                        for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
-                            unit.applyAllDebuff(-4);
-                        }
-                    }
-                    break;
-                case Support.GrayWaves:
-                    {
-                        if ((targetUnit.moveType === MoveType.Infantry || targetUnit.moveType === MoveType.Flying)) {
-                            targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                        }
-                    }
-                    break;
-                case Support.GrayWaves2: {
-                    if ((targetUnit.moveType === MoveType.Infantry || targetUnit.moveType === MoveType.Flying)) {
-                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                    }
-                    targetUnit.addStatusEffect(StatusEffectType.NullPanic);
-                }
-                    break;
-                case Support.GentleDream:
-                case Support.GentleDreamPlus:
-                    for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwnerUnit, false)) {
-                        if (unit.posX === skillOwnerUnit.posX ||
-                            unit.posX === targetUnit.posX ||
-                            unit.posY === skillOwnerUnit.posY ||
-                            unit.posY === targetUnit.posY) {
-                            let amount = 3;
-                            if (skillId === Support.GentleDreamPlus) {
-                                amount = 4;
-                                unit.addStatusEffect(StatusEffectType.NeutralizesPenalties);
-                            }
-                            unit.applyAllBuff(amount);
-                            unit.addStatusEffect(StatusEffectType.AirOrders);
-                        }
-                    }
-                    break;
-                case Support.WhimsicalDream:
-                    {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
-                            if (skillOwnerUnit === unit) continue;
-                            unit.applyAtkBuff(5);
-                        }
-
-                        let targetEnemies = this.__findNearestEnemies(targetUnit, 4);
-                        for (let targetEnemy of targetEnemies) {
-                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
-                                unit.applyAtkDebuff(-5);
-                            }
-                        }
-                    }
-                    break;
-                case Support.WhimsicalDreamPlus:
-                    {
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
-                            if (skillOwnerUnit === unit) continue;
-                            unit.applyAtkBuff(6);
-                            unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
-                        }
-
-                        let targetEnemies = this.__findNearestEnemies(targetUnit, 5);
-                        for (let targetEnemy of targetEnemies) {
-                            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
-                                unit.applyAtkDebuff(-6);
-                            }
-                        }
-                    }
-                    break;
-                case Support.SweetDreams:
-                    targetUnit.applyAllBuff(3);
-                    for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
-                        unit.applyAllDebuff(-4);
-                    }
-                    break;
-                case Support.CloyingDreams:
-                    targetUnit.applyAllBuff(5);
-                    targetUnit.addStatusEffect(StatusEffectType.Charge);
-                    targetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
-                    for (let unit of this.__findNearestEnemies(targetUnit, 5)) {
-                        unit.applyAllDebuff(-5);
-                    }
-                    break;
-                case Support.FrightfulDream:
-                    this.__applyRuse(skillOwnerUnit, targetUnit, unit => unit.applyAllDebuff(-3));
-                    break;
-                case Weapon.FaithfulBreath:
-                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
-                        unit.applyDefDebuff(-6);
-                        unit.applyResDebuff(-6);
-                    }
-                    for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
-                        unit.applyDefDebuff(-6);
-                        unit.applyResDebuff(-6);
-                    }
-                    break;
-                case Weapon.EnvelopingBreath:
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit)) {
-                        if (this.__isInCross(unit, skillOwnerUnit) || this.__isInCross(unit, targetUnit)) {
-                            unit.applyAtkDebuff(-7);
-                            unit.applyResDebuff(-7);
-                            unit.addStatusEffect(StatusEffectType.Guard);
-                        }
-                    }
-                    break;
-                case Weapon.Urur:
-                    {
-                        targetUnit.applyAllBuff(3);
-                    }
-                    break;
-                case Weapon.DancingFlames:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwnerUnit, 1)) {
-                        unit.applyAllBuff(6);
-                    }
-                    break;
-                case Weapon.Veruzandhi:
-                    targetUnit.applyAllBuff(4);
-                    break;
-                case PassiveB.BlazeDance1: targetUnit.applyAtkBuff(2); break;
-                case PassiveB.BlazeDance2: targetUnit.applyAtkBuff(3); break;
-                case PassiveB.BlazeDance3: targetUnit.applyAtkBuff(4); break;
-                case PassiveB.GaleDance1: targetUnit.applySpdBuff(2); break;
-                case PassiveB.GaleDance2: targetUnit.applySpdBuff(3); break;
-                case PassiveB.GaleDance3: targetUnit.applySpdBuff(4); break;
-                case PassiveB.EarthDance1: targetUnit.applyDefBuff(3); break;
-                case PassiveB.EarthDance2: targetUnit.applyDefBuff(4); break;
-                case PassiveB.EarthDance3: targetUnit.applyDefBuff(5); break;
-                case PassiveB.TorrentDance1: targetUnit.applyResBuff(3); break;
-                case PassiveB.TorrentDance2: targetUnit.applyResBuff(4); break;
-                case PassiveB.TorrentDance3: targetUnit.applyResBuff(5); break;
-                case PassiveB.FirestormDance2: targetUnit.applyAtkBuff(3); targetUnit.applySpdBuff(3); break;
-                case PassiveB.FirestormDance3:
-                    targetUnit.applyAtkSpdBuffs(6);
-                    targetUnit.addStatusEffect(StatusEffectType.Desperation);
-                    break;
-                case PassiveB.CalderaDance1: targetUnit.applyAtkBuff(2); targetUnit.applyDefBuff(3); break;
-                case PassiveB.CalderaDance2: targetUnit.applyAtkBuff(3); targetUnit.applyDefBuff(4); break;
-                case PassiveB.FirefloodDance2: targetUnit.applyAtkBuff(3); targetUnit.applyResBuff(4); break;
-                case PassiveB.RockslideDance2: targetUnit.applySpdBuff(3); targetUnit.applyDefBuff(4); break;
-                case PassiveB.DelugeDance2: targetUnit.applySpdBuff(3); targetUnit.applyResBuff(4); break;
-                case PassiveB.GeyserDance1: targetUnit.applyDefBuff(3); targetUnit.applyResBuff(3); break;
-                case PassiveB.GeyserDance2: targetUnit.applyDefBuff(4); targetUnit.applyResBuff(4); break;
-                case Weapon.Sukurudo: targetUnit.applyAllBuff(3); break;
-                case PassiveB.AtkCantrip3:
-                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
-                        unit.applyAtkDebuff(-7);
-                    }
-                    break;
-                case PassiveB.SpdCantrip3:
-                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
-                        unit.applySpdDebuff(-7);
-                    }
-                    break;
-                case PassiveB.DefCantrip3:
-                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
-                        unit.applyDefDebuff(-7);
-                    }
-                    break;
-                case PassiveB.ResCantrip3:
-                    for (let unit of this.__findNearestEnemies(skillOwnerUnit, 4)) {
-                        unit.applyResDebuff(-7);
-                    }
-                    break;
-            }
+    __applyRefresh(supportUnit, supportTargetUnit) {
+        if (supportTargetUnit == null) { return false; }
+        supportTargetUnit.isActionDone = false;
+        for (let skillId of supportUnit.enumerateSkills()) {
+            getSkillFunc(skillId, applyRefreshFuncMap)?.call(this, supportUnit, supportTargetUnit);
+            this.#applyRefreshSkills(skillId, supportTargetUnit, supportUnit);
         }
 
         // 大地の舞い等の後に実行する必要がある
-        if (skillOwnerUnit.weapon === Weapon.SeireiNoHogu) {
+        if (supportUnit.weapon === Weapon.SeireiNoHogu) {
             let buffs = [
-                Number(targetUnit.atkBuff),
-                Number(targetUnit.spdBuff),
-                Number(targetUnit.defBuff),
-                Number(targetUnit.resBuff)
+                Number(supportTargetUnit.atkBuff),
+                Number(supportTargetUnit.spdBuff),
+                Number(supportTargetUnit.defBuff),
+                Number(supportTargetUnit.resBuff)
             ];
             let maxBuff = buffs.reduce(function (a, b) {
                 return Math.max(a, b);
             });
-            targetUnit.applyAllBuff(maxBuff);
+            supportTargetUnit.applyAllBuff(maxBuff);
         }
 
         return true;
     }
+
+    #applyRefreshSkills(skillId, supportTargetUnit, supportUnit) {
+        switch (skillId) {
+            case Weapon.NightmaresEgg:
+                supportTargetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supportTargetUnit, 2)) {
+                    if (unit === supportUnit) {
+                        continue;
+                    }
+                    unit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                }
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(supportUnit)) {
+                    if (supportUnit.posX === unit.posX ||
+                        supportUnit.posY === unit.posY ||
+                        supportTargetUnit.posX === unit.posX ||
+                        supportTargetUnit.posY === unit.posY) {
+                        unit.addStatusEffect(StatusEffectType.Panic);
+                    }
+                }
+                break;
+            case Weapon.SevenfoldGifts:
+                supportTargetUnit.applyAllBuff(6);
+                supportTargetUnit.addStatusEffect(StatusEffectType.FollowUpAttackPlus)
+                break;
+            case Support.CallToFlame:
+                supportTargetUnit.applyAtkBuff(6);
+                supportTargetUnit.addStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                if (isWeaponTypeBreath(supportTargetUnit.weaponType)) {
+                    supportTargetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                break;
+            case Support.Play:
+                if (supportUnit.weapon === Weapon.HyosyoNoBreath) {
+                    for (let unit of this.__findNearestEnemies(supportUnit, 4)) {
+                        unit.applyAllDebuff(-4);
+                    }
+                }
+                break;
+            case Support.GrayWaves: {
+                if ((supportTargetUnit.moveType === MoveType.Infantry || supportTargetUnit.moveType === MoveType.Flying)) {
+                    supportTargetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+            }
+                break;
+            case Support.GrayWaves2: {
+                if ((supportTargetUnit.moveType === MoveType.Infantry || supportTargetUnit.moveType === MoveType.Flying)) {
+                    supportTargetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                }
+                supportTargetUnit.addStatusEffect(StatusEffectType.NullPanic);
+            }
+                break;
+            case Support.GentleDream:
+            case Support.GentleDreamPlus:
+                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(supportUnit, false)) {
+                    if (unit.posX === supportUnit.posX ||
+                        unit.posX === supportTargetUnit.posX ||
+                        unit.posY === supportUnit.posY ||
+                        unit.posY === supportTargetUnit.posY) {
+                        let amount = 3;
+                        if (skillId === Support.GentleDreamPlus) {
+                            amount = 4;
+                            unit.addStatusEffect(StatusEffectType.NeutralizesPenalties);
+                        }
+                        unit.applyAllBuff(amount);
+                        unit.addStatusEffect(StatusEffectType.AirOrders);
+                    }
+                }
+                break;
+            case Support.WhimsicalDream: {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supportTargetUnit, 2, true)) {
+                    if (supportUnit === unit) continue;
+                    unit.applyAtkBuff(5);
+                }
+
+                let targetEnemies = this.__findNearestEnemies(supportTargetUnit, 4);
+                for (let targetEnemy of targetEnemies) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
+                        unit.applyAtkDebuff(-5);
+                    }
+                }
+            }
+                break;
+            case Support.WhimsicalDreamPlus: {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supportTargetUnit, 2, true)) {
+                    if (supportUnit === unit) continue;
+                    unit.applyAtkBuff(6);
+                    unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                }
+
+                let targetEnemies = this.__findNearestEnemies(supportTargetUnit, 5);
+                for (let targetEnemy of targetEnemies) {
+                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetEnemy, 2, true)) {
+                        unit.applyAtkDebuff(-6);
+                    }
+                }
+            }
+                break;
+            case Support.SweetDreams:
+                supportTargetUnit.applyAllBuff(3);
+                for (let unit of this.__findNearestEnemies(supportTargetUnit, 4)) {
+                    unit.applyAllDebuff(-4);
+                }
+                break;
+            case Support.CloyingDreams:
+                supportTargetUnit.applyAllBuff(5);
+                supportTargetUnit.addStatusEffect(StatusEffectType.Charge);
+                supportTargetUnit.addStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                for (let unit of this.__findNearestEnemies(supportTargetUnit, 5)) {
+                    unit.applyAllDebuff(-5);
+                }
+                break;
+            case Support.FrightfulDream:
+                this.__applyRuse(supportUnit, supportTargetUnit, unit => unit.applyAllDebuff(-3));
+                break;
+            case Weapon.FaithfulBreath:
+                for (let unit of this.__findNearestEnemies(supportUnit, 4)) {
+                    unit.applyDefDebuff(-6);
+                    unit.applyResDebuff(-6);
+                }
+                for (let unit of this.__findNearestEnemies(supportTargetUnit, 4)) {
+                    unit.applyDefDebuff(-6);
+                    unit.applyResDebuff(-6);
+                }
+                break;
+            case Weapon.EnvelopingBreath:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(supportUnit)) {
+                    if (this.__isInCross(unit, supportUnit) || this.__isInCross(unit, supportTargetUnit)) {
+                        unit.applyAtkDebuff(-7);
+                        unit.applyResDebuff(-7);
+                        unit.addStatusEffect(StatusEffectType.Guard);
+                    }
+                }
+                break;
+            case Weapon.Urur: {
+                supportTargetUnit.applyAllBuff(3);
+            }
+                break;
+            case Weapon.DancingFlames:
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supportUnit, 1)) {
+                    unit.applyAllBuff(6);
+                }
+                break;
+            case Weapon.Veruzandhi:
+                supportTargetUnit.applyAllBuff(4);
+                break;
+            case PassiveB.BlazeDance1:
+                supportTargetUnit.applyAtkBuff(2);
+                break;
+            case PassiveB.BlazeDance2:
+                supportTargetUnit.applyAtkBuff(3);
+                break;
+            case PassiveB.BlazeDance3:
+                supportTargetUnit.applyAtkBuff(4);
+                break;
+            case PassiveB.GaleDance1:
+                supportTargetUnit.applySpdBuff(2);
+                break;
+            case PassiveB.GaleDance2:
+                supportTargetUnit.applySpdBuff(3);
+                break;
+            case PassiveB.GaleDance3:
+                supportTargetUnit.applySpdBuff(4);
+                break;
+            case PassiveB.EarthDance1:
+                supportTargetUnit.applyDefBuff(3);
+                break;
+            case PassiveB.EarthDance2:
+                supportTargetUnit.applyDefBuff(4);
+                break;
+            case PassiveB.EarthDance3:
+                supportTargetUnit.applyDefBuff(5);
+                break;
+            case PassiveB.TorrentDance1:
+                supportTargetUnit.applyResBuff(3);
+                break;
+            case PassiveB.TorrentDance2:
+                supportTargetUnit.applyResBuff(4);
+                break;
+            case PassiveB.TorrentDance3:
+                supportTargetUnit.applyResBuff(5);
+                break;
+            case PassiveB.FirestormDance2:
+                supportTargetUnit.applyAtkBuff(3);
+                supportTargetUnit.applySpdBuff(3);
+                break;
+            case PassiveB.FirestormDance3:
+                supportTargetUnit.applyAtkSpdBuffs(6);
+                supportTargetUnit.addStatusEffect(StatusEffectType.Desperation);
+                break;
+            case PassiveB.CalderaDance1:
+                supportTargetUnit.applyAtkBuff(2);
+                supportTargetUnit.applyDefBuff(3);
+                break;
+            case PassiveB.CalderaDance2:
+                supportTargetUnit.applyAtkBuff(3);
+                supportTargetUnit.applyDefBuff(4);
+                break;
+            case PassiveB.FirefloodDance2:
+                supportTargetUnit.applyAtkBuff(3);
+                supportTargetUnit.applyResBuff(4);
+                break;
+            case PassiveB.RockslideDance2:
+                supportTargetUnit.applySpdBuff(3);
+                supportTargetUnit.applyDefBuff(4);
+                break;
+            case PassiveB.DelugeDance2:
+                supportTargetUnit.applySpdBuff(3);
+                supportTargetUnit.applyResBuff(4);
+                break;
+            case PassiveB.GeyserDance1:
+                supportTargetUnit.applyDefBuff(3);
+                supportTargetUnit.applyResBuff(3);
+                break;
+            case PassiveB.GeyserDance2:
+                supportTargetUnit.applyDefBuff(4);
+                supportTargetUnit.applyResBuff(4);
+                break;
+            case Weapon.Sukurudo:
+                supportTargetUnit.applyAllBuff(3);
+                break;
+            case PassiveB.AtkCantrip3:
+                for (let unit of this.__findNearestEnemies(supportUnit, 4)) {
+                    unit.applyAtkDebuff(-7);
+                }
+                break;
+            case PassiveB.SpdCantrip3:
+                for (let unit of this.__findNearestEnemies(supportUnit, 4)) {
+                    unit.applySpdDebuff(-7);
+                }
+                break;
+            case PassiveB.DefCantrip3:
+                for (let unit of this.__findNearestEnemies(supportUnit, 4)) {
+                    unit.applyDefDebuff(-7);
+                }
+                break;
+            case PassiveB.ResCantrip3:
+                for (let unit of this.__findNearestEnemies(supportUnit, 4)) {
+                    unit.applyResDebuff(-7);
+                }
+                break;
+        }
+    }
+
     /**
      * @param  {Unit} unit
      * @param  {Unit} targetUnit
@@ -8816,18 +8854,11 @@ class BattleSimulatorBase {
      * @returns {MovementAssistResult}
      */
     __getTargetUnitTileAfterMoveAssist(unit, targetUnit, assistTile) {
-        let result = null;
-        let funcMap = getTargetUnitTileAfterMoveAssistFuncMap;
         let skillId = unit.support;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                result = func.call(this, unit, targetUnit, assistTile);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
-        switch (unit.support) {
+        let func = getSkillFunc(skillId, getTargetUnitTileAfterMoveAssistFuncMap);
+        /** @type {MovementAssistResult} */
+        let result = func?.call(this, unit, targetUnit, assistTile) ?? null;
+        switch (skillId) {
             case Support.RescuePlus:
             case Support.Rescue:
             case Support.Drawback:
@@ -8900,163 +8931,207 @@ class BattleSimulatorBase {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
         for (let skillId of supporterUnit.enumerateSkills()) {
-            let funcMap = applySkillsAfterRallyForSupporterFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, supporterUnit, targetUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
-            switch (skillId) {
-                case Support.GoldSerpent:
-                    break;
-                case Weapon.Heidr:
-                case Weapon.GoldenCurse:
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-                        if (unit.posX === supporterUnit.posX ||
-                            unit.posX === targetUnit.posX ||
-                            unit.posY === supporterUnit.posY ||
-                            unit.posY === targetUnit.posY) {
-                            unit.applyAllDebuff(-4);
-                            unit.addStatusEffect(StatusEffectType.Guard);
-                        }
-                    }
-                    break;
-                case Weapon.RetainersReport:
-                    if (supporterUnit.isWeaponSpecialRefined) {
-                        for (let u of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
-                            if (this.__isInCross(supporterUnit, u) ||
-                                this.__isInCross(targetUnit, u)) {
-                                u.applyDebuffs(-7, 0, -7, -7);
-                                u.addStatusEffect(StatusEffectType.Guard);
-                                u.addStatusEffect(StatusEffectType.Exposure);
-                            }
-                        }
-                    }
-                    break;
-                case Weapon.EverlivingBreath: {
-                    let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supporterUnit, 2, true));
-                    units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
-                    // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
-                    let unitSet = new Set(units);
-                    for (let u of unitSet) {
-                        u.heal(10);
-                        u.clearNegativeStatusEffects();
-                    }
-                    break;
-                }
-                case Weapon.AzureLance:
-                    if (supporterUnit.isWeaponSpecialRefined) {
-                        supporterUnit.applyAtkBuff(6);
-                        supporterUnit.applySpdBuff(6);
-                        targetUnit.applyAtkBuff(6);
-                        targetUnit.applySpdBuff(6);
-                        supporterUnit.heal(10);
-                        targetUnit.heal(10);
-                    }
-                    break;
-                case Weapon.DamiellBow:
-                    if (!(targetUnit.moveType === MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
-                        targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
-                        targetUnit.addStatusEffect(StatusEffectType.BonusDoubler);
-                    }
-                    break;
-                case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
-                case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
-                case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
-                case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
-                case PassiveB.AtkSpdRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
-                    break;
-                case PassiveB.AtkDefRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); });
-                    break;
-                case PassiveB.AtkResRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
-                    break;
-                case PassiveB.DefResRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyDefDebuff(-5); unit.applyResDebuff(-5); });
-                    break;
-                case PassiveB.SpdResRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyResDebuff(-5); unit.applySpdDebuff(-5); });
-                    break;
-                case PassiveB.SpdDefRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyDefDebuff(-5); unit.applySpdDebuff(-5); });
-                    break;
-            }
+            getSkillFunc(skillId, applySkillsAfterRallyForSupporterFuncMap)?.call(this, supporterUnit, targetUnit);
+            this.#applySkillsAfterRallyForSupporter(skillId, targetUnit, supporterUnit);
         }
 
         // 自分に使用された時
         for (let skillId of targetUnit.enumerateSkills()) {
-            let funcMap = applySkillsAfterRallyForTargetUnitFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, supporterUnit, targetUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+            getSkillFunc(skillId, applySkillsAfterRallyForTargetUnitFuncMap)?.call(this, supporterUnit, targetUnit);
+            this.#applySkillsAfterRallyForTargetUnit(skillId, targetUnit, supporterUnit);
+        }
+    }
+
+    #applySkillsAfterRallyForTargetUnit(skillId, targetUnit, supporterUnit) {
+        switch (skillId) {
+            case Weapon.Heidr:
+            case Weapon.GoldenCurse:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                    if (unit.posX === supporterUnit.posX ||
+                        unit.posX === targetUnit.posX ||
+                        unit.posY === supporterUnit.posY ||
+                        unit.posY === targetUnit.posY) {
+                        unit.applyAllDebuff(-4);
+                        unit.addStatusEffect(StatusEffectType.Guard);
+                    }
                 }
-            }
-            switch (skillId) {
-                case Weapon.Heidr:
-                case Weapon.GoldenCurse:
-                    for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-                        if (unit.posX === supporterUnit.posX ||
-                            unit.posX === targetUnit.posX ||
-                            unit.posY === supporterUnit.posY ||
-                            unit.posY === targetUnit.posY) {
-                            unit.applyAllDebuff(-4);
-                            unit.addStatusEffect(StatusEffectType.Guard);
+                break;
+            case Weapon.AzureLance:
+                if (supporterUnit.isWeaponSpecialRefined) {
+                    supporterUnit.applyAtkBuff(6);
+                    supporterUnit.applySpdBuff(6);
+                    targetUnit.applyAtkBuff(6);
+                    targetUnit.applySpdBuff(6);
+                    supporterUnit.heal(10);
+                    targetUnit.heal(10);
+                }
+                break;
+            case PassiveB.AtkFeint3:
+                this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7));
+                break;
+            case PassiveB.SpdFeint3:
+                this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7));
+                break;
+            case PassiveB.DefFeint3:
+                this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7));
+                break;
+            case PassiveB.ResFeint3:
+                this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7));
+                break;
+            case PassiveB.AtkSpdRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyAtkDebuff(-5);
+                        unit.applySpdDebuff(-5);
+                    });
+                break;
+            case PassiveB.AtkDefRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyAtkDebuff(-5);
+                        unit.applyDefDebuff(-5);
+                    });
+                break;
+            case PassiveB.AtkResRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyAtkDebuff(-5);
+                        unit.applyResDebuff(-5);
+                    });
+                break;
+            case PassiveB.DefResRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyDefDebuff(-5);
+                        unit.applyResDebuff(-5);
+                    });
+                break;
+            case PassiveB.SpdResRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyResDebuff(-5);
+                        unit.applySpdDebuff(-5);
+                    });
+                break;
+            case PassiveB.SpdDefRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyDefDebuff(-5);
+                        unit.applySpdDebuff(-5);
+                    });
+                break;
+        }
+    }
+
+    #applySkillsAfterRallyForSupporter(skillId, targetUnit, supporterUnit) {
+        switch (skillId) {
+            case Support.GoldSerpent:
+                break;
+            case Weapon.Heidr:
+            case Weapon.GoldenCurse:
+                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
+                    if (unit.posX === supporterUnit.posX ||
+                        unit.posX === targetUnit.posX ||
+                        unit.posY === supporterUnit.posY ||
+                        unit.posY === targetUnit.posY) {
+                        unit.applyAllDebuff(-4);
+                        unit.addStatusEffect(StatusEffectType.Guard);
+                    }
+                }
+                break;
+            case Weapon.RetainersReport:
+                if (supporterUnit.isWeaponSpecialRefined) {
+                    for (let u of this.enumerateUnitsInDifferentGroupOnMap(supporterUnit)) {
+                        if (this.__isInCross(supporterUnit, u) ||
+                            this.__isInCross(targetUnit, u)) {
+                            u.applyDebuffs(-7, 0, -7, -7);
+                            u.addStatusEffect(StatusEffectType.Guard);
+                            u.addStatusEffect(StatusEffectType.Exposure);
                         }
                     }
-                    break;
-                case Weapon.AzureLance:
-                    if (supporterUnit.isWeaponSpecialRefined) {
-                        supporterUnit.applyAtkBuff(6);
-                        supporterUnit.applySpdBuff(6);
-                        targetUnit.applyAtkBuff(6);
-                        targetUnit.applySpdBuff(6);
-                        supporterUnit.heal(10);
-                        targetUnit.heal(10);
-                    }
-                    break;
-                case PassiveB.AtkFeint3: this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7)); break;
-                case PassiveB.SpdFeint3: this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7)); break;
-                case PassiveB.DefFeint3: this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7)); break;
-                case PassiveB.ResFeint3: this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7)); break;
-                case PassiveB.AtkSpdRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyAtkDebuff(-5); unit.applySpdDebuff(-5); });
-                    break;
-                case PassiveB.AtkDefRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyAtkDebuff(-5); unit.applyDefDebuff(-5); });
-                    break;
-                case PassiveB.AtkResRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyAtkDebuff(-5); unit.applyResDebuff(-5); });
-                    break;
-                case PassiveB.DefResRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyDefDebuff(-5); unit.applyResDebuff(-5); });
-                    break;
-                case PassiveB.SpdResRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyResDebuff(-5); unit.applySpdDebuff(-5); });
-                    break;
-                case PassiveB.SpdDefRuse3:
-                    this.__applyRuse(supporterUnit, targetUnit,
-                        unit => { unit.applyDefDebuff(-5); unit.applySpdDebuff(-5); });
-                    break;
+                }
+                break;
+            case Weapon.EverlivingBreath: {
+                let units = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(supporterUnit, 2, true));
+                units = units.concat(Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)));
+                // 範囲が重複している場合でも効果が重複しないようにするために対象ユニットを集合に入れる
+                let unitSet = new Set(units);
+                for (let u of unitSet) {
+                    u.heal(10);
+                    u.clearNegativeStatusEffects();
+                }
+                break;
             }
+            case Weapon.AzureLance:
+                if (supporterUnit.isWeaponSpecialRefined) {
+                    supporterUnit.applyAtkBuff(6);
+                    supporterUnit.applySpdBuff(6);
+                    targetUnit.applyAtkBuff(6);
+                    targetUnit.applySpdBuff(6);
+                    supporterUnit.heal(10);
+                    targetUnit.heal(10);
+                }
+                break;
+            case Weapon.DamiellBow:
+                if (!(targetUnit.moveType === MoveType.Cavalry && targetUnit.isRangedWeaponType())) {
+                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    targetUnit.addStatusEffect(StatusEffectType.BonusDoubler);
+                }
+                break;
+            case PassiveB.AtkFeint3:
+                this.__applyFeint(supporterUnit, x => x.applyAtkDebuff(-7));
+                break;
+            case PassiveB.SpdFeint3:
+                this.__applyFeint(supporterUnit, x => x.applySpdDebuff(-7));
+                break;
+            case PassiveB.DefFeint3:
+                this.__applyFeint(supporterUnit, x => x.applyDefDebuff(-7));
+                break;
+            case PassiveB.ResFeint3:
+                this.__applyFeint(supporterUnit, x => x.applyResDebuff(-7));
+                break;
+            case PassiveB.AtkSpdRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyAtkDebuff(-5);
+                        unit.applySpdDebuff(-5);
+                    });
+                break;
+            case PassiveB.AtkDefRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyAtkDebuff(-5);
+                        unit.applyDefDebuff(-5);
+                    });
+                break;
+            case PassiveB.AtkResRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyAtkDebuff(-5);
+                        unit.applyResDebuff(-5);
+                    });
+                break;
+            case PassiveB.DefResRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyDefDebuff(-5);
+                        unit.applyResDebuff(-5);
+                    });
+                break;
+            case PassiveB.SpdResRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyResDebuff(-5);
+                        unit.applySpdDebuff(-5);
+                    });
+                break;
+            case PassiveB.SpdDefRuse3:
+                this.__applyRuse(supporterUnit, targetUnit,
+                    unit => {
+                        unit.applyDefDebuff(-5);
+                        unit.applySpdDebuff(-5);
+                    });
+                break;
         }
     }
 
@@ -9126,11 +9201,15 @@ class BattleSimulatorBase {
         return success;
     }
 
-    __applyHeal(supporterUnit, targetUnit) {
+    /**
+     * @param {Unit} supporterUnit
+     * @param {Unit} supportTargetUnit
+     */
+    __applyHeal(supporterUnit, supportTargetUnit) {
         let isActivated = false;
 
-        if (targetUnit.canHeal()) {
-            let healAmount = calcHealAmount(supporterUnit, targetUnit);
+        if (supportTargetUnit.canHeal()) {
+            let healAmount = calcHealAmount(supporterUnit, supportTargetUnit);
             if (supporterUnit.specialCount === 0) {
                 switch (supporterUnit.special) {
                     case Special.Chiyu:
@@ -9140,67 +9219,18 @@ class BattleSimulatorBase {
                 }
             }
 
-            let healedAmount = targetUnit.heal(healAmount);
-            this.writeSimpleLogLine(`${targetUnit.getNameWithGroup()}は${healedAmount}回復`);
-
-            for (let skillId of supporterUnit.enumerateSkills()) {
-                switch (skillId) {
-                    case PassiveB.GohoshiNoYorokobi1:
-                        supporterUnit.heal(Math.floor(healedAmount * 0.5));
-                        break;
-                    case PassiveB.GohoshiNoYorokobi2:
-                        supporterUnit.heal(Math.floor(healedAmount * 0.75));
-                        break;
-                    case PassiveB.GohoshiNoYorokobi3:
-                        supporterUnit.heal(Math.floor(healedAmount * 1.0));
-                        break;
-                    case Support.Reconcile:
-                        supporterUnit.heal(7);
-                        break;
-                    case Support.Martyr:
-                    case Support.MartyrPlus:
-                        supporterUnit.heal(Math.floor(supporterUnit.currentDamage * 0.5));
-                        break;
-                }
-
-            }
+            let healedAmount = supportTargetUnit.heal(healAmount);
+            this.writeSimpleLogLine(`${supportTargetUnit.getNameWithGroup()}は${healedAmount}回復`);
+            this.#healSupporter(supporterUnit, healedAmount);
             isActivated = true;
         }
-
-        switch (supporterUnit.support) {
-            case Support.Restore:
-            case Support.RestorePlus:
-                if (targetUnit.isDebuffed || targetUnit.hasAnyStatusEffect) {
-                    targetUnit.resetDebuffs();
-                    targetUnit.clearNegativeStatusEffects();
-                    isActivated = true;
-                }
-                break;
-        }
+        isActivated |= this.#applyRestore(supporterUnit, supportTargetUnit);
 
         if (isActivated) {
             if (supporterUnit.specialCount === 0) {
                 for (let skillId of supporterUnit.enumerateSkills()) {
-                    let funcMap = applySpecialSkillEffectWhenHealingFuncMap;
-                    if (funcMap.has(skillId)) {
-                        let func = funcMap.get(skillId);
-                        if (typeof func === "function") {
-                            func.call(this, supporterUnit, targetUnit);
-                        } else {
-                            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                        }
-                    }
-                    switch (skillId) {
-                        case Special.Tensho:
-                            for (let unit of this.enumerateUnitsInTheSameGroupOnMap(supporterUnit, false)) {
-                                if (unit === targetUnit) {
-                                    continue;
-                                }
-                                unit.heal(10);
-                            }
-                            supporterUnit.setSpecialCountToMax();
-                            break;
-                    }
+                    let func = getSkillFunc(skillId, applySpecialSkillEffectWhenHealingFuncMap);
+                    func?.call(this, supporterUnit, supportTargetUnit);
                 }
             } else {
                 // 奥義カウントを進める
@@ -9218,12 +9248,50 @@ class BattleSimulatorBase {
         return isActivated;
     }
 
+    #applyRestore(supporterUnit, supportTargetUnit) {
+        switch (supporterUnit.support) {
+            case Support.Restore:
+            case Support.RestorePlus:
+                if (supportTargetUnit.isDebuffed || supportTargetUnit.hasAnyStatusEffect) {
+                    supportTargetUnit.resetDebuffs();
+                    supportTargetUnit.clearNegativeStatusEffects();
+                    return true;
+                }
+                break;
+        }
+        return false;
+    }
+
+    #healSupporter(supporterUnit, healedAmount) {
+        for (let skillId of supporterUnit.enumerateSkills()) {
+            switch (skillId) {
+                case PassiveB.GohoshiNoYorokobi1:
+                    supporterUnit.heal(Math.floor(healedAmount * 0.5));
+                    break;
+                case PassiveB.GohoshiNoYorokobi2:
+                    supporterUnit.heal(Math.floor(healedAmount * 0.75));
+                    break;
+                case PassiveB.GohoshiNoYorokobi3:
+                    supporterUnit.heal(Math.floor(healedAmount * 1.0));
+                    break;
+                case Support.Reconcile:
+                    supporterUnit.heal(7);
+                    break;
+                case Support.Martyr:
+                case Support.MartyrPlus:
+                    supporterUnit.heal(Math.floor(supporterUnit.currentDamage * 0.5));
+                    break;
+            }
+        }
+    }
+
     __applyBalmSkill(supporterUnit, buffFunc) {
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(supporterUnit, false)) {
             buffFunc(unit);
         }
         supporterUnit.setSpecialCountToMax();
     }
+
     /**
      * @param  {Unit} supporterUnit
      * @param  {Unit} targetUnit
@@ -9246,140 +9314,15 @@ class BattleSimulatorBase {
 
             // サポートを行う側
             for (let skillId of supporterUnit.enumerateSkills()) {
-                let funcMap = applySupportSkillForSupporterFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        func.call(this, supporterUnit, targetUnit, supportTile);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
-                switch (skillId) {
-                    case Support.GoldSerpent: {
-                        let currentTurn = g_appData.globalBattleContext.currentTurn;
-                        if (currentTurn >= 2) {
-                            supporterUnit.addStatusEffect(StatusEffectType.Canto1);
-                            targetUnit.addStatusEffect(StatusEffectType.Canto1);
-                        }
-                        if (currentTurn >= 3) {
-                            supporterUnit.addStatusEffect(StatusEffectType.Treachery);
-                            targetUnit.addStatusEffect(StatusEffectType.Treachery);
-                        }
-                        if (currentTurn >= 4) {
-                            supporterUnit.addStatusEffect(StatusEffectType.DualStrike);
-                            targetUnit.addStatusEffect(StatusEffectType.DualStrike);
-                        }
-                        if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
-                            supporterUnit.isActionDone = false;
-                            supporterUnit.isOneTimeActionActivatedForWeapon = true;
-                        }
-                    }
-                        break;
-                    case Weapon.JollyJadeLance:
-                        if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
-                            supporterUnit.applyAtkBuff(6);
-                            supporterUnit.applySpdBuff(6);
-                            supporterUnit.isActionDone = false;
-                            supporterUnit.isOneTimeActionActivatedForWeapon = true;
-                        }
-                        break;
-                    case Support.DragonsDance:
-                        this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
-                        if (g_appData.globalBattleContext.currentTurn >= 2 &&
-                            supporterUnit.restSupportSkillAvailableTurn === 0) {
-                            this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
-                            supporterUnit.isActionDone = false;
-                            supporterUnit.applyBuffs(6, 6, 0, 0);
-                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                            supporterUnit.restSupportSkillAvailableTurn = 3;
-                            this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
-                        } else {
-                            this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
-                        }
-                        break;
-                    case Support.FateUnchanged:
-                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                            supporterUnit.isActionDone = false;
-                            supporterUnit.isOneTimeActionActivatedForSupport = true;
-                        }
-                        for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
-                            for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
-                                u.addStatusEffect(StatusEffectType.Exposure);
-                            }
-                        }
-                        for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
-                            for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
-                                u.addStatusEffect(StatusEffectType.Exposure);
-                            }
-                        }
-                        break;
-                    case Support.AFateChanged:
-                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                            supporterUnit.isActionDone = false;
-                            supporterUnit.isOneTimeActionActivatedForSupport = true;
-                        }
-                        for (let effect of targetUnit.getPositiveStatusEffects()) {
-                            supporterUnit.addStatusEffect(effect);
-                        }
-                        if (!targetUnit.hasStatusEffect(StatusEffectType.Panic)) {
-                            supporterUnit.applyAtkBuff(targetUnit.atkBuff);
-                            supporterUnit.applySpdBuff(targetUnit.spdBuff);
-                            supporterUnit.applyDefBuff(targetUnit.defBuff);
-                            supporterUnit.applyResBuff(targetUnit.resBuff);
-                        }
-                        break;
-                    case Support.ToChangeFate:
-                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                            supporterUnit.applyAtkBuff(6);
-                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                            supporterUnit.isActionDone = false;
-                            supporterUnit.isOneTimeActionActivatedForSupport = true;
-                        }
-                        break;
-                    case Support.ToChangeFate2:
-                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                            supporterUnit.applyAtkBuff(6);
-                            supporterUnit.applyDefBuff(6);
-                            supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                            supporterUnit.addStatusEffect(StatusEffectType.BonusDoubler);
-                            supporterUnit.isActionDone = false;
-                            supporterUnit.isOneTimeActionActivatedForSupport = true;
-                        }
-                        break;
-                    case Support.FutureVision:
-                    case Support.FutureVision2:
-                        if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                            supporterUnit.isActionDone = false;
-                            supporterUnit.isOneTimeActionActivatedForSupport = true;
-                        }
-                        if (supporterUnit.support === Support.FutureVision2) {
-                            for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
-                                unit.applyAtkDebuff(-7);
-                                unit.applyDefDebuff(-7);
-                            }
-                            for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
-                                unit.applyAtkDebuff(-7);
-                                unit.applyDefDebuff(-7);
-                            }
-                        }
-                        break;
-                }
+                let func = getSkillFunc(skillId, applySupportSkillForSupporterFuncMap);
+                func?.call(this, supporterUnit, targetUnit, supportTile);
+                this.#applySupportSkillForSupporter(skillId, supporterUnit, targetUnit);
             }
 
             // サポートを受ける側
             for (let skillId of targetUnit.enumerateSkills()) {
-                let funcMap = applySupportSkillForTargetUnitFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        func.call(this, supporterUnit, targetUnit, supportTile);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
+                let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);
+                func?.call(this, supporterUnit, targetUnit, supportTile);
             }
 
             // 再移動の評価
@@ -9395,6 +9338,121 @@ class BattleSimulatorBase {
         }
 
         return false;
+    }
+
+    #applySupportSkillForSupporter(skillId, supporterUnit, targetUnit) {
+        switch (skillId) {
+            case Support.GoldSerpent: {
+                let currentTurn = g_appData.globalBattleContext.currentTurn;
+                if (currentTurn >= 2) {
+                    supporterUnit.addStatusEffect(StatusEffectType.Canto1);
+                    targetUnit.addStatusEffect(StatusEffectType.Canto1);
+                }
+                if (currentTurn >= 3) {
+                    supporterUnit.addStatusEffect(StatusEffectType.Treachery);
+                    targetUnit.addStatusEffect(StatusEffectType.Treachery);
+                }
+                if (currentTurn >= 4) {
+                    supporterUnit.addStatusEffect(StatusEffectType.DualStrike);
+                    targetUnit.addStatusEffect(StatusEffectType.DualStrike);
+                }
+                if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                }
+            }
+                break;
+            case Weapon.JollyJadeLance:
+                if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                    supporterUnit.applyAtkBuff(6);
+                    supporterUnit.applySpdBuff(6);
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                }
+                break;
+            case Support.DragonsDance:
+                this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+                if (g_appData.globalBattleContext.currentTurn >= 2 &&
+                    supporterUnit.restSupportSkillAvailableTurn === 0) {
+                    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.applyBuffs(6, 6, 0, 0);
+                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                    supporterUnit.restSupportSkillAvailableTurn = 3;
+                    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果発動可能まで残り${supporterUnit.restSupportSkillAvailableTurn}ターン`);
+                } else {
+                    this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果は発動せず`);
+                }
+                break;
+            case Support.FateUnchanged:
+                if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.isOneTimeActionActivatedForSupport = true;
+                }
+                for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.addStatusEffect(StatusEffectType.Exposure);
+                    }
+                }
+                for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
+                        u.addStatusEffect(StatusEffectType.Exposure);
+                    }
+                }
+                break;
+            case Support.AFateChanged:
+                if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.isOneTimeActionActivatedForSupport = true;
+                }
+                for (let effect of targetUnit.getPositiveStatusEffects()) {
+                    supporterUnit.addStatusEffect(effect);
+                }
+                if (!targetUnit.hasStatusEffect(StatusEffectType.Panic)) {
+                    supporterUnit.applyAtkBuff(targetUnit.atkBuff);
+                    supporterUnit.applySpdBuff(targetUnit.spdBuff);
+                    supporterUnit.applyDefBuff(targetUnit.defBuff);
+                    supporterUnit.applyResBuff(targetUnit.resBuff);
+                }
+                break;
+            case Support.ToChangeFate:
+                if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                    supporterUnit.applyAtkBuff(6);
+                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.isOneTimeActionActivatedForSupport = true;
+                }
+                break;
+            case Support.ToChangeFate2:
+                if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                    supporterUnit.applyAtkBuff(6);
+                    supporterUnit.applyDefBuff(6);
+                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                    supporterUnit.addStatusEffect(StatusEffectType.BonusDoubler);
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.isOneTimeActionActivatedForSupport = true;
+                }
+                break;
+            case Support.FutureVision:
+            case Support.FutureVision2:
+                if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                    supporterUnit.isActionDone = false;
+                    supporterUnit.isOneTimeActionActivatedForSupport = true;
+                }
+                if (supporterUnit.support === Support.FutureVision2) {
+                    for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
+                        unit.applyAtkDebuff(-7);
+                        unit.applyDefDebuff(-7);
+                    }
+                    for (let unit of this.__findNearestEnemies(targetUnit, 4)) {
+                        unit.applyAtkDebuff(-7);
+                        unit.applyDefDebuff(-7);
+                    }
+                }
+                break;
+        }
     }
 
     /**
@@ -9466,22 +9524,15 @@ class BattleSimulatorBase {
         }
     }
 
-    __findTileAfterMovementAssist(unit, target, tile) {
-        if (!unit.hasSupport) {
+    __findTileAfterMovementAssist(assistUnit, assistTargetUnit, tile) {
+        if (!assistUnit.hasSupport) {
             return new MovementAssistResult(false, null, null);
         }
-        let funcMap = findTileAfterMovementAssistFuncMap;
-        let skillId = unit.support;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                return func.call(this, unit, target, tile);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        let skillId = assistUnit.support;
+        let func = getSkillFunc(skillId, findTileAfterMovementAssistFuncMap);
+        func?.call(this, assistUnit, assistTargetUnit, tile);
 
-        switch (unit.support) {
+        switch (assistUnit.support) {
             case Support.FateUnchanged:
             case Support.ToChangeFate:
             case Support.ToChangeFate2:
@@ -9489,26 +9540,26 @@ class BattleSimulatorBase {
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition:
-                return this.__findTileAfterReposition(unit, target, tile);
+                return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
             case Support.Smite:
-                return this.__findTileAfterSmite(unit, target, tile);
+                return this.__findTileAfterSmite(assistUnit, assistTargetUnit, tile);
             case Support.NudgePlus:
             case Support.Nudge:
             case Support.Shove:
-                return this.__findTileAfterShove(unit, target, tile);
+                return this.__findTileAfterShove(assistUnit, assistTargetUnit, tile);
             case Support.RescuePlus:
             case Support.Rescue:
             case Support.Drawback:
-                return this.__findTileAfterDrawback(unit, target, tile);
+                return this.__findTileAfterDrawback(assistUnit, assistTargetUnit, tile);
             case Support.FoulPlay:
             case Support.Swap:
             case Support.FutureVision:
             case Support.FutureVision2:
-                return this.__findTileAfterSwap(unit, target, tile);
+                return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
             case Support.Pivot:
-                return this.__findTileAfterPivot(unit, target, tile);
+                return this.__findTileAfterPivot(assistUnit, assistTargetUnit, tile);
             default:
-                this.writeErrorLine(`unknown support ${unit.supportInfo.name}`);
+                this.writeErrorLine(`unknown support ${assistUnit.supportInfo.name}`);
                 return new MovementAssistResult(false, null, null);
         }
     }
