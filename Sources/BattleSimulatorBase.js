@@ -8356,11 +8356,6 @@ class BattleSimulatorBase {
             this.__applyMovementAssistSkill(targetUnit, unit);
         }
 
-        // 移動補助スキルの処理が終了したので罠を発動させる
-        if (executesTrap) {
-            executeTrapIfPossible(unit, false);
-            executeTrapIfPossible(targetUnit, false);
-        }
         return true;
     }
 
@@ -9392,6 +9387,9 @@ class BattleSimulatorBase {
             if (!activated) {
                 supporterUnit.applyEndActionSkills();
             }
+
+            executeTrapIfPossible(supporterUnit, true);
+            executeTrapIfPossible(targetUnit, true);
 
             this.__goToNextPhaseIfPossible(supporterUnit.groupId);
         }
