@@ -506,6 +506,56 @@
     NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 }
 
+// ハデスΩ 特殊錬成
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.HadesuOmega);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、敵が射程2の時、
+            if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
+                // 戦闘中、自身の攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // 自分が与えるダメージ+速さの20%(範囲奥義を除く)、
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
+                });
+                // 敵の速さ、魔防の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)、
+                targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                // かつ自分が攻撃時に発動する奥義を装備している時、
+                if (targetUnit.hasNormalAttackSpecial()) {
+                    // - 戦闘中、自分の最初の攻撃前に奥義発動カウント-1
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                }
+            }
+        }
+    );
+}
+
+// ハデスΩ 錬成
+{
+    let skillId = getRefinementSkillId(Weapon.HadesuOmega);
+    // 奥義が発動しやすい(発動カウント-1)
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中の攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // 攻撃、速さの弱化を無効、
+                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                // かつ、上記の戦闘開始時、奥義を装備していて、奥義発動カウントが2以下の時、
+                if (targetUnit.hasNormalAttackSpecial() && targetUnit.battleContext.specialCount <= 2) {
+                    // 戦闘中、さらに攻撃、速さ+7
+                    targetUnit.addAtkSpdSpurs(7);
+                }
+            }
+        }
+    );
+}
+
 // ハデスΩ
 {
     let skillId = Weapon.HadesuOmega;
