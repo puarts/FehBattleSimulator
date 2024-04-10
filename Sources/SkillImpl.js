@@ -3948,7 +3948,6 @@
                 skillOwner.reserveToReduceSpecialCount(2);
             }
             let found = false;
-            /** @type {Unit[]} */
             let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
             for (let unit of allies) {
                 found = true;
@@ -3978,13 +3977,21 @@
             let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
             let additionalDamage = Math.trunc(status * 0.15);
             this.writeDebugLog(`${atkUnit.weaponInfo.name}により固定ダメージ+${additionalDamage}(atk(${status}) * 0.15)`);
-            atkUnit.battleContext.additionalDamage += additionalDamage;
+            if (isPrecombat) {
+                atkUnit.battleContext.additionalDamage = additionalDamage;
+            } else {
+                atkUnit.battleContext.additionalDamage += additionalDamage;
+            }
             // 奥義発動時
             let ratio = 0.1 + 0.1 * atkUnit.maxSpecialCount;
             let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
             let additionalDamageOfSpecial = Math.trunc(spd * ratio);
             this.writeDebugLog(`${atkUnit.weaponInfo.name}により奥義発動時の固定ダメージ+${additionalDamageOfSpecial}(spd(${spd}) * ratio(${ratio}))`);
-            atkUnit.battleContext.additionalDamageOfSpecial += additionalDamageOfSpecial;
+            if (isPrecombat) {
+                atkUnit.battleContext.additionalDamageOfSpecial = additionalDamageOfSpecial;
+            } else {
+                atkUnit.battleContext.additionalDamageOfSpecial += additionalDamageOfSpecial;
+            }
         }
     );
 }
