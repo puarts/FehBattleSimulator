@@ -4672,10 +4672,17 @@
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                 unit.reserveToResetDebuffs();
                 unit.reserveToClearNegativeStatusEffects();
-                unit.reserveToApplyBuffs(4, 4, 4, 4);
             }
             skillOwner.reserveToResetDebuffs();
             skillOwner.reserveToClearNegativeStatusEffects();
+        }
+    );
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 周囲2マス以内
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.addAllSpur(4);
+            }
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
