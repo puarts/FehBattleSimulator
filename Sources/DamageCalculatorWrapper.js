@@ -9869,7 +9869,11 @@ class DamageCalculatorWrapper {
                 }
             }
             if (targetUnit.isTransformed) {
-                targetUnit.battleContext.additionalDamageOfSpecial += damage;
+                if (isPrecombat) {
+                    targetUnit.battleContext.additionalDamageOfSpecial = damage;
+                } else {
+                    targetUnit.battleContext.additionalDamageOfSpecial += damage;
+                }
             }
         }
         for (let skillId of targetUnit.enumerateSkills()) {
@@ -9878,42 +9882,74 @@ class DamageCalculatorWrapper {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         let spd = DamageCalculatorWrapper.__getSpd(targetUnit, enemyUnit, isPrecombat);
                         let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
-                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                        if (isPrecombat) {
+                            targetUnit.battleContext.additionalDamageOfSpecial = Math.trunc(spd * ratio);
+                        } else {
+                            targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                        }
                     }
                     break;
                 case Weapon.ImbuedKoma:
                     if (targetUnit.isWeaponSpecialRefined) {
                         let def = DamageCalculatorWrapper.__getDef(targetUnit, enemyUnit, isPrecombat);
-                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.15);
+                        if (isPrecombat) {
+                            targetUnit.battleContext.additionalDamageOfSpecial = Math.trunc(def * 0.15);
+                        } else {
+                            targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.15);
+                        }
                     }
                     break;
                 case PassiveB.SpecialSpiral4:
-                    targetUnit.battleContext.additionalDamageOfSpecial += 5;
+                    if (isPrecombat) {
+                        targetUnit.battleContext.additionalDamageOfSpecial = 5;
+                    } else {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 5;
+                    }
                     break;
                 case PassiveB.MoonlightBangle:
                 case PassiveB.MoonlitBangleF: {
                     let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
                     let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
-                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * ratio);
+                    if (isPrecombat) {
+                        targetUnit.battleContext.additionalDamageOfSpecial = Math.trunc(def * ratio);
+                    } else {
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * ratio);
+                    }
                 }
                     break;
                 case PassiveB.RunaBracelet: {
                     let def = isPrecombat ? enemyUnit.getDefInPrecombat() : enemyUnit.getDefInCombat();
-                    targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.5);
+                    if (isPrecombat) {
+                        targetUnit.battleContext.additionalDamageOfSpecial = Math.trunc(def * 0.5);
+                    } else {
+                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(def * 0.5);
+                    }
                 }
                     break;
                 case PassiveB.Bushido:
-                    targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    if (isPrecombat) {
+                        targetUnit.battleContext.additionalDamageOfSpecial = 10;
+                    } else {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    }
                     break;
                 case PassiveB.Ikari3:
                     if (targetUnit.restHpPercentage <= 75) {
-                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                        if (isPrecombat) {
+                            targetUnit.battleContext.additionalDamageOfSpecial = 10;
+                        } else {
+                            targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                        }
                     }
                     break;
                 case PassiveB.Spurn3:
                 case PassiveB.Spurn4:
                     if (targetUnit.restHpPercentage <= 75) {
-                        targetUnit.battleContext.additionalDamageOfSpecial += 5;
+                        if (isPrecombat) {
+                            targetUnit.battleContext.additionalDamageOfSpecial = 5;
+                        } else {
+                            targetUnit.battleContext.additionalDamageOfSpecial += 5;
+                        }
                     }
                     break;
                 case Weapon.FumingFreikugel:
@@ -9930,7 +9966,11 @@ class DamageCalculatorWrapper {
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
                         let spd = DamageCalculatorWrapper.__getSpd(targetUnit, enemyUnit, isPrecombat);
-                        targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                        if (isPrecombat) {
+                            targetUnit.battleContext.additionalDamageOfSpecial = Math.trunc(spd * ratio);
+                        } else {
+                            targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(spd * ratio);
+                        }
                     }
                     break;
                 case Weapon.ManatsuNoBreath:
@@ -9938,7 +9978,11 @@ class DamageCalculatorWrapper {
                         if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                             let ratio = 0.2 + targetUnit.maxSpecialCount * 0.1;
                             let res = isPrecombat ? enemyUnit.getResInPrecombat() : enemyUnit.getResInCombat();
-                            targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(res * ratio);
+                            if (isPrecombat) {
+                                targetUnit.battleContext.additionalDamageOfSpecial = Math.trunc(res * ratio);
+                            } else {
+                                targetUnit.battleContext.additionalDamageOfSpecial += Math.trunc(res * ratio);
+                            }
                         }
                     }
                     break;
@@ -9958,10 +10002,18 @@ class DamageCalculatorWrapper {
                 case Weapon.Toron:
                 case Weapon.IhoNoHIken:
                 case Weapon.DarkExcalibur:
-                    targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    if (isPrecombat) {
+                        targetUnit.battleContext.additionalDamageOfSpecial = 10;
+                    } else {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                    }
                     break;
                 case Weapon.Shamsir:
-                    targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                    if (isPrecombat) {
+                        targetUnit.battleContext.additionalDamageOfSpecial = 7;
+                    } else {
+                        targetUnit.battleContext.additionalDamageOfSpecial += 7;
+                    }
                     break;
                 case Weapon.RunaNoEiken:
                 case Weapon.Otokureru:
@@ -9969,7 +10021,11 @@ class DamageCalculatorWrapper {
                 case Weapon.SyaniNoSeisou:
                 case Weapon.DevilAxe:
                     if (targetUnit.isWeaponSpecialRefined) {
-                        targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                        if (isPrecombat) {
+                            targetUnit.battleContext.additionalDamageOfSpecial = 10;
+                        } else {
+                            targetUnit.battleContext.additionalDamageOfSpecial += 10;
+                        }
                     }
                     break;
             }
