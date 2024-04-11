@@ -635,7 +635,7 @@ class AppData extends UnitManager {
         for (let i = 0; i < heroInfos.length; ++i) {
             let heroInfo = heroInfos[i];
             this.heroOptions.push({ id: i, text: heroInfo.name });
-            if (EmblemHeroSet.has(i)) {
+            if (EMBLEM_HERO_SET.has(i)) {
                 this.emblemHeroOptions.push({ id: i, text: heroInfo.name });
             }
             if (registersSkillOption) {

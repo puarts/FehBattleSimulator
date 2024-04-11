@@ -483,13 +483,17 @@ class CommandQueue {
     }
 }
 
-/// 現在のスレッドを指定時間の間、スピンループでスリープします。
+/**
+ * 現在のスレッドを指定時間の間、スピンループでスリープします。
+ */
 function sleep(waitMilliseconds) {
     let startMilliseconds = new Date();
     while (new Date() - startMilliseconds < waitMilliseconds);
 }
 
-/// 新しいスレッドで処理を開始します。
+/**
+ * 新しいスレッドで処理を開始します。
+ */
 function startProgressiveProcess(
     iterMax, // 繰り返し回数
     mainProcess, // メイン処理
@@ -498,7 +502,7 @@ function startProgressiveProcess(
     waitMilliseconds = 0,
     breakLoopFunc = null,
 ) {
-    if (iterMax == 0) {
+    if (iterMax === 0) {
         return;
     }
 
@@ -514,20 +518,12 @@ function startProgressiveProcess(
         showProgress(iter, iterMax);
 
         let breakLoop = true;
-        if (breakLoopFunc != null) {
-            breakLoop = breakLoopFunc();
-        }
-        else {
-            breakLoop = iter >= iterMax;
-        }
+        breakLoop = breakLoopFunc?.() ?? iter >= iterMax;
 
         if (!breakLoop) {
             setTimeout(tmp, 0);
-        }
-        else if (!endProcess) {
-            if (onProcessFinished != null) {
-                onProcessFinished();
-            }
+        } else if (!endProcess) {
+            onProcessFinished?.();
             endProcess = true;
         }
     }, 0);
@@ -541,18 +537,11 @@ function using_(disposable, func) {
 }
 
 function getFirstElementByTagName(elements, targetTagName) {
-    for (let i = 0; i < elements.length; ++i) {
-        let elem = elements[i];
-        if (elem.tagName == targetTagName) {
-            return elem;
-        }
-    }
-
-    return null;
+    return elements.find(e => e.tagName === targetTagName) || null;
 }
 
 function distinct(array) {
-    return array.filter((elem, index, self) => self.indexOf(elem) === index);
+    return [...new Set(array)];
 }
 
 function distinctStr(str) {
@@ -1063,12 +1052,16 @@ function dateStrToNumber(dateStr) {
 
 const ErrorCorrectionValue = 1.0 / 100000;
 
-/// 浮動小数の誤差を加味して floor します。
+/**
+ * 浮動小数の誤差を加味して floor します。
+ */
 function floorNumberWithFloatError(value) {
     return Math.floor(value + ErrorCorrectionValue);
 }
 
-/// 浮動小数の誤差を加味して trunc します。
+/**
+ * 浮動小数の誤差を加味して trunc します。
+ */
 function truncNumberWithFloatError(value) {
     let revisedValue = value;
     if (value < 0) {
@@ -1080,7 +1073,9 @@ function truncNumberWithFloatError(value) {
     return Math.trunc(revisedValue);
 }
 
-/// 小数を指定した桁数で丸めます。
+/**
+ * 小数を指定した桁数で丸めます。
+ */
 function roundFloat(value, precision = 6) {
     const factor = 10 ** precision;
     const revertFactor = 1.0 / factor;
@@ -1111,6 +1106,7 @@ function getKeyByValue(dict, value) {
 class IterUtil {
 
     /**
+     * valueFuncを適用した最大値を求める。
      * @template T
      * @param {Iterable<T>} iterable
      * @param {(i: T) => number} valueFunc
@@ -1129,6 +1125,7 @@ class IterUtil {
     }
 
     /**
+     * valueFuncを適用した最小値を求める。
      * @template T
      * @param {Iterable<T>} iterable
      * @param {(i: T) => number} valueFunc
@@ -1140,6 +1137,8 @@ class IterUtil {
     }
 
     /**
+     * valueFuncを最大にする要素を一つ求める。
+     * 最初に見つかったものを返す。
      * @template T
      * @param {Iterable<T>} iterable
      * @param {(i: T) => number} valueFunc
@@ -1159,6 +1158,8 @@ class IterUtil {
     }
 
     /**
+     * valueFuncを最小にする要素を一つ求める。
+     * 最初に見つかったものを返す。
      * @template T
      * @param {Iterable<T>} iterable
      * @param {(i: T) => number} valueFunc
@@ -1169,6 +1170,7 @@ class IterUtil {
     }
 
     /**
+     * valueFuncを最大にする要素を全て求める。
      * @template T
      * @param {Iterable<T>} iterable
      * @param {(i: T) => number} valueFunc
@@ -1190,6 +1192,7 @@ class IterUtil {
     }
 
     /**
+     * valueFuncを最小にする要素を全て求める。
      * @template T
      * @param {Iterable<T>} iterable
      * @param {(i: T) => number} valueFunc
@@ -1244,5 +1247,47 @@ class GeneratorUtil {
                 yield value;
             }
         }
+    }
+}
+
+class MathUtil {
+    /**
+     * 「最低min、最大max」した値を返す。
+     * @param {number} value
+     * @param {number} min
+     * @param {number} max
+     * @returns {number}
+     */
+    static ensureMinMax(value, min, max) {
+        let v = value;
+        v = MathUtil.ensureMin(v, min);
+        v = MathUtil.ensureMax(v, max);
+        return v;
+    }
+
+    /**
+     * 「最低min」した値を返す。
+     * @param {number} value
+     * @param {number} min
+     * @returns {number}
+     */
+    static ensureMin(value, min) {
+        return Math.max(value, min);
+    }
+
+    /**
+     * 「最大max」した値を返す。
+     * @param {number} value
+     * @param {number} max
+     * @returns {number}
+     */
+    static ensureMax(value, max) {
+        return Math.min(value, max);
+    }
+}
+
+class DebugUtil {
+    static getSkillName(unit, info) {
+        return `${unit.nameWithGroup}の${info.name}`;
     }
 }

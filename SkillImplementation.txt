@@ -57,14 +57,8 @@ applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
 applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {}
 
 獣の共通の化身スキル
-WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
-もしくは
-const WeaponTypesAddAtk2AfterTransform = {};
-WeaponTypesAddAtk2AfterTransform[Weapon.XXX] = 0;
-const BeastCommonSkillMap =
-    new Map([
-            [Weapon.XXX, BeastCommonSkillType.YYY], // 歩行、騎馬を実装済み
+WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
 
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
@@ -189,7 +183,7 @@ applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
     function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
         // 絶対追撃を受ける
         if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
-            targetUnit.battleContext.followupAttackPriorityIncrement++;
+            enemyUnit.battleContext.followupAttackPriorityIncrement++;
         }
     }
 );
@@ -222,6 +216,13 @@ enemyUnit.battleContext.restHpPercentage >= N
 
 ターン開始時、自身のHPがN%以上なら
 skillOwner.restHpPercentageAtBeginningOfTurn >= N
+
+[戦闘中のHP]
+targetUnit.restHp
+targetUnit.restHpPercentage
+// targetUnit.battleContext.restHp
+// targetUnit.battleContext.restHpPercentage
+// ではない
 
 速さの差を比較するスキルの比較判定時、自身の速さ+Nとして判定[虚勢]
 evalSpdAddFuncMap.set(skillId, function (unit) {
@@ -598,13 +599,13 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
 {
     let skillId = Special.SSS;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    // NormalAttackSpecialDict[skillId] = 0;
+    // NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     // 守備奥義
-    // DefenseSpecialDict[skillId] = 0;
+    // DEFENSE_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    // countNSpecials.push(skillId);
-    // inheritableCountNSpecials.push(skillId);
+    // COUNT2_SPECIALS.push(skillId);
+    // INHERITABLE_COUNT2.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -679,8 +680,8 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
     );
 
     // 範囲奥義
-    RangedAttackSpecialDict[skillId] = 0;
-    RangedAttackSpecialDamageRateDict[skillId] = 1;
+    RANGED_ATTACK_SPECIAL_SET.add(skillId);
+    RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.set(skillId, 1);
 
     // 十字範囲
     enumerateRangedSpecialTilesFuncMap.set(skillId,
@@ -700,10 +701,14 @@ NormalAttackSpecialDict か DefenseSpecialDict を選択
 __init__applySpecialSkillEffect() {}
 
 戦闘後、奥義発動カウント-N
-__applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
-  targetUnit.specialCount -= N;
-}
-
+applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
+    function (attackUnit, attackTargetUnit) {
+        // 奥義をは発動した場合
+        if (attackUnit.battleContext.isSpecialActivated) {
+            attackUnit.specialCount -= N;
+        }
+    }
+);
 
 戦闘後、敵の周囲2マスの敵に7ダメージ[死の吐息]
 __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {
@@ -782,7 +787,7 @@ canAddStatusEffectByRallyFuncMap.set(skillId,
     }
 );
 このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない
-noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
 [回復補助の閾値]
 PRECOMBAT_HEAL_THRESHOLD_MAP.set(skillId, 10);
@@ -830,9 +835,9 @@ atkUnit.battleContext.increaseCooldownCountForAttack = true;
 targetUnit.battleContext.increaseCooldownCountForBoth();
 
 補助スキルを使用したとき、自身の奥義発動変動量は常に0
-noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 このスキル使用時の奥義発動変動量は常に0
-noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
 奥義が発動しやすい(錬成武器)
 resetMaxSpecialCountFuncMap.set(skillId,
@@ -1069,9 +1074,13 @@ enemyUnit.battleContext.addDamageAfterBeginningOfCombatNotStack(N);
 calcFixedAddDamageFuncMap.set(skillId,
     function (atkUnit, defUnit, isPrecombat) {
         // Nダメージ
-        atkUnit.battleContext.additionalDamage += N;
+        if (isPrecombat) {
+            atkUnit.battleContext.additionalDamage = N;
+        } else {
+            atkUnit.battleContext.additionalDamage += N;
+        }
         // ステータスの20%(奥義含む。含まない場合はisPrecombatで条件わけする)
-        // if (isPrecombat) return;
+        if (isPrecombat) return;
         let status = DamageCalculatorWrapper.__get<XXX>(atkUnit, defUnit, isPrecombat);
         atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
     }
@@ -1085,7 +1094,7 @@ targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPreco
 // 範囲奥義を除くステータス参照固定ダメージ
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     if (isPrecombat) return;
-    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Spd, 0.2);
+    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
 });
 もしくは
 DamageCalculatorWrapper.js
@@ -1114,7 +1123,7 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
 マリア算など[ステータス参照の固定ダメージ軽減、固定ダメージ]
 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
-        this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Def, 0.25);
+        this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def, 0.25);
     }
 );
 
@@ -1150,12 +1159,12 @@ targetUnit.battleContext.damageReductionValueOfFirstAttacks += N;
 奥義発動時、ダメージ+N
 // 呼び出し順序によりこの方法は範囲奥義を除く場合にしか使用できない
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
-    targetUnit.battleContext.additionalDamageOfSpecial += N;
+    if (isPrecombat) {
+        targetUnit.battleContext.additionalDamageOfSpecial = N;
+    } else {
+        targetUnit.battleContext.additionalDamageOfSpecial += N;
+    }
 });
-もしくは
-__calcFixedSpecialAddDamage(targetUnit, enemyUnit, isPrecombat = false) {
-    targetUnit.battleContext.additionalDamageOfSpecial += N;
-}
 
 奥義によるダメージ+N
 __calcFixedSpecialAddDamage() {

@@ -1,36 +1,41 @@
-/// @file
-/// @brief スキル情報の定義とそれに関連するクラス、関数等の定義です。
+/**
+ * @file
+ * @brief スキル情報の定義とそれに関連するクラス、関数等の定義です。
+ */
 
-const WeaponTypeAttackRangeDict = {};
-WeaponTypeAttackRangeDict[WeaponType.Sword] = 1;
-WeaponTypeAttackRangeDict[WeaponType.Lance] = 1;
-WeaponTypeAttackRangeDict[WeaponType.Axe] = 1;
-WeaponTypeAttackRangeDict[WeaponType.RedBreath] = 1;
-WeaponTypeAttackRangeDict[WeaponType.BlueBreath] = 1;
-WeaponTypeAttackRangeDict[WeaponType.GreenBreath] = 1;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessBreath] = 1;
-WeaponTypeAttackRangeDict[WeaponType.RedBeast] = 1;
-WeaponTypeAttackRangeDict[WeaponType.BlueBeast] = 1;
-WeaponTypeAttackRangeDict[WeaponType.GreenBeast] = 1;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessBeast] = 1;
-WeaponTypeAttackRangeDict[WeaponType.RedTome] = 2;
-WeaponTypeAttackRangeDict[WeaponType.BlueTome] = 2;
-WeaponTypeAttackRangeDict[WeaponType.GreenTome] = 2;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessTome] = 2;
-WeaponTypeAttackRangeDict[WeaponType.RedBow] = 2;
-WeaponTypeAttackRangeDict[WeaponType.BlueBow] = 2;
-WeaponTypeAttackRangeDict[WeaponType.GreenBow] = 2;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessBow] = 2;
-WeaponTypeAttackRangeDict[WeaponType.RedDagger] = 2;
-WeaponTypeAttackRangeDict[WeaponType.BlueDagger] = 2;
-WeaponTypeAttackRangeDict[WeaponType.GreenDagger] = 2;
-WeaponTypeAttackRangeDict[WeaponType.ColorlessDagger] = 2;
-WeaponTypeAttackRangeDict[WeaponType.Staff] = 2;
-WeaponTypeAttackRangeDict[WeaponType.None] = 0;
+const WEAPON_TYPE_ATTACK_RANGE_MAP = new Map([
+    [WeaponType.Sword, 1],
+    [WeaponType.Lance, 1],
+    [WeaponType.Axe, 1],
+    [WeaponType.RedBreath, 1],
+    [WeaponType.BlueBreath, 1],
+    [WeaponType.GreenBreath, 1],
+    [WeaponType.ColorlessBreath, 1],
+    [WeaponType.RedBeast, 1],
+    [WeaponType.BlueBeast, 1],
+    [WeaponType.GreenBeast, 1],
+    [WeaponType.ColorlessBeast, 1],
+    [WeaponType.RedTome, 2],
+    [WeaponType.BlueTome, 2],
+    [WeaponType.GreenTome, 2],
+    [WeaponType.ColorlessTome, 2],
+    [WeaponType.RedBow, 2],
+    [WeaponType.BlueBow, 2],
+    [WeaponType.GreenBow, 2],
+    [WeaponType.ColorlessBow, 2],
+    [WeaponType.RedDagger, 2],
+    [WeaponType.BlueDagger, 2],
+    [WeaponType.GreenDagger, 2],
+    [WeaponType.ColorlessDagger, 2],
+    [WeaponType.Staff, 2],
+    [WeaponType.None, 0],
+]);
 
-/// 指定した武器種の射程を取得します。
+/**
+ * 指定した武器種の射程を取得します。
+ */
 function getAttackRangeOfWeaponType(weaponType) {
-    return WeaponTypeAttackRangeDict[weaponType];
+    return WEAPON_TYPE_ATTACK_RANGE_MAP.get(weaponType);
 }
 
 function getWeaponTypeOrder(weaponType) {
@@ -60,105 +65,112 @@ function getWeaponTypeOrder(weaponType) {
         WeaponType.ColorlessBow,
         WeaponType.ColorlessDagger,
     ];
-    let i = 0;
-    for (let type of weaponTypes) {
-        if (type === weaponType) {
-            return i;
-        }
-        ++i;
-    }
-    return -1;
+    return weaponTypes.findIndex(type => type === weaponType);
 }
+
+const TYPE_TO_STRING_MAP = new Map([
+    [WeaponRefinementType.None, "-"],
+    [WeaponRefinementType.Hp5_Atk2, "HP+5 攻撃+2"],
+    [WeaponRefinementType.Hp5_Spd3, "HP+5 速さ+3"],
+    [WeaponRefinementType.Hp5_Def4, "HP+5 守備+4"],
+    [WeaponRefinementType.Hp5_Res4, "HP+5 魔防+4"],
+    [WeaponRefinementType.Hp2_Atk1, "HP+2 攻撃+1"],
+    [WeaponRefinementType.Hp2_Spd2, "HP+2 速さ+2"],
+    [WeaponRefinementType.Hp2_Def3, "HP+2 守備+3"],
+    [WeaponRefinementType.Hp2_Res3, "HP+2 魔防+3"],
+    [WeaponRefinementType.Special_Hp3, "HP+3 特殊"],
+    [WeaponRefinementType.Special, "特殊"],
+    [WeaponRefinementType.WrathfulStaff, "神罰の杖"],
+    [WeaponRefinementType.DazzlingStaff, "幻惑の杖"],
+]);
 
 // noinspection JSUnusedGlobalSymbols
 function weaponRefinementTypeToString(type) {
-    switch (type) {
-        case WeaponRefinementType.None:
-            return "-";
-        case WeaponRefinementType.Hp5_Atk2:
-            return "HP+5 攻撃+2";
-        case WeaponRefinementType.Hp5_Spd3:
-            return "HP+5 速さ+3";
-        case WeaponRefinementType.Hp5_Def4:
-            return "HP+5 守備+4";
-        case WeaponRefinementType.Hp5_Res4:
-            return "HP+5 魔防+4";
-        case WeaponRefinementType.Hp2_Atk1:
-            return "HP+2 攻撃+1";
-        case WeaponRefinementType.Hp2_Spd2:
-            return "HP+2 速さ+2";
-        case WeaponRefinementType.Hp2_Def3:
-            return "HP+2 守備+3";
-        case WeaponRefinementType.Hp2_Res3:
-            return "HP+2 魔防+3";
-        case WeaponRefinementType.Special_Hp3:
-            return "HP+3 特殊";
-        case WeaponRefinementType.Special:
-            return "特殊";
-        case WeaponRefinementType.WrathfulStaff:
-            return "神罰の杖";
-        case WeaponRefinementType.DazzlingStaff:
-            return "幻惑の杖";
-    }
+    return TYPE_TO_STRING_MAP.get(type) || "-";
 }
 
-// スキルIDが被らないようにプレフィックスをつける
+/**
+ * スキルIDが被らないようにする
+ * @param {number} emblemHeroIndex
+ * @returns {string}
+ */
 function getEmblemHeroSkillId(emblemHeroIndex) {
     return `e_${emblemHeroIndex}`;
 }
 
-const EmblemHeroSet = new Set(Object.values(EmblemHero));
+/**
+ * @param {number|string} id
+ * @returns {string}
+ */
+function getRefinementSkillId(id) {
+    return `r_${id}`;
+}
 
-const PhysicalWeaponTypeDict = {};
-PhysicalWeaponTypeDict[WeaponType.Sword] = 0;
-PhysicalWeaponTypeDict[WeaponType.Lance] = 0;
-PhysicalWeaponTypeDict[WeaponType.Axe] = 0;
-PhysicalWeaponTypeDict[WeaponType.RedBeast] = 0;
-PhysicalWeaponTypeDict[WeaponType.BlueBeast] = 0;
-PhysicalWeaponTypeDict[WeaponType.GreenBeast] = 0;
-PhysicalWeaponTypeDict[WeaponType.ColorlessBeast] = 0;
-PhysicalWeaponTypeDict[WeaponType.RedBow] = 0;
-PhysicalWeaponTypeDict[WeaponType.BlueBow] = 0;
-PhysicalWeaponTypeDict[WeaponType.GreenBow] = 0;
-PhysicalWeaponTypeDict[WeaponType.ColorlessBow] = 0;
-PhysicalWeaponTypeDict[WeaponType.RedDagger] = 0;
-PhysicalWeaponTypeDict[WeaponType.BlueDagger] = 0;
-PhysicalWeaponTypeDict[WeaponType.GreenDagger] = 0;
-PhysicalWeaponTypeDict[WeaponType.ColorlessDagger] = 0;
+/**
+ * @param {number|string} id
+ * @returns {string}
+ */
+function getSpecialRefinementSkillId(id) {
+    return `sr_${id}`;
+}
 
-/// 武器タイプが物理系の武器であるかを判定します。
+const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
+
+const PHYSICAL_WEAPON_TYPE_SET = new Set([
+    WeaponType.Sword,
+    WeaponType.Lance,
+    WeaponType.Axe,
+    WeaponType.RedBeast,
+    WeaponType.BlueBeast,
+    WeaponType.GreenBeast,
+    WeaponType.ColorlessBeast,
+    WeaponType.RedBow,
+    WeaponType.BlueBow,
+    WeaponType.GreenBow,
+    WeaponType.ColorlessBow,
+    WeaponType.RedDagger,
+    WeaponType.BlueDagger,
+    WeaponType.GreenDagger,
+    WeaponType.ColorlessDagger,
+]);
+
+/**
+ * 武器タイプが物理系の武器であるかを判定します。
+ */
 function isPhysicalWeaponType(weaponType) {
-    return weaponType in PhysicalWeaponTypeDict;
+    return PHYSICAL_WEAPON_TYPE_SET.has(weaponType);
 }
 
-/// 武器錬成タイプが特殊錬成であるかを判定します。
+/**
+ * 武器錬成タイプが特殊錬成であるかを判定します。
+ */
 function isWeaponSpecialRefined(weaponRefinementType) {
-    switch (weaponRefinementType) {
-        case WeaponRefinementType.Special:
-        case WeaponRefinementType.Special_Hp3:
-            return true;
-        default:
-            return false;
-    }
+    return weaponRefinementType === WeaponRefinementType.Special
+        || weaponRefinementType === WeaponRefinementType.Special_Hp3;
 }
 
-const FiresweepWeaponDict = {};
-FiresweepWeaponDict[Weapon.SoleilsShine] = 0;
-FiresweepWeaponDict[Weapon.MiraiNoSeikishiNoYari] = 0;
-FiresweepWeaponDict[Weapon.FiresweepSword] = 0;
-FiresweepWeaponDict[Weapon.FiresweepSwordPlus] = 0;
-FiresweepWeaponDict[Weapon.FiresweepLance] = 0;
-FiresweepWeaponDict[Weapon.FiresweepLancePlus] = 0;
-FiresweepWeaponDict[Weapon.FiresweepBow] = 0;
-FiresweepWeaponDict[Weapon.FiresweepBowPlus] = 0;
-FiresweepWeaponDict[Weapon.FiresweepAxePlus] = 0;
+const FIRESWEEP_WEAPON_SET = new Set([
+    Weapon.SoleilsShine,
+    Weapon.MiraiNoSeikishiNoYari,
+    Weapon.FiresweepSword,
+    Weapon.FiresweepSwordPlus,
+    Weapon.FiresweepLance,
+    Weapon.FiresweepLancePlus,
+    Weapon.FiresweepBow,
+    Weapon.FiresweepBowPlus,
+    Weapon.FiresweepAxePlus,
+]);
 
-/// 自身、敵共に反撃不可になる武器であるかどうかを判定します。
+/**
+ * 自身、敵共に反撃不可になる武器であるかどうかを判定します。
+ */
 function isFiresweepWeapon(weapon) {
-    return weapon in FiresweepWeaponDict;
+    return weapon in FIRESWEEP_WEAPON_SET;
 }
 
-/// 補助スキルの射程を取得します。
+/**
+ * 補助スキルの射程を取得します。
+ */
 function getAssistRange(support) {
     switch (support) {
         case Support.None:
@@ -173,21 +185,22 @@ function getAssistRange(support) {
     }
 }
 
-/// 補助スキルが大応援かどうかを判定します。
+const RALLY_UP_SET = new Set([
+    Support.RallyUpSpd,
+    Support.RallyUpAtk,
+    Support.RallyUpAtkPlus,
+    Support.RallyUpSpdPlus,
+    Support.RallyUpDef,
+    Support.RallyUpDefPlus,
+    Support.RallyUpRes,
+    Support.RallyUpResPlus,
+]);
+
+/**
+ * 補助スキルが大応援かどうかを判定します。
+ */
 function isRallyUp(support) {
-    switch (support) {
-        case Support.RallyUpSpd:
-        case Support.RallyUpAtk:
-        case Support.RallyUpAtkPlus:
-        case Support.RallyUpSpdPlus:
-        case Support.RallyUpDef:
-        case Support.RallyUpDefPlus:
-        case Support.RallyUpRes:
-        case Support.RallyUpResPlus:
-            return true;
-        default:
-            return false;
-    }
+    return RALLY_UP_SET.has(support);
 }
 
 /** @type {Map<number|string, [number, number, number, number]>} */
@@ -198,7 +211,7 @@ const RALLY_BUFF_AMOUNT_MAP = new Map();
  */
 function getAtkBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Atk];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Atk];
     }
     switch (support) {
         case Support.RallyAttack:
@@ -224,10 +237,12 @@ function getAtkBuffAmount(support) {
     }
 }
 
-/// 応援スキルの速さの強化量を取得します。
+/**
+ * 応援スキルの速さの強化量を取得します。
+ */
 function getSpdBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Spd];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Spd];
     }
     switch (support) {
         case Support.RallySpeed:
@@ -253,10 +268,12 @@ function getSpdBuffAmount(support) {
     }
 }
 
-/// 応援スキルの守備の強化量を取得します。
+/**
+ * 応援スキルの守備の強化量を取得します。
+ */
 function getDefBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Def];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Def];
     }
     switch (support) {
         case Support.RallyUpDef:
@@ -282,10 +299,12 @@ function getDefBuffAmount(support) {
     }
 }
 
-/// 応援スキルの魔防の強化量を取得します。
+/**
+ * 応援スキルの魔防の強化量を取得します。
+ */
 function getResBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.Res];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Res];
     }
     switch (support) {
         case Support.RallyUpRes:
@@ -354,163 +373,163 @@ function getPrecombatHealThreshold(support) {
     }
 }
 
-const RangedAttackSpecialDict = {};
-RangedAttackSpecialDict[Special.GrowingFlame] = 0;
-RangedAttackSpecialDict[Special.GrowingLight] = 0;
-RangedAttackSpecialDict[Special.GrowingWind] = 0;
-RangedAttackSpecialDict[Special.GrowingThunder] = 0;
-RangedAttackSpecialDict[Special.BlazingFlame] = 0;
-RangedAttackSpecialDict[Special.BlazingLight] = 0;
-RangedAttackSpecialDict[Special.BlazingWind] = 0;
-RangedAttackSpecialDict[Special.BlazingThunder] = 0;
-RangedAttackSpecialDict[Special.RisingFlame] = 0;
-RangedAttackSpecialDict[Special.RisingLight] = 0;
-RangedAttackSpecialDict[Special.RisingWind] = 0;
-RangedAttackSpecialDict[Special.RisingThunder] = 0;
-RangedAttackSpecialDict[Special.GiftedMagic] = 0;
+const RANGED_ATTACK_SPECIAL_SET = new Set([
+    Special.GrowingFlame,
+    Special.GrowingLight,
+    Special.GrowingWind,
+    Special.GrowingThunder,
+    Special.BlazingFlame,
+    Special.BlazingLight,
+    Special.BlazingWind,
+    Special.BlazingThunder,
+    Special.RisingFlame,
+    Special.RisingLight,
+    Special.RisingWind,
+    Special.RisingThunder,
+    Special.GiftedMagic,
+]);
 
-/// 範囲奥義かどうかを判定します。
+/**
+ * 範囲奥義かどうかを判定します。
+ */
 function isRangedAttackSpecial(special) {
-    return special in RangedAttackSpecialDict;
+    return RANGED_ATTACK_SPECIAL_SET.has(special);
 }
 
-const RangedAttackSpecialDamageRateDict = {};
-RangedAttackSpecialDamageRateDict[Special.GrowingFlame] = 1;
-RangedAttackSpecialDamageRateDict[Special.GrowingLight] = 1;
-RangedAttackSpecialDamageRateDict[Special.GrowingWind] = 1;
-RangedAttackSpecialDamageRateDict[Special.GrowingThunder] = 1;
-RangedAttackSpecialDamageRateDict[Special.BlazingFlame] = 1.5;
-RangedAttackSpecialDamageRateDict[Special.BlazingLight] = 1.5;
-RangedAttackSpecialDamageRateDict[Special.BlazingWind] = 1.5;
-RangedAttackSpecialDamageRateDict[Special.BlazingThunder] = 1.5;
-RangedAttackSpecialDamageRateDict[Special.RisingFlame] = 1;
-RangedAttackSpecialDamageRateDict[Special.RisingLight] = 1;
-RangedAttackSpecialDamageRateDict[Special.RisingWind] = 1;
-RangedAttackSpecialDamageRateDict[Special.RisingThunder] = 1;
-RangedAttackSpecialDamageRateDict[Special.GiftedMagic] = 0.8;
+const RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP = new Map([
+    [Special.GrowingFlame, 1],
+    [Special.GrowingLight, 1],
+    [Special.GrowingWind, 1],
+    [Special.GrowingThunder, 1],
+    [Special.BlazingFlame, 1.5],
+    [Special.BlazingLight, 1.5],
+    [Special.BlazingWind, 1.5],
+    [Special.BlazingThunder, 1.5],
+    [Special.RisingFlame, 1],
+    [Special.RisingLight, 1],
+    [Special.RisingWind, 1],
+    [Special.RisingThunder, 1],
+    [Special.GiftedMagic, 0.8],
+]);
 
 function getRangedAttackSpecialDamageRate(special) {
-    let rate = RangedAttackSpecialDamageRateDict[special];
-    if (rate) {
-        return rate;
-    }
-    return 0;
+    return RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.get(special) || 0;
 }
 
-const DefenseSpecialDict = {};
-DefenseSpecialDict[Special.Nagatate] = 0;
-DefenseSpecialDict[Special.Otate] = 0;  // 大盾
-DefenseSpecialDict[Special.Kotate] = 0; // 小盾
-DefenseSpecialDict[Special.Seitate] = 0; // 聖盾
-DefenseSpecialDict[Special.Seii] = 0;  // 聖衣
-DefenseSpecialDict[Special.Seikabuto] = 0; // 聖兜
-DefenseSpecialDict[Special.IceMirror] = 0;
-DefenseSpecialDict[Special.IceMirror2] = 0;
-DefenseSpecialDict[Special.FrostbiteMirror] = 0;
-DefenseSpecialDict[Special.NegatingFang] = 0;
-DefenseSpecialDict[Special.GodlikeReflexes] = 0;
-DefenseSpecialDict[Special.Miracle] = 0;
+const DEFENSE_SPECIAL_SET = new Set([
+    Special.Nagatate,
+    Special.Otate,  // 大盾
+    Special.Kotate, // 小盾
+    Special.Seitate, // 聖盾
+    Special.Seii,  // 聖衣
+    Special.Seikabuto, // 聖兜
+    Special.IceMirror,
+    Special.IceMirror2,
+    Special.FrostbiteMirror,
+    Special.NegatingFang,
+    Special.GodlikeReflexes,
+    Special.Miracle,
+]);
 
-/// 防御系の奥義かどうかを判定します。
+/**
+ * 防御系の奥義かどうかを判定します。
+ */
 function isDefenseSpecial(special) {
-    return special in DefenseSpecialDict;
+    return DEFENSE_SPECIAL_SET.has(special);
 }
 
-const NormalAttackSpecialDict = {};
-NormalAttackSpecialDict[Special.DragonBlast] = 0;
-NormalAttackSpecialDict[Special.Flare] = 0;
-NormalAttackSpecialDict[Special.Moonbow] = 0;
-NormalAttackSpecialDict[Special.Luna] = 0;
-NormalAttackSpecialDict[Special.Aether] = 0;
-NormalAttackSpecialDict[Special.LunaFlash] = 0;
-NormalAttackSpecialDict[Special.LunarFlash2] = 0;
-NormalAttackSpecialDict[Special.Glimmer] = 0;
-NormalAttackSpecialDict[Special.Deadeye] = 0;
-NormalAttackSpecialDict[Special.Astra] = 0;
-NormalAttackSpecialDict[Special.ArmoredBeacon] = 0;
-NormalAttackSpecialDict[Special.ArmoredFloe] = 0;
-NormalAttackSpecialDict[Special.Bonfire] = 0;
-NormalAttackSpecialDict[Special.Ignis] = 0;
-NormalAttackSpecialDict[Special.Iceberg] = 0;
-NormalAttackSpecialDict[Special.Glacies] = 0;
-NormalAttackSpecialDict[Special.CircletOfBalance] = 0;
-NormalAttackSpecialDict[Special.HolyKnightAura] = 0;
-NormalAttackSpecialDict[Special.ChivalricAura] = 0; // グランベルの騎士道
-NormalAttackSpecialDict[Special.DraconicAura] = 0;
-NormalAttackSpecialDict[Special.DragonFang] = 0;
-NormalAttackSpecialDict[Special.Enclosure] = 0; // 閉界
-NormalAttackSpecialDict[Special.Sirius] = 0; // 天狼
-NormalAttackSpecialDict[Special.SiriusPlus] = 0; // 天狼
-NormalAttackSpecialDict[Special.RupturedSky] = 0; // 破天
-NormalAttackSpecialDict[Special.TwinBlades] = 0; // 双刃
-NormalAttackSpecialDict[Special.Taiyo] = 0;
-NormalAttackSpecialDict[Special.Yuyo] = 0;
-NormalAttackSpecialDict[Special.RegnalAstra] = 0; // 剣姫の流星
-NormalAttackSpecialDict[Special.ImperialAstra] = 0; // 剣皇の流星
-NormalAttackSpecialDict[Special.VitalAstra] = 0; // 心流星
-NormalAttackSpecialDict[Special.SupremeAstra] = 0; // 無双の流星
-NormalAttackSpecialDict[Special.OpenTheFuture] = 0; // 開世
-NormalAttackSpecialDict[Special.Fukusyu] = 0; // 復讐
-NormalAttackSpecialDict[Special.Kessyu] = 0; // 血讐
-NormalAttackSpecialDict[Special.Kagetsuki] = 0; // 影月
-NormalAttackSpecialDict[Special.Setsujoku] = 0; // 雪辱
-NormalAttackSpecialDict[Special.Hyouten] = 0; // 氷点
-NormalAttackSpecialDict[Special.Youkage] = 0; // 陽影
-NormalAttackSpecialDict[Special.Hotarubi] = 0; // 蛍火
-NormalAttackSpecialDict[Special.ShiningEmblem] = 0; // 光炎の紋章
-NormalAttackSpecialDict[Special.HonoNoMonsyo] = 0; // 炎の紋章
-NormalAttackSpecialDict[Special.HerosBlood] = 0;
-NormalAttackSpecialDict[Special.KuroNoGekko] = 0; // 黒の月光
-NormalAttackSpecialDict[Special.Lethality] = 0; // 滅殺
-NormalAttackSpecialDict[Special.AoNoTenku] = 0; // 蒼の天空
-NormalAttackSpecialDict[Special.RadiantAether2] = 0; // 蒼の天空・承
-NormalAttackSpecialDict[Special.MayhemAether] = 0; // 暴の天空
-NormalAttackSpecialDict[Special.Hoshikage] = 0; // 星影
-NormalAttackSpecialDict[Special.Fukuryu] = 0; // 伏竜
-NormalAttackSpecialDict[Special.BlueFrame] = 0; // ブルーフレイム
-NormalAttackSpecialDict[Special.SeidrShell] = 0; // 魔弾
-NormalAttackSpecialDict[Special.BrutalShell] = 0; // 凶弾
-NormalAttackSpecialDict[Special.RighteousWind] = 0;
-NormalAttackSpecialDict[Special.SublimeHeaven] = 0;
-NormalAttackSpecialDict[Special.DevinePulse] = 0;
+const NORMAL_ATTACK_SPECIAL_SET = new Set([
+    Special.DragonBlast,
+    Special.Flare,
+    Special.Moonbow,
+    Special.Luna,
+    Special.Aether,
+    Special.LunaFlash,
+    Special.LunarFlash2,
+    Special.Glimmer,
+    Special.Deadeye,
+    Special.Astra,
+    Special.ArmoredBeacon,
+    Special.ArmoredFloe,
+    Special.Bonfire,
+    Special.Ignis,
+    Special.Iceberg,
+    Special.Glacies,
+    Special.CircletOfBalance,
+    Special.HolyKnightAura,
+    Special.ChivalricAura, // グランベルの騎士道
+    Special.DraconicAura,
+    Special.DragonFang,
+    Special.Enclosure, // 閉界
+    Special.Sirius, // 天狼
+    Special.SiriusPlus, // 天狼
+    Special.RupturedSky, // 破天
+    Special.TwinBlades, // 双刃
+    Special.Taiyo,
+    Special.Yuyo,
+    Special.RegnalAstra, // 剣姫の流星
+    Special.ImperialAstra, // 剣皇の流星
+    Special.VitalAstra, // 心流星
+    Special.SupremeAstra, // 無双の流星
+    Special.OpenTheFuture, // 開世
+    Special.Fukusyu, // 復讐
+    Special.Kessyu, // 血讐
+    Special.Kagetsuki, // 影月
+    Special.Setsujoku, // 雪辱
+    Special.Hyouten, // 氷点
+    Special.Youkage, // 陽影
+    Special.Hotarubi, // 蛍火
+    Special.ShiningEmblem, // 光炎の紋章
+    Special.HonoNoMonsyo, // 炎の紋章
+    Special.HerosBlood,
+    Special.KuroNoGekko, // 黒の月光
+    Special.Lethality, // 滅殺
+    Special.AoNoTenku, // 蒼の天空
+    Special.RadiantAether2, // 蒼の天空・承
+    Special.MayhemAether, // 暴の天空
+    Special.Hoshikage, // 星影
+    Special.Fukuryu, // 伏竜
+    Special.BlueFrame, // ブルーフレイム
+    Special.SeidrShell, // 魔弾
+    Special.BrutalShell, // 凶弾
+    Special.RighteousWind,
+    Special.SublimeHeaven,
+    Special.DevinePulse,
+]);
 
 /// 戦闘中に発動する攻撃系の奥義かどうかを判定します。
 function isNormalAttackSpecial(special) {
-    return special in NormalAttackSpecialDict;
+    return NORMAL_ATTACK_SPECIAL_SET.has(special);
 }
 
-/// 再行動補助スキルかどうかを判定します。
-const refreshSupportSkillSet = new Set();
+/**
+ * 再行動補助スキルかどうかを判定します。
+ */
+const REFRESH_SUPPORT_SKILL_SET = new Set([
+    Support.DragonsDance,
+    Support.CallToFlame,
+    Support.Sing,
+    Support.Dance,
+    Support.GrayWaves,
+    Support.GentleDream,
+    Support.GentleDreamPlus,
+    Support.TenderDream,
+    Support.WhimsicalDream,
+    Support.SweetDreams,
+    Support.CloyingDreams,
+    Support.FrightfulDream,
+    Support.HarrowingDream,
+    Support.Play,
+]);
+
+function isRefreshSupportSkill(skillId) {
+    return REFRESH_SUPPORT_SKILL_SET.has(skillId);
+}
 
 /**
  * 応援扱いの回復サポートスキルIDの集合
  */
 const RALLY_HEAL_SKILL_SET = new Set();
-
-function isRefreshSupportSkill(skillId) {
-    if (refreshSupportSkillSet.has(skillId)) {
-        return true;
-    }
-    switch (skillId) {
-        case Support.DragonsDance:
-        case Support.CallToFlame:
-        case Support.Sing:
-        case Support.Dance:
-        case Support.GrayWaves:
-        case Support.GentleDream:
-        case Support.GentleDreamPlus:
-        case Support.TenderDream:
-        case Support.WhimsicalDream:
-        case Support.SweetDreams:
-        case Support.CloyingDreams:
-        case Support.FrightfulDream:
-        case Support.HarrowingDream:
-        case Support.Play:
-            return true;
-        default:
-            return false;
-    }
-}
 
 /**
  * 応援扱いの回復サポートスキルかどうかを返す
@@ -519,97 +538,122 @@ function isRallyHealSkill(skillId) {
     return RALLY_HEAL_SKILL_SET.has(skillId);
 }
 
-const BowWeaponTypeTable = {}
-BowWeaponTypeTable[WeaponType.RedBow] = 0;
-BowWeaponTypeTable[WeaponType.BlueBow] = 0;
-BowWeaponTypeTable[WeaponType.GreenBow] = 0;
-BowWeaponTypeTable[WeaponType.ColorlessBow] = 0;
-BowWeaponTypeTable[WeaponType.Bow] = 0;
+const BOW_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedBow,
+    WeaponType.BlueBow,
+    WeaponType.GreenBow,
+    WeaponType.ColorlessBow,
+    WeaponType.Bow,
+]);
 
-/// 武器タイプが弓であるかを判定します。
+/**
+ * 武器タイプが弓であるかを判定します。
+ */
 function isWeaponTypeBow(type) {
-    return type in BowWeaponTypeTable;
+    return BOW_WEAPON_TYPE_SET.has(type);
 }
 
-const DaggerWeaponTypeTable = {}
-DaggerWeaponTypeTable[WeaponType.RedDagger] = 0;
-DaggerWeaponTypeTable[WeaponType.BlueDagger] = 0;
-DaggerWeaponTypeTable[WeaponType.GreenDagger] = 0;
-DaggerWeaponTypeTable[WeaponType.ColorlessDagger] = 0;
-DaggerWeaponTypeTable[WeaponType.Dagger] = 0;
+const DAGGER_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedDagger,
+    WeaponType.BlueDagger,
+    WeaponType.GreenDagger,
+    WeaponType.ColorlessDagger,
+    WeaponType.Dagger,
+]);
 
-/// 武器タイプが暗器であるかを判定します。
+/**
+ * 武器タイプが暗器であるかを判定します。
+ */
 function isWeaponTypeDagger(type) {
-    return type in DaggerWeaponTypeTable;
+    return DAGGER_WEAPON_TYPE_SET.has(type);
 }
 
-const TomeWeaponTypeTable = {}
-TomeWeaponTypeTable[WeaponType.RedTome] = 0;
-TomeWeaponTypeTable[WeaponType.BlueTome] = 0;
-TomeWeaponTypeTable[WeaponType.GreenTome] = 0;
-TomeWeaponTypeTable[WeaponType.ColorlessTome] = 0;
-TomeWeaponTypeTable[WeaponType.Tome] = 0;
+const TOME_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedTome,
+    WeaponType.BlueTome,
+    WeaponType.GreenTome,
+    WeaponType.ColorlessTome,
+    WeaponType.Tome,
+]);
 
-/// 武器タイプが魔法であるかを判定します。
+/**
+ * 武器タイプが魔法であるかを判定します。
+ */
 function isWeaponTypeTome(type) {
-    return type in TomeWeaponTypeTable;
+    return TOME_WEAPON_TYPE_SET.has(type);
 }
 
-const BreathWeaponTypeTable = {}
-BreathWeaponTypeTable[WeaponType.RedBreath] = 0;
-BreathWeaponTypeTable[WeaponType.BlueBreath] = 0;
-BreathWeaponTypeTable[WeaponType.GreenBreath] = 0;
-BreathWeaponTypeTable[WeaponType.ColorlessBreath] = 0;
-BreathWeaponTypeTable[WeaponType.Breath] = 0;
+const BREATH_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedBreath,
+    WeaponType.BlueBreath,
+    WeaponType.GreenBreath,
+    WeaponType.ColorlessBreath,
+    WeaponType.Breath,
+]);
 
-/// 武器タイプが竜であるかを判定します。
+/**
+ * 武器タイプが竜であるかを判定します。
+ */
 function isWeaponTypeBreath(type) {
-    return type in BreathWeaponTypeTable;
+    return BREATH_WEAPON_TYPE_SET.has(type);
 }
 
-const BeastWeaponTypeTable = {}
-BeastWeaponTypeTable[WeaponType.RedBeast] = 0;
-BeastWeaponTypeTable[WeaponType.BlueBeast] = 0;
-BeastWeaponTypeTable[WeaponType.GreenBeast] = 0;
-BeastWeaponTypeTable[WeaponType.ColorlessBeast] = 0;
-BeastWeaponTypeTable[WeaponType.Beast] = 0;
+const BEAST_WEAPON_TYPE_SET = new Set([
+    WeaponType.RedBeast,
+    WeaponType.BlueBeast,
+    WeaponType.GreenBeast,
+    WeaponType.ColorlessBeast,
+    WeaponType.Beast,
+]);
 
-/// 武器タイプが獣であるかを判定します。
+/**
+ * 武器タイプが獣であるかを判定します。
+ */
 function isWeaponTypeBeast(type) {
-    return type in BeastWeaponTypeTable;
+    return BEAST_WEAPON_TYPE_SET.has(type);
 }
 
-/// 武器タイプが2距離射程の武器であるかを判定します。
+/**
+ * 武器タイプが2距離射程の武器であるかを判定します。
+ */
 function isRangedWeaponType(weaponType) {
     return !isMeleeWeaponType(weaponType);
 }
 
-const MeleeWeaponTypeTable = {};
-MeleeWeaponTypeTable[WeaponType.Sword] = 0;
-MeleeWeaponTypeTable[WeaponType.Axe] = 0;
-MeleeWeaponTypeTable[WeaponType.Lance] = 0;
-MeleeWeaponTypeTable[WeaponType.RedBeast] = 0;
-MeleeWeaponTypeTable[WeaponType.BlueBeast] = 0;
-MeleeWeaponTypeTable[WeaponType.GreenBeast] = 0;
-MeleeWeaponTypeTable[WeaponType.ColorlessBeast] = 0;
-MeleeWeaponTypeTable[WeaponType.RedBreath] = 0;
-MeleeWeaponTypeTable[WeaponType.BlueBreath] = 0;
-MeleeWeaponTypeTable[WeaponType.GreenBreath] = 0;
-MeleeWeaponTypeTable[WeaponType.ColorlessBreath] = 0;
-MeleeWeaponTypeTable[WeaponType.Breath] = 0;
-MeleeWeaponTypeTable[WeaponType.Beast] = 0;
+const MELEE_WEAPON_TYPE_SET = new Set([
+    WeaponType.Sword,
+    WeaponType.Axe,
+    WeaponType.Lance,
+    WeaponType.RedBeast,
+    WeaponType.BlueBeast,
+    WeaponType.GreenBeast,
+    WeaponType.ColorlessBeast,
+    WeaponType.RedBreath,
+    WeaponType.BlueBreath,
+    WeaponType.GreenBreath,
+    WeaponType.ColorlessBreath,
+    WeaponType.Breath,
+    WeaponType.Beast,
+]);
 
-/// 武器タイプが1距離射程の武器であるかを判定します。
+/**
+ * 武器タイプが1距離射程の武器であるかを判定します。
+ */
 function isMeleeWeaponType(weaponType) {
-    return weaponType in MeleeWeaponTypeTable;
+    return MELEE_WEAPON_TYPE_SET.has(weaponType);
 }
 
-/// 武器タイプが竜、もしくは獣であるかを判定します。
+/**
+ * 武器タイプが竜、もしくは獣であるかを判定します。
+ */
 function isWeaponTypeBreathOrBeast(type) {
-    return isWeaponTypeBeast(type) || isWeaponTypeBreath(type);
+    return isWeaponTypeBeast(type)
+        || isWeaponTypeBreath(type);
 }
 
-/// 武器タイプが継承可能であるかを判定します。
+/**
+ * 武器タイプが継承可能であるかを判定します。
+ */
 function isInheritableWeaponType(targetType, types) {
     for (let type of types) {
         if (type === targetType) {
@@ -653,181 +697,86 @@ function isInheritableWeaponType(targetType, types) {
     return false;
 }
 
-const WeaponTypeToColorType = {};
-WeaponTypeToColorType[WeaponType.Sword] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedTome] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedBreath] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedBeast] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedBow] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.RedDagger] = ColorType.Red;
-WeaponTypeToColorType[WeaponType.Lance] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueTome] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueBreath] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueBeast] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueBow] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.BlueDagger] = ColorType.Blue;
-WeaponTypeToColorType[WeaponType.Axe] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenTome] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenBreath] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenBeast] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenBow] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.GreenDagger] = ColorType.Green;
-WeaponTypeToColorType[WeaponType.Staff] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessTome] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessBreath] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessBeast] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessBow] = ColorType.Colorless;
-WeaponTypeToColorType[WeaponType.ColorlessDagger] = ColorType.Colorless;
+const WEAPON_TYPE_TO_COLOR_MAP = new Map([
+    [WeaponType.Sword, ColorType.Red],
+    [WeaponType.RedTome, ColorType.Red],
+    [WeaponType.RedBreath, ColorType.Red],
+    [WeaponType.RedBeast, ColorType.Red],
+    [WeaponType.RedBow, ColorType.Red],
+    [WeaponType.RedDagger, ColorType.Red],
+    [WeaponType.Lance, ColorType.Blue],
+    [WeaponType.BlueTome, ColorType.Blue],
+    [WeaponType.BlueBreath, ColorType.Blue],
+    [WeaponType.BlueBeast, ColorType.Blue],
+    [WeaponType.BlueBow, ColorType.Blue],
+    [WeaponType.BlueDagger, ColorType.Blue],
+    [WeaponType.Axe, ColorType.Green],
+    [WeaponType.GreenTome, ColorType.Green],
+    [WeaponType.GreenBreath, ColorType.Green],
+    [WeaponType.GreenBeast, ColorType.Green],
+    [WeaponType.GreenBow, ColorType.Green],
+    [WeaponType.GreenDagger, ColorType.Green],
+    [WeaponType.Staff, ColorType.Colorless],
+    [WeaponType.ColorlessTome, ColorType.Colorless],
+    [WeaponType.ColorlessBreath, ColorType.Colorless],
+    [WeaponType.ColorlessBeast, ColorType.Colorless],
+    [WeaponType.ColorlessBow, ColorType.Colorless],
+    [WeaponType.ColorlessDagger, ColorType.Colorless],
+]);
 
 function getColorFromWeaponType(weaponType) {
-    return WeaponTypeToColorType[weaponType];
+    return WEAPON_TYPE_TO_COLOR_MAP.get(weaponType);
 }
 
+const STRING_TO_WEAPON_TYPE_MAP = new Map([
+    ["剣", WeaponType.Sword],
+    ["槍", WeaponType.Lance],
+    ["斧", WeaponType.Axe],
+    ["無魔", WeaponType.ColorlessTome],
+    ["赤魔", WeaponType.RedTome],
+    ["青魔", WeaponType.BlueTome],
+    ["緑魔", WeaponType.GreenTome],
+    ["赤竜", WeaponType.RedBreath],
+    ["青竜", WeaponType.BlueBreath],
+    ["緑竜", WeaponType.GreenBreath],
+    ["無竜", WeaponType.ColorlessBreath],
+    ["杖", WeaponType.Staff],
+    ["暗器", WeaponType.ColorlessDagger],
+    ["赤暗器", WeaponType.RedDagger],
+    ["青暗器", WeaponType.BlueDagger],
+    ["緑暗器", WeaponType.GreenDagger],
+    ["弓", WeaponType.ColorlessBow],
+    ["赤弓", WeaponType.RedBow],
+    ["青弓", WeaponType.BlueBow],
+    ["緑弓", WeaponType.GreenBow],
+    ["赤獣", WeaponType.RedBeast],
+    ["青獣", WeaponType.BlueBeast],
+    ["緑獣", WeaponType.GreenBeast],
+    ["獣", WeaponType.ColorlessBeast],
+]);
+
+const WEAPON_TYPE_TO_STRING_MAP =
+    new Map([...STRING_TO_WEAPON_TYPE_MAP.entries()].map(([key, value]) => [value, key]));
+
 function stringToWeaponType(input) {
-    switch (input) {
-        case "剣":
-            return WeaponType.Sword;
-        case "槍":
-            return WeaponType.Lance;
-        case "斧":
-            return WeaponType.Axe;
-        case "無魔":
-            return WeaponType.ColorlessTome;
-        case "赤魔":
-            return WeaponType.RedTome;
-        case "青魔":
-            return WeaponType.BlueTome;
-        case "緑魔":
-            return WeaponType.GreenTome;
-        case "赤竜":
-            return WeaponType.RedBreath;
-        case "青竜":
-            return WeaponType.BlueBreath;
-        case "緑竜":
-            return WeaponType.GreenBreath;
-        case "無竜":
-            return WeaponType.ColorlessBreath;
-        case "杖":
-            return WeaponType.Staff;
-        case "暗器":
-            return WeaponType.ColorlessDagger;
-        case "赤暗器":
-            return WeaponType.RedDagger;
-        case "青暗器":
-            return WeaponType.BlueDagger;
-        case "緑暗器":
-            return WeaponType.GreenDagger;
-        case "弓":
-            return WeaponType.ColorlessBow;
-        case "赤弓":
-            return WeaponType.RedBow;
-        case "青弓":
-            return WeaponType.BlueBow;
-        case "緑弓":
-            return WeaponType.GreenBow;
-        case "赤獣":
-            return WeaponType.RedBeast;
-        case "青獣":
-            return WeaponType.BlueBeast;
-        case "緑獣":
-            return WeaponType.GreenBeast;
-        case "獣":
-            return WeaponType.ColorlessBeast;
-        default:
-            return WeaponType.None;
-    }
+    return STRING_TO_WEAPON_TYPE_MAP.get(input) ?? WeaponType.None;
 }
 
 function weaponTypeToString(weaponType) {
-    switch (weaponType) {
-        case WeaponType.Sword:
-            return "剣";
-        case WeaponType.ColorlessTome:
-            return "無魔";
-        case WeaponType.RedTome:
-            return "赤魔";
-        case WeaponType.RedBreath:
-            return "赤竜";
-        case WeaponType.RedBeast:
-            return "赤獣";
-        case WeaponType.RedBow:
-            return "赤弓";
-        case WeaponType.RedDagger:
-            return "赤暗器";
-        case WeaponType.Lance:
-            return "槍";
-        case WeaponType.BlueTome:
-            return "青魔";
-        case WeaponType.BlueBreath:
-            return "青竜";
-        case WeaponType.BlueBeast:
-            return "青獣";
-        case WeaponType.BlueBow:
-            return "青弓";
-        case WeaponType.BlueDagger:
-            return "青暗器";
-        case WeaponType.Axe:
-            return "斧";
-        case WeaponType.GreenTome:
-            return "緑魔";
-        case WeaponType.GreenBreath:
-            return "緑竜";
-        case WeaponType.GreenBeast:
-            return "緑獣";
-        case WeaponType.GreenBow:
-            return "緑弓";
-        case WeaponType.GreenDagger:
-            return "緑暗器";
-        case WeaponType.Staff:
-            return "杖";
-        case WeaponType.ColorlessBreath:
-            return "竜";
-        case WeaponType.ColorlessBeast:
-            return "獣";
-        case WeaponType.ColorlessBow:
-            return "弓";
-        case WeaponType.ColorlessDagger:
-            return "暗器";
-        case WeaponType.Breath:
-            return "竜石";
-        case WeaponType.Beast:
-            return "獣";
-        default:
-            return "不明";
-    }
+    return WEAPON_TYPE_TO_STRING_MAP.get(weaponType) ?? "不明";
 }
 
 function canRallyForciblyByPlayer(unit) {
-    let skillId = unit.support;
-    let funcMap = canRallyForciblyByPlayerFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            let result = func.call(this, unit);
-            if (result) {
-                return true;
-            }
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
-    }
-    return false;
+    return getSkillFunc(unit.support, canRallyForciblyByPlayerFuncMap)?.call(this, unit) ?? false;
 }
 
-/// 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
+/**
+ * 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
+ */
 function canRallyForcibly(skill, unit) {
-    let skillId = skill;
-    let funcMap = canRallyForciblyFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            let result = func.call(this, unit);
-            if (result) {
-                return true;
-            }
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
+    let func = getSkillFunc(skill, canRallyForciblyFuncMap);
+    if (func?.call(this, unit) ?? false) {
+        return true;
     }
     switch (skill) {
         case Support.GoldSerpent:
@@ -858,17 +807,8 @@ function canRallyForcibly(skill, unit) {
 }
 
 function canRalliedForcibly(skillId, unit) {
-    let funcMap = canRalliedForciblyFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            let result = func.call(this, unit);
-            if (result) {
-                return true;
-            }
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
+    if (getSkillFunc(skillId, canRalliedForciblyFuncMap)?.call(this, unit) ?? false) {
+        return true;
     }
     switch (skillId) {
         case Support.GoldSerpent:
@@ -898,58 +838,56 @@ function canRalliedForcibly(skillId, unit) {
     }
 }
 
-/// 戦闘前に発動するスペシャルであるかどうかを判定します。
+/**
+ * 戦闘前に発動するスペシャルであるかどうかを判定します。
+ */
 function isPrecombatSpecial(special) {
     return isRangedAttackSpecial(special);
 }
 
-// 二分探索したいだけで値はどうでもいいので0を入れておきます
-const TeleportationSkillDict = {};
-TeleportationSkillDict[PassiveC.TipTheScales] = 0;
-TeleportationSkillDict[Weapon.LanceOfHeroics] = 0;
-TeleportationSkillDict[Weapon.FlowerLance] = 0;
-TeleportationSkillDict[Weapon.FujinYumi] = 0;
-TeleportationSkillDict[Weapon.Gurimowaru] = 0;
-TeleportationSkillDict[Weapon.ApotheosisSpear] = 0;
-TeleportationSkillDict[Weapon.Noatun] = 0;
-TeleportationSkillDict[Weapon.HinokaNoKounagitou] = 0;
-TeleportationSkillDict[Weapon.IzunNoKajitsu] = 0;
-TeleportationSkillDict[PassiveB.TeniNoKona] = 0;
-TeleportationSkillDict[PassiveB.Kyuen2] = 0;
-TeleportationSkillDict[PassiveB.Kyuen3] = 0;
-TeleportationSkillDict[PassiveB.WingsOfMercy4] = 0;
-TeleportationSkillDict[PassiveB.Ridatsu3] = 0;
-TeleportationSkillDict[PassiveB.EscapeRoute4] = 0;
-TeleportationSkillDict[PassiveB.KyokugiHiKo1] = 0;
-TeleportationSkillDict[PassiveB.KyokugiHiKo2] = 0;
-TeleportationSkillDict[PassiveB.KyokugiHiKo3] = 0;
-TeleportationSkillDict[PassiveB.HentaiHiko1] = 0;
-TeleportationSkillDict[PassiveB.HentaiHiko2] = 0;
-TeleportationSkillDict[PassiveB.HentaiHiko3] = 0;
-TeleportationSkillDict[PassiveC.SorakaranoSendo3] = 0;
-TeleportationSkillDict[PassiveC.Guidance4] = 0;
-TeleportationSkillDict[PassiveC.SoaringGuidance] = 0;
-TeleportationSkillDict[PassiveC.HikonoSendo3] = 0;
-TeleportationSkillDict[PassiveC.OpeningRetainer] = 0;
-TeleportationSkillDict[Weapon.SilentPower] = 0;
+const TELEPORTATION_SKILL_SET = new Set([
+    PassiveC.TipTheScales,
+    Weapon.LanceOfHeroics,
+    Weapon.FlowerLance,
+    Weapon.FujinYumi,
+    Weapon.Gurimowaru,
+    Weapon.ApotheosisSpear,
+    Weapon.Noatun,
+    Weapon.HinokaNoKounagitou,
+    Weapon.IzunNoKajitsu,
+    PassiveB.TeniNoKona,
+    PassiveB.Kyuen2,
+    PassiveB.Kyuen3,
+    PassiveB.WingsOfMercy4,
+    PassiveB.Ridatsu3,
+    PassiveB.EscapeRoute4,
+    PassiveB.KyokugiHiKo1,
+    PassiveB.KyokugiHiKo2,
+    PassiveB.KyokugiHiKo3,
+    PassiveB.HentaiHiko1,
+    PassiveB.HentaiHiko2,
+    PassiveB.HentaiHiko3,
+    PassiveC.SorakaranoSendo3,
+    PassiveC.Guidance4,
+    PassiveC.SoaringGuidance,
+    PassiveC.HikonoSendo3,
+    PassiveC.OpeningRetainer,
+    Weapon.SilentPower,
+]);
 
-/// テレポート効果を持つスキルであるかどうかを判定します。
+/**
+ * テレポート効果を持つスキルであるかどうかを判定します。
+ */
 function isTeleportationSkill(skillId) {
-    return skillId in TeleportationSkillDict;
+    return TELEPORTATION_SKILL_SET.has(skillId);
 }
 
-/// 天駆の道の効果を持つスキルかどうか
+/**
+ * 天駆の道の効果を持つスキルかどうか
+ */
 function hasPathfinderEffect(skillId) {
-    let funcMap = hasPathfinderEffectFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            if (func.call(this)) {
-                return true;
-            }
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
+    if (getSkillFunc(skillId, hasPathfinderEffectFuncMap)?.call(this) ?? false) {
+        return true;
     }
     switch (skillId) {
         case PassiveB.TwinSkyWing:
@@ -962,7 +900,9 @@ function hasPathfinderEffect(skillId) {
     }
 }
 
-/// 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合を0～1で返します。
+/**
+ * 「自分の最大HP-現HPの〇%を奥義ダメージに加算」の割合を0～1で返します。
+ */
 function getSelfDamageDealtRateToAddSpecialDamage(skillId) {
     switch (skillId) {
         case Special.Fukusyu:
@@ -975,50 +915,47 @@ function getSelfDamageDealtRateToAddSpecialDamage(skillId) {
     }
 }
 
-const TriangleAdeptDict = {};
-TriangleAdeptDict[PassiveA.AishoGekika3] = 0;
-TriangleAdeptDict[Weapon.AsahiNoKen] = 0;
-TriangleAdeptDict[Weapon.AsahiNoKenPlus] = 0;
-TriangleAdeptDict[Weapon.SoukaiNoYari] = 0;
-TriangleAdeptDict[Weapon.SoukaiNoYariPlus] = 0;
-TriangleAdeptDict[Weapon.ShinryokuNoOno] = 0;
-TriangleAdeptDict[Weapon.ShinryokuNoOnoPlus] = 0;
-TriangleAdeptDict[Weapon.WakakiMogyuNoYari] = 0;
-TriangleAdeptDict[Weapon.WakakiKurohyoNoKen] = 0;
-TriangleAdeptDict[Weapon.ShinginNoSeiken] = 0;
-TriangleAdeptDict[Weapon.YoheidanNoSenfu] = 0;
+const TRIANGLE_ADEPT_SET = new Set([
+    PassiveA.AishoGekika3,
+    Weapon.AsahiNoKen,
+    Weapon.AsahiNoKenPlus,
+    Weapon.SoukaiNoYari,
+    Weapon.SoukaiNoYariPlus,
+    Weapon.ShinryokuNoOno,
+    Weapon.ShinryokuNoOnoPlus,
+    Weapon.WakakiMogyuNoYari,
+    Weapon.WakakiKurohyoNoKen,
+    Weapon.ShinginNoSeiken,
+    Weapon.YoheidanNoSenfu,
+]);
 
-/// 相性激化3の効果を標準で発動できるすきるかどうかを判定します。
+/**
+ * 相性激化3の効果を標準で発動できるすきるかどうかを判定します。
+ */
 function isTriangleAdeptSkill(skillId) {
-    return skillId in TriangleAdeptDict;
+    return TRIANGLE_ADEPT_SET.has(skillId);
 }
 
-const EvalSpdAddDict = {};
-EvalSpdAddDict[PassiveB.BindingNecklacePlus] = 7;
-EvalSpdAddDict[PassiveS.HayasaNoKyosei1] = 5;
-EvalSpdAddDict[PassiveS.HayasaNoKyosei2] = 8;
-EvalSpdAddDict[PassiveS.HayasaNoKyosei3] = 10;
-EvalSpdAddDict[PassiveB.Spurn4] = 7;
-EvalSpdAddDict[PassiveB.CloseCall4] = 7;
-EvalSpdAddDict[PassiveB.Repel4] = 7;
-EvalSpdAddDict[PassiveB.BeastSense4] = 7;
-EvalSpdAddDict[Weapon.SharpWarSword] = 10;
+const EVAL_SPD_ADD_MAP = new Map([
+    [PassiveB.BindingNecklacePlus, 7],
+    [PassiveS.HayasaNoKyosei1, 5],
+    [PassiveS.HayasaNoKyosei2, 8],
+    [PassiveS.HayasaNoKyosei3, 10],
+    [PassiveB.Spurn4, 7],
+    [PassiveB.CloseCall4, 7],
+    [PassiveB.Repel4, 7],
+    [PassiveB.BeastSense4, 7],
+    [Weapon.SharpWarSword, 10],
+]);
 
-/// 速さ比較時の速さ加算値を取得します。
+/**
+ * 速さ比較時の速さ加算値を取得します。
+ */
 function getEvalSpdAdd(unit) {
     let amount = 0;
     for (let skillId of unit.enumerateSkills()) {
-        let value = EvalSpdAddDict[skillId];
-        amount += value ? value : 0;
-        let funcMap = evalSpdAddFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                amount += func.call(this, unit);
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
-        }
+        amount += EVAL_SPD_ADD_MAP.get(skillId) ?? 0;
+        amount += getSkillFunc(skillId, evalSpdAddFuncMap)?.call(this, unit) ?? 0;
         switch (skillId) {
             case Weapon.NewBrazenCatFang:
                 if (unit.isWeaponSpecialRefined) {
@@ -1030,67 +967,73 @@ function getEvalSpdAdd(unit) {
     return amount;
 }
 
-const EvalResAddDict = {};
-EvalResAddDict[PassiveS.MaboNoKyosei1] = 5;
-EvalResAddDict[PassiveS.MaboNoKyosei2] = 8;
-EvalResAddDict[PassiveS.MaboNoKyosei3] = 10;
+const EVAL_RES_ADD_MAP = new Map([
+    [PassiveS.MaboNoKyosei1, 5],
+    [PassiveS.MaboNoKyosei2, 8],
+    [PassiveS.MaboNoKyosei3, 10],
+]);
 
-/// 魔防比較時の速さ加算値を取得します。
+/**
+ * 魔防比較時の速さ加算値を取得します。
+ */
 function getEvalResAdd(passiveS) {
-    let value = EvalResAddDict[passiveS];
+    let value = EVAL_RES_ADD_MAP.get(passiveS);
     return value ? value : 0;
 }
 
-const WeaponTypesAddAtk2AfterTransform = {};
-WeaponTypesAddAtk2AfterTransform[Weapon.DreamHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.ArcaneNihility] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.Ravager] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.WaryRabbitFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.KeenRabbitFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.FangOfFinality] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.HeraldingHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.EnclosingClaw] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.FieryFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.RoyalHatariFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.HornOfOpening] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.PolishedFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.SparklingFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.EbonPirateClaw] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.CrossbonesClaw] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.ResolvedFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.RefreshedFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.RenewedFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.RaydreamHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.BrightmareHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.NightmareHorn] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.BrazenCatFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TaguelFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TaguelChildFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.FoxkitFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.NewBrazenCatFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.NewFoxkitFang] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.KarasuOuNoHashizume] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TakaouNoHashizume] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.YoukoohNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.JunaruSenekoNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.ShishiouNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TrasenshiNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.JinroMusumeNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.JinroOuNoTsumekiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.OkamijoouNoKiba] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.ShirasagiNoTsubasa] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.SeijuNoKeshinHiko] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.GroomsWings] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.SkyPirateClaw] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.TwinCrestPower] = 0;
-WeaponTypesAddAtk2AfterTransform[Weapon.IlluminatingHorn] = 0;
+const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
+    Weapon.DreamHorn,
+    Weapon.ArcaneNihility,
+    Weapon.Ravager,
+    Weapon.WaryRabbitFang,
+    Weapon.KeenRabbitFang,
+    Weapon.FangOfFinality,
+    Weapon.HeraldingHorn,
+    Weapon.EnclosingClaw,
+    Weapon.FieryFang,
+    Weapon.RoyalHatariFang,
+    Weapon.HornOfOpening,
+    Weapon.PolishedFang,
+    Weapon.SparklingFang,
+    Weapon.EbonPirateClaw,
+    Weapon.CrossbonesClaw,
+    Weapon.ResolvedFang,
+    Weapon.RefreshedFang,
+    Weapon.RenewedFang,
+    Weapon.RaydreamHorn,
+    Weapon.BrightmareHorn,
+    Weapon.NightmareHorn,
+    Weapon.BrazenCatFang,
+    Weapon.TaguelFang,
+    Weapon.TaguelChildFang,
+    Weapon.FoxkitFang,
+    Weapon.NewBrazenCatFang,
+    Weapon.NewFoxkitFang,
+    Weapon.KarasuOuNoHashizume,
+    Weapon.TakaouNoHashizume,
+    Weapon.YoukoohNoTsumekiba,
+    Weapon.JunaruSenekoNoTsumekiba,
+    Weapon.ShishiouNoTsumekiba,
+    Weapon.TrasenshiNoTsumekiba,
+    Weapon.JinroMusumeNoTsumekiba,
+    Weapon.JinroOuNoTsumekiba,
+    Weapon.OkamijoouNoKiba,
+    Weapon.ShirasagiNoTsubasa,
+    Weapon.SeijuNoKeshinHiko,
+    Weapon.GroomsWings,
+    Weapon.SkyPirateClaw,
+    Weapon.TwinCrestPower,
+    Weapon.IlluminatingHorn,
+]);
 
 function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
-    return weapon in WeaponTypesAddAtk2AfterTransform;
+    return WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.has(weapon);
 }
 
-// 化身による共通の効果
-// TODO 残りも実装する
+/**
+ * 化身による共通の効果
+ * TODO 残りも実装する
+ */
 const BeastCommonSkillType = {
     Infantry: 0, // 初期の歩行近接
     Infantry2: 1, // アシュ以降の歩行近接
@@ -1101,83 +1044,82 @@ const BeastCommonSkillType = {
     Cavalry2: 6, // TODO: 次世代騎馬なのか魔器だけなのか確認する
 }
 
-const BeastCommonSkillMap =
-    new Map(
-        [
-            // 次世代歩行
-            [Weapon.HeraldingHorn, BeastCommonSkillType.Infantry2],
-            [Weapon.FieryFang, BeastCommonSkillType.Infantry2],
-            [Weapon.WildTigerFang, BeastCommonSkillType.Infantry2],
-            [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
-            [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
-            [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
-            [Weapon.IlluminatingHorn, BeastCommonSkillType.Infantry2],
+const BEAST_COMMON_SKILL_MAP = new Map([
+    // 次世代歩行
+    [Weapon.HeraldingHorn, BeastCommonSkillType.Infantry2],
+    [Weapon.FieryFang, BeastCommonSkillType.Infantry2],
+    [Weapon.WildTigerFang, BeastCommonSkillType.Infantry2],
+    [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
+    [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
+    [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
+    [Weapon.IlluminatingHorn, BeastCommonSkillType.Infantry2],
 
-            // 錬成すると次世代歩行
-            [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
-            [Weapon.OkamijoouNoKiba, BeastCommonSkillType.Infantry2IfRefined],
-            [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
-            [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+    // 錬成すると次世代歩行
+    [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+    [Weapon.OkamijoouNoKiba, BeastCommonSkillType.Infantry2IfRefined],
+    [Weapon.JinroMusumeNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
+    [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
 
-            // 旧世代歩行
-            [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
-            [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
+    // 旧世代歩行
+    [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
+    [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
 
-            // 次世代騎馬
-            [Weapon.ArcaneNihility, BeastCommonSkillType.Cavalry2],
-            [Weapon.DreamHorn, BeastCommonSkillType.Cavalry2],
+    // 次世代騎馬
+    [Weapon.ArcaneNihility, BeastCommonSkillType.Cavalry2],
+    [Weapon.DreamHorn, BeastCommonSkillType.Cavalry2],
 
-            // 騎馬
-            [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],
-            [Weapon.KeenRabbitFang, BeastCommonSkillType.Cavalry],
-            [Weapon.SparklingFang, BeastCommonSkillType.Cavalry],
-            [Weapon.RefreshedFang, BeastCommonSkillType.Cavalry],
-            [Weapon.RaydreamHorn, BeastCommonSkillType.Cavalry],
-            [Weapon.BrightmareHorn, BeastCommonSkillType.Cavalry],
-            [Weapon.NightmareHorn, BeastCommonSkillType.Cavalry],
-            [Weapon.BrazenCatFang, BeastCommonSkillType.Cavalry],
-            [Weapon.NewBrazenCatFang, BeastCommonSkillType.Cavalry],
-            [Weapon.NewFoxkitFang, BeastCommonSkillType.Cavalry],
-            [Weapon.FoxkitFang, BeastCommonSkillType.Cavalry],
-            [Weapon.TaguelFang, BeastCommonSkillType.Cavalry],
-            [Weapon.TaguelChildFang, BeastCommonSkillType.Cavalry],
-            [Weapon.YoukoohNoTsumekiba, BeastCommonSkillType.Cavalry],
-            [Weapon.JunaruSenekoNoTsumekiba, BeastCommonSkillType.Cavalry],
-        ]
-    );
+    // 騎馬
+    [Weapon.WaryRabbitFang, BeastCommonSkillType.Cavalry],
+    [Weapon.KeenRabbitFang, BeastCommonSkillType.Cavalry],
+    [Weapon.SparklingFang, BeastCommonSkillType.Cavalry],
+    [Weapon.RefreshedFang, BeastCommonSkillType.Cavalry],
+    [Weapon.RaydreamHorn, BeastCommonSkillType.Cavalry],
+    [Weapon.BrightmareHorn, BeastCommonSkillType.Cavalry],
+    [Weapon.NightmareHorn, BeastCommonSkillType.Cavalry],
+    [Weapon.BrazenCatFang, BeastCommonSkillType.Cavalry],
+    [Weapon.NewBrazenCatFang, BeastCommonSkillType.Cavalry],
+    [Weapon.NewFoxkitFang, BeastCommonSkillType.Cavalry],
+    [Weapon.FoxkitFang, BeastCommonSkillType.Cavalry],
+    [Weapon.TaguelFang, BeastCommonSkillType.Cavalry],
+    [Weapon.TaguelChildFang, BeastCommonSkillType.Cavalry],
+    [Weapon.YoukoohNoTsumekiba, BeastCommonSkillType.Cavalry],
+    [Weapon.JunaruSenekoNoTsumekiba, BeastCommonSkillType.Cavalry],
+]);
 
-const AdvantageousAgainstColorlessWeaponTable = {};
-AdvantageousAgainstColorlessWeaponTable[Weapon.EtherealBreath] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.KinsekiNoSyo] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.GunshiNoRaisyo] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.KokukarasuNoSyo] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.GunshiNoFusho] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.Blarraven] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.BlarravenPlus] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.Gronnraven] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.GronnravenPlus] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.Rauarraven] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.RauarravenPlus] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.YukyuNoSyo] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.Nagurufaru] = 0;
-AdvantageousAgainstColorlessWeaponTable[Weapon.TomeOfOrder] = 0;
+const ADVANTAGEOUS_AGAINST_COLORLESS_WEAPON_SET = new Set([
+    Weapon.EtherealBreath,
+    Weapon.KinsekiNoSyo,
+    Weapon.GunshiNoRaisyo,
+    Weapon.KokukarasuNoSyo,
+    Weapon.GunshiNoFusho,
+    Weapon.Blarraven,
+    Weapon.BlarravenPlus,
+    Weapon.Gronnraven,
+    Weapon.GronnravenPlus,
+    Weapon.Rauarraven,
+    Weapon.RauarravenPlus,
+    Weapon.YukyuNoSyo,
+    Weapon.Nagurufaru,
+    Weapon.TomeOfOrder,
+]);
 
 function isAdvantageousForColorless(weapon) {
-    return weapon in AdvantageousAgainstColorlessWeaponTable;
+    return ADVANTAGEOUS_AGAINST_COLORLESS_WEAPON_SET.has(weapon);
 }
 
-const BreakerSkillToTargetWeaponTypeTable = {};
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Swordbreaker3] = WeaponType.Sword;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Lancebreaker3] = WeaponType.Lance;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Axebreaker3] = WeaponType.Axe;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Bowbreaker3] = WeaponType.ColorlessBow;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.Daggerbreaker3] = WeaponType.ColorlessDagger;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.RedTomebreaker3] = WeaponType.RedTome;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.BlueTomebreaker3] = WeaponType.BlueTome;
-BreakerSkillToTargetWeaponTypeTable[PassiveB.GreenTomebreaker3] = WeaponType.GreenTome;
+const BREAKER_SKILL_TO_TARGET_WEAPON_TYPE_MAP = new Map([
+    [PassiveB.Swordbreaker3, WeaponType.Sword],
+    [PassiveB.Lancebreaker3, WeaponType.Lance],
+    [PassiveB.Axebreaker3, WeaponType.Axe],
+    [PassiveB.Bowbreaker3, WeaponType.ColorlessBow],
+    [PassiveB.Daggerbreaker3, WeaponType.ColorlessDagger],
+    [PassiveB.RedTomebreaker3, WeaponType.RedTome],
+    [PassiveB.BlueTomebreaker3, WeaponType.BlueTome],
+    [PassiveB.GreenTomebreaker3, WeaponType.GreenTome],
+]);
 
 function getBreakerSkillTargetWeaponType(breakerSkillId) {
-    return BreakerSkillToTargetWeaponTypeTable[breakerSkillId];
+    return BREAKER_SKILL_TO_TARGET_WEAPON_TYPE_MAP.get(breakerSkillId);
 }
 
 /**
@@ -1190,17 +1132,17 @@ function __createValueDict(sourceDict) {
     return valueDict;
 }
 
-const WeaponValueDict = __createValueDict(Weapon);
-const SupportValueDict = __createValueDict(Support);
-const SpecialValueDict = __createValueDict(Special);
-const PassiveAValueDict = __createValueDict(PassiveA);
-const PassiveBValueDict = __createValueDict(PassiveB);
-const PassiveCValueDict = __createValueDict(PassiveC);
-const PassiveSValueDict = __createValueDict(PassiveS);
-const PassiveXValueDict = __createValueDict(PassiveX);
-const CaptainValueDict = __createValueDict(Captain);
+const WEAPON_VALUE_DICT = __createValueDict(Weapon);
+const SUPPORT_VALUE_DICT = __createValueDict(Support);
+const SPECIAL_VALUE_DICT = __createValueDict(Special);
+const PASSIVE_A_VALUE_DICT = __createValueDict(PassiveA);
+const PASSIVE_B_VALUE_DICT = __createValueDict(PassiveB);
+const PASSIVE_C_VALUE_DICT = __createValueDict(PassiveC);
+const PASSIVE_S_VALUE_DICT = __createValueDict(PassiveS);
+const PASSIVE_X_VALUE_DICT = __createValueDict(PassiveX);
+const CAPTAIN_VALUE_DICT = __createValueDict(Captain);
 
-const SaveSkills = new Set([
+const SAVE_SKILLS_SET = new Set([
     PassiveC.WoefulUpheaval,
     PassiveC.WithEveryone2,
     PassiveC.AsFarSave3,
@@ -1213,7 +1155,9 @@ const SaveSkills = new Set([
     PassiveC.DrNearSave3,
 ]);
 
-/// スキル情報です。ユニットの初期化等に使用します。
+/**
+ * スキル情報です。ユニットの初期化等に使用します。
+ */
 class SkillInfo {
     /**
      * @param  {String} id
@@ -1353,23 +1297,23 @@ class SkillInfo {
         }
         switch (this.type) {
             case SkillType.Weapon:
-                return this.id in WeaponValueDict;
+                return this.id in WEAPON_VALUE_DICT;
             case SkillType.Support:
-                return this.id in SupportValueDict;
+                return this.id in SUPPORT_VALUE_DICT;
             case SkillType.Special:
-                return this.id in SpecialValueDict;
+                return this.id in SPECIAL_VALUE_DICT;
             case SkillType.PassiveA:
-                return this.id in PassiveAValueDict;
+                return this.id in PASSIVE_A_VALUE_DICT;
             case SkillType.PassiveB:
-                return this.id in PassiveBValueDict;
+                return this.id in PASSIVE_B_VALUE_DICT;
             case SkillType.PassiveC:
-                return this.id in PassiveCValueDict;
+                return this.id in PASSIVE_C_VALUE_DICT;
             case SkillType.PassiveS:
-                return this.id in PassiveSValueDict;
+                return this.id in PASSIVE_S_VALUE_DICT;
             case SkillType.PassiveX:
-                return this.id in PassiveXValueDict;
+                return this.id in PASSIVE_X_VALUE_DICT;
             case SkillType.Captain:
-                return this.id in CaptainValueDict;
+                return this.id in CAPTAIN_VALUE_DICT;
             default:
                 throw new Error("Invalid skill type");
         }
@@ -1409,69 +1353,26 @@ class SkillInfo {
     }
 }
 
-class MathUtil {
-    /**
-     * 「最低min、最大max」した値を返す。
-     * @param {number} value
-     * @param {number} min
-     * @param {number} max
-     * @returns {number}
-     */
-    static ensureMinMax(value, min, max) {
-        let v = value;
-        v = MathUtil.ensureMin(v, min);
-        v = MathUtil.ensureMax(v, max);
-        return v;
-    }
+const COUNT2_SPECIALS = [];
+const INHERITABLE_COUNT2_SPECIALS = [];
+const COUNT3_SPECIALS = [];
+const INHERITABLE_COUNT3_SPECIALS = [];
+const COUNT4_SPECIALS = [];
+const INHERITABLE_COUNT4_SPECIALS = [];
 
-    /**
-     * 「最低min」した値を返す。
-     * @param {number} value
-     * @param {number} min
-     * @returns {number}
-     */
-    static ensureMin(value, min) {
-        return Math.max(value, min);
-    }
+/**
+ * 補助時に奥義発動カウントを進めないスキル
+ */
+const NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET = new Set([
+    Support.RescuePlus,
+    Support.Rescue,
+    Support.ReturnPlus,
+    Support.Return,
+    Support.NudgePlus,
+    Support.Nudge,
+]);
 
-    /**
-     * 「最大max」した値を返す。
-     * @param {number} value
-     * @param {number} max
-     * @returns {number}
-     */
-    static ensureMax(value, max) {
-        return Math.min(value, max);
-    }
-}
-
-class DebugUtil {
-    static getSkillName(unit, info) {
-        return `${unit.nameWithGroup}の${info.name}`;
-    }
-}
-
-const count2Specials = [];
-const inheritableCount2Specials = [];
-const count3Specials = [];
-const inheritableCount3Specials = [];
-const count4Specials = [];
-const inheritableCount4Specials = [];
-
-// 補助時に奥義発動カウントを進めないスキル
-const noEffectOnSpecialCooldownChargeOnSupportSkillSet = new Set();
-{
-    let skills = [
-        Support.RescuePlus, Support.Rescue,
-        Support.ReturnPlus, Support.Return,
-        Support.NudgePlus, Support.Nudge,
-    ];
-    for (let skill of skills) {
-        noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skill);
-    }
-}
-
-const StatusIndex = {
+const STATUS_INDEX = {
     Atk: 0,
     Spd: 1,
     Def: 2,
@@ -1479,28 +1380,63 @@ const StatusIndex = {
 }
 
 // TODO: ここから下の内容を別ファイルに分ける
+
+/**
+ * @template {F | undefined} F
+ * @param {number|string} skillId
+ * @param {Map<number|string, F>} funcMap
+ * @returns {F}
+ */
+function getSkillFunc(skillId, funcMap) {
+    // 錬成先が登録されている
+    // 何も返さない
+    if (funcMap.has(getRefinementSkillId(skillId)) ||
+        funcMap.has(getSpecialRefinementSkillId(skillId))) {
+        return undefined;
+    }
+    if (funcMap.has(skillId)) {
+        let func = funcMap.get(skillId);
+        if (typeof func === "function") {
+            return func;
+        } else {
+            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
+        }
+    }
+    return undefined;
+}
+
 // FuncMap
-// noinspection DuplicatedCode
 /** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySpecialDamageReductionPerAttackFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectForUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, unit: Unit) => boolean>} */
 const canActivateCantoFuncMap = new Map();
+/** @type {Map<number|string, (this: Unit) => number>} */
 const calcMoveCountForCantoFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, owner: Unit) => number>} */
 const evalSpdAddFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, defUnit: Unit, atkUnit: Unit) => void>} */
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
 /** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applySkillForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applyEnemySkillForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: Unit) => void>} */
 const setOnetimeActionActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, ally: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectFromAlliesFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, ally: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectFromAlliesExcludedFromFeudFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, enemyAlly: Unit, potentialDamage: boolean) => void>} */
 const updateUnitSpurFromEnemyAlliesFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applyRefreshFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySkillEffectsPerCombatFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const initApplySpecialSkillEffectFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, atkUnit: Unit, defUnit: Unit) => void>} */
 const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 // 応援後のスキル
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
@@ -1524,61 +1460,88 @@ const applySupportSkillForTargetUnitFuncMap = new Map();
 const canRallyForciblyFuncMap = new Map();
 /** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
 const canRallyForciblyByPlayerFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, u: Unit) => boolean>} */
 const canRalliedForciblyFuncMap = new Map();
 /** @type {Map<number|string, (u: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForUnitFuncMap = new Map();
 /** @type {Map<number|string, (this: PostCombatSkillHander, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectAfterCombatForUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const applySKillEffectForUnitAtBeginningOfCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, ally: Unit, enemy: Unit, potentialDamage: boolean) => void>} */
 const updateUnitSpurFromAlliesFuncMap = new Map();
+/** @type {Map<number|string, (this: Unit, moveUnit: Unit) => boolean>} */
 const canActivateObstructToAdjacentTilesFuncMap = new Map();
+/** @type {Map<number|string, (this: Unit, moveUnit: Unit) => boolean>} */
 const canActivateObstructToTilesIn2SpacesFuncMap = new Map();
 // 切り込みなど移動スキル終了後に発動するスキル効果
+/** @type {Map<number|string, (this: Unit, atkUnit: Unit, defUnit: Unit, tileToAttack: Tile) => void>} */
 const applySkillEffectAfterMovementSkillsActivatedFuncMap = new Map();
 // 優先度の高い再行動スキルの評価
-// noinspection DuplicatedCode
+/** @type {Map<number|string, (this: Unit, atkUnit: Unit, defUnit: Unit, tileToAttack: Tile) => void>} */
 const applyHighPriorityAnotherActionSkillEffectFuncMap = new Map();
-// thisはUnit
+/** @type {Map<number|string, (this: Unit) => void>} */
 const applyEndActionSkillsFuncMap = new Map();
-// thisはUnit
+/** @type {Map<number|string, (this: Unit) => void>} */
 const applySkillsAfterCantoActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler) => boolean>} */
 const hasTransformSkillsFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, assistUnit: Unit, target: Unit, assitTile: Tile) => MovementAssistResult>} */
 const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, assistUnit: Unit, target: Unit, tile: Tile) => void>} */
 const findTileAfterMovementAssistFuncMap = new Map();
-// thisはUnit
+/** @type {Map<number|string, (this: Unit) => number>} */
 const resetMaxSpecialCountFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, attackUnit: Unit, lossesInCombat: boolean, result: CombatResult) => boolean>} */
 const isAfflictorFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, defUnit: Unit, atkUnit: Unit, attackRange: number) => void>} */
 const applyDamageReductionRatioBySpecialFuncMap = new Map();
 // TODO: リファクタリングする
+/** @type {Map<number|string, (this: DamageCalculator, defUnit: Unit, atkUnit: Unit) => void>} */
 const activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, atkUnit: Unit, defUnit: Unit) => number>} */
 const addSpecialDamageAfterDefenderSpecialActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySkillEffectAfterSpecialActivatedFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleMap, targetTile: Tile) => Generator<Tile>>} */
 const enumerateRangedSpecialTilesFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, target: Unit, attackCount: number) => void>} */
 const applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
-// thisはUnit
+/** @type {Map<number|string, (this: Unit, restHpPercentage: number, defUnit: Unit) => boolean>} */
 const canDisableAttackOrderSwapSkillFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, atkUnit: Unit, defUnit: Unit, isPrecombat: boolean) => void>} */
 const calcFixedAddDamageFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applyHealSkillForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleSimulatorBase, atkUnit: Unit, attackTarget: Unit, executesTrap: boolean) => boolean>} */
 const applyMovementSkillAfterCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectRelatedToFollowupAttackPossibilityFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applyPotentSkillEffectFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, canActivateAttackerSpecial: boolean) => void>} */
 const applySkillEffectsPerAttackFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
 const applySkillEffectAfterSetAttackCountFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, atkUnit: Unit, ally: Unit) => boolean>} */
 const canActivateSaveSkillFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, atkUnit: Unit, defUnit: Unit) => void>} */
 const selectReferencingResOrDefFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleMap, target: Unit, ally: Unit) => Generator<Tile>>} */
 const enumerateTeleportTilesForAllyFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, target: Unit) => void>} */
 const applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap = new Map();
+/** @type {Map<number|string, (this: Window) => boolean>} */
 const hasPathfinderEffectFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, enemyAlly: Unit, potentialDamage: boolean) => void>} */
 const applySkillEffectFromEnemyAlliesFuncMap = new Map();
 /** @type {Map<number|string, (this: PostCombatSkillHander, attacker: Unit, attackTarget: Unit) => void>} */
 const applyAttackSkillEffectAfterCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySpecialSkillEffectWhenHealingFuncMap = new Map();
+// TODO: リファクタリングする
 /** @type {Map<number|string, (this: any, supporter: Unit, target: Unit) => boolean>} */
 const canAddStatusEffectByRallyFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit) => number>} */

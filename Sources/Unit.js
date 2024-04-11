@@ -725,14 +725,17 @@ class Unit extends BattleMapElement {
     }
 
     isPartner(ally) {
-        return this.partnerHeroIndex === ally.heroIndex || ally.partnerHeroIndex === this.heroIndex;
+        return this.partnerHeroIndex === ally.heroIndex
+            || ally.partnerHeroIndex === this.heroIndex;
     }
 
     canActivateCanto() {
-        return !(!this.isActionDone || this.isCantoActivatedInCurrentTurn);
+        return this.isActionDone && !this.isCantoActivatedInCurrentTurn;
     }
 
-    /// 再移動が発動可能なら発動します。
+    /**
+     * 再移動が発動可能なら発動します。
+     */
     activateCantoIfPossible(moveCountForCanto, cantoControlledIfCantoActivated) {
         if (!this.isActionDone || this.isCantoActivatedInCurrentTurn) {
             return;
@@ -753,28 +756,25 @@ class Unit extends BattleMapElement {
             }
             // 再移動発動直後スキル
             for (let skillId of this.enumerateSkills()) {
-                let funcMap = applySkillsAfterCantoActivatedFuncMap;
-                if (funcMap.has(skillId)) {
-                    let func = funcMap.get(skillId);
-                    if (typeof func === "function") {
-                        func.call(this, moveCountForCanto, cantoControlledIfCantoActivated);
-                    } else {
-                        console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                    }
-                }
+                let func = getSkillFunc(skillId, applySkillsAfterCantoActivatedFuncMap);
+                func?.call(this, moveCountForCanto, cantoControlledIfCantoActivated);
             }
             // 同時タイミングに付与された天脈を消滅させる
             g_appData.map.applyReservedDivineVein();
         }
     }
 
-    /// 再移動の発動を終了します。
+    /**
+     * 再移動の発動を終了します。
+     */
     deactivateCanto() {
         this.moveCountForCanto = 0;
         this.isCantoActivating = false;
     }
 
-    /// 再移動が発動しているとき、trueを返します。
+    /**
+     * 再移動が発動しているとき、trueを返します。
+     */
     isCantoActivated() {
         return this.isCantoActivating;
     }
@@ -2170,17 +2170,10 @@ class Unit extends BattleMapElement {
     canActivateObstructToTilesIn2Spaces(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = canActivateObstructToTilesIn2SpacesFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    if (func.call(this, this, moveUnit)) {
-                        hasSkills = true;
-                        break;
-                    }
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
+            let func = getSkillFunc(skillId, canActivateObstructToTilesIn2SpacesFuncMap);
+            if (func?.call(this, moveUnit) ?? false) {
+                hasSkills = true;
+                break;
             }
         }
         hasSkills |=
@@ -2197,17 +2190,10 @@ class Unit extends BattleMapElement {
     canActivateObstructToAdjacentTiles(moveUnit) {
         let hasSkills = false;
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = canActivateObstructToAdjacentTilesFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    if (func.call(this, this, moveUnit)) {
-                        hasSkills = true;
-                        break;
-                    }
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
+            let func = getSkillFunc(skillId, canActivateObstructToAdjacentTilesFuncMap);
+            if (func?.call(this, moveUnit) ?? false) {
+                hasSkills = true;
+                break;
             }
         }
         hasSkills |=
@@ -2345,15 +2331,7 @@ class Unit extends BattleMapElement {
         }
 
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = setOnetimeActionActivatedFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            getSkillFunc(skillId, setOnetimeActionActivatedFuncMap)?.call(this);
             switch (skillId) {
                 case PassiveB.GuardBearing4:
                     // 各ターンについてこのスキル所持者が敵から攻撃された最初の戦闘の時
@@ -2413,15 +2391,7 @@ class Unit extends BattleMapElement {
         // ここでは天脈の予約を行う
         // 同時タイミングに異なる複数の天脈が付与されていなければ天脈付与を確定させる
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = applyEndActionSkillsFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            getSkillFunc(skillId, applyEndActionSkillsFuncMap)?.call(this);
             switch (skillId) {
                 case Weapon.Vallastone:
                     for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
@@ -4111,85 +4081,94 @@ class Unit extends BattleMapElement {
         return this.currentDamage >= requiredHealAmount;
     }
 
-    * enumerateSkillInfos() {
-        if (this.weaponInfo != null) {
-            yield this.weaponInfo;
-        }
-        if (this.supportInfo != null) {
-            yield this.supportInfo;
-        }
-        if (this.specialInfo != null) {
-            yield this.specialInfo;
-        }
-        if (this.passiveAInfo != null) {
-            yield this.passiveAInfo;
-        }
-        if (this.passiveBInfo != null) {
-            yield this.passiveBInfo;
-        }
-        if (this.passiveCInfo != null) {
-            yield this.passiveCInfo;
-        }
-        if (this.passiveSInfo != null) {
-            yield this.passiveSInfo;
-        }
-        if (this.passiveXInfo != null) {
-            yield this.passiveXInfo;
-        }
-        if (this.isCaptain && this.captainInfo != null) {
-            yield this.captainInfo;
+    /**
+     * @returns {Generator<SkillInfo>}
+     */
+    * #enumerateSkillInfo(info) {
+        if (info != null) {
+            yield info;
         }
     }
 
+    /**
+     * @returns {Generator<SkillInfo>}
+     */
+    * enumerateSkillInfos() {
+        let infos = [
+            this.weaponInfo,
+            this.supportInfo,
+            this.specialInfo,
+            this.passiveAInfo,
+            this.passiveBInfo,
+            this.passiveCInfo,
+            this.passiveSInfo,
+            this.passiveXInfo,
+        ];
+        for(let info of infos) {
+            yield* this.#enumerateSkillInfo(info);
+        }
+        if (this.isCaptain) {
+            yield* this.#enumerateSkillInfo(this.captainInfo);
+        }
+    }
+
+    /**
+     * @param {number} id
+     * @param {boolean} canRefine
+     * @returns {Generator<number|string>}
+     */
+    * #enumerateSkills(id, canRefine = false) {
+        if (id !== NoneValue) {
+            yield id;
+            if (canRefine) {
+                if (this.isWeaponRefined) {
+                    yield getRefinementSkillId(id);
+                }
+                if (this.isWeaponSpecialRefined) {
+                    yield getSpecialRefinementSkillId(id);
+                }
+            }
+        }
+    }
+
+    /**
+     * @returns {Generator<number|string>}
+     */
     * enumerateSkills() {
-        if (this.weapon !== NoneValue) {
-            yield this.weapon;
-        }
-        if (this.support !== NoneValue) {
-            yield this.support;
-        }
-        if (this.special !== NoneValue) {
-            yield this.special;
-        }
-        if (this.passiveA !== NoneValue) {
-            yield this.passiveA;
-        }
-        if (this.passiveB !== NoneValue) {
-            yield this.passiveB;
-        }
-        if (this.passiveC !== NoneValue) {
-            yield this.passiveC;
-        }
-        if (this.passiveS !== NoneValue) {
-            yield this.passiveS;
-        }
-        if (this.passiveX !== NoneValue) {
-            yield this.passiveX;
-        }
-        if (this.isCaptain && this.captain !== NoneValue) {
-            yield this.captain;
+        yield* this.#enumerateSkills(this.weapon, true);
+        yield* this.#enumerateSkills(this.support);
+        yield* this.#enumerateSkills(this.special);
+        // passiveA-X
+        yield* this.enumeratePassiveSkills()
+        if (this.isCaptain) {
+            yield* this.#enumerateSkills(this.captain);
         }
         if (this.emblemHeroIndex > 0) {
             yield getEmblemHeroSkillId(this.emblemHeroIndex);
         }
     }
 
+    /**
+     * @returns {Generator<number|string>}
+     */
     * enumeratePassiveSkills() {
-        if (this.passiveA !== NoneValue) {
-            yield this.passiveA;
+        let passives = [
+            this.passiveA,
+            this.passiveB,
+            this.passiveC,
+            this.passiveS,
+            this.passiveX,
+        ];
+        for (let passive of passives) {
+            yield* this.#enumerateSkills(passive);
         }
-        if (this.passiveB !== NoneValue) {
-            yield this.passiveB;
-        }
-        if (this.passiveC !== NoneValue) {
-            yield this.passiveC;
-        }
-        if (this.passiveS !== NoneValue) {
-            yield this.passiveS;
-        }
-        if (this.passiveX !== NoneValue) {
-            yield this.passiveX;
-        }
+    }
+
+    /**
+     * @returns {Generator<number|string>}
+     */
+    * enumerateWeaponSkills() {
+        yield* this.#enumerateSkills(this.weapon, true);
     }
 
     hasDagger7Effect() {
@@ -4726,7 +4705,9 @@ class Unit extends BattleMapElement {
         return this.canHavePairUpUnit && this.pairUpUnit != null && this.pairUpUnit.heroInfo != null;
     }
 
-    /// ステータスにスキルの加算値を加算します。
+    /**
+     * ステータスにスキルの加算値を加算します。
+     */
     updateStatusBySkillsExceptWeapon() {
         for (let skillInfo of this.enumerateSkillInfos()) {
             if (skillInfo === this.weaponInfo) {
@@ -4787,15 +4768,7 @@ class Unit extends BattleMapElement {
             specialCountMax += this.weaponInfo.cooldownCount;
         }
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = resetMaxSpecialCountFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    specialCountMax += func.call(this);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            specialCountMax += getSkillFunc(skillId, resetMaxSpecialCountFuncMap)?.call(this) ?? 0;
             switch (skillId) {
                 case Weapon.CrimeanScepter:
                 case Weapon.DuskDawnStaff:
@@ -5151,16 +5124,9 @@ class Unit extends BattleMapElement {
      */
     canDisableAttackOrderSwapSkill(restHpPercentage, defUnit) {
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = canDisableAttackOrderSwapSkillFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    if (func.call(this, restHpPercentage, defUnit)) {
-                        return true;
-                    }
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
+            let func = getSkillFunc(skillId, canDisableAttackOrderSwapSkillFuncMap);
+            if (func?.call(this, restHpPercentage, defUnit) ?? false) {
+                return true;
             }
             switch (skillId) {
                 case Weapon.Queensblade:
@@ -5234,15 +5200,8 @@ class Unit extends BattleMapElement {
             moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         for (let skillId of this.enumerateSkills()) {
-            let funcMap = calcMoveCountForCantoFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    moveCountForCanto = Math.max(moveCountForCanto, func.call(this, moveCountForCanto));
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            let moveCount = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
+            moveCountForCanto = Math.max(moveCountForCanto, moveCount);
             // 同系統効果複数時、最大値適用
             switch (skillId) {
                 // 再移動(1)
@@ -5362,7 +5321,7 @@ class Unit extends BattleMapElement {
 
     __hasSaveSkills() {
         for (let skillId of this.enumerateSkills()) {
-            if (SaveSkills.has(skillId)) {
+            if (SAVE_SKILLS_SET.has(skillId)) {
                 return true;
             }
         }
@@ -5373,7 +5332,7 @@ class Unit extends BattleMapElement {
      * キラー効果などで奥義カウントの最大値が減らされているかどうか
      */
     isReducedMaxSpecialCount() {
-        return this.maxSpecialCount < this.specialInfo.specialCount;
+        return this.maxSpecialCount < this.specialInfo?.specialCount ?? 0;
     }
 
     hasNormalAttackSpecial() {
@@ -5454,15 +5413,7 @@ function calcBuffAmount(assistUnit, targetUnit) {
 function calcHealAmount(assistUnit, targetUnit) {
     let healAmount = 0;
     let skillId = assistUnit.support;
-    let funcMap = calcHealAmountFuncMap;
-    if (funcMap.has(skillId)) {
-        let func = funcMap.get(skillId);
-        if (typeof func === "function") {
-            healAmount += func.call(this, assistUnit, targetUnit);
-        } else {
-            console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-        }
-    }
+    healAmount += getSkillFunc(skillId, calcHealAmountFuncMap)?.call(this, assistUnit, targetUnit) ?? 0;
     switch (skillId) {
         case Support.Heal:
             healAmount = 5;
@@ -5587,16 +5538,9 @@ function isDebufferTier2(attackUnit, targetUnit) {
  */
 function isAfflictor(attackUnit, lossesInCombat, result) {
     for (let skillId of attackUnit.enumerateSkills()) {
-        let funcMap = isAfflictorFuncMap;
-        if (funcMap.has(skillId)) {
-            let func = funcMap.get(skillId);
-            if (typeof func === "function") {
-                if (func.call(this, attackUnit, lossesInCombat, result)) {
-                    return true;
-                }
-            } else {
-                console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-            }
+        let func = getSkillFunc(skillId, isAfflictorFuncMap);
+        if (func?.call(this, attackUnit, lossesInCombat, result) ?? false) {
+            return true;
         }
         switch (skillId) {
             case Weapon.DuskDawnStaff:

@@ -912,7 +912,7 @@ class DamageCalcData {
             Special.Moonbow, // 月虹(守備魔防-30%)
             Special.Glimmer, // 凶星(1.5倍)
             Special.RupturedSky, // 破天(+攻撃20%)
-        ].concat(inheritableCount2Specials);
+        ].concat(INHERITABLE_COUNT2_SPECIALS);
     }
 
 
@@ -935,7 +935,7 @@ class DamageCalcData {
             // Special.ImperialAstra, // 剣皇の流星(+速さ40%)
             Special.TwinBlades, // 双刃(+魔防30%)
             Special.CircletOfBalance, // 聖神と暗黒神の冠(+魔坊40%)
-        ].concat(count2Specials);
+        ].concat(COUNT2_SPECIALS);
     }
     __getInheritableCount3Specials() {
         return [
@@ -948,7 +948,7 @@ class DamageCalcData {
             Special.ArmoredFloe, // 重装の聖氷(+魔防40%)
             Special.Bonfire, // 緋炎(+守備50%)
             Special.Luna, // 月光(守備魔防-50%)
-        ].concat(inheritableCount3Specials);
+        ].concat(INHERITABLE_COUNT3_SPECIALS);
     }
     __getCount3Specials() {
         return [
@@ -958,7 +958,7 @@ class DamageCalcData {
             // Special.OpenTheFuture, // 開世(+守備50%)
             Special.KuroNoGekko, // 黒の月光(守備魔防-80%)
             Special.LightlessLuna, // 漆黒の月光(守備魔防-80%)
-        ].concat(count3Specials);
+        ].concat(COUNT3_SPECIALS);
     }
     __getInheritableCount4Specials() {
         return [
@@ -967,13 +967,13 @@ class DamageCalcData {
             Special.DragonFang, // 竜穿(+攻撃50%)
             Special.Astra, // 流星(2.5倍)
             Special.Lethality, // 滅殺(守備魔防-75%)
-        ].concat(inheritableCount4Specials);
+        ].concat(INHERITABLE_COUNT4_SPECIALS);
     }
 
     __getCount4Specials() {
         return [
             Special.Lethality, // 滅殺
-        ].concat(count4Specials);
+        ].concat(COUNT4_SPECIALS);
     }
 
     __writeLog(message) {

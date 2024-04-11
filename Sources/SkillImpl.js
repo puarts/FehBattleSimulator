@@ -44,7 +44,7 @@
                 // ダメージ+守備の20%(範囲奥義を除く)、
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Def, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Def, 0.2);
                 });
                 // 攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)
                 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
@@ -108,7 +108,7 @@
                 // 自分が与えるダメージ＋攻撃の15%（範囲奥義を除く）、かつ
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Atk, 0.15);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Atk, 0.15);
                 });
                 // 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
                 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
@@ -133,13 +133,12 @@
     // - 戦闘中、自分の最初の攻撃前に自分の奥義発動カウント＋1（奥義発動カウントの最大値は超えない）
     // - さらに、自分の奥義発動カウントの最大値が本来より減少している時（奥義が発動しやすい時）、かつ敵が攻撃時に発動する奥義を装備している時、
     // - 戦闘中、自分の最初の攻撃前に敵の奥義発動カウントー1
-    /** @type {(this: BattleSimulatorBase, skillOwner: Unit, ally: Unit) => void} */
-    let func = function (skillOwner, ally) {
+    /** @type {(this: BattleSimulatorBase, skillOwner: Unit) => void} */
+    let func = function (skillOwner) {
         skillOwner.reduceSpecialCount(1);
         let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
         for (let enemy of enemies) {
-            if (enemy.isInCrossWithOffset(skillOwner, 1) ||
-                enemy.isInCrossWithOffset(ally, 1)) {
+            if (enemy.isInCrossWithOffset(skillOwner, 1)) {
                 enemy.addStatusEffect(StatusEffectType.HushSpectrum);
             }
         }
@@ -147,13 +146,13 @@
     // 使用した時
     applySkillsAfterRallyForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit) {
-            func.call(this, supporterUnit, targetUnit);
+            func.call(this, supporterUnit);
         }
     );
     // 使用された時
     applySkillsAfterRallyForTargetUnitFuncMap.set(skillId,
         function (supporterUnit, targetUnit) {
-            func.call(this, targetUnit, supporterUnit);
+            func.call(this, targetUnit);
         }
     );
     applyMovementAssistSkillFuncMap.set(skillId,
@@ -163,23 +162,26 @@
     );
     // 応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、または、行動済みの自分に使用された時、
     // - 自分を行動可能にする（1ターンに1回のみ）
-    let actionFunc = skillOwner => {
+
+    /** @type {(this: BattleSimulatorBase, owner: Unit) => void} */
+    let actionFunc = function(skillOwner) {
         if (!skillOwner.isActionDone) {
             return;
         }
         if (!skillOwner.isOneTimeActionActivatedForWeapon) {
             skillOwner.isOneTimeActionActivatedForWeapon = true;
+            this.writeDebugLogLine(`${DebugUtil.getSkillName(skillOwner, skillOwner.weaponInfo)}により${skillOwner.nameWithGroup}は再行動`);
             skillOwner.isActionDone = false;
         }
     };
     applySupportSkillForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
-            actionFunc(supporterUnit);
+            actionFunc.call(this, supporterUnit);
         }
     );
     applySupportSkillForTargetUnitFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
-            actionFunc(targetUnit);
+            actionFunc.call(this, targetUnit);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
@@ -188,7 +190,7 @@
             if (targetUnit.battleContext.initiatesCombat ||
                 this.__isThereAllyIn2Spaces(targetUnit)) {
                 // - 戦闘中、攻撃、速さ、守備、魔防が16一敵の奥義発動カウントの最大値x2だけ増加（最低8、敵が奥義を装備していない時も8）、
-                let amount = MathUtil.ensureMin(16 - targetUnit.maxSpecialCount * 2, 8);
+                let amount = MathUtil.ensureMin(16 - enemyUnit.maxSpecialCount * 2, 8);
                 if (enemyUnit.special === Special.None) {
                     amount = 8;
                 }
@@ -348,7 +350,7 @@
                 // - ダメージ＋魔防の20％（範囲奥義を除く）
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Res, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
                 });
             }
         }
@@ -503,41 +505,145 @@
         }
     );
     // （このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない）
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
+}
+
+// ハデスΩ 特殊錬成
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.HadesuOmega);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、敵が射程2の時、
+            if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
+                // 戦闘中、自身の攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // 自分が与えるダメージ+速さの20%(範囲奥義を除く)、
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
+                });
+                // 敵の速さ、魔防の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)、
+                targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                // かつ自分が攻撃時に発動する奥義を装備している時、
+                if (targetUnit.hasNormalAttackSpecial()) {
+                    // - 戦闘中、自分の最初の攻撃前に奥義発動カウント-1
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                }
+            }
+        }
+    );
+}
+
+// ハデスΩ 錬成
+{
+    let skillId = getRefinementSkillId(Weapon.HadesuOmega);
+    // 奥義が発動しやすい(発動カウント-1)
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中の攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // 攻撃、速さの弱化を無効、
+                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                // かつ、上記の戦闘開始時、奥義を装備していて、奥義発動カウントが2以下の時、
+                if (targetUnit.hasNormalAttackSpecial() && targetUnit.battleContext.specialCount <= 2) {
+                    // 戦闘中、さらに攻撃、速さ+7
+                    targetUnit.addAtkSpdSpurs(7);
+                }
+            }
+        }
+    );
 }
 
 // ハデスΩ
 {
     let skillId = Weapon.HadesuOmega;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <通常効果>
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.addAtkSpdSpurs(4);
+                if (targetUnit.hasSpecial &&
+                    targetUnit.statusEvalUnit.specialCount === 0) {
+                    targetUnit.atkSpur += 6;
+                }
+            }
+        }
+    );
+}
+
+// 狼花嫁の牙 特殊錬成
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.BridesFang);
+    // HP+3
+    // 化身時、【再移動(残り+1)】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return unit.isTransformed;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // 再移動残り+1
+        return this.restMoveCount + 1;
+    });
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // ターン開始時、化身状態になる条件を満たしていれば、自分に「自分が移動可能な地形を平地のように移動可能」、「移動+1」(重複しない)を付与(1ターン)
+            if (skillOwner.isTransformed) {
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
             }
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (targetUnit.battleContext.initiatesCombat) {
-                    targetUnit.addAtkSpdSpurs(4);
-                    if (targetUnit.hasSpecial &&
-                        targetUnit.statusEvalUnit.specialCount === 0) {
-                        targetUnit.atkSpur += 6;
-                    }
-                }
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // 戦闘開始時、自身のHPが25%以上なら戦闘中、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 敵の攻撃、速さ、守備-4、
+                enemyUnit.addSpursWithoutRes(-4);
+                // 自身の奥義発動時、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(範囲奥義を除く)、
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+                // 戦闘後、自分は、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+// 狼花嫁の牙 錬成
+{
+    let skillId = getRefinementSkillId(Weapon.BridesFang);
+    // 奥義が発動しやすい(発動カウント-1)
+    // ターン開始時、竜、獣以外の味方と隣接していない場合化身状態になる(そうでない場合、化身状態を解除)
+    // 化身状態なら、攻撃+2、かつ奥義発動時、奥義によるダメージ+7、戦闘中、敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry2);
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、奥義発動カウント-1
+            skillOwner.reserveToReduceSpecialCount(1);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、敵の攻撃、速さ、守備-5、
+                enemyUnit.addSpursWithoutRes(-5);
+                // 自分が最初に受けた攻撃と2回攻撃のダメージを40%軽減、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 戦闘(または戦闘前)で奥義を発動した場合、戦闘後、奥義発動カウント-2
+            if (targetUnit.battleContext.isSpecialActivated) {
+                targetUnit.specialCount -= 2;
             }
         }
     );
@@ -546,42 +652,85 @@
 // 狼花嫁の牙
 {
     let skillId = Weapon.BridesFang;
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Infantry);
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
-        }
-    );
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry);
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                    enemyUnit.addSpursWithoutRes(-5);
-                }
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // <通常効果>
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                enemyUnit.addSpursWithoutRes(-5);
             }
         }
     );
     applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit) {
-            if (!attackUnit.weaponRefinement) {
-                if (attackUnit.battleContext.isSpecialActivated) {
-                    attackUnit.specialCount -= 1;
+            if (attackUnit.battleContext.isSpecialActivated) {
+                attackUnit.specialCount -= 1;
+            }
+        }
+    );
+}
+
+// ダニエルの錬弓(特殊錬成)
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.DanielMadeBow);
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、自分と周囲2マス以内の味方の攻撃、速さ+6、【魔刃】、「戦闘中、奥義発動カウント変動量+1(同系統効果複数時、最大値適用)」を付与(1ターン)
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                /** @type {Generator<Unit>} */
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let targetUnit of targetUnits) {
+                    targetUnit.reserveToApplyBuffs(6, 6, 0, 0);
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
                 }
+
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、攻撃、守備+5
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAtkDefSpurs(5);
+            }
+        }
+    );
+}
+
+// ダニエルの錬弓(錬成)
+{
+    let skillId = getRefinementSkillId(Weapon.DanielMadeBow);
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    // 周囲4マスの味方は、戦闘中、攻撃、守備+5
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 4) {
+                targetUnit.addAtkDefSpurs(5);
+            }
+        }
+    );
+    // 周囲4マスの敵は、戦闘中、攻撃、守備-5、
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // enemyAllyUnitからのスキルなので錬成判定に注意
+            // <通常効果>
+            if (targetUnit.distance(enemyAllyUnit) <= 4) {
+                targetUnit.addAtkDefSpurs(-5);
+            }
+        }
+    );
+    // 周囲4マスの敵は、戦闘中、攻撃、守備-5、
+    // 絶対追撃を受ける
+    applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // 絶対追撃を受ける
+            if (targetUnit.distance(enemyAllyUnit) <= 4) {
+                enemyUnit.battleContext.followupAttackPriorityIncrement++;
             }
         }
     );
@@ -592,52 +741,99 @@
     let skillId = Weapon.DanielMadeBow;
     updateUnitSpurFromAlliesFuncMap.set(skillId,
         function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // 周囲2マス以内
-                if (targetUnit.distance(allyUnit) <= 2) {
-                    targetUnit.atkSpur += 5;
-                }
+            // 周囲2マス以内
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.atkSpur += 5;
             }
         }
     );
     updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
             // enemyAllyUnitからのスキルなので錬成判定に注意
-            if (!enemyAllyUnit.isWeaponRefined) {
-                // <通常効果>
-                if (targetUnit.distance(enemyAllyUnit) <= 2) {
-                    targetUnit.atkSpur -= 5;
-                }
-            } else {
-                // <錬成効果>
-                if (enemyAllyUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // <通常効果>
+            if (targetUnit.distance(enemyAllyUnit) <= 2) {
+                targetUnit.atkSpur -= 5;
             }
         }
     );
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
+}
+
+// 暗黒の聖書(特殊錬成)
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.DarkScripture);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <特殊錬成効果>
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、敵の攻撃、速さ、魔防-4、
+                enemyUnit.addSpursWithoutDef(-4);
+                // 敵は追撃不可、
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                // 自分が与えるダメージ+魔防の20%(範囲奥義を除く)、
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
+                });
+                // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+                    // 魔防参照
+                    return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
+                });
+            }
+        }
+    );
+    // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+}
+
+// 暗黒の聖書(錬成)
+{
+    let skillId = getRefinementSkillId(Weapon.DarkScripture);
+    // 攻撃+3
+    // 自軍ターン開始時、および、敵軍ターン開始時、
+    // 自分を中心とした縦3列と横3列にいる魔防が「自分の魔防+5」より低い敵の攻撃、魔防-7、
+    // 【混乱】、【回復不可】、「奥義以外の「敵の致死攻撃を受けた時、ダメージをHPが1残るように軽減」する効果を無効」を付与(敵の次回行動終了時まで)
+    /** @type {(this: BeginningOfTurnSkillHandler, skillOwner: Unit) => void} */
+    let applySkill = function (skillOwner) {
+        /** @type {Generator<Unit>} */
+        let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let enemy of enemies) {
+            if (enemy.isInCrossWithOffset(skillOwner, 1)) {
+                if (skillOwner.isHigherResInPrecombat(enemy, -5)) {
+                    enemy.reserveToApplyDebuffs(-7, 0, 0, -7);
+                    enemy.reserveToAddStatusEffect(StatusEffectType.Sabotage);
+                    enemy.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
+                    enemy.reserveToAddStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP);
                 }
             }
+        }
+    }
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            applySkill.call(this, skillOwner);
+        }
+    );
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            applySkill.call(this, skillOwner);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // <錬成効果>
+            // 敵から攻撃された時、または、周囲1マス以内に味方がいない時、
+            if (enemyUnit.battleContext.initiatesCombat ||
+                !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                // 戦闘中、敵の攻撃、魔防-6、速さ-4、
+                enemyUnit.addSpurs(-6, -4, 0, -6);
+                // 自分は絶対追撃
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         }
     );
@@ -646,34 +842,92 @@
 // 暗黒の聖書
 {
     let skillId = Weapon.DarkScripture;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <通常効果>
+            if (calcPotentialDamage ||
+                !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
+                enemyUnit.addAtkResSpurs(-6);
+            }
+            if (!enemyUnit.hasEffective(EffectiveType.Dragon)) {
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+}
+
+// 星竜のブレス(特殊錬成)
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.AstralBreath);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <特殊錬成効果>
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // さらに、攻撃、速さ、守備、魔防が増加、
+                // 増加値は、攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離(最大4)、
+                let amount = MathUtil.ensureMax(targetUnit.distance(enemyUnit), 4);
+                targetUnit.addAllSpur(amount);
+                // ダメージ+○、○は、自分と周囲2マス以内にいる味方のうち強化の合計値が最も高い値(範囲奥義を除く)、
+                let buffSum =
+                    targetUnit.getBuffsInCombat(enemyUnit).reduce((p, c) => p + c);
+                let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                let getBuffSum = u => u.getBuffs().reduce((p, c) => p + c);
+                let maxBuffSum = IterUtil.maxValue(allies, getBuffSum, buffSum);
+                targetUnit.battleContext.additionalDamage += maxBuffSum;
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+    );
+}
+
+// 星竜のブレス(錬成)
+{
+    let skillId = getRefinementSkillId(Weapon.AstralBreath);
+    TELEPORTATION_SKILL_SET.add(skillId);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
+            // <錬成効果>
+            // ターン開始時、周囲3マス以内に自分と支援を結んでいる相手がいる時、自分と、周囲3マス以内の支援相手の速さ、守備、魔防+6、【回避】を付与(1ターン)
+            let applySkill = u => {
+                u.reserveToApplyBuffs(0, 6, 6, 7);
+                u.reserveToAddStatusEffect(StatusEffectType.Dodge);
+            }
+            let found = false;
+            /** @type {Generator<Unit>} */
+            let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3);
+            for (let ally of allies) {
+                if (ally.isPartner(skillOwner)) {
+                    found = true;
+                    applySkill(ally);
                 }
+            }
+            if (found) {
+                applySkill(skillOwner);
             }
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (calcPotentialDamage ||
-                    !this.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                    enemyUnit.addAtkResSpurs(-6);
-                }
-                if (!enemyUnit.hasEffective(EffectiveType.Dragon)) {
-                    targetUnit.battleContext.followupAttackPriorityIncrement++;
-                }
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
+            // <錬成効果>
+            // 周囲3マス以内に味方がいる時、戦闘中、自身の攻撃、速さ、守備、魔防+5、戦闘後、7回復
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function* (unit) {
+            // 自分と支援を結んでいる相手の周囲2マス以内のマスに移動可能
+            for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                if (ally.isPartner(unit)) {
+                    yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
                 }
             }
         }
@@ -683,42 +937,22 @@
 // 星竜のブレス
 {
     let skillId = Weapon.AstralBreath;
-    TeleportationSkillDict[skillId] = 0;
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                // <通常効果>
-            } else {
-                // <錬成効果>
-                if (skillOwner.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
-            }
-        }
-    );
+    // 速さ+3
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
+    TELEPORTATION_SKILL_SET.add(skillId);
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (!calcPotentialDamage && this.__isTherePartnerInSpace3(targetUnit)) {
-                    targetUnit.addAllSpur(5);
-                }
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // <通常効果>
+            if (!calcPotentialDamage && this.__isTherePartnerInSpace3(targetUnit)) {
+                targetUnit.addAllSpur(5);
             }
         }
     );
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function* (unit) {
-            if (!unit.isWeaponRefined) {
-                for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                    if (ally.isPartner(unit)) {
-                        yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
-                    }
+            for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                if (ally.isPartner(unit)) {
+                    yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
                 }
             }
         }
@@ -815,11 +1049,11 @@
 {
     let skillId = Special.GreatAether;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count4Specials.push(skillId);
-    inheritableCount4Specials.push(skillId);
+    COUNT4_SPECIALS.push(skillId);
+    INHERITABLE_COUNT4_SPECIALS.push(skillId);
 
     applySkillEffectsPerCombatFuncMap.set(skillId,
         function (targetUnit, enemyUnit, context) {
@@ -958,8 +1192,8 @@
         }
     );
     // ターン開始時、竜、獣以外の味方と隣接していない場合、化身状態になる(そうでない場合、化身状態を解除)化身状態なら、攻撃+2、かつ敵から攻撃された時、距離に関係なく反撃する
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Armor);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Armor);
 }
 
 // 禿鷹の弓+
@@ -1025,11 +1259,11 @@
 {
     let skillId = Special.SacredWind;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -1166,6 +1400,22 @@
     );
 }
 
+// 天照
+{
+    let skillId = Special.Tensho;
+    applySpecialSkillEffectWhenHealingFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            for (let allies of this.enumerateUnitsInTheSameGroupOnMap(supporterUnit, false)) {
+                if (allies === targetUnit) {
+                    continue;
+                }
+                allies.heal(10);
+            }
+            supporterUnit.setSpecialCountToMax();
+        }
+    );
+}
+
 // 祝福
 {
     let setSkill = (skillId, buffFunc) => {
@@ -1229,7 +1479,7 @@
                     unit.reserveToAddStatusEffect(StatusEffectType.Guard);
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
                         for (let skillId of ally.enumerateSkills()) {
-                            if (SaveSkills.has(skillId)) {
+                            if (SAVE_SKILLS_SET.has(skillId)) {
                                 ally.reserveToAddStatusEffect(StatusEffectType.Guard);
                             }
                         }
@@ -1433,7 +1683,7 @@
                     enemyUnit.atkSpur -= 7;
                     targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                         (targetUnit, enemyUnit, calcPotentialDamage) => {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.Atk, 0.15);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Atk, 0.15);
                         }
                     );
                     targetUnit.battleContext.applyAttackSkillEffectAfterCombatFuncs.push(
@@ -1713,7 +1963,7 @@
 // しろいはるのゆめ
 {
     let skillId = Support.SpringsDream;
-    refreshSupportSkillSet.add(skillId);
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
     applyRefreshFuncMap.set(skillId,
         function (skillOwnerUnit, targetUnit) {
             /** @type {[Unit]} */
@@ -1931,7 +2181,7 @@
                         targetUnit.addAllSpur(4);
                         targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                             if (isPrecombat) return;
-                            this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.Spd, 0.2);
+                            this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
                         });
                     }
                 }
@@ -2209,14 +2459,14 @@
 // 恐慌の聖光
 {
     let skillId = Special.HolyPanic;
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2242,14 +2492,14 @@
 // 抑制の聖光
 {
     let skillId = Special.LightsRestraint;
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2275,14 +2525,14 @@
 // 重圧の聖光
 {
     let skillId = Special.HolyPressure;
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2334,11 +2584,11 @@
 {
     let skillId = Special.DragonsRoar;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2591,14 +2841,14 @@
 // 輝映の聖光
 {
     let skillId = Special.GlitterOfLight;
-    noEffectOnSpecialCooldownChargeOnSupportSkillSet.add(skillId);
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2932,7 +3182,7 @@
 // こわいゆめ・神
 {
     let skillId = Support.FrightfulDreamPlus;
-    refreshSupportSkillSet.add(skillId);
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
     applyRefreshFuncMap.set(skillId,
         function (skillOwnerUnit, targetUnit) {
             /** @type {[Unit]} */
@@ -2999,7 +3249,7 @@
         return g_appData.currentTurn <= 4;
     });
     calcMoveCountForCantoFuncMap.set(skillId, function () {
-        return 3;
+        return g_appData.currentTurn <= 4 ? 3 : 0;
     });
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
@@ -3040,11 +3290,11 @@
 {
     let skillId = Special.SeidrShellPlus;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -3375,7 +3625,7 @@
 {
     let skillId = PassiveC.DarklingDragon;
     // 護り手
-    SaveSkills.add(skillId);
+    SAVE_SKILLS_SET.add(skillId);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -3493,11 +3743,11 @@
 {
     let skillId = Special.LodestarRush;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -3698,7 +3948,6 @@
                 skillOwner.reserveToReduceSpecialCount(2);
             }
             let found = false;
-            /** @type {Unit[]} */
             let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
             for (let unit of allies) {
                 found = true;
@@ -3728,13 +3977,21 @@
             let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
             let additionalDamage = Math.trunc(status * 0.15);
             this.writeDebugLog(`${atkUnit.weaponInfo.name}により固定ダメージ+${additionalDamage}(atk(${status}) * 0.15)`);
-            atkUnit.battleContext.additionalDamage += additionalDamage;
+            if (isPrecombat) {
+                atkUnit.battleContext.additionalDamage = additionalDamage;
+            } else {
+                atkUnit.battleContext.additionalDamage += additionalDamage;
+            }
             // 奥義発動時
             let ratio = 0.1 + 0.1 * atkUnit.maxSpecialCount;
             let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
             let additionalDamageOfSpecial = Math.trunc(spd * ratio);
             this.writeDebugLog(`${atkUnit.weaponInfo.name}により奥義発動時の固定ダメージ+${additionalDamageOfSpecial}(spd(${spd}) * ratio(${ratio}))`);
-            atkUnit.battleContext.additionalDamageOfSpecial += additionalDamageOfSpecial;
+            if (isPrecombat) {
+                atkUnit.battleContext.additionalDamageOfSpecial = additionalDamageOfSpecial;
+            } else {
+                atkUnit.battleContext.additionalDamageOfSpecial += additionalDamageOfSpecial;
+            }
         }
     );
 }
@@ -3840,12 +4097,12 @@
     };
     let setSkill = (skillId, func, isBulwalk4) => {
         canActivateObstructToAdjacentTilesFuncMap.set(skillId,
-            function (unit, moveUnit) {
+            function (moveUnit) {
                 return true;
             }
         );
         canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
-            function (unit, moveUnit) {
+            function (moveUnit) {
                 return true;
             }
         );
@@ -3862,11 +4119,11 @@
 {
     let skillId = Special.ArmsOfTheThree;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -3944,8 +4201,8 @@
 // 刃の葬り手の爪
 {
     let skillId = Weapon.QuietingClaw;
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Flying);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Flying);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -4422,10 +4679,17 @@
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
                 unit.reserveToResetDebuffs();
                 unit.reserveToClearNegativeStatusEffects();
-                unit.reserveToApplyBuffs(4, 4, 4, 4);
             }
             skillOwner.reserveToResetDebuffs();
             skillOwner.reserveToClearNegativeStatusEffects();
+        }
+    );
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 周囲2マス以内
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.addAllSpur(4);
+            }
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
@@ -4648,8 +4912,8 @@
 {
     let skillId = Special.GiftedMagic2;
     // 範囲奥義
-    RangedAttackSpecialDict[skillId] = 0;
-    RangedAttackSpecialDamageRateDict[skillId] = 1;
+    RANGED_ATTACK_SPECIAL_SET.add(skillId);
+    RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.set(skillId, 1);
 
     // 十字範囲
     enumerateRangedSpecialTilesFuncMap.set(skillId,
@@ -4684,11 +4948,11 @@
 {
     let skillId = Special.NegatingFang2;
     // 守備奥義
-    DefenseSpecialDict[skillId] = 0;
+    DEFENSE_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     // 奥義によるダメージ軽減
     applyDamageReductionRatioBySpecialFuncMap.set(skillId,
@@ -5039,8 +5303,8 @@
             }
         }
     );
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
 }
 
 // 死の瘴気
@@ -5222,11 +5486,11 @@
 {
     let skillId = Special.SupremeHeaven;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count2Specials.push(skillId);
-    inheritableCount2Specials.push(skillId);
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -5327,11 +5591,11 @@
 {
     let skillId = Special.NoQuarter;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -5446,11 +5710,11 @@
 {
     let skillId = Special.ArmoredBlaze;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
-    inheritableCount3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -6166,8 +6430,8 @@
             }
         }
     );
-    WeaponTypesAddAtk2AfterTransform[skillId] = 0;
-    BeastCommonSkillMap.set(skillId, BeastCommonSkillType.Cavalry2);
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
 }
 
 // 癒し手の心
@@ -6223,10 +6487,10 @@
 {
     let skillId = Special.TimeIsLight;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    count3Specials.push(skillId);
+    COUNT3_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -6350,7 +6614,7 @@
 {
     let skillId = Special.LightIsTime;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -6584,7 +6848,7 @@
             }
         }
     );
-    TeleportationSkillDict[skillId] = 0;
+    TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function (unit) {
             return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
@@ -6797,8 +7061,8 @@
         }
     );
     canActivateObstructToAdjacentTilesFuncMap.set(skillId,
-        function (unit, moveUnit) {
-            return unit.isWeaponSpecialRefined && moveUnit.isMeleeWeaponType();
+        function (moveUnit) {
+            return this.isWeaponSpecialRefined && moveUnit.isMeleeWeaponType();
         }
     );
     canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
@@ -7039,7 +7303,7 @@
 // 白夜忍の薙刀+
 {
     let skillId = Weapon.KumoNaginataPlus;
-    TeleportationSkillDict[skillId] = 0;
+    TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function (unit) {
             return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
@@ -7157,7 +7421,7 @@
 // 白夜忍の和弓+
 {
     let skillId = Weapon.KumoYumiPlus;
-    TeleportationSkillDict[skillId] = 0;
+    TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function (unit) {
             return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
@@ -7263,7 +7527,7 @@
 // 漆黒の月光
 {
     let skillId = Special.LightlessLuna;
-    NormalAttackSpecialDict[skillId] = 0;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             targetUnit.battleContext.specialSufferPercentage = 80;
@@ -7302,7 +7566,7 @@
 // あまいゆめ・神
 {
     let skillId = Support.SweetDreamsPlus;
-    refreshSupportSkillSet.add(skillId);
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
     applyRefreshFuncMap.set(skillId,
         function (skillOwnerUnit, targetUnit) {
             targetUnit.applyAllBuff(5);
@@ -7449,7 +7713,7 @@
     let skillId = Special.Flare;
     applySkillEffectsPerCombatFuncMap.set(skillId,
         function (targetUnit, enemyUnit, context) {
-            if (targetUnit.battleContext.restHpPercentage >= 70) {
+            if (targetUnit.restHpPercentage >= 70) {
                 let res = enemyUnit.getResInCombat(targetUnit);
                 targetUnit.battleContext.addSpecialAddDamage(Math.trunc(res * 0.6));
             } else {
