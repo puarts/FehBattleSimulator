@@ -2691,6 +2691,7 @@ class Unit extends BattleMapElement {
 
     /**
      * @param  {Boolean} leavesOneHp
+     * @returns {[number, number, number]} hp, damage, heal
      */
     applyReservedHp(leavesOneHp) {
         let healHp = this.hasStatusEffect(StatusEffectType.DeepWounds) ? 0 : this.reservedHeal;
@@ -2700,6 +2701,7 @@ class Unit extends BattleMapElement {
 
         this.reservedDamage = 0;
         this.reservedHeal = 0;
+        return [this.hp, damageHp, healHp];
     }
 
     reserveTakeDamage(damageAmount) {

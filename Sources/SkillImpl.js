@@ -593,6 +593,7 @@
             // ターン開始時、化身状態になる条件を満たしていれば、自分に「自分が移動可能な地形を平地のように移動可能」、「移動+1」(重複しない)を付与(1ターン)
             if (skillOwner.isTransformed) {
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
             }
         }
     );
@@ -1083,15 +1084,16 @@
             if (targetUnit.battleContext.isSpecialActivated) {
                 // 自身を中心とした縦3列と横3列にいる敵に
                 /** @type {Generator<Unit>} */
-                let units = this.enumerateUnitsInDifferentGroupOnMap(targetUnit);
+                let enemies = this.enumerateUnitsInDifferentGroupOnMap(targetUnit);
                 let count = 0;
-                for (let unit of units) {
-                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
+                for (let enemy of enemies) {
+                    if (enemy.isInCrossWithOffset(targetUnit, 1)) {
+                        this.writeDebugLogLine(`${enemy.nameWithGroup}`);
                         count++;
                         // 5ダメージ、
-                        unit.reserveTakeDamage(5);
+                        enemy.reserveTakeDamage(5);
                         // 奥義発動カウント＋1（奥義発動カウントの最大値は超えない）、
-                        unit.increaseSpecialCount(1);
+                        enemy.increaseSpecialCount(1);
                     }
                 }
                 // 自分は、HPが回復
@@ -2762,10 +2764,9 @@
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             let found = false;
-            /** @type {[Unit]} */
-            let units = this.enumerateUnitsInTheSameGroupOnMap(skillOwner);
-            for (let unit of units) {
-                if (unit.isPartner(skillOwner)) {
+            let allies = this.enumerateUnitsInTheSameGroupOnMap(skillOwner);
+            for (let ally of allies) {
+                if (ally.isPartner(skillOwner)) {
                     found = true;
                     break;
                 }

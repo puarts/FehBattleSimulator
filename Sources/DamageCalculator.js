@@ -136,7 +136,9 @@ class DamageCalcResult {
     }
 }
 
-/// ダメージ計算を行うためのクラスです。
+/**
+ * ダメージ計算を行うためのクラスです。
+ */
 class DamageCalculator {
     /**
      * @param  {LoggerBase} logger
@@ -1286,20 +1288,21 @@ class DamageCalculator {
             }
 
             // 神速追撃によるダメージ軽減
+            let potentRatio = 1;
             if (context.isPotentFollowupAttack) {
                 if (atkUnit.battleContext.potentOverwriteRatio === null) {
                     for (let ratio of atkUnit.battleContext.potentRatios) {
-                        let oldRatio = damageReductionRatio;
-                        damageReductionRatio *= ratio;
-                        this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+                        let oldRatio = potentRatio;
+                        potentRatio *= ratio;
+                        this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
                         this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
                     }
                 } else {
                     let ratio = atkUnit.battleContext.potentOverwriteRatio;
                     this.writeDebugLog(`神速追撃上書き値による軽減。ratios: ${atkUnit.battleContext.potentRatios} → ratio: ${ratio}`);
-                    let oldRatio = damageReductionRatio;
-                    damageReductionRatio *= ratio;
-                    this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+                    let oldRatio = potentRatio;
+                    potentRatio *= ratio;
+                    this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
                     this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
                 }
             }
@@ -1340,8 +1343,14 @@ class DamageCalculator {
                 // 奥義発動
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack;
-                currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, specialDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
-                if (this.isLogEnabled) this.writeLog(`奥義によるダメージ${currentDamage}`);
+                currentDamage = this.__calcUnitAttackDamage(
+                    defUnit, atkUnit,
+                    specialDamage,
+                    damageReductionRatio, damageReductionValue,
+                    potentRatio,
+                    activatesDefenderSpecial, context
+                );
+                if (this.isLogEnabled) this.writeLog(`<span style="color: #ff00ff">奥義</span>によるダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
                 let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
                 this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/><span style="color: #ff00ff">奥義</span>ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
@@ -1371,8 +1380,14 @@ class DamageCalculator {
                 }
             } else {
                 // 通常攻撃
-                currentDamage = this.__calcUnitAttackDamage(defUnit, atkUnit, normalDamage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context);
-                if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ${currentDamage}`);
+                currentDamage = this.__calcUnitAttackDamage(
+                    defUnit, atkUnit,
+                    normalDamage,
+                    damageReductionRatio, damageReductionValue,
+                    potentRatio,
+                    activatesDefenderSpecial, context
+                );
+                if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
                 let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
                 this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/>通常攻撃ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
@@ -1783,19 +1798,25 @@ class DamageCalculator {
      * @param {number} damage
      * @param {number} damageReductionRatio
      * @param {number|string} damageReductionValue
+     * @param {number} potentRatio
      * @param {boolean} activatesDefenderSpecial
      * @param {DamageCalcContext} context
      */
-    __calcUnitAttackDamage(defUnit, atkUnit, damage, damageReductionRatio, damageReductionValue, activatesDefenderSpecial, context) {
-        let reducedDamage = floorNumberWithFloatError(damage * damageReductionRatio) + damageReductionValue;
+    __calcUnitAttackDamage(defUnit, atkUnit,
+                           damage,
+                           damageReductionRatio, damageReductionValue,
+                           potentRatio,
+                           activatesDefenderSpecial, context) {
+        let reducedDamage = Math.trunc(damage * damageReductionRatio) + damageReductionValue;
         let currentDamage = Math.max(damage - reducedDamage, 0);
-        if (damageReductionRatio > 0.0) {
-            if (this.isLogEnabled) this.writeDebugLog("ダメージ軽減率" + floorNumberWithFloatError(damageReductionRatio * 100) + "%");
-            if (this.isLogEnabled) this.writeDebugLog("固定ダメージ軽減値-" + damageReductionValue);
-            if (this.isLogEnabled) this.writeDebugLog("ダメージ変化:" + damage + "→" + currentDamage);
-        } else if (damageReductionValue > 0) {
-            if (this.isLogEnabled) this.writeDebugLog("固定ダメージ軽減値-" + damageReductionValue);
-            if (this.isLogEnabled) this.writeDebugLog("ダメージ変化:" + damage + "→" + currentDamage);
+        currentDamage = Math.trunc(currentDamage * potentRatio);
+        if (this.isLogEnabled) {
+            this.writeDebugLog(`ダメージ計算: (${damage} - trunc(${damage} * ${roundFloat(damageReductionRatio)})) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
+            this.writeDebugLog(`軽減前ダメージ${damage}`);
+            this.writeDebugLog(`ダメージ軽減率${floorNumberWithFloatError(damageReductionRatio * 100)}%`);
+            this.writeDebugLog(`固定ダメージ軽減値-${damageReductionValue}`);
+            this.writeDebugLog(`神速追撃ダメージ倍率${floorNumberWithFloatError(potentRatio * 100)}%`);
+            this.writeDebugLog(`ダメージ変化:${damage}→${currentDamage} (${damage - currentDamage}軽減)`);
         }
 
         if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
