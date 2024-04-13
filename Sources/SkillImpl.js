@@ -593,6 +593,7 @@
             // ターン開始時、化身状態になる条件を満たしていれば、自分に「自分が移動可能な地形を平地のように移動可能」、「移動+1」(重複しない)を付与(1ターン)
             if (skillOwner.isTransformed) {
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
             }
         }
     );
