@@ -85,19 +85,19 @@ class HtmlLogger extends LoggerBase {
             return;
         }
 
-        this._simpleLog += log + "<br/>";
+        this._simpleLog += `${log}<br/>`;
     }
 
     writeLog(log) {
         if (!this.isLogEnabled) {
             return;
         }
-        this._log += log + "<br/>";
+        this._log += "<span style='font-size:10px; color:#000000'>" + log + "</span><br/>";
     }
     writeDebugLog(log) {
         if (!this.isLogEnabled) {
             return;
         }
-        this._log += "<span style='font-size:10px; color:#666666'>" + log + "</span><br/>";
+        this._log += `<span style='font-size:10px; color:#666666'>${log}</span><br/>`;
     }
 }
