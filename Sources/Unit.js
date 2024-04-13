@@ -2700,6 +2700,7 @@ class Unit extends BattleMapElement {
 
         this.reservedDamage = 0;
         this.reservedHeal = 0;
+        return [this.hp, damageHp, healHp];
     }
 
     reserveTakeDamage(damageAmount) {

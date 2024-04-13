@@ -136,7 +136,9 @@ class DamageCalcResult {
     }
 }
 
-/// ダメージ計算を行うためのクラスです。
+/**
+ * ダメージ計算を行うためのクラスです。
+ */
 class DamageCalculator {
     /**
      * @param  {LoggerBase} logger

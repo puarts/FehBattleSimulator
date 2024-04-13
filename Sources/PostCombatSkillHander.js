@@ -136,7 +136,10 @@ class PostCombatSkillHander {
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.modifySpecialCount();
             if (!unit.isDead) {
-                unit.applyReservedHp(true);
+                let [hp, damage, heal] = unit.applyReservedHp(true);
+                if (damage !== 0 || heal !== 0) {
+                    this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}`);
+                }
             }
         }
 
@@ -789,6 +792,8 @@ class PostCombatSkillHander {
         if (targetUnit.isAlive) {
             targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
             targetUnit.reserveTakeDamage(targetUnit.battleContext.damageAfterCombat);
+            // TODO: リファクタリングする
+            targetUnit.battleContext.resetHealOrDamageAfterCombat();
             if (targetUnit.battleContext.isChainGuardActivated) {
                 targetUnit.reserveTakeDamage(1);
             }
