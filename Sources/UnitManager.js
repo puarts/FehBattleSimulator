@@ -84,7 +84,7 @@ class UnitManager {
      */
     * enumerateUnitsInDifferentGroupOnMap(targetUnit) {
         for (let unit of this.enumerateUnitsInDifferentGroup(targetUnit)) {
-            if (unit.isOnMap) {
+            if (unit.isOnMap && !unit.isDead) {
                 yield unit;
             }
         }
