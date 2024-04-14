@@ -1814,6 +1814,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=XOqr5WF160Q&ab_channel=NintendoMobile
     ForagerNaginata: 2850, // 農地の主の薙刀
     Perspicacious: 2852, // 軍略伝授の刃
+    RauarlanternPlus: 2854, // ラウアランタン+
 };
 
 const Support = {

@@ -1,5 +1,33 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ラウアランタン+
+{
+    let skillId = Weapon.RauarlanternPlus;
+    // 威力：12 射程：2
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、自分に
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                // * 「自分が移動可能な地形を平地のように移動可能」、
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                // * 「戦闘中、奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）」を付与（1ターン）
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // * 戦闘中、攻撃、魔防＋5
+                targetUnit.addAtkResSpurs(5);
+            }
+        }
+    );
+}
+
 // 軍略伝授の刃
 {
     let skillId = Weapon.Perspicacious;
