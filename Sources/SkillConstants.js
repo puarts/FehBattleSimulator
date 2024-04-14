@@ -1815,6 +1815,7 @@ const Weapon = {
     ForagerNaginata: 2850, // 農地の主の薙刀
     Perspicacious: 2852, // 軍略伝授の刃
     RauarlanternPlus: 2854, // ラウアランタン+
+    TriPathSplitter: 2856, // 三つの道歌う法具
 };
 
 const Support = {

@@ -1,5 +1,47 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 三つの道歌う法具
+{
+    let skillId = Weapon.TriPathSplitter;
+    // 射程：1
+    // 威力：16
+    // 速さ+3
+    // 【再移動（マス間の距離＋1、最大4）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // マス間の距離+1、最大4
+        return MathUtil.ensureMax(Unit.calcMoveDistance(this) + 1, 4);
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let targetUnit of targetUnits) {
+                    // * 自分と周囲2マス以内の味方の攻撃、速さ+6（1ターン）、
+                    targetUnit.reserveToApplyBuffs(6, 6, 0, 0);
+                    // * 【見切り・追撃効果】、
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    // * 【見切り・パニック】を付与
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // * 戦闘中、攻撃、速さ、守備、魔防＋5
+                targetUnit.addAllSpur(5);
+            }
+        }
+    );
+}
+
 // ラウアランタン+
 {
     let skillId = Weapon.RauarlanternPlus;
