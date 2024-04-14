@@ -2538,6 +2538,8 @@ const PassiveB = {
     SpdCantrip3: 1928, // 速さの魅了3
     DefCantrip3: 1471,
     ResCantrip3: 1589,
+    // 2種魅了
+    ADCantrip3: 2858, // 攻撃守備の魅了3
 
     // 連携
     AtkSpdLink2: 1133, // 攻撃速さの連携2

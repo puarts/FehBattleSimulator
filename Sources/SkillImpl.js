@@ -1,5 +1,32 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 2種魅了3
+{
+    /**
+     * @param {number} skillId
+     * @param {function(enemy: Unit): void} debuffFunc
+     */
+    let setSkill = (skillId, debuffFunc) => {
+        applyRefreshFuncMap.set(skillId,
+            function (skillOwnerUnit, targetUnit) {
+                // 「歌う」「踊る」使用時、自分と対象の十字方向にいる敵の
+                let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit);
+                for (let enemy of enemies) {
+                    if (enemy.isInCrossOf(skillOwnerUnit) ||
+                        enemy.isInCrossOf(targetUnit)) {
+                        // * 攻撃、守備一7、
+                        debuffFunc(enemy);
+                        // * 【混乱】を付与（敵の次回行動終了まで）
+                        enemy.addStatusEffect(StatusEffectType.Sabotage);
+                    }
+                }
+            }
+        );
+    }
+    // 攻撃守備の魅了3
+    setSkill(PassiveB.ADCantrip3, e => e.applyDebuffs(-7, 0, -7, 0));
+}
+
 // つたうみなすじ
 {
     let skillId = Support.ChangingWaters;
