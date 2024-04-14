@@ -1530,12 +1530,13 @@ class BattleMap {
             }
         }
     }
+
     /**
-     * @param  {Tile} targetTile
-     * @param  {Number} targetDistance
-     * @returns {Tile[]}
+     * @param {Tile} targetTile
+     * @param {Number} targetDistance
+     * @returns {Generator<Tile>}
      */
-    *enumerateTilesWithinSpecifiedDistance(targetTile, targetDistance) {
+    * enumerateTilesWithinSpecifiedDistance(targetTile, targetDistance) {
         for (let y = 0; y < this._height; ++y) {
             for (let x = 0; x < this._width; ++x) {
                 let index = y * this._width + x;

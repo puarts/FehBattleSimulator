@@ -524,7 +524,7 @@ applyHealSkillForBeginningOfTurnFuncMap.set(skillId,
 );
 
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
-targetUnit.battleContext.healedHpByAttack += N
+targetUnit.battleContext.healedHpByAttack += N;
 
 自分の追撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByFollowupAttack += N;
@@ -1267,7 +1267,7 @@ applyRefreshFuncMap.set(skillId,
 __applyRefresh(skillOwnerUnit, targetUnit) {}
 
 このスキルは「歌う」「踊る｣として扱われる。「歌う」「踊る」を持つ対象には使用できない。対象を行動可能な状態にする。
-refreshSupportSkillSet.add(skillId);
+REFRESH_SUPPORT_SKILL_SET.add(skillId);
 もしくは
 function isRefreshSupportSkill(skillId) {return true;}
 
@@ -1447,8 +1447,7 @@ unit.calcMoveCountForCanto() {} // ワープの場合は必要なし
 * enumerateWarpCantoTiles(unit) {}
 
 移動可能[ワープ]
-// const TeleportationSkillDictに登録
-TeleportationSkillDict[skillId] = 0;
+TELEPORTATION_SKILL_SET.add(skillId);
 enumerateTeleportTilesForUnitFuncMap.set(skillId,
     function (unit) {
         // 周囲2マス以内の味方の、周囲1マス以内に移動可能

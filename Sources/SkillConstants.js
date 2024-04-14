@@ -1808,6 +1808,14 @@ const Weapon = {
     NewWarAxe: 2844, // 戦神の戦斧
     DraconicPacts: 2841, // 邪痕と聖痕の竜血
     HeavyWarAxe: 2845, // 戦神の護斧
+
+    // 「新英雄＆響心アクア」
+    // https://www.youtube.com/watch?v=6lQIdLhtTMo&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=XOqr5WF160Q&ab_channel=NintendoMobile
+    ForagerNaginata: 2850, // 農地の主の薙刀
+    Perspicacious: 2852, // 軍略伝授の刃
+    RauarlanternPlus: 2854, // ラウアランタン+
+    TriPathSplitter: 2856, // 三つの道歌う法具
 };
 
 const Support = {
@@ -1820,6 +1828,7 @@ const Support = {
     Pivot: 422, // 回り込み
 
     // 専用補助
+    ChangingWaters: 2857, // つたうみなすじ
     SpringsDream: 2806, // しろいはるのゆめ
     FutureVision: 433, // 未来を移す瞳
     FutureVision2: 1948, // 未来を映す瞳・承
@@ -2529,6 +2538,8 @@ const PassiveB = {
     SpdCantrip3: 1928, // 速さの魅了3
     DefCantrip3: 1471,
     ResCantrip3: 1589,
+    // 2種魅了
+    ADCantrip3: 2858, // 攻撃守備の魅了3
 
     // 連携
     AtkSpdLink2: 1133, // 攻撃速さの連携2
@@ -2564,6 +2575,7 @@ const PassiveB = {
     SabotageRes3: 867, // 魔防の混乱3
 
     // 2種混乱
+    SabotageAD3: 2853, // 攻撃守備の混乱3
     SabotageAR3: 2407, // 攻撃魔防の混乱3
     SabotageSR3: 2717, // 速さ魔防の混乱3
 
@@ -2801,6 +2813,7 @@ const PassiveB = {
     SpdDefBulwark3: 2202, // 速さ守備の防壁3
     SpdResBulwark3: 2260, // 速さ魔防の防壁3
     // 防壁4
+    ASBulwark4: 2851, // 攻撃速さの防壁4
     AtkDefBulwark4: 2750, // 攻撃守備の防壁4
     SRBulwark4: 2798, // 速さ魔防の防壁4
 
@@ -3240,6 +3253,7 @@ const PassiveX = {
     FleetingEcho: 2663, // 響・飛燕の離撃
     SoaringEcho: 2787, // 響・飛走の先導
     GuardEcho: 2822, // 響・キャンセル
+    MercyWingEcho: 2859, // 響・救援の行路
 };
 
 const Captain = {

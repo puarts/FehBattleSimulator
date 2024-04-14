@@ -1,5 +1,242 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 響・救援の行路
+{
+    let skillId = PassiveX.MercyWingEcho;
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function* (unit) {
+            for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                // HPが50%以下の味方の隣接マスへ移動可能
+                if (ally.hpPercentage <= 50) {
+                    yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1);
+                }
+            }
+        }
+    );
+}
+
+// 2種魅了3
+{
+    /**
+     * @param {number} skillId
+     * @param {function(enemy: Unit): void} debuffFunc
+     */
+    let setSkill = (skillId, debuffFunc) => {
+        applyRefreshFuncMap.set(skillId,
+            function (skillOwnerUnit, targetUnit) {
+                // 「歌う」「踊る」使用時、自分と対象の十字方向にいる敵の
+                let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwnerUnit);
+                for (let enemy of enemies) {
+                    if (enemy.isInCrossOf(skillOwnerUnit) ||
+                        enemy.isInCrossOf(targetUnit)) {
+                        // * 攻撃、守備一7、
+                        debuffFunc(enemy);
+                        // * 【混乱】を付与（敵の次回行動終了まで）
+                        enemy.addStatusEffect(StatusEffectType.Sabotage);
+                    }
+                }
+            }
+        );
+    }
+    // 攻撃守備の魅了3
+    setSkill(PassiveB.ADCantrip3, e => e.applyDebuffs(-7, 0, -7, 0));
+}
+
+// つたうみなすじ
+{
+    let skillId = Support.ChangingWaters;
+    // 射程：1
+    // このスキルは「歌う」「踊る」として扱われる
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
+    // 「歌う」「踊る」を持つ対象には使用できない
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            // 対象を行動可能な状態にし、
+            // 対象に「移動＋1」を付与（1ターン、重複しない、射程2の騎馬を除く）、
+            let isRangedCavalry = targetUnit.isRangedWeaponType() && targetUnit.moveType === MoveType.Cavalry;
+            if (!isRangedCavalry) {
+                targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+            }
+            // かつ、対象と、その周囲2マスの味方（自分を除く）に【奮激】を付与
+            targetUnit.addStatusEffect(StatusEffectType.Incited);
+        }
+    );
+}
+
+// 三つの道歌う法具
+{
+    let skillId = Weapon.TriPathSplitter;
+    // 射程：1
+    // 威力：16
+    // 速さ+3
+    // 【再移動（マス間の距離＋1、最大4）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // マス間の距離+1、最大4
+        return MathUtil.ensureMax(Unit.calcMoveDistance(this) + 1, 4);
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let targetUnit of targetUnits) {
+                    // * 自分と周囲2マス以内の味方の攻撃、速さ+6（1ターン）、
+                    targetUnit.reserveToApplyBuffs(6, 6, 0, 0);
+                    // * 【見切り・追撃効果】、
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                    // * 【見切り・パニック】を付与
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // * 戦闘中、攻撃、速さ、守備、魔防＋5
+                targetUnit.addAllSpur(5);
+            }
+        }
+    );
+}
+
+// ラウアランタン+
+{
+    let skillId = Weapon.RauarlanternPlus;
+    // 威力：12 射程：2
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、自分に
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                // * 「自分が移動可能な地形を平地のように移動可能」、
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.UnitCannotBeSlowedByTerrain);
+                // * 「戦闘中、奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）」を付与（1ターン）
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // * 戦闘中、攻撃、魔防＋5
+                targetUnit.addAtkResSpurs(5);
+            }
+        }
+    );
+}
+
+// 軍略伝授の刃
+{
+    let skillId = Weapon.Perspicacious;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+    // 【暗器（7）】効果
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // * 戦闘中、敵の攻撃、守備が減少
+                //     * 減少値は、自分を中心とした縦7x横7マスにいる味方の数x3＋6（最大15）、
+                let isInSquare = u => u.isInSquare(targetUnit, 7);
+                let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 99, isInSquare);
+                let amount = MathUtil.ensureMax(allyCount * 3 + 6, 15);
+                enemyUnit.addAtkDefSpurs(-amount);
+                // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）（範囲奥義を除く）、
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // * 自身の奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+    // 自分を中心とした縦7x横7マスにいる味方は、
+    // * 戦闘中、攻撃、守備、魔防＋4、
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            if (targetUnit.isInSquare(allyUnit, 7) <= 2) {
+                targetUnit.addSpursWithoutSpd(4);
+            }
+        }
+    );
+    // 自分を中心とした縦7x横7マスにいる味方は、
+    // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を30%無効（無効にする数値は端数切捨て）（範囲奥義を除く）
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.isInSquare(allyUnit, 7) <= 2) {
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.3);
+            }
+        }
+    );
+}
+
+// 農地の主の薙刀
+{
+    let skillId = Weapon.ForagerNaginata;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                // * 自分と周囲3マス以内の味方の
+                /** @type {Generator<Unit>} */
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3, true);
+                for (let targetUnit of targetUnits) {
+                    // * 守備、魔防+6、
+                    targetUnit.reserveToApplyBuffs(0, 0, 6, 6);
+                    // * 「戦闘中、奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）」を付与（1ターン）
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                }
+
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            /**
+             * @this DamageCalculatorWrapper
+             * @returns {number}
+             */
+            function getAmount() {
+                // *  ●は、周囲3マス以内にいる味方の数x3＋1（最大10、自身の周囲2マス以内に以下のいずれかのマスがある時は10として扱う
+                //     *  天脈が付与されたマス
+                //     *  いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス）
+                let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.ensureMax(allyCount * 3 + 1, 10);
+                let tiles = this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2);
+                let tilePred = t => t.hasDivineVein() || (t.isPassableAnyMoveType() && t.isCountedAsDifficultTerrain());
+                if (GeneratorUtil.some(tiles, tilePred)) {
+                    amount = 10;
+                }
+                return amount;
+            }
+
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // * 戦闘中、攻撃、速さ、守備、魔防＋5、
+                targetUnit.addAllSpur(5);
+                let amount = getAmount.call(this);
+                // * さらに、攻撃、速さ、守備、魔防が●だけ増加、
+                targetUnit.addAllSpur(amount);
+                // * 最初に受けた攻撃と2回攻撃のダメージー●（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                // * かつ戦闘中、自分の攻撃でダメージを与えた時、
+                //     * 自分のHP●回復（与えたダメージが0でも効果は発動）、
+                targetUnit.battleContext.healedHpByAttack += amount;
+            }
+        }
+    );
+}
+
 // 戦神の護斧
 {
     let skillId = Weapon.HeavyWarAxe;
@@ -164,7 +401,7 @@
     // - 自分を行動可能にする（1ターンに1回のみ）
 
     /** @type {(this: BattleSimulatorBase, owner: Unit) => void} */
-    let actionFunc = function(skillOwner) {
+    let actionFunc = function (skillOwner) {
         if (!skillOwner.isActionDone) {
             return;
         }
@@ -4109,7 +4346,8 @@
         );
         applySkillEffectForUnitFuncMap.set(skillId, generateFunc(func, isBulwalk4));
     };
-
+    // 攻撃速さの防壁4
+    setSkill(PassiveB.ASBulwark4, u => u.addAtkSpdSpurs(-4), true);
     // 攻撃守備の防壁4
     setSkill(PassiveB.AtkDefBulwark4, u => u.addAtkDefSpurs(-4), true);
     // 速さ魔防の防壁4
@@ -5019,6 +5257,11 @@
 
 // 2種混乱3
 {
+    /**
+     * @param {number} skillId
+     * @param {[number, number]} indices
+     * @param {function(Unit, number, number): void} spurFunc
+     */
     const setSabotageFuncs = (skillId, indices, spurFunc) => {
         let reservedDebuffs = [0, 0, 0, 0];
         let debuffs = [-6, -6, -6, -6];
@@ -5044,10 +5287,12 @@
         );
     };
 
+    // 攻撃守備の混乱3
+    setSabotageFuncs(PassiveB.SabotageAD3, [STATUS_INDEX.Atk, STATUS_INDEX.Def], (u, v1, v2) => u.addAtkDefSpurs(v1, v2));
     // 攻撃魔防の混乱3
-    setSabotageFuncs(PassiveB.SabotageAR3, [0, 3], (u, v1, v2) => u.addAtkResSpurs(v1, v2));
+    setSabotageFuncs(PassiveB.SabotageAR3, [STATUS_INDEX.Atk, STATUS_INDEX.Res], (u, v1, v2) => u.addAtkResSpurs(v1, v2));
     // 速さ魔防の混乱3
-    setSabotageFuncs(PassiveB.SabotageSR3, [1, 3], (u, v1, v2) => u.addSpdResSpurs(v1, v2));
+    setSabotageFuncs(PassiveB.SabotageSR3, [STATUS_INDEX.Spd, STATUS_INDEX.Res], (u, v1, v2) => u.addSpdResSpurs(v1, v2));
 }
 
 // 竜眼
@@ -5824,12 +6069,8 @@
                     let dist = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
                     let found = false;
                     for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2)) {
-                        if (tile.divineVein !== DivineVeinType.None) {
-                            found = true;
-                            break;
-                        }
-                        let satisfiedTile = !(tile.type === TileType.Normal || tile.type === TileType.Wall);
-                        if (satisfiedTile) {
+                        if (tile.hasDivineVein() ||
+                            (tile.isPassableAnyMoveType() && tile.isCountedAsDifficultTerrain())) {
                             found = true;
                             break;
                         }

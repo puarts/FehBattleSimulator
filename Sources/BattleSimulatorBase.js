@@ -4189,8 +4189,7 @@ class BattleSimulatorBase {
             let enemyUnits = Array.from(this.enumerateEnemyUnitsOnMap());
             this.__initializeAiContextPerTurn(allyUnits, enemyUnits);
             this.__initializeAiContextPerTurn(enemyUnits, allyUnits);
-        }
-        else {
+        } else {
             this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
         }
     }
@@ -4259,6 +4258,9 @@ class BattleSimulatorBase {
         }
     }
 
+    /**
+     * @params {Generator<Unit>} units
+     */
     __initializeAllUnitsOnMapPerTurn(units) {
         for (let unit of units) {
             unit.isCombatDone = false;
@@ -9332,7 +9334,7 @@ class BattleSimulatorBase {
             }
 
             executeTrapIfPossible(supporterUnit, true);
-            executeTrapIfPossible(targetUnit, true);
+            executeTrapIfPossible(targetUnit, false);
 
             this.__goToNextPhaseIfPossible(supporterUnit.groupId);
         }
@@ -9960,8 +9962,7 @@ function placeUnitToMap(unit, x, y, endsActionIfActivateTrap = false, executesTr
 
     if (executesTrap) {
         return executeTrapIfPossible(unit, endsActionIfActivateTrap);
-    }
-    else {
+    } else {
         return MoveResult.Success;
     }
 }
@@ -9997,17 +9998,19 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
             if (trapCondSatisfied) {
                 if (endsActionIfActivateTrap) {
                     g_app.endUnitActionAndGainPhaseIfPossible(unit);
+                } else {
+                    if (obj instanceof HexTrap) {
+                        g_app.endUnitActionAndGainPhaseIfPossible(unit);
+                    }
                 }
 
                 g_app.audioManager.playSoundEffect(SoundEffectId.Trap);
                 g_app.executeStructure(obj);
                 if (obj instanceof HeavyTrap) {
                     result = MoveResult.HeavyTrapActivated;
-                }
-                else if (obj instanceof BoltTrap) {
+                } else if (obj instanceof BoltTrap) {
                     result = MoveResult.BoltTrapActivated;
-                }
-                else if (obj instanceof HexTrap) {
+                } else if (obj instanceof HexTrap) {
                     result = MoveResult.HexTrapActivated;
                 }
             }
