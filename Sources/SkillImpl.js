@@ -1,5 +1,21 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 響・救援の行路
+{
+    let skillId = PassiveX.MercyWingEcho;
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function* (unit) {
+            for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                // HPが50%以下の味方の隣接マスへ移動可能
+                if (ally.hpPercentage <= 50) {
+                    yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1);
+                }
+            }
+        }
+    );
+}
+
 // 2種魅了3
 {
     /**
