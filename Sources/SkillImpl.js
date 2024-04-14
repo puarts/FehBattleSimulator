@@ -224,7 +224,7 @@
     // - 自分を行動可能にする（1ターンに1回のみ）
 
     /** @type {(this: BattleSimulatorBase, owner: Unit) => void} */
-    let actionFunc = function(skillOwner) {
+    let actionFunc = function (skillOwner) {
         if (!skillOwner.isActionDone) {
             return;
         }
@@ -4169,7 +4169,8 @@
         );
         applySkillEffectForUnitFuncMap.set(skillId, generateFunc(func, isBulwalk4));
     };
-
+    // 攻撃速さの防壁4
+    setSkill(PassiveB.ASBulwark4, u => u.addAtkSpdSpurs(-4), true);
     // 攻撃守備の防壁4
     setSkill(PassiveB.AtkDefBulwark4, u => u.addAtkDefSpurs(-4), true);
     // 速さ魔防の防壁4

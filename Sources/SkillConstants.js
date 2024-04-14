@@ -2806,6 +2806,7 @@ const PassiveB = {
     SpdDefBulwark3: 2202, // 速さ守備の防壁3
     SpdResBulwark3: 2260, // 速さ魔防の防壁3
     // 防壁4
+    ASBulwark4: 2851, // 攻撃速さの防壁4
     AtkDefBulwark4: 2750, // 攻撃守備の防壁4
     SRBulwark4: 2798, // 速さ魔防の防壁4
 
