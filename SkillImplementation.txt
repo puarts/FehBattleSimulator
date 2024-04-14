@@ -1267,7 +1267,7 @@ applyRefreshFuncMap.set(skillId,
 __applyRefresh(skillOwnerUnit, targetUnit) {}
 
 このスキルは「歌う」「踊る｣として扱われる。「歌う」「踊る」を持つ対象には使用できない。対象を行動可能な状態にする。
-refreshSupportSkillSet.add(skillId);
+REFRESH_SUPPORT_SKILL_SET.add(skillId);
 もしくは
 function isRefreshSupportSkill(skillId) {return true;}
 

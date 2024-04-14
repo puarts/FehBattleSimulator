@@ -1,5 +1,23 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// つたうみなすじ
+{
+    let skillId = Support.ChangingWaters;
+    // 射程：1
+    // このスキルは「歌う」「踊る」として扱われる
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
+    // 「歌う」「踊る」を持つ対象には使用できない
+    applyRefreshFuncMap.set(skillId,
+        function (skillOwnerUnit, targetUnit) {
+            // 対象を行動可能な状態にし、
+            // 対象に「移動＋1」を付与（1ターン、重複しない、射程2の騎馬を除く）、
+            targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+            // かつ、対象と、その周囲2マスの味方（自分を除く）に【奮激】を付与
+            targetUnit.addStatusEffect(StatusEffectType.Incited);
+        }
+    );
+}
+
 // 三つの道歌う法具
 {
     let skillId = Weapon.TriPathSplitter;

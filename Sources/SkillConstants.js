@@ -1828,6 +1828,7 @@ const Support = {
     Pivot: 422, // 回り込み
 
     // 専用補助
+    ChangingWaters: 2857, // つたうみなすじ
     SpringsDream: 2806, // しろいはるのゆめ
     FutureVision: 433, // 未来を移す瞳
     FutureVision2: 1948, // 未来を映す瞳・承
