@@ -54,7 +54,10 @@
         function (skillOwnerUnit, targetUnit) {
             // 対象を行動可能な状態にし、
             // 対象に「移動＋1」を付与（1ターン、重複しない、射程2の騎馬を除く）、
-            targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+            let isRangedCavalry = targetUnit.isRangedWeaponType() && targetUnit.moveType === MoveType.Cavalry;
+            if (!isRangedCavalry) {
+                targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+            }
             // かつ、対象と、その周囲2マスの味方（自分を除く）に【奮激】を付与
             targetUnit.addStatusEffect(StatusEffectType.Incited);
         }
