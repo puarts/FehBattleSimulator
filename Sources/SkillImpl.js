@@ -1,5 +1,65 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 農地の主の薙刀
+{
+    let skillId = Weapon.ForagerNaginata;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                // * 自分と周囲3マス以内の味方の
+                /** @type {Generator<Unit>} */
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3, true);
+                for (let targetUnit of targetUnits) {
+                    // * 守備、魔防+6、
+                    targetUnit.reserveToApplyBuffs(0, 0, 6, 6);
+                    // * 「戦闘中、奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）」を付与（1ターン）
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                }
+
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            /**
+             * @this DamageCalculatorWrapper
+             * @returns {number}
+             */
+            function getAmount() {
+                // *  ●は、周囲3マス以内にいる味方の数x3＋1（最大10、自身の周囲2マス以内に以下のいずれかのマスがある時は10として扱う
+                //     *  天脈が付与されたマス
+                //     *  いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス）
+                let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.ensureMax(allyCount * 3 + 1, 10);
+                let tiles = this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2);
+                let tilePred = t => t.hasDivineVein() || (t.isPassableAnyMoveType() && t.isCountedAsDifficultTerrain());
+                if (GeneratorUtil.some(tiles, tilePred)) {
+                    amount = 10;
+                }
+                return amount;
+            }
+
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // * 戦闘中、攻撃、速さ、守備、魔防＋5、
+                targetUnit.addAllSpur(5);
+                let amount = getAmount.call(this);
+                // * さらに、攻撃、速さ、守備、魔防が●だけ増加、
+                targetUnit.addAllSpur(amount);
+                // * 最初に受けた攻撃と2回攻撃のダメージー●（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                // * かつ戦闘中、自分の攻撃でダメージを与えた時、
+                //     * 自分のHP●回復（与えたダメージが0でも効果は発動）、
+                targetUnit.battleContext.healedHpByAttack += amount;
+            }
+        }
+    );
+}
+
 // 戦神の護斧
 {
     let skillId = Weapon.HeavyWarAxe;
@@ -5824,12 +5884,8 @@
                     let dist = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
                     let found = false;
                     for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2)) {
-                        if (tile.divineVein !== DivineVeinType.None) {
-                            found = true;
-                            break;
-                        }
-                        let satisfiedTile = !(tile.type === TileType.Normal || tile.type === TileType.Wall);
-                        if (satisfiedTile) {
+                        if (tile.hasDivineVein() ||
+                            (tile.isPassableAnyMoveType() && tile.isCountedAsDifficultTerrain())) {
                             found = true;
                             break;
                         }

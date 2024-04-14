@@ -10867,9 +10867,16 @@ class DamageCalculatorWrapper {
         return this._unitManager.countEnemiesWithinSpecifiedSpaces(targetUnit, spaces, predicator);
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {number} spaces
+     * @param {(unit: Unit) => boolean} predicator
+     * @returns {number}
+     */
     __countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         return this._unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator);
     }
+
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit

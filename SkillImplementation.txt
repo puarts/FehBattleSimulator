@@ -524,7 +524,7 @@ applyHealSkillForBeginningOfTurnFuncMap.set(skillId,
 );
 
 自分の攻撃でダメージを与えた時、自分のHP N回復(与えたダメージが0でも効果は発動)
-targetUnit.battleContext.healedHpByAttack += N
+targetUnit.battleContext.healedHpByAttack += N;
 
 自分の追撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
 targetUnit.battleContext.healedHpByFollowupAttack += N;

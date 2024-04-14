@@ -1248,6 +1248,21 @@ class GeneratorUtil {
             }
         }
     }
+
+    /**
+     * @template T
+     * @param {Generator<T>} generator
+     * @param {(i: T) => boolean} pred
+     * @returns {boolean}
+     */
+    static some(generator, pred) {
+        for (const value of generator) {
+            if (pred(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 class MathUtil {

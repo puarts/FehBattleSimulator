@@ -29,7 +29,7 @@ function tileTypeToString(type) {
 const TileTypeOptions = [];
 for (let key in TileType) {
     let id = TileType[key];
-    if (id == TileType.Wall) {
+    if (id === TileType.Wall) {
         continue;
     }
     TileTypeOptions.push({
@@ -93,7 +93,7 @@ class Tile extends BattleMapElement {
         this._moveWeights[MoveType.Armor] = 1;
         this._moveWeights[MoveType.Cavalry] = 1;
 
-        /** @type {Tile} */
+        /** @type {Tile[]} */
         this._neighbors = [];
         this._placedUnit = null;
         this._tempData = null;
@@ -193,7 +193,7 @@ class Tile extends BattleMapElement {
     }
 
     get isStructurePlacable() {
-        return !(this.type != TileType.Normal || this.obj instanceof BreakableWall || this.obj instanceof Wall);
+        return !(this.type != TileType.Normal || this.obj instanceof BreakableWall || this.isWall());
     }
 
     isAttackableBySpecifiedGroup(groupId) {
@@ -663,23 +663,23 @@ class Tile extends BattleMapElement {
             }
 
             let weight = 1;
-            if (ignoreWeights == false) {
+            if (ignoreWeights === false) {
                 weight = neighborTile.getMoveWeight(unit, ignoresUnits, false);
             }
 
-            let isObstructTile = weight == ObstructTile;
+            let isObstructTile = weight === ObstructTile;
             if (isObstructTile) {
                 // 進軍阻止
                 weight = 1;
             }
 
             if (ignoreWeightsExceptCanNotReach) {
-                if (weight != CanNotReachTile) {
+                if (weight !== CanNotReachTile) {
                     weight = 1;
                 }
             }
 
-            if (weight == CanNotReachTile) {
+            if (weight === CanNotReachTile) {
                 tracedDepthDict[key] = -1;
             }
 
@@ -704,29 +704,35 @@ class Tile extends BattleMapElement {
 
     isEnemyUnitAvailable(moveUnit) {
         return this.placedUnit != null
-            && this._placedUnit.groupId != moveUnit.groupId;
+            && this._placedUnit.groupId !== moveUnit.groupId;
     }
 
-    getMoveWeight(unit, ignoresUnits, ignoresBreakableWalls = false, isUnitIgnoredFunc = null, isPathfinderEnabled = true) {
-        if (this._placedUnit != null && isUnitIgnoredFunc != null && !isUnitIgnoredFunc(this._placedUnit)) {
-            // タイルのユニットを無視しないので障害物扱い
-            return CanNotReachTile;
+    getMoveWeight(unit, ignoresUnits,
+                  ignoresBreakableWalls = false,
+                  isUnitIgnoredFunc = null,
+                  isPathfinderEnabled = true) {
+        if (this._placedUnit != null && isUnitIgnoredFunc != null) {
+            if (!isUnitIgnoredFunc?.(this._placedUnit)) {
+                // タイルのユニットを無視しないので障害物扱い
+                return CanNotReachTile;
+            }
         }
 
         if (!ignoresUnits) {
             if (!unit.canActivatePass()) {
-                if (this._placedUnit != null && unit.groupId !== this._placedUnit.groupId) {
-                    // 敵ユニットだったらオブジェクトと同じ扱い
-                    return CanNotReachTile;
+                if (this._placedUnit != null) {
+                    if (unit.groupId !== this._placedUnit.groupId) {
+                        // 敵ユニットだったらオブジェクトと同じ扱い
+                        return CanNotReachTile;
+                    }
                 }
 
                 let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
                 // 隣接マスに進軍阻止持ちがいるか確認
                 for (let tile1Space of this.neighbors) {
-                    if (tile1Space.isEnemyUnitAvailable(unit)
-                        && tile1Space.placedUnit.canActivateObstructToAdjacentTiles(unit)
-                    ) {
-                        if (weight === CanNotReachTile || this.obj instanceof Wall) {
+                    if (tile1Space.isEnemyUnitAvailable(unit) &&
+                        tile1Space.placedUnit.canActivateObstructToAdjacentTiles(unit)) {
+                        if (weight === CanNotReachTile || this.isWall()) {
                             return CanNotReachTile;
                         }
                         return ObstructTile;
@@ -734,10 +740,9 @@ class Tile extends BattleMapElement {
 
                     // 2マス以内に進軍阻止持ちがいるか確認
                     for (let tile2Spaces of tile1Space.neighbors) {
-                        if (tile2Spaces.isEnemyUnitAvailable(unit)
-                            && tile2Spaces.placedUnit.canActivateObstructToTilesIn2Spaces(unit)
-                        ) {
-                            if (weight === CanNotReachTile || this.obj instanceof Wall) {
+                        if (tile2Spaces.isEnemyUnitAvailable(unit) &&
+                            tile2Spaces.placedUnit.canActivateObstructToTilesIn2Spaces(unit)) {
+                            if (weight === CanNotReachTile || this.isWall()) {
                                 return CanNotReachTile;
                             }
                             return ObstructTile;
@@ -785,12 +790,11 @@ class Tile extends BattleMapElement {
                 return weight;
             }
 
-            if (unit.groupId == UnitGroupType.Ally) {
+            if (unit.groupId === UnitGroupType.Ally) {
                 if (this._obj instanceof DefenceStructureBase) {
                     return weight;
                 }
-            }
-            else {
+            } else {
                 if (this._obj instanceof OffenceStructureBase) {
                     return weight;
                 }
@@ -798,6 +802,39 @@ class Tile extends BattleMapElement {
         }
 
         return CanNotReachTile;
+    }
+
+    isWall() {
+        return this.obj instanceof Wall;
+    }
+
+    isCountedAsDifficultTerrain() {
+        return [
+            TileType.Forest,
+            TileType.Flier,
+            TileType.Trench,
+            TileType.DefensiveTrench,
+            TileType.DefensiveForest,
+        ].some(t => t.type === this.type);
+    }
+
+    isNotCountedAsDifficultTerrain() {
+        return [
+            TileType.Normal,
+            TileType.DefensiveTile,
+        ].some(t => t.type === this.type);
+    }
+
+    isPassableAnyMoveType() {
+        return this.type !== TileType.Wall;
+    }
+
+    isImpassableAnyMoveType() {
+        return this.type === TileType.Wall;
+    }
+
+    hasDivineVein() {
+        return this.divineVein !== DivineVeinType.None
     }
 }
 
@@ -1051,7 +1088,7 @@ class TilePriorityContext {
                 return 3;
             case TileType.DefensiveTrench:
             case TileType.Trench:
-                if (unit.moveType == MoveType.Cavalry) {
+                if (unit.moveType === MoveType.Cavalry) {
                     return 1;
                 }
                 else {

@@ -1808,6 +1808,11 @@ const Weapon = {
     NewWarAxe: 2844, // 戦神の戦斧
     DraconicPacts: 2841, // 邪痕と聖痕の竜血
     HeavyWarAxe: 2845, // 戦神の護斧
+
+    // 「新英雄＆響心アクア」
+    // https://www.youtube.com/watch?v=6lQIdLhtTMo&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=XOqr5WF160Q&ab_channel=NintendoMobile
+    ForagerNaginata: 2850, // 農地の主の薙刀
 };
 
 const Support = {

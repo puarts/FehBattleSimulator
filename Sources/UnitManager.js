@@ -235,6 +235,12 @@ class UnitManager {
         return count;
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {number} spaces
+     * @param {(unit: Unit) => boolean} predicator
+     * @returns {number}
+     */
     countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         let count = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
