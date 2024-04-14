@@ -1813,6 +1813,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=6lQIdLhtTMo&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=XOqr5WF160Q&ab_channel=NintendoMobile
     ForagerNaginata: 2850, // 農地の主の薙刀
+    Perspicacious: 2852, // 軍略伝授の刃
 };
 
 const Support = {

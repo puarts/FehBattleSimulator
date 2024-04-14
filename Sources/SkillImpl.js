@@ -1,5 +1,48 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 軍略伝授の刃
+{
+    let skillId = Weapon.Perspicacious;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+    // 【暗器（7）】効果
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // * 戦闘中、敵の攻撃、守備が減少
+                //     * 減少値は、自分を中心とした縦7x横7マスにいる味方の数x3＋6（最大15）、
+                let isInSquare = u => u.isInSquare(targetUnit, 7);
+                let allyCount = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 99, isInSquare);
+                let amount = MathUtil.ensureMax(allyCount * 3 + 6, 15);
+                enemyUnit.addAtkDefSpurs(-amount);
+                // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）（範囲奥義を除く）、
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // * 自身の奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+    // 自分を中心とした縦7x横7マスにいる味方は、
+    // * 戦闘中、攻撃、守備、魔防＋4、
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            if (targetUnit.isInSquare(allyUnit, 7) <= 2) {
+                targetUnit.addSpursWithoutSpd(4);
+            }
+        }
+    );
+    // 自分を中心とした縦7x横7マスにいる味方は、
+    // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を30%無効（無効にする数値は端数切捨て）（範囲奥義を除く）
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.isInSquare(allyUnit, 7) <= 2) {
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.3);
+            }
+        }
+    );
+}
+
 // 農地の主の薙刀
 {
     let skillId = Weapon.ForagerNaginata;
