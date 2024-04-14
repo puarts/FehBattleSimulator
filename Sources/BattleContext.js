@@ -668,11 +668,4 @@ class BattleContext {
     canAttackInCombat() {
         return this.initiatesCombat || this.canCounterattack;
     }
-
-    // TODO: リファクタリングする
-    resetHealOrDamageAfterCombat() {
-        this.healedHpAfterCombat = 0;
-        this.healedHpAfterAttackSpecialInCombat = 0;
-        this.damageAfterCombat = 0;
-    }
 }

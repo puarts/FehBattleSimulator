@@ -4189,8 +4189,7 @@ class BattleSimulatorBase {
             let enemyUnits = Array.from(this.enumerateEnemyUnitsOnMap());
             this.__initializeAiContextPerTurn(allyUnits, enemyUnits);
             this.__initializeAiContextPerTurn(enemyUnits, allyUnits);
-        }
-        else {
+        } else {
             this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
         }
     }
@@ -4259,6 +4258,9 @@ class BattleSimulatorBase {
         }
     }
 
+    /**
+     * @params {Generator<Unit>} units
+     */
     __initializeAllUnitsOnMapPerTurn(units) {
         for (let unit of units) {
             unit.isCombatDone = false;

@@ -279,8 +279,7 @@ class DamageCalculatorWrapper {
             self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
             self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
         }), () => {
-            atkUnit.initBattleContext(true);
-            defUnit.initBattleContext(false);
+            this.#initBattleContext(atkUnit, defUnit);
 
             this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit);
             this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit);
@@ -298,10 +297,9 @@ class DamageCalculatorWrapper {
             let preCombatDamage = 0;
             let preCombatDamageWithOverkill = 0;
 
-            if (!calcPotentialDamage &&
-                atkUnit.canActivatePrecombatSpecial() &&
-                !atkUnit.battleContext.cannotTriggerPrecombatSpecial
-            ) {
+            let canTriggerPrecombatSpecial = !atkUnit.battleContext.cannotTriggerPrecombatSpecial;
+            let canActivatePrecombatSpecial = atkUnit.canActivatePrecombatSpecial() && canTriggerPrecombatSpecial;
+            if (canActivatePrecombatSpecial && !calcPotentialDamage) {
                 [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit);
                 // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
                 defUnit.battleContext.clearPrecombatState();
@@ -319,8 +317,7 @@ class DamageCalculatorWrapper {
                     preCombatDamageWithOverkill = 0;
                     if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
                     self.__initSaverUnit(saverUnit, defUnit);
-                    if (atkUnit.canActivatePrecombatSpecial() &&
-                        !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
+                    if (canActivatePrecombatSpecial) {
                         // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
                         for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
                             if (tile.placedUnit === saverUnit) {
@@ -350,6 +347,24 @@ class DamageCalculatorWrapper {
         });
 
         return result;
+    }
+
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     */
+    #initBattleContext(atkUnit, defUnit) {
+        atkUnit.initBattleContext(true);
+        defUnit.initBattleContext(false);
+        // 戦闘参加ユニット以外の戦闘コンテキストを初期化する
+        // TODO: リファクタリング
+        let allUnitsOnMap = GeneratorUtil.combine(
+            this.enumerateUnitsInTheSameGroupOnMap(atkUnit),
+            this.enumerateUnitsInTheSameGroupOnMap(defUnit)
+        );
+        for (let unit of allUnitsOnMap) {
+            unit.initBattleContext(false);
+        }
     }
 
     __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {

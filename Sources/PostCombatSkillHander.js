@@ -792,11 +792,6 @@ class PostCombatSkillHander {
         if (targetUnit.isAlive) {
             targetUnit.reserveHeal(targetUnit.battleContext.healedHpAfterCombat);
             targetUnit.reserveTakeDamage(targetUnit.battleContext.damageAfterCombat);
-            // TODO: リファクタリングする
-            targetUnit.battleContext.resetHealOrDamageAfterCombat();
-            if (targetUnit.battleContext.isChainGuardActivated) {
-                targetUnit.reserveTakeDamage(1);
-            }
         }
     }
 
