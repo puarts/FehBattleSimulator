@@ -5123,6 +5123,11 @@
 
 // 2種混乱3
 {
+    /**
+     * @param {number} skillId
+     * @param {[number, number]} indices
+     * @param {function(Unit, number, number): void} spurFunc
+     */
     const setSabotageFuncs = (skillId, indices, spurFunc) => {
         let reservedDebuffs = [0, 0, 0, 0];
         let debuffs = [-6, -6, -6, -6];
@@ -5148,10 +5153,12 @@
         );
     };
 
+    // 攻撃守備の混乱3
+    setSabotageFuncs(PassiveB.SabotageAD3, [STATUS_INDEX.Atk, STATUS_INDEX.Def], (u, v1, v2) => u.addAtkDefSpurs(v1, v2));
     // 攻撃魔防の混乱3
-    setSabotageFuncs(PassiveB.SabotageAR3, [0, 3], (u, v1, v2) => u.addAtkResSpurs(v1, v2));
+    setSabotageFuncs(PassiveB.SabotageAR3, [STATUS_INDEX.Atk, STATUS_INDEX.Res], (u, v1, v2) => u.addAtkResSpurs(v1, v2));
     // 速さ魔防の混乱3
-    setSabotageFuncs(PassiveB.SabotageSR3, [1, 3], (u, v1, v2) => u.addSpdResSpurs(v1, v2));
+    setSabotageFuncs(PassiveB.SabotageSR3, [STATUS_INDEX.Spd, STATUS_INDEX.Res], (u, v1, v2) => u.addSpdResSpurs(v1, v2));
 }
 
 // 竜眼

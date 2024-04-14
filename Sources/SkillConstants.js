@@ -2570,6 +2570,7 @@ const PassiveB = {
     SabotageRes3: 867, // 魔防の混乱3
 
     // 2種混乱
+    SabotageAD3: 2853, // 攻撃守備の混乱3
     SabotageAR3: 2407, // 攻撃魔防の混乱3
     SabotageSR3: 2717, // 速さ魔防の混乱3
 
