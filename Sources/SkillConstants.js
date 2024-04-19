@@ -1816,6 +1816,7 @@ const Weapon = {
     Perspicacious: 2852, // 軍略伝授の刃
     RauarlanternPlus: 2854, // ラウアランタン+
     TriPathSplitter: 2856, // 三つの道歌う法具
+    LucrativeBowPlus: 2860, // 有利状態の弓+
 };
 
 const Support = {

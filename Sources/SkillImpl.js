@@ -1,5 +1,36 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 有利状態の弓+
+{
+    let skillId = Weapon.LucrativeBowPlus;
+    // 飛行特効
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                // 自分に【見切り・追撃効果】、
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                // 【見切り・パニック】を付与
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // さらに、攻撃、速さが、自分が受けている強化を除いた【有利な状態】の数と敵が受けている弱化を除いた【不利な状態異常】の数の合計値の2倍だけ増加
+                let length = targetUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                let amount = length * 2;
+                targetUnit.addAtkSpdSpurs(amount);
+            }
+        }
+    );
+}
+
 // 響・救援の行路
 {
     let skillId = PassiveX.MercyWingEcho;
