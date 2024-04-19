@@ -6891,7 +6891,7 @@ class BattleSimulatorBase {
                 return;
             }
 
-            if (attackerUnit.weaponInfo.attackCount === 2) {
+            if (attackerUnit.weaponInfo?.attackCount === 2) {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.DoubleAttack);
             } else {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);
