@@ -1517,6 +1517,10 @@ class BeginningOfTurnSkillHandler {
                 break;
             }
             case Weapon.TrueLoveRoses:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+                break;
             case PassiveC.OddRecovery1:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
