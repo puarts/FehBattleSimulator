@@ -1817,6 +1817,8 @@ const Weapon = {
     RauarlanternPlus: 2854, // ラウアランタン+
     TriPathSplitter: 2856, // 三つの道歌う法具
     LucrativeBowPlus: 2860, // 有利状態の弓+
+
+    SupremeThoekk: 2862, // 神杖セック
 };
 
 const Support = {

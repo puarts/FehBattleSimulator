@@ -1,5 +1,48 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 神杖セック
+{
+    let skillId = Weapon.SupremeThoekk;
+    // 【再移動(1)】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+    // 杖は他の武器同様のダメージ計算になる
+    // 奥義が発動しやすい(発動カウント-1)(奥義発動カウント最大値の下限は1)
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、奥義発動カウント-1
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、魔防+6、さらに、
+                targetUnit.addAtkResSpurs(6);
+                // 攻撃、魔防が戦闘開始時の魔防の20%だけ増加、
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                targetUnit.addAtkResSpurs(amount);
+                // 絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // ダメージ+魔防の20%(範囲奥義を除く)
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
+                });
+            }
+        }
+    );
+}
+
 // 有利状態の弓+
 {
     let skillId = Weapon.LucrativeBowPlus;
