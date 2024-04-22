@@ -1,5 +1,35 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 幻惑・不和の烙印
+{
+    let skillId = PassiveB.DazzlingDiscord;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分の周囲5マス以内にいる最も近い敵と
+            let nearestEnemies = this.__findNearestEnemies(skillOwner, 5);
+            for (let nearestEnemy of nearestEnemies) {
+                // その周囲2マス以内の敵それぞれについて、
+                let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true);
+                for (let enemy of enemies) {
+                    // 魔防が自分より1以上低い時、【不和】を付与
+                    if (enemy.isLowerResInPrecombat(skillOwner)) {
+                        enemy.reserveToAddStatusEffect(StatusEffectType.Discord);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の攻撃、魔防-4、
+            enemyUnit.addAtkResSpurs(-4);
+            // 敵は反撃不可
+            targetUnit.battleContext.invalidatesCounterattack = true;
+        }
+    );
+}
+
 // 神杖セック
 {
     let skillId = Weapon.SupremeThoekk;
@@ -1117,7 +1147,7 @@
         let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
         for (let enemy of enemies) {
             if (enemy.isInCrossWithOffset(skillOwner, 1)) {
-                if (skillOwner.isHigherResInPrecombat(enemy, -5)) {
+                if (enemy.isLowerResInPrecombat(skillOwner, 5)) {
                     enemy.reserveToApplyDebuffs(-7, 0, 0, -7);
                     enemy.reserveToAddStatusEffect(StatusEffectType.Sabotage);
                     enemy.reserveToAddStatusEffect(StatusEffectType.DeepWounds);

@@ -3486,7 +3486,7 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * 守備がn以上高いかどうかを返す
+     * 守備が相手の守備+nより高いかどうかを返す
      * @param {Unit} enemyUnit
      * @param {number} n
      * @return {boolean}
@@ -3496,13 +3496,23 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * 魔防がn以上高いかどうかを返す
+     * 魔防が相手の魔防+nより高いかどうかを返す
      * @param {Unit} enemyUnit
-     * @param {number} n
+     * @param {number} n 自然数
      * @return {boolean}
      */
     isHigherResInPrecombat(enemyUnit, n = 0) {
         return this.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat() + n;
+    }
+
+    /**
+     * 魔防が「相手の魔防+n」より低いかどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n 自然数
+     * @return {boolean}
+     */
+    isLowerResInPrecombat(enemyUnit, n = 0) {
+        return this.getEvalResInPrecombat() < enemyUnit.getEvalResInPrecombat() + n;
     }
 
     __getEvalDefAdd() {

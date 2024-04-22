@@ -2467,6 +2467,7 @@ const PassiveB = {
     DazzlingStaff3: 633, // 幻惑の杖3
     DazzlingShift: 2363, // 幻惑・転移
     DazzleFarTrace: 2594, // 幻惑・遠影
+    DazzlingDiscord: 2863, // 幻惑・不和の烙印
     ChillAtk1: 1339,
     ChillAtk2: 1340,
     ChillAtk3: 614, // 攻撃の封印3
