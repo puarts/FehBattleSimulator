@@ -1108,7 +1108,7 @@ class IterUtil {
     /**
      * valueFuncを適用した最大値を求める。
      * @template T
-     * @param {Iterable<T>} iterable
+     * @param {Iterable<T>|Generator<T>} iterable
      * @param {(i: T) => number} valueFunc
      * @param {number} initValue
      * @returns {number}
@@ -1127,7 +1127,7 @@ class IterUtil {
     /**
      * valueFuncを適用した最小値を求める。
      * @template T
-     * @param {Iterable<T>} iterable
+     * @param {Iterable<T>|Generator<T>} iterable
      * @param {(i: T) => number} valueFunc
      * @param {number} initValue
      * @returns {number}
@@ -1140,7 +1140,7 @@ class IterUtil {
      * valueFuncを最大にする要素を一つ求める。
      * 最初に見つかったものを返す。
      * @template T
-     * @param {Iterable<T>} iterable
+     * @param {Iterable<T>|Generator<T>} iterable
      * @param {(i: T) => number} valueFunc
      * @returns {T}
      */
@@ -1161,7 +1161,7 @@ class IterUtil {
      * valueFuncを最小にする要素を一つ求める。
      * 最初に見つかったものを返す。
      * @template T
-     * @param {Iterable<T>} iterable
+     * @param {Iterable<T>|Generator<T>} iterable
      * @param {(i: T) => number} valueFunc
      * @returns {T}
      */
@@ -1172,7 +1172,7 @@ class IterUtil {
     /**
      * valueFuncを最大にする要素を全て求める。
      * @template T
-     * @param {Iterable<T>} iterable
+     * @param {Iterable<T>|Generator<T>} iterable
      * @param {(i: T) => number} valueFunc
      * @returns {T[]}
      */
@@ -1194,7 +1194,7 @@ class IterUtil {
     /**
      * valueFuncを最小にする要素を全て求める。
      * @template T
-     * @param {Iterable<T>} iterable
+     * @param {Iterable<T>|Generator<T>} iterable
      * @param {(i: T) => number} valueFunc
      * @returns {T[]}
      */

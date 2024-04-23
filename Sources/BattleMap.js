@@ -2957,7 +2957,7 @@ class BattleMap {
                 + unit.hp + "</span>";
             if (unit.maxSpecialCount > 0) {
                 let specialCount = unit.specialCount;
-                if (unit.specialCount == 0) {
+                if (unit.specialCount === 0) {
                     specialCount = "<img src='" + g_imageRootPath + "Special.png" + "' style='width:12px;height:12px'>";
                 }
                 cell.innerText += "<span style='font-size:10px;color:#ffbbee;position:absolute;bottom:12px;left:0;" + shadowCss + ";pointer-events: none;'>"
