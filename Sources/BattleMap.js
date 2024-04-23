@@ -2914,20 +2914,20 @@ class BattleMap {
      */
     __putUnitIconToCell(cell, unit, currentPhaseType) {
         let style = "";
-        let color = "#bbeeff";
+        let hpColor = "#bbeeff";
         {
             // 残りHPで枠線を変える
             if (unit.hpPercentage <= 50) {
-                color = "#ff0000";
+                hpColor = "#ff0000";
             } else if (unit.hpPercentage <= 75) {
-                color = "#ffbb00";
+                hpColor = "#ffbb00";
             }
-            if (color != "") {
+            if (hpColor !== "") {
                 //style = "border: 2px " + color + " solid;border-radius: 50px 50px 50px 50px / 50px 50px 50px 50px;";
             }
         }
 
-        if (unit.isActionDone || currentPhaseType != unit.groupId) {
+        if (unit.isActionDone || currentPhaseType !== unit.groupId) {
             style += "filter:grayscale(100%);filter:brightness(70%);";
         }
 
@@ -2953,8 +2953,13 @@ class BattleMap {
                     + g_imageRootPath + "ExpansionUnit.png" + "' style='width:15px' ></span>";
             }
 
-            cell.innerText += "<span style='font-size:10px;color:" + color + ";position:absolute;bottom:0;left:0;" + shadowCss + ";pointer-events: none'>"
-                + unit.hp + "</span>";
+            let unitColor = unit.groupId === UnitGroupType.Ally ? "#00cccc" : "#ff3333";
+            let maxHpWidth = 20;
+            let currentHpWidth = Math.round(unit.hpPercentage / 100.0 * maxHpWidth);
+            cell.innerText +=
+                `<span style='font-size:10px;color:${hpColor};position:absolute;bottom:0;left:0;${shadowCss};pointer-events: none'>${unit.hp}</span>` +
+                `<span style='width:${maxHpWidth}px;height:2;background-color:#000000;border:1px solid #000000;position:absolute;bottom:0;left:12px;pointer-events: none'></span>` +
+                `<span style='width:${currentHpWidth}px;height:2;background-color:${unitColor};border:1px solid #000000;position:absolute;bottom:0;left:12px;pointer-events: none'></span>`;
             if (unit.maxSpecialCount > 0) {
                 let specialCount = unit.specialCount;
                 if (unit.specialCount === 0) {
