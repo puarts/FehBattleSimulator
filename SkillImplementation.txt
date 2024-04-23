@@ -616,7 +616,7 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     // COUNT2_SPECIALS.push(skillId);
-    // INHERITABLE_COUNT2.push(skillId);
+    // INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {

@@ -1,5 +1,34 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 覇天・承
+{
+    let skillId = Special.SublimeHeaven2;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let isDragonOrBeast = isWeaponTypeBreath(enemyUnit.weaponType) || isWeaponTypeBeast(enemyUnit.weaponType);
+            let ratio = isDragonOrBeast ? 0.6 : 0.3;
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * ratio));
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.statusEvalUnit.isSpecialCountMax) {
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        }
+    );
+}
+
+
 // 神杖天空を偽る
 {
     let skillId = PassiveC.DivineDeceit;

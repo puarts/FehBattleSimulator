@@ -2052,6 +2052,7 @@ const Special = {
     ChivalricAura: 2527, // グランベルの騎士道
 
     SublimeHeaven: 1752, // 覇天
+    SublimeHeaven2: 2866, // 覇天・承
     SupremeHeaven: 2705, // 真覇天
     DevinePulse: 2167, // 天刻の拍動
 
