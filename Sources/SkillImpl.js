@@ -1,5 +1,59 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 神杖天空を偽る
+{
+    let skillId = PassiveC.DivineDeceit;
+    /** @type {(this: BeginningOfTurnSkillHandler, unit: Unit) => void} */
+    let funcForBeginningOfTurn = function (skillOwner) {
+        let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let enemy of enemies) {
+            // 自軍ターン開始時、および、敵軍ターン開始時、十字方向にいる、魔防が「自分の魔防+5」より低い敵に【グラビティ】を付与
+            if (enemy.isInCrossOf(skillOwner) &&
+                enemy.isLowerResInPrecombat(skillOwner, 5)) {
+                enemy.reserveToAddStatusEffect(StatusEffectType.Gravity);
+            }
+            // 自軍ターン開始時、および、敵軍ターン開始時、自分を中心とした縦3列と横3列にいる魔防が「自分の魔防+5」より低い敵に【謀策】、【弱点露呈】を付与(敵の次回行動終了時まで)
+            if (enemy.isInCrossWithOffset(skillOwner, 1) &&
+                enemy.isLowerResInPrecombat(skillOwner, 5)) {
+                enemy.reserveToAddStatusEffect(StatusEffectType.Ploy);
+                enemy.reserveToAddStatusEffect(StatusEffectType.Exposure);
+            }
+        }
+    };
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId, funcForBeginningOfTurn);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, funcForBeginningOfTurn);
+
+    /** @type {(this: BeginningOfTurnSkillHandler, unit: Unit) => void} */
+    let funcAfterSkillsForBeginningOfTurn = function (skillOwner) {
+        let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let enemy of enemies) {
+            // 自軍ターン、および、敵軍ターンの開始時スキル発動後、
+            // 自分を中心とした縦3列と横3列にいる強化を除いた【有利な状態】の数が3以上の敵の【有利な状態】を解除(同じタイミングで付与される【有利な状態】は解除されない)
+            if (enemy.isInCrossWithOffset(skillOwner, 1)) {
+                if (enemy.getPositiveStatusEffects().length >= 3) {
+                    enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
+                    let skillName = DebugUtil.getSkillName(skillOwner, skillOwner.passiveBInfo);
+                    let statuses = enemy.getPositiveStatusEffects().map(e => getStatusEffectName(e)).join(", ");
+                    this.writeDebugLog(`${skillName}により${enemy.nameWithGroup}の${statuses}を解除`);
+                }
+            }
+        }
+    };
+    // ターン開始時スキル発動後
+    applySkillAfterSkillsForBeginningOfTurnFuncMap.set(skillId, funcAfterSkillsForBeginningOfTurn);
+    applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId, funcAfterSkillsForBeginningOfTurn);
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵が【不利な状態異常】を受けている時、戦闘中、攻撃、魔防+5
+            if (enemyUnit.hasNegativeStatusEffect()) {
+                targetUnit.addAtkResSpurs(5);
+            }
+        }
+    );
+}
+
 // 幻惑・不和の烙印
 {
     let skillId = PassiveB.DazzlingDiscord;
@@ -5068,6 +5122,7 @@
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
+            /** @type {Unit[]} */
             let enemies = [];
             let maxEffectCount = 0;
             for (let enemy of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
@@ -5103,7 +5158,7 @@
             // ステータス解除予約
             for (let enemy of enemies) {
                 // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
-                enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectToDeleteSet.add(e));
+                enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
                 enemy.reservedStatusesToDelete = [true, true, true, true];
             }
         }
@@ -5430,7 +5485,7 @@
 // 共に未来を変えて
 {
     let skillId = PassiveC.FutureSighted;
-    applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap.set(skillId,
+    applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             let units = [];
             let distance = Number.MAX_SAFE_INTEGER;
@@ -5451,8 +5506,7 @@
                 if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3 - 5) {
                     if (!unit.hasStatusEffect(StatusEffectType.TimesGrip)) {
                         unit.endAction();
-                        // TODO: 予約が必要になれば予約を実装する
-                        unit.addStatusEffect(StatusEffectType.TimesGrip);
+                        unit.reserveToAddStatusEffect(StatusEffectType.TimesGrip);
                     }
                 }
             }

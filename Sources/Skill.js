@@ -1495,7 +1495,9 @@ const resetMaxSpecialCountFuncMap = new Map();
 /** @type {Map<number|string, (this: Window, attackUnit: Unit, lossesInCombat: boolean, result: CombatResult) => boolean>} */
 const isAfflictorFuncMap = new Map();
 /** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
-const applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap = new Map();
+const applySkillAfterSkillsForBeginningOfTurnFuncMap = new Map();
+/** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
+const applySkillAfterEnemySkillsForBeginningOfTurnFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, defUnit: Unit, atkUnit: Unit, attackRange: number) => void>} */
 const applyDamageReductionRatioBySpecialFuncMap = new Map();
 // TODO: リファクタリングする

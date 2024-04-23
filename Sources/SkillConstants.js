@@ -3160,6 +3160,7 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    DivineDeceit: 2864, // 神杖天空を偽る
     GlitteringAnima: 2793, // 煌めく理力
     DarklingDragon: 2766, // 闇の樹海の竜神
     DragonMonarch: 2756, // リトスの神竜王
