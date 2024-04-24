@@ -1,5 +1,239 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+{
+    let skillId = Special.HolyKnight2;
+
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、
+            // 自分に「移動+1」(重複しない)、
+            skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+            // 「自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減」を付与(1ターン)
+            skillOwner.reserveToAddStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+        }
+    );
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 攻撃の30%を奥義ダメージに加算
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.3));
+        }
+    );
+
+    applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit, attackCount) {
+            // 奥義を発動した戦闘後、
+            if (attackUnit.battleContext.isSpecialActivated) {
+                // 自分と全味方の
+                for (let targetUnit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
+                    // 攻撃、守備+6、
+                    targetUnit.applyBuffs(6, 0, 6, 0);
+                    // 「移動+1」(重複しない)、
+                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    // 「自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減」を付与(1ターン)
+                    targetUnit.addStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+                    // (その戦闘で自分のHPが0になっても効果は発動)
+                }
+            }
+        }
+    )
+}
+
+// 覇天・承
+{
+    let skillId = Special.SublimeHeaven2;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let isDragonOrBeast = isWeaponTypeBreath(enemyUnit.weaponType) || isWeaponTypeBeast(enemyUnit.weaponType);
+            let ratio = isDragonOrBeast ? 0.6 : 0.3;
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * ratio));
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (skillOwner.statusEvalUnit.isSpecialCountMax) {
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        }
+    );
+}
+
+
+// 神杖天空を偽る
+{
+    let skillId = PassiveC.DivineDeceit;
+    /** @type {(this: BeginningOfTurnSkillHandler, unit: Unit) => void} */
+    let funcForBeginningOfTurn = function (skillOwner) {
+        let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let enemy of enemies) {
+            // 自軍ターン開始時、および、敵軍ターン開始時、十字方向にいる、魔防が「自分の魔防+5」より低い敵に【グラビティ】を付与
+            if (enemy.isInCrossOf(skillOwner) &&
+                enemy.isLowerResInPrecombat(skillOwner, 5)) {
+                enemy.reserveToAddStatusEffect(StatusEffectType.Gravity);
+            }
+            // 自軍ターン開始時、および、敵軍ターン開始時、自分を中心とした縦3列と横3列にいる魔防が「自分の魔防+5」より低い敵に【謀策】、【弱点露呈】を付与(敵の次回行動終了時まで)
+            if (enemy.isInCrossWithOffset(skillOwner, 1) &&
+                enemy.isLowerResInPrecombat(skillOwner, 5)) {
+                enemy.reserveToAddStatusEffect(StatusEffectType.Ploy);
+                enemy.reserveToAddStatusEffect(StatusEffectType.Exposure);
+            }
+        }
+    };
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId, funcForBeginningOfTurn);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, funcForBeginningOfTurn);
+
+    /** @type {(this: BeginningOfTurnSkillHandler, unit: Unit) => void} */
+    let funcAfterSkillsForBeginningOfTurn = function (skillOwner) {
+        let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+        for (let enemy of enemies) {
+            // 自軍ターン、および、敵軍ターンの開始時スキル発動後、
+            // 自分を中心とした縦3列と横3列にいる強化を除いた【有利な状態】の数が3以上の敵の【有利な状態】を解除(同じタイミングで付与される【有利な状態】は解除されない)
+            if (enemy.isInCrossWithOffset(skillOwner, 1)) {
+                if (enemy.getPositiveStatusEffects().length >= 3) {
+                    enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
+                    let skillName = DebugUtil.getSkillName(skillOwner, skillOwner.passiveBInfo);
+                    let statuses = enemy.getPositiveStatusEffects().map(e => getStatusEffectName(e)).join(", ");
+                    this.writeDebugLog(`${skillName}により${enemy.nameWithGroup}の${statuses}を解除`);
+                }
+            }
+        }
+    };
+    // ターン開始時スキル発動後
+    applySkillAfterSkillsForBeginningOfTurnFuncMap.set(skillId, funcAfterSkillsForBeginningOfTurn);
+    applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId, funcAfterSkillsForBeginningOfTurn);
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵が【不利な状態異常】を受けている時、戦闘中、攻撃、魔防+5
+            if (enemyUnit.hasNegativeStatusEffect()) {
+                targetUnit.addAtkResSpurs(5);
+            }
+        }
+    );
+}
+
+// 幻惑・不和の烙印
+{
+    let skillId = PassiveB.DazzlingDiscord;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分の周囲5マス以内にいる最も近い敵と
+            let nearestEnemies = this.__findNearestEnemies(skillOwner, 5);
+            for (let nearestEnemy of nearestEnemies) {
+                // その周囲2マス以内の敵それぞれについて、
+                let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true);
+                for (let enemy of enemies) {
+                    // 魔防が自分より1以上低い時、【不和】を付与
+                    if (enemy.isLowerResInPrecombat(skillOwner)) {
+                        enemy.reserveToAddStatusEffect(StatusEffectType.Discord);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の攻撃、魔防-4、
+            enemyUnit.addAtkResSpurs(-4);
+            // 敵は反撃不可
+            targetUnit.battleContext.invalidatesCounterattack = true;
+        }
+    );
+}
+
+// 神杖セック
+{
+    let skillId = Weapon.SupremeThoekk;
+    // 【再移動(1)】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+    // 杖は他の武器同様のダメージ計算になる
+    // 奥義が発動しやすい(発動カウント-1)(奥義発動カウント最大値の下限は1)
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、奥義発動カウント-1
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、魔防+6、さらに、
+                targetUnit.addAtkResSpurs(6);
+                // 攻撃、魔防が戦闘開始時の魔防の20%だけ増加、
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                targetUnit.addAtkResSpurs(amount);
+                // 絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // ダメージ+魔防の20%(範囲奥義を除く)
+                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
+                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
+                });
+            }
+        }
+    );
+}
+
+// 有利状態の弓+
+{
+    let skillId = Weapon.LucrativeBowPlus;
+    // 飛行特効
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                // 自分に【見切り・追撃効果】、
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                // 【見切り・パニック】を付与
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // さらに、攻撃、速さが、自分が受けている強化を除いた【有利な状態】の数と敵が受けている弱化を除いた【不利な状態異常】の数の合計値の2倍だけ増加
+                let length = targetUnit.getPositiveStatusEffects().length + enemyUnit.getNegativeStatusEffects().length;
+                let amount = length * 2;
+                targetUnit.addAtkSpdSpurs(amount);
+            }
+        }
+    );
+}
+
 // 響・救援の行路
 {
     let skillId = PassiveX.MercyWingEcho;
@@ -1043,7 +1277,7 @@
         let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
         for (let enemy of enemies) {
             if (enemy.isInCrossWithOffset(skillOwner, 1)) {
-                if (skillOwner.isHigherResInPrecombat(enemy, -5)) {
+                if (enemy.isLowerResInPrecombat(skillOwner, 5)) {
                     enemy.reserveToApplyDebuffs(-7, 0, 0, -7);
                     enemy.reserveToAddStatusEffect(StatusEffectType.Sabotage);
                     enemy.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
@@ -4964,6 +5198,7 @@
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
+            /** @type {Unit[]} */
             let enemies = [];
             let maxEffectCount = 0;
             for (let enemy of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
@@ -4999,7 +5234,7 @@
             // ステータス解除予約
             for (let enemy of enemies) {
                 // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
-                enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectToDeleteSet.add(e));
+                enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
                 enemy.reservedStatusesToDelete = [true, true, true, true];
             }
         }
@@ -5326,7 +5561,7 @@
 // 共に未来を変えて
 {
     let skillId = PassiveC.FutureSighted;
-    applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap.set(skillId,
+    applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             let units = [];
             let distance = Number.MAX_SAFE_INTEGER;
@@ -5347,8 +5582,7 @@
                 if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3 - 5) {
                     if (!unit.hasStatusEffect(StatusEffectType.TimesGrip)) {
                         unit.endAction();
-                        // TODO: 予約が必要になれば予約を実装する
-                        unit.addStatusEffect(StatusEffectType.TimesGrip);
+                        unit.reserveToAddStatusEffect(StatusEffectType.TimesGrip);
                     }
                 }
             }

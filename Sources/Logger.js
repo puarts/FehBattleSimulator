@@ -10,6 +10,9 @@ class LoggerBase {
         return "";
     }
 
+    clearLog() {
+    }
+
     writeSimpleLog(log) {
     }
 

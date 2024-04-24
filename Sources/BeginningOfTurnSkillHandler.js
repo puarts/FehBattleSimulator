@@ -41,7 +41,12 @@ class BeginningOfTurnSkillHandler {
         this._logger.writeDebugLog(message);
     }
 
+    clearLog() {
+        this._logger.clearLog();
+    }
+
     /**
+     * 自軍ターン開始時スキル
      * @param  {Unit} unit
      */
     applySkillsForBeginningOfTurn(unit) {
@@ -51,25 +56,37 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
+    /**
+     * 敵軍ターン開始時スキル
+     * @param  {Unit} unit
+     */
     applyEnemySkillsForBeginningOfTurn(unit) {
         for (let skillId of unit.enumerateSkills()) {
             this.applyEnemySkillForBeginningOfTurn(skillId, unit);
         }
     }
 
-    applyAfterEnemySkillsSkillsForBeginningOfTurn(unit) {
-        for (let skillId of unit.enumerateSkills()) {
-            this.applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, unit);
-        }
-    }
-
-    applySkillsAfterBeginningOfTurn(unit) {
+    /**
+     * 自軍のターン開始時スキル発動後のスキル
+     * @param  {Unit} unit
+     */
+    applySkillsAfterSkillsForBeginningOfTurn(unit) {
         if (unit.hasStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately)) {
             this.writeDebugLog(`${unit.nameWithGroup}はステータス${getStatusEffectName(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately)}により行動終了`);
             unit.endAction();
         }
         for (let skillId of unit.enumerateSkills()) {
-            this.applySkillAfterBeginningOfTurn(skillId, unit);
+            this.applySkillAfterSkillsForBeginningOfTurn(skillId, unit);
+        }
+    }
+
+    /**
+     * 敵軍のターン開始時スキル発動後のスキル
+     * @param  {Unit} unit
+     */
+    applySkillsAfterEnemySkillsForBeginningOfTurn(unit) {
+        for (let skillId of unit.enumerateSkills()) {
+            this.applySkillAfterEnemySkillsForBeginningOfTurn(skillId, unit);
         }
     }
 
@@ -106,13 +123,10 @@ class BeginningOfTurnSkillHandler {
     /**
      * @param  {Unit} unit
      */
-    applyReservedState(unit) {
-        // ターン開始時の不利な状態無効
-        if (!unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
-            unit.applyReservedBuffs();
-            unit.applyReservedDebuffs();
-            unit.applyReservedStatusEffects();
-        } else {
+    applyReservedState(unit, isBeginningOfTurn = true) {
+        if (isBeginningOfTurn &&
+            unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
+            // ターン開始時の不利な状態無効
             // applyReservedDebuffsは呼び出さない
             unit.applyReservedBuffs();
             unit.resetReservedDebuffs();
@@ -123,6 +137,10 @@ class BeginningOfTurnSkillHandler {
             for (let e of unit.statusEffects.filter(e => isNegativeStatusEffect(e))) {
                 unit.reservedStatusEffects.push(e);
             }
+            unit.applyReservedStatusEffects();
+        } else {
+            unit.applyReservedBuffs();
+            unit.applyReservedDebuffs();
             unit.applyReservedStatusEffects();
         }
         unit.applyReservedSpecialCount();
@@ -1517,6 +1535,10 @@ class BeginningOfTurnSkillHandler {
                 break;
             }
             case Weapon.TrueLoveRoses:
+                if (this.globalBattleContext.currentTurn === 1) {
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+                break;
             case PassiveC.OddRecovery1:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
@@ -2899,14 +2921,13 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
-    applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {
-        getSkillFunc(skillId, applyAfterEnemySkillsSkillForBeginningOfTurnFuncMap)?.call(this, skillOwner);
+    applySkillAfterEnemySkillsForBeginningOfTurn(skillId, skillOwner) {
+        getSkillFunc(skillId, applySkillAfterEnemySkillsForBeginningOfTurnFuncMap)?.call(this, skillOwner);
         switch (skillId) {
             case PassiveC.FutureFocused:
                 if (this.isOddTurn) {
                     let enemyUnits = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
                     let unitsInCross = GeneratorUtil.filter(enemyUnits, u => skillOwner.isInCrossOf(u));
-                    /** @type {Unit[]} */
                     let nearestUnits= IterUtil.minElements(unitsInCross, u => skillOwner.distance(u));
                     let lowerRes = u => skillOwner.isHigherResInPrecombat(u, u.distance(skillOwner) * 3);
                     nearestUnits.filter(lowerRes).forEach(u => u.endAction());
@@ -2915,9 +2936,14 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
-    // ターン開始時スキル発動後に発動するスキル
-    // エリミーヌのターン開始時スキル不可効果(FalseStart)を受けない
-    applySkillAfterBeginningOfTurn(skillId, skillOwner) {
+    /**
+     * ターン開始時スキル発動後に発動するスキル
+     * エリミーヌのターン開始時スキル不可効果(FalseStart)を受けない
+     * @param {number|string} skillId
+     * @param {Unit} skillOwner
+     */
+    applySkillAfterSkillsForBeginningOfTurn(skillId, skillOwner) {
+        getSkillFunc(skillId, applySkillAfterSkillsForBeginningOfTurnFuncMap)?.call(this, skillOwner);
         switch (skillId) {
             case Weapon.TomeOfLaxuries:
                 if (skillOwner.battleContext.restHpPercentage >= 25) {
@@ -2927,9 +2953,9 @@ class BeginningOfTurnSkillHandler {
                             effect !== StatusEffectType.Pathfinder
                     );
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        ally.addStatusEffects(positiveEffects);
+                        positiveEffects.forEach(e => ally.reserveToAddStatusEffect(e));
                         // 自身がパニック時は味方に強化は付与されない
-                        ally.applyBuffs(
+                        ally.reserveToApplyBuffs(
                             skillOwner.getAtkBuff(),
                             skillOwner.getSpdBuff(),
                             skillOwner.getDefBuff(),
@@ -2940,7 +2966,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.FettersOfDromi:
                 if (skillOwner.hasStatusEffect(StatusEffectType.Stall)) {
-                    skillOwner.clearPositiveStatusEffect(StatusEffectType.MobilityIncreased);
+                    skillOwner.reservedStatusEffectSetToDelete.add(StatusEffectType.MobilityIncreased);
                 }
                 break;
         }

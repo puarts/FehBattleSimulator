@@ -53,8 +53,19 @@ applyHealSkillForBeginningOfTurn(skillId, skillOwner) {}
 applyEnemySkillForBeginningOfTurn(skillId, skillOwner) {}
 ターン開始時(ダメージ)
 applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
+
+自軍のターン開始時スキル発動後
+applyAfterSkillsSkillForBeginningOfTurnFuncMap.set(skillId,
+    function (skillOwner) {
+    }
+);
+
 敵軍のターン開始時スキル発動後
-applyAfterEnemySkillsSkillForBeginningOfTurn(skillId, skillOwner) {}
+// セイズなど敵軍のターン開始時スキル発動後の効果
+applySkillsAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
+    function (skillOwner) {
+    }
+);
 
 獣の共通の化身スキル
 WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
@@ -605,7 +616,7 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     // COUNT2_SPECIALS.push(skillId);
-    // INHERITABLE_COUNT2.push(skillId);
+    // INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     initApplySpecialSkillEffectFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -1555,6 +1566,12 @@ unit.reserveToClearNegativeStatusEffects();
 ステータス付与
 Main.js
 unit.reserveToAddStatusEffect(StatusEffectType.XXX);
+
+ステータス解除予約
+// バフ解除予約
+enemy.reservedStatusesToDelete = [true, true, true, true];
+// 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
+enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
 
 天脈を予約
 tile.reserveDivineVein(DivineVeinType.Green, unit.groupId);

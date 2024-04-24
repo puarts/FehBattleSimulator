@@ -4094,28 +4094,8 @@ class BattleSimulatorBase {
         this.executeStructuresByUnitGroupType(targetUnits[0].groupId, false);
         this.applyTileEffect();
 
-        // ターン開始時スキル(通常)
-        for (let unit of targetUnits) {
-            this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動スキルを適用..");
-            this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
-        }
-        // ターン開始時スキル(敵ユニット)
-        for (let unit of enemyTurnSkillTargetUnits) {
-            this.writeDebugLogLine(unit.getNameWithGroup() + "の敵ターン開始時発動スキルを適用..");
-            this.beginningOfTurnSkillHandler.applyEnemySkillsForBeginningOfTurn(unit);
-        }
-        // ターン開始時効果(通常)による効果を反映
-        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
-
-        // ターン開始時スキル(回復・ダメージ)
-        for (let unit of targetUnits) {
-            this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動HPスキルを適用..");
-            this.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(unit);
-        }
-        // ターン開始時効果によるダメージや回復を反映
-        this.beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap(true);
-
-        this.writeLog(this.beginningOfTurnSkillHandler.log);
+        this.#applySkillsForBeginningOfTurnForAllGroups(targetUnits, enemyTurnSkillTargetUnits);
+        this.#applyHpSkillsForBeginningOfTurnForAllGroups(targetUnits);
 
         for (let unit of targetUnits) {
             unit.deleteSnapshot();
@@ -4124,21 +4104,69 @@ class BattleSimulatorBase {
         // 化身によりステータス変化する
         this.data.__updateStatusBySkillsAndMergeForAllHeroes();
 
-        // セイズなど敵軍のターン開始時スキル発動後の効果
-        for (let unit of enemyTurnSkillTargetUnits) {
-            this.writeDebugLogLine(unit.getNameWithGroup() + "の敵軍のターン開始時スキル発動後のスキルを適用..");
-            this.beginningOfTurnSkillHandler.applyAfterEnemySkillsSkillsForBeginningOfTurn(unit);
-        }
+        this.#applySkillsAfterSkillsForBeginningOfTurnForAllGroups(targetUnits, enemyTurnSkillTargetUnits);
 
-        // ターン開始時スキル発動後
-        // ex) 伝承ユーリスCスキル: ターン開始時スキル発動後、自分に【空転】が付与されている時、「自身の移動+1」を解除
-        for (let unit of targetUnits) {
-            this.writeDebugLogLine(unit.getNameWithGroup() + "の開始時スキル発動後のスキルを適用..");
-            this.beginningOfTurnSkillHandler.applySkillsAfterBeginningOfTurn(unit);
-        }
+        this.writeLog(this.beginningOfTurnSkillHandler.log);
 
         // マップの更新(ターン開始時の移動マスの変化をマップに反映)
         this.data.map.updateTiles();
+    }
+
+    #applyHpSkillsForBeginningOfTurnForAllGroups(targetUnits) {
+        // ターン開始時スキル(回復・ダメージ)
+        for (let unit of targetUnits) {
+            this.writeDebugLogLine(unit.getNameWithGroup() + "のターン開始時発動HPスキルを適用..");
+            this.beginningOfTurnSkillHandler.applyHpSkillsForBeginningOfTurn(unit);
+            this.writeLog(this.beginningOfTurnSkillHandler.log);
+            this.beginningOfTurnSkillHandler.clearLog();
+        }
+        // ターン開始時効果によるダメージや回復を反映
+        this.beginningOfTurnSkillHandler.applyReservedHpForAllUnitsOnMap(true);
+        this.writeLog(this.beginningOfTurnSkillHandler.log);
+        this.beginningOfTurnSkillHandler.clearLog();
+    }
+
+    #applySkillsForBeginningOfTurnForAllGroups(targetUnits, enemyTurnSkillTargetUnits) {
+        // ターン開始時スキル(通常)
+        for (let unit of targetUnits) {
+            this.writeDebugLogLine(`${unit.getNameWithGroup()}のターン開始時発動スキルを適用..`);
+            this.beginningOfTurnSkillHandler.applySkillsForBeginningOfTurn(unit);
+            this.writeLog(this.beginningOfTurnSkillHandler.log);
+            this.beginningOfTurnSkillHandler.clearLog();
+        }
+        // ターン開始時スキル(敵ユニット)
+        for (let unit of enemyTurnSkillTargetUnits) {
+            this.writeDebugLogLine(`${unit.getNameWithGroup()}の敵ターン開始時発動スキルを適用..`);
+            this.beginningOfTurnSkillHandler.applyEnemySkillsForBeginningOfTurn(unit);
+            this.writeLog(this.beginningOfTurnSkillHandler.log);
+            this.beginningOfTurnSkillHandler.clearLog();
+        }
+        // ターン開始時効果(通常)による効果を反映
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
+        this.writeLog(this.beginningOfTurnSkillHandler.log);
+        this.beginningOfTurnSkillHandler.clearLog();
+    }
+
+    #applySkillsAfterSkillsForBeginningOfTurnForAllGroups(targetUnits, enemyTurnSkillTargetUnits) {
+        // ターン開始時スキル発動後
+        // ex) 伝承ユーリスCスキル: ターン開始時スキル発動後、自分に【空転】が付与されている時、「自身の移動+1」を解除
+        for (let unit of targetUnits) {
+            this.writeDebugLogLine(`${unit.getNameWithGroup()}の自軍のターン開始時スキル発動後のスキルを適用..`);
+            this.beginningOfTurnSkillHandler.applySkillsAfterSkillsForBeginningOfTurn(unit);
+            this.writeLog(this.beginningOfTurnSkillHandler.log);
+            this.beginningOfTurnSkillHandler.clearLog();
+        }
+
+        // セイズなど敵軍のターン開始時スキル発動後の効果
+        for (let unit of enemyTurnSkillTargetUnits) {
+            this.writeDebugLogLine(`${unit.getNameWithGroup()}の敵軍のターン開始時スキル発動後のスキルを適用..`);
+            this.beginningOfTurnSkillHandler.applySkillsAfterEnemySkillsForBeginningOfTurn(unit);
+            this.writeLog(this.beginningOfTurnSkillHandler.log);
+            this.beginningOfTurnSkillHandler.clearLog();
+        }
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
+        this.writeLog(this.beginningOfTurnSkillHandler.log);
+        this.beginningOfTurnSkillHandler.clearLog();
     }
 
     /**
@@ -6891,7 +6919,7 @@ class BattleSimulatorBase {
                 return;
             }
 
-            if (attackerUnit.weaponInfo.attackCount === 2) {
+            if (attackerUnit.weaponInfo?.attackCount === 2) {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.DoubleAttack);
             } else {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);

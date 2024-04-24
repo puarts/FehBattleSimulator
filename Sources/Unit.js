@@ -419,7 +419,7 @@ class Unit extends BattleMapElement {
         this.reservedHeal = 0;
         this.reservedStatusEffects = [];
         this.currentStatusEffectSet = new Set();
-        this.reservedStatusEffectToDeleteSet = new Set();
+        this.reservedStatusEffectSetToDelete = new Set();
         this.reservedAtkBuff = 0;
         this.reservedSpdBuff = 0;
         this.reservedDefBuff = 0;
@@ -2021,7 +2021,7 @@ class Unit extends BattleMapElement {
     }
 
     reserveToClearNegativeStatusEffects() {
-        this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectToDeleteSet.add(e));
+        this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectSetToDelete.add(e));
     }
 
     clearNegativeStatusEffects() {
@@ -2673,7 +2673,7 @@ class Unit extends BattleMapElement {
 
     applyReservedStatusEffects() {
         // 削除予約を反映
-        for (let e of this.reservedStatusEffectToDeleteSet) {
+        for (let e of this.reservedStatusEffectSetToDelete) {
             this.currentStatusEffectSet.delete(e);
         }
         if (this.reservedStatusesToDelete[0]) this.atkBuff = 0;
@@ -2681,7 +2681,7 @@ class Unit extends BattleMapElement {
         if (this.reservedStatusesToDelete[2]) this.defBuff = 0;
         if (this.reservedStatusesToDelete[3]) this.resBuff = 0;
 
-        this.reservedStatusEffectToDeleteSet.clear();
+        this.reservedStatusEffectSetToDelete.clear();
         this.reservedStatusesToDelete = [false, false, false, false];
         // すでに付与されている状態（解除は反映済み）に予約された状態を加える
         this.reservedStatusEffects.forEach(e => this.currentStatusEffectSet.add(e));
@@ -3486,7 +3486,7 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * 守備がn以上高いかどうかを返す
+     * 守備が相手の守備+nより高いかどうかを返す
      * @param {Unit} enemyUnit
      * @param {number} n
      * @return {boolean}
@@ -3496,13 +3496,23 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * 魔防がn以上高いかどうかを返す
+     * 魔防が相手の魔防+nより高いかどうかを返す
      * @param {Unit} enemyUnit
      * @param {number} n
      * @return {boolean}
      */
     isHigherResInPrecombat(enemyUnit, n = 0) {
         return this.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat() + n;
+    }
+
+    /**
+     * 魔防が「相手の魔防+n」より低いかどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isLowerResInPrecombat(enemyUnit, n = 0) {
+        return this.getEvalResInPrecombat() < enemyUnit.getEvalResInPrecombat() + n;
     }
 
     __getEvalDefAdd() {

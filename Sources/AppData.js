@@ -760,12 +760,13 @@ class AppData extends UnitManager {
             + " 速:" + unit.getSpdInPrecombat()
             + " 守:" + unit.getDefInPrecombat()
             + " 魔:" + unit.getResInPrecombat();
-        if (unit.groupId == UnitGroupType.Ally) {
+        if (unit.groupId === UnitGroupType.Ally) {
             // this.attackerInfo = info;
         } else {
             // this.attackTargetInfo = info;
         }
     }
+
     __updateStatusBySkillsAndMergeForAllHeroes(updatesPureGrowthRate = false) {
         for (let unit of this.enumerateUnits()) {
             if (unit.heroInfo == null) {
@@ -779,6 +780,7 @@ class AppData extends UnitManager {
      * @param  {Unit} unit
      * @param  {boolean} updatesPureGrowthRate=false
      * @param  {boolean} updateBlessingEffects=true
+     * @param  {boolean} withPairUpUnit
      */
     __updateStatusBySkillsAndMerges(
         unit,

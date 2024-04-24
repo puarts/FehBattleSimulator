@@ -28,6 +28,11 @@ class PostCombatSkillHander {
         return this._unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces);
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {boolean} withTargetUnit
+     * @returns {Generator<Unit>}
+     */
     enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }

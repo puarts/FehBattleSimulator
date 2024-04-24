@@ -1816,6 +1816,9 @@ const Weapon = {
     Perspicacious: 2852, // 軍略伝授の刃
     RauarlanternPlus: 2854, // ラウアランタン+
     TriPathSplitter: 2856, // 三つの道歌う法具
+    LucrativeBowPlus: 2860, // 有利状態の弓+
+
+    SupremeThoekk: 2862, // 神杖セック
 };
 
 const Support = {
@@ -2046,9 +2049,11 @@ const Special = {
     LightIsTime: 2668, // 光は時
     DragonBlast: 2558, // 神竜破
     HolyKnightAura: 1702, // グランベルの聖騎士
+    HolyKnight2: 2865, // グランベルの…・承
     ChivalricAura: 2527, // グランベルの騎士道
 
     SublimeHeaven: 1752, // 覇天
+    SublimeHeaven2: 2866, // 覇天・承
     SupremeHeaven: 2705, // 真覇天
     DevinePulse: 2167, // 天刻の拍動
 
@@ -2464,6 +2469,7 @@ const PassiveB = {
     DazzlingStaff3: 633, // 幻惑の杖3
     DazzlingShift: 2363, // 幻惑・転移
     DazzleFarTrace: 2594, // 幻惑・遠影
+    DazzlingDiscord: 2863, // 幻惑・不和の烙印
     ChillAtk1: 1339,
     ChillAtk2: 1340,
     ChillAtk3: 614, // 攻撃の封印3
@@ -3156,6 +3162,7 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    DivineDeceit: 2864, // 神杖天空を偽る
     GlitteringAnima: 2793, // 煌めく理力
     DarklingDragon: 2766, // 闇の樹海の竜神
     DragonMonarch: 2756, // リトスの神竜王

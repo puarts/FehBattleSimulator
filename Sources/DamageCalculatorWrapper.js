@@ -15742,12 +15742,9 @@ class DamageCalculatorWrapper {
             }
         };
         this._applySpecialSkillEffectFuncDict[Special.SublimeHeaven] = (targetUnit, enemyUnit) => {
-            if (isWeaponTypeBeast(enemyUnit.weaponType) || isWeaponTypeBreath(enemyUnit.weaponType)) {
-                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.5));
-            }
-            else {
-                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * 0.25));
-            }
+            let isDragonOrBeast = isWeaponTypeBreath(enemyUnit.weaponType) || isWeaponTypeBeast(enemyUnit.weaponType);
+            let ratio = isDragonOrBeast ? 0.5 : 0.25;
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(targetUnit.getAtkInCombat(enemyUnit) * ratio));
             targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
         };
 
