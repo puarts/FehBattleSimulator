@@ -1,5 +1,52 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+{
+    let skillId = Special.HolyKnight2;
+
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、
+            // 自分に「移動+1」(重複しない)、
+            skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+            // 「自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減」を付与(1ターン)
+            skillOwner.reserveToAddStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+        }
+    );
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 攻撃の30%を奥義ダメージに加算
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.3));
+        }
+    );
+
+    applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
+        function (attackUnit, attackTargetUnit, attackCount) {
+            // 奥義を発動した戦闘後、
+            if (attackUnit.battleContext.isSpecialActivated) {
+                // 自分と全味方の
+                for (let targetUnit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
+                    // 攻撃、守備+6、
+                    targetUnit.applyBuffs(6, 0, 6, 0);
+                    // 「移動+1」(重複しない)、
+                    targetUnit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                    // 「自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減」を付与(1ターン)
+                    targetUnit.addStatusEffect(StatusEffectType.ReducesDamageFromFirstAttackBy40Percent);
+                    // (その戦闘で自分のHPが0になっても効果は発動)
+                }
+            }
+        }
+    )
+}
+
 // 覇天・承
 {
     let skillId = Special.SublimeHeaven2;

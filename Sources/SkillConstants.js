@@ -2049,6 +2049,7 @@ const Special = {
     LightIsTime: 2668, // 光は時
     DragonBlast: 2558, // 神竜破
     HolyKnightAura: 1702, // グランベルの聖騎士
+    HolyKnight2: 2865, // グランベルの…・承
     ChivalricAura: 2527, // グランベルの騎士道
 
     SublimeHeaven: 1752, // 覇天
