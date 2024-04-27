@@ -2656,10 +2656,10 @@ class Unit extends BattleMapElement {
     }
 
     applyReservedDebuffs() {
-        this.atkDebuff = this.reservedAtkDebuff;
-        this.spdDebuff = this.reservedSpdDebuff;
-        this.defDebuff = this.reservedDefDebuff;
-        this.resDebuff = this.reservedResDebuff;
+        this.applyAtkDebuff(this.reservedAtkDebuff);
+        this.applySpdDebuff(this.reservedSpdDebuff);
+        this.applyDefDebuff(this.reservedDefDebuff);
+        this.applyResDebuff(this.reservedResDebuff);
 
         this.resetReservedDebuffs();
     }

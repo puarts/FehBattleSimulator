@@ -2958,8 +2958,8 @@ class BattleMap {
             let currentHpWidth = Math.round(unit.hpPercentage / 100.0 * maxHpWidth);
             cell.innerText +=
                 `<span style='font-size:10px;color:${hpColor};position:absolute;bottom:0;left:0;${shadowCss};pointer-events: none'>${unit.hp}</span>` +
-                `<span style='width:${maxHpWidth}px;height:2;background-color:#000000;border:1px solid #000000;position:absolute;bottom:0;left:12px;pointer-events: none'></span>` +
-                `<span style='width:${currentHpWidth}px;height:2;background-color:${unitColor};border:1px solid #000000;position:absolute;bottom:0;left:12px;pointer-events: none'></span>`;
+                `<span style='width:${maxHpWidth}px;height:2px;background-color:#000000;border:1px solid #000000;position:absolute;bottom:0;left:12px;pointer-events: none'></span>` +
+                `<span style='width:${currentHpWidth}px;height:2px;background-color:${unitColor};border:1px solid #000000;position:absolute;bottom:0;left:12px;pointer-events: none'></span>`;
             if (unit.maxSpecialCount > 0) {
                 let specialCount = unit.specialCount;
                 if (unit.specialCount === 0) {

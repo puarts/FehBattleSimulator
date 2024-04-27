@@ -4164,7 +4164,7 @@ class BattleSimulatorBase {
             this.writeLog(this.beginningOfTurnSkillHandler.log);
             this.beginningOfTurnSkillHandler.clearLog();
         }
-        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(false);
         this.writeLog(this.beginningOfTurnSkillHandler.log);
         this.beginningOfTurnSkillHandler.clearLog();
     }

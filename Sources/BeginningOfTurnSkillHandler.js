@@ -99,15 +99,15 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
-    applyReservedStateForAllUnitsOnMap() {
+    applyReservedStateForAllUnitsOnMap(isBeginningOfTurn = true) {
         for (let unit of this._unitManager.enumerateAllUnitsOnMap()) {
             if (unit.isDead) {
                 continue;
             }
-
-            this.applyReservedState(unit);
+            this.applyReservedState(unit, isBeginningOfTurn);
         }
     }
+
     /**
      * @param  {Boolean} leavesOneHp
      */
@@ -116,12 +116,13 @@ class BeginningOfTurnSkillHandler {
             if (unit.isDead) {
                 continue;
             }
-
             unit.applyReservedHp(leavesOneHp);
         }
     }
+
     /**
-     * @param  {Unit} unit
+     * @param {Unit} unit
+     * @param {boolean} isBeginningOfTurn
      */
     applyReservedState(unit, isBeginningOfTurn = true) {
         if (isBeginningOfTurn &&
@@ -3436,6 +3437,7 @@ class BeginningOfTurnSkillHandler {
     __isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         return this._unitManager.isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator);
     }
+
     __isNextToOtherUnits(unit) {
         for (let otherUnit of this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
             if (!unit.isNextTo(otherUnit)) { continue; }

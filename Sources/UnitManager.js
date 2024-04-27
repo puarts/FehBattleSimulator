@@ -32,7 +32,7 @@ class UnitManager {
      * @returns {Generator<Unit>}
      */
     enumerateUnitsInSpecifiedGroup(groupId) {
-        return this.enumerateUnitsWithPredicator(x => x.groupId == groupId);
+        return this.enumerateUnitsWithPredicator(x => x.groupId === groupId);
     }
     /**
      * @param  {number} groupId
@@ -92,7 +92,7 @@ class UnitManager {
 
     enumerateUnitsWithinSpecifiedSpaces(posX, posY, unitGroupId, spaces) {
         return this.enumerateUnitsWithPredicator(unit => {
-            if (unit.groupId != unitGroupId || !unit.isOnMap) {
+            if (unit.groupId !== unitGroupId || !unit.isOnMap) {
                 return false;
             }
             let dist = Math.abs(unit.posX - posX) + Math.abs(unit.posY - posY);
@@ -135,61 +135,30 @@ class UnitManager {
     }
 
     /**
-     * @param  {UnitGroupType} unitGroup
-     * @param  {Function} getStatusFunc
-     * @param  {Unit} exceptUnit=null
+     * @param {number} unitGroup
+     * @param {(u: Unit) => number} getStatusFunc
+     * @param {(u: Unit) => boolean} exceptUnitFunc
      */
-    findMaxStatusUnits(unitGroup, getStatusFunc, exceptUnitFunc = null) {
-        let maxUnits = [];
-        let maxValue = -1;
-        for (let unit of this.enumerateUnitsInSpecifiedGroup(unitGroup)) {
-            if (exceptUnitFunc != null && exceptUnitFunc(unit)) {
-                continue;
-            }
-            if (!unit.isOnMap) {
-                continue;
-            }
-            let value = getStatusFunc(unit);
-            if (value > maxValue) {
-                maxValue = value;
-                maxUnits = [unit];
-            }
-            else if (value == maxValue) {
-                maxUnits.push(unit);
-            }
-        }
-        return maxUnits;
+    findMaxStatusUnits(unitGroup, getStatusFunc, exceptUnitFunc = _ => false) {
+        let filterFunc = u => u.isOnMap && (exceptUnitFunc === null || !exceptUnitFunc(u))
+        let targetUnits = GeneratorUtil.filter(this.enumerateUnitsInSpecifiedGroup(unitGroup), filterFunc);
+        return IterUtil.maxElements(targetUnits, u => getStatusFunc(u));
     }
 
+    /**
+     * @param {number} unitGroup
+     * @param {(u: Unit) => number} getStatusFunc
+     * @param {(u: Unit) => boolean} exceptUnitFunc
+     */
     findMinStatusUnits(unitGroup, getStatusFunc, exceptUnitFunc = null) {
-        let minUnits = [];
-        let minValue = 100000;
-        for (let unit of this.enumerateUnitsInSpecifiedGroup(unitGroup)) {
-            if (exceptUnitFunc != null && exceptUnitFunc(unit)) {
-                continue;
-            }
-
-            if (!unit.isOnMap) {
-                continue;
-            }
-            let value = getStatusFunc(unit);
-            if (value < minValue) {
-                minValue = value;
-                minUnits = [unit];
-            }
-            else if (value == minValue) {
-                minUnits.push(unit);
-            }
-        }
-        return minUnits;
+        return this.findMaxStatusUnits(unitGroup, u => -getStatusFunc(u), exceptUnitFunc);
     }
 
     isThereAllyInSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
-            if (predicator != null && !predicator(unit)) {
-                continue;
+            if (predicator === null || predicator?.(unit)) {
+                return true;
             }
-            return true;
         }
         return false;
     }
@@ -202,23 +171,24 @@ class UnitManager {
         }
         return false;
     }
+
     /**
-     * @param  {Unit} unit
-     * @param  {function(Unit): boolean} exceptCondition
+     * @param {Unit} unit
+     * @param {function(Unit): boolean} exceptCondition
      */
     isNextToAlliesExcept(unit, exceptCondition) {
         for (let otherUnit of this.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
             if (!otherUnit.isOnMap) { continue; }
-            if (!exceptCondition(otherUnit)
-                && unit.isNextTo(otherUnit)
-            ) {
+            if (!exceptCondition(otherUnit) &&
+                unit.isNextTo(otherUnit)) {
                 return true;
             }
         }
         return false;
     }
+
     /**
-     * @param  {Unit} skillOwnerUnit
+     * @param {Unit} skillOwnerUnit
      */
     isNextToOtherUnitsExceptDragonAndBeast(skillOwnerUnit) {
         return this.isNextToAlliesExcept(skillOwnerUnit,
@@ -244,12 +214,8 @@ class UnitManager {
     countAlliesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         let count = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, false)) {
-            if (predicator) {
-                if (predicator(unit)) {
-                    ++count;
-                }
-            } else {
-                ++count;
+            if (predicator === null || predicator(unit)) {
+                count++;
             }
         }
         return count;
@@ -283,26 +249,18 @@ class UnitManager {
     findNearestEnemies(targetUnit, distLimit = 100) {
         return this.__findNearestUnits(targetUnit, this.enumerateUnitsInDifferentGroupOnMap(targetUnit), distLimit);
     }
+
     findNearestAllies(targetUnit, distLimit = 100) {
         return this.__findNearestUnits(targetUnit, this.enumerateUnitsInTheSameGroupOnMap(targetUnit), distLimit);
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {Generator<Unit>|Unit[]|Iterable<Unit>} candidateUnits
+     * @param {number} distLimit
+     * @returns {Unit[]}
+     */
     __findNearestUnits(targetUnit, candidateUnits, distLimit) {
-        let minDist = 1000;
-        let minUnits = [];
-        for (let unit of candidateUnits) {
-            let dist = calcDistance(unit.posX, unit.posY, targetUnit.posX, targetUnit.posY);
-            if (dist > distLimit) {
-                continue;
-            }
-            if (dist < minDist) {
-                minUnits = [unit];
-                minDist = dist;
-            } else if (dist == minDist) {
-                minUnits.push(unit);
-            }
-        }
-        return minUnits;
+        return IterUtil.minElements(candidateUnits, u => targetUnit.distance(u));
     }
-
 }

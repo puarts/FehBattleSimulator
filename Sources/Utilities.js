@@ -1263,6 +1263,18 @@ class GeneratorUtil {
         }
         return false;
     }
+
+    /**
+     * @template T
+     * @param {Generator<T>} generator
+     * @param {(i: T) => any} func
+     * @returns {void}
+     */
+    static forEach(generator, func) {
+        for (const value of generator) {
+            func(value);
+        }
+    }
 }
 
 class MathUtil {
