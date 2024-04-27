@@ -1620,7 +1620,7 @@
                                 <span v-if="value.groupId == UnitGroupType.Ally">
                                     <label class="normal" >支援: </label>
                                     <select2 :options="g_app.vm.heroOptions" v-model="value.partnerHeroIndex" class="hero"
-                                        @input="g_app.updateAllUnitSpur()">
+                                        @input="g_app.updateAllUnitSpur();g_app.updatePartner(value)">
                                     </select2>
                                     <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.partnerHeroIndex}})</span>
 

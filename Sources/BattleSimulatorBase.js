@@ -3887,14 +3887,19 @@ class BattleSimulatorBase {
             }
         }
     }
+
+    /**
+     * @returns {Generator<Unit>}
+     */
     * enumerateAllyUnits() {
         for (let unit of this.enumerateUnitsInSpecifiedGroup(UnitGroupType.Ally)) {
             yield unit;
         }
     }
+
     /**
      * @param  {number} groupId
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateUnitsInSpecifiedGroup(groupId) {
         return g_appData.enumerateUnitsInSpecifiedGroup(groupId);
@@ -4067,12 +4072,38 @@ class BattleSimulatorBase {
     updateAllUnitSpur(calcPotentialDamage = false) {
         this.damageCalc.updateAllUnitSpur(calcPotentialDamage);
     }
+
     updateSpurForSpecifiedGroupUnits(groupId, calcPotentialDamage = false) {
         for (let unit of this.enumerateUnitsInSpecifiedGroup(groupId)) {
             if (!unit.isOnMap) {
                 continue;
             }
             this.damageCalc.updateUnitSpur(unit, calcPotentialDamage);
+        }
+    }
+
+    /**
+     * 引数以外のユニットの支援をアップデートする
+     * @param {Unit} targetUnit
+     */
+    updatePartner(targetUnit) {
+        let allUnits = this.enumerateAllyUnits();
+        for (let unit of allUnits) {
+            if (unit.groupId !== targetUnit.groupId) {
+                continue;
+            }
+            if (unit.heroIndex === targetUnit.heroIndex) {
+                // 他のインデックスが等しいユニットにも支援を設定する
+                unit.partnerHeroIndex = targetUnit.partnerHeroIndex;
+            } else if (unit.heroIndex === targetUnit.partnerHeroIndex) {
+                // 自分の支援相手に自分を設定する
+                unit.partnerHeroIndex = targetUnit.heroIndex;
+            } else {
+                if (unit.partnerHeroIndex === targetUnit.partnerHeroIndex) {
+                    // 他のユニットが同じユニットを支援相手にしていた場合に支援を外す
+                    unit.partnerHeroIndex = -1;
+                }
+            }
         }
     }
 
