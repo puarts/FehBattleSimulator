@@ -32,7 +32,7 @@ class UnitManager {
      * @returns {Generator<Unit>}
      */
     enumerateUnitsInSpecifiedGroup(groupId) {
-        return this.enumerateUnitsWithPredicator(x => x.groupId == groupId);
+        return this.enumerateUnitsWithPredicator(x => x.groupId === groupId);
     }
     /**
      * @param  {number} groupId
@@ -92,7 +92,7 @@ class UnitManager {
 
     enumerateUnitsWithinSpecifiedSpaces(posX, posY, unitGroupId, spaces) {
         return this.enumerateUnitsWithPredicator(unit => {
-            if (unit.groupId != unitGroupId || !unit.isOnMap) {
+            if (unit.groupId !== unitGroupId || !unit.isOnMap) {
                 return false;
             }
             let dist = Math.abs(unit.posX - posX) + Math.abs(unit.posY - posY);
