@@ -2192,23 +2192,16 @@
                 // <錬成効果>
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
-                    let applyFunc = index => {
-                        let getStatusFunc = unit => unit.statusEvalUnit.getStatusesInPrecombat()[index];
+                    for (let i = 0; i < 4; i++) {
+                        let debuffs = [0, 0, 0, 0];
+                        debuffs[i] = -7;
+                        let getStatusFunc = unit => unit.statusEvalUnit.getStatusesInPrecombat()[i];
                         let maxStatusUnits = this.__findMaxStatusUnits(skillOwner.enemyGroupId, getStatusFunc);
                         for (let maxStatusUnit of maxStatusUnits) {
-                            let zeros = [0, 0, 0, 0];
-                            zeros[index] = -7;
-                            /** @type {Generator<Unit>} */
-                            let units =
-                                this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(maxStatusUnit, 2, true);
-                            for (let unit of units) {
-                                unit.reserveToApplyDebuffs(...zeros);
-                            }
+                            let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(maxStatusUnit, 2, true);
+                            GeneratorUtil.forEach(enemies, u => u.reserveToApplyDebuffs(...debuffs));
                             maxStatusUnit.reserveToAddStatusEffect(StatusEffectType.Sabotage);
                         }
-                    }
-                    for (let i = 0; i < 4; i++) {
-                        applyFunc(i);
                     }
                 }
             }
