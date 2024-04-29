@@ -440,7 +440,6 @@ function isDefenseSpecial(special) {
 
 const NORMAL_ATTACK_SPECIAL_SET = new Set([
     Special.DragonBlast,
-    Special.Flare,
     Special.Moonbow,
     Special.Luna,
     Special.Aether,

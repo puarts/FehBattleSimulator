@@ -8180,16 +8180,22 @@
 // 陽光
 {
     let skillId = Special.Flare;
-    applySkillEffectsPerCombatFuncMap.set(skillId,
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
+
+    applySkillEffectsPerAttackFuncMap.set(skillId,
         function (targetUnit, enemyUnit, context) {
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}のHP割合: ${targetUnit.restHpPercentage}`);
+            let res = enemyUnit.getResInCombat(targetUnit);
+            let ratio = 0;
             if (targetUnit.restHpPercentage >= 70) {
-                let res = enemyUnit.getResInCombat(targetUnit);
-                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(res * 0.6));
+                ratio = 0.6;
             } else {
-                let res = enemyUnit.getResInCombat(targetUnit);
-                targetUnit.battleContext.addSpecialAddDamage(Math.trunc(res * 0.4));
+                ratio = 0.4;
                 targetUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
             }
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}によるダメージ割合: ${ratio}, 魔防: ${res}`);
+            targetUnit.battleContext.addSpecialAddDamagePerAttack(Math.trunc(res * ratio));
         }
     );
 }
