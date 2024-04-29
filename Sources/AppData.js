@@ -1939,7 +1939,7 @@ class AppData extends UnitManager {
 
     findUnitById(id) {
         for (let unit of this.enumerateUnits()) {
-            if (unit.id == id) {
+            if (unit.id === id) {
                 return unit;
             }
         }
@@ -1994,7 +1994,7 @@ class AppData extends UnitManager {
     }
 
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     * enumerateUnitsInSpecifiedGroup(groupId) {
         switch (groupId) {
