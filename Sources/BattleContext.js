@@ -174,6 +174,9 @@ class BattleContext {
         // 最初の攻撃前の奥義発動カウント増加値
         this.specialCountIncreaseBeforeFirstAttack = 0;
 
+        // 最初の追撃前の奥義発動カウント増加値
+        this.specialCountIncreaseBeforeFollowupAttack = 0;
+
         // 敵の最初の攻撃前の奥義発動カウント減少値
         this.specialCountReductionBeforeFirstAttackByEnemy = 0;
 
@@ -644,7 +647,7 @@ class BattleContext {
     }
 
     getSpecialCountReductionBeforeFollowupAttack() {
-        let increase = 0;
+        let increase = this.specialCountIncreaseBeforeFollowupAttack;
         let reduction = this.specialCountReductionBeforeFollowupAttack;
         return increase - reduction;
     }

@@ -1,5 +1,62 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 邪竜の後継者 
+{
+    let skillId = PassiveC.FellSuccessor;
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 周囲2マスの味方は、
+            if (targetUnit.distance(allyUnit) <= 2) {
+                // 戦闘中、攻撃、守備、魔防＋4
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 周囲2マスの味方は、
+            if (targetUnit.distance(allyUnit) <= 2) {
+                // 戦闘開始時、スキル所持者の魔防が敵より5以上高い時、かつ、敵が攻撃時に発動する奥義を装備している時、戦闘中、
+                if (allyUnit.isHigherOrEqualResInPrecombat(enemyUnit, 5) &&
+                    enemyUnit.hasNormalAttackSpecial()) {
+                    // 敵の最初の「攻撃前」に敵の奥義発動カウント＋1、
+                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                    // 敵が射程2であれば、さらに
+                    if (enemyUnit.isRangedWeaponType()) {
+                        // 敵の最初の「追撃前」に敵の奥義発動カウント＋1（いずれも、奥義発動カウントの最大値は超えない）
+                        enemyUnit.battleContext.specialCountIncreaseBeforeFollowupAttack += 1;
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、敵の攻撃、魔防-5、かつ
+                enemyUnit.addAtkResSpurs(-5);
+                // 魔防が敵より5以上高い時、かつ敵が攻撃時に発動する奥義を装備している時、
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        if (targetUnit.isHigherOrEqualResInCombat(enemyUnit, 5) &&
+                            enemyUnit.hasNormalAttackSpecial()) {
+                            // 敵の最初の「攻撃前」に敵の奥義発動カウント＋1、
+                            enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                            // 敵が射程2であれば、さらに
+                            if (enemyUnit.isRangedWeaponType()) {
+                                // 敵の最初の「追撃前」に敵の奥義発動カウント＋1（いずれも、奥義発動カウントの最大値は超えない）
+                                enemyUnit.battleContext.specialCountIncreaseBeforeFollowupAttack += 1;
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // 明鏡止水
 {
     let skillId = PassiveA.CrystallineWater;
