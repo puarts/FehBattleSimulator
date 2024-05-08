@@ -250,6 +250,8 @@ __applySkillEffectForUnitAfterCombatStatusFixed() {
 }
 
 2回攻撃
+targetUnit.battleContext.setAttacksTwice();
+もしくは
 targetUnit.battleContext.setAttackCountFuncs.push(
     (targetUnit, enemyUnit) => {
         // 攻撃時
@@ -971,6 +973,8 @@ __applyPrecombatDamageReductionRatio(defUnit, atkUnit) {
     }
 }
 戦闘中
+// 30%軽減
+targetUnit.battleContext.setDamageReductionRatio(0.3);
 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
     // 魔防参照

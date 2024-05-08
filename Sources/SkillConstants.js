@@ -1819,6 +1819,11 @@ const Weapon = {
     LucrativeBowPlus: 2860, // 有利状態の弓+
 
     SupremeThoekk: 2862, // 神杖セック
+
+    //「新英雄＆魔器ルミエル」
+    // https://www.youtube.com/watch?v=a03AgGZIDkI&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=gy2K4_7xo8s&ab_channel=NintendoMobile
+    FellChildsMight: 2874, // 邪竜ノ娘の力
 };
 
 const Support = {

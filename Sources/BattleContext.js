@@ -668,4 +668,21 @@ class BattleContext {
     canAttackInCombat() {
         return this.initiatesCombat || this.canCounterattack;
     }
+
+    setDamageReductionRatio(ratio) {
+        this.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+            return ratio;
+        });
+    }
+
+    setAttacksTwice() {
+        this.setAttackCountFuncs.push(
+            (targetUnit, enemyUnit) => {
+                // 攻撃時
+                targetUnit.battleContext.attackCount = 2;
+                // 攻撃を受けた時
+                targetUnit.battleContext.counterattackCount = 2;
+            }
+        );
+    }
 }

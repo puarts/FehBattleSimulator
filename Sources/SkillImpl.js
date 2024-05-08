@@ -1,5 +1,48 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 邪竜ノ娘の力
+{
+    let skillId = Weapon.FellChildsMight;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 周囲2マス以内の味方は、
+            if (targetUnit.distance(allyUnit) <= 2) {
+                // 戦闘中、攻撃を受けた時のダメージを30%軽減（範囲奥義を除く）
+                targetUnit.battleContext.setDamageReductionRatio(0.3);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、敵が射程2の時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.isRangedWeaponType()) {
+                // 戦闘中、敵の攻撃、魔防一6、
+                enemyUnit.addAtkResSpurs(-6);
+                // さらに、敵の攻撃、魔防が、戦闘開始時の自分の魔防の20%だけ減少、
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                enemyUnit.addAtkResSpurs(-amount);
+                // 攻撃を受けた時のダメージを30%軽減（範囲奥義を除く）、
+                targetUnit.battleContext.setDamageReductionRatio(0.3);
+                // 自身の奥義発動カウント変動量＋1（同系統効果複数時、最大値を適用）、
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // かつ戦闘中、魔防が敵より10以上高い時、
+                        if (targetUnit.isHigherOrEqualResInCombat(enemyUnit, 10)) {
+                            // 2回攻撃
+                            targetUnit.battleContext.setAttacksTwice();
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+// グランベルの…・承
 {
     let skillId = Special.HolyKnight2;
 
