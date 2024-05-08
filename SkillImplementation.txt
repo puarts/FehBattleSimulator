@@ -818,6 +818,8 @@ targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
 );
 
 自身の奥義発動カウント変動量-を無効
+targetUnit.battleContext.neutralizesReducesCooldownCount();
+もしくは
 targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         enemyUnit.battleContext.reducesCooldownCount = false;

@@ -1,5 +1,66 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 魂なき鴉爪の書
+{
+    let skillId = Weapon.DeadCrowTome;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 奥義発動カウントー1、
+                skillOwner.reserveToReduceSpecialCount(1);
+                // かつターン開始時、自身のHPが100%であれば、
+                if (skillOwner.restHpPercentageAtBeginningOfTurn >= 100) {
+                    // さらに、奥義発動カウントー1
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+                // ターン開始時、自身のHPが25%以上なら、自分と周囲2マス以内の味方の
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let targetUnit of targetUnits) {
+                    // 攻撃、速さ＋6（1ターン）、
+                    targetUnit.reserveToApplyBuffs(6, 6, 0, 0);
+                    // 【攻め立て】を付与
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.Desperation);
+                }
+            }
+        }
+    );
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            let isHpCondSatisfied =
+                (isPrecombat && atkUnit.restHpPercentageAtBeginningOfTurn >= 25) ||
+                (!isPrecombat && atkUnit.battleContext.restHpPercentage >= 25);
+            if (isHpCondSatisfied) {
+                // ダメージ＋速さの20%（戦闘前奥義も含む）、
+                let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ＋6、
+                targetUnit.addAtkSpdSpurs(6);
+                // さらに、攻撃、速さが、戦闘開始時の速さの20%だけ増加、
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addAtkSpdSpurs(amount);
+                // 自分の追撃不可を無効、
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                // かつ戦闘開始時、自身のHPが100%であれば、
+                if (targetUnit.isFullHp) {
+                    // 戦闘中、自身の奥義発動カウント変動量ーを無効
+                    targetUnit.battleContext.neutralizesReducesCooldownCount();
+                }
+            }
+        }
+    );
+}
+
 // 邪竜の後継者 
 {
     let skillId = PassiveC.FellSuccessor;

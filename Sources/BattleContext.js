@@ -694,4 +694,12 @@ class BattleContext {
             }
         );
     }
+
+    neutralizesReducesCooldownCount() {
+        this.applyInvalidationSkillEffectFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                enemyUnit.battleContext.reducesCooldownCount = false;
+            }
+        );
+    }
 }
