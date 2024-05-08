@@ -1,5 +1,22 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 限界死線
+{
+    let skillId = PassiveA.VergeOfDeath;
+    // 攻撃、魔防+8 守備-8
+    let func = function (skillOwner) {
+        // 自軍ターン開始時、および、敵軍ターン開始時、
+        // 自分に、このとき付与される
+        // 攻撃、速さの弱化、
+        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0] |= true;
+        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[1] |= true;
+        // 【パニック】を無効化
+        skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
+    };
+    applySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, func);
+}
+
 // 魂なき鴉爪の書
 {
     let skillId = Weapon.DeadCrowTome;

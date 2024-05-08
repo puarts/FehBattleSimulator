@@ -2438,6 +2438,7 @@ const PassiveA = {
     AtkSpdWild: 2712, // 攻撃速さの野生
 
     CrystallineWater: 2875, // 明鏡止水
+    VergeOfDeath: 2873, // 限界死線
 };
 
 const PassiveB = {
