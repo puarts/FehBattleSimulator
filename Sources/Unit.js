@@ -2632,8 +2632,7 @@ class Unit extends BattleMapElement {
     initReservedStatusEffects() {
         this.reservedStatusEffects = [];
         // 現在付与されているステータス(this.statusEffects)を保存する（シーフなどによる解除対象と対象外の付与予約を区別するため）
-        this.currentStatusEffectSet = new Set();
-        this.statusEffects.forEach(e => this.currentStatusEffectSet.add(e));
+        this.currentStatusEffectSet = new Set(this.statusEffects);
     }
 
     initReservedDebuffs() {
@@ -2669,6 +2668,10 @@ class Unit extends BattleMapElement {
         this.reservedSpdDebuff = 0;
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
+    }
+
+    resetReservedNegativeStatusEffects() {
+        this.reservedStatusEffects = this.reservedStatusEffects.filter(e => isPositiveStatusEffect(e));
     }
 
     applyReservedStatusEffects() {

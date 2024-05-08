@@ -1,5 +1,22 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 明鏡止水
+{
+    let skillId = PassiveA.CrystallineWater;
+    // 攻撃、魔防+8 守備-8
+    let func = function (skillOwner) {
+        // 自軍ターン開始時、および、敵軍ターン開始時、
+        // 自分に、このとき付与される
+        // 攻撃、魔防の弱化、
+        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0] |= true;
+        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3] |= true;
+        // 【パニック】を無効化
+        skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
+    };
+    applySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, func);
+}
+
 // 邪竜ノ娘の力
 {
     let skillId = Weapon.FellChildsMight;

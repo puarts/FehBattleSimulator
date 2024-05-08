@@ -2435,6 +2435,8 @@ const PassiveA = {
 
     // 野生
     AtkSpdWild: 2712, // 攻撃速さの野生
+
+    CrystallineWater: 2875, // 明鏡止水
 };
 
 const PassiveB = {

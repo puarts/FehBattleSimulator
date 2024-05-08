@@ -1577,6 +1577,14 @@ enemy.reservedStatusesToDelete = [true, true, true, true];
 // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
 enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
 
+[ターン開始時スキル無効]
+このとき付与される【不利な状態異常】を無効化
+skillOwner.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn = true;
+自軍ターン開始時、および、敵軍ターン開始時、自分に、このとき付与される攻撃、魔防の弱化、【パニック】を無効化
+skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
+skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0] |= true;
+skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3] |= true;
+
 天脈を予約
 tile.reserveDivineVein(DivineVeinType.Green, unit.groupId);
 
