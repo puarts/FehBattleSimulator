@@ -1825,6 +1825,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=gy2K4_7xo8s&ab_channel=NintendoMobile
     FellChildsMight: 2874, // 邪竜ノ娘の力
     DeadCrowTome: 2872, // 魂なき鴉爪の書
+    Ereshkigal: 2870, // エレシュキガル
 };
 
 const Support = {

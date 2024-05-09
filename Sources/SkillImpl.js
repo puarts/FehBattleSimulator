@@ -1,5 +1,53 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// エレシュキガル
+{
+    let skillId = Weapon.Ereshkigal;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.battleContext.restHpPercentage >= 25) {
+                /** @type {Generator<Unit>} */
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let targetUnit of targetUnits) {
+                    // 自分と周囲2マス以内の味方の攻撃＋6、
+                    targetUnit.reserveToApplyAtkBuff(6);
+                    // 【エーギル奪取】を付与（1ターン）
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.EssenceDrain);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、敵の攻撃、魔防一6、
+                enemyUnit.addAtkResSpurs(-6);
+                // さらに、敵の攻撃、魔防が、戦闘開始時の自分の魔防の20%だけ減少
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                enemyUnit.addAtkResSpurs(-amount);
+                // 戦闘開始時、自身のHPが25%以上なら、
+                let positiveLength = targetUnit.getPositiveStatusEffects().length;
+                // 与えるダメージ＋自身の【有利な状態】の数x5（最大25、範囲奥義を除く、強化は除く）、
+                targetUnit.battleContext.additionalDamage += MathUtil.ensureMax(positiveLength * 5, 25);
+                // 受けるダメージー自身の【有利な状態】の数x3（最大15、範囲奥義を除く、強化は除く）、
+                targetUnit.battleContext.damageReductionValue += MathUtil.ensureMax(positiveLength * 3, 15);
+                // かつ自分が攻撃時に発動する奥義を装備している時、
+                if (targetUnit.hasNormalAttackSpecial()) {
+                    // 戦闘中、自分の最初の攻撃前に奥義発動カウントー自身の【有利な状態】の数（最大3、強化は除く）
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack +=
+                        MathUtil.ensureMax(positiveLength, 3);
+                }
+            }
+        }
+    );
+}
+
 // 限界死線
 {
     let skillId = PassiveA.VergeOfDeath;
@@ -5399,32 +5447,11 @@
                 }
             }
             this.writeDebugLog(`${skillOwner.nameWithGroup}のシーフの対象キャラ: ${enemies.map(u => u.nameWithGroup)}(${enemies.length})`);
+            let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            let logger = this;
             // ステータス付与予約
-            let statusSet = new Set();
-            enemies.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => {
-                this.writeDebugLog(`シーフにより${enemy.nameWithGroup}から${getStatusEffectName(e)}を解除`);
-                statusSet.add(e);
-            }));
-            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                // ステータス
-                for (let statusEffect of statusSet) {
-                    unit.reserveToAddStatusEffect(statusEffect);
-                }
-                // 強化
-                enemies.forEach(enemy => {
-                    let buffs = enemy.getBuffs(false);
-                    unit.reserveToApplyBuffs(...buffs);
-                    if (buffs.some(i => i > 0)) {
-                        this.writeDebugLog(`シーフにより${enemy.nameWithGroup} → ${unit.nameWithGroup}へ強化${buffs}を付与`);
-                    }
-                });
-            }
-            // ステータス解除予約
-            for (let enemy of enemies) {
-                // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
-                enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
-                enemy.reservedStatusesToDelete = [true, true, true, true];
-            }
+            this.writeDebugLog("シーフの効果を発動");
+            stealBonusEffects(enemies, targetUnits, logger);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,

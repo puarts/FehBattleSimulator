@@ -1575,6 +1575,10 @@ unit.reserveToClearNegativeStatusEffects();
 Main.js
 unit.reserveToAddStatusEffect(StatusEffectType.XXX);
 
+[シーフ]
+味方に、 敵が受けている 【有利な状態】を付与(1ターン)し、敵の 【有利な状態】を解除 (付与、解除ともに、同じタイミングに付与された 有利な状態は含まない)
+stealBonusEffects(enemies, targetUnits, logger);
+
 ステータス解除予約
 // バフ解除予約
 enemy.reservedStatusesToDelete = [true, true, true, true];

@@ -19,7 +19,13 @@ class PostCombatSkillHander {
     writeDebugLogLine(log) {
         this._logger.writeDebugLog(log);
     }
+    writeDebugLog(log) {
+        this._logger.writeDebugLog(log);
+    }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withTargetUnit);
     }
@@ -78,6 +84,7 @@ class PostCombatSkillHander {
         // 戦闘後のダメージ、回復の合計を反映させないといけないので予約HPとして計算
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.initReservedHp();
+            unit.initReservedStatusEffects();
         }
 
         // 最初の戦闘のみで発動する状態効果は、状態が付与されていない戦闘も最初の戦闘にカウントするので
@@ -105,15 +112,8 @@ class PostCombatSkillHander {
             this.__applySkillEffectAfterCombatForUnit(defUnit, atkUnit);
         }
 
-        if (result.atkUnit_actualTotalAttackCount > 0) {
-            this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(atkUnit, defUnit);
-        }
-        this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(atkUnit, defUnit, result.atkUnit_actualTotalAttackCount);
-
-        if (result.defUnit_actualTotalAttackCount > 0) {
-            this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit);
-        }
-        this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit, result.defUnit_actualTotalAttackCount);
+        // 死んでも発動するスキル効果
+        this.#applySkillEffectsAfterCombatNeverthelessDeadForUnits(atkUnit, defUnit, result);
 
         // BattleContextに記録された回復・ダメージの予約
         for (let unit of this.enumerateAllUnitsOnMap()) {
@@ -137,6 +137,22 @@ class PostCombatSkillHander {
             applyHealInvalidation(defUnit, atkUnit);
         }
 
+        this.#applyReservedEffects();
+    }
+
+    #applySkillEffectsAfterCombatNeverthelessDeadForUnits(atkUnit, defUnit, result) {
+        if (result.atkUnit_actualTotalAttackCount > 0) {
+            this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(atkUnit, defUnit);
+        }
+        this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(atkUnit, defUnit, result.atkUnit_actualTotalAttackCount);
+
+        if (result.defUnit_actualTotalAttackCount > 0) {
+            this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit);
+        }
+        this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit, result.defUnit_actualTotalAttackCount);
+    }
+
+    #applyReservedEffects() {
         // 奥義カウントやHP変動の加減値をここで確定
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.modifySpecialCount();
@@ -145,6 +161,7 @@ class PostCombatSkillHander {
                 if (damage !== 0 || heal !== 0) {
                     this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}`);
                 }
+                this.#applyReservedState(unit);
             }
         }
 
@@ -154,6 +171,12 @@ class PostCombatSkillHander {
         g_appData.map.applyReservedDivineVein();
     }
 
+    #applyReservedState(unit) {
+        unit.applyReservedBuffs();
+        unit.applyReservedDebuffs();
+        unit.applyReservedStatusEffects();
+        unit.applyReservedSpecialCount();
+    }
 
     __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
@@ -908,6 +931,7 @@ class PostCombatSkillHander {
     }
 
     __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {
+        this.#applyEssenceDrain(attackUnit, attackTargetUnit);
         for (let func of attackUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs) {
             func(attackUnit, attackTargetUnit);
         }
@@ -917,6 +941,37 @@ class PostCombatSkillHander {
             this.#applyAnAttackSkillEffectAfterCombatNeverthelessDeadForUnit(skillId, attackUnit, attackTargetUnit);
         }
         this.#applyDaggerSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit);
+    }
+
+    /**
+     * @param {Unit} attackUnit
+     * @param {Unit} attackTargetUnit
+     */
+    #applyEssenceDrain(attackUnit, attackTargetUnit) {
+        if (!attackUnit.hasStatusEffect(StatusEffectType.EssenceDrain)) {
+            return;
+        }
+        // 【エーギル奪取】
+        // 戦闘中に攻撃していれば、
+        // 戦闘後に自分と【エーギル奪取】が付与されている味方に、
+        // 戦闘相手とその周囲2マス以内の敵が受けている【有利な状態】を付与（1ターン）し、
+        // 戦闘相手とその周囲2マス以内の敵の【有利な状態】を解除
+        // （付与、解除ともに、同じタイミングに付与された有利な状態は含まない）
+        let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
+        /** @type {Unit[]} */
+        let allyArray = Array.from(this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true));
+        let targetAllyArray = allyArray.filter(u => u.hasStatusEffect(StatusEffectType.EssenceDrain));
+        this.writeDebugLog("エーギル奪取の効果を発動");
+        stealBonusEffects(Array.from(enemies), targetAllyArray, this);
+        // 戦闘で敵を撃破していれば、
+        // 戦闘後に自分と【エーギル奪取】が付与されている味方は10回復
+        // (敵を撃破しているなら1回は攻撃しているはず)
+        // TODO: 攻撃しなくても敵を撃破できる手段ができた場合に以下の処理を修正する(1回は攻撃しているロジックの外に出す)
+        if (attackTargetUnit.isDead) {
+            for (let ally of targetAllyArray) {
+                ally.reserveHeal(10);
+            }
+        }
     }
 
     #applyDaggerSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit) {

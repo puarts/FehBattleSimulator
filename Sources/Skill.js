@@ -1378,6 +1378,41 @@ const STATUS_INDEX = {
     Res: 3,
 }
 
+// TODO: リファクタリングする(適切な場所に移動する。引数の型を確定する)
+/**
+ * @param {Generator<Unit>|Unit[]} enemies
+ * @param {Generator<Unit>|Unit[]} targetAllies
+ * @param logger
+ */
+function stealBonusEffects(enemies, targetAllies, logger = null) {
+    let statusSet = new Set();
+    let enemyArray = Array.from(enemies);
+    enemyArray.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => {
+        logger?.writeDebugLog(`${enemy.nameWithGroup}から${getStatusEffectName(e)}を解除`);
+        statusSet.add(e);
+    }));
+    for (let targetAlly of targetAllies) {
+        // ステータス
+        for (let statusEffect of statusSet) {
+            targetAlly.reserveToAddStatusEffect(statusEffect);
+        }
+        // 強化
+        enemyArray.forEach(enemy => {
+            let buffs = enemy.getBuffs(false);
+            targetAlly.reserveToApplyBuffs(...buffs);
+            if (buffs.some(i => i > 0)) {
+                logger?.writeDebugLog(`${enemy.nameWithGroup} → ${targetAlly.nameWithGroup}へ強化${buffs}を付与`);
+            }
+        });
+    }
+    // ステータス解除予約
+    for (let enemy of enemyArray) {
+        // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
+        enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
+        enemy.reservedStatusesToDelete = [true, true, true, true];
+    }
+}
+
 // TODO: ここから下の内容を別ファイルに分ける
 
 /**
