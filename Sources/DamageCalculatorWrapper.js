@@ -2427,7 +2427,7 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
                     (attackUnit, attackTargetUnit) => {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                            unit.takeDamage(7);
+                            unit.reserveTakeDamage(7);
                         }
                     }
                 );
@@ -2530,9 +2530,8 @@ class DamageCalculatorWrapper {
                         targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
                             (attackUnit, attackTargetUnit) => {
                                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(attackUnit)) {
-                                    // TODO: [公式バグ] attackUnit => attackTargetUnitに修正予定
                                     if (Math.abs(attackTargetUnit.posX - unit.posX) <= 1) {
-                                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                                        unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
                                     }
                                 }
                             }
@@ -2633,9 +2632,9 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
                     (targetUnit, enemyUnit) => {
-                        targetUnit.addStatusEffect(StatusEffectType.DeepStar);
+                        targetUnit.reserveToAddStatusEffect(StatusEffectType.DeepStar);
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
-                            unit.addStatusEffect(StatusEffectType.Gravity);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                         }
                     }
                 );

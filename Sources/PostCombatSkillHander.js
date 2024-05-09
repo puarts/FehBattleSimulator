@@ -183,7 +183,7 @@ class PostCombatSkillHander {
             switch (skillId) {
                 case Weapon.Simuberin:
                     if (!atkUnit.isWeaponRefined) {
-                        this.__applyHoneSkill(atkUnit, x => true, x => x.applyAtkBuff(4));
+                        this.__applyHoneSkill(atkUnit, x => true, x => x.reserveToApplyBuffs(4, 0, 0, 0));
                     }
                     break;
                 case Weapon.KuraineNoYumi:
@@ -191,8 +191,7 @@ class PostCombatSkillHander {
                 case Weapon.YamiNoBreath:
                 case Weapon.YamiNoBreathPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, false)) {
-                        unit.applyAtkDebuff(-5);
-                        unit.applySpdDebuff(-5);
+                        unit.reserveToApplyDebuffs(-5, -5, 0, 0);
                     }
                     break;
                 case Weapon.FirstBite:
@@ -202,8 +201,7 @@ class PostCombatSkillHander {
                 case Weapon.SeinaruBuke:
                 case Weapon.SeinaruBukePlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
-                        unit.applyDefBuff(2);
-                        unit.applyResBuff(2);
+                        unit.reserveToApplyBuffs(0, 0, 2, 2);
                     }
                     break;
                 case Weapon.NinjinNoYari:
@@ -214,7 +212,7 @@ class PostCombatSkillHander {
                 case Weapon.AoNoTamagoPlus:
                 case Weapon.MidoriNoTamago:
                 case Weapon.MidoriNoTamagoPlus:
-                    atkUnit.heal(4);
+                    atkUnit.reserveHeal(4);
                     break;
                 case Weapon.FalcionEchoes:
                     if (atkUnit.isWeaponSpecialRefined) {
@@ -249,8 +247,7 @@ class PostCombatSkillHander {
                 case Weapon.SnipersBow:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.reserveTakeDamage(7);
-                        unit.applyAtkDebuff(-7);
-                        unit.applySpdDebuff(-7);
+                        unit.reserveToApplyDebuffs(-7, -7, 0, 0);
                     }
                     break;
                 case PassiveC.SavageBlow1:
@@ -291,12 +288,11 @@ class PostCombatSkillHander {
             switch (skillId) {
                 case Weapon.KyupidNoYaPlus:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, false)) {
-                        unit.applyDefBuff(2);
-                        unit.applyResBuff(2);
+                        unit.reserveToApplyBuffs(0, 0, 2, 2);
                     }
                     break;
                 case Weapon.SpendthriftBowPlus:
-                    attackUnit.specialCount += 2;
+                    attackUnit.reserveToIncreaseSpecialCount(2);
                     break;
                 case Weapon.Rifia:
                     if (!attackUnit.isWeaponRefined) {
@@ -367,7 +363,7 @@ class PostCombatSkillHander {
                     if (!enemyUnit.isAlive) {
                         this.writeDebugLogLine(`${enemyUnit.passiveSInfo.name}発動、${targetUnit.getNameWithGroup()}のHP10回復、奥義カウント+1`);
                         targetUnit.reserveHeal(10);
-                        targetUnit.specialCount += 1;
+                        targetUnit.reserveToIncreaseSpecialCount(1);
                     }
                     break;
             }
@@ -391,16 +387,16 @@ class PostCombatSkillHander {
                     if (targetUnit.battleContext.restHpPercentage >= 25 &&
                         targetUnit.battleContext.passiveBSkillCondSatisfied) {
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
-                            unit.addStatusEffect(StatusEffectType.Gravity);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                         }
                     }
                     break;
                 case Weapon.LoneWolf:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         if (targetUnit.isSpecialCountMax) {
-                            targetUnit.reduceSpecialCount(2);
+                            targetUnit.reserveToReduceSpecialCount(2);
                         } else if (Number(targetUnit.specialCount) === Number(targetUnit.maxSpecialCount) - 1) {
-                            targetUnit.reduceSpecialCount(1);
+                            targetUnit.reserveToReduceSpecialCount(1);
                         }
                     }
                     break;
@@ -445,7 +441,7 @@ class PostCombatSkillHander {
                     break;
                 case PassiveC.TimesPulse4:
                     if (targetUnit.isSpecialCountMax) {
-                        targetUnit.reduceSpecialCount(1);
+                        targetUnit.reserveToReduceSpecialCount(1);
                     }
                     break;
                 case Weapon.MagetsuNoSaiki:
@@ -510,7 +506,7 @@ class PostCombatSkillHander {
                     break;
                 case Weapon.AscendingBlade:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        targetUnit.specialCount -= 1;
+                        targetUnit.reserveToReduceSpecialCount(1);
                     }
                     break;
                 case Weapon.PastelPoleaxe:
@@ -521,7 +517,7 @@ class PostCombatSkillHander {
                     }
                     break;
                 case PassiveB.FaithfulLoyalty:
-                    targetUnit.addStatusEffect(StatusEffectType.Vantage);
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.Vantage);
                     break;
                 case Weapon.GousouJikumunto:
                     if (targetUnit.isWeaponRefined) {
@@ -587,9 +583,9 @@ class PostCombatSkillHander {
                     break;
                 case PassiveB.FallenStar:
                     if (targetUnit.battleContext.initiatesCombat) {
-                        targetUnit.addStatusEffect(StatusEffectType.FallenStar);
+                        targetUnit.reserveToAddStatusEffect(StatusEffectType.FallenStar);
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
-                            unit.addStatusEffect(StatusEffectType.Gravity);
+                            unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                         }
                     }
                     break;
@@ -615,7 +611,7 @@ class PostCombatSkillHander {
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
                             targetUnit.reserveHeal(7);
-                            targetUnit.specialCount -= 1;
+                            targetUnit.reserveToReduceSpecialCount(1);
                         }
                     }
                     break;
@@ -636,6 +632,7 @@ class PostCombatSkillHander {
                         targetUnit.isOneTimeActionActivatedForWeapon = true;
                     }
                     break;
+                    // TODO: 予約に修正する
                 case PassiveB.SealAtk1: enemyUnit.applyAtkDebuff(-3); break;
                 case PassiveB.SealAtk2: enemyUnit.applyAtkDebuff(-5); break;
                 case PassiveB.SealAtk3: enemyUnit.applyAtkDebuff(-7); break;
@@ -1351,15 +1348,15 @@ class PostCombatSkillHander {
                 case Special.ChivalricAura:
                     if (attackUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
-                            unit.applyAtkBuff(6);
-                            unit.addStatusEffect(StatusEffectType.MobilityIncreased);
+                            unit.reserveToApplyBuffs(6, 0, 0, 0);
+                            unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                         }
                     }
                     break;
                 case Special.ShiningEmblem:
                     if (attackUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
-                            unit.applyAllBuff(6);
+                            unit.reserveToApplyAllBuffs(6);
                         }
                     }
                     break;
@@ -1367,7 +1364,7 @@ class PostCombatSkillHander {
                 case Special.HonoNoMonsyo:
                     if (attackUnit.battleContext.isSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
-                            unit.applyAllBuff(4);
+                            unit.reserveToApplyAllBuffs(4);
                         }
                     }
                     break;
