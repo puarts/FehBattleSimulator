@@ -702,4 +702,20 @@ class BattleContext {
             }
         );
     }
+
+    setNullFollowupAttack() {
+        this.invalidatesAbsoluteFollowupAttack = true;
+        this.invalidatesInvalidationOfFollowupAttack = true;
+    }
+
+    setSpdNullFollowupAttack(diff = 1) {
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.isHigherOrEqualSpdInCombat(enemyUnit, diff)) {
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+        );
+    }
 }

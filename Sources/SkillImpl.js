@@ -1,5 +1,36 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 魔器・歪神竜の竜石
+{
+    let skillId = Weapon.ArcaneFellstone;
+    // 威力：16
+    // 射程：1
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
+    // 奥義が発動しやすい（発動カウントー1）
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防が戦闘開始時の敵の攻撃の25%-4だけ増加（最大14、最低5）、
+                let amount =
+                    MathUtil.ensureMinMax(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25) - 4, 5, 14);
+                targetUnit.addAllSpur(amount);
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減
+                // （最初に受けた攻撃と2回攻撃：
+                // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                // 自身の奥義発動カウント変動量＋1（同系統効果複数時、最大値を適用）、
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                // かつ速さが敵より1以上高い時、
+                // 戦闘中、敵の絶対追撃を無効、かつ、
+                // 自分の追撃不可を無効
+                targetUnit.battleContext.setSpdNullFollowupAttack();
+            }
+        }
+    );
+}
+
 // エレシュキガル
 {
     let skillId = Weapon.Ereshkigal;

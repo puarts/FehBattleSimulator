@@ -1826,6 +1826,7 @@ const Weapon = {
     FellChildsMight: 2874, // 邪竜ノ娘の力
     DeadCrowTome: 2872, // 魂なき鴉爪の書
     Ereshkigal: 2870, // エレシュキガル
+    ArcaneFellstone: 2867, // 魔器・歪神竜の竜石
 };
 
 const Support = {

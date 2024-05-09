@@ -308,6 +308,12 @@ targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
 自身の追撃不可を無効
 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
 
+見切り追撃
+targetUnit.battleContext.setNullFollowupAttack();
+
+見切り追撃(速度比較)
+targetUnit.battleContext.setSpdNullFollowupAttack();
+
 敵の追撃の速さ条件+20(targetUnitから見て)
 enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 20;
 
