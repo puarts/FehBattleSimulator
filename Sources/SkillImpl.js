@@ -4749,6 +4749,11 @@
         u => u.reserveToApplyBuffs(6, 0, 6, 0),
         u => u.addAtkDefSpurs(3)
     );
+    // 守備魔防の信義4
+    setSkill(PassiveC.DefResOath4,
+        u => u.reserveToApplyBuffs(0, 0, 6, 6),
+        u => u.addDefResSpurs(3)
+    );
 }
 
 // 砂漠の天馬騎士の剣

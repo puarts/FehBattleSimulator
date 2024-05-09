@@ -3049,6 +3049,7 @@ const PassiveC = {
     AtkResOath3: 982,
     AtkResOath4: 2242, // 攻撃魔防の信義4
     DefResOath3: 1092,
+    DefResOath4: 2871, // 守備魔防の信義4
     SpdDefOath3: 1233,
     SpdResOath3: 1602,
 
