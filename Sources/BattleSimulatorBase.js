@@ -5717,7 +5717,7 @@ class BattleSimulatorBase {
 
                 if (!ignores5DamageDealt) {
                     // 2回攻撃は1回分だけ加味
-                    let attackCount = combatResult.atkUnit_totalAttackCount / unit.weaponInfo.attackCount;
+                    let attackCount = combatResult.atkUnit_totalAttackCount / (unit.weaponInfo?.attackCount ?? 1);
                     let damageDealt = combatResult.atkUnit_normalAttackDamage * attackCount;
                     this.writeDebugLogLine(unit.getNameWithGroup() + "から" + attackableUnitInfo.targetUnit.getNameWithGroup() + "へのダメージ=" + damageDealt);
                     if (damageDealt >= 5) {

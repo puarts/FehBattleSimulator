@@ -182,6 +182,7 @@ const StatusEffectType = {
     TimesGrip: 60, // 時の陥穽
     AfterStartOfTurnSkillsTriggerActionEndsImmediately: 61, // ターン開始後スキル発動後、即座に行動終了
     HushSpectrum: 62, // 七色の囁き
+    EssenceDrain: 63, // エーギル奪取
 };
 
 const NotReserved = -2;
@@ -310,6 +311,7 @@ const STATUS_EFFECT_FILE_NAME_MAP = new Map([
     [StatusEffectType.TimesGrip, "TimesGrip.webp"],
     [StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately, "AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp"],
     [StatusEffectType.HushSpectrum, "HushSpectrum.webp"],
+    [StatusEffectType.EssenceDrain, "EssenceDrain.webp"],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

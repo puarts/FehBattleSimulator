@@ -174,6 +174,9 @@ class BattleContext {
         // 最初の攻撃前の奥義発動カウント増加値
         this.specialCountIncreaseBeforeFirstAttack = 0;
 
+        // 最初の追撃前の奥義発動カウント増加値
+        this.specialCountIncreaseBeforeFollowupAttack = 0;
+
         // 敵の最初の攻撃前の奥義発動カウント減少値
         this.specialCountReductionBeforeFirstAttackByEnemy = 0;
 
@@ -370,6 +373,12 @@ class BattleContext {
 
         // ターン開始時付与不利な状態異常を無効化
         this.neutralizesAnyPenaltyWhileBeginningOfTurn = false;
+
+        // ターン開始時付与に無効化されるステータス
+        this.neutralizedStatusEffectSetWhileBeginningOfTurn = new Set();
+
+        // ターン開始時付与に無効化されるステータス
+        this.neutralizedDebuffsWhileBeginningOfTurn = [false, false, false, false];
 
         // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
         this.damageAfterBeginningOfCombat = 0;
@@ -638,7 +647,7 @@ class BattleContext {
     }
 
     getSpecialCountReductionBeforeFollowupAttack() {
-        let increase = 0;
+        let increase = this.specialCountIncreaseBeforeFollowupAttack;
         let reduction = this.specialCountReductionBeforeFollowupAttack;
         return increase - reduction;
     }
@@ -667,5 +676,46 @@ class BattleContext {
      */
     canAttackInCombat() {
         return this.initiatesCombat || this.canCounterattack;
+    }
+
+    setDamageReductionRatio(ratio) {
+        this.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+            return ratio;
+        });
+    }
+
+    setAttacksTwice() {
+        this.setAttackCountFuncs.push(
+            (targetUnit, enemyUnit) => {
+                // 攻撃時
+                targetUnit.battleContext.attackCount = 2;
+                // 攻撃を受けた時
+                targetUnit.battleContext.counterattackCount = 2;
+            }
+        );
+    }
+
+    neutralizesReducesCooldownCount() {
+        this.applyInvalidationSkillEffectFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                enemyUnit.battleContext.reducesCooldownCount = false;
+            }
+        );
+    }
+
+    setNullFollowupAttack() {
+        this.invalidatesAbsoluteFollowupAttack = true;
+        this.invalidatesInvalidationOfFollowupAttack = true;
+    }
+
+    setSpdNullFollowupAttack(diff = 1) {
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.isHigherOrEqualSpdInCombat(enemyUnit, diff)) {
+                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                }
+            }
+        );
     }
 }

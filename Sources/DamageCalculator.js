@@ -921,7 +921,9 @@ class DamageCalculator {
                 defUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttackByEnemy();
             if (defUnit.battleContext.isChangedSpecialCountBeforeFirstAttackByEnemy()) {
                 this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の攻撃の前の奥義カウント: <span style="color: #ff00ff">${defCount}</span> = ${defUnit.tmpSpecialCount} -
-                                    ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy}`);
+                                    ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy} +
+                                    ${defUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`
+                );
             }
             defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
         }
@@ -931,7 +933,9 @@ class DamageCalculator {
                 + atkUnit.battleContext.getSpecialCountReductionBeforeFollowupAttack();
             if (atkUnit.battleContext.isChangedSpecialCountBeforeFollowupAttack()) {
                 this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
-                                    ${atkUnit.battleContext.specialCountReductionBeforeFollowupAttack}`);
+                                    ${atkUnit.battleContext.specialCountReductionBeforeFollowupAttack} + 
+                                    ${atkUnit.battleContext.specialCountIncreaseBeforeFollowupAttack}`
+                );
             }
             atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
         }

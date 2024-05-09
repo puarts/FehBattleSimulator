@@ -125,26 +125,27 @@ class BeginningOfTurnSkillHandler {
      * @param {boolean} isBeginningOfTurn
      */
     applyReservedState(unit, isBeginningOfTurn = true) {
-        if (isBeginningOfTurn &&
-            unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
-            // ターン開始時の不利な状態無効
-            // applyReservedDebuffsは呼び出さない
-            unit.applyReservedBuffs();
-            unit.resetReservedDebuffs();
-            // 有利な異常状態だけ残しapplyReservedStatusEffectsを呼び出す
-            unit.reservedStatusEffects = unit.reservedStatusEffects.filter(e => isPositiveStatusEffect(e));
-            // 前ターンにかかったデバフは解除できないので予約リストに入れる
-            // （前ターンにかかっていたバフは全てターン開始時にunit.reservedStatusEffectsに入れる実装になっている）
-            for (let e of unit.statusEffects.filter(e => isNegativeStatusEffect(e))) {
-                unit.reservedStatusEffects.push(e);
+        unit.applyReservedBuffs();
+        if (isBeginningOfTurn) {
+            if (unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
+                // 予約されたデバフと不利なステータス状態を解除
+                unit.resetReservedDebuffs();
+                unit.resetReservedNegativeStatusEffects();
             }
-            unit.applyReservedStatusEffects();
-        } else {
-            unit.applyReservedBuffs();
-            unit.applyReservedDebuffs();
-            unit.applyReservedStatusEffects();
+            BeginningOfTurnSkillHandler.#neutralizesBuffsDebuffsAndStatusEffects(unit);
         }
+        unit.applyReservedDebuffs();
+        unit.applyReservedStatusEffects();
         unit.applyReservedSpecialCount();
+    }
+
+    static #neutralizesBuffsDebuffsAndStatusEffects(unit) {
+        if (unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0]) unit.reservedAtkDebuff = 0;
+        if (unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn[1]) unit.reservedSpdDebuff = 0;
+        if (unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn[2]) unit.reservedDefDebuff = 0;
+        if (unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3]) unit.reservedResDebuff = 0;
+        let isNotNeutralized = e => !unit.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.has(e);
+        unit.reservedStatusEffects = unit.reservedStatusEffects.filter(isNotNeutralized);
     }
 
     /**

@@ -1819,6 +1819,14 @@ const Weapon = {
     LucrativeBowPlus: 2860, // 有利状態の弓+
 
     SupremeThoekk: 2862, // 神杖セック
+
+    //「新英雄＆魔器ルミエル」
+    // https://www.youtube.com/watch?v=a03AgGZIDkI&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=gy2K4_7xo8s&ab_channel=NintendoMobile
+    FellChildsMight: 2874, // 邪竜ノ娘の力
+    DeadCrowTome: 2872, // 魂なき鴉爪の書
+    Ereshkigal: 2870, // エレシュキガル
+    ArcaneFellstone: 2867, // 魔器・歪神竜の竜石
 };
 
 const Support = {
@@ -2415,6 +2423,7 @@ const PassiveA = {
     AtkResScowl3: 2422, // 攻撃魔防の竜眼3
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
     AtkSpdScowl4: 2754, // 攻撃速さの竜眼4
+    SpdResScowl4: 2868, // 速さ魔防の竜眼4
     DefResScowl4: 2765, // 守備魔防の竜眼4
 
     // 柔撃
@@ -2430,6 +2439,9 @@ const PassiveA = {
 
     // 野生
     AtkSpdWild: 2712, // 攻撃速さの野生
+
+    CrystallineWater: 2875, // 明鏡止水
+    VergeOfDeath: 2873, // 限界死線
 };
 
 const PassiveB = {
@@ -3039,6 +3051,7 @@ const PassiveC = {
     AtkResOath3: 982,
     AtkResOath4: 2242, // 攻撃魔防の信義4
     DefResOath3: 1092,
+    DefResOath4: 2871, // 守備魔防の信義4
     SpdDefOath3: 1233,
     SpdResOath3: 1602,
 
@@ -3162,6 +3175,8 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    CorruptedDragon: 2869, // 異形なる竜王
+    FellSuccessor: 2876, // 邪竜の後継者
     DivineDeceit: 2864, // 神杖天空を偽る
     GlitteringAnima: 2793, // 煌めく理力
     DarklingDragon: 2766, // 闇の樹海の竜神
