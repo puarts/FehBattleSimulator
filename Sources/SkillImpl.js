@@ -1,5 +1,58 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 異形なる竜王
+{
+    let skillId = PassiveC.CorruptedDragon;
+    applyEndActionSkillsFuncMap.set(skillId,
+        function () {
+            // 行動後（再移動が発動した時は再移動後）、自分を中心とした縦5x横5マスに
+            // 【天脈・護】を付与（1ターン）
+            for (let tile of g_appData.map.enumerateTilesInSquare(this.placedTile, 5)) {
+                tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
+            }
+        }
+    );
+
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
+            // 自分を中心とした縦5x横5マスにいる味方は、
+            if (allyUnit.isInSquare(targetUnit, 5)) {
+                // 戦闘中、攻撃、速さ、守備、魔防＋4、
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 自分を中心とした縦5x横5マスにいる味方は、
+            if (allyUnit.isInSquare(targetUnit, 5)) {
+                // 自身の奥義発動カウント変動量ーを無効
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+            }
+        }
+    );
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分を中心とした縦5x横5マスに味方がいる時、
+            if (this.__isThereAllyInSquare(targetUnit, 5)) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防＋4、
+                targetUnit.addAllSpur(4);
+                // 自身の奥義発動カウント変動量ーを無効、
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+                // かつ奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        }
+    );
+}
+
 // 魔器・歪神竜の竜石
 {
     let skillId = Weapon.ArcaneFellstone;
