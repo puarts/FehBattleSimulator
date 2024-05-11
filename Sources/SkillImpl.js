@@ -4763,6 +4763,9 @@
     // 固定ダメージ
     calcFixedAddDamageFuncMap.set(skillId,
         function (atkUnit, defUnit, isPrecombat) {
+            if (!(atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit))) {
+                return;
+            }
             let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
             let additionalDamage = Math.trunc(status * 0.15);
             this.writeDebugLog(`${atkUnit.weaponInfo.name}により固定ダメージ+${additionalDamage}(atk(${status}) * 0.15)`);
