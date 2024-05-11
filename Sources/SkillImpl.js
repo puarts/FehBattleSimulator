@@ -1,5 +1,49 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 命なき根牙の剣
+{
+    let skillId = Weapon.DeadWolfBlade;
+    // 速さ+3
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 自分と周囲2マス以内の味方に【敵弱化増幅】を付与、
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let targetUnit of targetUnits) {
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.FoePenaltyDoubler);
+                }
+                // 最も近い敵とその周囲2マス以内の敵の速さ、守備-7(敵の次回行動終了まで)
+                let nearestEnemies = this.__findNearestEnemies(skillOwner);
+                for (let nearestEnemy of nearestEnemies) {
+                    let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true);
+                    for (let enemy of enemies) {
+                        enemy.reserveToApplyDebuffs(0, -7, -7, 0);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // さらに、攻撃、速さ、守備、魔防が、戦闘開始時の自分の速さの15%だけ増加、
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                targetUnit.addAllSpur(amount);
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                // 敵の奥義発動カウント変動量-1(同系統効果複数時、最大値適用)
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+    );
+}
+
 // 異形なる竜王
 {
     let skillId = PassiveC.CorruptedDragon;
