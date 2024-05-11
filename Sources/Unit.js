@@ -3495,7 +3495,7 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isHigherDefInPrecombat(enemyUnit, n = 0) {
-        return this.isHigherOrEqualDefInPrecombat(enemyUnit, 1);
+        return this.isHigherOrEqualDefInPrecombat(enemyUnit, n + 1);
     }
 
     /**
@@ -3515,7 +3515,7 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isHigherResInPrecombat(enemyUnit, n = 0) {
-        return this.isHigherOrEqualResInPrecombat(enemyUnit, 1);
+        return this.isHigherOrEqualResInPrecombat(enemyUnit, n + 1);
     }
 
     /**

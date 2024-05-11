@@ -708,10 +708,10 @@ class BattleContext {
         this.invalidatesInvalidationOfFollowupAttack = true;
     }
 
-    setSpdNullFollowupAttack(diff = 1) {
+    setSpdNullFollowupAttack(diff = 0) {
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {
-                if (targetUnit.isHigherOrEqualSpdInCombat(enemyUnit, diff)) {
+                if (targetUnit.isHigherSpdInCombat(enemyUnit, diff)) {
                     targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                 }
