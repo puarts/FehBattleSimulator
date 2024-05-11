@@ -6963,15 +6963,6 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(6);
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.ProfessorialText] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat
-                || self.__isThereAllyIn2Spaces(targetUnit)
-            ) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.DivineSeaSpear] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 3;
@@ -10408,12 +10399,6 @@ class DamageCalculatorWrapper {
                             break;
                         case Weapon.ProfessorialGuide:
                             targetUnit.battleContext.invalidateCooldownCountSkills();
-                            break;
-                        case Weapon.ProfessorialText:
-                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                            }
                             break;
                         case Weapon.RenewedFang:
                             if (targetUnit.partnerHeroIndex === allyUnit.heroIndex ||

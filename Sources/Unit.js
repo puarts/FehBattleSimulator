@@ -3549,6 +3549,16 @@ class Unit extends BattleMapElement {
     }
 
     /**
+     * 速さが相手の速さ+nより高いかどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherSpdInCombat(enemyUnit, n = 0) {
+        return this.isHigherOrEqualSpdInCombat(enemyUnit, n + 1);
+    }
+
+    /**
      * 速さが相手の速さ+n以上かどうかを返す
      * @param {Unit} enemyUnit
      * @param {number} n

@@ -1,5 +1,90 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 師の導きの書
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.ProfessorialText);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // さらに、攻撃、速さ、守備、魔防が自分を中心とした縦3列と横3列にいる味方の数だけ増加、
+                let amount = this.__countUnit(targetUnit.groupId, u => u.isInCrossWithOffset(targetUnit, 1));
+                targetUnit.addAllSpur(amount);
+                // 自身の攻撃、速さの弱化を無効、
+                targetUnit.battleContext.invalidateDebuffs(true, true, false, false);
+                // 敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効、
+                targetUnit.battleContext.setTempo();
+                // 最初に受けた攻撃と2回攻撃のダメージを30%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+            }
+        }
+    );
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 自分を中心とした縦3列と横3列の味方は、戦闘中、攻撃、速さの弱化を無効
+            if (targetUnit.isInCrossWithOffset(allyUnit, 1)) {
+                targetUnit.battleContext.invalidateDebuffs(true, true, false, false);
+            }
+        }
+    );
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.ProfessorialText);
+    // 奥義が発動しやすい(発動カウント-1)
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            let func = u => targetUnit.isInCrossWithOffset(u, 1);
+            // 自分から攻撃した時、または、自分を中心とした縦3列と横3列に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAnyAllyUnit(targetUnit, func)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // ダメージ+7(範囲奥義を除く)、
+                targetUnit.battleContext.additionalDamage += 7;
+                // かつ戦闘中、速さが敵より1以上高い時、
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.setSpdNullFollowupAttack();
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 自分を中心とした縦3列と横3列の味方は、
+            if (targetUnit.isInCrossWithOffset(allyUnit, 1)) {
+                // 戦闘中、攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // かつ戦闘中、速さが敵より1以上高い時、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.setSpdNullFollowupAttack();
+            }
+        }
+    );
+}
+
+{
+    let skillId = Weapon.ProfessorialText;
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.battleContext.setSpdNullFollowupAttack();
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.setNullFollowupAttack();
+            }
+        }
+    );
+}
+
 // 聖裁ティルフィング
 {
     let skillId = getSpecialRefinementSkillId(Weapon.HallowedTyrfing);

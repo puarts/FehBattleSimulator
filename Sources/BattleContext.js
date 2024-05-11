@@ -726,4 +726,14 @@ class BattleContext {
             atkUnit.battleContext.additionalDamage += Math.trunc(statuses[statusIndex] * ratio);
         });
     }
+
+    setTempo() {
+        this.applyInvalidationSkillEffectFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                enemyUnit.battleContext.increaseCooldownCountForAttack = false;
+                enemyUnit.battleContext.increaseCooldownCountForDefense = false;
+                enemyUnit.battleContext.reducesCooldownCount = false;
+            }
+        );
+    }
 }
