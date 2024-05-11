@@ -378,6 +378,7 @@
 {
     let skillId = Special.SublimeHeaven2;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)

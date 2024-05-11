@@ -3495,7 +3495,17 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isHigherDefInPrecombat(enemyUnit, n = 0) {
-        return this.getEvalDefInPrecombat() > enemyUnit.getEvalDefInPrecombat() + n;
+        return this.isHigherOrEqualDefInPrecombat(enemyUnit, 1);
+    }
+
+    /**
+     * 守備が相手の守備+n以上かどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherOrEqualDefInPrecombat(enemyUnit, n = 0) {
+        return this.statusEvalUnit.getEvalDefInPrecombat() >= enemyUnit.statusEvalUnit.getEvalDefInPrecombat() + n;
     }
 
     /**
@@ -3505,7 +3515,7 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isHigherResInPrecombat(enemyUnit, n = 0) {
-        return this.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat() + n;
+        return this.isHigherOrEqualResInPrecombat(enemyUnit, 1);
     }
 
     /**
@@ -3515,7 +3525,7 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isHigherOrEqualResInPrecombat(enemyUnit, n = 0) {
-        return this.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + n;
+        return this.statusEvalUnit.getEvalResInPrecombat() >= enemyUnit.statusEvalUnit.getEvalResInPrecombat() + n;
     }
 
     /**
@@ -3525,7 +3535,7 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isLowerResInPrecombat(enemyUnit, n = 0) {
-        return this.getEvalResInPrecombat() < enemyUnit.getEvalResInPrecombat() + n;
+        return this.statusEvalUnit.getEvalResInPrecombat() < enemyUnit.statusEvalUnit.getEvalResInPrecombat() + n;
     }
 
     /**
