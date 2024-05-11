@@ -1,5 +1,70 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 聖裁ティルフィング
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.HallowedTyrfing);
+    // HP+3
+    // 【再移動(残り+1)】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return this.restMoveCount + 1;
+    });
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、さらに、
+                targetUnit.addAllSpur(4);
+                // 攻撃、速さ、守備、魔防が増加、増加値は、攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離(最大4)、
+                let amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
+                targetUnit.addAllSpur(amount);
+                // ダメージ+攻撃の15%(範囲奥義を除く)、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
+                // 敵の攻撃、守備の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)
+                targetUnit.battleContext.invalidateDebuffs(true, false, true, false);
+            }
+        }
+    );
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.HallowedTyrfing);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、戦闘開始時、敵のHPが75%以上なら、
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5)
+                // 絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃)、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                // 戦闘後、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+{
+    let skillId = Weapon.HallowedTyrfing;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                }
+            }
+        }
+    );
+}
+
 // 命なき根牙の剣
 {
     let skillId = Weapon.DeadWolfBlade;

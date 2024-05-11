@@ -718,4 +718,12 @@ class BattleContext {
             }
         );
     }
+
+    addFixedDamageByOwnStatusInCombat(statusIndex, ratio) {
+        this.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+            if (isPrecombat) return;
+            let statuses = atkUnit.getStatusesInCombat(defUnit);
+            atkUnit.battleContext.additionalDamage += Math.trunc(statuses[statusIndex] * ratio);
+        });
+    }
 }

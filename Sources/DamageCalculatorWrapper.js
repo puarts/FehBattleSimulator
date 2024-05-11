@@ -7150,15 +7150,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.HallowedTyrfing] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
-                if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
-                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
-                }
-            }
-        };
         this._applySkillEffectForUnitFuncDict[PassiveC.FatalSmoke3] = (targetUnit) => {
             targetUnit.battleContext.invalidatesHeal = true;
         };
