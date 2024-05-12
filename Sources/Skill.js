@@ -102,6 +102,14 @@ function getEmblemHeroSkillId(emblemHeroIndex) {
  * @param {number|string} id
  * @returns {string}
  */
+function getNormalSkillId(id) {
+    return `n_${id}`;
+}
+
+/**
+ * @param {number|string} id
+ * @returns {string}
+ */
 function getRefinementSkillId(id) {
     return `r_${id}`;
 }
@@ -1422,11 +1430,12 @@ function stealBonusEffects(enemies, targetAllies, logger = null) {
  * @returns {F}
  */
 function getSkillFunc(skillId, funcMap) {
-    // 錬成先が登録されている
-    // 何も返さない
+    // 錬成先が登録されている場合
     if (funcMap.has(getRefinementSkillId(skillId)) ||
         funcMap.has(getSpecialRefinementSkillId(skillId))) {
-        return undefined;
+        if (funcMap.has(getNormalSkillId(skillId))) {
+            return undefined;
+        }
     }
     if (funcMap.has(skillId)) {
         let func = funcMap.get(skillId);

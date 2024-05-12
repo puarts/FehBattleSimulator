@@ -65,7 +65,7 @@
 }
 
 {
-    let skillId = Weapon.ProfessorialText;
+    let skillId = getNormalSkillId(Weapon.ProfessorialText);
     applySkillEffectFromAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
             if (targetUnit.distance(allyUnit) <= 2) {
@@ -136,7 +136,7 @@
 }
 
 {
-    let skillId = Weapon.HallowedTyrfing;
+    let skillId = getNormalSkillId(Weapon.HallowedTyrfing);
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -1554,7 +1554,7 @@
 
 // ハデスΩ
 {
-    let skillId = Weapon.HadesuOmega;
+    let skillId = getNormalSkillId(Weapon.HadesuOmega);
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // <通常効果>
@@ -1646,7 +1646,7 @@
 
 // 狼花嫁の牙
 {
-    let skillId = Weapon.BridesFang;
+    let skillId = getNormalSkillId(Weapon.BridesFang);
     WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
     BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry);
     applySkillEffectForUnitFuncMap.set(skillId,
@@ -1733,7 +1733,7 @@
 
 // ダニエルの錬弓
 {
-    let skillId = Weapon.DanielMadeBow;
+    let skillId = getNormalSkillId(Weapon.DanielMadeBow);
     updateUnitSpurFromAlliesFuncMap.set(skillId,
         function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
             // 周囲2マス以内
@@ -1836,7 +1836,7 @@
 
 // 暗黒の聖書
 {
-    let skillId = Weapon.DarkScripture;
+    let skillId = getNormalSkillId(Weapon.DarkScripture);
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // <通常効果>
@@ -1931,7 +1931,7 @@
 
 // 星竜のブレス
 {
-    let skillId = Weapon.AstralBreath;
+    let skillId = getNormalSkillId(Weapon.AstralBreath);
     // 速さ+3
     // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
     TELEPORTATION_SKILL_SET.add(skillId);
