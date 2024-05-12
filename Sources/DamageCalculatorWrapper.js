@@ -1947,15 +1947,6 @@ class DamageCalculatorWrapper {
                 defUnit.addAllSpur(4);
             }
         };
-
-
-
-        self._applySkillEffectForDefUnitFuncDict[Weapon.Amatsu] = (defUnit) => {
-            if (defUnit.battleContext.restHpPercentage >= 50) {
-                defUnit.battleContext.canCounterattackToAllDistance = true;
-            }
-        };
-
         {
             let func = (defUnit, atkUnit) => {
                 if (isPhysicalWeaponType(atkUnit.weaponType)) {
