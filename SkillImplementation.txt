@@ -953,6 +953,12 @@ targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces |= units.some(u => part
 if (targetUnit.battleContext.isThereAnyPartnerPairsIn3Spaces) {}
 
 敵の守備か魔防の低い方でダメージ計算(ブレスは実装不要)
+selectReferencingResOrDefFuncMap.set(skillId,
+    function (atkUnit, defUnit) {
+        atkUnit.battleContext.refersMinOfDefOrRes = true;
+    }
+);
+もしくは
 targetUnit.battleContext.refersMinOfDefOrRes = true;
 
 敵の守備か魔防の低い方でダメージ計算(魔弾など奥義発動時限定などはここで実装する)
@@ -961,6 +967,9 @@ __selectReferencingResOrDef(atkUnit, defUnit) {
 
 敵の「敵の守備か魔防の低い方でダメージ計算」を無効化
 __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit) {}
+
+敵の魔防でダメージ計算
+targetUnit.battleContext.refersRes = true;
 
 ダメカ
 受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×N%軽減(最大M)[回避]

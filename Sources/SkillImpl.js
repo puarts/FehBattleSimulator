@@ -1,5 +1,56 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// フレイムランス
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.FlameLance);
+    // HP+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲1マス以内の味方が1体以下の時、
+            if (targetUnit.battleContext.initiatesCombat || this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                // 戦闘中、敵の攻撃、速さ、魔防-4、さらに、
+                enemyUnit.addSpursWithoutDef(-4);
+                // 敵の攻撃、速さ、魔防が敵が受けている攻撃、速さ、魔防の強化の値の2倍だけ減少(能力値ごとに計算)(例えば、攻撃+7の強化を受けていれば、+7-14-4で、攻撃-11となる)、
+                enemyUnit.battleContext.setAllBonusReversal();
+                // 最初に受けた攻撃のダメージを30%軽減、かつ最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)
+                targetUnit.battleContext.reduceAndAddDamage(enemyUnit, 0.3);
+            }
+        }
+    );
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.FlameLance);
+    // 獣特効
+    // 速さ+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 敵の魔防でダメージ計算、かつ、
+                targetUnit.battleContext.refersRes = true;
+                // 戦闘中、敵の攻撃-4、速さ、魔防-5、
+                enemyUnit.atkSpur -= 4;
+                enemyUnit.addSpdResSpurs(-5);
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.setNullFollowupAttack();
+            }
+        }
+    );
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.FlameLance);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 50) {
+                targetUnit.battleContext.refersRes = true;
+                enemyUnit.addSpdResSpurs(-5)
+            }
+        }
+    );
+}
+
 // アマツ
 {
     let skillId = getSpecialRefinementSkillId(Weapon.Amatsu);

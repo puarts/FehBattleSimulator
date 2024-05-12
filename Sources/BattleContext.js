@@ -736,4 +736,31 @@ class BattleContext {
             }
         );
     }
+
+    /**
+     * @param {Unit} enemyUnit
+     * @param {number} ratio
+     */
+    reduceAndAddDamage(enemyUnit, ratio) {
+        // 最初に受けた攻撃のダメージを軽減
+        this.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
+        // ダメージ軽減分を保存
+        this.addReducedDamageForNextAttackFuncs.push(
+            (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                if (!context.isFirstAttack(atkUnit)) return;
+                defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+            }
+        );
+        // 攻撃ごとの固定ダメージに軽減した分を加算
+        this.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+            if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                return addDamage;
+            }
+            return 0;
+        });
+    }
 }

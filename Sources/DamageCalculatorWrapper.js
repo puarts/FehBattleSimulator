@@ -651,9 +651,6 @@ class DamageCalculatorWrapper {
             let resInCombat = defUnit.getResInCombat(atkUnit);
             atkUnit.battleContext.refersRes = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
         }
-        else if (atkUnit.weapon === Weapon.FlameLance) {
-            atkUnit.battleContext.refersRes = atkUnit.battleContext.restHpPercentage >= 50;
-        }
         else if (atkUnit.weapon === Weapon.HelsReaper) { // 魔防参照
             atkUnit.battleContext.refersRes = !isWeaponTypeTome(defUnit.weaponType) && defUnit.weaponType !== WeaponType.Staff;
         }
@@ -7638,12 +7635,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.resSpur -= 6;
                 targetUnit.battleContext.increaseCooldownCountForDefense = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.FlameLance] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                enemyUnit.spdSpur -= 5;
-                enemyUnit.resSpur -= 5;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TalreganAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
