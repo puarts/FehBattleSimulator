@@ -4202,6 +4202,9 @@ class Unit extends BattleMapElement {
                 if (this.isWeaponSpecialRefined) {
                     yield getSpecialRefinementSkillId(id);
                 }
+                if (!this.isWeaponRefined) {
+                    yield getNormalSkillId(id);
+                }
             }
         }
     }
