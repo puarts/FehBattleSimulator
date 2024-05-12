@@ -9667,7 +9667,7 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.CandyCanePlus] = func;
         }
         {
-            let func = (targetUnit, enemyUnit) => {
+            this._applySkillEffectForUnitFuncDict[Weapon.BladeOfShadow] = (targetUnit, enemyUnit) => {
                 if (!targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
                     targetUnit.battleContext.invalidateAllOwnDebuffs();
                     enemyUnit.atkSpur -= 5;
@@ -9675,8 +9675,6 @@ class DamageCalculatorWrapper {
                     enemyUnit.defSpur -= 5;
                 }
             };
-            this._applySkillEffectForUnitFuncDict[Weapon.BladeOfShadow] = func;
-            this._applySkillEffectForUnitFuncDict[Weapon.SpearOfShadow] = func;
         }
         {
             let func = (targetUnit) => {
