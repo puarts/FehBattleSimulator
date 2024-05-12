@@ -1827,6 +1827,7 @@ const Weapon = {
     DeadCrowTome: 2872, // 魂なき鴉爪の書
     Ereshkigal: 2870, // エレシュキガル
     ArcaneFellstone: 2867, // 魔器・歪神竜の竜石
+    DeadWolfBlade: 2877, // 命なき根牙の剣
 };
 
 const Support = {

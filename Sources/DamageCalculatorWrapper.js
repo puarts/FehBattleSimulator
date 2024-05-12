@@ -651,9 +651,6 @@ class DamageCalculatorWrapper {
             let resInCombat = defUnit.getResInCombat(atkUnit);
             atkUnit.battleContext.refersRes = defInCombat === resInCombat ? !atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
         }
-        else if (atkUnit.weapon === Weapon.FlameLance) {
-            atkUnit.battleContext.refersRes = atkUnit.battleContext.restHpPercentage >= 50;
-        }
         else if (atkUnit.weapon === Weapon.HelsReaper) { // 魔防参照
             atkUnit.battleContext.refersRes = !isWeaponTypeTome(defUnit.weaponType) && defUnit.weaponType !== WeaponType.Staff;
         }
@@ -800,15 +797,7 @@ class DamageCalculatorWrapper {
             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
         }
         for (let skillId of defUnit.enumerateSkills()) {
-            let funcMap = applyPrecombatDamageReductionRatioFuncMap;
-            if (funcMap.has(skillId)) {
-                let func = funcMap.get(skillId);
-                if (typeof func === "function") {
-                    func.call(this, defUnit, atkUnit);
-                } else {
-                    console.warn(`登録された関数が間違っています。key: ${skillId}, value: ${func}, type: ${typeof func}`);
-                }
-            }
+            getSkillFunc(skillId, applyPrecombatDamageReductionRatioFuncMap)?.call(this, defUnit, atkUnit);
             switch (skillId) {
                 case Weapon.DragonsFist:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -995,11 +984,6 @@ class DamageCalculatorWrapper {
                 case Weapon.GiltGoblet:
                     if (atkUnit.battleContext.restHpPercentage === 100 && isRangedWeaponType(atkUnit.weaponType)) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
-                    }
-                    break;
-                case Weapon.BloodTome:
-                    if (isRangedWeaponType(atkUnit.weaponType)) {
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
                     }
                     break;
                 case Weapon.EtherealBreath: {
@@ -1418,12 +1402,6 @@ class DamageCalculatorWrapper {
                 atkUnit.atkSpur += 5;
                 atkUnit.defSpur += 5;
                 atkUnit.resSpur += 5;
-            }
-        };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.SummerStrikers] = (atkUnit) => {
-            if (atkUnit.battleContext.restHpPercentage >= 25) {
-                atkUnit.atkSpur += 5;
-                atkUnit.spdSpur += 5;
             }
         };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.HewnLance] = (atkUnit) => {
@@ -1966,15 +1944,6 @@ class DamageCalculatorWrapper {
                 defUnit.addAllSpur(4);
             }
         };
-
-
-
-        self._applySkillEffectForDefUnitFuncDict[Weapon.Amatsu] = (defUnit) => {
-            if (defUnit.battleContext.restHpPercentage >= 50) {
-                defUnit.battleContext.canCounterattackToAllDistance = true;
-            }
-        };
-
         {
             let func = (defUnit, atkUnit) => {
                 if (isPhysicalWeaponType(atkUnit.weaponType)) {
@@ -6963,15 +6932,6 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(6);
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.ProfessorialText] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat
-                || self.__isThereAllyIn2Spaces(targetUnit)
-            ) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.DivineSeaSpear] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.atkSpur += 3;
@@ -7150,15 +7110,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.HallowedTyrfing] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
-                if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
-                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
-                }
-            }
-        };
         this._applySkillEffectForUnitFuncDict[PassiveC.FatalSmoke3] = (targetUnit) => {
             targetUnit.battleContext.invalidatesHeal = true;
         };
@@ -7256,9 +7207,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesOwnResDebuff = true;
                 targetUnit.battleContext.isAdvantageForColorless = isRangedWeaponType(enemyUnit.weaponType);
             }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.BloodTome] = (targetUnit, enemyUnit) => {
-            targetUnit.battleContext.isAdvantageForColorless = isRangedWeaponType(enemyUnit.weaponType);
         };
         this._applySkillEffectForUnitFuncDict[Weapon.StaffOfRausten] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat) {
@@ -7687,12 +7635,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.resSpur -= 6;
                 targetUnit.battleContext.increaseCooldownCountForDefense = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.FlameLance] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 50) {
-                enemyUnit.spdSpur -= 5;
-                enemyUnit.resSpur -= 5;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TalreganAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -9707,7 +9649,7 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.CandyCanePlus] = func;
         }
         {
-            let func = (targetUnit, enemyUnit) => {
+            this._applySkillEffectForUnitFuncDict[Weapon.BladeOfShadow] = (targetUnit, enemyUnit) => {
                 if (!targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
                     targetUnit.battleContext.invalidateAllOwnDebuffs();
                     enemyUnit.atkSpur -= 5;
@@ -9715,8 +9657,6 @@ class DamageCalculatorWrapper {
                     enemyUnit.defSpur -= 5;
                 }
             };
-            this._applySkillEffectForUnitFuncDict[Weapon.BladeOfShadow] = func;
-            this._applySkillEffectForUnitFuncDict[Weapon.SpearOfShadow] = func;
         }
         {
             let func = (targetUnit) => {
@@ -10417,12 +10357,6 @@ class DamageCalculatorWrapper {
                             break;
                         case Weapon.ProfessorialGuide:
                             targetUnit.battleContext.invalidateCooldownCountSkills();
-                            break;
-                        case Weapon.ProfessorialText:
-                            if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                            }
                             break;
                         case Weapon.RenewedFang:
                             if (targetUnit.partnerHeroIndex === allyUnit.heroIndex ||
@@ -13221,11 +13155,6 @@ class DamageCalculatorWrapper {
                     return 0.5;
                 }
                 break;
-            case Weapon.BloodTome:
-                if (isRangedWeaponType(atkUnit.weaponType)) {
-                    return 0.5;
-                }
-                break;
             case Weapon.Roputous:
                 if (defUnit.isWeaponRefined) {
                     if (!atkUnit.isWeaponEffectiveAgainst(EffectiveType.Dragon)) {
@@ -15885,11 +15814,6 @@ class DamageCalculatorWrapper {
                     if (targetUnit.battleContext.restHpPercentage >= 50 &&
                         enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
-                    }
-                    break;
-                case Weapon.SummerStrikers:
-                    if (targetUnit.battleContext.initiatesCombat && targetUnit.battleContext.restHpPercentage >= 25) {
-                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
                     }
                     break;
                 case Weapon.Urvan:

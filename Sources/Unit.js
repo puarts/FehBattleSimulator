@@ -3495,7 +3495,17 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isHigherDefInPrecombat(enemyUnit, n = 0) {
-        return this.getEvalDefInPrecombat() > enemyUnit.getEvalDefInPrecombat() + n;
+        return this.isHigherOrEqualDefInPrecombat(enemyUnit, n + 1);
+    }
+
+    /**
+     * 守備が相手の守備+n以上かどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherOrEqualDefInPrecombat(enemyUnit, n = 0) {
+        return this.statusEvalUnit.getEvalDefInPrecombat() >= enemyUnit.statusEvalUnit.getEvalDefInPrecombat() + n;
     }
 
     /**
@@ -3505,7 +3515,7 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isHigherResInPrecombat(enemyUnit, n = 0) {
-        return this.getEvalResInPrecombat() > enemyUnit.getEvalResInPrecombat() + n;
+        return this.isHigherOrEqualResInPrecombat(enemyUnit, n + 1);
     }
 
     /**
@@ -3515,7 +3525,7 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isHigherOrEqualResInPrecombat(enemyUnit, n = 0) {
-        return this.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + n;
+        return this.statusEvalUnit.getEvalResInPrecombat() >= enemyUnit.statusEvalUnit.getEvalResInPrecombat() + n;
     }
 
     /**
@@ -3525,7 +3535,7 @@ class Unit extends BattleMapElement {
      * @return {boolean}
      */
     isLowerResInPrecombat(enemyUnit, n = 0) {
-        return this.getEvalResInPrecombat() < enemyUnit.getEvalResInPrecombat() + n;
+        return this.statusEvalUnit.getEvalResInPrecombat() < enemyUnit.statusEvalUnit.getEvalResInPrecombat() + n;
     }
 
     /**
@@ -3536,6 +3546,16 @@ class Unit extends BattleMapElement {
      */
     isHigherResInCombat(enemyUnit, n = 0) {
         return this.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(this) + n;
+    }
+
+    /**
+     * 速さが相手の速さ+nより高いかどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherSpdInCombat(enemyUnit, n = 0) {
+        return this.isHigherOrEqualSpdInCombat(enemyUnit, n + 1);
     }
 
     /**
@@ -4181,6 +4201,9 @@ class Unit extends BattleMapElement {
                 }
                 if (this.isWeaponSpecialRefined) {
                     yield getSpecialRefinementSkillId(id);
+                }
+                if (!this.isWeaponRefined) {
+                    yield getNormalSkillId(id);
                 }
             }
         }
