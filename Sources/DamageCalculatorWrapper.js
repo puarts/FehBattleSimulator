@@ -1407,12 +1407,6 @@ class DamageCalculatorWrapper {
                 atkUnit.resSpur += 5;
             }
         };
-        self._applySkillEffectForAtkUnitFuncDict[Weapon.SummerStrikers] = (atkUnit) => {
-            if (atkUnit.battleContext.restHpPercentage >= 25) {
-                atkUnit.atkSpur += 5;
-                atkUnit.spdSpur += 5;
-            }
-        };
         self._applySkillEffectForAtkUnitFuncDict[Weapon.HewnLance] = (atkUnit) => {
             if (atkUnit.isWeaponSpecialRefined) {
                 atkUnit.atkSpur += 4;
@@ -15840,11 +15834,6 @@ class DamageCalculatorWrapper {
                     if (targetUnit.battleContext.restHpPercentage >= 50 &&
                         enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
-                    }
-                    break;
-                case Weapon.SummerStrikers:
-                    if (targetUnit.battleContext.initiatesCombat && targetUnit.battleContext.restHpPercentage >= 25) {
-                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
                     }
                     break;
                 case Weapon.Urvan:

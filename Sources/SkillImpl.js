@@ -1,5 +1,68 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 一夏の神宝
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.SummerStrikers);
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分と周囲2マス以内の味方は、
+            let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let targetUnit of targetUnits) {
+                // 奥義発動カウントが最大値なら、奥義発動カウント-1
+                if (targetUnit.statusEvalUnit.isSpecialCountMax) {
+                    targetUnit.reserveToReduceSpecialCount(1);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // さらに、攻撃、速さが、戦闘開始時の速さの20%だけ増加、
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addAtkSpdSpurs(amount);
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.setNullFollowupAttack();
+            }
+        }
+    );
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.SummerStrikers);
+    // 奥義が発動しやすい(発動カウント-1)
+    // 【暗器(7)】効果
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、敵が射程2の時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.isRangedWeaponType()) {
+                // 戦闘中、攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // かつ最初に受けた攻撃と2回攻撃のダメージを75%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.75, enemyUnit);
+                // 自身の奥義発動カウント変動量-を無効
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+            }
+        }
+    );
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.SummerStrikers);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
+            }
+        }
+    );
+}
+
 // 魔王の血書
 {
     let skillId = getSpecialRefinementSkillId(Weapon.BloodTome);

@@ -880,12 +880,12 @@ resetMaxSpecialCount() {
 if (unit.isSpecialCharged) {}
 
 奥義発動カウントが最大値なら、奥義発動カウント-N
-if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
-    skillOwner.reduceSpecialCount(N);
+if (U.statusEvalUnit.isSpecialCountMax) {
+    U.reserveToReduceSpecialCount(N);
 }
 // 戦闘後の時は
 if (targetUnit.isSpecialCountMax) {
-    targetUnit.reduceSpecialCount(N);
+    targetUnit.reserveToReduceSpecialCount(N);
 }
 
 戦闘中、奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で奥義を発動済みの時(戦闘前奥義が含まれるのか注意すること)
