@@ -2655,8 +2655,7 @@
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
                     if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
-                        /** @type {Generator<Unit>} */
-                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
                         for (let unit of units) {
                             unit.reserveToResetDebuffs();
                             unit.reserveToClearNegativeStatusEffects();
