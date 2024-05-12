@@ -1,5 +1,93 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 魔王の血書
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.BloodTome);
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分に【相性相殺】を付与
+            skillOwner.reserveToAddStatusEffect(StatusEffectType.CancelAffinity);
+            // ターン開始時、
+            // 自分の周囲5マス以内にいる最も近い敵とその周囲2マス以内の敵の
+            /** @type {Generator<Unit>} */
+            let nearestEnemies = this.__findNearestEnemies(skillOwner, 5);
+            for (let nearestEnemy of nearestEnemies) {
+                for (let enemy of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                    // 攻撃、魔防-7、
+                    enemy.reserveToApplyBuffs(-7, 0, 0, -7);
+                    // 【相性激化】を付与(敵の次回行動終了まで)
+                    enemy.reserveToAddStatusEffect(StatusEffectType.TriangleAdept);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、自身の攻撃+5、
+                targetUnit.atkSpur += 5;
+                // 敵の攻撃-5、
+                enemyUnit.atkSpur -= 5;
+                // 自分は絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // 敵の奥義発動カウント変動量-1(同系統効果複数時、最大値適用)
+                targetUnit.battleContext.reducesCooldownCount = true;
+            }
+        }
+    );
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.BloodTome);
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            // 敵が射程2の時、受けた範囲奥義のダメージを80%軽減(巨影の範囲奥義を除く)
+            if (isRangedWeaponType(atkUnit.weaponType)) {
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、敵が射程2の時、
+            if (targetUnit.battleContext.initiatesCombat || targetUnit.isRangedWeaponType()) {
+                // 戦闘中、自身の攻撃+5、敵の攻撃-5、
+                targetUnit.atkSpur += 5;
+                enemyUnit.atkSpur -= 5;
+                // 自分が与えるダメージ+魔防の20%(範囲奥義を除く)、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Res, 0.20);
+                // 自分が受けた攻撃のダメージを50%軽減(範囲奥義を除く)
+                targetUnit.battleContext.setDamageReductionRatio(0.5);
+                // 「自分から攻撃した時、または、敵が射程2の時」、
+                // かつ、敵が無属性なら、自分は3すくみ有利、敵は3すくみ不利となる
+                if (enemyUnit.color === ColorType.Colorless) {
+                    targetUnit.battleContext.isAdvantageForColorless = true;
+                }
+            }
+        }
+    );
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.BloodTome);
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            if (atkUnit.isRangedWeaponType()) {
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (enemyUnit.isRangedWeaponType()) {
+                targetUnit.battleContext.setDamageReductionRatio(0.5);
+            }
+            targetUnit.battleContext.isAdvantageForColorless = enemyUnit.isRangedWeaponType();
+        }
+    );
+}
+
 // 師の導きの書
 {
     let skillId = getSpecialRefinementSkillId(Weapon.ProfessorialText);

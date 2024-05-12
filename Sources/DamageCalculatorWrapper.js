@@ -989,11 +989,6 @@ class DamageCalculatorWrapper {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.5);
                     }
                     break;
-                case Weapon.BloodTome:
-                    if (isRangedWeaponType(atkUnit.weaponType)) {
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
-                    }
-                    break;
                 case Weapon.EtherealBreath: {
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.8);
                 }
@@ -7231,9 +7226,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.isAdvantageForColorless = isRangedWeaponType(enemyUnit.weaponType);
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.BloodTome] = (targetUnit, enemyUnit) => {
-            targetUnit.battleContext.isAdvantageForColorless = isRangedWeaponType(enemyUnit.weaponType);
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.StaffOfRausten] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.atkSpur += 6;
@@ -13186,11 +13178,6 @@ class DamageCalculatorWrapper {
             case Weapon.GiltGoblet:
                 if ((atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) &&
                     isWeaponTypeTome(atkUnit.weaponType)) {
-                    return 0.5;
-                }
-                break;
-            case Weapon.BloodTome:
-                if (isRangedWeaponType(atkUnit.weaponType)) {
                     return 0.5;
                 }
                 break;

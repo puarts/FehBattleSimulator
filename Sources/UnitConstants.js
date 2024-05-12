@@ -123,7 +123,7 @@ const StatusEffectType = {
     Gravity: 1, // 移動制限
     MobilityIncreased: 2, // 移動値加算
     CounterattacksDisrupted: 3, // 反撃不可付与
-    TriangleAdept: 4, // 激化付与
+    TriangleAdept: 4, // 相性激化
     Guard: 5, // キャンセル
     AirOrders: 6, // 曲技付与(周囲2マスの味方の隣接マスに移動可能, UnitCanMoveToASpaceAdjacentToAnyAllyWithin2Spaces)
     EffectiveAgainstDragons: 7, // 竜特効付与
