@@ -632,34 +632,66 @@ class PostCombatSkillHander {
                         targetUnit.isOneTimeActionActivatedForWeapon = true;
                     }
                     break;
-                    // TODO: 予約に修正する
-                case PassiveB.SealAtk1: enemyUnit.applyAtkDebuff(-3); break;
-                case PassiveB.SealAtk2: enemyUnit.applyAtkDebuff(-5); break;
-                case PassiveB.SealAtk3: enemyUnit.applyAtkDebuff(-7); break;
-                case PassiveB.SealAtk4: enemyUnit.applyAtkDebuff(-7); break;
-                case PassiveB.SealSpd1: enemyUnit.applySpdDebuff(-3); break;
-                case PassiveB.SealSpd2: enemyUnit.applySpdDebuff(-5); break;
-                case PassiveB.SealSpd3: enemyUnit.applySpdDebuff(-7); break;
-                case PassiveB.SealSpd4: enemyUnit.applySpdDebuff(-7); break;
-                case PassiveB.SealDef1: enemyUnit.applyDefDebuff(-3); break;
-                case PassiveB.SealDef2: enemyUnit.applyDefDebuff(-5); break;
-                case PassiveB.SealDef3: enemyUnit.applyDefDebuff(-7); break;
-                case PassiveB.SealDef4: enemyUnit.applyDefDebuff(-7); break;
-                case PassiveB.SealRes1: enemyUnit.applyResDebuff(-3); break;
-                case PassiveB.SealRes2: enemyUnit.applyResDebuff(-5); break;
-                case PassiveB.SealRes3: enemyUnit.applyResDebuff(-7); break;
-                case PassiveB.SealRes4: enemyUnit.applyResDebuff(-7); break;
-                case PassiveB.SealAtkSpd1: enemyUnit.applyAtkDebuff(-3); enemyUnit.applySpdDebuff(-3); break;
-                case PassiveB.SealAtkDef1: enemyUnit.applyAtkDebuff(-3); enemyUnit.applyDefDebuff(-3); break;
-                case PassiveB.SealDefRes1: enemyUnit.applyDefDebuff(-3); enemyUnit.applyResDebuff(-3); break;
-                case PassiveB.SealSpdDef1: enemyUnit.applySpdDebuff(-3); enemyUnit.applyDefDebuff(-3); break;
-                case PassiveB.SealSpdRes1: enemyUnit.applySpdDebuff(-3); enemyUnit.applyResDebuff(-3); break;
-                case PassiveB.SealAtkSpd2: enemyUnit.applyAtkDebuff(-5); enemyUnit.applySpdDebuff(-5); break;
-                case PassiveB.SealAtkDef2: enemyUnit.applyAtkDebuff(-5); enemyUnit.applyDefDebuff(-5); break;
-                case PassiveB.SealAtkRes2: enemyUnit.applyAtkDebuff(-5); enemyUnit.applyResDebuff(-5); break;
-                case PassiveB.SealDefRes2: enemyUnit.applyDefDebuff(-5); enemyUnit.applyResDebuff(-5); break;
-                case PassiveB.SealSpdDef2: enemyUnit.applySpdDebuff(-5); enemyUnit.applyDefDebuff(-5); break;
-                case PassiveB.SealSpdRes2: enemyUnit.applySpdDebuff(-5); enemyUnit.applyResDebuff(-5); break;
+                case PassiveB.SealAtk1: enemyUnit.reserveToApplyAtkDebuff(-3); break;
+                case PassiveB.SealAtk2: enemyUnit.reserveToApplyAtkDebuff(-5); break;
+                case PassiveB.SealAtk3: enemyUnit.reserveToApplyAtkDebuff(-7); break;
+                case PassiveB.SealAtk4: enemyUnit.reserveToApplyAtkDebuff(-7); break;
+                case PassiveB.SealSpd1: enemyUnit.reserveToApplySpdDebuff(-3); break;
+                case PassiveB.SealSpd2: enemyUnit.reserveToApplySpdDebuff(-5); break;
+                case PassiveB.SealSpd3: enemyUnit.reserveToApplySpdDebuff(-7); break;
+                case PassiveB.SealSpd4: enemyUnit.reserveToApplySpdDebuff(-7); break;
+                case PassiveB.SealDef1: enemyUnit.reserveToApplyDefDebuff(-3); break;
+                case PassiveB.SealDef2: enemyUnit.reserveToApplyDefDebuff(-5); break;
+                case PassiveB.SealDef3: enemyUnit.reserveToApplyDefDebuff(-7); break;
+                case PassiveB.SealDef4: enemyUnit.reserveToApplyDefDebuff(-7); break;
+                case PassiveB.SealRes1: enemyUnit.reserveToApplyResDebuff(-3); break;
+                case PassiveB.SealRes2: enemyUnit.reserveToApplyResDebuff(-5); break;
+                case PassiveB.SealRes3: enemyUnit.reserveToApplyResDebuff(-7); break;
+                case PassiveB.SealRes4: enemyUnit.reserveToApplyResDebuff(-7); break;
+                case PassiveB.SealAtkSpd1:
+                    enemyUnit.reserveToApplyAtkDebuff(-3);
+                    enemyUnit.reserveToApplySpdDebuff(-3);
+                    break;
+                case PassiveB.SealAtkDef1:
+                    enemyUnit.reserveToApplyAtkDebuff(-3);
+                    enemyUnit.reserveToApplyDefDebuff(-3);
+                    break;
+                case PassiveB.SealDefRes1:
+                    enemyUnit.reserveToApplyDefDebuff(-3);
+                    enemyUnit.reserveToApplyResDebuff(-3);
+                    break;
+                case PassiveB.SealSpdDef1:
+                    enemyUnit.reserveToApplySpdDebuff(-3);
+                    enemyUnit.reserveToApplyDefDebuff(-3);
+                    break;
+                case PassiveB.SealSpdRes1:
+                    enemyUnit.reserveToApplySpdDebuff(-3);
+                    enemyUnit.reserveToApplyResDebuff(-3);
+                    break;
+                case PassiveB.SealAtkSpd2:
+                    enemyUnit.reserveToApplyAtkDebuff(-5);
+                    enemyUnit.reserveToApplySpdDebuff(-5);
+                    break;
+                case PassiveB.SealAtkDef2:
+                    enemyUnit.reserveToApplyAtkDebuff(-5);
+                    enemyUnit.reserveToApplyDefDebuff(-5);
+                    break;
+                case PassiveB.SealAtkRes2:
+                    enemyUnit.reserveToApplyAtkDebuff(-5);
+                    enemyUnit.reserveToApplyResDebuff(-5);
+                    break;
+                case PassiveB.SealDefRes2:
+                    enemyUnit.reserveToApplyDefDebuff(-5);
+                    enemyUnit.reserveToApplyResDebuff(-5);
+                    break;
+                case PassiveB.SealSpdDef2:
+                    enemyUnit.reserveToApplySpdDebuff(-5);
+                    enemyUnit.reserveToApplyDefDebuff(-5);
+                    break;
+                case PassiveB.SealSpdRes2:
+                    enemyUnit.reserveToApplySpdDebuff(-5);
+                    enemyUnit.reserveToApplyResDebuff(-5);
+                    break;
                 case PassiveB.SeimeiNoGofu3:
                     targetUnit.reserveHeal(6);
                     break;
@@ -669,14 +701,14 @@ class PostCombatSkillHander {
                 case Weapon.WaryRabbitFang:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         if (targetUnit.hpPercentage <= 90) {
-                            targetUnit.specialCount -= 2;
+                            targetUnit.reserveToReduceSpecialCount(2);
                         }
                     }
                     break;
                 case Weapon.TaguelChildFang: {
                     let percentage = targetUnit.isWeaponRefined ? 90 : 75;
                     if (targetUnit.hpPercentage <= percentage) {
-                        targetUnit.specialCount -= 2;
+                        targetUnit.reserveToReduceSpecialCount(2);
                     }
                 }
                     break;
@@ -736,7 +768,7 @@ class PostCombatSkillHander {
                     break;
                 case Weapon.InnerWellspring:
                     if (targetUnit.battleContext.isSpecialActivated) {
-                        targetUnit.specialCount -= 1;
+                        targetUnit.reserveToReduceSpecialCount(1);
                     }
                     break;
                 case PassiveB.DeadlyBalancePlus:
@@ -744,24 +776,24 @@ class PostCombatSkillHander {
                 case PassiveB.SpecialSpiral4:
                 case Weapon.MakenMistoruthin:
                     if (targetUnit.battleContext.isSpecialActivated) {
-                        targetUnit.specialCount -= 2;
+                        targetUnit.reserveToReduceSpecialCount(2);
                     }
                     break;
                 case PassiveC.FatalSmoke3:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.DeepWounds);
+                        unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
                     }
                     break;
                 case PassiveC.PanicSmoke3:
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                     }
                     break;
                 case PassiveC.KodoNoGenen3:
                     this.writeDebugLogLine(targetUnit.getNameWithGroup() + "の鼓動の幻煙3発動");
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                         this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
-                        unit.specialCount += 1;
+                        unit.reserveToReduceSpecialCount(1);
                     }
                     break;
                 case PassiveB.Atrocity:
@@ -769,42 +801,42 @@ class PostCombatSkillHander {
                         this.writeDebugLogLine(targetUnit.getNameWithGroup() + "の無惨発動");
                         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                             this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
-                            unit.specialCount += 1;
-                            unit.applyAllDebuff(-5);
+                            unit.reserveToIncreaseSpecialCount(1);
+                            unit.reserveToApplyAllDebuff(-5);
                         }
                     }
                     break;
                 // 紫煙
-                case PassiveC.AtkSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-3)); break;
-                case PassiveC.AtkSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-5)); break;
-                case PassiveC.AtkSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-7)); break;
-                case PassiveC.SpdSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-3)); break;
-                case PassiveC.SpdSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-5)); break;
-                case PassiveC.SpdSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-7)); break;
-                case PassiveC.DefSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyDefDebuff(-3)); break;
-                case PassiveC.DefSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyDefDebuff(-5)); break;
-                case PassiveC.DefSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyDefDebuff(-7)); break;
-                case PassiveC.ResSmoke1: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-3)); break;
-                case PassiveC.ResSmoke2: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-5)); break;
-                case PassiveC.ResSmoke3: this.__applySmokeSkill(enemyUnit, x => x.applyResDebuff(-7)); break;
+                case PassiveC.AtkSmoke1: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyAtkDebuff(-3)); break;
+                case PassiveC.AtkSmoke2: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyAtkDebuff(-5)); break;
+                case PassiveC.AtkSmoke3: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyAtkDebuff(-7)); break;
+                case PassiveC.SpdSmoke1: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplySpdDebuff(-3)); break;
+                case PassiveC.SpdSmoke2: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplySpdDebuff(-5)); break;
+                case PassiveC.SpdSmoke3: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplySpdDebuff(-7)); break;
+                case PassiveC.DefSmoke1: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyDefDebuff(-3)); break;
+                case PassiveC.DefSmoke2: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyDefDebuff(-5)); break;
+                case PassiveC.DefSmoke3: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyDefDebuff(-7)); break;
+                case PassiveC.ResSmoke1: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyResDebuff(-3)); break;
+                case PassiveC.ResSmoke2: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyResDebuff(-5)); break;
+                case PassiveC.ResSmoke3: this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyResDebuff(-7)); break;
                 // SP300紫煙
                 case PassiveC.DefResSmoke3:
-                    this.__applySmokeSkill(enemyUnit, x => x.applyDebuffs(0, 0, -7, -7), true);
+                    this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyDebuffs(0, 0, -7, -7), true);
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
-                        unit.applyAtkBuff(6);
+                        unit.reserveToApplyAtkBuff(6);
                     }
-                    targetUnit.addStatusEffect(StatusEffectType.Pathfinder);
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.Pathfinder);
                     break;
                 case PassiveC.AtkSmoke4:
-                    this.__applySmokeSkill(enemyUnit, x => x.applyAtkDebuff(-7), true);
-                    targetUnit.applyDefBuff(6);
-                    targetUnit.applyResBuff(6);
-                    targetUnit.addStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                    this.__applySmokeSkill(enemyUnit, x => x.reserveToApplyAtkDebuff(-7), true);
+                    targetUnit.reserveToApplyDefBuff(6);
+                    targetUnit.reserveToApplyResBuff(6);
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
                     break;
                 case PassiveC.SpdSmoke4:
-                    this.__applySmokeSkill(enemyUnit, x => x.applySpdDebuff(-7), true);
-                    targetUnit.applySpdBuff(6);
-                    targetUnit.addStatusEffect(StatusEffectType.Dodge);
+                    this.__applySmokeSkill(enemyUnit, x => x.reserveToApplySpdDebuff(-7), true);
+                    targetUnit.reserveToApplySpdBuff(6);
+                    targetUnit.reserveToAddStatusEffect(StatusEffectType.Dodge);
                     break;
             }
         }
@@ -984,13 +1016,13 @@ class PostCombatSkillHander {
             this.__applyDaggerEffect(attackUnit, attackTargetUnit, -3);
         } else if (attackUnit.weapon === Weapon.PoisonDaggerPlus) {
             if (attackTargetUnit.moveType === MoveType.Infantry) {
-                attackTargetUnit.applyDefDebuff(-6);
-                attackTargetUnit.applyResDebuff(-6);
+                attackTargetUnit.reserveToApplyDefDebuff(-6);
+                attackTargetUnit.reserveToApplyResDebuff(-6);
             }
         } else if (attackUnit.weapon === Weapon.PoisonDagger) {
             if (attackTargetUnit.moveType === MoveType.Infantry) {
-                attackTargetUnit.applyDefDebuff(-4);
-                attackTargetUnit.applyResDebuff(-4);
+                attackTargetUnit.reserveToApplyDefDebuff(-4);
+                attackTargetUnit.reserveToApplyResDebuff(-4);
             }
         }
     }
@@ -1000,20 +1032,20 @@ class PostCombatSkillHander {
             case Weapon.Kvasir:
                 if (attackUnit.battleContext.restHpPercentage >= 25) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                     }
                 }
                 break;
             case Weapon.IncurablePlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                     unit.reserveTakeDamage(7);
-                    unit.addStatusEffect(StatusEffectType.DeepWounds);
+                    unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
                 }
                 break;
             case Weapon.DuskDawnStaff:
                 if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackTargetUnit, 2)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                        unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
                     }
                 }
                 break;
@@ -1021,7 +1053,7 @@ class PostCombatSkillHander {
                 if (attackUnit.isWeaponSpecialRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.reserveTakeDamage(5);
-                        unit.addStatusEffect(StatusEffectType.Exposure);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
                     }
                 }
                 break;
@@ -1035,7 +1067,7 @@ class PostCombatSkillHander {
             case Weapon.CaringConch:
                 if (attackUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(attackUnit)) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.Guard);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Guard);
                     }
                 }
                 break;
@@ -1057,27 +1089,27 @@ class PostCombatSkillHander {
                 break;
             case Weapon.SerpentineStaffPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.addStatusEffect(StatusEffectType.DeepWounds);
+                    unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
                 }
                 break;
             case Weapon.FlamelickBreath:
                 if (attackUnit.battleContext.restHpPercentage >= 25) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.DeepWounds);
+                        unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
                     }
                 }
                 break;
             case Weapon.TigerSpirit:
                 if (attackUnit.battleContext.restHpPercentage >= 25) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                     }
                 }
                 break;
             case Weapon.FrostbiteBreath:
                 if (attackUnit.battleContext.restHpPercentage >= 25) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                        unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
                     }
                 }
                 break;
@@ -1095,12 +1127,12 @@ class PostCombatSkillHander {
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                     this.writeLogLine(`${unit.getNameWithGroup()}は${attackUnit.weaponInfo.name}により7ダメージ、反撃不可の状態異常付与`);
                     unit.reserveTakeDamage(7);
-                    unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                    unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
                 }
                 break;
             case Weapon.Buryunhirude:
                 if (!attackUnit.isWeaponRefined) {
-                    attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
+                    attackTargetUnit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
                 break;
             case PassiveC.Jagan:
@@ -1108,14 +1140,14 @@ class PostCombatSkillHander {
             case Weapon.Sangurizuru:
             case Weapon.ElisesStaff:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 1, true)) {
-                    unit.addStatusEffect(StatusEffectType.Gravity);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
                 break;
             case Weapon.Gravity:
-                attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
+                attackTargetUnit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 break;
             case Weapon.SpringtimeStaff:
-                attackTargetUnit.addStatusEffect(StatusEffectType.Gravity);
+                attackTargetUnit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 if (attackUnit.isWeaponSpecialRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
                         unit.reserveHeal(7);
@@ -1124,56 +1156,56 @@ class PostCombatSkillHander {
                 break;
             case Weapon.SlowPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.applySpdDebuff(-7);
+                    unit.reserveToApplySpdDebuff(-7);
                 }
                 break;
             case Weapon.Slow:
-                attackTargetUnit.applySpdDebuff(-6);
+                attackTargetUnit.reserveToApplySpdDebuff(-6);
                 break;
             case Weapon.ElenasStaff:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.applyAtkDebuff(-7);
-                    unit.applySpdDebuff(-7);
+                    unit.reserveToApplyAtkDebuff(-7);
+                    unit.reserveToApplySpdDebuff(-7);
                     if (attackUnit.isWeaponSpecialRefined) {
-                        unit.addStatusEffect(StatusEffectType.Panic);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                     }
                 }
                 break;
             case Weapon.FearPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.applyAtkDebuff(-7);
+                    unit.reserveToApplyAtkDebuff(-7);
                 }
                 break;
             case Weapon.Fear:
-                attackTargetUnit.applyAtkDebuff(-6);
+                attackTargetUnit.reserveToApplyAtkDebuff(-6);
                 break;
             case Weapon.Pesyukado: {
                 let amount = attackUnit.isWeaponRefined ? 5 : 4;
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                    unit.applyAllBuff(amount);
+                    unit.reserveToApplyAllBuffs(amount);
                 }
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.applyAllDebuff(amount);
+                    unit.reserveToApplyAllDebuff(amount);
                 }
                 if (!attackUnit.isWeaponSpecialRefined) break;
                 if (attackUnit.battleContext.restHpPercentage >= 25) {
                     this.writeDebugLogLine(attackUnit.getNameWithGroup() + "の特殊錬成ペシュカド発動");
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
-                        unit.specialCount += 1;
+                        unit.reserveToIncreaseSpecialCount(1);
                     }
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.specialCount -= 1;
+                        unit.reserveToReduceSpecialCount(1);
                     }
                 }
                 break;
             }
             case Weapon.Hlidskjalf:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                    unit.applyAllBuff(4);
+                    unit.reserveToApplyAllBuffs(4);
                 }
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.applyAllDebuff(-4);
+                    unit.reserveToApplyAllDebuff(-4);
                 }
                 break;
             case Weapon.StaffOfLilies:
@@ -1182,30 +1214,30 @@ class PostCombatSkillHander {
             case Weapon.CandyStaffPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                     unit.setSpecialCountToMax();
-                    unit.addStatusEffect(StatusEffectType.Guard);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Guard);
                     if (skillId === Weapon.StaffOfLilies) {
-                        unit.applyAtkDebuff(-6);
-                        unit.applySpdDebuff(-6);
+                        unit.reserveToApplyAtkDebuff(-6);
+                        unit.reserveToApplySpdDebuff(-6);
                     }
                 }
                 break;
             case Weapon.Candlelight:
-                attackTargetUnit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                attackTargetUnit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
                 break;
             case Weapon.DotingStaff:
             case Weapon.CandlelightPlus:
             case Weapon.FlashPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                    unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
                 }
                 break;
             case Weapon.Trilemma:
-                attackTargetUnit.addStatusEffect(StatusEffectType.TriangleAdept);
+                attackTargetUnit.reserveToAddStatusEffect(StatusEffectType.TriangleAdept);
                 break;
             case Weapon.TrilemmaPlus:
             case Weapon.PunishmentStaff:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.addStatusEffect(StatusEffectType.TriangleAdept);
+                    unit.reserveToAddStatusEffect(StatusEffectType.TriangleAdept);
                 }
                 break;
             case Weapon.AbsorbPlus:
@@ -1232,13 +1264,13 @@ class PostCombatSkillHander {
             case Weapon.LightBreath:
             case Weapon.LightBreathPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                    unit.applyAllBuff(5);
+                    unit.reserveToApplyAllBuffs(5);
                 }
                 break;
             case Weapon.Ifingr:
                 if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
                     for (let unit of this.__findNearestAllies(attackUnit)) {
-                        unit.applyAllDebuff(-4);
+                        unit.reserveToApplyAllDebuff(-4);
                     }
                 }
                 break;
@@ -1247,23 +1279,23 @@ class PostCombatSkillHander {
             case Weapon.MonstrousBow:
             case Weapon.MonstrousBowPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.addStatusEffect(StatusEffectType.Panic);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                 }
                 break;
             case Weapon.Panic:
             case Weapon.LegionsAxe:
             case Weapon.RoroNoOnoPlus:
-                attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
+                attackTargetUnit.reserveToAddStatusEffect(StatusEffectType.Panic);
                 break;
             case Weapon.GrimasTruth:
                 if (!attackUnit.isWeaponRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                        unit.applyAtkBuff(5);
-                        unit.applySpdBuff(5);
+                        unit.reserveToApplyAtkBuff(5);
+                        unit.reserveToApplySpdBuff(5);
                     }
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                        unit.applyAtkDebuff(-5);
-                        unit.applySpdDebuff(-5);
+                        unit.reserveToApplyAtkDebuff(-5);
+                        unit.reserveToApplySpdDebuff(-5);
                     }
                 }
                 break;
@@ -1271,15 +1303,15 @@ class PostCombatSkillHander {
                 if (attackUnit.isWeaponRefined) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.reserveTakeDamage(10);
-                        unit.applyDefDebuff(-7);
-                        unit.applyResDebuff(-7);
+                        unit.reserveToApplyDefDebuff(-7);
+                        unit.reserveToApplyResDebuff(-7);
                     }
                 } else {
                     if (attackUnit.battleContext.initiatesCombat) {
                         attackTargetUnit.reserveTakeDamage(7);
                     }
-                    attackTargetUnit.applyDefDebuff(-7);
-                    attackTargetUnit.applyResDebuff(-7);
+                    attackTargetUnit.reserveToApplyDefDebuff(-7);
+                    attackTargetUnit.reserveToApplyResDebuff(-7);
                 }
                 break;
             case Weapon.PainPlus:
@@ -1289,39 +1321,39 @@ class PostCombatSkillHander {
                 }
                 break;
             case Weapon.SneeringAxe: {
-                attackTargetUnit.addStatusEffect(StatusEffectType.Panic);
+                attackTargetUnit.reserveToAddStatusEffect(StatusEffectType.Panic);
             }
                 break;
             case Weapon.MitteiNoAnki:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackUnit, 2, true)) {
-                    unit.applyDefBuff(6);
-                    unit.applyResBuff(6);
+                    unit.reserveToApplyDefBuff(6);
+                    unit.reserveToApplyResBuff(6);
                 }
                 break;
             case Weapon.DokuNoKen:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                     this.writeLogLine(unit.getNameWithGroup() + "は" + attackUnit.weaponInfo.name + "により10ダメージ、反撃不可の状態異常付与");
                     unit.reserveTakeDamage(10);
-                    unit.addStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                    unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
                     if (attackUnit.isWeaponSpecialRefined) {
-                        unit.addStatusEffect(StatusEffectType.Discord);
+                        unit.reserveToAddStatusEffect(StatusEffectType.Discord);
                     }
                 }
                 break;
             case Weapon.PanicPlus:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.addStatusEffect(StatusEffectType.Panic);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                 }
                 break;
             case Weapon.SaizoNoBakuenshin:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.applyAllDebuff(-6);
+                    unit.reserveToApplyAllDebuff(-6);
                 }
                 break;
             case Weapon.MeikiNoBreath:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.applyAtkDebuff(-7);
-                    unit.applySpdDebuff(-7);
+                    unit.reserveToApplyAtkDebuff(-7);
+                    unit.reserveToApplySpdDebuff(-7);
                 }
                 break;
         }
@@ -1382,8 +1414,8 @@ class PostCombatSkillHander {
     __applyDaggerEffect(attackUnit, attackTargetUnit, debuffAmount) {
         this.writeLogLine(attackUnit.getNameWithGroup() + "の暗器(" + debuffAmount + ")効果発動");
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-            unit.applyDefDebuff(debuffAmount);
-            unit.applyResDebuff(debuffAmount);
+            unit.reserveToApplyDefDebuff(debuffAmount);
+            unit.reserveToApplyResDebuff(debuffAmount);
         }
     }
 
@@ -1396,7 +1428,8 @@ class PostCombatSkillHander {
     }
 
     __applySmokeSkill(attackTargetUnit, debuffFunc, withTargetUnit = false) {
-        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, withTargetUnit)) {
+        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, withTargetUnit);
+        for (let unit of units) {
             debuffFunc(unit);
         }
     }
