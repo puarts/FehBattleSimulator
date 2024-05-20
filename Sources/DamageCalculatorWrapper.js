@@ -2485,30 +2485,6 @@ class DamageCalculatorWrapper {
                 }
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.FlowerOfEase] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.isWeaponRefined) {
-                // <錬成効果>
-                if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
-                    enemyUnit.addAtkDefSpurs(-5);
-                }
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        enemyUnit.addAtkDefSpurs(-5);
-                        targetUnit.battleContext.followupAttackPriorityIncrement++;
-                        targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
-                            (attackUnit, attackTargetUnit) => {
-                                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(attackUnit)) {
-                                    if (Math.abs(attackTargetUnit.posX - unit.posX) <= 1) {
-                                        unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                                    }
-                                }
-                            }
-                        );
-                    }
-                }
-            }
-        }
         this._applySkillEffectForUnitFuncDict[PassiveB.DisarmTrap4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdDefSpurs(-4);
             if (targetUnit.battleContext.initiatesCombat) {
@@ -17156,17 +17132,6 @@ class DamageCalculatorWrapper {
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromEnemyAlliesFuncMap);
                 func?.call(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
-            }
-            // 縦3列以内
-            if (Math.abs(targetUnit.posX - enemyAlly.posX) <= 1) {
-                switch (enemyAlly.weapon) {
-                    case Weapon.FlowerOfEase:
-                        if (targetUnit.hasNegativeStatusEffect()) {
-                            let amount = enemyAlly.isWeaponRefined ? 4 : 3;
-                            targetUnit.addSpurs(-amount, 0, -amount, -amount);
-                        }
-                        break;
-                }
             }
             // 縦3列と横3列
             if (Math.abs(targetUnit.posX - enemyAlly.posX) <= 1 ||

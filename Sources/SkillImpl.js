@@ -1,5 +1,71 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 微睡の花の剣
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.FlowerOfEase);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <特殊錬成効果>
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                enemyUnit.addAtkDefSpurs(-5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+                    (attackUnit, attackTargetUnit) => {
+                        for (let unit of this.enumerateUnitsInDifferentGroupOnMap(attackUnit)) {
+                            if (Math.abs(attackTargetUnit.posX - unit.posX) <= 1) {
+                                unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
+                            }
+                        }
+                    }
+                );
+            }
+        }
+    );
+    isAfflictorFuncMap.set(skillId,
+        function (attackUnit, lossesInCombat) {
+            return true;
+        }
+    );
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.FlowerOfEase);
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // 縦3列以内
+            if (Math.abs(targetUnit.posX - enemyAllyUnit.posX) <= 1) {
+                if (targetUnit.hasNegativeStatusEffect()) {
+                    let amount = 4;
+                    targetUnit.addSpurs(-amount, 0, -amount, -amount);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // <錬成効果>
+            if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
+                enemyUnit.addAtkDefSpurs(-5);
+            }
+        }
+    );
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.FlowerOfEase);
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // 縦3列以内
+            if (Math.abs(targetUnit.posX - enemyAllyUnit.posX) <= 1) {
+                if (targetUnit.hasNegativeStatusEffect()) {
+                    let amount = 3;
+                    targetUnit.addSpurs(-amount, 0, -amount, -amount);
+                }
+            }
+        }
+    );
+}
+
 // フレイムランス
 {
     let skillId = getSpecialRefinementSkillId(Weapon.FlameLance);
@@ -8207,6 +8273,11 @@
                 unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
                 unit.reserveToAddStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP);
             }
+        }
+    );
+    isAfflictorFuncMap.set(skillId,
+        function (attackUnit, lossesInCombat) {
+            return true;
         }
     );
 }
