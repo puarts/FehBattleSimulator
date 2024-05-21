@@ -1,5 +1,48 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// すべてを鎖す世界
+{
+    let skillId = PassiveC.AbsoluteClosure;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、
+            // 自分を中心とした縦3列と横3列の敵に
+            /** @type {Generator<Unit>} */
+            // let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
+            let enemies = this.unitManager.enumerateUnitsInDifferentGroupInCrossOf(skillOwner, 1);
+            for (let enemy of enemies) {
+                // 【護られ不可」、
+                enemy.reserveToAddStatusEffect(StatusEffectType.Undefended);
+                // 【暗闘】を付与
+                enemy.reserveToAddStatusEffect(StatusEffectType.Feud);
+            }
+
+            // ターン開始時、
+            // 自身を中心とした縦3列と横3列に敵がいる時、
+            if (this.unitManager.existsUnitsInDifferentGroupInCrossOf(skillOwner, 1)) {
+                // 自分に【回避】を付与、
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                // 自分の【不利な状態異常】を解除
+                skillOwner.reserveToResetDebuffs();
+                skillOwner.reserveToClearNegativeStatusEffects();
+                // （同ターン開始時に受けた不利な状態異常は解除されない）
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 化身状態なら、
+            if (targetUnit.isTransformed) {
+                // 戦闘中、攻撃、速さ、守備、魔防＋4、
+                targetUnit.addAllSpur(4);
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.setNullFollowupAttack();
+            }
+        }
+    );
+}
+
 // 絶対化身・強襲4
 {
     let skillId = PassiveB.BeastAssault4;

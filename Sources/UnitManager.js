@@ -90,6 +90,18 @@ class UnitManager {
         }
     }
 
+    * enumerateUnitsInDifferentGroupInCrossOf(targetUnit, offset) {
+        for (let unit of this.enumerateUnitsInDifferentGroup(targetUnit)) {
+            if (unit.isOnMap && !unit.isDead && unit.isInCrossWithOffset(targetUnit, offset)) {
+                yield unit;
+            }
+        }
+    }
+
+    existsUnitsInDifferentGroupInCrossOf(targetUnit, offset) {
+        return !this.enumerateUnitsInDifferentGroupInCrossOf(targetUnit, offset).next().done
+    }
+
     enumerateUnitsWithinSpecifiedSpaces(posX, posY, unitGroupId, spaces) {
         return this.enumerateUnitsWithPredicator(unit => {
             if (unit.groupId !== unitGroupId || !unit.isOnMap) {
