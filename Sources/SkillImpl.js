@@ -1,5 +1,81 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 閉ざす花嫁のブーケ
+{
+    let skillId = Weapon.ClosingFlorets;
+    // 威力：14：
+    // 射程：1
+    // 【再移動（残り＋1）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // 再移動残り+1
+        return this.restMoveCount + 1;
+    });
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            /** @type {(this: BeginningOfTurnSkillHandler) => Unit[]} */
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 自分と後述の対象それぞれについて、
+                /** @type {Unit[]} */
+                let targetUnits;
+                if (this.unitManager.existsPartnerOnMap(skillOwner)) {
+                    // （対象は、
+                    // 自軍内に支援を結んでいる相手がいる時は、周囲2マス以内にいる支援相手、
+                    targetUnits = Array.from(this.unitManager.enumeratePartnersInSpecifiedRange(skillOwner, 2));
+                } else {
+                    // 自軍内に支援を結んでいる相手がいない時は、周囲2マス以内にいる最も速さが高い味方）
+                    let allies = this.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                    // TODO: 虚勢が有効か調べる
+                    let getSpd = u => u.statusEvalUnit.getSpdInPrecombat();
+                    targetUnits = Array.from(IterUtil.maxElements(allies, getSpd));
+                }
+                targetUnits.push(skillOwner);
+
+                for (let targetUnit of targetUnits) {
+                    let unit = targetUnit.statusEvalUnit;
+                    if (unit.isSpecialCountMax) {
+                        // 奥義発動カウントが「最大値」なら、奥義発動カウントー2、
+                        targetUnit.reserveToReduceSpecialCount(2);
+                    } else if (unit.maxSpecialCount - 1 === unit.specialCount) {
+                        // 「最大値－1」なら、奥義発動カウントー1
+                        targetUnit.reserveToReduceSpecialCount(1);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防が自分を中心とした縦3列と横3列にいる敵の数x3＋5だけ増加（最大14）、
+                let enemies = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnit));
+                let count = enemies.filter(u => u.isInCrossWithOffset(targetUnit, 1)).length;
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                targetUnit.addAllSpur(amount);
+                let spdFlag = [false, true, false, false];
+                // 与えるダメージ＋速さの20％（範囲奥義を除く）、
+                targetUnit.battleContext.addDamageByStatus(spdFlag, 0.2);
+                // 受けるダメージー速さの20％（範囲奥義を除く）
+                targetUnit.battleContext.reduceDamageByStatus(spdFlag, 0.2);
+            }
+        }
+    );
+    // ターン開始時、竜、獣以外の味方と隣接していない場合
+    // 化身状態になり、移動＋1（1ターン、重複しない）
+    // （そうでない場合、化身状態を解除）
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Flying);
+    // 化身状態なら、攻撃＋2
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+}
+
 // 微睡の花の剣
 {
     let skillId = getSpecialRefinementSkillId(Weapon.FlowerOfEase);

@@ -1163,7 +1163,11 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
     }
 );
 
+与えるダメージ＋速さの20％（範囲奥義を除く）、
+targetUnit.battleContext.addDamageByStatus([false, true, false, false], 0.2);
 自分が受けるダメージー守備か魔防の高い方の20％（範囲奥義を除く）
+targetUnit.battleContext.reduceDamageByStatus([false, false, true, true], 0.2);
+もしくは
 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         this.applyDamageReductionByOwnStatus(targetUnit, enemyUnit, [false, false, true, true]);

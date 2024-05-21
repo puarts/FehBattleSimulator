@@ -28,6 +28,10 @@ class BeginningOfTurnSkillHandler {
     get isFirstTurn() {
         return this.globalBattleContext.isFirstTurn;
     }
+    /** @type {UnitManager} */
+    get unitManager() {
+        return this._unitManager;
+    }
 
     get log() {
         return this._logger.log;

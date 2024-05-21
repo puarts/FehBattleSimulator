@@ -763,4 +763,22 @@ class BattleContext {
             return 0;
         });
     }
+
+    addDamageByStatus(statusFlags, ratio) {
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                let status = targetUnit.getHighestStatusInCombat(enemyUnit, statusFlags);
+                this.additionalDamage += Math.trunc(status * ratio);
+            }
+        );
+    }
+
+    reduceDamageByStatus(statusFlags, ratio) {
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                let status = targetUnit.getHighestStatusInCombat(enemyUnit, statusFlags);
+                this.damageReductionValue += Math.trunc(status * ratio);
+            }
+        );
+    }
 }

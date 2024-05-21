@@ -242,6 +242,20 @@ class UnitManager {
         return this.enumerateUnitsWithPredicator(pred);
     }
 
+    enumeratePartnersOnMap(targetUnit) {
+        let pred = unit => {
+            const isSameGroup = targetUnit.groupId === unit.groupId;
+            const isPartner = targetUnit.isPartner(unit);
+
+            return isSameGroup && unit.isOnMap && isPartner;
+        }
+        return this.enumerateUnitsWithPredicator(pred);
+    }
+
+    existsPartnerOnMap(targetUnit) {
+        return !this.enumeratePartnersOnMap(targetUnit).next().done
+    }
+
     __createDefaultUnit(id, unitGroupType) {
         return new Unit(id, "", unitGroupType, MoveType.Infantry);
     }

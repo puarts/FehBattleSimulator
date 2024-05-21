@@ -1828,6 +1828,11 @@ const Weapon = {
     Ereshkigal: 2870, // エレシュキガル
     ArcaneFellstone: 2867, // 魔器・歪神竜の竜石
     DeadWolfBlade: 2877, // 命なき根牙の剣
+
+    // 超英雄「未来の花嫁たち」
+    // https://www.youtube.com/watch?v=Y7DYD38zM38&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Y9_CADToG5M&ab_channel=NintendoMobile
+    ClosingFlorets: 2882, // 閉ざす花嫁のブーケ
 };
 
 const Support = {
