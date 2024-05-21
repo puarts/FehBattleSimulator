@@ -1,5 +1,24 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 絶対化身・強襲4
+{
+    let skillId = PassiveB.BeastAssault4;
+    hasTransformSkillsFuncMap.set(skillId, function () {
+        // 化身状態になる条件を無条件にする
+        return true;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の速さ、守備ー4、
+            enemyUnit.addSpdDefSpurs(-4);
+            // 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+            // （無効にする数値は端数切捨て）
+            // （範囲奥義を除く）
+        }
+    );
+}
+
 // 閉ざす花嫁のブーケ
 {
     let skillId = Weapon.ClosingFlorets;
