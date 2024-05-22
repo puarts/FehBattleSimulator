@@ -138,6 +138,9 @@ class PostCombatSkillHander {
         }
 
         this.#applyReservedEffects();
+
+        this.#applyPostCombatAllySkills(atkUnit);
+        this.#applyPostCombatAllySkills(defUnit);
     }
 
     #applySkillEffectsAfterCombatNeverthelessDeadForUnits(atkUnit, defUnit, result) {
@@ -1431,6 +1434,15 @@ class PostCombatSkillHander {
         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, withTargetUnit);
         for (let unit of units) {
             debuffFunc(unit);
+        }
+    }
+
+    #applyPostCombatAllySkills(combatUnit) {
+        let allies = this.enumerateUnitsInTheSameGroupOnMap(combatUnit);
+        for (let ally of allies) {
+            for (let skillId of ally.enumerateSkills()) {
+                getSkillFunc(skillId, applyPostCombatAllySkillFuncMap)?.call(this, ally, combatUnit);
+            }
         }
     }
 }

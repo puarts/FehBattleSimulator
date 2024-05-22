@@ -3190,6 +3190,7 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    ForeverYours: 2890, // あなたのシャロン
     AbsoluteClosure: 2884, // すべてを鎖す世界
     CorruptedDragon: 2869, // 異形なる竜王
     FellSuccessor: 2876, // 邪竜の後継者

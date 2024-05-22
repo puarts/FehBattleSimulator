@@ -1593,3 +1593,5 @@ const canAddStatusEffectByRallyFuncMap = new Map();
 const getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap = new Map();
 /** @type {Map<number|string, (this: Window, supporter: Unit, target: Unit) => number>} */
 const calcHealAmountFuncMap = new Map();
+/** @type {Map<number|string, (this: PostCombatSkillHander, skillOwner: Unit, combatUnit: Unit) => void>} */
+const applyPostCombatAllySkillFuncMap = new Map();

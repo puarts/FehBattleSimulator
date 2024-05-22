@@ -219,7 +219,7 @@ class DamageCalculatorWrapper {
         // 戦闘後発動のスキル等を評価
         this._combatHander.applyPostCombatProcess(atkUnit, result.defUnit, result);
 
-        if (defUnit != result.defUnit) {
+        if (defUnit !== result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
             let saverUnit = result.defUnit;
             if (!saverUnit.isDead) {

@@ -1447,6 +1447,15 @@ updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case PassiveB.RagingStorm:
 }
 
+味方が戦闘した時、味方の戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
+// （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
+// （1ターンに1回のみ）
+if (!skillOwner.isAnotherActionInPostCombatActivated) {
+    skillOwner.isAnotherActionInPostCombatActivated = true;
+    skillOwner.isActionDone = false;
+    skillOwner.isCantoActivatedInCurrentTurn = false;
+}
+
 入れ替え
 getTargetUnitTileAfterMoveAssistFuncMap.set(skillId, function (unit, targetUnit, assistTile) {
     return this.__findTileAfterSwap(unit, targetUnit, assistTile);

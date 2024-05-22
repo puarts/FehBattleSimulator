@@ -1,5 +1,48 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// あなたのシャロン
+{
+    let skillId = PassiveC.ForeverYours;
+    // 【再移動（マス間の距離＋1、最大4）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        let dist = Unit.calcMoveDistance(this)
+        return Math.min(dist + 1, 4);
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲3マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // 戦闘中、攻撃、速さ、守備、魔防＋4、
+                targetUnit.addAllSpur(4);
+                // 攻撃を受けた時のダメージを40%軽減（範囲奥義を除く）、
+                targetUnit.battleContext.setDamageReductionRatio(0.4);
+                // 敵の奥義発動カウント変動量＋を無効、かつ自身の奥義発動カウント変動量ーを無効
+                targetUnit.battleContext.setTempo();
+            }
+        }
+    );
+    applyPostCombatAllySkillFuncMap.set(skillId,
+        function (skillOwner, combatUnit) {
+            // 自分が行動済みで、
+            // 周囲3マス以内で味方が戦闘した時、
+            if (skillOwner.isActionDone &&
+                skillOwner.distance(combatUnit) <= 3) {
+                // 味方の戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
+                // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
+                // （1ターンに1回のみ）
+                if (!skillOwner.isAnotherActionInPostCombatActivated) {
+                    skillOwner.isAnotherActionInPostCombatActivated = true;
+                    skillOwner.isActionDone = false;
+                    skillOwner.isCantoActivatedInCurrentTurn = false;
+                }
+            }
+        }
+    );
+}
+
 // 突破
 {
     let setSkill = (skillId, spurFunc) => {
