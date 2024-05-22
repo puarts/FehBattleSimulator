@@ -137,6 +137,11 @@ class DamageCalculatorWrapper {
         return this._damageCalc.isLogEnabled;
     }
 
+    /** @type {UnitManager} */
+    get unitManager() {
+        return this._unitManager;
+    }
+
     set isLogEnabled(value) {
         this._damageCalc.isLogEnabled = value;
     }

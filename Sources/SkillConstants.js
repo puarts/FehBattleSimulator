@@ -1835,6 +1835,7 @@ const Weapon = {
     ClosingFlorets: 2882, // 閉ざす花嫁のブーケ
     WildflowerEdge: 2885, // 野花の花嫁の大剣
     DragonbloomPlus: 2887, // 竜石のブーケ+
+    UnitedBouquet: 2888, // 二国の花嫁のブーケ
 };
 
 const Support = {

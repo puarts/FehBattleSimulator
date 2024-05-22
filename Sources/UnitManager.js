@@ -90,6 +90,14 @@ class UnitManager {
         }
     }
 
+    * enumerateUnitsInTheSameGroupInCrossOf(targetUnit, offset) {
+    for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit)) {
+            if (unit.isOnMap && !unit.isDead && unit.isInCrossWithOffset(targetUnit, offset)) {
+                yield unit;
+            }
+        }
+    }
+
     * enumerateUnitsInDifferentGroupInCrossOf(targetUnit, offset) {
         for (let unit of this.enumerateUnitsInDifferentGroup(targetUnit)) {
             if (unit.isOnMap && !unit.isDead && unit.isInCrossWithOffset(targetUnit, offset)) {

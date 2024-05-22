@@ -1,5 +1,43 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 二国の花嫁のブーケ
+{
+    let skillId = Weapon.UnitedBouquet;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 自分の攻撃、速さ＋6、
+                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
+                // 「移動＋1」（重複しない）を付与（1ターン）
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防が自分を中心とした縦3列と横3列にいる味方の数x3＋5だけ増加（最大14）、
+                let allies = this.unitManager.enumerateUnitsInTheSameGroupInCrossOf(targetUnit, 1);
+                let amount = MathUtil.ensureMax(GeneratorUtil.count(allies) * 3 + 5, 14);
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+                targetUnit.battleContext.setNullFollowupAttack();
+                // ダメージ＋速さの20%（範囲奥義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
+                // かつ戦闘中、自分の攻撃でダメージを与えた時、HPが回復
+                // 回復値は、攻撃した側（自分からなら自分、敵からなら敵）の移動前と移動後のマスの距離x3（最大12）
+                // （与えたダメージが0でも効果は発動）
+                let distance = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                targetUnit.battleContext.healedHpByAttack += MathUtil.ensureMax(distance * 3, 12);
+            }
+        }
+    );
+}
+
 // 竜石のブーケ+
 {
     let skillId = Weapon.DragonbloomPlus;
@@ -763,7 +801,7 @@
                 // 戦闘中、攻撃、速さ、守備、魔防+4、さらに、
                 targetUnit.addAllSpur(4);
                 // 攻撃、速さ、守備、魔防が増加、増加値は、攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離(最大4)、
-                let amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
+                let amount = MathUtil.ensureMax(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 4);
                 targetUnit.addAllSpur(amount);
                 // ダメージ+攻撃の15%(範囲奥義を除く)、
                 targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
