@@ -1,5 +1,27 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 怒涛・キャンセル4
+{
+    let skillId = PassiveB.FlowGuard4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、
+            if (targetUnit.battleContext.initiatesCombat) {
+                // 戦闘中、敵の速さ、守備ー4、
+                enemyUnit.addSpdDefSpurs(-4);
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+                targetUnit.battleContext.setNullFollowupAttack();
+                // 敵の奥義発動カウント変動量－1（同系統効果複数時、最大値適用）、
+                targetUnit.battleContext.reducesCooldownCount = true;
+                // かつ敵が攻撃時に発動する奥義を装備している時、敵の最初の攻撃前に敵の奥義発動カウント＋1（奥義発動カウントの最大値は超えない）
+                if (enemyUnit.hasNormalAttackSpecial()) {
+                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                }
+            }
+        }
+    );
+}
+
 // 野花の花嫁の大剣
 {
     let skillId = Weapon.WildflowerEdge;
