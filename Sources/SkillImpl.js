@@ -8843,6 +8843,12 @@
             }
         }
     );
+    isAfflictorFuncMap.set(skillId,
+        function (attackUnit, lossesInCombat) {
+            // 死んでいなければ
+            return !lossesInCombat;
+        }
+    );
 }
 
 // 鬼神飛燕の炎撃
@@ -8870,6 +8876,12 @@
             if (targetUnit.battleContext.initiatesCombat) {
                 this.__applyFlaredSkillEffect(targetUnit, enemyUnit);
             }
+        }
+    );
+    isAfflictorFuncMap.set(skillId,
+        function (attackUnit, lossesInCombat) {
+            // 死んでいなければ
+            return !lossesInCombat;
         }
     );
 }
