@@ -63,6 +63,7 @@ const Hero = {
     DuoLyon: 1086,
     HarmonizedChloe: 1097,
     DuoRobin: 1109,
+    DuoSharena: 1125,
 };
 
 const IvStateOptions = [
