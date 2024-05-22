@@ -1,5 +1,48 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 竜石のブーケ+
+{
+    let skillId = Weapon.DragonbloomPlus;
+    // 威力：14
+    // 射程：1
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防＋4、
+                targetUnit.addAllSpur(4);
+                // ダメージ＋速さの15%（範囲奥義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.15);
+                // 最初に受けた攻撃と2回攻撃のダメージを〇%軽減（〇は、各ターンについて、このスキル所持者が自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時は80、そうでない時は40）
+                let ratio = 0.4;
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                        ratio = 0.8;
+                    }
+                } else if (enemyUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon2) {
+                        ratio = 0.8;
+                    }
+                }
+                // 最初に受けた攻撃と2回攻撃のダメージを〇%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, Unit);
+                // （最初に受けた攻撃と2回攻撃：
+                // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）
+            }
+        }
+    );
+    setOnetimeActionActivatedFuncMap.set(skillId,
+        function () {
+            if (this.battleContext.initiatesCombat) {
+                this.isOneTimeActionActivatedForWeapon = true;
+            } else {
+                this.isOneTimeActionActivatedForWeapon2 = true;
+            }
+        }
+    );
+}
+
 // 怒涛・キャンセル4
 {
     let skillId = PassiveB.FlowGuard4;
@@ -86,7 +129,7 @@
         }
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function(targetUnit, enemyUnit) {
+        function (targetUnit, enemyUnit) {
             // 自分から攻撃した時、戦闘後、
             if (targetUnit.battleContext.initiatesCombat) {
                 // 敵に【戦果移譲】を付与（敵の次回行動終了時まで）、かつ、
@@ -111,7 +154,6 @@
             // ターン開始時、
             // 自分を中心とした縦3列と横3列の敵に
             /** @type {Generator<Unit>} */
-            // let enemies = this.enumerateUnitsInDifferentGroupOnMap(skillOwner);
             let enemies = this.unitManager.enumerateUnitsInDifferentGroupInCrossOf(skillOwner, 1);
             for (let enemy of enemies) {
                 // 【護られ不可」、
