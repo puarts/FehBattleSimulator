@@ -1202,6 +1202,9 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
 固定ダメージ軽減(受けるダメージ-N)
 targetUnit.battleContext.damageReductionValue += N;
 
+戦闘中、敵の奥義による攻撃の時、受けるダメージーN
+targetUnit.battleContext.damageReductionValueOfSpecialAttack += N;
+
 攻撃ごとに変化する可能性がある固定ダメージ軽減
 applySkillEffectsPerAttackFuncMap.set(skillId,
     function (targetUnit, enemyUnit, canActivateAttackerSpecial) {

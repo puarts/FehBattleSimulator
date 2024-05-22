@@ -2452,6 +2452,9 @@ const PassiveA = {
 
     CrystallineWater: 2875, // 明鏡止水
     VergeOfDeath: 2873, // 限界死線
+
+    // 突破
+    AtkSpdExcel: 2889, // 攻撃速さの突破
 };
 
 const PassiveB = {

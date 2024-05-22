@@ -1,5 +1,35 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 突破
+{
+    let setSkill = (skillId, spurFunc) => {
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 攻撃した側（自分からなら自分、敵からなら敵）の移動後のマスが移動前と異なる時、
+                let distance = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                if (distance > 0) {
+                    // 戦闘中、攻撃、速さ＋6、さらに、
+                    spurFunc(targetUnit, 6);
+                    // （〇は、攻撃した側の
+                    // 移動前と移動後のマスの距離（最大4））
+                    let amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
+                    // 攻撃、速さ＋〇、
+                    spurFunc(targetUnit, amount);
+                    // かつ自分から攻撃していれば、
+                    if (targetUnit.battleContext.initiatesCombat) {
+                        // 戦闘中、受けるダメージー〇✕3（範囲義を除く）
+                        targetUnit.battleContext.damageReductionValue += amount * 3;
+                        // 戦闘中、敵の奥義による攻撃の時、受けるダメージー〇x3（範囲奥義を除く）
+                        targetUnit.battleContext.damageReductionValueOfSpecialAttack += amount * 3;
+                    }
+                }
+            }
+        );
+    }
+    // 攻撃速さの突破
+    setSkill(PassiveA.AtkSpdExcel, (u, v) => u.addAtkSpdSpurs(v));
+}
+
 // 二国の花嫁のブーケ
 {
     let skillId = Weapon.UnitedBouquet;
