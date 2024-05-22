@@ -1,5 +1,85 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 野花の花嫁の大剣
+{
+    let skillId = Weapon.WildflowerEdge;
+    // 威力：16
+    // 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // 【再移動（残り＋1）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return this.restMoveCount + 1;
+    });
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForAllyFuncMap.set(skillId,
+        function* (targetUnit, allyUnit) {
+            // 現在のターン中に自分が戦闘を行っている時、
+            // 周囲5マス以内の味方は、自身の周囲2マス以内に移動可能
+            if (allyUnit.isCombatDone && allyUnit.distance(targetUnit) <= 5) {
+                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防＋5さらに、
+                targetUnit.addAllSpur(5);
+                // 攻撃、速さ、守備、魔防が戦闘開始時の自分の速さの15%だけ増加、
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
+                targetUnit.addAllSpur(amount);
+                // ダメージ＋速さの20%（範囲奥義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
+                // 【〇は、各ターンについて、このスキル所持者が
+                // 自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時は80
+                // そうでない時は40）
+                let ratio = 0.4;
+                if (targetUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                        ratio = 0.8;
+                    }
+                } else if (enemyUnit.battleContext.initiatesCombat) {
+                    if (!targetUnit.isOneTimeActionActivatedForWeapon2) {
+                        ratio = 0.8;
+                    }
+                }
+                // 最初に受けた攻撃と2回攻撃のダメージを〇%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(ratio, Unit);
+            }
+        }
+    );
+    setOnetimeActionActivatedFuncMap.set(skillId,
+        function () {
+            if (this.battleContext.initiatesCombat) {
+                this.isOneTimeActionActivatedForWeapon = true;
+            } else {
+                this.isOneTimeActionActivatedForWeapon2 = true;
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function(targetUnit, enemyUnit) {
+            // 自分から攻撃した時、戦闘後、
+            if (targetUnit.battleContext.initiatesCombat) {
+                // 敵に【戦果移譲】を付与（敵の次回行動終了時まで）、かつ、
+                enemyUnit.reserveToAddStatusEffect(StatusEffectType.ShareSpoils);
+            }
+            /** @type {Generator<Unit>} */
+            let enemies = this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, 2, true);
+            // 敵とその周囲2マス以内の敵に10ダメージ
+            for (let enemy of enemies) {
+                enemy.reserveTakeDamage(10);
+            }
+        }
+    );
+}
+
 // すべてを鎖す世界
 {
     let skillId = PassiveC.AbsoluteClosure;

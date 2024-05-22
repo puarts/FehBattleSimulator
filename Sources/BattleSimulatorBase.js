@@ -3539,6 +3539,19 @@ class BattleSimulatorBase {
             }
         }
 
+        // 戦果移譲による再行動
+        if (atkUnit.isAlive) {
+            if (defUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
+                // さらに、敵から攻撃された戦闘で撃破された時、
+                if (defUnit.isDead) {
+                   // 戦闘後、敵を行動可能な状態にする（この効果は「時は光」を含む、他の同系統効果より優先する、その際、他の同系統効果は発動していない扱いとする）
+                    if (atkUnit.isActionDone) {
+                        atkUnit.isActionDone = false;
+                    }
+                }
+            }
+        }
+
         // 優先度の高い再行動スキルの評価
         if (atkUnit.isAlive) {
             for (let skillId of atkUnit.enumerateSkills()) {

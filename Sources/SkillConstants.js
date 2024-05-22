@@ -1833,6 +1833,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=Y7DYD38zM38&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=Y9_CADToG5M&ab_channel=NintendoMobile
     ClosingFlorets: 2882, // 閉ざす花嫁のブーケ
+    WildflowerEdge: 2885, // 野花の花嫁の大剣
 };
 
 const Support = {

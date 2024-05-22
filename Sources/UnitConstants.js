@@ -183,6 +183,7 @@ const StatusEffectType = {
     AfterStartOfTurnSkillsTriggerActionEndsImmediately: 61, // ターン開始後スキル発動後、即座に行動終了
     HushSpectrum: 62, // 七色の囁き
     EssenceDrain: 63, // エーギル奪取
+    ShareSpoils: 64, // 戦果移譲
 };
 
 const NotReserved = -2;

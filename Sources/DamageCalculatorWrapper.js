@@ -2216,6 +2216,13 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += 1;
             }
         }
+        // 【戦果移譲】
+        if (targetUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
+            // 戦闘中、攻撃、速さ、守備、魔防ー5となる状態異常
+            targetUnit.addAllSpur(-5);
+            // さらに、自分の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
+            enemyUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+        }
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
         ) {
