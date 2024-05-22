@@ -2430,6 +2430,7 @@ const PassiveA = {
     // 竜眼
     AtkResScowl3: 2422, // 攻撃魔防の竜眼3
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
+    AtkSpdScowl3: 2760, // 攻撃速さの竜眼3
     AtkSpdScowl4: 2754, // 攻撃速さの竜眼4
     SpdResScowl4: 2868, // 速さ魔防の竜眼4
     DefResScowl4: 2765, // 守備魔防の竜眼4
