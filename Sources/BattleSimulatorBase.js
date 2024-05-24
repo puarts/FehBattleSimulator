@@ -1053,6 +1053,7 @@ class BattleSimulatorBase {
         }
 
         switch (duoUnit.heroIndex) {
+            case Hero.DuoSharena:
             case Hero.DuoSanaki:
             case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
@@ -1521,6 +1522,7 @@ class BattleSimulatorBase {
                     duoUnit.addStatusEffect(StatusEffectType.Vantage);
                 }
                 break;
+            case Hero.DuoSharena:
             case Hero.DuoSanaki:
             case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
@@ -3535,6 +3537,19 @@ class BattleSimulatorBase {
                     moveUnitToTrashBox(unit);
                     tilesForUpdateChaseTargetTile.push(updateRequiredTile);
                     break;
+                }
+            }
+        }
+
+        // 戦果移譲による再行動
+        if (atkUnit.isAlive) {
+            if (defUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
+                // さらに、敵から攻撃された戦闘で撃破された時、
+                if (defUnit.isDead) {
+                   // 戦闘後、敵を行動可能な状態にする（この効果は「時は光」を含む、他の同系統効果より優先する、その際、他の同系統効果は発動していない扱いとする）
+                    if (atkUnit.isActionDone) {
+                        atkUnit.isActionDone = false;
+                    }
                 }
             }
         }

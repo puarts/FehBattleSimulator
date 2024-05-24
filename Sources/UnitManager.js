@@ -90,6 +90,26 @@ class UnitManager {
         }
     }
 
+    * enumerateUnitsInTheSameGroupInCrossOf(targetUnit, offset) {
+    for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit)) {
+            if (unit.isOnMap && !unit.isDead && unit.isInCrossWithOffset(targetUnit, offset)) {
+                yield unit;
+            }
+        }
+    }
+
+    * enumerateUnitsInDifferentGroupInCrossOf(targetUnit, offset) {
+        for (let unit of this.enumerateUnitsInDifferentGroup(targetUnit)) {
+            if (unit.isOnMap && !unit.isDead && unit.isInCrossWithOffset(targetUnit, offset)) {
+                yield unit;
+            }
+        }
+    }
+
+    existsUnitsInDifferentGroupInCrossOf(targetUnit, offset) {
+        return !this.enumerateUnitsInDifferentGroupInCrossOf(targetUnit, offset).next().done
+    }
+
     enumerateUnitsWithinSpecifiedSpaces(posX, posY, unitGroupId, spaces) {
         return this.enumerateUnitsWithPredicator(unit => {
             if (unit.groupId !== unitGroupId || !unit.isOnMap) {
@@ -240,6 +260,20 @@ class UnitManager {
             return isSameGroup && unit.isOnMap && inRange && isPartner;
         }
         return this.enumerateUnitsWithPredicator(pred);
+    }
+
+    enumeratePartnersOnMap(targetUnit) {
+        let pred = unit => {
+            const isSameGroup = targetUnit.groupId === unit.groupId;
+            const isPartner = targetUnit.isPartner(unit);
+
+            return isSameGroup && unit.isOnMap && isPartner;
+        }
+        return this.enumerateUnitsWithPredicator(pred);
+    }
+
+    existsPartnerOnMap(targetUnit) {
+        return !this.enumeratePartnersOnMap(targetUnit).next().done
     }
 
     __createDefaultUnit(id, unitGroupType) {

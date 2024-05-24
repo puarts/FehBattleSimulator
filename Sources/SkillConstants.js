@@ -1828,6 +1828,14 @@ const Weapon = {
     Ereshkigal: 2870, // エレシュキガル
     ArcaneFellstone: 2867, // 魔器・歪神竜の竜石
     DeadWolfBlade: 2877, // 命なき根牙の剣
+
+    // 超英雄「未来の花嫁たち」
+    // https://www.youtube.com/watch?v=Y7DYD38zM38&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=Y9_CADToG5M&ab_channel=NintendoMobile
+    ClosingFlorets: 2882, // 閉ざす花嫁のブーケ
+    WildflowerEdge: 2885, // 野花の花嫁の大剣
+    DragonbloomPlus: 2887, // 竜石のブーケ+
+    UnitedBouquet: 2888, // 二国の花嫁のブーケ
 };
 
 const Support = {
@@ -2423,6 +2431,7 @@ const PassiveA = {
     // 竜眼
     AtkResScowl3: 2422, // 攻撃魔防の竜眼3
     AtkResScowl4: 2421, // 攻撃魔防の竜眼4
+    AtkSpdScowl3: 2760, // 攻撃速さの竜眼3
     AtkSpdScowl4: 2754, // 攻撃速さの竜眼4
     SpdResScowl4: 2868, // 速さ魔防の竜眼4
     DefResScowl4: 2765, // 守備魔防の竜眼4
@@ -2443,6 +2452,9 @@ const PassiveA = {
 
     CrystallineWater: 2875, // 明鏡止水
     VergeOfDeath: 2873, // 限界死線
+
+    // 突破
+    AtkSpdExcel: 2889, // 攻撃速さの突破
 };
 
 const PassiveB = {
@@ -2818,6 +2830,7 @@ const PassiveB = {
     FlowFeather3: 2139, // 怒涛・天馬行空3
     FlowNTrace3: 2322, // 怒涛・近影3
     FlowDesperation: 2535, // 怒涛・攻め立て
+    FlowGuard4: 2886, // 怒涛・キャンセル4
 
     // 拍節
     AtkResTempo3: 2184, // 攻撃魔防の拍節3
@@ -2845,6 +2858,7 @@ const PassiveB = {
     BeastNTrace3: 2303, // 絶対化身・近影3
     BeastFollowUp3: 2335, // 絶対化身・追撃3
     BeastSense4: 2515, // 絶対化身・察知4
+    BeastAssault4 : 2883, // 絶対化身・強襲4
 
     // 咆哮
     CounterRoar4: 2546, // 反撃の咆哮4
@@ -3176,6 +3190,8 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     // 専用C
+    ForeverYours: 2890, // あなたのシャロン
+    AbsoluteClosure: 2884, // すべてを鎖す世界
     CorruptedDragon: 2869, // 異形なる竜王
     FellSuccessor: 2876, // 邪竜の後継者
     DivineDeceit: 2864, // 神杖天空を偽る

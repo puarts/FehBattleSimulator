@@ -1275,6 +1275,19 @@ class GeneratorUtil {
             func(value);
         }
     }
+
+    /**
+     * @template T
+     * @param {Generator<T>} generator
+     * @returns {number}
+     */
+    static count(generator) {
+        let count = 0;
+        for (const value of generator) {
+            count++;
+        }
+        return count;
+    }
 }
 
 class MathUtil {

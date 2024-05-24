@@ -1022,6 +1022,31 @@ targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
 最初に受けた攻撃と2回攻撃のダメージを40%軽減
 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
 
+最初に受けた攻撃と2回攻撃のダメージを70%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃)
+(軽減効果は、各ターンについて、このスキル所持者が自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時のみ発動)
+applySkillEffectForUnitFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, calcPotentialDamage) {
+        if (targetUnit.battleContext.initiatesCombat) {
+            if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+            }
+        } else if (enemyUnit.battleContext.initiatesCombat) {
+            if (!targetUnit.isOneTimeActionActivatedForWeapon2) {
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+            }
+        }
+    }
+}
+setOnetimeActionActivatedFuncMap.set(skillId,
+    function () {
+        if (this.battleContext.initiatesCombat) {
+            this.isOneTimeActionActivatedForWeapon = true;
+        } else {
+            this.isOneTimeActionActivatedForWeapon2 = true;
+        }
+    }
+);
+
 最初に受けた攻撃と2回攻撃のダメージ-7(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1~2回目の攻撃)
 targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
 
@@ -1163,7 +1188,11 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
     }
 );
 
+与えるダメージ＋速さの20％（範囲奥義を除く）、
+targetUnit.battleContext.addDamageByStatus([false, true, false, false], 0.2);
 自分が受けるダメージー守備か魔防の高い方の20％（範囲奥義を除く）
+targetUnit.battleContext.reduceDamageByStatus([false, false, true, true], 0.2);
+もしくは
 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         this.applyDamageReductionByOwnStatus(targetUnit, enemyUnit, [false, false, true, true]);
@@ -1172,6 +1201,9 @@ targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFun
 
 固定ダメージ軽減(受けるダメージ-N)
 targetUnit.battleContext.damageReductionValue += N;
+
+戦闘中、敵の奥義による攻撃の時、受けるダメージーN
+targetUnit.battleContext.damageReductionValueOfSpecialAttack += N;
 
 攻撃ごとに変化する可能性がある固定ダメージ軽減
 applySkillEffectsPerAttackFuncMap.set(skillId,
@@ -1413,6 +1445,15 @@ applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
 updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case Weapon.TwinCrestPower:
     // case PassiveB.RagingStorm:
+}
+
+味方が戦闘した時、味方の戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
+// （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
+// （1ターンに1回のみ）
+if (!skillOwner.isAnotherActionInPostCombatActivated) {
+    skillOwner.isAnotherActionInPostCombatActivated = true;
+    skillOwner.isActionDone = false;
+    skillOwner.isCantoActivatedInCurrentTurn = false;
 }
 
 入れ替え

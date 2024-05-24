@@ -137,6 +137,11 @@ class DamageCalculatorWrapper {
         return this._damageCalc.isLogEnabled;
     }
 
+    /** @type {UnitManager} */
+    get unitManager() {
+        return this._unitManager;
+    }
+
     set isLogEnabled(value) {
         this._damageCalc.isLogEnabled = value;
     }
@@ -214,7 +219,7 @@ class DamageCalculatorWrapper {
         // 戦闘後発動のスキル等を評価
         this._combatHander.applyPostCombatProcess(atkUnit, result.defUnit, result);
 
-        if (defUnit != result.defUnit) {
+        if (defUnit !== result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
             let saverUnit = result.defUnit;
             if (!saverUnit.isDead) {
@@ -2216,6 +2221,13 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += 1;
             }
         }
+        // 【戦果移譲】
+        if (targetUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
+            // 戦闘中、攻撃、速さ、守備、魔防ー5となる状態異常
+            targetUnit.addAllSpur(-5);
+            // さらに、自分の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
+            enemyUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+        }
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
         ) {
@@ -2482,30 +2494,6 @@ class DamageCalculatorWrapper {
                             }
                         }
                     );
-                }
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.FlowerOfEase] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.isWeaponRefined) {
-                // <錬成効果>
-                if (enemyUnit.battleContext.restHpPercentage >= 75 || enemyUnit.hasNegativeStatusEffect()) {
-                    enemyUnit.addAtkDefSpurs(-5);
-                }
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        enemyUnit.addAtkDefSpurs(-5);
-                        targetUnit.battleContext.followupAttackPriorityIncrement++;
-                        targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
-                            (attackUnit, attackTargetUnit) => {
-                                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(attackUnit)) {
-                                    if (Math.abs(attackTargetUnit.posX - unit.posX) <= 1) {
-                                        unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                                    }
-                                }
-                            }
-                        );
-                    }
                 }
             }
         }
@@ -17156,17 +17144,6 @@ class DamageCalculatorWrapper {
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromEnemyAlliesFuncMap);
                 func?.call(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
-            }
-            // 縦3列以内
-            if (Math.abs(targetUnit.posX - enemyAlly.posX) <= 1) {
-                switch (enemyAlly.weapon) {
-                    case Weapon.FlowerOfEase:
-                        if (targetUnit.hasNegativeStatusEffect()) {
-                            let amount = enemyAlly.isWeaponRefined ? 4 : 3;
-                            targetUnit.addSpurs(-amount, 0, -amount, -amount);
-                        }
-                        break;
-                }
             }
             // 縦3列と横3列
             if (Math.abs(targetUnit.posX - enemyAlly.posX) <= 1 ||

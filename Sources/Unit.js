@@ -563,6 +563,11 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
 
+        // 戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
+        //（同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
+        //（1ターンに1回のみ）
+        this.isAnotherActionInPostCombatActivated = false;
+
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
         this.isOncePerMapSpecialActivated = false;
 
@@ -1228,6 +1233,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restSupportSkillAvailableTurn
             + ValueDelimiter + this.restPassiveBSkillAvailableTurn
             + ValueDelimiter + boolToInt(this.isSupportDone)
+            + ValueDelimiter + boolToInt(this.isAnotherActionInPostCombatActivated)
             ;
     }
 
@@ -1356,6 +1362,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.restSupportSkillAvailableTurn = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restPassiveBSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isSupportDone = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isAnotherActionInPostCombatActivated = intToBool(Number(values[i])); ++i; }
     }
 
 
@@ -2318,6 +2325,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
         this.isCantoActivatedInCurrentTurn = false;
+        this.isAnotherActionInPostCombatActivated = false;
     }
 
     setOnetimeActionActivated() {
