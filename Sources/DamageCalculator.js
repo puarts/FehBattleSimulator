@@ -646,7 +646,7 @@ class DamageCalculator {
             atkCountPerCombat = 1;
         }
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
-        let specialAddDamage = atkUnit.battleContext.getTotalSpecialAddDamage();
+        let specialAddDamage = atkUnit.battleContext.getSpecialAddDamage();
 
         let mitHp = defUnit.restHp;
         let defInCombat = defUnit.getDefInCombat(atkUnit);
@@ -1322,7 +1322,8 @@ class DamageCalculator {
 
             let currentDamage = 0;
             normalDamage += atkUnit.battleContext.additionalDamagePerAttack;
-            specialDamage += atkUnit.battleContext.additionalDamagePerAttack;
+            specialDamage +=
+                atkUnit.battleContext.additionalDamagePerAttack + atkUnit.battleContext.getSpecialAddDamagePerAttack();
             if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
                 atkUnit.battleContext.specialActivatedCount++;

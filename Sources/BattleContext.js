@@ -628,8 +628,12 @@ class BattleContext {
         this.#specialAddDamagePerAttack += damage;
     }
 
-    getTotalSpecialAddDamage() {
-        return this.#specialAddDamage + this.#specialAddDamagePerAttack;
+    getSpecialAddDamage() {
+        return this.#specialAddDamage;
+    }
+
+    getSpecialAddDamagePerAttack() {
+        return this.#specialAddDamagePerAttack;
     }
 
     getSpecialCountChangeAmountBeforeFirstAttack() {
