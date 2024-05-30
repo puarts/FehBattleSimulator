@@ -394,6 +394,9 @@ class BattleContext {
         // 神速追撃上書き
         this.potentOverwriteRatio = null;
 
+        // 戦闘中に一度しか発動しない奥義のスキル効果が発動したか
+        this.isOneTimeSpecialSkillEffectActivatedDuringCombat = false;
+
         // フック関数
         // 固定ダメージ
         this.calcFixedAddDamageFuncs = [];

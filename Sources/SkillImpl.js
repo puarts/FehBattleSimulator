@@ -1,5 +1,72 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 竜穿射
+{
+    let skillId = Special.DragonFangShot;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 魔防の40%を奥義ダメージに加算
+            let status = targetUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.4));
+        }
+    );
+
+    // 奥義によるダメージ軽減
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, context) {
+            // 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
+            // * 魔防の差x（4-現在の奥義発動カウント）％軽減（最大（40-現在の奥義発動カウントx10）％）（巨影の範囲奥義を除く）
+            let diff = targetUnit.getEvalResDiffInCombat(enemyUnit);
+            let count = targetUnit.tmpSpecialCount;
+            let ratio = MathUtil.ensureMinMax(diff * 0.04 - count, 0, 0.4 - count * 0.1);
+            targetUnit.battleContext.damageReductionRatiosBySpecialPerAttack.push(ratio);
+        }
+    );
+
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            let diff = defUnit.getEvalResDiffInPrecombat(atkUnit);
+            let count = defUnit.specialCount;
+            let ratio = MathUtil.ensureMinMax(diff * 0.04 - count, 0, 0.4 - count * 0.1);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 奥義を発動した戦闘後、
+            if (targetUnit.battleContext.isSpecialActivated) {
+                // * 敵のマスとその周囲2マスのマスに【天脈・水】を付与（1ターン）
+                let targetTile = enemyUnit.placedTile;
+                for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetTile, 2)) {
+                    tile.reserveDivineVein(DivineVeinType.Water, targetUnit.groupId);
+                }
+            }
+        }
+    );
+
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
+            // 戦闘中、奥義発動可能状態の時、
+            // または、戦闘中、奥義を発動済みの時、
+            if (targetUnit.isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                if (!targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat) {
+                    targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat = true;
+                    // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）
+                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                }
+            }
+        }
+    );
+}
+
 // 白の血族のブレス
 {
     let skillId = Weapon.HoshidosBreath;

@@ -1064,6 +1064,13 @@ __calcAttackTotalDamage(
     atkUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack.push(0.75);
 }
 
+奥義によるダメージ軽減(攻撃ごとに変化する可能性がある)
+applySkillEffectsPerAttackFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, context) {
+        targetUnit.battleContext.damageReductionRatiosBySpecialPerAttack.push(ratio);
+    }
+);
+
 奥義による攻撃でダメージを与えた時、次の敵の攻撃のダメージを50%軽減(その戦闘中のみ)
 // Weapon.ChildsCompass参照
 

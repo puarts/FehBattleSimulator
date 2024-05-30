@@ -3496,6 +3496,14 @@ class Unit extends BattleMapElement {
         return this.getResInPrecombat() + this.__getEvalResAdd();
     }
 
+    getEvalResDiffInCombat(enemyUnit) {
+        return this.getEvalResInCombat(enemyUnit) - enemyUnit.getEvalResInCombat(this);
+    }
+
+    getEvalResDiffInPrecombat(enemyUnit) {
+        return this.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+    }
+
     /**
      * 守備が相手の守備+nより高いかどうかを返す
      * @param {Unit} enemyUnit
