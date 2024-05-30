@@ -2277,6 +2277,14 @@ class DamageCalculatorWrapper {
         // 天脈効果
         let targetTile = targetUnit.placedTile;
         switch (targetTile.divineVein) {
+            case DivineVeinType.Water:
+                if (targetTile.divineVeinGroup === enemyUnit.groupId) {
+                    // * 敵は戦闘中、速さー5、
+                    targetUnit.spdSpur -= 5;
+                    // * 奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は数切捨て）（範囲奥義を除く）（付与マスに既に天脈がある場合、それを上書きする）（同じタイミングに異なる複数の天脈の付与が発生した場合、天脈は消滅する）
+                    enemyUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                }
+                break;
             case DivineVeinType.Stone:
                 if (targetTile.divineVeinGroup === targetUnit.groupId) {
                     targetUnit.addDefResSpurs(6);

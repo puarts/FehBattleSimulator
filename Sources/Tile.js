@@ -48,8 +48,9 @@ const DivineVeinType = {
     Flame: 2,
     Green: 3,
     Haze: 4,
+    Water: 5,
 };
-const DivineVeinStrings = ['', '護', '炎', '緑', '瘴'];
+const DivineVeinStrings = ['', '護', '炎', '緑', '瘴', '水'];
 
 function divineVeinColor(divineVeinGroup) {
     switch (divineVeinGroup) {
@@ -407,18 +408,27 @@ class Tile extends BattleMapElement {
             return 1;
         }
 
-        // 天脈・炎の場合は敵の2距離はコスト+1
+        // 天脈・炎/水の場合は敵の2距離はコスト+1
         // ただし移動制限がかかっている場合は侵入可能
-        if (isRangedWeaponType(unit.weaponType) &&
-            this.divineVein === DivineVeinType.Flame &&
-            this.divineVeinGroup !== unit.groupId) {
+        let isDifficultTerrainDivineVein =
+            this.divineVein === DivineVeinType.Flame ||
+            this.divineVein === DivineVeinType.Water;
+        if (unit.isRangedWeaponType() &&
+            isDifficultTerrainDivineVein &&
+            this.isEnemyDivineVein(unit)) {
             return unit.moveCount === 1 ? 1 : 2;
         }
 
         return this._moveWeights[unit.moveType];
     }
 
-    /// 指定したユニットについて、このタイルで天駆の道が発動するか
+    isEnemyDivineVein(unit) {
+        return this.divineVeinGroup !== unit.groupId;
+    }
+
+    /**
+     * 指定したユニットについて、このタイルで天駆の道が発動するか
+     */
     __canActivatePathfinder(unit) {
         if (this._placedUnit == null) {
             return false;
@@ -702,9 +712,8 @@ class Tile extends BattleMapElement {
         }
     }
 
-    isEnemyUnitAvailable(moveUnit) {
-        return this.placedUnit != null
-            && this._placedUnit.groupId !== moveUnit.groupId;
+    existsEnemyUnit(moveUnit) {
+        return this.placedUnit != null && this.placedUnit.groupId !== moveUnit.groupId;
     }
 
     getMoveWeight(unit, ignoresUnits,
@@ -730,7 +739,7 @@ class Tile extends BattleMapElement {
                 let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
                 // 隣接マスに進軍阻止持ちがいるか確認
                 for (let tile1Space of this.neighbors) {
-                    if (tile1Space.isEnemyUnitAvailable(unit) &&
+                    if (tile1Space.existsEnemyUnit(unit) &&
                         tile1Space.placedUnit.canActivateObstructToAdjacentTiles(unit)) {
                         if (weight === CanNotReachTile || this.isWall()) {
                             return CanNotReachTile;
@@ -740,7 +749,7 @@ class Tile extends BattleMapElement {
 
                     // 2マス以内に進軍阻止持ちがいるか確認
                     for (let tile2Spaces of tile1Space.neighbors) {
-                        if (tile2Spaces.isEnemyUnitAvailable(unit) &&
+                        if (tile2Spaces.existsEnemyUnit(unit) &&
                             tile2Spaces.placedUnit.canActivateObstructToTilesIn2Spaces(unit)) {
                             if (weight === CanNotReachTile || this.isWall()) {
                                 return CanNotReachTile;

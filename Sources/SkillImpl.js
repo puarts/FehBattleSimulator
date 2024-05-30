@@ -1,5 +1,161 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 竜鱗障壁・対転移
+{
+    let skillId = PassiveB.HighDragonWall;
+    // * 魔防の差を比較するスキルの比較判定時、自身の魔防＋5として判定
+    evalResAddFuncMap.set(skillId, function (unit) {
+        return 5;
+    })
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、
+            // * 敵の速さ、魔防-4
+            enemyUnit.addSpdResSpurs(-4);
+            // * 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
+            // 魔防の差x4%軽減（最大40%）（巨影の範囲奥義を除く）
+            targetUnit.battleContext.setResDodge(4, 40);
+            // * 射程2の敵は自分の周囲4マス以内へのスキル効果によるワープ移動不可（すり抜けを持つ敵には無効）（制圧戦の拠点等の地形効果によるワープ移動は可）
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+    canWarpFuncMap.set(skillId,
+        function (targetTile, warpUnit, enemyUnit) {
+            let distance = targetTile.calculateDistance(enemyUnit.placedTile);
+            if (distance <= 4) {
+                if (warpUnit.isRangedWeaponType()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    );
+}
+
+// 竜穿射
+{
+    let skillId = Special.DragonFangShot;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 魔防の40%を奥義ダメージに加算
+            let status = targetUnit.getResInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.4));
+        }
+    );
+
+    // 奥義によるダメージ軽減
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, context) {
+            // 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
+            // * 魔防の差x（4-現在の奥義発動カウント）％軽減（最大（40-現在の奥義発動カウントx10）％）（巨影の範囲奥義を除く）
+            let diff = targetUnit.getEvalResDiffInCombat(enemyUnit);
+            let count = targetUnit.tmpSpecialCount;
+            let ratio = MathUtil.ensureMinMax(diff * 0.04 - count, 0, 0.4 - count * 0.1);
+            targetUnit.battleContext.damageReductionRatiosBySpecialPerAttack.push(ratio);
+        }
+    );
+
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            let diff = defUnit.getEvalResDiffInPrecombat(atkUnit);
+            let count = defUnit.specialCount;
+            let ratio = MathUtil.ensureMinMax(diff * 0.04 - count, 0, 0.4 - count * 0.1);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 奥義を発動した戦闘後、
+            if (targetUnit.battleContext.isSpecialActivated) {
+                // * 敵のマスとその周囲2マスのマスに【天脈・水】を付与（1ターン）
+                let targetTile = enemyUnit.placedTile;
+                for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetTile, 2)) {
+                    tile.reserveDivineVein(DivineVeinType.Water, targetUnit.groupId);
+                }
+            }
+        }
+    );
+
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
+            // 戦闘中、奥義発動可能状態の時、
+            // または、戦闘中、奥義を発動済みの時、
+            if (targetUnit.isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                if (!targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat) {
+                    targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat = true;
+                    // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）
+                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                }
+            }
+        }
+    );
+}
+
+// 白の血族のブレス
+{
+    let skillId = Weapon.HoshidosBreath;
+    // 威力：16
+    // 射程：1
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
+    // 奥義が発動しやすい（発動カウントー1）
+    // 敵から攻撃された時、
+    // 距離に関係なく反撃する
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、
+            // 自身のHPが25%以上で、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 奥義発動カウントが最大値なら、
+                // * 奥義発動カウントー1
+                if (skillOwner.statusEvalUnit.isSpecialCountMax) {
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、
+            // 自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // * 戦闘中、攻撃、速さ、守備、魔防が周囲3マス以内の味方の数*3+5だけ増加（最大14）、
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                // * 最初に受けた攻撃と2回攻撃のダメージー7（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
+                // かつ敵が攻撃時に発動する奥義を装備している時、
+                // * 戦闘中、魔防が敵より5以上高ければ、敵の最初の攻撃前に敵の奥義発動カウント＋1（奥義発動カウントの最大値は超えない）
+                targetUnit.battleContext.setSpecialCountIncreaseBeforeFirstAttack(1, 5);
+                // 戦闘開始時、自身のHPが25%以上なら、
+                // 戦闘後、奥義発動カウントが最大値なら、
+                // * 奥義発動カウントー1
+                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        if (targetUnit.isSpecialCountMax) {
+                            targetUnit.reserveToReduceSpecialCount(1);
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // あなたのシャロン
 {
     let skillId = PassiveC.ForeverYours;

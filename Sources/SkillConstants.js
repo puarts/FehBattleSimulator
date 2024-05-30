@@ -1836,6 +1836,11 @@ const Weapon = {
     WildflowerEdge: 2885, // 野花の花嫁の大剣
     DragonbloomPlus: 2887, // 竜石のブーケ+
     UnitedBouquet: 2888, // 二国の花嫁のブーケ
+
+    // 伝承英雄「眩き光竜の神子 カムイ」
+    // https://www.youtube.com/watch?v=4zZlsvfyFKM&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=ggFGkhvIj4s&t=25s&ab_channel=NintendoMobile
+    HoshidosBreath: 2895, // 白の血族のブレス
 };
 
 const Support = {
@@ -2058,6 +2063,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
+    DragonFangShot: 2896, // 竜穿射
     GreatAether: 2835, // 覇克・天空
     SacredWind: 2828, // 神聖風
     LodestarRush: 2758, // スターラッシュ
@@ -2464,6 +2470,7 @@ const PassiveB = {
     QuickRiposte3: 599, // 切り返し3
     QuickRiposte4: 2264, // 切り返し4
     DragonWall3: 1621, // 竜鱗障壁3
+    HighDragonWall: 2897, // 竜鱗障壁・対転移
     TrueDragonWall: 2078, // 真竜鱗障壁
     NewDivinity: 2174, // 新たなる神竜王
     DragonsIre3: 1493, // 竜の逆鱗3

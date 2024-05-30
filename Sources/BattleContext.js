@@ -394,6 +394,9 @@ class BattleContext {
         // 神速追撃上書き
         this.potentOverwriteRatio = null;
 
+        // 戦闘中に一度しか発動しない奥義のスキル効果が発動したか
+        this.isOneTimeSpecialSkillEffectActivatedDuringCombat = false;
+
         // フック関数
         // 固定ダメージ
         this.calcFixedAddDamageFuncs = [];
@@ -628,8 +631,12 @@ class BattleContext {
         this.#specialAddDamagePerAttack += damage;
     }
 
-    getTotalSpecialAddDamage() {
-        return this.#specialAddDamage + this.#specialAddDamagePerAttack;
+    getSpecialAddDamage() {
+        return this.#specialAddDamage;
+    }
+
+    getSpecialAddDamagePerAttack() {
+        return this.#specialAddDamagePerAttack;
     }
 
     getSpecialCountChangeAmountBeforeFirstAttack() {
@@ -780,5 +787,24 @@ class BattleContext {
                 this.damageReductionValue += Math.trunc(status * ratio);
             }
         );
+    }
+
+    // 竜眼
+    setSpecialCountIncreaseBeforeFirstAttack(amount = 1, resDiff = 5) {
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.isHigherOrEqualResInCombat(enemyUnit, resDiff) &&
+                    enemyUnit.hasNormalAttackSpecial()) {
+                    // 敵の最初の「攻撃前」に敵の奥義発動カウント＋1、
+                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                }
+            }
+        );
+    }
+
+    setResDodge(percentage = 4, maxPercentage = 40) {
+        this.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+            return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit, percentage, maxPercentage);
+        });
     }
 }

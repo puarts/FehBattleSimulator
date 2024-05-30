@@ -239,6 +239,10 @@ targetUnit.restHpPercentage
 evalSpdAddFuncMap.set(skillId, function (unit) {
     return 7;
 })
+// 魔防
+evalResAddFuncMap.set(skillId, function (unit) {
+    return 7;
+})
 もしくは
 const EvalSpdAddDict = {};
 EvalSpdAddDict[<skill id>] = N;
@@ -904,6 +908,9 @@ targetUnit.battleContext.specialCountIncreaseBeforeFirstAttack += N;
 自分の最初の追撃前に自分の奥義発動カウント+N
 targetUnit.battleContext.specialCountIncreaseBeforeFollowupAttack += N;
 
+戦闘中、魔防が敵より5以上高ければ、敵の最初の攻撃前に敵の奥義発動カウント+1
+targetUnit.battleContext.setSpecialCountIncreaseBeforeFirstAttack(1, 5);
+
 敵の最初の攻撃前に自分の奥義発動カウント-N(Nは自然数)
 targetUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += N;
 自分の最初の攻撃前に敵の奥義発動カウント-N
@@ -1001,6 +1008,8 @@ targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) =>
     // 固定割合(30%)
     // return 0.3;
 });
+// 魔防回避
+targetUnit.battleContext.setResDodge(4, 40);
 もしくは
 __getDamageReductionRatio(skillId, atkUnit, defUnit) {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
@@ -1060,6 +1069,13 @@ __calcAttackTotalDamage(
     invalidatesDamageReductionExceptSpecial) {
     atkUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack.push(0.75);
 }
+
+奥義によるダメージ軽減(攻撃ごとに変化する可能性がある)
+applySkillEffectsPerAttackFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, context) {
+        targetUnit.battleContext.damageReductionRatiosBySpecialPerAttack.push(ratio);
+    }
+);
 
 奥義による攻撃でダメージを与えた時、次の敵の攻撃のダメージを50%軽減(その戦闘中のみ)
 // Weapon.ChildsCompass参照
@@ -1573,6 +1589,20 @@ Main.js
     // 離脱
     yield* this.__enumerateEscapeRoute(unit);
 }
+
+射程2の敵は自分の周囲4マス以内へのスキル効果によるワープ移動不可（すり抜けを持つ敵には無効）（制圧戦の拠点等の地形効果によるワープ移動は可）
+[ワープ抑制]
+canWarpFuncMap.set(skillId,
+    function (targetTile, warpUnit, enemyUnit) {
+        let distance = targetTile.calculateDistance(enemyUnit.placedTile);
+        if (distance <= 4) {
+            if (warpUnit.isRangedWeaponType()) {
+                return false;
+            }
+        }
+        return true;
+    }
+);
 
 天駆の道
 function hasPathfinderEffect(skillId) {}
