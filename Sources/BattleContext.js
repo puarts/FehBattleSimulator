@@ -785,4 +785,17 @@ class BattleContext {
             }
         );
     }
+
+    // 竜眼
+    setSpecialCountIncreaseBeforeFirstAttack(amount = 1, resDiff = 5) {
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                if (targetUnit.isHigherOrEqualResInCombat(enemyUnit, resDiff) &&
+                    enemyUnit.hasNormalAttackSpecial()) {
+                    // 敵の最初の「攻撃前」に敵の奥義発動カウント＋1、
+                    enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                }
+            }
+        );
+    }
 }

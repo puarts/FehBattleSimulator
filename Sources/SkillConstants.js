@@ -1836,6 +1836,11 @@ const Weapon = {
     WildflowerEdge: 2885, // 野花の花嫁の大剣
     DragonbloomPlus: 2887, // 竜石のブーケ+
     UnitedBouquet: 2888, // 二国の花嫁のブーケ
+
+    // 伝承英雄「眩き光竜の神子 カムイ」
+    // https://www.youtube.com/watch?v=4zZlsvfyFKM&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=ggFGkhvIj4s&t=25s&ab_channel=NintendoMobile
+    HoshidosBreath: 2895, // 白の血族のブレス
 };
 
 const Support = {

@@ -1,5 +1,57 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 白の血族のブレス
+{
+    let skillId = Weapon.HoshidosBreath;
+    // 威力：16
+    // 射程：1
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
+    // 奥義が発動しやすい（発動カウントー1）
+    // 敵から攻撃された時、
+    // 距離に関係なく反撃する
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、
+            // 自身のHPが25%以上で、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 奥義発動カウントが最大値なら、
+                // * 奥義発動カウントー1
+                if (skillOwner.statusEvalUnit.isSpecialCountMax) {
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、
+            // 自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // * 戦闘中、攻撃、速さ、守備、魔防が周囲3マス以内の味方の数*3+5だけ増加（最大14）、
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                // * 最初に受けた攻撃と2回攻撃のダメージー7（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
+                // かつ敵が攻撃時に発動する奥義を装備している時、
+                // * 戦闘中、魔防が敵より5以上高ければ、敵の最初の攻撃前に敵の奥義発動カウント＋1（奥義発動カウントの最大値は超えない）
+                targetUnit.battleContext.setSpecialCountIncreaseBeforeFirstAttack(1, 5);
+                // 戦闘開始時、自身のHPが25%以上なら、
+                // 戦闘後、奥義発動カウントが最大値なら、
+                // * 奥義発動カウントー1
+                targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs.push(
+                    (targetUnit, enemyUnit) => {
+                        if (targetUnit.isSpecialCountMax) {
+                            targetUnit.reserveToReduceSpecialCount(1);
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 // あなたのシャロン
 {
     let skillId = PassiveC.ForeverYours;
