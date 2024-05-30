@@ -48,8 +48,9 @@ const DivineVeinType = {
     Flame: 2,
     Green: 3,
     Haze: 4,
+    Water: 5,
 };
-const DivineVeinStrings = ['', '護', '炎', '緑', '瘴'];
+const DivineVeinStrings = ['', '護', '炎', '緑', '瘴', '水'];
 
 function divineVeinColor(divineVeinGroup) {
     switch (divineVeinGroup) {
@@ -407,18 +408,27 @@ class Tile extends BattleMapElement {
             return 1;
         }
 
-        // 天脈・炎の場合は敵の2距離はコスト+1
+        // 天脈・炎/水の場合は敵の2距離はコスト+1
         // ただし移動制限がかかっている場合は侵入可能
-        if (isRangedWeaponType(unit.weaponType) &&
-            this.divineVein === DivineVeinType.Flame &&
-            this.divineVeinGroup !== unit.groupId) {
+        let isDifficultTerrainDivineVein =
+            this.divineVein === DivineVeinType.Flame ||
+            this.divineVein === DivineVeinType.Water;
+        if (unit.isRangedWeaponType() &&
+            isDifficultTerrainDivineVein &&
+            this.isEnemyDivineVein(unit)) {
             return unit.moveCount === 1 ? 1 : 2;
         }
 
         return this._moveWeights[unit.moveType];
     }
 
-    /// 指定したユニットについて、このタイルで天駆の道が発動するか
+    isEnemyDivineVein(unit) {
+        return this.divineVeinGroup !== unit.groupId;
+    }
+
+    /**
+     * 指定したユニットについて、このタイルで天駆の道が発動するか
+     */
     __canActivatePathfinder(unit) {
         if (this._placedUnit == null) {
             return false;

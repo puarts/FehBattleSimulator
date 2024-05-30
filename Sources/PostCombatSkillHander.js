@@ -911,12 +911,13 @@ class PostCombatSkillHander {
     __applyFlaredSkillEffect(targetUnit, enemyUnit) {
         let placedTile = enemyUnit.placedTile;
         // キャラの位置関係によって天脈対象のタイルが異なる
+        let divineVein = DivineVeinType.Flame;
         if (targetUnit.posX === enemyUnit.posX) {
             // x軸が等しい時
             for (let tile of this.map.enumerateTiles()) {
                 if (tile.posY === placedTile.posY &&
                     Math.abs(tile.posX - placedTile.posX) <= 2) {
-                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
+                    tile.reserveDivineVein(divineVein, targetUnit.groupId);
                 }
             }
         } else if (targetUnit.posY === enemyUnit.posY) {
@@ -924,7 +925,7 @@ class PostCombatSkillHander {
             for (let tile of this.map.enumerateTiles()) {
                 if (tile.posX === placedTile.posX &&
                     Math.abs(tile.posY - placedTile.posY) <= 2) {
-                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
+                    tile.reserveDivineVein(divineVein, targetUnit.groupId);
                 }
             }
         } else if (
@@ -940,7 +941,7 @@ class PostCombatSkillHander {
                     (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY + 1) ||
                     (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY + 2)
                 ) {
-                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
+                    tile.reserveDivineVein(divineVein, targetUnit.groupId);
                 }
             }
         } else if (
@@ -956,7 +957,7 @@ class PostCombatSkillHander {
                     (tile.posX === placedTile.posX - 1 && tile.posY === placedTile.posY - 1) ||
                     (tile.posX === placedTile.posX - 2 && tile.posY === placedTile.posY - 2)
                 ) {
-                    tile.reserveDivineVein(DivineVeinType.Flame, targetUnit.groupId);
+                    tile.reserveDivineVein(divineVein, targetUnit.groupId);
                 }
             }
         }
