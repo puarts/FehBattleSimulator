@@ -2319,8 +2319,19 @@ class BattleMap {
             targetTile.divineVeinGroup !== warpUnit.groupId) {
             return false;
         }
+        for (let tile of this.enumerateTiles()) {
+            if (tile.existsEnemyUnit(warpUnit)) {
+                let enemyUnit = tile.placedUnit;
+                for (let skillId of enemyUnit.enumerateSkills()) {
+                    let canWarp = getSkillFunc(skillId, canWarpFuncMap)?.call(this, targetTile, warpUnit, enemyUnit) ?? true;
+                    if (!canWarp) {
+                        return false;
+                    }
+                }
+            }
+        }
         for (let tile of this.enumerateTilesWithinSpecifiedDistance(targetTile, 4)) {
-            if (tile.isEnemyUnitAvailable(warpUnit)) {
+            if (tile.existsEnemyUnit(warpUnit)) {
                 let enemyUnit = tile.placedUnit;
                 if (enemyUnit.passiveB === PassiveB.DetailedReport ||
                     enemyUnit.hasStatusEffect(StatusEffectType.WarpBubble)) {

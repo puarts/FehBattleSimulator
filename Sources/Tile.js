@@ -712,9 +712,8 @@ class Tile extends BattleMapElement {
         }
     }
 
-    isEnemyUnitAvailable(moveUnit) {
-        return this.placedUnit != null
-            && this._placedUnit.groupId !== moveUnit.groupId;
+    existsEnemyUnit(moveUnit) {
+        return this.placedUnit != null && this.placedUnit.groupId !== moveUnit.groupId;
     }
 
     getMoveWeight(unit, ignoresUnits,
@@ -740,7 +739,7 @@ class Tile extends BattleMapElement {
                 let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
                 // 隣接マスに進軍阻止持ちがいるか確認
                 for (let tile1Space of this.neighbors) {
-                    if (tile1Space.isEnemyUnitAvailable(unit) &&
+                    if (tile1Space.existsEnemyUnit(unit) &&
                         tile1Space.placedUnit.canActivateObstructToAdjacentTiles(unit)) {
                         if (weight === CanNotReachTile || this.isWall()) {
                             return CanNotReachTile;
@@ -750,7 +749,7 @@ class Tile extends BattleMapElement {
 
                     // 2マス以内に進軍阻止持ちがいるか確認
                     for (let tile2Spaces of tile1Space.neighbors) {
-                        if (tile2Spaces.isEnemyUnitAvailable(unit) &&
+                        if (tile2Spaces.existsEnemyUnit(unit) &&
                             tile2Spaces.placedUnit.canActivateObstructToTilesIn2Spaces(unit)) {
                             if (weight === CanNotReachTile || this.isWall()) {
                                 return CanNotReachTile;

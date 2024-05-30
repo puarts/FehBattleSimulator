@@ -2470,6 +2470,7 @@ const PassiveB = {
     QuickRiposte3: 599, // 切り返し3
     QuickRiposte4: 2264, // 切り返し4
     DragonWall3: 1621, // 竜鱗障壁3
+    HighDragonWall: 2897, // 竜鱗障壁・対転移
     TrueDragonWall: 2078, // 真竜鱗障壁
     NewDivinity: 2174, // 新たなる神竜王
     DragonsIre3: 1493, // 竜の逆鱗3

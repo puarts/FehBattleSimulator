@@ -239,6 +239,10 @@ targetUnit.restHpPercentage
 evalSpdAddFuncMap.set(skillId, function (unit) {
     return 7;
 })
+// 魔防
+evalResAddFuncMap.set(skillId, function (unit) {
+    return 7;
+})
 もしくは
 const EvalSpdAddDict = {};
 EvalSpdAddDict[<skill id>] = N;
@@ -1004,6 +1008,8 @@ targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) =>
     // 固定割合(30%)
     // return 0.3;
 });
+// 魔防回避
+targetUnit.battleContext.setResDodge(4, 40);
 もしくは
 __getDamageReductionRatio(skillId, atkUnit, defUnit) {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
@@ -1583,6 +1589,20 @@ Main.js
     // 離脱
     yield* this.__enumerateEscapeRoute(unit);
 }
+
+射程2の敵は自分の周囲4マス以内へのスキル効果によるワープ移動不可（すり抜けを持つ敵には無効）（制圧戦の拠点等の地形効果によるワープ移動は可）
+[ワープ抑制]
+canWarpFuncMap.set(skillId,
+    function (targetTile, warpUnit, enemyUnit) {
+        let distance = targetTile.calculateDistance(enemyUnit.placedTile);
+        if (distance <= 4) {
+            if (warpUnit.isRangedWeaponType()) {
+                return false;
+            }
+        }
+        return true;
+    }
+);
 
 天駆の道
 function hasPathfinderEffect(skillId) {}

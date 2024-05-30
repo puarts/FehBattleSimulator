@@ -3602,7 +3602,7 @@ class Unit extends BattleMapElement {
     }
 
     __getEvalResAdd() {
-        let value = getEvalResAdd(this.passiveS);
+        let value = getEvalResAdd(this);
         if (value) {
             return value;
         }

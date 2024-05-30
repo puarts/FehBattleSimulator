@@ -1,5 +1,42 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 竜鱗障壁・対転移
+{
+    let skillId = PassiveB.HighDragonWall;
+    // * 魔防の差を比較するスキルの比較判定時、自身の魔防＋5として判定
+    evalResAddFuncMap.set(skillId, function (unit) {
+        return 5;
+    })
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、
+            // * 敵の速さ、魔防-4
+            enemyUnit.addSpdResSpurs(-4);
+            // * 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
+            // 魔防の差x4%軽減（最大40%）（巨影の範囲奥義を除く）
+            targetUnit.battleContext.setResDodge(4, 40);
+            // * 射程2の敵は自分の周囲4マス以内へのスキル効果によるワープ移動不可（すり抜けを持つ敵には無効）（制圧戦の拠点等の地形効果によるワープ移動は可）
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
+            defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
+        }
+    );
+    canWarpFuncMap.set(skillId,
+        function (targetTile, warpUnit, enemyUnit) {
+            let distance = targetTile.calculateDistance(enemyUnit.placedTile);
+            if (distance <= 4) {
+                if (warpUnit.isRangedWeaponType()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    );
+}
+
 // 竜穿射
 {
     let skillId = Special.DragonFangShot;

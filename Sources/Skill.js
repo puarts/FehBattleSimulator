@@ -983,9 +983,13 @@ const EVAL_RES_ADD_MAP = new Map([
 /**
  * 魔防比較時の速さ加算値を取得します。
  */
-function getEvalResAdd(passiveS) {
-    let value = EVAL_RES_ADD_MAP.get(passiveS);
-    return value ? value : 0;
+function getEvalResAdd(unit) {
+    let value = 0;
+    for (let skillId of unit.enumerateSkills()) {
+        value = EVAL_RES_ADD_MAP.get(skillId);
+        value += getSkillFunc(skillId, evalResAddFuncMap)?.call(this, unit) ?? 0;
+    }
+    return value;
 }
 
 const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
@@ -1459,6 +1463,8 @@ const canActivateCantoFuncMap = new Map();
 const calcMoveCountForCantoFuncMap = new Map();
 /** @type {Map<number|string, (this: Window, owner: Unit) => number>} */
 const evalSpdAddFuncMap = new Map();
+/** @type {Map<number|string, (this: Window, owner: Unit) => number>} */
+const evalResAddFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculatorWrapper, defUnit: Unit, atkUnit: Unit) => void>} */
 const applyPrecombatDamageReductionRatioFuncMap = new Map();
 /** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
@@ -1595,3 +1601,5 @@ const getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap = new Map();
 const calcHealAmountFuncMap = new Map();
 /** @type {Map<number|string, (this: PostCombatSkillHander, skillOwner: Unit, combatUnit: Unit) => void>} */
 const applyPostCombatAllySkillFuncMap = new Map();
+/** @type {Map<number|string, (this: BattleMap, tile: Tile, warpUnit: Unit, enemyUnit: Unit) => void>} */
+const canWarpFuncMap = new Map();
