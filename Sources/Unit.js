@@ -2662,11 +2662,19 @@ class Unit extends BattleMapElement {
         this.reservedResBuff = 0;
     }
 
-    applyReservedDebuffs() {
-        this.atkDebuff = this.reservedAtkDebuff;
-        this.spdDebuff = this.reservedSpdDebuff;
-        this.defDebuff = this.reservedDefDebuff;
-        this.resDebuff = this.reservedResDebuff;
+    applyReservedDebuffs(neutralizesDebuffs = [false, false, false, false]) {
+        if (!neutralizesDebuffs[0]) {
+            this.applyAtkDebuff(this.reservedAtkDebuff);
+        }
+        if (!neutralizesDebuffs[1]) {
+            this.applySpdDebuff(this.reservedSpdDebuff);
+        }
+        if (!neutralizesDebuffs[2]) {
+            this.applyDefDebuff(this.reservedDefDebuff);
+        }
+        if (!neutralizesDebuffs[3]) {
+            this.applyResDebuff(this.reservedResDebuff);
+        }
 
         this.resetReservedDebuffs();
     }
@@ -4195,7 +4203,7 @@ class Unit extends BattleMapElement {
             this.passiveSInfo,
             this.passiveXInfo,
         ];
-        for(let info of infos) {
+        for (let info of infos) {
             yield* this.#enumerateSkillInfo(info);
         }
         if (this.isCaptain) {

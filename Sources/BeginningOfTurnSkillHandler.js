@@ -136,20 +136,12 @@ class BeginningOfTurnSkillHandler {
                 unit.resetReservedDebuffs();
                 unit.resetReservedNegativeStatusEffects();
             }
-            BeginningOfTurnSkillHandler.#neutralizesBuffsDebuffsAndStatusEffects(unit);
+            let isNotNeutralized = e => !unit.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.has(e);
+            unit.reservedStatusEffects = unit.reservedStatusEffects.filter(isNotNeutralized);
         }
-        unit.applyReservedDebuffs();
+        unit.applyReservedDebuffs(unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn);
         unit.applyReservedStatusEffects();
         unit.applyReservedSpecialCount();
-    }
-
-    static #neutralizesBuffsDebuffsAndStatusEffects(unit) {
-        if (unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0]) unit.reservedAtkDebuff = 0;
-        if (unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn[1]) unit.reservedSpdDebuff = 0;
-        if (unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn[2]) unit.reservedDefDebuff = 0;
-        if (unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3]) unit.reservedResDebuff = 0;
-        let isNotNeutralized = e => !unit.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.has(e);
-        unit.reservedStatusEffects = unit.reservedStatusEffects.filter(isNotNeutralized);
     }
 
     /**
