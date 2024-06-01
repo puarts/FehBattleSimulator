@@ -8984,50 +8984,69 @@
 
 // 幻影バトルアクス
 {
-    let skillId = Weapon.GeneiBattleAxe;
+    let skillId = getSpecialRefinementSkillId(Weapon.GeneiBattleAxe);
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (this.__isThereAllyIn2Spaces(targetUnit) && !calcPotentialDamage) {
-                    targetUnit.addDefResSpurs(6);
-                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
-                }
-            } else {
-                // <錬成効果>
-                if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) && !calcPotentialDamage) {
-                    targetUnit.addAtkSpdSpurs(4);
-                    targetUnit.addDefResSpurs(6);
-                    enemyUnit.battleContext.followupAttackPriorityDecrement--;
-                    if (enemyUnit.battleContext.initiatesCombat) {
-                        let count = this.__countEnemiesActionNotDone(targetUnit);
-                        let amount = Math.max(Math.min(count * 3, 12), 6);
-                        targetUnit.addDefResSpurs(amount);
-                    }
-                }
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                }
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // 攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)、
+                targetUnit.battleContext.setDamageReductionRatio(0.3);
+                // 戦闘後、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
             }
         }
     );
     updateUnitSpurFromAlliesFuncMap.set(skillId,
-        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
-            if (!allyUnit.isWeaponSpecialRefined) {
-                return;
-            }
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 周囲2マス以内の味方は、
+            // 戦闘中、守備、魔防+4、
             if (targetUnit.distance(allyUnit) <= 2) {
-                targetUnit.addDefResSpurs(6);
+                targetUnit.addDefResSpurs(4);
             }
         }
     );
     applySkillEffectFromAlliesExcludedFromFeudFuncMap.set(skillId,
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
-            if (!allyUnit.isWeaponSpecialRefined) {
-                return;
-            }
+            // 周囲2マス以内の味方は、
+            // 戦闘後、7回復
             if (targetUnit.distance(allyUnit) <= 2) {
                 targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.GeneiBattleAxe);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3) && !calcPotentialDamage) {
+                // 戦闘中、自身の攻撃、速さ+4、
+                // 守備、魔防+6、
+                targetUnit.addAtkSpdSpurs(4);
+                targetUnit.addDefResSpurs(6);
+                // 敵は追撃不可、かつ、
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
+                // 敵から攻撃された時、
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    // 戦闘中、敵の攻撃、守備が、行動済みではない敵の人数×3だけ減少(最大12、最小6)
+                    let count = this.__countEnemiesActionNotDone(targetUnit);
+                    let amount = Math.max(Math.min(count * 3, 12), 6);
+                    targetUnit.addDefResSpurs(amount);
+                }
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.GeneiBattleAxe);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (this.__isThereAllyIn2Spaces(targetUnit) && !calcPotentialDamage) {
+                targetUnit.addDefResSpurs(6);
+                enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         }
     );
