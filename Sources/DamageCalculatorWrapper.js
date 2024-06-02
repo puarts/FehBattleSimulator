@@ -17336,10 +17336,6 @@ class DamageCalculatorWrapper {
                         targetUnit.spdSpur -= 5;
                         targetUnit.resSpur -= 5;
                         break;
-                    case Weapon.ExoticFruitJuice:
-                        targetUnit.spdSpur -= 6;
-                        targetUnit.resSpur -= 6;
-                        break;
                     case Weapon.TharjasHex:
                         if (unit.isWeaponSpecialRefined) {
                             targetUnit.atkSpur -= 4;

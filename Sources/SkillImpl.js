@@ -1,5 +1,20 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 楽園の果汁
+{
+    let skillId = getNormalSkillId(Weapon.ExoticFruitJuice);
+    // 攻撃+3
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            // 周囲2マスの敵は、
+            if (targetUnit.distance(enemyAllyUnit) <= 2) {
+                // 戦闘中、速さ、魔防-6
+                targetUnit.addSpdResSpurs(-6);
+            }
+        }
+    );
+}
+
 // 天帝の闇剣
 {
     let skillId = getNormalSkillId(Weapon.DarkCreatorS);
