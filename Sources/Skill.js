@@ -858,7 +858,6 @@ const TELEPORTATION_SKILL_SET = new Set([
     Weapon.FlowerLance,
     Weapon.FujinYumi,
     Weapon.Gurimowaru,
-    Weapon.ApotheosisSpear,
     Weapon.Noatun,
     Weapon.HinokaNoKounagitou,
     Weapon.IzunNoKajitsu,

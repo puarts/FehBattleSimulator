@@ -2150,13 +2150,10 @@ class BattleMap {
                     }
                 }
                 break;
-            case PassiveB.TeniNoKona:
-            case Weapon.ApotheosisSpear: {
+            case PassiveB.TeniNoKona: {
                 let threshold = 50;
                 if (skillId === PassiveB.TeniNoKona) {
                     threshold = 80;
-                } else if (skillId === Weapon.ApotheosisSpear) {
-                    threshold = 0;
                 }
                 if (unit.hpPercentage >= threshold) {
                     yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);

@@ -1,5 +1,28 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 裏の五連闘の宝槍
+{
+    TELEPORTATION_SKILL_SET.add(Weapon.ApotheosisSpear);
+    let skillId = getNormalSkillId(Weapon.ApotheosisSpear);
+    // 速さ+3
+    // 周囲2マス以内の味方の隣接マスに移動可能
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            // 周囲2マス以内の味方の、周囲1マス以内に移動可能
+            return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、敵のHPが75%以上なら
+            if (enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、自身の攻撃、速さ+5
+                targetUnit.addAtkSpdSpurs(5);
+            }
+        }
+    );
+}
+
 // 竜鱗障壁・対転移
 {
     let skillId = PassiveB.HighDragonWall;
