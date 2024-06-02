@@ -1,5 +1,15 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 混沌ラグネル
+{
+    let skillId = getNormalSkillId(Weapon.ChaosRagnell);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
+        }
+    );
+}
+
 // 楽園の果汁
 {
     let skillId = getNormalSkillId(Weapon.ExoticFruitJuice);

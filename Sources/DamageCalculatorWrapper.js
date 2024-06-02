@@ -11610,9 +11610,6 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.ShinkenFalcion:
-                case Weapon.ChaosRagnell:
-                    this.__applyDebuffReverse(targetUnit, targetUnit.weaponInfo.name);
-                    break;
                 case PassiveA.SpdDefIdeal3:
                     DamageCalculatorWrapper.__applyIdealEffect(targetUnit, enemyUnit,
                         (unit, value) => {
