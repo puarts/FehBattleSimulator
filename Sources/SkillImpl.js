@@ -1,5 +1,42 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 天帝の闇剣
+{
+    let skillId = getNormalSkillId(Weapon.DarkCreatorS);
+    // 守備+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、攻撃、守備がHPが90%以上の味方の人数×2だけ上昇(最大値6)
+            if (!calcPotentialDamage) {
+                let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
+                let amount = MathUtil.ensureMax(count * 2, 6);
+                targetUnit.addAtkDefSpurs(amount);
+
+                // 受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージをHPが90%以上の味方の人数×15%軽減(最大45%)(巨影の範囲奥義を除く)(上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ)
+                let ratio = MathUtil.ensureMax(0.15 * count, 0.45);
+                if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                    targetUnit.battleContext.setDamageReductionRatio(ratio);
+                }
+            }
+        }
+    );
+    applyPrecombatDamageReductionRatioFuncMap.set(skillId,
+        function (defUnit, atkUnit) {
+            // 受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージをHPが90%以上の味方の人数×15%軽減(最大45%)(巨影の範囲奥義を除く)(上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ)
+            if (!defUnit.isOneTimeActionActivatedForWeapon) {
+                let count = this.__countUnit(defUnit.groupId, x => x.hpPercentage >= 90);
+                defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(MathUtil.ensureMax(0.15 * count, 0.45));
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // (上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、このスキル所持者の最初の戦闘のみ)
+            targetUnit.isOneTimeActionActivatedForWeapon = true;
+        }
+    );
+}
+
 // 裏の五連闘の宝槍
 {
     TELEPORTATION_SKILL_SET.add(Weapon.ApotheosisSpear);

@@ -597,9 +597,6 @@ class PostCombatSkillHander {
                         unit.reserveHeal(7);
                     }
                     break;
-                case Weapon.DarkCreatorS:
-                    targetUnit.isOneTimeActionActivatedForWeapon = true;
-                    break;
                 case Weapon.EffiesLance:
                     if (targetUnit.isWeaponSpecialRefined) {
                         targetUnit.isOneTimeActionActivatedForWeapon = true;

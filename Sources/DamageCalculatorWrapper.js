@@ -7549,14 +7549,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.DarkCreatorS] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
-                let count = self.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
-                let buff = Math.min(count * 2, 6);
-                targetUnit.atkSpur += buff;
-                targetUnit.defSpur += buff;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.SpearOfAssal] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
                 targetUnit.battleContext.invalidatesAtkBuff = true;
@@ -13316,14 +13308,6 @@ class DamageCalculatorWrapper {
             switch (skillId) {
                 case PassiveB.Bushido2:
                     targetUnit.battleContext.additionalDamage += 7;
-                    break;
-                // この実装だと戦闘前に効かないので、実際の挙動を確認した方がいいかも
-                case Weapon.DarkCreatorS:
-                    if (!calcPotentialDamage && !targetUnit.isOneTimeActionActivatedForWeapon) {
-                        let count = this.__countUnit(targetUnit.groupId, x => x.hpPercentage >= 90);
-                        let damageReductionRatio = Math.min(count * 15, 45) * 0.01;
-                        targetUnit.battleContext.multDamageReductionRatio(damageReductionRatio, enemyUnit);
-                    }
                     break;
             }
         }
