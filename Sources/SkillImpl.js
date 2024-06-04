@@ -7500,8 +7500,7 @@
                 atkUnit.tmpSpecialCount === 0 ||
                 defUnit.battleContext.isSpecialActivated ||
                 atkUnit.battleContext.isSpecialActivated) {
-                if (defUnit.battleContext.restHpPercentage >= 25 &&
-                    isRangedWeaponType(atkUnit.weaponType)) {
+                if (isRangedWeaponType(atkUnit.weaponType)) {
                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.3);
                 }
             }
