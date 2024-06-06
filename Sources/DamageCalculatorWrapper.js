@@ -6482,7 +6482,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.isWeaponRefined) {
                 if (targetUnit.battleContext.restHpPercentage >= 25) {
                     enemyUnit.addAtkDefSpurs(-5);
-                    targetUnit.battleContext.nullInvalidatesHealRatio = 0.5;
+                    targetUnit.battleContext.addNullInvalidatesHealRatios(0.5);
                 }
                 if (targetUnit.isWeaponSpecialRefined) {
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
@@ -7724,7 +7724,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.5;
                 if (targetUnit.isWeaponRefined) {
-                    targetUnit.battleContext.nullInvalidatesHealRatio = 0.6;
+                    targetUnit.battleContext.addNullInvalidatesHealRatios(0.6);
                 }
             }
             if (targetUnit.isWeaponSpecialRefined) {
@@ -9122,7 +9122,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.isWeaponSpecialRefined) {
                 targetUnit.addAllSpur(4);
                 targetUnit.battleContext.reducesCooldownCount = true;
-                targetUnit.battleContext.nullInvalidatesHealRatio = 0.5
+                targetUnit.battleContext.addNullInvalidatesHealRatios(0.5);
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Marute] = (targetUnit, enemyUnit) => {
@@ -9444,7 +9444,7 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.increaseCooldownCountForAttack = true;
                 targetUnit.battleContext.increaseCooldownCountForDefense = true;
                 targetUnit.battleContext.reducesCooldownCount = true;
-                targetUnit.battleContext.nullInvalidatesHealRatio = 0.5
+                targetUnit.battleContext.addNullInvalidatesHealRatios(0.5);
                 targetUnit.battleContext.specialDamageRatioToHeal += 0.3;
             }
         };

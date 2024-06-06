@@ -2280,7 +2280,7 @@
                     }
                 );
                 // - 自分の【回復不可」を50%無効、
-                targetUnit.battleContext.nullInvalidatesHealRatio = 0.5;
+                targetUnit.battleContext.addNullInvalidatesHealRatios(0.5);
                 // - 敵から受けた追撃のダメージを80%軽減（追撃：通常の攻撃は、2回目の攻撃「2回攻撃」は、3～4回目の攻撃）、
                 targetUnit.battleContext.multDamageReductionRatioOfFollowupAttack(0.8, enemyUnit);
             }

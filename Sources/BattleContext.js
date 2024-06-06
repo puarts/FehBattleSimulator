@@ -7,6 +7,8 @@ class BattleContext {
     #specialAddDamage = 0;
     // 攻撃のたびに変化する可能性のある奥義発動時の「奥義ダメージに加算」の加算ダメージ
     #specialAddDamagePerAttack = 0;
+    // 回復不可無効
+    #nullInvalidatesHealRatios = [];
 
     constructor() {
         this.initContext();
@@ -69,7 +71,7 @@ class BattleContext {
         this.invalidatesHeal = false;
 
         // [回復不可]を無効にする割合
-        this.nullInvalidatesHealRatio = 0;
+        this.#nullInvalidatesHealRatios = [];
 
         // 戦闘後回復
         this.healedHpAfterCombat = 0;
@@ -485,6 +487,10 @@ class BattleContext {
         return this.restHp === this.maxHpWithSkills;
     }
 
+    get nullInvalidatesHealRatios() {
+        return this.#nullInvalidatesHealRatios;
+    }
+
     invalidateAllBuffs() {
         this.invalidatesAtkBuff = true;
         this.invalidatesSpdBuff = true;
@@ -806,5 +812,9 @@ class BattleContext {
         this.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
             return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit, percentage, maxPercentage);
         });
+    }
+
+    addNullInvalidatesHealRatios(ratio) {
+        this.#nullInvalidatesHealRatios.push(ratio)
     }
 }

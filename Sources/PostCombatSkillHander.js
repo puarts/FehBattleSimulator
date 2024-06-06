@@ -122,15 +122,23 @@ class PostCombatSkillHander {
 
         // 不治の幻煙による回復無効化
         {
+            /** @type {(u1: Unit, u2: Unit) => void} */
             let applyHealInvalidation = (targetUnit, enemyUnit) => {
                 if (targetUnit.battleContext.invalidatesHeal) {
-                    let ratio = enemyUnit.battleContext.nullInvalidatesHealRatio;
-                    let reservedHeal = Math.trunc(enemyUnit.reservedHeal * ratio);
-                    if (enemyUnit.reservedHeal > 0) {
-                        let detail = `${enemyUnit.reservedHeal} → ${reservedHeal}`;
-                        this.writeDebugLogLine(`${enemyUnit.nameWithGroup}の回復量変化(ratio: ${ratio}): ${detail}`);
+                    // 回復不可の場合、元の回復量分だけ回復量を減らす
+                    let reducedHeal = enemyUnit.reservedHeal;
+                    // 回復量を減らされた分に対して回復不可無効の割合を乗算していく
+                    let ratios = enemyUnit.battleContext.nullInvalidatesHealRatios;
+                    for (let ratio of ratios) {
+                        let oldReducedHeal = reducedHeal;
+                        let invalidationAmount = Math.trunc(reducedHeal * ratio);
+                        reducedHeal -= invalidationAmount;
+                        let detail = `${oldReducedHeal} * ${ratio} = ${reducedHeal}`;
+                        this.writeDebugLogLine(`${enemyUnit.nameWithGroup}の回復不可量変化(ratio: ${ratio}): ${detail}`);
                     }
-                    enemyUnit.reservedHeal = reservedHeal;
+                    let detail = `${enemyUnit.reservedHeal} - ${reducedHeal} = ${enemyUnit.reservedHeal - reducedHeal}`;
+                    this.writeDebugLogLine(`${enemyUnit.nameWithGroup}の回復量変化: ${detail}`);
+                    enemyUnit.reservedHeal -= reducedHeal;
                 }
             };
             applyHealInvalidation(atkUnit, defUnit);

@@ -1778,10 +1778,26 @@ class DamageCalculator {
      */
     __heal(unit, healedHp, enemyUnit) {
         if (enemyUnit.battleContext.invalidatesHeal || unit.hasStatusEffect(StatusEffectType.DeepWounds)) {
-            healedHp = Math.trunc(healedHp * unit.battleContext.nullInvalidatesHealRatio);
+            // 回復不可の場合、元の回復量分だけ回復量を減らす
+            let reducedHeal = healedHp;
             if (this.isLogEnabled) {
-                this.writeDebugLog(`${unit.getNameWithGroup()}は[回復不可]を${unit.battleContext.nullInvalidatesHealRatio}無効`);
+                this.writeDebugLog(`${unit.getNameWithGroup()}は[回復]を${reducedHeal}だけ無効(${healedHp} - ${reducedHeal}回復)`);
             }
+            // 回復量を減らされた分に対して回復不可無効の割合を乗算していく
+            let ratios = unit.battleContext.nullInvalidatesHealRatios;
+            for (let ratio of ratios) {
+                let oldReducedHeal = reducedHeal;
+                let invalidationAmount = Math.trunc(reducedHeal * ratio);
+                reducedHeal -= invalidationAmount;
+                let detail = `${oldReducedHeal} * ${ratio} = ${reducedHeal}`;
+                if (this.isLogEnabled) {
+                    this.writeDebugLog(`${unit.nameWithGroup}の回復不可量変化(ratio: ${ratio}): ${detail}`);
+                }
+            }
+            if (this.isLogEnabled) {
+                this.writeDebugLog(`${unit.getNameWithGroup()}は[回復]を${reducedHeal}だけ無効(${healedHp} - ${reducedHeal}回復)`);
+            }
+            healedHp -= reducedHeal;
         }
 
         unit.restHp += healedHp;
