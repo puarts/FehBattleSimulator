@@ -1,5 +1,40 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 魔器・暁風の刃
+{
+    let skillId = Weapon.ArcaneTempest;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、
+            // 奥義発動カウントが最大値なら、
+            if (skillOwner.statusEvalUnit.isSpecialCountMax) {
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25％以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防が、戦闘開始時の敵の攻撃の25%-4だけ増加（最大14、最低5）、
+                let atk = enemyUnit.getAtkInPrecombat();
+                let amount = MathUtil.ensureMinMax(Math.trunc(atk * 0.25) - 4, 5, 14);
+                targetUnit.addAllSpur(amount);
+                // 最初に受けた攻撃と2回攻撃のダメージを30%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+                // （最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                // かつ速さが敵より1以上高い時、戦闘中、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.setSpdNullFollowupAttack();
+                // 【暗器（7）】効果
+            }
+        }
+    );
+}
+
 // 強化増幅の弓+ 
 {
     let skillId = Weapon.DoublerBowPlus;

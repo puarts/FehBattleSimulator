@@ -1847,6 +1847,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=V7-F5ZDEIJI&ab_channel=NintendoMobile
     Caladbolg: 2900, // カラドボルグ
     DoublerBowPlus: 2898, // 強化増幅の弓+
+    ArcaneTempest: 2902, // 魔器・暁風の刃
 };
 
 const Support = {
