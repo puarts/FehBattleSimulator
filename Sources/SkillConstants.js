@@ -1848,6 +1848,7 @@ const Weapon = {
     Caladbolg: 2900, // カラドボルグ
     DoublerBowPlus: 2898, // 強化増幅の弓+
     ArcaneTempest: 2902, // 魔器・暁風の刃
+    SilverOfDawn: 2905, // 暁星の輝き
 };
 
 const Support = {

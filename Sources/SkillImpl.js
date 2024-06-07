@@ -1,5 +1,78 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 暁星の輝き
+{
+    let skillId = Weapon.SilverOfDawn;
+    // 重装、騎馬特効
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // 周囲2マス以内の味方は、
+    // 自身の周囲2マス以内に移動可能
+    enumerateTeleportTilesForAllyFuncMap.set(skillId,
+        function* (targetUnit, allyUnit) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+            }
+        }
+    );
+
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 敵軍ターン開始時、
+            // 自分と周囲2マス以内の味方は、
+            /** @type {Generator<Unit>} */
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                // 10回復
+                unit.reserveHeal(10);
+            }
+        }
+    );
+
+    applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 敵軍のターン開始時スキル発動後、
+            // 自分と周囲2マス以内にいる味方が受けている弱化を無効化し、強化に変換する、
+            /** @type {Generator<Unit>} */
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                let buffs = unit.getDebuffs().map(i => Math.abs(i));
+                unit.reserveToApplyBuffs(...buffs);
+                unit.reservedDebuffsToDelete = [true, true, true, true];
+                // さらに、【不利な状態異常】を2個解除（同タイミングで付与される【不利な状態異常】は解除されない。
+                // 解除される【不利な状態異常】は、受けている効果の一覧で、上に記載される状態を優先）
+                let sortFunc = (a, b) => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(a) - NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(b);
+                let effects = unit.getNegativeStatusEffects().sort(sortFunc);
+                if (effects[0]) {
+                    unit.reservedStatusEffectSetToDelete.add(effects[0]);
+                }
+                if (effects[1]) {
+                    unit.reservedStatusEffectSetToDelete.add(effects[1]);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、敵の攻撃、魔防一6、
+                enemyUnit.addAtkResSpurs(-6);
+                // さらに、敵の攻撃、魔防が、戦闘開始時の自分の魔防の20%だけ減少、
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                enemyUnit.addAtkResSpurs(-amount);
+                // 敵の攻撃、魔防の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）、
+                targetUnit.battleContext.invalidateBuffs(true, false, false, true);
+                // 自分が与えるダメージ＋〇
+                // 〇は、自分を中心とした縦3列と横3列にいる
+                // 味方の数✕5（最大15、範囲義を除く
+                let count = this.__countAllyUnitsInCrossWithOffset(targetUnit, 1);
+                targetUnit.battleContext.additionalDamage += MathUtil.ensureMax(count * 5, 15);
+            }
+        }
+    );
+}
+
 // 罠解除・神速
 {
     let skillId = PassiveB.PotentDisarm;
@@ -1923,7 +1996,7 @@
             // 自分を中心とした縦3列と横3列にいる強化を除いた【有利な状態】の数が3以上の敵の【有利な状態】を解除(同じタイミングで付与される【有利な状態】は解除されない)
             if (enemy.isInCrossWithOffset(skillOwner, 1)) {
                 if (enemy.getPositiveStatusEffects().length >= 3) {
-                    enemy.reservedStatusesToDelete = [true, true, true, true];
+                    enemy.reservedBuffsToDelete = [true, true, true, true];
                     enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
                     let skillName = DebugUtil.getSkillName(skillOwner, skillOwner.passiveBInfo);
                     let statuses = enemy.getPositiveStatusEffects().map(e => getStatusEffectName(e)).join(", ");

@@ -429,7 +429,8 @@ class Unit extends BattleMapElement {
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
         this.reservedSpecialCount = 0;
-        this.reservedStatusesToDelete = [false, false, false, false];
+        this.reservedBuffsToDelete = [false, false, false, false];
+        this.reservedDebuffsToDelete = [false, false, false, false];
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
         this.weaponType = WeaponType.None;
@@ -2695,13 +2696,19 @@ class Unit extends BattleMapElement {
         for (let e of this.reservedStatusEffectSetToDelete) {
             this.currentStatusEffectSet.delete(e);
         }
-        if (this.reservedStatusesToDelete[0]) this.atkBuff = 0;
-        if (this.reservedStatusesToDelete[1]) this.spdBuff = 0;
-        if (this.reservedStatusesToDelete[2]) this.defBuff = 0;
-        if (this.reservedStatusesToDelete[3]) this.resBuff = 0;
+        if (this.reservedBuffsToDelete[0]) this.atkBuff = 0;
+        if (this.reservedBuffsToDelete[1]) this.spdBuff = 0;
+        if (this.reservedBuffsToDelete[2]) this.defBuff = 0;
+        if (this.reservedBuffsToDelete[3]) this.resBuff = 0;
+
+        if (this.reservedDebuffsToDelete[0]) this.atkDebuff = 0;
+        if (this.reservedDebuffsToDelete[1]) this.spdDebuff = 0;
+        if (this.reservedDebuffsToDelete[2]) this.defDebuff = 0;
+        if (this.reservedDebuffsToDelete[3]) this.resDebuff = 0;
 
         this.reservedStatusEffectSetToDelete.clear();
-        this.reservedStatusesToDelete = [false, false, false, false];
+        this.reservedBuffsToDelete = [false, false, false, false];
+        this.reservedDebuffsToDelete = [false, false, false, false];
         // すでに付与されている状態（解除は反映済み）に予約された状態を加える
         this.reservedStatusEffects.forEach(e => this.currentStatusEffectSet.add(e));
         this.statusEffects = [...this.currentStatusEffectSet];

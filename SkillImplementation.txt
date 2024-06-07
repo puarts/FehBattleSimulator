@@ -62,7 +62,7 @@ applyAfterSkillsSkillForBeginningOfTurnFuncMap.set(skillId,
 
 敵軍のターン開始時スキル発動後
 // セイズなど敵軍のターン開始時スキル発動後の効果
-applySkillsAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
+applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
     function (skillOwner) {
     }
 );
@@ -1589,6 +1589,9 @@ enumerateTeleportTilesForUnitFuncMap.set(skillId,
 // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
 enumerateTeleportTilesForAllyFuncMap.set(skillId,
     function* (targetUnit, allyUnit) {
+        if (targetUnit.distance(allyUnit) <= 2) {
+            yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+        }
         if (allyUnit.hpPercentage <= 60 ||
             allyUnit.isCombatDone || allyUnit.isSupportDone) {
             yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
@@ -1712,9 +1715,13 @@ stealBonusEffects(enemies, targetUnits, logger);
 
 ステータス解除予約
 // バフ解除予約
-enemy.reservedStatusesToDelete = [true, true, true, true];
+enemy.reservedBuffsToDelete = [true, true, true, true];
+// デバフ解除予約
+enemy.reservedDebuffsToDelete = [true, true, true, true];
 // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
 enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
+// ステータスを一つ解除
+unit.reservedStatusEffectSetToDelete.add(e);
 
 [ターン開始時スキル無効]
 このとき付与される【不利な状態異常】を無効化

@@ -187,6 +187,32 @@ const StatusEffectType = {
     ShareSpoils: 64, // 戦果移譲
 };
 
+const NEGATIVE_STATUS_EFFECT_ARRAY = [
+    StatusEffectType.Panic,
+    StatusEffectType.Exposure,
+    StatusEffectType.Sabotage,
+    StatusEffectType.Discord,
+    StatusEffectType.HushSpectrum,
+    StatusEffectType.ShareSpoils,
+    StatusEffectType.FalseStart,
+    StatusEffectType.CounterattacksDisrupted,
+    StatusEffectType.Isolation,
+    StatusEffectType.DeepWounds,
+    StatusEffectType.NeutralizeUnitSurvivesWith1HP,
+    StatusEffectType.Undefended,
+    StatusEffectType.Feud,
+    StatusEffectType.Ploy,
+    StatusEffectType.Schism,
+    StatusEffectType.TimesGrip,
+    StatusEffectType.Gravity,
+    StatusEffectType.Stall,
+    StatusEffectType.Guard,
+    StatusEffectType.TriangleAdept,
+    StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately,
+];
+const NEGATIVE_STATUS_EFFECT_ORDER_MAP = new Map();
+NEGATIVE_STATUS_EFFECT_ARRAY.forEach((v, i) => NEGATIVE_STATUS_EFFECT_ORDER_MAP.set(v, i));
+
 const NotReserved = -2;
 
 ///
