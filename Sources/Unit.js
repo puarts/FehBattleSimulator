@@ -2709,12 +2709,13 @@ class Unit extends BattleMapElement {
     }
 
     /**
+     * 戦闘中以外の回復
      * @param {Boolean} leavesOneHp
      * @returns {[number, number, number, number]} hp, damage, heal
      */
     applyReservedHp(leavesOneHp) {
         let healHp = this.reservedHeal;
-        let reducedHeal = this.calculateReducedHealAmount(healHp);
+        let reducedHeal = this.hasDeepWounds() ? healHp : 0;
         healHp -= reducedHeal;
         let damageHp = this.hasStatusEffect(StatusEffectType.EnGarde) ? 0 : this.reservedDamage;
         this.hp = Number(this.hp) - damageHp + healHp;
@@ -2725,7 +2726,7 @@ class Unit extends BattleMapElement {
         return [this.hp, damageHp, healHp, reducedHeal];
     }
 
-    calculateReducedHealAmount(healHp) {
+    calculateReducedHealAmountInCombat(healHp) {
         let reducedHeal = this.hasDeepWounds() ? healHp : 0;
         return this.battleContext.calculateReducedHealAmount(reducedHeal);
     }

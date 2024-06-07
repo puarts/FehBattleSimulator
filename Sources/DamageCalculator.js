@@ -1800,6 +1800,7 @@ class DamageCalculator {
     }
 
     /**
+     * 戦闘中の攻撃後の回復
      * @param {Unit} unit
      * @param {number} healedHp
      * @param {Unit} enemyUnit
@@ -1807,7 +1808,7 @@ class DamageCalculator {
     __heal(unit, healedHp, enemyUnit) {
         let healAmount = healedHp;
         // 回復不可の場合、元の回復量分だけ回復量を減らす
-        let reducedHeal = unit.calculateReducedHealAmount(healAmount);
+        let reducedHeal = unit.calculateReducedHealAmountInCombat(healAmount);
         healAmount -= reducedHeal;
 
         unit.restHp += healAmount;
