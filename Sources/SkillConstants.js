@@ -2710,6 +2710,7 @@ const PassiveB = {
 
     Wanakaijo3: 858, // 罠解除3
     DisarmTrap4: 2572, // 罠解除4
+    PotentDisarm: 2904, // 罠解除・神速
 
     RunaBracelet: 667, // 月の腕輪
     LunarBrace2: 1947, // 月の腕輪・承

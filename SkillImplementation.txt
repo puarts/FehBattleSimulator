@@ -1650,6 +1650,12 @@ let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
 移動前と移動後のマスの距離
 let dist = Unit.calcMoveDistance(targetUnit);
 
+罠解除
+DISARM_TRAP_SKILL_SET.add(skillId);
+
+魔法罠解除
+DISARM_HEX_TRAP_SKILL_SET.add(skillId);
+
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
 

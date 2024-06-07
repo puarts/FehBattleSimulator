@@ -1382,6 +1382,15 @@ const NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET = new Set([
     Support.Nudge,
 ]);
 
+const DISARM_TRAP_SKILL_SET = new Set([
+    PassiveB.Wanakaijo3,
+    PassiveB.DisarmTrap4,
+]);
+
+const DISARM_HEX_TRAP_SKILL_SET = new Set([
+    PassiveB.DisarmTrap4,
+]);
+
 const STATUS_INDEX = {
     Atk: 0,
     Spd: 1,

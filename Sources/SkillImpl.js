@@ -1,5 +1,31 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 罠解除・神速
+{
+    let skillId = PassiveB.PotentDisarm;
+    // 飛空城で攻撃時、
+    // 落雷の、重圧の罠が設置されたマスで移動終了すると、罠を解除する
+    DISARM_TRAP_SKILL_SET.add(skillId);
+    // 飛空城で攻撃時、
+    // 停止の魔法で移動終了する時、
+    // 停止の魔法が発動するHPの条件を一10た状態で判定
+    DISARM_HEX_TRAP_SKILL_SET.add(skillId);
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の速さ、守備-4
+            enemyUnit.addSpdDefSpurs(-4);
+        }
+    );
+    applyPotentSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 追撃の速さ条件を25した状態で追撃の速さ条件を満たしている時（絶対追撃、追撃不可は含まない）、
+            // 戦闘中、【神速追撃：ダメージ●%】を発動（〇は、自分が2回攻撃でない、かつ追撃ができない時は80、それ以外は40）
+            this.__applyPotent(targetUnit, enemyUnit);
+        }
+    );
+}
+
 // 瞬殺
 {
     let skillId = Special.Bane;
