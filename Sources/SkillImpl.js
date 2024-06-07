@@ -1,5 +1,91 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ユンヌの見守り
+{
+    let skillId = PassiveB.YunesProtection;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、敵軍内で最も
+            // 攻撃、速さ、守備、魔防が高い敵と、その周囲2マス以内にいる敵それぞれについて、
+            // その能力値一7（敵の次回行動終了まで）
+            // ターン開始時、敵軍内で最も
+            // 攻撃、速さ、守備、魔防が高い敵それぞれについて、
+            // 【弱点露呈】、
+            // 【不和】を付与（敵の次回行動終了まで）
+            this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                unit => {
+                    return this.__getStatusEvalUnit(unit).getAtkInPrecombat()
+                },
+                unit => {
+                    unit.reserveToApplyAtkDebuff(-7);
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        u.reserveToApplyAtkDebuff(-7);
+                    }
+                    unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                });
+            this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                unit => {
+                    return this.__getStatusEvalUnit(unit).getSpdInPrecombat()
+                },
+                unit => {
+                    unit.reserveToApplySpdDebuff(-7);
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        u.reserveToApplySpdDebuff(-7);
+                    }
+                    unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                });
+            this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                unit => {
+                    return this.__getStatusEvalUnit(unit).getDefInPrecombat()
+                },
+                unit => {
+                    unit.reserveToApplyDefDebuff(-7);
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        u.reserveToApplyDefDebuff(-7);
+                    }
+                    unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                });
+            this.__applyDebuffToMaxStatusUnits(skillOwner.enemyGroupId,
+                unit => {
+                    return this.__getStatusEvalUnit(unit).getResInPrecombat()
+                },
+                unit => {
+                    unit.reserveToApplyResDebuff(-7);
+                    for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
+                        u.reserveToApplyResDebuff(-7);
+                    }
+                    unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
+                    unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                });
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、敵の攻撃、魔防-5、
+                enemyUnit.addAtkResSpurs(-5);
+                // さらに、敵の攻撃、魔防が減少
+                // 減少値は、敵とその周囲2マス以内にいる敵のうち弱化の合計値が最も高い値、
+                let debuffTotal = enemyUnit.debuffTotal;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                    debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
+                }
+                let amount = Math.abs(debuffTotal);
+                enemyUnit.addAtkResSpurs(-amount);
+                // 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // （無効にする数値は端数切捨て）
+                // （範囲奥義を除く）
+            }
+        }
+    );
+}
+
 // 暁星の輝き
 {
     let skillId = Weapon.SilverOfDawn;
