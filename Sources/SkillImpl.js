@@ -1,5 +1,28 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 響・遠影
+{
+    let skillId = PassiveX.FarTraceEcho;
+    // 【再移動（残り、最低1）］を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return this.restMoveCount === 0 ? 1 : this.restMoveCount;
+    });
+    // 戦闘中、ダメージ＋3（戦闘前奥義も含む）
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            // Nダメージ
+            if (isPrecombat) {
+                atkUnit.battleContext.additionalDamage = 3;
+            } else {
+                atkUnit.battleContext.additionalDamage += 3;
+            }
+        }
+    );
+}
+
 // ユンヌの見守り
 {
     let skillId = PassiveB.YunesProtection;

@@ -1568,6 +1568,8 @@ calcMoveCountForCantoFuncMap.set(skillId, function () {
     // マス間の距離+1、最大4
     // let dist = Unit.calcMoveDistance(this)
     // return Math.min(dist + 1, 4);
+    // 残り最低1
+    // return this.restMoveCount === 0 ? 1 : this.restMoveCount;
 });
 もしくは
 __canActivateCanto(unit) {}
