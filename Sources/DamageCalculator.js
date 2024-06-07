@@ -1376,6 +1376,17 @@ class DamageCalculator {
                 // 奥義発動
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack;
+                if (atkUnit.battleContext.isBaneSpecial) {
+                    // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
+                    if (specialDamage < defUnit.restHp - 1) {
+                        if (this.isLogEnabled) {
+                            let message = `${atkUnit.nameWithGroup}の瞬殺効果が発動`;
+                            this.writeDebugLog(message);
+                            this.writeSimpleLog(message);
+                        }
+                        specialDamage = defUnit.restHp - 1;
+                    }
+                }
                 currentDamage = this.__calcUnitAttackDamage(
                     defUnit, atkUnit,
                     specialDamage,
@@ -1839,6 +1850,8 @@ class DamageCalculator {
                            damageReductionRatio, damageReductionValue,
                            potentRatio,
                            activatesDefenderSpecial, context) {
+        // 軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする
+        // （巨影など一部の敵を除く）
         let reducedDamage = Math.trunc(damage * damageReductionRatio) + damageReductionValue;
         let currentDamage = Math.max(damage - reducedDamage, 0);
         currentDamage = Math.trunc(currentDamage * potentRatio);

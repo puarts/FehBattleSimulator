@@ -1,5 +1,43 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 瞬殺
+{
+    let skillId = Special.Bane;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 敵の守備、魔防-40%扱いで攻撃奥義発動時、
+            targetUnit.battleContext.specialSufferPercentage = 40;
+            targetUnit.battleContext.isBaneSpecial = true;
+            // 軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする
+            // （巨影など一部の敵を除く）
+            // 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // 自分または敵が奥義発動可能状態の時、または、この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時、
+            if (defUnit.tmpSpecialCount === 0 ||
+                atkUnit.tmpSpecialCount === 0 ||
+                defUnit.battleContext.isSpecialActivated ||
+                atkUnit.battleContext.isSpecialActivated) {
+                // 戦闘中、受けた攻撃のダメージを30%軽減（1戦闘1回のみ）
+                // （範囲奥義を除く）
+                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.3);
+            }
+        }
+    );
+}
+
 // 魔器・暁風の刃
 {
     let skillId = Weapon.ArcaneTempest;

@@ -404,6 +404,9 @@ class BattleContext {
         // 戦闘中に一度しか発動しない奥義のスキル効果が発動したか
         this.isOneTimeSpecialSkillEffectActivatedDuringCombat = false;
 
+        // 瞬殺
+        this.isBaneSpecial = false;
+
         // フック関数
         // 固定ダメージ
         this.calcFixedAddDamageFuncs = [];
