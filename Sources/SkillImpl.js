@@ -1,5 +1,69 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// カラドボルグ
+{
+    let skillId = Weapon.Caladbolg;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let atk = enemyUnit.getAtkInPrecombat();
+                // 戦闘中、攻撃、速さ、守備、魔防が、戦闘開始時の敵の攻撃の25%-4だけ増加（最大14、最低5）、
+                let amount = MathUtil.ensureMinMax(Math.trunc(atk * 0.25) - 4, 5, 14);
+                targetUnit.addAllSpur(amount);
+                // 自身の奥義発動カウント変動量ーを無効、
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+                // 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // （無効にする数値は端数切捨て）
+                // （範囲奥義を除く）、
+
+                // 敵の最初の攻撃前に自分の奥義発動カウントー1
+                targetUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += 1;
+
+                // 戦闘開始時、自身のHPが25%以上なら、
+                // 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。軽減値はスキルによる軽減効果も含む）
+                // [ダメージ軽減分を保存]
+                targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
+                    (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                        if (!context.isFirstAttack(atkUnit)) return;
+                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                    }
+                );
+                // [攻撃ごとの固定ダメージに軽減した分を加算]
+                targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                        let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                        return addDamage;
+                    }
+                    return 0;
+                });
+            }
+        }
+    );
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、受けるダメージー◎（Oは、敵の奥義による攻撃の時は16、そうでない時は8）
+                // （範囲奥義を除く）、
+                if (canActivateAttackerSpecial) {
+                    // 奥義発動時
+                    targetUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack += 16;
+                } else {
+                    // 通常
+                    targetUnit.battleContext.damageReductionValuePerAttack += 8;
+                }
+            }
+        }
+    );
+}
+
 // 蛇の杖+
 {
     let skillId = Weapon.SerpentineStaffPlus;

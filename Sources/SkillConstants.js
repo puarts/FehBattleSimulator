@@ -1841,6 +1841,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=4zZlsvfyFKM&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=ggFGkhvIj4s&t=25s&ab_channel=NintendoMobile
     HoshidosBreath: 2895, // 白の血族のブレス
+
+    // 新英雄「響心ミカヤ＆魔器サザ」
+    // https://www.youtube.com/watch?v=lwHT4QOlZUE&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=V7-F5ZDEIJI&ab_channel=NintendoMobile
+    Caladbolg: 2900, // カラドボルグ
 };
 
 const Support = {
