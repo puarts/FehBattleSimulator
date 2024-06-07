@@ -120,31 +120,6 @@ class PostCombatSkillHander {
             this.__reserveHealOrDamageAfterCombatForUnit(unit);
         }
 
-        // 不治の幻煙による回復無効化
-        {
-            /** @type {(u1: Unit, u2: Unit) => void} */
-            let applyHealInvalidation = (targetUnit, enemyUnit) => {
-                if (targetUnit.battleContext.invalidatesHeal) {
-                    // 回復不可の場合、元の回復量分だけ回復量を減らす
-                    let reducedHeal = enemyUnit.reservedHeal;
-                    // 回復量を減らされた分に対して回復不可無効の割合を乗算していく
-                    let ratios = enemyUnit.battleContext.nullInvalidatesHealRatios;
-                    for (let ratio of ratios) {
-                        let oldReducedHeal = reducedHeal;
-                        let invalidationAmount = Math.trunc(reducedHeal * ratio);
-                        reducedHeal -= invalidationAmount;
-                        let detail = `${oldReducedHeal} * ${ratio} = ${reducedHeal}`;
-                        this.writeDebugLogLine(`${enemyUnit.nameWithGroup}の回復不可量変化(ratio: ${ratio}): ${detail}`);
-                    }
-                    let detail = `${enemyUnit.reservedHeal} - ${reducedHeal} = ${enemyUnit.reservedHeal - reducedHeal}`;
-                    this.writeDebugLogLine(`${enemyUnit.nameWithGroup}の回復量変化: ${detail}`);
-                    enemyUnit.reservedHeal -= reducedHeal;
-                }
-            };
-            applyHealInvalidation(atkUnit, defUnit);
-            applyHealInvalidation(defUnit, atkUnit);
-        }
-
         this.#applyReservedEffects();
 
         this.#applyPostCombatAllySkills(atkUnit);
@@ -168,9 +143,9 @@ class PostCombatSkillHander {
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.modifySpecialCount();
             if (!unit.isDead) {
-                let [hp, damage, heal] = unit.applyReservedHp(true);
-                if (damage !== 0 || heal !== 0) {
-                    this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}`);
+                let [hp, damage, heal, reducedHeal] = unit.applyReservedHp(true);
+                if (damage !== 0 || heal !== 0 || reducedHeal !== 0) {
+                    this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}, reduced: ${reducedHeal}`);
                 }
                 this.#applyReservedState(unit);
             }
@@ -1094,11 +1069,6 @@ class PostCombatSkillHander {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.reserveTakeDamage(7);
                     }
-                }
-                break;
-            case Weapon.SerpentineStaffPlus:
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
                 }
                 break;
             case Weapon.FlamelickBreath:

@@ -579,6 +579,16 @@ class DamageCalculatorWrapper {
         self.__selectReferencingResOrDef(atkUnit, defUnit);
         self.__selectReferencingResOrDef(defUnit, atkUnit);
 
+        // 戦闘開始後ダメージ決定後に評価されるスキル効果
+        {
+            this.applySkillEffectsAfterAfterBeginningOfCombat(atkUnit, defUnit);
+            this.applySkillEffectsAfterAfterBeginningOfCombat(defUnit, atkUnit);
+
+            // 周囲の敵からのスキル効果
+            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(atkUnit, defUnit, calcPotentialDamage);
+            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(defUnit, atkUnit, calcPotentialDamage);
+        }
+
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
         result = self._damageCalc.calcCombatResult(atkUnit, defUnit, damageType);
@@ -3210,7 +3220,7 @@ class DamageCalculatorWrapper {
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.IncurablePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            targetUnit.battleContext.invalidatesHeal = true;
+            enemyUnit.battleContext.hasDeepWounds = true;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.WyvernHatchet] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -5787,9 +5797,6 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += 6;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.SerpentineStaffPlus] = (targetUnit) => {
-            targetUnit.battleContext.invalidatesHeal = true;
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.DrybladeLance] = (targetUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -6274,10 +6281,10 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.FlamelickBreath] = (targetUnit) => {
+        this._applySkillEffectForUnitFuncDict[Weapon.FlamelickBreath] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
-                targetUnit.battleContext.invalidatesHeal = true;
+                enemyUnit.battleContext.hasDeepWounds = true;
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DemonicTome] = (targetUnit) => {
@@ -7106,8 +7113,8 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         };
-        this._applySkillEffectForUnitFuncDict[PassiveC.FatalSmoke3] = (targetUnit) => {
-            targetUnit.battleContext.invalidatesHeal = true;
+        this._applySkillEffectForUnitFuncDict[PassiveC.FatalSmoke3] = (targetUnit, enemyUnit) => {
+            enemyUnit.battleContext.hasDeepWounds = true;
         };
         this._applySkillEffectForUnitFuncDict[Weapon.KyoufuArmars] = (targetUnit, enemyUnit) => {
             if (targetUnit.isWeaponSpecialRefined) {
@@ -17622,6 +17629,34 @@ class DamageCalculatorWrapper {
                     }
                     targetUnit.battleContext.disablesSkillsFromColorlessEnemyAlliesInCombat = true;
                     break;
+            }
+        }
+    }
+
+    applySkillEffectsAfterAfterBeginningOfCombat(targetUnit, enemyUnit) {
+        for (let skillId of targetUnit.enumerateSkills()) {
+            getSkillFunc(skillId, applySkillEffectsAfterAfterBeginningOfCombatFuncMap)?.call(this, targetUnit, enemyUnit);
+        }
+    }
+
+    applySkillEffectsAfterAfterBeginningOfCombatFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
+        if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+            return;
+        }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
+
+        if (!calcPotentialDamage) {
+            // 距離に関係ない効果
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
+                    continue
+                }
+                for (let skillId of allyUnit.enumerateSkills()) {
+                    let func = getSkillFunc(skillId, applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap);
+                    func?.call(this, targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
+                }
             }
         }
     }

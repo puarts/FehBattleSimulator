@@ -3119,6 +3119,7 @@ const PassiveC = {
     InciteAtkRes: 2774, // 攻撃魔防の奮激
 
     SeiNoIbuki3: 668, // 生の息吹3
+    BreathOfLife4: 2901, // 生の息吹4
     HokoNoGogeki3: 732, // 歩行の剛撃3
     HokoNoJugeki3: 733, // 歩行の柔撃3
     HokoNoKokyu3: 921, // 歩行の呼吸3

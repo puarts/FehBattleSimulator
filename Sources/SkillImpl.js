@@ -1,5 +1,84 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 蛇の杖+
+{
+    let skillId = Weapon.SerpentineStaffPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            enemyUnit.battleContext.hasDeepWounds = true;
+            targetUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs.push(
+                (attackUnit, attackTargetUnit, result) => {
+                    /** @type {Unit[]} */
+                    let enemies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
+                    for (let unit of enemies) {
+                        unit.reserveTakeDamage(7);
+                        unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
+                    }
+                }
+            );
+        }
+    );
+}
+
+// 生の息吹4
+{
+    let skillId = PassiveC.BreathOfLife4;
+    applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 周囲2マス以内の味方は、
+            if (targetUnit.distance(allyUnit) <= 2) {
+                // 自分は、戦闘開始後（戦闘開始後にダメージを受ける効果の後）、HPが回復
+                // 回復値は、
+                // 守備が敵よりも高い時は、
+                let diff = MathUtil.ensureMin(targetUnit.getDefDiffInCombat(enemyUnit), 0);
+                // 最大HPの20%＋守備の差✕4、そうでない時は、最大HPの20％
+                let heal = Math.trunc(targetUnit.maxHpWithSkills * 0.2) + diff * 4;
+                //（最大：最大HPの40%+戦闘開始後に自身が受けたダメージで減少したHP量）
+                let maxHeal = Math.trunc(targetUnit.maxHpWithSkills * 0.4) + targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
+                targetUnit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(MathUtil.ensureMax(heal, maxHeal));
+            }
+        }
+    );
+    applySkillEffectsAfterAfterBeginningOfCombatFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 自分は、戦闘開始後（戦闘開始後にダメージを受ける効果の後）、HPが回復
+                // 回復値は、
+                // 守備が敵よりも高い時は、
+                let diff = MathUtil.ensureMin(targetUnit.getDefDiffInCombat(enemyUnit), 0);
+                // 最大HPの20%＋守備の差✕4、そうでない時は、最大HPの20％
+                let heal = Math.trunc(targetUnit.maxHpWithSkills * 0.2) + diff * 4;
+                //（最大：最大HPの40%+戦闘開始後に自身が受けたダメージで減少したHP量）
+                let maxHeal = Math.trunc(targetUnit.maxHpWithSkills * 0.4) + targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
+                targetUnit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(MathUtil.ensureMax(heal, maxHeal));
+            }
+        }
+    );
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            if (targetUnit.distance(allyUnit) <= 2) {
+                // 周囲2マス以内の味方は、
+                // 戦闘中、守備＋4、
+                targetUnit.defSpur += 4;
+                // 【回復不可】を50%無効
+                targetUnit.battleContext.addNullInvalidatesHealRatios(0.5);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 自分は、戦闘中、守備＋4、
+                targetUnit.defSpur += 4;
+                //【回復不可】を50%無効
+                targetUnit.battleContext.addNullInvalidatesHealRatios(0.5);
+            }
+        }
+    );
+}
+
 // 混沌ラグネル
 {
     let skillId = getNormalSkillId(Weapon.ChaosRagnell);
@@ -8897,7 +8976,7 @@
     let skillId = PassiveC.FatalSmoke4;
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            targetUnit.battleContext.invalidatesHeal = true;
+            enemyUnit.battleContext.hasDeepWounds = true;
             targetUnit.battleContext.neutralizesNonSpecialMiracle = true;
         }
     );

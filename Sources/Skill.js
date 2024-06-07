@@ -1602,3 +1602,7 @@ const calcHealAmountFuncMap = new Map();
 const applyPostCombatAllySkillFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleMap, tile: Tile, warpUnit: Unit, enemyUnit: Unit) => void>} */
 const canWarpFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
+applySkillEffectsAfterAfterBeginningOfCombatFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, ally: Unit, potentialDamage: boolean) => void>} */
+applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap = new Map();

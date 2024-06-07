@@ -9,6 +9,8 @@ class BattleContext {
     #specialAddDamagePerAttack = 0;
     // 回復不可無効
     #nullInvalidatesHealRatios = [];
+    // 戦闘開始後ダメージの後の回復量
+    #healAmountsAfterAfterBeginningOfCombatSkills = [0]; // 番兵
 
     constructor() {
         this.initContext();
@@ -67,11 +69,14 @@ class BattleContext {
         // 守備魔防の低い方を参照を無効化
         this.invalidatesReferenceLowerMit = false;
 
-        // 回復を無効化
-        this.invalidatesHeal = false;
+        // 回復を無効化されている状態
+        this.hasDeepWounds = false;
 
         // [回復不可]を無効にする割合
         this.#nullInvalidatesHealRatios = [];
+
+        // 戦闘開始後ダメージの後の回復量
+        this.#healAmountsAfterAfterBeginningOfCombatSkills = [0];
 
         // 戦闘後回復
         this.healedHpAfterCombat = 0;
@@ -487,10 +492,6 @@ class BattleContext {
         return this.restHp === this.maxHpWithSkills;
     }
 
-    get nullInvalidatesHealRatios() {
-        return this.#nullInvalidatesHealRatios;
-    }
-
     invalidateAllBuffs() {
         this.invalidatesAtkBuff = true;
         this.invalidatesSpdBuff = true;
@@ -816,5 +817,22 @@ class BattleContext {
 
     addNullInvalidatesHealRatios(ratio) {
         this.#nullInvalidatesHealRatios.push(ratio)
+    }
+
+    calculateReducedHealAmount(reducedHeal) {
+        // 回復量を減らされた分に対して回復不可無効の割合を乗算していく
+        for (let ratio of this.#nullInvalidatesHealRatios) {
+            let invalidationAmount = Math.trunc(reducedHeal * ratio);
+            reducedHeal -= invalidationAmount;
+        }
+        return reducedHeal;
+    }
+
+    addHealAmountAfterAfterBeginningOfCombatSkills(heal) {
+        this.#healAmountsAfterAfterBeginningOfCombatSkills.push(heal);
+    }
+
+    get maxHealAmountAfterAfterBeginningOfCombatSkills() {
+        return Math.max(...this.#healAmountsAfterAfterBeginningOfCombatSkills);
     }
 }
