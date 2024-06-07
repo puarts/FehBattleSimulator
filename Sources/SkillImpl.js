@@ -4338,6 +4338,8 @@
             }
         );
     }
+    // 攻撃魔防の十字牽制
+    setSkill(PassiveC.AtkResCrux, u => u.addAtkResSpurs(-4));
     // 速さ魔防の十字牽制
     setSkill(PassiveC.SpdResCrux, u => u.addSpdResSpurs(-4));
 }
