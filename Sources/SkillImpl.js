@@ -1,5 +1,45 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 強化増幅の弓+ 
+{
+    let skillId = Weapon.DoublerBowPlus;
+    // 威力：12
+    // 射程：2 特効：血
+    // 飛行特効
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                // 自分と周囲2マス以内の味方の
+                let targetUnits = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let targetUnit of targetUnits) {
+                    // 攻撃、魔防＋6（1ターン）
+                    targetUnit.reserveToApplyBuffs(6, 0, 0, 6);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防＋4、
+                targetUnit.addAllSpur(4);
+                // さらに、攻撃、速さ、守備、魔防が、自分と周囲2マス以内にいる味方のうち
+                // 強化が最も高い値だけ増加（能力値ごとに計算）
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        targetUnit.addSpurs(...amounts);
+                    }
+                );
+            }
+        }
+    );
+}
+
 // カラドボルグ
 {
     let skillId = Weapon.Caladbolg;

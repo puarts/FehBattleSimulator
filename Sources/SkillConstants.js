@@ -1846,6 +1846,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=lwHT4QOlZUE&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=V7-F5ZDEIJI&ab_channel=NintendoMobile
     Caladbolg: 2900, // カラドボルグ
+    DoublerBowPlus: 2898, // 強化増幅の弓+
 };
 
 const Support = {
