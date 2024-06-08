@@ -120,23 +120,6 @@ class PostCombatSkillHander {
             this.__reserveHealOrDamageAfterCombatForUnit(unit);
         }
 
-        // 不治の幻煙による回復無効化
-        {
-            let applyHealInvalidation = (targetUnit, enemyUnit) => {
-                if (targetUnit.battleContext.invalidatesHeal) {
-                    let ratio = enemyUnit.battleContext.nullInvalidatesHealRatio;
-                    let reservedHeal = Math.trunc(enemyUnit.reservedHeal * ratio);
-                    if (enemyUnit.reservedHeal > 0) {
-                        let detail = `${enemyUnit.reservedHeal} → ${reservedHeal}`;
-                        this.writeDebugLogLine(`${enemyUnit.nameWithGroup}の回復量変化(ratio: ${ratio}): ${detail}`);
-                    }
-                    enemyUnit.reservedHeal = reservedHeal;
-                }
-            };
-            applyHealInvalidation(atkUnit, defUnit);
-            applyHealInvalidation(defUnit, atkUnit);
-        }
-
         this.#applyReservedEffects();
 
         this.#applyPostCombatAllySkills(atkUnit);
@@ -160,9 +143,9 @@ class PostCombatSkillHander {
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.modifySpecialCount();
             if (!unit.isDead) {
-                let [hp, damage, heal] = unit.applyReservedHp(true);
-                if (damage !== 0 || heal !== 0) {
-                    this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}`);
+                let [hp, damage, heal, reducedHeal] = unit.applyReservedHp(true);
+                if (damage !== 0 || heal !== 0 || reducedHeal !== 0) {
+                    this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}, reduced: ${reducedHeal}`);
                 }
                 this.#applyReservedState(unit);
             }
@@ -596,9 +579,6 @@ class PostCombatSkillHander {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
                         unit.reserveHeal(7);
                     }
-                    break;
-                case Weapon.DarkCreatorS:
-                    targetUnit.isOneTimeActionActivatedForWeapon = true;
                     break;
                 case Weapon.EffiesLance:
                     if (targetUnit.isWeaponSpecialRefined) {
@@ -1089,11 +1069,6 @@ class PostCombatSkillHander {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
                         unit.reserveTakeDamage(7);
                     }
-                }
-                break;
-            case Weapon.SerpentineStaffPlus:
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true)) {
-                    unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
                 }
                 break;
             case Weapon.FlamelickBreath:

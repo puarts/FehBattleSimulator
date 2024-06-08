@@ -62,7 +62,7 @@ applyAfterSkillsSkillForBeginningOfTurnFuncMap.set(skillId,
 
 敵軍のターン開始時スキル発動後
 // セイズなど敵軍のターン開始時スキル発動後の効果
-applySkillsAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
+applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
     function (skillOwner) {
     }
 );
@@ -772,14 +772,51 @@ applySkillEffectsPerCombatFuncMap.set(skillId,
 奥義による攻撃でダメージを与えた時、N回復(与えたダメージが0でも効果は発動)
 targetUnit.healedHpAfterAttackSpecialInCombat = N;
 
-戦闘中と戦闘後、敵はHPを回復できない
-targetUnit.battleContext.invalidatesHeal= true;
+戦闘中と戦闘後、敵はHPを回復できない[Uが回復できないユニット]
+U.battleContext.hasDeepWounds = true;
 
 【回復不可】
 unit.addStatusEffect(StatusEffectType.DeepWounds);
 
 【回復不可】を60%無効
-targetUnit.battleContext.nullInvalidatesHealRatio = 0.6;
+targetUnit.battleContext.addNullInvalidatesHealRatios(0.6);
+
+戦闘開始後(戦闘開始後にダメージを受ける効果の後)、HPが回復
+回復値は、守備が敵よりも高い時は、最大HPの20%+守備の差×4、そうでない時は、最大HPの20%(最大:最大HPの40%+戦闘開始後に自身が受けたダメージで減少したHP量)(同系統効果複数時、最大値適用)
+// 自身
+applySkillEffectsAfterAfterBeginningOfCombatFuncMap.set(skillId,
+    function (targetUnit, enemyUnit) {
+        // 周囲2マス以内に味方がいる時、
+        if (this.__isThereAllyIn2Spaces(targetUnit)) {
+            // 自分は、戦闘開始後（戦闘開始後にダメージを受ける効果の後）、HPが回復
+            // 回復値は、
+            // 守備が敵よりも高い時は、
+            let diff = MathUtil.ensureMin(targetUnit.getDefDiffInCombat(enemyUnit), 0);
+            // 最大HPの20%＋守備の差✕4、そうでない時は、最大HPの20％
+            let heal = Math.trunc(targetUnit.maxHpWithSkills * 0.2) + diff * 4;
+            //（最大：最大HPの40%+戦闘開始後に自身が受けたダメージで減少したHP量）
+            let maxHeal = Math.trunc(targetUnit.maxHpWithSkills * 0.4) + targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
+            targetUnit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(MathUtil.ensureMax(heal, maxHeal));
+        }
+    }
+);
+// 周囲2マスの味方
+applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap.set(skillId,
+    function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+        // 周囲2マス以内の味方は、
+        if (targetUnit.distance(allyUnit) <= 2) {
+            // 自分は、戦闘開始後（戦闘開始後にダメージを受ける効果の後）、HPが回復
+            // 回復値は、
+            // 守備が敵よりも高い時は、
+            let diff = MathUtil.ensureMin(targetUnit.getDefDiffInCombat(enemyUnit), 0);
+            // 最大HPの20%＋守備の差✕4、そうでない時は、最大HPの20％
+            let heal = Math.trunc(targetUnit.maxHpWithSkills * 0.2) + diff * 4;
+            //（最大：最大HPの40%+戦闘開始後に自身が受けたダメージで減少したHP量）
+            let maxHeal = Math.trunc(targetUnit.maxHpWithSkills * 0.4) + targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
+            targetUnit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(MathUtil.ensureMax(heal, maxHeal));
+        }
+    }
+);
 
 杖の補助スキルによる回復量
 calcHealAmountFuncMap.set(skillId,
@@ -1531,6 +1568,8 @@ calcMoveCountForCantoFuncMap.set(skillId, function () {
     // マス間の距離+1、最大4
     // let dist = Unit.calcMoveDistance(this)
     // return Math.min(dist + 1, 4);
+    // 残り最低1
+    // return this.restMoveCount === 0 ? 1 : this.restMoveCount;
 });
 もしくは
 __canActivateCanto(unit) {}
@@ -1552,6 +1591,9 @@ enumerateTeleportTilesForUnitFuncMap.set(skillId,
 // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
 enumerateTeleportTilesForAllyFuncMap.set(skillId,
     function* (targetUnit, allyUnit) {
+        if (targetUnit.distance(allyUnit) <= 2) {
+            yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+        }
         if (allyUnit.hpPercentage <= 60 ||
             allyUnit.isCombatDone || allyUnit.isSupportDone) {
             yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
@@ -1613,6 +1655,12 @@ let dist = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
 移動前と移動後のマスの距離
 let dist = Unit.calcMoveDistance(targetUnit);
 
+罠解除
+DISARM_TRAP_SKILL_SET.add(skillId);
+
+魔法罠解除
+DISARM_HEX_TRAP_SKILL_SET.add(skillId);
+
 神竜の花を自身に使用した回数がN回
 targetUnit.dragonflower === N
 
@@ -1669,9 +1717,13 @@ stealBonusEffects(enemies, targetUnits, logger);
 
 ステータス解除予約
 // バフ解除予約
-enemy.reservedStatusesToDelete = [true, true, true, true];
+enemy.reservedBuffsToDelete = [true, true, true, true];
+// デバフ解除予約
+enemy.reservedDebuffsToDelete = [true, true, true, true];
 // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
 enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
+// ステータスを一つ解除
+unit.reservedStatusEffectSetToDelete.add(e);
 
 [ターン開始時スキル無効]
 このとき付与される【不利な状態異常】を無効化

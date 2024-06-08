@@ -10060,13 +10060,12 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
             let trapCondSatisfied = false;
             switch (obj.constructor) {
                 case HeavyTrap:
-                case BoltTrap:
-                    trapCondSatisfied =
-                        unit.passiveB !== PassiveB.Wanakaijo3 &&
-                        unit.passiveB !== PassiveB.DisarmTrap4;
+                case BoltTrap: {
+                    trapCondSatisfied = !DISARM_TRAP_SKILL_SET.has(unit.passiveB);
                     break;
+                }
                 case HexTrap:
-                    trapCondSatisfied = unit.hp <= obj.level * 5 + 35 - (unit.passiveB === PassiveB.DisarmTrap4 ? 10 : 0);
+                    trapCondSatisfied = unit.hp <= obj.level * 5 + 35 - (DISARM_HEX_TRAP_SKILL_SET.has(unit.passiveB) ? 10 : 0);
                     break;
             }
             if (trapCondSatisfied) {

@@ -215,6 +215,11 @@ class DamageCalculator {
         // 戦闘開始後効果 (ex) 戦闘後ダメージなど
         this.__activateEffectAfterBeginningOfCombat(atkUnit, defUnit);
         this.__activateEffectAfterBeginningOfCombat(defUnit, atkUnit);
+
+        // 戦闘開始後ダメージの後のスキル効果
+        this.__activateEffectAfterAfterBeginningOfCombatSkills(atkUnit, defUnit);
+        this.__activateEffectAfterAfterBeginningOfCombatSkills(defUnit, atkUnit);
+
         // atkUnitが受けるダメージはdefUnitが与えるダメージとして表示する
         result.atkUnitDamageAfterBeginningOfCombat = defUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
         result.defUnitDamageAfterBeginningOfCombat = atkUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
@@ -241,19 +246,42 @@ class DamageCalculator {
         return result;
     }
 
+    /**
+     * 戦闘開始後の効果
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     */
     __activateEffectAfterBeginningOfCombat(targetUnit, enemyUnit) {
         // 戦闘開始後ダメージ
         let damageAfterBeginningOfCombat = targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
         if (damageAfterBeginningOfCombat > 0) {
-            targetUnit.restHp -= damageAfterBeginningOfCombat;
-            let logMessage = `${targetUnit.getNameWithGroup()}に合計<span style="color: #ff0000">${damageAfterBeginningOfCombat}</span>の戦闘開始後ダメージ`;
+            targetUnit.takeDamageInCombat(damageAfterBeginningOfCombat);
+
+            // ログ
+            let logMessage =
+                `${targetUnit.getNameWithGroup()}に合計<span style="color: #ff0000">${damageAfterBeginningOfCombat}</span>の戦闘開始後ダメージ: HP=${targetUnit.restHp}/${targetUnit.maxHpWithSkills}`;
             this.writeDebugLog(logMessage);
             this.writeSimpleLog(logMessage);
             let debugMessage = `重複しない戦闘開始後ダメージ: [${targetUnit.battleContext.getDamagesAfterBeginningOfCombatNotStack()}]`;
             this.writeDebugLog(debugMessage);
-            if (targetUnit.restHp <= 0) {
-                targetUnit.restHp = 1;
-            }
+        }
+    }
+
+    /**
+     * 戦闘開始後の後の効果
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     */
+    __activateEffectAfterAfterBeginningOfCombatSkills(targetUnit, enemyUnit) {
+        // 戦闘開始後ダメージ後の回復
+        let maxHealAmount = targetUnit.battleContext.maxHealAmountAfterAfterBeginningOfCombatSkills;
+        let [restHp, healAmount] = targetUnit.healInCombat(maxHealAmount);
+
+        // ログ
+        if (maxHealAmount !== 0 || healAmount !== 0) {
+            let message = `${targetUnit.getNameWithGroup()}は戦闘開始後ダメージ後<span style="color: #008800;">${healAmount}回復</span>(回復不可分${maxHealAmount - healAmount}): HP=${restHp}/${targetUnit.maxHpWithSkills}`;
+            this.writeDebugLog(message);
+            this.writeSimpleLog(message);
         }
     }
 
@@ -1348,6 +1376,17 @@ class DamageCalculator {
                 // 奥義発動
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
                 damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack;
+                if (atkUnit.battleContext.isBaneSpecial) {
+                    // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
+                    if (specialDamage < defUnit.restHp - 1) {
+                        if (this.isLogEnabled) {
+                            let message = `${atkUnit.nameWithGroup}の瞬殺効果が発動`;
+                            this.writeDebugLog(message);
+                            this.writeSimpleLog(message);
+                        }
+                        specialDamage = defUnit.restHp - 1;
+                    }
+                }
                 currentDamage = this.__calcUnitAttackDamage(
                     defUnit, atkUnit,
                     specialDamage,
@@ -1772,24 +1811,23 @@ class DamageCalculator {
     }
 
     /**
+     * 戦闘中の攻撃後の回復
      * @param {Unit} unit
      * @param {number} healedHp
      * @param {Unit} enemyUnit
      */
     __heal(unit, healedHp, enemyUnit) {
-        if (enemyUnit.battleContext.invalidatesHeal || unit.hasStatusEffect(StatusEffectType.DeepWounds)) {
-            healedHp = Math.trunc(healedHp * unit.battleContext.nullInvalidatesHealRatio);
-            if (this.isLogEnabled) {
-                this.writeDebugLog(`${unit.getNameWithGroup()}は[回復不可]を${unit.battleContext.nullInvalidatesHealRatio}無効`);
-            }
-        }
+        let healAmount = healedHp;
+        // 回復不可の場合、元の回復量分だけ回復量を減らす
+        let reducedHeal = unit.calculateReducedHealAmountInCombat(healAmount);
+        healAmount -= reducedHeal;
 
-        unit.restHp += healedHp;
+        unit.restHp += healAmount;
         if (unit.restHp > unit.maxHpWithSkills) {
             unit.restHp = unit.maxHpWithSkills;
         }
         if (this.isLogEnabled) {
-            let message = `${unit.getNameWithGroup()}は<span style="color: #008800;">${healedHp}回復</span>: HP=${unit.restHp}/${unit.maxHpWithSkills}`;
+            let message = `${unit.getNameWithGroup()}は<span style="color: #008800;">${healAmount}回復</span>(回復不可分${reducedHeal}): HP=${unit.restHp}/${unit.maxHpWithSkills}`;
             this.writeDebugLog(message);
             if (healedHp > 0) {
                 this.writeSimpleLog(message);
@@ -1812,6 +1850,8 @@ class DamageCalculator {
                            damageReductionRatio, damageReductionValue,
                            potentRatio,
                            activatesDefenderSpecial, context) {
+        // 軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする
+        // （巨影など一部の敵を除く）
         let reducedDamage = Math.trunc(damage * damageReductionRatio) + damageReductionValue;
         let currentDamage = Math.max(damage - reducedDamage, 0);
         currentDamage = Math.trunc(currentDamage * potentRatio);

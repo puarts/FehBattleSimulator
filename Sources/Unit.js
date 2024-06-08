@@ -429,7 +429,8 @@ class Unit extends BattleMapElement {
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
         this.reservedSpecialCount = 0;
-        this.reservedStatusesToDelete = [false, false, false, false];
+        this.reservedBuffsToDelete = [false, false, false, false];
+        this.reservedDebuffsToDelete = [false, false, false, false];
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
         this.weaponType = WeaponType.None;
@@ -2695,13 +2696,19 @@ class Unit extends BattleMapElement {
         for (let e of this.reservedStatusEffectSetToDelete) {
             this.currentStatusEffectSet.delete(e);
         }
-        if (this.reservedStatusesToDelete[0]) this.atkBuff = 0;
-        if (this.reservedStatusesToDelete[1]) this.spdBuff = 0;
-        if (this.reservedStatusesToDelete[2]) this.defBuff = 0;
-        if (this.reservedStatusesToDelete[3]) this.resBuff = 0;
+        if (this.reservedBuffsToDelete[0]) this.atkBuff = 0;
+        if (this.reservedBuffsToDelete[1]) this.spdBuff = 0;
+        if (this.reservedBuffsToDelete[2]) this.defBuff = 0;
+        if (this.reservedBuffsToDelete[3]) this.resBuff = 0;
+
+        if (this.reservedDebuffsToDelete[0]) this.atkDebuff = 0;
+        if (this.reservedDebuffsToDelete[1]) this.spdDebuff = 0;
+        if (this.reservedDebuffsToDelete[2]) this.defDebuff = 0;
+        if (this.reservedDebuffsToDelete[3]) this.resDebuff = 0;
 
         this.reservedStatusEffectSetToDelete.clear();
-        this.reservedStatusesToDelete = [false, false, false, false];
+        this.reservedBuffsToDelete = [false, false, false, false];
+        this.reservedDebuffsToDelete = [false, false, false, false];
         // すでに付与されている状態（解除は反映済み）に予約された状態を加える
         this.reservedStatusEffects.forEach(e => this.currentStatusEffectSet.add(e));
         this.statusEffects = [...this.currentStatusEffectSet];
@@ -2709,18 +2716,30 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * @param  {Boolean} leavesOneHp
-     * @returns {[number, number, number]} hp, damage, heal
+     * 戦闘中以外の回復
+     * @param {Boolean} leavesOneHp
+     * @returns {[number, number, number, number]} hp, damage, heal
      */
     applyReservedHp(leavesOneHp) {
-        let healHp = this.hasStatusEffect(StatusEffectType.DeepWounds) ? 0 : this.reservedHeal;
+        let healHp = this.reservedHeal;
+        let reducedHeal = this.hasDeepWounds() ? healHp : 0;
+        healHp -= reducedHeal;
         let damageHp = this.hasStatusEffect(StatusEffectType.EnGarde) ? 0 : this.reservedDamage;
         this.hp = Number(this.hp) - damageHp + healHp;
         this.modifyHp(leavesOneHp);
 
         this.reservedDamage = 0;
         this.reservedHeal = 0;
-        return [this.hp, damageHp, healHp];
+        return [this.hp, damageHp, healHp, reducedHeal];
+    }
+
+    calculateReducedHealAmountInCombat(healHp) {
+        let reducedHeal = this.hasDeepWounds() ? healHp : 0;
+        return this.battleContext.calculateReducedHealAmount(reducedHeal);
+    }
+
+    hasDeepWounds() {
+        return this.hasStatusEffect(StatusEffectType.DeepWounds) || this.battleContext.hasDeepWounds;
     }
 
     reserveTakeDamage(damageAmount) {
@@ -2742,14 +2761,20 @@ class Unit extends BattleMapElement {
         this.hp = MathUtil.ensureMin(this.hp - damageAmount, leavesOneHp ? 1 : 0);
     }
 
+    takeDamageInCombat(damage, leavesOneHp = false) {
+        if (this.isDead) {
+            return;
+        }
+        this.restHp = MathUtil.ensureMin(this.restHp - damage, leavesOneHp ? 1 : 0);
+    }
+
     healFull() {
         this.heal(99);
     }
 
     heal(healAmount) {
-        if (this.hasStatusEffect(StatusEffectType.DeepWounds)) {
-            return 0;
-        }
+        let reducedHeal = this.hasDeepWounds() ? healAmount : 0;
+        healAmount -= this.battleContext.calculateReducedHealAmount(reducedHeal);
 
         let damage = this.maxHpWithSkills - this.hp;
         let hp = this.hp + healAmount;
@@ -2758,6 +2783,13 @@ class Unit extends BattleMapElement {
         }
         this.hp = hp;
         return Math.min(damage, healAmount);
+    }
+
+    healInCombat(healAmount) {
+        let reducedHeal = this.hasDeepWounds() ? healAmount : 0;
+        healAmount -= this.battleContext.calculateReducedHealAmount(reducedHeal);
+        this.restHp = MathUtil.ensureMax(this.restHp + healAmount, this.maxHpWithSkills);
+        return [this.restHp, healAmount];
     }
 
     get isAlive() {
@@ -3484,6 +3516,10 @@ class Unit extends BattleMapElement {
 
     getDefInPrecombat() {
         return Math.min(99, this.getDefInPrecombatWithoutDebuff() + Number(this.defDebuff));
+    }
+
+    getDefDiffInCombat(enemyUnit) {
+        return this.getDefInCombat(enemyUnit) - enemyUnit.getDefInCombat(this);
     }
 
     getResInPrecombatWithoutDebuff() {

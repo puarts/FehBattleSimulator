@@ -1841,6 +1841,14 @@ const Weapon = {
     // https://www.youtube.com/watch?v=4zZlsvfyFKM&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=ggFGkhvIj4s&t=25s&ab_channel=NintendoMobile
     HoshidosBreath: 2895, // 白の血族のブレス
+
+    // 新英雄「響心ミカヤ＆魔器サザ」
+    // https://www.youtube.com/watch?v=lwHT4QOlZUE&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=V7-F5ZDEIJI&ab_channel=NintendoMobile
+    Caladbolg: 2900, // カラドボルグ
+    DoublerBowPlus: 2898, // 強化増幅の弓+
+    ArcaneTempest: 2902, // 魔器・暁風の刃
+    SilverOfDawn: 2905, // 暁星の輝き
 };
 
 const Support = {
@@ -2063,6 +2071,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
+    Bane: 2903, // 瞬殺
     DragonFangShot: 2896, // 竜穿射
     GreatAether: 2835, // 覇克・天空
     SacredWind: 2828, // 神聖風
@@ -2702,6 +2711,7 @@ const PassiveB = {
 
     Wanakaijo3: 858, // 罠解除3
     DisarmTrap4: 2572, // 罠解除4
+    PotentDisarm: 2904, // 罠解除・神速
 
     RunaBracelet: 667, // 月の腕輪
     LunarBrace2: 1947, // 月の腕輪・承
@@ -2777,6 +2787,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    YunesProtection: 2906, // ユンヌの見守り
     BelieveInLove: 2820, // 愛する人がいますか
     SunlitBundleD: 2769, // 華日の腕輪・護
     SpoilRotten: 2710, // 可愛がってあげる
@@ -3119,6 +3130,7 @@ const PassiveC = {
     InciteAtkRes: 2774, // 攻撃魔防の奮激
 
     SeiNoIbuki3: 668, // 生の息吹3
+    BreathOfLife4: 2901, // 生の息吹4
     HokoNoGogeki3: 732, // 歩行の剛撃3
     HokoNoJugeki3: 733, // 歩行の柔撃3
     HokoNoKokyu3: 921, // 歩行の呼吸3
@@ -3145,6 +3157,7 @@ const PassiveC = {
     ASReinSnap: 2598, // 攻速牽制・運び手
     SDReinSnap: 2444, // 速守牽制・運び手
     // 十字牽制
+    AtkResCrux: 2907, // 攻撃魔防の十字牽制
     SpdResCrux: 2808, // 速さ魔防の十字牽制
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
@@ -3300,6 +3313,7 @@ const PassiveX = {
     SoaringEcho: 2787, // 響・飛走の先導
     GuardEcho: 2822, // 響・キャンセル
     MercyWingEcho: 2859, // 響・救援の行路
+    FarTraceEcho: 2908, // 響・遠影
 };
 
 const Captain = {

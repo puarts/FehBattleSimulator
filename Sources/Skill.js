@@ -858,7 +858,6 @@ const TELEPORTATION_SKILL_SET = new Set([
     Weapon.FlowerLance,
     Weapon.FujinYumi,
     Weapon.Gurimowaru,
-    Weapon.ApotheosisSpear,
     Weapon.Noatun,
     Weapon.HinokaNoKounagitou,
     Weapon.IzunNoKajitsu,
@@ -1383,6 +1382,15 @@ const NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET = new Set([
     Support.Nudge,
 ]);
 
+const DISARM_TRAP_SKILL_SET = new Set([
+    PassiveB.Wanakaijo3,
+    PassiveB.DisarmTrap4,
+]);
+
+const DISARM_HEX_TRAP_SKILL_SET = new Set([
+    PassiveB.DisarmTrap4,
+]);
+
 const STATUS_INDEX = {
     Atk: 0,
     Spd: 1,
@@ -1421,7 +1429,7 @@ function stealBonusEffects(enemies, targetAllies, logger = null) {
     for (let enemy of enemyArray) {
         // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
         enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
-        enemy.reservedStatusesToDelete = [true, true, true, true];
+        enemy.reservedBuffsToDelete = [true, true, true, true];
     }
 }
 
@@ -1603,3 +1611,7 @@ const calcHealAmountFuncMap = new Map();
 const applyPostCombatAllySkillFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleMap, tile: Tile, warpUnit: Unit, enemyUnit: Unit) => void>} */
 const canWarpFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
+applySkillEffectsAfterAfterBeginningOfCombatFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit, ally: Unit, potentialDamage: boolean) => void>} */
+applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap = new Map();

@@ -120,7 +120,8 @@ class BeginningOfTurnSkillHandler {
             if (unit.isDead) {
                 continue;
             }
-            unit.applyReservedHp(leavesOneHp);
+            let [hp, damage, heal , reducedHeal] = unit.applyReservedHp(leavesOneHp);
+            this.writeDebugLog(`予約された回復、ダメージを反映 [ユニット, hp, damage, heal, reducedHeal] : ${unit.nameWithGroup}, ${hp}, ${damage}, ${heal}, ${reducedHeal}`);
         }
     }
 
