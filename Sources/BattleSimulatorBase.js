@@ -5315,6 +5315,11 @@ class BattleSimulatorBase {
             return false;
         }
 
+        this.writeLogLine("■天脈の計算------------");
+        if (this.simulateDivineVein(actionableUnits)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -5365,6 +5370,11 @@ class BattleSimulatorBase {
         this.writeLogLine("■移動の計算------------");
         // noinspection RedundantIfStatementJS
         if (this.simulateMovement(actionableUnits, enemyUnits, allyUnits)) {
+            return false;
+        }
+
+        this.writeLogLine("■天脈の計算------------");
+        if (this.simulateDivineVein(actionableUnits)) {
             return false;
         }
 
