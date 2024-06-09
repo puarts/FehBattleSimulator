@@ -2781,16 +2781,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.Vallastone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                enemyUnit.addAllSpur(-5);
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
-                    return 0.3;
-                });
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.ThraciaKinglance] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (enemyUnit.battleContext.initiatesCombat ||
                 enemyUnit.battleContext.restHpPercentage >= 75) {

@@ -1748,6 +1748,24 @@ applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
     }
 );
 
+[移動に関わる天脈]
+let divineFunc = function () {
+    for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
+        tile.reserveDivineVein(DivineVeinType.Green, this.groupId);
+    }
+};
+// 行動終了
+applyEndActionSkillsFuncMap.set(skillId, divineFunc);
+// 再移動発動時
+applySkillsAfterCantoActivatedFuncMap.set(skillId, divineFunc);
+
+[行動終了時に発動する天脈を持っているかどうか(AIが行動終了して天脈を張るかどうかに関係する)]
+hasDivineVeinSkillsWhenActionDoneFuncMap.set(skillId,
+    function () {
+        return true;
+    }
+);
+
 出典の配列を返す
 unit.getOrigins();
 

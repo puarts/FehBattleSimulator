@@ -4239,14 +4239,6 @@ class BattleSimulatorBase {
                 // TODO: 正しい挙動か確認する
                 unit.endAction();
                 unit.deactivateCanto();
-                // ターン >= 2としないと戦闘開始を押した瞬間に敵の天脈が発動してしまう
-                if (group === UnitGroupType.Ally && g_appData.currentTurn >= 2) {
-                    // 拡張枠のユニットは天脈を発動しない
-                    if (unit !== g_appData.getEnemyExpansionUnitOnMap() &&
-                        !g_appData.isEnemyActionTriggered) {
-                        unit.applyEndActionSkills();
-                    }
-                }
             }
         }
 
@@ -5323,6 +5315,11 @@ class BattleSimulatorBase {
             return false;
         }
 
+        this.writeLogLine("■天脈の計算------------");
+        if (this.simulateDivineVein(actionableUnits)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -5373,6 +5370,11 @@ class BattleSimulatorBase {
         this.writeLogLine("■移動の計算------------");
         // noinspection RedundantIfStatementJS
         if (this.simulateMovement(actionableUnits, enemyUnits, allyUnits)) {
+            return false;
+        }
+
+        this.writeLogLine("■天脈の計算------------");
+        if (this.simulateDivineVein(actionableUnits)) {
             return false;
         }
 
@@ -5434,6 +5436,11 @@ class BattleSimulatorBase {
         this.writeLogLine("■移動の計算------------");
         // noinspection RedundantIfStatementJS
         if (this.simulateMovement(triggeredActionableUnits, enemyUnits, allyUnits)) {
+            return false;
+        }
+
+        this.writeLogLine("■天脈の計算------------");
+        if (this.simulateDivineVein(actionableUnits)) {
             return false;
         }
 
@@ -6396,6 +6403,27 @@ class BattleSimulatorBase {
         return isActionActivated;
     }
 
+    /**
+     * AIがその場でキャラを行動終了して天脈を発動させる行動のシミュレーション
+     * 今の所Mia's AI Manipulation Instructional Academy(https://vervefeh.github.io/FEH-AI/textguide.html)には記載されていない
+     * @param {Unit[]} targetUnits
+     */
+    simulateDivineVein(targetUnits) {
+        // スロットの左の方から行動する
+        let unitsSortedBySlot = Array.from(targetUnits).sort((a, b) => a.slotOrder - b.slotOrder);
+        for (let unit of unitsSortedBySlot) {
+            for (let skillId of unit.enumerateSkills()) {
+                let result = getSkillFunc(skillId, hasDivineVeinSkillsWhenActionDoneFuncMap)?.call(this);
+                if (result && !unit.isActionDone) {
+                    unit.endAction();
+                    unit.applyEndActionSkills();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     __getCantoActivatedUnit(units) {
         for (let unit of units) {
             if (unit.isCantoActivated()) {
@@ -6569,7 +6597,7 @@ class BattleSimulatorBase {
             serial = this.__convertUnitPerTurnStatusToSerialForSpecifiedGroupUnitsOnMap(groupId);
         }
         let self = this;
-        this.__enqueueCommand("ユニット全員の行動終了", function () {
+        this.__enqueueCommand(`${groupIdToString(groupId)}ユニット全員の行動終了`, function () {
             if (self.isCommandLogEnabled) {
                 self.writeLogLine("行動可能なユニットはいないので現在のフェーズ終了");
             }

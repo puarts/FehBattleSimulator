@@ -2401,13 +2401,6 @@ class Unit extends BattleMapElement {
         // 同時タイミングに異なる複数の天脈が付与されていなければ天脈付与を確定させる
         for (let skillId of this.enumerateSkills()) {
             getSkillFunc(skillId, applyEndActionSkillsFuncMap)?.call(this);
-            switch (skillId) {
-                case Weapon.Vallastone:
-                    for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
-                        tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
-                    }
-                    break;
-            }
         }
 
         // 同時タイミングに付与された天脈を消滅させる
