@@ -743,18 +743,6 @@ class DamageCalculatorWrapper {
             return false;
         }
 
-        if (ally.hasStatusEffect(StatusEffectType.AssignDecoy)) {
-            if (ally.__hasSaveSkills()) {
-                return false;
-            }
-            if (isRangedWeaponType(ally.weaponType) && isRangedWeaponType(atkUnit.weaponType)) {
-                return true;
-            }
-            if (isMeleeWeaponType(ally.weaponType) && isMeleeWeaponType(atkUnit.weaponType)) {
-                return true;
-            }
-        }
-
         for (let skillId of ally.enumerateSkills()) {
             if (getSkillFunc(skillId, canActivateSaveSkillFuncMap)?.call(this, atkUnit, ally) ?? false) {
                 return true;
@@ -778,6 +766,21 @@ class DamageCalculatorWrapper {
                         return true;
                     }
                     break;
+            }
+        }
+
+        // 通常の護り手スキルの後に判定を行う
+        if (ally.hasStatusEffect(StatusEffectType.AssignDecoy)) {
+            if (ally.__hasSaveSkills()) {
+                // 護り手スキルを持っている場合には囮指名の効果は発動しない
+                // (囮指名者が護り手スキルを持っていてその護り手スキルが発動しない場合の処理)
+                return false;
+            }
+            if (isRangedWeaponType(ally.weaponType) && isRangedWeaponType(atkUnit.weaponType)) {
+                return true;
+            }
+            if (isMeleeWeaponType(ally.weaponType) && isMeleeWeaponType(atkUnit.weaponType)) {
+                return true;
             }
         }
 
