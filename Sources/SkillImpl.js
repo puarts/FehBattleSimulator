@@ -3679,6 +3679,7 @@
                 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                 // ダメージ+敵の最大HPの30%(範囲奥義を除く)、
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
                     atkUnit.battleContext.additionalDamage += Math.trunc(enemyUnit.maxHpWithSkills * 0.3);
                 });
             }
@@ -4789,13 +4790,21 @@
             if (!atkUnit.isWeaponRefined) {
                 if (defUnit.hasNegativeStatusEffect()) {
                     let value = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
-                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                    if (isPrecombat) {
+                        atkUnit.battleContext.additionalDamage = Math.trunc(value * 0.2);
+                    } else {
+                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                    }
                 }
             } else {
                 if (atkUnit.hasPositiveStatusEffect(defUnit) ||
                     defUnit.hasNegativeStatusEffect()) {
                     let value = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
-                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                    if (isPrecombat) {
+                        atkUnit.battleContext.additionalDamage = Math.trunc(value * 0.2);
+                    } else {
+                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
+                    }
                 }
             }
         }
@@ -7089,7 +7098,11 @@
         );
         calcFixedAddDamageFuncMap.set(skillId,
             function (atkUnit, defUnit, isPrecombat) {
-                atkUnit.battleContext.additionalDamage += 7;
+                if (isPrecombat) {
+                    atkUnit.battleContext.additionalDamage = 7;
+                } else {
+                    atkUnit.battleContext.additionalDamage += 7;
+                }
             }
         );
     }
@@ -7345,53 +7358,84 @@
 
 // 業炎フォルブレイズ
 {
-    let skillId = Weapon.StudiedForblaze;
+    let skillId = getSpecialRefinementSkillId(Weapon.StudiedForblaze);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.restHpPercentage >= 25 || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、攻撃、魔防+5、
+                targetUnit.addAtkResSpurs(5);
+                // 絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // 最初に受けた攻撃のダメージを30%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+            }
+        }
+    );
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (atkUnit.battleContext.restHpPercentage >= 25 || this.__isThereAllyIn2Spaces(atkUnit)) {
+                // ダメージ+魔防の15%(戦闘前奥義も含む)、
+                let status = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
+                if (isPrecombat) {
+                    atkUnit.battleContext.additionalDamage = Math.trunc(status * 0.15);
+                } else {
+                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+                }
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.StudiedForblaze);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-            if (!skillOwner.isWeaponRefined) {
-                if (this.globalBattleContext.currentTurn === 1) {
-                    skillOwner.reserveToReduceSpecialCount(1);
-                }
-            } else {
-                if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
-                    skillOwner.reduceSpecialCount(1);
-                }
+            if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
+                skillOwner.reduceSpecialCount(1);
             }
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                // <通常効果>
-                if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    targetUnit.addAtkResSpurs(6);
-                }
-            } else {
-                // <錬成効果>
-                if (targetUnit.isWeaponSpecialRefined) {
-                    // <特殊錬成効果>
-                    if (targetUnit.battleContext.initiatesCombat ||
-                        this.__isThereAllyIn2Spaces(targetUnit)) {
-                        targetUnit.addAtkResSpurs(5);
-                        targetUnit.battleContext.followupAttackPriorityIncrement++;
-                    }
-                }
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、魔防+6、かつ、
+                targetUnit.addAtkResSpurs(6);
             }
         }
     );
     canDisableAttackOrderSwapSkillFuncMap.set(skillId,
+        // 自身と敵の戦闘順入替スキル(待ち伏せ、攻め立て等)無効
         function (restHpPercentage, defUnit) {
-            // 錬成で共通
             return restHpPercentage >= 25;
         }
     );
-    calcFixedAddDamageFuncMap.set(skillId,
-        function (atkUnit, defUnit, isPrecombat) {
-            if (atkUnit.isWeaponSpecialRefined) {
-                let status = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
-                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
+}
+{
+    let skillId = getNormalSkillId(Weapon.StudiedForblaze);
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            if (this.globalBattleContext.currentTurn === 1) {
+                skillOwner.reserveToReduceSpecialCount(1);
             }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、魔防+6、かつ、
+                targetUnit.addAtkResSpurs(6);
+            }
+        }
+    );
+    canDisableAttackOrderSwapSkillFuncMap.set(skillId,
+        // 自身と敵の戦闘順入替スキル(待ち伏せ、攻め立て等)無効
+        function (restHpPercentage, defUnit) {
+            return restHpPercentage >= 25;
         }
     );
 }
@@ -8164,6 +8208,7 @@
             if (allyCount <= 1) {
                 enemyUnit.addAtkDefSpurs(-5);
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                    if (isPrecombat) return;
                     let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
                     atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
                 });
@@ -8658,7 +8703,11 @@
                 );
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                        atkUnit.battleContext.additionalDamage += 5;
+                        if (isPrecombat) {
+                            atkUnit.battleContext.additionalDamage = 5;
+                        } else {
+                            atkUnit.battleContext.additionalDamage += 5;
+                        }
                     }
                 });
             }
@@ -10696,6 +10745,7 @@
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.addAllSpur(4);
                         targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+                            if (isPrecombat) return;
                             let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
                             atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
                         });
