@@ -1,5 +1,23 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 見切り追撃の槍+
+{
+    let skillId = Weapon.NullSpearPlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ+5、
+                targetUnit.addAtkSpdSpurs(5);
+                // かつ速さが敵より1以上高い時、戦闘中、敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+                targetUnit.battleContext.setSpdNullFollowupAttack();
+                // ダメージ+5(範囲奥義を除く)
+                targetUnit.battleContext.additionalDamage += 5;
+            }
+        }
+    );
+}
+
 // 透魔の竜石
 {
     let skillId = Weapon.Vallastone;
