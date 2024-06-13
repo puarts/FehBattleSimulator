@@ -10486,7 +10486,7 @@ class DamageCalculatorWrapper {
         if (calcPotentialDamage) {
             return;
         }
-        for (let enemyAllyUnit of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit)) {
+        for (let enemyAllyUnit of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit, true)) {
             if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAllyUnit)) {
                 continue
             }
