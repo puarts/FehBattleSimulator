@@ -141,12 +141,17 @@
                 enemyUnit.addAtkResSpurs(-5);
                 // さらに、敵の攻撃、魔防が減少
                 // 減少値は、敵とその周囲2マス以内にいる敵のうち弱化の合計値が最も高い値、
-                let debuffTotal = enemyUnit.debuffTotal;
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
-                    debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
-                }
-                let amount = Math.abs(debuffTotal);
-                enemyUnit.addAtkResSpurs(-amount);
+                // 相手の弱化無効スキルの設定が終わった後に判定しなければならない
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let debuffTotal = enemyUnit.debuffTotal;
+                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
+                            debuffTotal = Math.min(debuffTotal, unit.getDebuffTotal(true));
+                        }
+                        let amount = Math.abs(debuffTotal);
+                        enemyUnit.addAtkResSpurs(-amount);
+                    }
+                );
                 // 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
                 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                 // （無効にする数値は端数切捨て）
@@ -3654,9 +3659,11 @@
                 let amount = MathUtil.ensureMinMax(Math.trunc(atk * 0.25) - 2, 6, 16);
                 targetUnit.atkSpur += amount;
                 enemyUnit.atkSpur -= amount;
-                // 自身の弱化を無効、自身の反撃不可を無効、自身の奥義発動カウント変動量ーを無効
+                // 自身の弱化を無効、
                 targetUnit.battleContext.invalidateAllOwnDebuffs();
+                // 自身の反撃不可を無効、
                 targetUnit.battleContext.nullCounterDisrupt = true;
+                // 自身の奥義発動カウント変動量ーを無効
                 targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
                         enemyUnit.battleContext.reducesCooldownCount = false;
