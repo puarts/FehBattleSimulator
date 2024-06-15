@@ -776,7 +776,7 @@ class PostCombatSkillHander {
                     this.writeDebugLogLine(targetUnit.getNameWithGroup() + "の鼓動の幻煙3発動");
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2, true)) {
                         this.writeDebugLogLine(unit.getNameWithGroup() + "の奥義カウントを+1");
-                        unit.reserveToReduceSpecialCount(1);
+                        unit.reserveToIncreaseSpecialCount(1);
                     }
                     break;
                 case PassiveB.Atrocity:
