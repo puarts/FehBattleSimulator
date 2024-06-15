@@ -9797,37 +9797,43 @@
     );
 }
 
-
 // 豊潤の花
 {
-    let skillId = Weapon.FlowerOfPlenty;
+    let skillId = getSpecialRefinementSkillId(Weapon.FlowerOfPlenty);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAtkResSpurs(5);
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
+                    unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
+                }
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.FlowerOfPlenty);
     updateUnitSpurFromAlliesFuncMap.set(skillId,
         function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
             // 5×3マス以内にいる場合
             if (Math.abs(allyUnit.posX - targetUnit.posX) <= 1 &&
                 Math.abs(allyUnit.posY - targetUnit.posY) <= 2) {
-                if (!allyUnit.isWeaponRefined) {
-                    targetUnit.addAtkResSpurs(3);
-                } else {
-                    targetUnit.addAtkResSpurs(4);
-                }
+                targetUnit.addAtkResSpurs(4);
             }
-        }
-    );
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.isWeaponRefined) {
-                return;
-            }
             let found = false;
             for (let unit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (Math.abs(unit.posX - targetUnit.posX) <= 1 &&
-                    Math.abs(unit.posY - targetUnit.posY) <= 2) {
+                if (unit.isInRectangle(targetUnit, 3, 5)) {
                     found = true;
                     break;
                 }
@@ -9835,21 +9841,16 @@
             if (found) {
                 targetUnit.addAtkResSpurs(5);
             }
-            if (targetUnit.isWeaponSpecialRefined) {
-                if (targetUnit.battleContext.restHpPercentage >= 25) {
-                    targetUnit.addAtkResSpurs(5);
-                    targetUnit.battleContext.followupAttackPriorityIncrement++;
-                }
-            }
         }
     );
-    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit) {
-            if (targetUnit.isWeaponSpecialRefined &&
-                targetUnit.battleContext.restHpPercentage >= 25) {
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 1, true)) {
-                    unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
-                }
+}
+{
+    let skillId = getNormalSkillId(Weapon.FlowerOfPlenty);
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
+            // 5×3マス以内にいる場合
+            if (allyUnit.isInRectangle(targetUnit, 3, 5)) {
+                targetUnit.addAtkResSpurs(3);
             }
         }
     );
