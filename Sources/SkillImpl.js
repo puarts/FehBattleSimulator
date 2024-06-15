@@ -7594,7 +7594,7 @@
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
-                        if (targetUnit.getEvalResInCombat(enemyUnit) > enemyUnit.getEvalResInCombat(targetUnit)) {
+                        if (targetUnit.isHigherResInPrecombat(enemyUnit)) {
                             spurFunc(enemyUnit, -3, -3);
                             let maxDebuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit);
                             spurFunc(enemyUnit, maxDebuffs[indices[0]], maxDebuffs[indices[1]]);
