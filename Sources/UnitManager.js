@@ -158,6 +158,7 @@ class UnitManager {
      * @param {number} unitGroup
      * @param {(u: Unit) => number} getStatusFunc
      * @param {(u: Unit) => boolean} exceptUnitFunc
+     * @returns {Unit[]}
      */
     findMaxStatusUnits(unitGroup, getStatusFunc, exceptUnitFunc = _ => false) {
         let filterFunc = u => u.isOnMap && (exceptUnitFunc === null || !exceptUnitFunc(u))

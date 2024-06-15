@@ -175,10 +175,12 @@ class DamageCalculatorWrapper {
             !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
             // 範囲攻撃ダメージを周囲の敵に反映
             for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
-                if (tile.placedUnit != null
-                    && tile.placedUnit !== defUnit
-                    && tile.placedUnit.groupId === defUnit.groupId
-                ) {
+                let isNotDefUnit = tile.placedUnit !== defUnit;
+                let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit);
+                if (tile.placedUnit != null &&
+                    isNotDefUnit &&
+                    isNotSaverUnit &&
+                    tile.placedUnit.groupId === defUnit.groupId) {
                     let targetUnit = tile.placedUnit;
                     let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit);
                     this.writeLog(`atkUnit.battleContext.additionalDamageOfSpecial: ${atkUnit.battleContext.additionalDamageOfSpecial}`);
@@ -416,7 +418,7 @@ class DamageCalculatorWrapper {
     }
 
     /**
-     * @param  {Unit} saverUnit
+     * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      */
     __applyPrecombatSkills(atkUnit, defUnit) {
@@ -437,7 +439,7 @@ class DamageCalculatorWrapper {
     }
 
     /**
-     * @param  {Unit} saverUnit
+     * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      */
     calcPrecombatSpecialResult(atkUnit, defUnit) {

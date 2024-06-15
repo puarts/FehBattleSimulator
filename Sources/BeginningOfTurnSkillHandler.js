@@ -3353,6 +3353,10 @@ class BeginningOfTurnSkillHandler {
             applyDebuffFunc(unit);
         }
     }
+
+    /**
+     * @returns {Unit[]}
+     */
     __findMaxStatusUnits(unitGroup, getStatusFunc, exceptUnit = null) {
         return this._unitManager.findMaxStatusUnits(unitGroup, getStatusFunc, x => x == exceptUnit);
     }
