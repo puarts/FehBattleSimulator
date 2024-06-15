@@ -188,6 +188,7 @@ class BattleContext {
         this.specialCountReductionBeforeFirstAttackByEnemy = 0;
 
         // 攻撃時の追加ダメージ
+        // TODO: 戦闘前と戦闘中で変数を分ける
         this.additionalDamage = 0;
 
         // 最初の攻撃の追加ダメージ

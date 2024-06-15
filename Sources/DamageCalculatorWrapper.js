@@ -175,10 +175,12 @@ class DamageCalculatorWrapper {
             !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
             // 範囲攻撃ダメージを周囲の敵に反映
             for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
-                if (tile.placedUnit != null
-                    && tile.placedUnit !== defUnit
-                    && tile.placedUnit.groupId === defUnit.groupId
-                ) {
+                let isNotDefUnit = tile.placedUnit !== defUnit;
+                let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit);
+                if (tile.placedUnit != null &&
+                    isNotDefUnit &&
+                    isNotSaverUnit &&
+                    tile.placedUnit.groupId === defUnit.groupId) {
                     let targetUnit = tile.placedUnit;
                     let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit);
                     this.writeLog(`atkUnit.battleContext.additionalDamageOfSpecial: ${atkUnit.battleContext.additionalDamageOfSpecial}`);
@@ -416,7 +418,7 @@ class DamageCalculatorWrapper {
     }
 
     /**
-     * @param  {Unit} saverUnit
+     * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      */
     __applyPrecombatSkills(atkUnit, defUnit) {
@@ -437,7 +439,7 @@ class DamageCalculatorWrapper {
     }
 
     /**
-     * @param  {Unit} saverUnit
+     * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      */
     calcPrecombatSpecialResult(atkUnit, defUnit) {
@@ -743,18 +745,6 @@ class DamageCalculatorWrapper {
             return false;
         }
 
-        if (ally.hasStatusEffect(StatusEffectType.AssignDecoy)) {
-            if (ally.__hasSaveSkills()) {
-                return false;
-            }
-            if (isRangedWeaponType(ally.weaponType) && isRangedWeaponType(atkUnit.weaponType)) {
-                return true;
-            }
-            if (isMeleeWeaponType(ally.weaponType) && isMeleeWeaponType(atkUnit.weaponType)) {
-                return true;
-            }
-        }
-
         for (let skillId of ally.enumerateSkills()) {
             if (getSkillFunc(skillId, canActivateSaveSkillFuncMap)?.call(this, atkUnit, ally) ?? false) {
                 return true;
@@ -778,6 +768,21 @@ class DamageCalculatorWrapper {
                         return true;
                     }
                     break;
+            }
+        }
+
+        // 通常の護り手スキルの後に判定を行う
+        if (ally.hasStatusEffect(StatusEffectType.AssignDecoy)) {
+            if (ally.__hasSaveSkills()) {
+                // 護り手スキルを持っている場合には囮指名の効果は発動しない
+                // (囮指名者が護り手スキルを持っていてその護り手スキルが発動しない場合の処理)
+                return false;
+            }
+            if (isRangedWeaponType(ally.weaponType) && isRangedWeaponType(atkUnit.weaponType)) {
+                return true;
+            }
+            if (isMeleeWeaponType(ally.weaponType) && isMeleeWeaponType(atkUnit.weaponType)) {
+                return true;
             }
         }
 
@@ -10483,7 +10488,7 @@ class DamageCalculatorWrapper {
         if (calcPotentialDamage) {
             return;
         }
-        for (let enemyAllyUnit of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit)) {
+        for (let enemyAllyUnit of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit, true)) {
             if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAllyUnit)) {
                 continue
             }

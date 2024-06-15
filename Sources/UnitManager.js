@@ -158,6 +158,7 @@ class UnitManager {
      * @param {number} unitGroup
      * @param {(u: Unit) => number} getStatusFunc
      * @param {(u: Unit) => boolean} exceptUnitFunc
+     * @returns {Unit[]}
      */
     findMaxStatusUnits(unitGroup, getStatusFunc, exceptUnitFunc = _ => false) {
         let filterFunc = u => u.isOnMap && (exceptUnitFunc === null || !exceptUnitFunc(u))
@@ -281,20 +282,12 @@ class UnitManager {
     }
 
     findNearestEnemies(targetUnit, distLimit = 100) {
-        return this.__findNearestUnits(targetUnit, this.enumerateUnitsInDifferentGroupOnMap(targetUnit), distLimit);
+        let units = this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, distLimit);
+        return IterUtil.minElements(units, u => targetUnit.distance(u));
     }
 
     findNearestAllies(targetUnit, distLimit = 100) {
-        return this.__findNearestUnits(targetUnit, this.enumerateUnitsInTheSameGroupOnMap(targetUnit), distLimit);
-    }
-
-    /**
-     * @param {Unit} targetUnit
-     * @param {Generator<Unit>|Unit[]|Iterable<Unit>} candidateUnits
-     * @param {number} distLimit
-     * @returns {Unit[]}
-     */
-    __findNearestUnits(targetUnit, candidateUnits, distLimit) {
-        return IterUtil.minElements(candidateUnits, u => targetUnit.distance(u));
+        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, distLimit);
+        return IterUtil.minElements(units, u => targetUnit.distance(u));
     }
 }
