@@ -3216,6 +3216,8 @@ const PassiveC = {
     // 鍛錬の鼓動
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
+    BeastThreaten: 2913, // 獣の威嚇
+
     // 専用C
     ForeverYours: 2890, // あなたのシャロン
     AbsoluteClosure: 2884, // すべてを鎖す世界

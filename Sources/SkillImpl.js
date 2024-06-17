@@ -1,5 +1,32 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 獣の威嚇
+{
+    let skillId = PassiveC.BeastThreaten;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身を中心とした縦3列と横3列の敵の
+            let enemies = this.unitManager.enumerateUnitsInDifferentGroupInCrossOf(skillOwner, 1);
+            for (let enemy of enemies) {
+                // - 守備一7（敵の次回行動終了まで）、
+                // - 【パニック】を付与
+                enemy.reserveToApplyDebuffs(0, 0, -7, 0);
+                enemy.reserveToAddStatusEffect(StatusEffectType.Panic);
+            }
+            // ターン開始時、自身を中心とした縦3列と横3列に敵がいる時、
+            if (!this.unitManager.enumerateUnitsInDifferentGroupInCrossOf(skillOwner, 1).next().done) {
+                // - 自分の攻撃＋6（1ターン）、
+                skillOwner.reserveToApplyAtkBuff(6);
+                // - かつ奥義発動カウントが最大値なら、奥義発動カウントー1
+                if (skillOwner.statusEvalUnit.isSpecialCountMax) {
+                    skillOwner.reserveToReduceSpecialCount(1);
+                }
+            }
+        }
+    );
+}
+
 // 日に育ち地に満ちる
 {
     let skillId = PassiveB.UnderTheSun;
