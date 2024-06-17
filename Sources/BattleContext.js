@@ -863,4 +863,15 @@ class BattleContext {
             return 0;
         });
     }
+
+    setFoesPenaltyDoubler() {
+        this.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+            }
+        );
+    }
 }

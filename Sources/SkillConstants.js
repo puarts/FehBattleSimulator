@@ -1855,6 +1855,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=1hFxzEah_1s&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=9fKJH6Sck2o&ab_channel=NintendoMobile
     LoveOfNerthus: 2911, // 地の女神の溺愛
+    PrincesLance: 2914, // 荒波制す氷王の槍
 };
 
 const Support = {

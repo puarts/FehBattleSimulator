@@ -1,5 +1,34 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 荒波制す氷王の槍
+{
+    let skillId = Weapon.PrincesLance;
+    // 威力：16
+    // 射程：1
+    // 【再移動（2）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 2;
+    });
+    // 奥義が発動しやすい（発動カウントー1）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // - 戦闘中、自身の攻撃、速さ、守備、魔防が、戦闘開始時の敵の攻撃の25%-4だけ増加（最大14、最低5）、
+                let amount = MathUtil.ensureMinMax(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25 - 4), 5, 14);
+                // - 敵の攻撃、速さ、守備、魔防が敵が受けている攻撃、速さ、守備、魔防の強化の値の2倍だけ減少（能力値ごとに計算）（例えば、攻撃＋7の強化を受けていれば、+7-14で、攻撃ー7となる）、自分が受けた攻撃のダメージを40%軽減（範囲奥義を除く）、かつ
+                targetUnit.battleContext.setFoesPenaltyDoubler();
+                // - 戦闘中、奥義による攻撃でダメージを与えた時、自分の最大HPの（10＋自分の奥義発動カウントの最大値x20）％回復（与えたダメージが0でも効果は発動）（最大100％）
+                targetUnit.battleContext.maxHpRatioToHealBySpecial += MathUtil.ensureMax(0.1 + targetUnit.maxSpecialCount * 0.2, 1);
+            }
+        }
+    );
+}
+
 // 獣の威嚇
 {
     let skillId = PassiveC.BeastThreaten;
