@@ -1,5 +1,39 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 守備の波・奇数4
+{
+    let skillId = PassiveC.OddDefWave4;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分と周囲2マス以内の味方の
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                // - 守備+6（1ターン）
+                unit.reserveToApplyBuffs(0, 0, 6, 0);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    // 戦闘中、守備が「敵の守備-5」以上の時、
+                    if (targetUnit.isHigherOrEqualDefInPrecombat(enemyUnit, -5)) {
+                        // - 敵の奥義発動カウント変動量＋を無効、かつ自身の奥義発動カウント変動量ーを無効
+                        targetUnit.battleContext.setTempo();
+                    }
+                }
+            );
+            // 奇数ターンの時、
+            if (this.globalBattleContext.isOddTurn) {
+                // - 戦闘中、守備+6
+                targetUnit.defSpur += 6;
+            }
+        }
+    );
+}
+
 // 氷王の封印
 {
     let skillId = PassiveB.IcePrincesSeal;
