@@ -87,6 +87,7 @@
                 if (targetUnit.isCombatDone) {
                     amount = 14;
                 }
+                targetUnit.addAllSpur(amount);
                 // - ダメージ＋速さの20%（範囲義を除く）、
                 targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
                 // - 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）（範囲奥義を除く）
