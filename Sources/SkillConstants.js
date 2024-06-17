@@ -3032,6 +3032,7 @@ const PassiveC = {
     EvenResWave3: 717,
 
     // 波4
+    OddSpdWave4: 2920, // 速さの波・奇数4
     OddDefWave4: 2916, // 守備の波・奇数4
 
     HoneAtk3: 694, // 攻撃の鼓舞3

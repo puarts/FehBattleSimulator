@@ -1,5 +1,33 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 速さの波・奇数4
+{
+    let skillId = PassiveC.OddSpdWave4;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分と周囲2マス以内の味方の
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                // - 速さ+6（1ターン）
+                unit.reserveToApplyBuffs(0, 6, 0, 0);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、速さが「敵の速さー5」以上の時、
+            // - 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+            targetUnit.battleContext.setSpdNullFollowupAttack(-5);
+            // 奇数ターンの時、
+            if (this.globalBattleContext.isOddTurn) {
+                // - 戦闘中、速さ+6
+                targetUnit.spdSpur += 6;
+            }
+        }
+    );
+}
+
 // 時と光
 {
     let skillId = Special.TimeAndLight;
