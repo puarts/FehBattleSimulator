@@ -1517,6 +1517,34 @@ updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case PassiveB.RagingStorm:
 }
 
+自分から攻撃した時、戦闘後、自分を行動可能な状態にし、自分とダブル相手に移動を最大1マスに制限する状態異常を付与(次回行動終了まで)(発動後、2ターンの間発動しない)
+applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+    function (atkUnit, defUnit, tileToAttack) {
+        if (atkUnit.battleContext.initiatesCombat) {
+            let logMessage = `${atkUnit.nameWithGroup}の武器スキル効果発動可能まで残り${atkUnit.restWeaponSkillAvailableTurn}ターン`;
+            if (atkUnit.restWeaponSkillAvailableTurn === 0) {
+                logMessage = `${atkUnit.nameWithGroup}の武器スキル効果は現在発動可能`;
+            }
+            this.writeLogLine(logMessage);
+            this.writeSimpleLogLine(logMessage);
+            if (atkUnit.restWeaponSkillAvailableTurn !== 0) {
+                this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
+            }
+            if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                atkUnit.isActionDone &&
+                atkUnit.restWeaponSkillAvailableTurn === 0) {
+                logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.weaponInfo.name}により再行動`;
+                this.writeLogLine(logMessage);
+                this.writeSimpleLogLine(logMessage);
+                atkUnit.restWeaponSkillAvailableTurn = 2;
+                atkUnit.isActionDone = false;
+                atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                atkUnit.isOneTimeActionActivatedForWeapon = true;
+            }
+        }
+    }
+);
+
 味方が戦闘した時、味方の戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
 // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
 // （1ターンに1回のみ）

@@ -1857,6 +1857,7 @@ const Weapon = {
     LoveOfNerthus: 2911, // 地の女神の溺愛
     PrincesLance: 2914, // 荒波制す氷王の槍
     SeaTambourinePlus: 2917, // 南国の楽器+
+    GoldenSunlight: 2918, // 魔女と女神の夏光
 };
 
 const Support = {

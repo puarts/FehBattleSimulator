@@ -252,6 +252,11 @@ class UnitManager {
         return count;
     }
 
+    countEnemiesInCrossWithOffset(targetUnit, offset) {
+        let isInCross = u => u.isInCrossWithOffset(targetUnit, offset);
+        return this.countEnemiesWithinSpecifiedSpaces(targetUnit, 99, isInCross);
+    }
+
     enumeratePartnersInSpecifiedRange(targetUnit, spaces) {
         let pred = unit => {
             const isSameGroup = targetUnit.groupId === unit.groupId;

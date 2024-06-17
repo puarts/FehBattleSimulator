@@ -1,5 +1,64 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 魔女と女神の夏光
+{
+    let skillId = Weapon.GoldenSunlight;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                // - 戦闘中、攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列にいる敵の数x3＋5だけ増加
+                // （最大14、各自軍ターン、各敵軍ターンそれぞれについてこのスキル所持者の2回目以降の戦闘の時は14として扱う）、
+                let count = this.unitManager.countEnemiesInCrossWithOffset(targetUnit, 1);
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                if (targetUnit.isCombatDone) {
+                    amount = 14;
+                }
+                // - ダメージ＋速さの20%（範囲義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+                // - 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）（範囲奥義を除く）
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+            }
+            // 自分から攻撃した時、戦闘中、
+            if (targetUnit.battleContext.initiatesCombat) {
+                // - 最初に受けた攻撃と2回攻撃のダメージを70%軽減（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.7, enemyUnit);
+            }
+        }
+    );
+    applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+        function (atkUnit, defUnit, tileToAttack) {
+            // 自分から攻撃した時、戦闘中、
+            if (atkUnit.battleContext.initiatesCombat) {
+                // - 戦闘後、自分を行動可能な状態にし、自分とダブル相手に移動を最大1マスに制限する状態異常を付与（次回行動終了まで）（発動後、2ターンの間発動しない）
+                let logMessage = `${atkUnit.nameWithGroup}の武器スキル効果発動可能まで残り${atkUnit.restWeaponSkillAvailableTurn}ターン`;
+                if (atkUnit.restWeaponSkillAvailableTurn === 0) {
+                    logMessage = `${atkUnit.nameWithGroup}の武器スキル効果は現在発動可能`;
+                }
+                this.writeLogLine(logMessage);
+                this.writeSimpleLogLine(logMessage);
+                if (atkUnit.restWeaponSkillAvailableTurn !== 0) {
+                    this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
+                }
+                if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                    atkUnit.isActionDone &&
+                    atkUnit.restWeaponSkillAvailableTurn === 0) {
+                    logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.weaponInfo.name}により再行動`;
+                    this.writeLogLine(logMessage);
+                    this.writeSimpleLogLine(logMessage);
+                    atkUnit.restWeaponSkillAvailableTurn = 2;
+                    atkUnit.isActionDone = false;
+                    atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                    atkUnit.isOneTimeActionActivatedForWeapon = true;
+                }
+            }
+        }
+    );
+}
+
 // 南国の楽器+
 {
     let skillId = Weapon.SeaTambourinePlus;
@@ -9346,25 +9405,27 @@
     );
     applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
         function (atkUnit, defUnit, tileToAttack) {
-            let logMessage = `${atkUnit.nameWithGroup}の武器スキル効果発動可能まで残り${atkUnit.restWeaponSkillAvailableTurn}ターン`;
-            if (atkUnit.restWeaponSkillAvailableTurn === 0) {
-                logMessage = `${atkUnit.nameWithGroup}の武器スキル効果は現在発動可能`;
-            }
-            this.writeLogLine(logMessage);
-            this.writeSimpleLogLine(logMessage);
-            if (atkUnit.restWeaponSkillAvailableTurn !== 0) {
-                this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
-            }
-            if (!atkUnit.isOneTimeActionActivatedForWeapon &&
-                atkUnit.isActionDone &&
-                atkUnit.restWeaponSkillAvailableTurn === 0) {
-                logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.weaponInfo.name}により再行動`;
+            if (atkUnit.battleContext.initiatesCombat) {
+                let logMessage = `${atkUnit.nameWithGroup}の武器スキル効果発動可能まで残り${atkUnit.restWeaponSkillAvailableTurn}ターン`;
+                if (atkUnit.restWeaponSkillAvailableTurn === 0) {
+                    logMessage = `${atkUnit.nameWithGroup}の武器スキル効果は現在発動可能`;
+                }
                 this.writeLogLine(logMessage);
                 this.writeSimpleLogLine(logMessage);
-                atkUnit.restWeaponSkillAvailableTurn = 2;
-                atkUnit.isActionDone = false;
-                atkUnit.addStatusEffect(StatusEffectType.Gravity);
-                atkUnit.isOneTimeActionActivatedForWeapon = true;
+                if (atkUnit.restWeaponSkillAvailableTurn !== 0) {
+                    this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
+                }
+                if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                    atkUnit.isActionDone &&
+                    atkUnit.restWeaponSkillAvailableTurn === 0) {
+                    logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.weaponInfo.name}により再行動`;
+                    this.writeLogLine(logMessage);
+                    this.writeSimpleLogLine(logMessage);
+                    atkUnit.restWeaponSkillAvailableTurn = 2;
+                    atkUnit.isActionDone = false;
+                    atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                    atkUnit.isOneTimeActionActivatedForWeapon = true;
+                }
             }
         }
     );
