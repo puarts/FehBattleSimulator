@@ -1,5 +1,36 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 日に育ち地に満ちる
+{
+    let skillId = PassiveB.UnderTheSun;
+    // 【再移動（2）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 2;
+    });
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、敵の速さ、守備-5、
+                enemyUnit.addSpdDefSpurs(-5);
+                // - 自身の奥義発動カウント変動量ーを無効、
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+                // - 自分が与えるダメージ＋速さの20％（範囲奥義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+                // - 最初に受けた攻撃と2回攻撃のダメージー速さの25％（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                targetUnit.battleContext.addDamageReductionValueOfFirstAttacks(STATUS_INDEX.Spd, 0.25);
+                // - 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。軽減値はスキルによる軽減効果も含む）、
+                targetUnit.battleContext.addReducedDamageForNextAttack();
+                // - 戦闘後、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 地の女神の溺愛
 {
     let skillId = Weapon.LoveOfNerthus;
@@ -3956,25 +3987,7 @@
                 // 自分が最初に受けた攻撃のダメージを30%軽減し、軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。
                 // 軽減値はスキルによる軽減効果も含む）、
                 // 最初に受けた攻撃のダメージを軽減
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-                // ダメージ軽減分を保存
-                targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                    (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
-                        if (!context.isFirstAttack(atkUnit)) return;
-                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                    }
-                );
-                // 攻撃ごとの固定ダメージに軽減した分を加算
-                targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
-                        let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                        return addDamage;
-                    }
-                    return 0;
-                });
+                targetUnit.battleContext.reduceAndAddDamage(enemyUnit, 0.3);
                 // 戦闘後、7回復
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }

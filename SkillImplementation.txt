@@ -1304,6 +1304,10 @@ __calcFixedSpecialAddDamage() {
 }
 
 最初の受けた攻撃のダメージをN%軽減し、軽減した値を、自身の次の攻撃のダメージに加算(他のスキルによる軽減値も含む)(その戦闘中のみ)
+targetUnit.battleContext.reduceAndAddDamage(enemyUnit, 0.3);
+// 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。軽減値はスキルによる軽減効果も含む）、
+targetUnit.battleContext.addReducedDamageForNextAttack();
+もしくは
 __init__applySkillEffectForUnitFuncDict() {
     // 最初に受けた攻撃のダメージを軽減
     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(N / 100.0, enemyUnit);

@@ -2793,6 +2793,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    UnderTheSun: 2912, // 日に育ち地に満ちる
     YunesProtection: 2906, // ユンヌの見守り
     BelieveInLove: 2820, // 愛する人がいますか
     SunlitBundleD: 2769, // 華日の腕輪・護
