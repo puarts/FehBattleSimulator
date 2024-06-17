@@ -5,15 +5,14 @@
     let skillId = Weapon.LoveOfNerthus;
     // 威力：14 射程：1
     // 奥義が発動しやすい（発動カウントー1）
+
     // ターン開始時、竜、獣以外の味方と隣接していない場合
     // 化身状態になる（そうでない場合、化身状態を解除）
     // 化身状態なら、攻撃＋2、かつ戦闘中、敵の攻撃、守備-3、さらに、敵の攻撃、守備が
     // 攻撃した側（自分からなら自分、敵からなら敵）の移動前と移動後のマスの距離（最大3）だけ減少、かつ移動と移動後のマスの距離が2以上の時、戦闘中、自分が最初に受けた攻撃のダメージを30%軽減
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-        }
-    );
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
+
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // 戦闘開始時、自身のHPが25%以上なら、
