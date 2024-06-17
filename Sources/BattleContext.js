@@ -11,6 +11,8 @@ class BattleContext {
     #nullInvalidatesHealRatios = [];
     // 戦闘開始後ダメージの後の回復量
     #healAmountsAfterAfterBeginningOfCombatSkills = [0]; // 番兵
+    // 戦闘中、奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」をN％無効（最大100%、無効にする数値は端数切捨て）（範囲奥義を除く）
+    #reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation = [];
 
     constructor() {
         this.initContext();
@@ -40,6 +42,7 @@ class BattleContext {
         this.damageReductionRatiosByChainGuard = [];
         this.isChainGuardActivated = false;
         this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
+        this.#reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation = [];
         this.isEffectiveToOpponent = false;
         this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
         this.attackCount = 1;
@@ -762,24 +765,7 @@ class BattleContext {
     reduceAndAddDamage(enemyUnit, ratio) {
         // 最初に受けた攻撃のダメージを軽減
         this.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
-        // ダメージ軽減分を保存
-        this.addReducedDamageForNextAttackFuncs.push(
-            (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
-                if (!context.isFirstAttack(atkUnit)) return;
-                defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
-                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-            }
-        );
-        // 攻撃ごとの固定ダメージに軽減した分を加算
-        this.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-            if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
-                let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                return addDamage;
-            }
-            return 0;
-        });
+        this.addReducedDamageForNextAttack();
     }
 
     addDamageByStatus(statusFlags, ratio) {
@@ -838,5 +824,54 @@ class BattleContext {
 
     get maxHealAmountAfterAfterBeginningOfCombatSkills() {
         return Math.max(...this.#healAmountsAfterAfterBeginningOfCombatSkills);
+    }
+
+    get reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation() {
+        return this.#reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation;
+    }
+
+    addReductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation(ratio) {
+        this.#reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation.push(ratio);
+    }
+
+    addDamageReductionValueOfFirstAttacks(statusIndex, ratio) {
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                let statuses = targetUnit.getStatusesInCombat(enemyUnit);
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += Math.trunc(statuses[statusIndex] * ratio);
+            }
+        );
+    }
+
+    addReducedDamageForNextAttack() {
+        // ダメージ軽減分を保存
+        this.addReducedDamageForNextAttackFuncs.push(
+            (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                if (!context.isFirstAttack(atkUnit)) return;
+                defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+            }
+        );
+        // 攻撃ごとの固定ダメージに軽減した分を加算
+        this.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
+            if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
+                atkUnit.battleContext.reducedDamageForNextAttack = 0;
+                return addDamage;
+            }
+            return 0;
+        });
+    }
+
+    setFoesPenaltyDoubler() {
+        this.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+            (targetUnit, enemyUnit, calcPotentialDamage) => {
+                enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
+                enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
+                enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
+                enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
+            }
+        );
     }
 }

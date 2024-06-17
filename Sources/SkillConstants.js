@@ -1850,6 +1850,14 @@ const Weapon = {
     ArcaneTempest: 2902, // 魔器・暁風の刃
     SilverOfDawn: 2905, // 暁星の輝き
     NullSpearPlus: 2909, // 見切り追撃の槍+
+
+    // 超英雄「恥ずかしがり屋の夏」
+    // https://www.youtube.com/watch?v=1hFxzEah_1s&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=9fKJH6Sck2o&ab_channel=NintendoMobile
+    LoveOfNerthus: 2911, // 地の女神の溺愛
+    PrincesLance: 2914, // 荒波制す氷王の槍
+    SeaTambourinePlus: 2917, // 南国の楽器+
+    GoldenSunlight: 2918, // 魔女と女神の夏光
 };
 
 const Support = {
@@ -2072,6 +2080,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
+    TimeAndLight: 2919, // 時と光
     Bane: 2903, // 瞬殺
     DragonFangShot: 2896, // 竜穿射
     GreatAether: 2835, // 覇克・天空
@@ -2788,6 +2797,8 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    IcePrincesSeal: 2915, // 氷王の封印
+    UnderTheSun: 2912, // 日に育ち地に満ちる
     YunesProtection: 2906, // ユンヌの見守り
     BelieveInLove: 2820, // 愛する人がいますか
     SunlitBundleD: 2769, // 華日の腕輪・護
@@ -3020,6 +3031,10 @@ const PassiveC = {
     EvenDefWave3: 716,
     EvenResWave3: 717,
 
+    // 波4
+    OddSpdWave4: 2920, // 速さの波・奇数4
+    OddDefWave4: 2916, // 守備の波・奇数4
+
     HoneAtk3: 694, // 攻撃の鼓舞3
     HoneSpd3: 695,
     HoneDef3: 696,
@@ -3209,6 +3224,8 @@ const PassiveC = {
 
     // 鍛錬の鼓動
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
+
+    BeastThreaten: 2913, // 獣の威嚇
 
     // 専用C
     ForeverYours: 2890, // あなたのシャロン

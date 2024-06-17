@@ -11922,6 +11922,21 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      */
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+        // 【凍結】
+        if (targetUnit.hasStatusEffect(StatusEffectType.Frozen)) {
+            // 以下の効果により、自分の追撃が発生しにくくなり、敵の追撃が発生しやすくなる状態異常（敵の次回行動終了まで）
+            // 戦闘中、
+            let d = targetUnit.getDefDiffInCombat(enemyUnit);
+            // 〇は、敵の守備が自分の守備より高い時は10＋守備の差x2、そうでない時は10
+            let amount = MathUtil.ensureMin(10 + d * 2, 10);
+            // 自分の追撃の速さ条件＋〇、
+            targetUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += amount;
+            // 敵の追撃の速さ条件一〇
+            enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack -= amount;
+            // （例えば、追撃の速さ条件＋10であれば、速さの差が15以上なければ追撃できない）
+            // （同系統スキル複数の時、効果は累積する）
+        }
+
         for (let func of targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs) {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }

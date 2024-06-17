@@ -413,6 +413,8 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 }
 
 弱化を受けていれば、戦闘中、敵の弱化の値だけ減少(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7-7で、戦闘中、攻撃-14となる)[弱化増幅]
+targetUnit.battleContext.setFoesPenaltyDoubler();
+もしくは
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -1148,6 +1150,9 @@ applySkillEffectFromAlliesFuncMap.set(skillId,
 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を半分無効(無効にする数値は端数切捨て。例えば敵の「ダメージを45%軽減」なら半分の「22%」分を無効にし、「ダメージを23%軽減」にする))[リヴスラ, ダメージ軽減半分無効]
 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
 
+戦闘中、奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」をN％無効（最大100%、無効にする数値は端数切捨て）（範囲奥義を除く）[奥義発動時のダメージ軽減半分無効]
+targetUnit.battleContext.addReductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation(ratio);
+
 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
 // 次の攻撃
@@ -1301,6 +1306,10 @@ __calcFixedSpecialAddDamage() {
 }
 
 最初の受けた攻撃のダメージをN%軽減し、軽減した値を、自身の次の攻撃のダメージに加算(他のスキルによる軽減値も含む)(その戦闘中のみ)
+targetUnit.battleContext.reduceAndAddDamage(enemyUnit, 0.3);
+// 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。軽減値はスキルによる軽減効果も含む）、
+targetUnit.battleContext.addReducedDamageForNextAttack();
+もしくは
 __init__applySkillEffectForUnitFuncDict() {
     // 最初に受けた攻撃のダメージを軽減
     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(N / 100.0, enemyUnit);
@@ -1507,6 +1516,34 @@ updateDamageCalculation(atkUnit, defUnit, tileToAttack = null) {
     // case Weapon.TwinCrestPower:
     // case PassiveB.RagingStorm:
 }
+
+自分から攻撃した時、戦闘後、自分を行動可能な状態にし、自分とダブル相手に移動を最大1マスに制限する状態異常を付与(次回行動終了まで)(発動後、2ターンの間発動しない)
+applySkillEffectAfterMovementSkillsActivatedFuncMap.set(skillId,
+    function (atkUnit, defUnit, tileToAttack) {
+        if (atkUnit.battleContext.initiatesCombat) {
+            let logMessage = `${atkUnit.nameWithGroup}の武器スキル効果発動可能まで残り${atkUnit.restWeaponSkillAvailableTurn}ターン`;
+            if (atkUnit.restWeaponSkillAvailableTurn === 0) {
+                logMessage = `${atkUnit.nameWithGroup}の武器スキル効果は現在発動可能`;
+            }
+            this.writeLogLine(logMessage);
+            this.writeSimpleLogLine(logMessage);
+            if (atkUnit.restWeaponSkillAvailableTurn !== 0) {
+                this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
+            }
+            if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                atkUnit.isActionDone &&
+                atkUnit.restWeaponSkillAvailableTurn === 0) {
+                logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.weaponInfo.name}により再行動`;
+                this.writeLogLine(logMessage);
+                this.writeSimpleLogLine(logMessage);
+                atkUnit.restWeaponSkillAvailableTurn = 2;
+                atkUnit.isActionDone = false;
+                atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                atkUnit.isOneTimeActionActivatedForWeapon = true;
+            }
+        }
+    }
+);
 
 味方が戦闘した時、味方の戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
 // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
