@@ -2080,6 +2080,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
+    TimeAndLight: 2919, // 時と光
     Bane: 2903, // 瞬殺
     DragonFangShot: 2896, // 竜穿射
     GreatAether: 2835, // 覇克・天空

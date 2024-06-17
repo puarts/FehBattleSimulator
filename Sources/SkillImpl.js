@@ -1,5 +1,47 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 時と光
+{
+    let skillId = Special.TimeAndLight;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.3));
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    enemyUnit.battleContext.reducesCooldownCount = false;
+                }
+            );
+        }
+    );
+    applyHighPriorityAnotherActionSkillEffectFuncMap.set(skillId,
+        function (atkUnit, defUnit, tileToAttack) {
+            if (atkUnit.battleContext.initiatesCombat &&
+                atkUnit.battleContext.isSpecialActivated &&
+                atkUnit.isAlive &&
+                !atkUnit.isOneTimeActionActivatedForSpecial &&
+                atkUnit.isActionDone) {
+                let logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.specialInfo.name}により再行動`;
+                this.writeLogLine(logMessage);
+                this.writeSimpleLogLine(logMessage);
+                atkUnit.isActionDone = false;
+                atkUnit.isOneTimeActionActivatedForSpecial = true;
+                atkUnit.addStatusEffect(StatusEffectType.Gravity);
+            }
+        }
+    );
+}
+
 // 魔女と女神の夏光
 {
     let skillId = Weapon.GoldenSunlight;
