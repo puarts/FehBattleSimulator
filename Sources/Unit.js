@@ -1874,7 +1874,7 @@ class Unit extends BattleMapElement {
 
     /**
      * 出典の集合を返す。
-     * @param {[Unit]} units
+     * @param {[Unit]|Generator<Unit>} units
      * @return {Set<String>}
      */
     static getOriginSet(units) {

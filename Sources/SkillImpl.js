@@ -4978,7 +4978,6 @@
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                /** @type {[Unit]} */
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
                 for (let unit of units) {
                     unit.reserveHeal(7);
@@ -4990,7 +4989,6 @@
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             let count = 0;
             let foundDragon = false;
-            /** @type {[Unit]} */
             let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
             for (let unit of units) {
                 count++;
@@ -5569,7 +5567,6 @@
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             if (skillOwner.battleContext.restHpPercentage >= 25) {
-                /** @type {[Unit]} */
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3, true);
                 for (let unit of units) {
                     unit.reserveToAddStatusEffect(StatusEffectType.Hexblade);
@@ -6228,7 +6225,6 @@
                 if (skillOwner.isWeaponSpecialRefined) {
                     // <特殊錬成効果>
                     let found = false;
-                    /** @type {[Unit]} */
                     let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
                     for (let unit of units) {
                         found = true;
@@ -6954,7 +6950,6 @@
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             let found = false;
-            /** @type {Unit[]} */
             let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
             for (let unit of allies) {
                 found = true;
@@ -10690,7 +10685,7 @@
         function (targetUnit, enemyUnit, context) {
             this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}のHP割合: ${targetUnit.restHpPercentage}`);
             let res = enemyUnit.getResInCombat(targetUnit);
-            let ratio = 0;
+            let ratio;
             if (targetUnit.restHpPercentage >= 70) {
                 ratio = 0.6;
             } else {
