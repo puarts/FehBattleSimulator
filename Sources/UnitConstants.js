@@ -185,6 +185,7 @@ const StatusEffectType = {
     HushSpectrum: 62, // 七色の囁き
     EssenceDrain: 63, // エーギル奪取
     ShareSpoils: 64, // 戦果移譲
+    Frozen: 65, // 凍結
 };
 
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
@@ -264,6 +265,8 @@ const NEGATIVE_STATUS_EFFECT_SET = new Set([
     StatusEffectType.TimesGrip,
     StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately,
     StatusEffectType.HushSpectrum,
+    StatusEffectType.ShareSpoils,
+    StatusEffectType.Frozen,
 ]);
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
@@ -340,6 +343,8 @@ const STATUS_EFFECT_FILE_NAME_MAP = new Map([
     [StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately, "AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp"],
     [StatusEffectType.HushSpectrum, "HushSpectrum.webp"],
     [StatusEffectType.EssenceDrain, "EssenceDrain.webp"],
+    [StatusEffectType.ShareSpoils, "ShareSpoils.webp"],
+    [StatusEffectType.Frozen, "Frozen.webp"],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

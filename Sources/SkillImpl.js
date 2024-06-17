@@ -1,5 +1,43 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 氷王の封印
+{
+    let skillId = PassiveB.IcePrincesSeal;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、最も近い敵とその周囲2マス以内の敵の
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                for (let nearestEnemy of this.__findNearestEnemies(skillOwner)) {
+                    for (let enemy of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2, true)) {
+                        // - 速さ、守備一7（敵の次回行動終了まで）、
+                        enemy.reserveToApplyDebuffs(0, -7, -7, 0);
+                        // - 【凍結】、
+                        enemy.reserveToAddStatusEffect(StatusEffectType.Guard);
+                        // - 【キャンセル】を付与
+                        enemy.reserveToAddStatusEffect(StatusEffectType.Frozen);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、敵の攻撃、速さ、守備一5、
+                enemyUnit.addSpdDefSpurs(-5);
+                // - 自分は絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // - 自分が与えるダメージ＋自分の守備の20%、
+                targetUnit.battleContext.addDamageByStatus([false, false, true, false], 0.2);
+                // - 自分が受けるダメージー自分の守備の20%（範囲奥義を除く）
+                targetUnit.battleContext.reduceDamageByStatus([false, false, true, false], 0.2);
+            }
+        }
+    );
+}
+
 // 荒波制す氷王の槍
 {
     let skillId = Weapon.PrincesLance;
