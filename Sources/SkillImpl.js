@@ -1,5 +1,40 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 南国の楽器+
+{
+    let skillId = Weapon.SeaTambourinePlus;
+    // 威力：12
+    // 射程：2
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 自分と周囲2マス以内の味方の
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // - 攻撃、速さ+6（1ターン）
+                    unit.reserveToApplyBuffs(6, 6, 0, 0);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上で、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                let amount = this.globalBattleContext.isEvenTurn ? 5 : 11;
+                // - 偶数ターンなら、戦闘中、攻撃、速さ＋5、
+                // - 奇数ターンなら、戦闘中、攻撃、速さ＋11
+                targetUnit.addAtkSpdSpurs(amount);
+                // 戦闘開始時、自身のHPが25%以上で、自分の速さが「敵の速さー5」以上の時、
+                // - 戦闘中、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                targetUnit.battleContext.setSpdNullFollowupAttack(-5);
+            }
+        }
+    );
+}
+
 // 守備の波・奇数4
 {
     let skillId = PassiveC.OddDefWave4;
