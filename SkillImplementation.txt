@@ -1148,6 +1148,9 @@ applySkillEffectFromAlliesFuncMap.set(skillId,
 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を半分無効(無効にする数値は端数切捨て。例えば敵の「ダメージを45%軽減」なら半分の「22%」分を無効にし、「ダメージを23%軽減」にする))[リヴスラ, ダメージ軽減半分無効]
 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
 
+戦闘中、奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」をN％無効（最大100%、無効にする数値は端数切捨て）（範囲奥義を除く）[奥義発動時のダメージ軽減半分無効]
+targetUnit.battleContext.addReductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation(ratio);
+
 奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)
 targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
 // 次の攻撃

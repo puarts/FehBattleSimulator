@@ -1850,6 +1850,11 @@ const Weapon = {
     ArcaneTempest: 2902, // 魔器・暁風の刃
     SilverOfDawn: 2905, // 暁星の輝き
     NullSpearPlus: 2909, // 見切り追撃の槍+
+
+    // 超英雄「恥ずかしがり屋の夏」
+    // https://www.youtube.com/watch?v=1hFxzEah_1s&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=9fKJH6Sck2o&ab_channel=NintendoMobile
+    LoveOfNerthus: 2911, // 地の女神の溺愛
 };
 
 const Support = {

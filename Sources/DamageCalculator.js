@@ -1184,6 +1184,11 @@ class DamageCalculator {
                 !atkUnit.battleContext.preventedAttackerSpecial;
 
             // ダメージ軽減をN%無効
+            // 奥義発動時
+            if (canActivateAttackerSpecial) {
+                let ratios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation;
+                reductionRatios = reductionRatios.concat(ratios);
+            }
             if (reductionRatios.length >= 1) {
                 let reducedRatio = 1 - damageReductionRatio;
                 if (this.isLogEnabled) {

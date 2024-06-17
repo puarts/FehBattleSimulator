@@ -1,5 +1,58 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 地の女神の溺愛
+{
+    let skillId = Weapon.LoveOfNerthus;
+    // 威力：14 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時、竜、獣以外の味方と隣接していない場合
+    // 化身状態になる（そうでない場合、化身状態を解除）
+    // 化身状態なら、攻撃＋2、かつ戦闘中、敵の攻撃、守備-3、さらに、敵の攻撃、守備が
+    // 攻撃した側（自分からなら自分、敵からなら敵）の移動前と移動後のマスの距離（最大3）だけ減少、かつ移動と移動後のマスの距離が2以上の時、戦闘中、自分が最初に受けた攻撃のダメージを30%軽減
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列にいる味方の数✕3＋5だけ増加（最大14）、
+                let count = this.__countAllyUnitsInCrossWithOffset(targetUnit, 1);
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                targetUnit.addAllSpur(amount);
+                // - 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+                targetUnit.battleContext.setNullFollowupAttack();
+                // - 最初に受けた攻撃と2回攻撃のダメージを40%軽減（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                // 「戦闘開始時、自身のHPが25%以上の時の自分」と「自身を中心とした縦3列と横3列の味方」は、
+                // - 戦闘中、奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を（奥義発動カウント最大値x30＋10）％無効（最大100%、無効にする数値は端数切捨て）（範囲奥義を除く）、かつ、
+                let ratio = MathUtil.ensureMax(targetUnit.maxSpecialCount * 0.3 + 0.1, 1);
+                targetUnit.battleContext.addReductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation(ratio);
+                // - 奥義発動カウント最大値が3以上の攻撃時に発動する奥義装備時、戦闘中、最初の攻撃前に奥義発動カウントー1
+                if (targetUnit.maxSpecialCount >= 3 && targetUnit.hasNormalAttackSpecial()) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                }
+            }
+        }
+    );
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 「戦闘開始時、自身のHPが25%以上の時の自分」と「自身を中心とした縦3列と横3列の味方」は、
+            if (allyUnit.isInCrossWithOffset(targetUnit, 1)) {
+                // - 戦闘中、奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を（奥義発動カウント最大値x30＋10）％無効（最大100%、無効にする数値は端数切捨て）（範囲奥義を除く）、かつ、
+                let ratio = MathUtil.ensureMax(targetUnit.maxSpecialCount * 0.3 + 0.1, 1);
+                targetUnit.battleContext.addReductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation(ratio);
+                // - 奥義発動カウント最大値が3以上の攻撃時に発動する奥義装備時、戦闘中、最初の攻撃前に奥義発動カウントー1
+                if (targetUnit.maxSpecialCount >= 3 && targetUnit.hasNormalAttackSpecial()) {
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+                }
+            }
+        }
+    );
+}
+
 // 見切り追撃の槍+
 {
     let skillId = Weapon.NullSpearPlus;
