@@ -1053,8 +1053,17 @@ class BattleSimulatorBase {
         }
 
         switch (duoUnit.heroIndex) {
+            case Hero.DuoSharena: {
+                let areThereAnyAllies =
+                    this.__isThereAllyInSpecifiedSpaces(duoUnit, 3, u => u.isCombatDone);
+                // 自分が行動済みで、周囲3マス以内にいる味方が現在のターン中に戦闘を行っている時のみ発動可能
+                let canActivate = duoUnit.isActionDone && areThereAnyAllies;
+                if (!canActivate) {
+                    return false;
+                }
+            }
+                break;
             case Hero.DuoGullveig:
-            case Hero.DuoSharena:
             case Hero.DuoSanaki:
             case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
@@ -1523,8 +1532,13 @@ class BattleSimulatorBase {
                     duoUnit.addStatusEffect(StatusEffectType.Vantage);
                 }
                 break;
-            case Hero.DuoGullveig:
             case Hero.DuoSharena:
+                // 自分を行動可能な状態にし、
+                duoUnit.isActionDone = false;
+                // 再移動を発動済みなら再発動可能にする
+                duoUnit.isCantoActivatedInCurrentTurn = false;
+                break;
+            case Hero.DuoGullveig:
             case Hero.DuoSanaki:
             case Hero.DuoLaegijarn:
             case Hero.DuoCorrin:
