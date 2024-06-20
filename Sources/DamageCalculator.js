@@ -255,7 +255,7 @@ class DamageCalculator {
         // 戦闘開始後ダメージ
         let damageAfterBeginningOfCombat = targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
         if (damageAfterBeginningOfCombat > 0) {
-            targetUnit.takeDamageInCombat(damageAfterBeginningOfCombat);
+            targetUnit.takeDamageInCombat(damageAfterBeginningOfCombat, true);
 
             // ログ
             let logMessage =
