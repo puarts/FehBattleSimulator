@@ -1034,7 +1034,7 @@
 
     // 奥義によるダメージ軽減
     applySkillEffectsPerAttackFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, context) {
+        function (targetUnit, enemyUnit) {
             // 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
             // * 魔防の差x（4-現在の奥義発動カウント）％軽減（最大（40-現在の奥義発動カウントx10）％）（巨影の範囲奥義を除く）
             let diff = targetUnit.getEvalResDiffInCombat(enemyUnit);
@@ -3958,8 +3958,8 @@
     COUNT4_SPECIALS.push(skillId);
     INHERITABLE_COUNT4_SPECIALS.push(skillId);
 
-    applySkillEffectsPerCombatFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, context) {
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
             // 攻撃の（40+敵がこの戦闘中に攻撃した回数x10）％を奥義ダメージに加算
             let count = context.getAttackLogs(enemyUnit).length;
             let status = targetUnit.getAtkInCombat(enemyUnit);
@@ -10682,7 +10682,7 @@
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillEffectsPerAttackFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, context) {
+        function (targetUnit, enemyUnit) {
             this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}のHP割合: ${targetUnit.restHpPercentage}`);
             let res = enemyUnit.getResInCombat(targetUnit);
             let ratio;
