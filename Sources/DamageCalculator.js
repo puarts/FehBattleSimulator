@@ -1126,8 +1126,8 @@ class DamageCalculator {
             // 攻撃奥義発動可能状態で実際に奥義が発動できる
             let canActivateAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0 &&
                 !atkUnit.battleContext.preventedAttackerSpecial;
-            this.__applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial);
-            this.__applySkillEffectsPerAttack(defUnit, atkUnit, canActivateAttackerSpecial);
+            this.__applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial, context);
+            this.__applySkillEffectsPerAttack(defUnit, atkUnit, canActivateAttackerSpecial, context);
             // 奥義発動可能状態（実際に奥義が発動できるかは問わない）
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0 &&
@@ -1635,10 +1635,16 @@ class DamageCalculator {
         }
     }
 
-    __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial) {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} canActivateAttackerSpecial
+     * @param {DamageCalcContext} context
+     */
+    __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectsPerAttackFuncMap);
-            func?.call(this, targetUnit, enemyUnit, canActivateAttackerSpecial);
+            func?.call(this, targetUnit, enemyUnit, canActivateAttackerSpecial, context);
             switch (skillId) {
                 case Weapon.GustyWarBow:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
