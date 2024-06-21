@@ -413,7 +413,7 @@ class DamageCalcData {
         let result = this.damageCalc.calcCombatResult(this.atkUnit, this.defUnit);
         this.basicDamageDealt = result.atkUnit_normalAttackDamage;
         this.actualDamageDealt = result.damageHistory[0].damageDealt;
-        this.additionalDamage = this.atkUnit.battleContext.specialAddDamage
+        this.additionalDamage = this.atkUnit.battleContext.getSpecialAddDamage()
             + this.atkUnit.battleContext.additionalDamage
             + this.atkUnit.battleContext.additionalDamageOfSpecial;
         this.multDamage = this.atkUnit.battleContext.specialMultDamage;
