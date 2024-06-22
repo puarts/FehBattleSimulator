@@ -436,12 +436,7 @@
     // 戦闘中、ダメージ＋3（戦闘前奥義も含む）
     calcFixedAddDamageFuncMap.set(skillId,
         function (atkUnit, defUnit, isPrecombat) {
-            // Nダメージ
-            if (isPrecombat) {
-                atkUnit.battleContext.additionalDamage = 3;
-            } else {
-                atkUnit.battleContext.additionalDamage += 3;
-            }
+            atkUnit.battleContext.additionalDamage += 3;
         }
     );
 }
@@ -5171,21 +5166,13 @@
             if (!atkUnit.isWeaponRefined) {
                 if (defUnit.hasNegativeStatusEffect()) {
                     let value = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
-                    if (isPrecombat) {
-                        atkUnit.battleContext.additionalDamage = Math.trunc(value * 0.2);
-                    } else {
-                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
-                    }
+                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
                 }
             } else {
                 if (atkUnit.hasPositiveStatusEffect(defUnit) ||
                     defUnit.hasNegativeStatusEffect()) {
                     let value = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
-                    if (isPrecombat) {
-                        atkUnit.battleContext.additionalDamage = Math.trunc(value * 0.2);
-                    } else {
-                        atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
-                    }
+                    atkUnit.battleContext.additionalDamage += Math.trunc(value * 0.2);
                 }
             }
         }
@@ -6867,11 +6854,7 @@
             let status = DamageCalculatorWrapper.__getAtk(atkUnit, defUnit, isPrecombat);
             let additionalDamage = Math.trunc(status * 0.15);
             this.writeDebugLog(`${atkUnit.weaponInfo.name}により固定ダメージ+${additionalDamage}(atk(${status}) * 0.15)`);
-            if (isPrecombat) {
-                atkUnit.battleContext.additionalDamage = additionalDamage;
-            } else {
-                atkUnit.battleContext.additionalDamage += additionalDamage;
-            }
+            atkUnit.battleContext.additionalDamage += additionalDamage;
             // 奥義発動時
             let ratio = 0.1 + 0.1 * atkUnit.maxSpecialCount;
             let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
@@ -7476,11 +7459,7 @@
         );
         calcFixedAddDamageFuncMap.set(skillId,
             function (atkUnit, defUnit, isPrecombat) {
-                if (isPrecombat) {
-                    atkUnit.battleContext.additionalDamage = 7;
-                } else {
-                    atkUnit.battleContext.additionalDamage += 7;
-                }
+                atkUnit.battleContext.additionalDamage += 7;
             }
         );
     }
@@ -7756,11 +7735,7 @@
             if (atkUnit.battleContext.restHpPercentage >= 25 || this.__isThereAllyIn2Spaces(atkUnit)) {
                 // ダメージ+魔防の15%(戦闘前奥義も含む)、
                 let status = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
-                if (isPrecombat) {
-                    atkUnit.battleContext.additionalDamage = Math.trunc(status * 0.15);
-                } else {
-                    atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
-                }
+                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.15);
             }
         }
     );
@@ -9081,11 +9056,7 @@
                 );
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                        if (isPrecombat) {
-                            atkUnit.battleContext.additionalDamage = 5;
-                        } else {
-                            atkUnit.battleContext.additionalDamage += 5;
-                        }
+                        atkUnit.battleContext.additionalDamage += 5;
                     }
                 });
             }

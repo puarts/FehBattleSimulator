@@ -26,6 +26,7 @@ const MapType = {
     K0015: 14,
     K0016: 15,
     K0017: 16,
+    K0018: 17,
 
     // 闘技場
     // https://feheroes.gamepedia.com/List_of_Arena_maps
@@ -314,6 +315,7 @@ AetherRaidMapImageFilePaths[MapType.K0014] = "K0014.png";
 AetherRaidMapImageFilePaths[MapType.K0015] = "K0015.png";
 AetherRaidMapImageFilePaths[MapType.K0016] = "K0016.png";
 AetherRaidMapImageFilePaths[MapType.K0017] = "K0017.png";
+AetherRaidMapImageFilePaths[MapType.K0018] = "K0018.webp";
 
 const AetherRaidMapImageFiles = [];
 initializeImageFileList(AetherRaidMapImageFilePaths, AetherRaidMapImageFiles);
