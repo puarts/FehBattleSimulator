@@ -315,7 +315,7 @@ AetherRaidMapImageFilePaths[MapType.K0014] = "K0014.png";
 AetherRaidMapImageFilePaths[MapType.K0015] = "K0015.png";
 AetherRaidMapImageFilePaths[MapType.K0016] = "K0016.png";
 AetherRaidMapImageFilePaths[MapType.K0017] = "K0017.png";
-AetherRaidMapImageFilePaths[MapType.K0018] = "K0018.webp";
+AetherRaidMapImageFilePaths[MapType.K0018] = "K0018.png";
 
 const AetherRaidMapImageFiles = [];
 initializeImageFileList(AetherRaidMapImageFilePaths, AetherRaidMapImageFiles);
