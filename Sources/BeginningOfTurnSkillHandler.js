@@ -782,7 +782,7 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 if (found) {
-                    skillOwner.reserveToResetDebuffs();
+                    skillOwner.reservedDebuffsToDelete = [true, true, true, true];
                     skillOwner.reserveToClearNegativeStatusEffects();
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
                 }
@@ -1525,7 +1525,7 @@ class BeginningOfTurnSkillHandler {
                 for (let target of targets) {
                     target.reserveToApplyAtkBuff(6);
                     target.reserveToApplySpdBuff(6);
-                    target.reserveToResetDebuffs();
+                    target.reservedDebuffsToDelete = [true, true, true, true];
 
                     // キアの杖の効果が重なると2回目の実行で対象が変化してしまうので予約する
                     // todo: 他の場所も状態が変化するものはすべて予約にしないといけない
@@ -1541,7 +1541,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.OddRecovery1:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reserveToResetDebuffs();
+                        unit.reservedDebuffsToDelete = [true, true, true, true];
                         unit.reserveToClearNegativeStatusEffects();
                     }
                 }
@@ -1549,7 +1549,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.OddRecovery2:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reserveToResetDebuffs();
+                        unit.reservedDebuffsToDelete = [true, true, true, true];
                         unit.reserveToClearNegativeStatusEffects();
                     }
                 }
@@ -1557,7 +1557,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.OddRecovery3:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reserveToResetDebuffs();
+                        unit.reservedDebuffsToDelete = [true, true, true, true];
                         unit.reserveToClearNegativeStatusEffects();
                     }
                 }
@@ -1565,7 +1565,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.EvenRecovery1:
                 if (!this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reserveToResetDebuffs();
+                        unit.reservedDebuffsToDelete = [true, true, true, true];
                         unit.reserveToClearNegativeStatusEffects();
                     }
                 }
@@ -1573,7 +1573,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.EvenRecovery2:
                 if (!this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reserveToResetDebuffs();
+                        unit.reservedDebuffsToDelete = [true, true, true, true];
                         unit.reserveToClearNegativeStatusEffects();
                     }
                 }
@@ -1581,7 +1581,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.EvenRecovery3:
                 if (!this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reserveToResetDebuffs();
+                        unit.reservedDebuffsToDelete = [true, true, true, true];
                         unit.reserveToClearNegativeStatusEffects();
                     }
                 }
