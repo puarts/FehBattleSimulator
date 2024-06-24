@@ -5588,10 +5588,11 @@
     let skillId = PassiveX.SoaringEcho;
     enumerateTeleportTilesForAllyFuncMap.set(skillId,
         function* (targetUnit, allyUnit) {
-            // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
-            if (targetUnit.distance(allyUnit) <= 2 &&
+            let isTargetMoveType =
                 targetUnit.moveType === MoveType.Infantry ||
-                targetUnit.moveType === MoveType.Flying) {
+                targetUnit.moveType === MoveType.Flying;
+            if (targetUnit.distance(allyUnit) <= 2 && isTargetMoveType) {
+                // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
                 yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
