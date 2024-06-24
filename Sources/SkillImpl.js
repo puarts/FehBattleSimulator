@@ -1407,7 +1407,7 @@
                 // 自分に【回避】を付与、
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
                 // 自分の【不利な状態異常】を解除
-                skillOwner.reserveToResetDebuffs();
+                skillOwner.reservedDebuffsToDelete = [true, true, true, true];
                 skillOwner.reserveToClearNegativeStatusEffects();
                 // （同ターン開始時に受けた不利な状態異常は解除されない）
             }
@@ -4545,7 +4545,7 @@
                     if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
                         for (let unit of units) {
-                            unit.reserveToResetDebuffs();
+                            unit.reservedDebuffsToDelete = [true, true, true, true];
                             unit.reserveToClearNegativeStatusEffects();
                             unit.reserveHeal(10);
                         }
@@ -7554,12 +7554,10 @@
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
-            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                unit.reserveToResetDebuffs();
+            for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
+                unit.reservedDebuffsToDelete = [true, true, true, true];
                 unit.reserveToClearNegativeStatusEffects();
             }
-            skillOwner.reserveToResetDebuffs();
-            skillOwner.reserveToClearNegativeStatusEffects();
         }
     );
     updateUnitSpurFromAlliesFuncMap.set(skillId,
