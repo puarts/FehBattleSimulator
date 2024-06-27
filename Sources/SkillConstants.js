@@ -3374,6 +3374,7 @@ const AssistType = {
 const EmblemHero = {
     Marth: 1082,
     Ike: 1105,
+    Celica: 1139,
 };
 
 const EffectiveType = {

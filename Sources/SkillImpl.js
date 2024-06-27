@@ -1,5 +1,26 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 紋章士セリカ
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Celica);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // （エンゲージした相手の奥義を強化）
+            // 奥義発動カウントの最大値x4を奥義ダメージに加算（範囲奥義を除く）
+            targetUnit.battleContext.addSpecialAddDamage(targetUnit.maxSpecialCount * 4);
+        }
+    );
+    // 周囲5マス以内にいる敵から自分の射程分離れたマスのうち、自分から最も近いマスに移動可能
+    // （敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            let range = unit.isRangedWeaponType() ? 2 : 1;
+            return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 5, range);
+        }
+    );
+}
+
 // 共鳴の黒魔法4
 {
     let skillId = PassiveB.Resonance4;
