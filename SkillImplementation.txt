@@ -228,6 +228,8 @@ enemyUnit.battleContext.restHpPercentage >= N
 ターン開始時、自身のHPがN%以上なら
 skillOwner.restHpPercentageAtBeginningOfTurn >= N
 
+[戦闘開始時のHP]
+targetUnit.hp
 [戦闘中のHP]
 targetUnit.restHp
 targetUnit.restHpPercentage

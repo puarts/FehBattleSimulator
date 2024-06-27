@@ -2915,6 +2915,9 @@ const PassiveB = {
 
     // 不動4
     LaguzFriend: 2836, // 不動4
+
+    // 共鳴の黒魔法4
+    Resonance4: 2926, // 共鳴の黒魔法4
 };
 
 const PassiveC = {

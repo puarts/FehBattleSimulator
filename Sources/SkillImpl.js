@@ -1,5 +1,28 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 共鳴の黒魔法4
+{
+    let skillId = PassiveB.Resonance4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始後、自分に（出撃時のHPアップを除いた自分の最大HP-20）/ 5のダメージ（出撃時のHPアップ：伝承効果、神階効果、ボーナスキャラなど）（戦闘で攻撃可能な時のみ発動）
+            // （戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1）
+            let d = Math.trunc((targetUnit.maxHpWithSkillsWithoutEnteringBattleHpAdd - 20) / 5);
+            targetUnit.battleContext.damageAfterBeginningOfCombat += d;
+
+            // - 戦闘中、敵の速さ、魔防ー4、
+            enemyUnit.addSpdResSpurs(-4);
+            // - 自分が与えるダメージ＋（戦闘開始時のHP一現在のHP）✕2（最大12、最低6）（範囲奥義を除く）、
+            let hpDiff = targetUnit.hp - targetUnit.restHp;
+            let damage = MathUtil.ensureMinMax(hpDiff * 2, 6, 12);
+            targetUnit.battleContext.additionalDamage += damage;
+            // - 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を（戦闘開始時のHP一現在のHP）x10%無効（最大60%、最低30%）（無効にする数値は端数切捨て）（範囲奥義を除く）
+            let ratio = MathUtil.ensureMinMax(hpDiff * 0.1, 0.3, 0.6);
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+        }
+    );
+}
+
 // ワープライナ
 {
     let skillId = Special.WarpRagnarok;
