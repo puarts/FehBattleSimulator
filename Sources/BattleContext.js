@@ -696,7 +696,7 @@ class BattleContext {
      * @returns {boolean}
      */
     canAttackInCombat() {
-        return this.initiatesCombat || this.canCounterattack;
+        return this.initiatesCombat ? true : this.canCounterattack;
     }
 
     setDamageReductionRatio(ratio) {
