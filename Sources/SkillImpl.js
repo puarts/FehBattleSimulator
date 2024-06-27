@@ -1,5 +1,125 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 紋章士セリカ
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Celica);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // （エンゲージした相手の奥義を強化）
+            // 奥義発動カウントの最大値x4を奥義ダメージに加算（範囲奥義を除く）
+            targetUnit.battleContext.addSpecialAddDamage(targetUnit.maxSpecialCount * 4);
+        }
+    );
+    // 周囲5マス以内にいる敵から自分の射程分離れたマスのうち、自分から最も近いマスに移動可能
+    // （敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            let range = unit.isRangedWeaponType() ? 2 : 1;
+            return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 5, range);
+        }
+    );
+}
+
+// 共鳴の黒魔法4
+{
+    let skillId = PassiveB.Resonance4;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // - 戦闘中、敵の速さ、魔防ー4、
+            enemyUnit.addSpdResSpurs(-4);
+            // - 自分が与えるダメージ＋（戦闘開始時のHP一現在のHP）✕2（最大12、最低6）（範囲奥義を除く）、
+            let hpDiff = targetUnit.hp - targetUnit.restHp;
+            let damage = MathUtil.ensureMinMax(hpDiff * 2, 6, 12);
+            targetUnit.battleContext.additionalDamage += damage;
+            // - 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を（戦闘開始時のHP一現在のHP）x10%無効（最大60%、最低30%）（無効にする数値は端数切捨て）（範囲奥義を除く）
+            let ratio = MathUtil.ensureMinMax(hpDiff * 0.1, 0.3, 0.6);
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+        }
+    );
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 戦闘開始後、自分に（出撃時のHPアップを除いた自分の最大HP-20）/ 5のダメージ（出撃時のHPアップ：伝承効果、神階効果、ボーナスキャラなど）（戦闘で攻撃可能な時のみ発動）
+            // （戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1）
+            if (targetUnit.battleContext.canAttackInCombat()) {
+                let d = Math.trunc((targetUnit.maxHpWithSkillsWithoutEnteringBattleHpAdd - 20) / 5);
+                targetUnit.battleContext.damageAfterBeginningOfCombat += d;
+            }
+        }
+    );
+}
+
+// ワープライナ
+{
+    let skillId = Special.WarpRagnarok;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 攻撃の25%を奥義ダメージに加算
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.25));
+        }
+    );
+
+    // 敵を通過可能
+    CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
+
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            // 周囲6マス以内にいる敵から2マス離れたマスのうち、自分から最も近いマスに移動可能
+            // （敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない）
+            return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 6, 2);
+        }
+    );
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、
+            // 奥義発動カウントが最大値なら、奥義発動カウントー1
+            if (skillOwner.statusEvalUnit.isSpecialCountMax) {
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        }
+    );
+}
+
+// 慈愛の王女の魔力
+{
+    let skillId = Weapon.CaringMagic;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // - 戦闘中、攻撃、速さ＋6、
+                targetUnit.addAtkSpdSpurs(6);
+                // - さらに、攻撃、速さが、戦闘開始時の速さの20%だけ増加、
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addAtkSpdSpurs(amount);
+                // - ダメージ＋速さの20%（範囲奥義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+                // - 敵の速さ、魔防の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）、
+                targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                // - 自分の最初の追撃前に自身の奥義発動カウントー1、
+                targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += 1;
+            }
+            // かつ自分から攻撃した時、
+            if (targetUnit.battleContext.initiatesCombat) {
+                // - 戦闘中、追撃可能なら自分の攻撃の直後に追撃を行う
+                targetUnit.battleContext.isDesperationActivatable = true;
+            }
+        }
+    );
+}
+
 // 速さの波・奇数4
 {
     let skillId = PassiveC.OddSpdWave4;

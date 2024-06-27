@@ -1858,6 +1858,11 @@ const Weapon = {
     PrincesLance: 2914, // 荒波制す氷王の槍
     SeaTambourinePlus: 2917, // 南国の楽器+
     GoldenSunlight: 2918, // 魔女と女神の夏光
+
+    // 紋章士英雄「響きの紋章士 セリカ」
+    // https://www.youtube.com/watch?v=tA-Z3bXCklo&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=A7Uf1CNgqoE&ab_channel=NintendoMobile
+    CaringMagic: 2924, // 慈愛の王女の魔力
 };
 
 const Support = {
@@ -2080,6 +2085,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     // 専用奥義
+    WarpRagnarok: 2925, // ワープライナ
     TimeAndLight: 2919, // 時と光
     Bane: 2903, // 瞬殺
     DragonFangShot: 2896, // 竜穿射
@@ -2909,6 +2915,9 @@ const PassiveB = {
 
     // 不動4
     LaguzFriend: 2836, // 不動4
+
+    // 共鳴の黒魔法4
+    Resonance4: 2926, // 共鳴の黒魔法4
 };
 
 const PassiveC = {
@@ -3365,6 +3374,7 @@ const AssistType = {
 const EmblemHero = {
     Marth: 1082,
     Ike: 1105,
+    Celica: 1139,
 };
 
 const EffectiveType = {

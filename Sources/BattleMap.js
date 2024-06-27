@@ -2256,12 +2256,12 @@ class BattleMap {
         }
     }
 
-    * enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, spaces) {
+    * enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, spaces, distance = 1) {
         for (let enemyUnit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, spaces)) {
             // 一番近いマスを求める
             let nearestTiles = [];
             let minDistance = Number.MAX_SAFE_INTEGER;
-            for (let tile of this.enumerateTilesWithinSpecifiedDistance(enemyUnit.placedTile, 1)) {
+            for (let tile of this.enumerateTilesWithinSpecifiedDistance(enemyUnit.placedTile, distance)) {
                 let distance = unit.placedTile.calculateDistance(tile);
                 if (distance < minDistance) {
                     minDistance = distance;

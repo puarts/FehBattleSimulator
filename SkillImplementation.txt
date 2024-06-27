@@ -228,6 +228,8 @@ enemyUnit.battleContext.restHpPercentage >= N
 ターン開始時、自身のHPがN%以上なら
 skillOwner.restHpPercentageAtBeginningOfTurn >= N
 
+[戦闘開始時のHP]
+targetUnit.hp
 [戦闘中のHP]
 targetUnit.restHp
 targetUnit.restHpPercentage
@@ -355,6 +357,9 @@ targetUnit.battleContext.nullCounterDisrupt = true;
 
 敵が反撃可能なら
 this.canCounterAttack(atkUnit, defUnit)
+
+戦闘で攻撃可能な時
+if (targetUnit.battleContext.canAttackInCombat()) {}
 
 自分が受けている攻撃、速さ、守備、魔防の強化の値だけ上昇(強化増幅)
 __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
@@ -1627,6 +1632,8 @@ enumerateTeleportTilesForUnitFuncMap.set(skillId,
         return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
         // 周囲4マス以内にいる敵の隣接マスのうち、自分から最も近いマスに移動可能(敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない)
         return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
+        // 紋章士セリカ
+        return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 6, 2);
     }
 );
 // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
@@ -1686,6 +1693,9 @@ canWarpFuncMap.set(skillId,
         return true;
     }
 );
+
+// 敵を通過可能[すり抜け]
+CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
 
 天駆の道
 function hasPathfinderEffect(skillId) {}
