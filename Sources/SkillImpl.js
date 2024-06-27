@@ -1,5 +1,36 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 慈愛の王女の魔力
+{
+    let skillId = Weapon.CaringMagic;
+    // 威力：14 射程：2
+    // 奥義が発動しやすい（発動カウントー1）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyIn2Spaces(targetUnit)) {
+                // - 戦闘中、攻撃、速さ＋6、
+                targetUnit.addAtkSpdSpurs(6);
+                // - さらに、攻撃、速さが、戦闘開始時の速さの20%だけ増加、
+                let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
+                targetUnit.addAtkSpdSpurs(amount);
+                // - ダメージ＋速さの20%（範囲奥義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+                // - 敵の速さ、魔防の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）、
+                targetUnit.battleContext.invalidateBuffs(false, true, false, true);
+                // - 自分の最初の追撃前に自身の奥義発動カウントー1、
+                targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += 1;
+            }
+            // かつ自分から攻撃した時、
+            if (targetUnit.battleContext.initiatesCombat) {
+                // - 戦闘中、追撃可能なら自分の攻撃の直後に追撃を行う
+                targetUnit.battleContext.isDesperationActivatable = true;
+            }
+        }
+    );
+}
+
 // 速さの波・奇数4
 {
     let skillId = PassiveC.OddSpdWave4;

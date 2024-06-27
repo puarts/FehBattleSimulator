@@ -1858,6 +1858,11 @@ const Weapon = {
     PrincesLance: 2914, // 荒波制す氷王の槍
     SeaTambourinePlus: 2917, // 南国の楽器+
     GoldenSunlight: 2918, // 魔女と女神の夏光
+
+    // 紋章士英雄「響きの紋章士 セリカ」
+    // https://www.youtube.com/watch?v=tA-Z3bXCklo&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=A7Uf1CNgqoE&ab_channel=NintendoMobile
+    CaringMagic: 2924, // 慈愛の王女の魔力
 };
 
 const Support = {
