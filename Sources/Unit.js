@@ -338,6 +338,7 @@ class ActionContext {
 
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
+    #hpAddAfterEnteringBattle = 0;
     constructor(id = "", name = "",
                 unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
@@ -440,6 +441,7 @@ class Unit extends BattleMapElement {
         this._maxHpWithSkills = 0;
         this.hpAdd = 0;
         this.hpMult = 1.0;
+        this.#hpAddAfterEnteringBattle = 0;
         this._atkBuff = 0;
         this._atkDebuff = 0;
         this.atkSpur = 0;
@@ -1089,6 +1091,14 @@ class Unit extends BattleMapElement {
         }
     }
 
+    get hpAddAfterEnteringBattle() {
+        return this.#hpAddAfterEnteringBattle;
+    }
+
+    get maxHpWithSkillsWithoutEnteringBattleHpAdd() {
+        return this._maxHpWithSkills - this.hpAddAfterEnteringBattle;
+    }
+
     clearBlessingEffects() {
         this.blessingEffects = [];
         this.__clearBlessings();
@@ -1673,6 +1683,7 @@ class Unit extends BattleMapElement {
         this.snapshot._def = this._def;
         this.snapshot._res = this._res;
         this.snapshot._maxHpWithSkills = this._maxHpWithSkills;
+        this.snapshot.#hpAddAfterEnteringBattle = this.#hpAddAfterEnteringBattle;
         this.snapshot.atkWithSkills = this.atkWithSkills;
         this.snapshot.spdWithSkills = this.spdWithSkills;
         this.snapshot.defWithSkills = this.defWithSkills;
@@ -2302,6 +2313,7 @@ class Unit extends BattleMapElement {
         this.resBuff = 0;
     }
 
+    // TODO: 削除する
     reserveToResetDebuffs() {
         this.reservedAtkDebuff = 0;
         this.reservedSpdDebuff = 0;
@@ -3760,39 +3772,39 @@ class Unit extends BattleMapElement {
     __updateStatusByBlessing(blessing) {
         switch (blessing) {
             case BlessingType.Hp5_Atk3:
-                this._maxHpWithSkills += 5;
+                this.addHpAfterEnteringBattle(5);
                 this.atkWithSkills += 3;
                 break;
             case BlessingType.Hp5_Spd4:
-                this._maxHpWithSkills += 5;
+                this.addHpAfterEnteringBattle(5);
                 this.spdWithSkills += 4;
                 break;
             case BlessingType.Hp5_Def5:
-                this._maxHpWithSkills += 5;
+                this.addHpAfterEnteringBattle(5);
                 this.defWithSkills += 5;
                 break;
             case BlessingType.Hp5_Res5:
-                this._maxHpWithSkills += 5;
+                this.addHpAfterEnteringBattle(5);
                 this.resWithSkills += 5;
                 break;
             case BlessingType.Hp3_Atk2:
-                this._maxHpWithSkills += 3;
+                this.addHpAfterEnteringBattle(3);
                 this.atkWithSkills += 2;
                 break;
             case BlessingType.Hp3_Spd3:
-                this._maxHpWithSkills += 3;
+                this.addHpAfterEnteringBattle(3);
                 this.spdWithSkills += 3;
                 break;
             case BlessingType.Hp3_Def4:
-                this._maxHpWithSkills += 3;
+                this.addHpAfterEnteringBattle(3);
                 this.defWithSkills += 4;
                 break;
             case BlessingType.Hp3_Res4:
-                this._maxHpWithSkills += 3;
+                this.addHpAfterEnteringBattle(3);
                 this.resWithSkills += 4;
                 break;
             case BlessingType.Hp3:
-                this._maxHpWithSkills += 3;
+                this.addHpAfterEnteringBattle(3);
                 break;
             default:
                 break;
@@ -4640,6 +4652,7 @@ class Unit extends BattleMapElement {
         this.heroInfo = null;
         this.heroIndex = -1;
         this._maxHpWithSkills = 0;
+        this.#hpAddAfterEnteringBattle = 0;
         this.atkWithSkills = 0;
         this.spdWithSkills = 0;
         this.defWithSkills = 0;
@@ -4727,6 +4740,7 @@ class Unit extends BattleMapElement {
         this.updateBaseStatus(updatesPureGrowthRate);
 
         this.maxHpWithSkillsWithoutAdd = this.hpLvN;
+        this.#hpAddAfterEnteringBattle = 0;
         this.atkWithSkills = Math.floor(Number(this.atkLvN) * Number(this.atkMult) + Number(this.atkAdd));
         this.spdWithSkills = Math.floor(Number(this.spdLvN) * Number(this.spdMult) + Number(this.spdAdd));
         this.defWithSkills = Math.floor(Number(this.defLvN) * Number(this.defMult) + Number(this.defAdd));
@@ -4807,7 +4821,7 @@ class Unit extends BattleMapElement {
 
         // ボナキャラ補正
         if (this.isBonusChar) {
-            this.maxHpWithSkillsWithoutAdd += 10;
+            this.addHpAfterEnteringBattle(10);
             this.atkWithSkills += 4;
             this.spdWithSkills += 4;
             this.defWithSkills += 4;
@@ -5472,6 +5486,11 @@ class Unit extends BattleMapElement {
 
     hasDefenseSpecial() {
         return isDefenseSpecial(this.special);
+    }
+
+    addHpAfterEnteringBattle(value) {
+        this._maxHpWithSkills += value;
+        this.#hpAddAfterEnteringBattle += value;
     }
 
     // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
