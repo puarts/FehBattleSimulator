@@ -1627,6 +1627,8 @@ enumerateTeleportTilesForUnitFuncMap.set(skillId,
         return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
         // 周囲4マス以内にいる敵の隣接マスのうち、自分から最も近いマスに移動可能(敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない)
         return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 4);
+        // 紋章士セリカ
+        return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 6, 2);
     }
 );
 // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
