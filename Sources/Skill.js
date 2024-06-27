@@ -777,6 +777,8 @@ function canRallyForciblyByPlayer(unit) {
     return getSkillFunc(unit.support, canRallyForciblyByPlayerFuncMap)?.call(this, unit) ?? false;
 }
 
+CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET = new Set();
+
 /**
  * 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
  */

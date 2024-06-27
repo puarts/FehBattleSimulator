@@ -2181,6 +2181,11 @@ class Unit extends BattleMapElement {
 
     /// すり抜けを発動可能ならtrue、そうでなければfalseを返します。
     canActivatePass() {
+        for (let skillId of this.enumerateSkills()) {
+            if (CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.has(skillId)) {
+                return true;
+            }
+        }
         return (this.passiveB === PassiveB.Surinuke3 && this.hpPercentage >= 25)
             || (this.weapon === Weapon.FujinYumi && !this.isWeaponRefined && this.hpPercentage >= 50);
     }

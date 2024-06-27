@@ -1689,6 +1689,9 @@ canWarpFuncMap.set(skillId,
     }
 );
 
+// 敵を通過可能[すり抜け]
+CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
+
 天駆の道
 function hasPathfinderEffect(skillId) {}
 

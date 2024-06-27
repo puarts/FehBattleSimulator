@@ -1,5 +1,45 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ワープライナ
+{
+    let skillId = Special.WarpRagnarok;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 攻撃の25%を奥義ダメージに加算
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.25));
+        }
+    );
+
+    // 敵を通過可能
+    CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
+
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            // 周囲6マス以内にいる敵から2マス離れたマスのうち、自分から最も近いマスに移動可能
+            // （敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない）
+            return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 6, 2);
+        }
+    );
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、
+            // 奥義発動カウントが最大値なら、奥義発動カウントー1
+            if (skillOwner.statusEvalUnit.isSpecialCountMax) {
+                skillOwner.reserveToReduceSpecialCount(1);
+            }
+        }
+    );
+}
+
 // 慈愛の王女の魔力
 {
     let skillId = Weapon.CaringMagic;
