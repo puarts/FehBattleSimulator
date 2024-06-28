@@ -5514,6 +5514,16 @@ class Unit extends BattleMapElement {
         }
         return Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
     }
+
+    canActivateOrActivatedSpecial() {
+        let hasSpecial = this.special !== Special.None;
+        let canActivateSpecial = hasSpecial && this.tmpSpecialCount === 0;
+        return canActivateSpecial || this.battleContext.isSpecialActivated;
+    }
+
+    static canActivateOrActivatedSpecialEither(targetUnit, enemyUnit) {
+        return targetUnit.canActivateOrActivatedSpecial() || enemyUnit.canActivateOrActivatedSpecial();
+    }
 }
 
 
