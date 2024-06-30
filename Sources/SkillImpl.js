@@ -1,5 +1,48 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 束縛、秩序、…・神
+{
+    let skillId = PassiveC.OrdersRestraintPlus;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲3マス以内の味方の
+            let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3);
+            for (let ally of allies) {
+                // 攻撃、魔防+6、かつ
+                ally.reserveToApplyBuffs(6, 0, 0, 6);
+                // 【見切り・パニック】、
+                ally.reserveToAddStatusEffect(StatusEffectType.Panic);
+                // 【見切り・追撃効果】、
+                ally.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                // 【魔刃】を付与(1ターン)
+                ally.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+            }
+
+            // ターン開始時、周囲3マス以内に味方が3体以上いる時、
+            if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
+                // 自分の攻撃、魔防+6、かつ
+                skillOwner.reserveToApplyBuffs(6, 0, 0, 6);
+                // 【見切り・パニック】
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Panic);
+                // 【見切り・追撃効果】、
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                // 「戦闘中、敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は数切捨て)(範囲奥義を除く)」を付与(1ターン)
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+}
+
 // 紋章士セリカ
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Celica);

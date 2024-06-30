@@ -3287,6 +3287,7 @@ const PassiveC = {
     WingsOfLight: 1622, // 光輝く翼
     WingsOfLightPlus: 2800, // 光輝く翼・神
     OrdersRestraint: 1724, // 束縛、秩序、安定
+    OrdersRestraintPlus: 2931, // 束縛、秩序、…・神
     DomainOfIce: 1774, // 絶氷結界
     DomainOfFlame: 1848, // 絶炎結界
     EverlivingDomain: 2144, // 永生結界
