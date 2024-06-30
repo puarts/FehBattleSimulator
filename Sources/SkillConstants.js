@@ -2824,6 +2824,7 @@ const PassiveB = {
     SunTwinWing: 1680, // 双姫の陽翼
     SunTwinWingPlus: 2799, // 双姫の陽翼・神
     MoonTwinWing: 1732, // 双姫の月翼
+    MoonTwinWingPlus: 2930, // 双姫の月翼・神
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖

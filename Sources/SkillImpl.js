@@ -1,5 +1,29 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 双姫の月翼・神
+{
+    let skillId = PassiveB.MoonTwinWingPlus;
+    // 速さの差を比較するスキルの比較判定時、自身の速さ+7として判定
+    evalSpdAddFuncMap.set(skillId, function (unit) {
+        return 7;
+    })
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、敵の攻撃、速さ、守備-5、
+                targetUnit.addSpursWithoutRes(-5);
+                // 自分が与えるダメージ+攻撃の10%(範囲奥義を除く)、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.10);
+                // 敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)、
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // かつ速さが敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×5%軽減(最大50%)(巨影の範囲奥義を除く)
+                targetUnit.battleContext.setDodgeInCombat(5, 50);
+            }
+        }
+    );
+}
+
 // 束縛、秩序、…・神
 {
     let skillId = PassiveC.OrdersRestraintPlus;
@@ -1150,10 +1174,12 @@
             enemyUnit.addSpdResSpurs(-4);
             // * 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
             // 魔防の差x4%軽減（最大40%）（巨影の範囲奥義を除く）
-            targetUnit.battleContext.setResDodge(4, 40);
+            targetUnit.battleContext.setResDodgeInCombat(4, 40);
             // * 射程2の敵は自分の周囲4マス以内へのスキル効果によるワープ移動不可（すり抜けを持つ敵には無効）（制圧戦の拠点等の地形効果によるワープ移動は可）
         }
     );
+    // * 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
+    // 魔防の差x4%軽減（最大40%）（巨影の範囲奥義を除く）
     applyPrecombatDamageReductionRatioFuncMap.set(skillId,
         function (defUnit, atkUnit) {
             let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);

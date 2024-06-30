@@ -1059,8 +1059,10 @@ targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) =>
     // 固定割合(30%)
     // return 0.3;
 });
+// 速さ回避
+targetUnit.battleContext.setDodgeInCombat(4, 40);
 // 魔防回避
-targetUnit.battleContext.setResDodge(4, 40);
+targetUnit.battleContext.setResDodgeInCombat(4, 40);
 もしくは
 __getDamageReductionRatio(skillId, atkUnit, defUnit) {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);

@@ -801,7 +801,13 @@ class BattleContext {
         );
     }
 
-    setResDodge(percentage = 4, maxPercentage = 40) {
+    setDodgeInCombat(percentage = 4, maxPercentage = 40) {
+        this.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+            return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, percentage, maxPercentage);
+        });
+    }
+
+    setResDodgeInCombat(percentage = 4, maxPercentage = 40) {
         this.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
             return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit, percentage, maxPercentage);
         });
