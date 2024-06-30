@@ -2824,6 +2824,7 @@ const PassiveB = {
     SunTwinWing: 1680, // 双姫の陽翼
     SunTwinWingPlus: 2799, // 双姫の陽翼・神
     MoonTwinWing: 1732, // 双姫の月翼
+    MoonTwinWingPlus: 2930, // 双姫の月翼・神
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖
@@ -3287,6 +3288,7 @@ const PassiveC = {
     WingsOfLight: 1622, // 光輝く翼
     WingsOfLightPlus: 2800, // 光輝く翼・神
     OrdersRestraint: 1724, // 束縛、秩序、安定
+    OrdersRestraintPlus: 2931, // 束縛、秩序、…・神
     DomainOfIce: 1774, // 絶氷結界
     DomainOfFlame: 1848, // 絶炎結界
     EverlivingDomain: 2144, // 永生結界

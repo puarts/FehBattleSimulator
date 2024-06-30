@@ -1,5 +1,72 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 双姫の月翼・神
+{
+    let skillId = PassiveB.MoonTwinWingPlus;
+    // 速さの差を比較するスキルの比較判定時、自身の速さ+7として判定
+    evalSpdAddFuncMap.set(skillId, function (unit) {
+        return 7;
+    })
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、敵の攻撃、速さ、守備-5、
+                targetUnit.addSpursWithoutRes(-5);
+                // 自分が与えるダメージ+攻撃の10%(範囲奥義を除く)、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.10);
+                // 敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)、
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // かつ速さが敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×5%軽減(最大50%)(巨影の範囲奥義を除く)
+                targetUnit.battleContext.setDodgeInCombat(5, 50);
+            }
+        }
+    );
+}
+
+// 束縛、秩序、…・神
+{
+    let skillId = PassiveC.OrdersRestraintPlus;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲3マス以内の味方の
+            let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 3);
+            for (let ally of allies) {
+                // 攻撃、魔防+6、かつ
+                ally.reserveToApplyBuffs(6, 0, 0, 6);
+                // 【見切り・パニック】、
+                ally.reserveToAddStatusEffect(StatusEffectType.Panic);
+                // 【見切り・追撃効果】、
+                ally.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                // 【魔刃】を付与(1ターン)
+                ally.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+            }
+
+            // ターン開始時、周囲3マス以内に味方が3体以上いる時、
+            if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 3)) {
+                // 自分の攻撃、魔防+6、かつ
+                skillOwner.reserveToApplyBuffs(6, 0, 0, 6);
+                // 【見切り・パニック】
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Panic);
+                // 【見切り・追撃効果】、
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
+                // 「戦闘中、敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は数切捨て)(範囲奥義を除く)」を付与(1ターン)
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4
+                targetUnit.addAllSpur(4);
+            }
+        }
+    );
+}
+
 // 紋章士セリカ
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Celica);
@@ -28,13 +95,17 @@
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // - 戦闘中、敵の速さ、魔防ー4、
             enemyUnit.addSpdResSpurs(-4);
+        }
+    );
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
             // - 自分が与えるダメージ＋（戦闘開始時のHP一現在のHP）✕2（最大12、最低6）（範囲奥義を除く）、
             let hpDiff = targetUnit.hp - targetUnit.restHp;
             let damage = MathUtil.ensureMinMax(hpDiff * 2, 6, 12);
-            targetUnit.battleContext.additionalDamage += damage;
+            targetUnit.battleContext.additionalDamagePerAttack += damage;
             // - 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を（戦闘開始時のHP一現在のHP）x10%無効（最大60%、最低30%）（無効にする数値は端数切捨て）（範囲奥義を除く）
             let ratio = MathUtil.ensureMinMax(hpDiff * 0.1, 0.3, 0.6);
-            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack.push(ratio);
         }
     );
     applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
@@ -777,10 +848,7 @@
     applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             // 自分または敵が奥義発動可能状態の時、または、この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時、
-            if (defUnit.tmpSpecialCount === 0 ||
-                atkUnit.tmpSpecialCount === 0 ||
-                defUnit.battleContext.isSpecialActivated ||
-                atkUnit.battleContext.isSpecialActivated) {
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // 戦闘中、受けた攻撃のダメージを30%軽減（1戦闘1回のみ）
                 // （範囲奥義を除く）
                 defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.3);
@@ -1106,10 +1174,12 @@
             enemyUnit.addSpdResSpurs(-4);
             // * 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
             // 魔防の差x4%軽減（最大40%）（巨影の範囲奥義を除く）
-            targetUnit.battleContext.setResDodge(4, 40);
+            targetUnit.battleContext.setResDodgeInCombat(4, 40);
             // * 射程2の敵は自分の周囲4マス以内へのスキル効果によるワープ移動不可（すり抜けを持つ敵には無効）（制圧戦の拠点等の地形効果によるワープ移動は可）
         }
     );
+    // * 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを
+    // 魔防の差x4%軽減（最大40%）（巨影の範囲奥義を除く）
     applyPrecombatDamageReductionRatioFuncMap.set(skillId,
         function (defUnit, atkUnit) {
             let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
@@ -3984,10 +4054,7 @@
         function (atkUnit, defUnit) {
             // 「自分または敵が奥義発動可能状態の時」、「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
             // 2条件のいずれかを満たした時、
-            if (defUnit.tmpSpecialCount === 0 ||
-                atkUnit.tmpSpecialCount === 0 ||
-                defUnit.battleContext.isSpecialActivated ||
-                atkUnit.battleContext.isSpecialActivated) {
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // かつ、敵が射程2の時、
                 if (isRangedWeaponType(atkUnit.weaponType)) {
                     // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）（範囲奥義を除く）
@@ -6767,10 +6834,7 @@
     // 攻撃奥義のダメージ軽減
     applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
-            if (defUnit.tmpSpecialCount === 0 ||
-                atkUnit.tmpSpecialCount === 0 ||
-                defUnit.battleContext.isSpecialActivated ||
-                atkUnit.battleContext.isSpecialActivated) {
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
             }
         }
@@ -8518,10 +8582,7 @@
     // 攻撃奥義のダメージ軽減
     applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
-            if (defUnit.tmpSpecialCount === 0 ||
-                atkUnit.tmpSpecialCount === 0 ||
-                defUnit.battleContext.isSpecialActivated ||
-                atkUnit.battleContext.isSpecialActivated) {
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 if (isRangedWeaponType(atkUnit.weaponType)) {
                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.3);
                 }
@@ -8740,10 +8801,7 @@
     // 攻撃奥義のダメージ軽減
     applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
-            if (defUnit.tmpSpecialCount === 0 ||
-                atkUnit.tmpSpecialCount === 0 ||
-                defUnit.battleContext.isSpecialActivated ||
-                atkUnit.battleContext.isSpecialActivated) {
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // 40%軽減
                 if (isMeleeWeaponType(atkUnit.weaponType)) {
                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
@@ -10591,10 +10649,7 @@
     );
     applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
-            if (defUnit.tmpSpecialCount === 0 ||
-                atkUnit.tmpSpecialCount === 0 ||
-                defUnit.battleContext.isSpecialActivated ||
-                atkUnit.battleContext.isSpecialActivated) {
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
             }
         }

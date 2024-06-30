@@ -1189,6 +1189,9 @@ class DamageCalculator {
                 let ratios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation;
                 reductionRatios = reductionRatios.concat(ratios);
             }
+
+            let reductionRatiosPerAttack = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack;
+            reductionRatios = reductionRatios.concat(reductionRatiosPerAttack);
             if (reductionRatios.length >= 1) {
                 let reducedRatio = 1 - damageReductionRatio;
                 if (this.isLogEnabled) {
@@ -1221,10 +1224,7 @@ class DamageCalculator {
                     func?.call(this, atkUnit, defUnit);
                     switch (skillId) {
                         case Special.DragonBlast:
-                            if (defUnit.tmpSpecialCount === 0 ||
-                                atkUnit.tmpSpecialCount === 0 ||
-                                defUnit.battleContext.isSpecialActivated ||
-                                atkUnit.battleContext.isSpecialActivated) {
+                            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                                 if (defUnit.battleContext.specialSkillCondSatisfied) {
                                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
                                 }
@@ -1232,10 +1232,7 @@ class DamageCalculator {
                             break;
                         case Special.ArmoredFloe:
                         case Special.ArmoredBeacon:
-                            if (defUnit.tmpSpecialCount === 0 ||
-                                atkUnit.tmpSpecialCount === 0 ||
-                                defUnit.battleContext.isSpecialActivated ||
-                                atkUnit.battleContext.isSpecialActivated) {
+                            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                                 if (isRangedWeaponType(atkUnit.weaponType)) {
                                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
                                 }

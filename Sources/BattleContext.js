@@ -42,6 +42,7 @@ class BattleContext {
         this.damageReductionRatiosByChainGuard = [];
         this.isChainGuardActivated = false;
         this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
+        this.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack = []; // 奥義以外のダメージ軽減効果の軽減率
         this.#reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation = [];
         this.isEffectiveToOpponent = false;
         this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
@@ -457,6 +458,7 @@ class BattleContext {
         this.damageReductionValueOfSpecialAttackPerAttack = 0;
         this.#specialAddDamagePerAttack = 0;
         this.damageReductionRatiosBySpecialPerAttack = [];
+        this.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack = [];
     }
 
     invalidateFollowupAttackSkills() {
@@ -799,7 +801,13 @@ class BattleContext {
         );
     }
 
-    setResDodge(percentage = 4, maxPercentage = 40) {
+    setDodgeInCombat(percentage = 4, maxPercentage = 40) {
+        this.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
+            return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, percentage, maxPercentage);
+        });
+    }
+
+    setResDodgeInCombat(percentage = 4, maxPercentage = 40) {
         this.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
             return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit, percentage, maxPercentage);
         });

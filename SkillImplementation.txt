@@ -705,12 +705,14 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
     // 攻撃奥義のダメージ軽減
     applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
-            if (defUnit.tmpSpecialCount === 0 ||
-                atkUnit.tmpSpecialCount === 0 ||
-                defUnit.battleContext.isSpecialActivated ||
-                atkUnit.battleContext.isSpecialActivated) {
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // 敵が1距離の時40%軽減
                 if (isMeleeWeaponType(atkUnit.weaponType)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+                // かつ、敵が射程2の時、
+                if (isRangedWeaponType(atkUnit.weaponType)) {
+                    // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）（範囲奥義を除く）
                     defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
                 }
             }
@@ -993,10 +995,7 @@ __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
 自分または敵が奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で自分または敵が奥義発動済みの時、戦闘中、受けた攻撃のダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
 applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
     function (atkUnit, defUnit) {
-        if (defUnit.tmpSpecialCount === 0 ||
-            atkUnit.tmpSpecialCount === 0 ||
-            defUnit.battleContext.isSpecialActivated ||
-            atkUnit.battleContext.isSpecialActivated) {
+        if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
             defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
         }
     }
@@ -1060,8 +1059,10 @@ targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) =>
     // 固定割合(30%)
     // return 0.3;
 });
+// 速さ回避
+targetUnit.battleContext.setDodgeInCombat(4, 40);
 // 魔防回避
-targetUnit.battleContext.setResDodge(4, 40);
+targetUnit.battleContext.setResDodgeInCombat(4, 40);
 もしくは
 __getDamageReductionRatio(skillId, atkUnit, defUnit) {
     return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit);
