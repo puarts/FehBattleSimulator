@@ -1189,6 +1189,9 @@ class DamageCalculator {
                 let ratios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation;
                 reductionRatios = reductionRatios.concat(ratios);
             }
+
+            let reductionRatiosPerAttack = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack;
+            reductionRatios = reductionRatios.concat(reductionRatiosPerAttack);
             if (reductionRatios.length >= 1) {
                 let reducedRatio = 1 - damageReductionRatio;
                 if (this.isLogEnabled) {

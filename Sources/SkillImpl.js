@@ -28,13 +28,17 @@
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // - 戦闘中、敵の速さ、魔防ー4、
             enemyUnit.addSpdResSpurs(-4);
+        }
+    );
+    applySkillEffectsPerAttackFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
             // - 自分が与えるダメージ＋（戦闘開始時のHP一現在のHP）✕2（最大12、最低6）（範囲奥義を除く）、
             let hpDiff = targetUnit.hp - targetUnit.restHp;
             let damage = MathUtil.ensureMinMax(hpDiff * 2, 6, 12);
-            targetUnit.battleContext.additionalDamage += damage;
+            targetUnit.battleContext.additionalDamagePerAttack += damage;
             // - 敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を（戦闘開始時のHP一現在のHP）x10%無効（最大60%、最低30%）（無効にする数値は端数切捨て）（範囲奥義を除く）
             let ratio = MathUtil.ensureMinMax(hpDiff * 0.1, 0.3, 0.6);
-            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack.push(ratio);
         }
     );
     applySkillEffectRelatedToFollowupAttackPossibilityFuncMap.set(skillId,
