@@ -764,8 +764,8 @@
                 unit.reservedDebuffsToDelete = [true, true, true, true];
                 // さらに、【不利な状態異常】を2個解除（同タイミングで付与される【不利な状態異常】は解除されない。
                 // 解除される【不利な状態異常】は、受けている効果の一覧で、上に記載される状態を優先）
-                let sortFunc = (a, b) => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(a) - NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(b);
-                let effects = unit.getNegativeStatusEffects().sort(sortFunc);
+                let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+                let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
                 if (effects[0]) {
                     unit.reservedStatusEffectSetToDelete.add(effects[0]);
                 }
