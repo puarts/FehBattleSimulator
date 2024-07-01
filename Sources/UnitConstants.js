@@ -209,6 +209,7 @@ const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Gravity,
     StatusEffectType.Stall,
     StatusEffectType.Guard,
+    StatusEffectType.Frozen,
     StatusEffectType.TriangleAdept,
     StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately,
 ];
