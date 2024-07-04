@@ -2212,7 +2212,7 @@ class Unit extends BattleMapElement {
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstructToAdjacentTiles(moveUnit) {
-        let hasSkills = false;
+        let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwalk);
         for (let skillId of this.enumerateSkills()) {
             let func = getSkillFunc(skillId, canActivateObstructToAdjacentTilesFuncMap);
             if (func?.call(this, moveUnit) ?? false) {

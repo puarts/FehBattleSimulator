@@ -1841,6 +1841,8 @@ Main.js
     __activateDuoOrHarmonizedSkill(duoUnit) {
         // 同じ出典のキャラクターに付与
         this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ZZZ);
+        // 同じ出店のキャラクターにバフ
+        this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.applyBuffs(6, 6, 0, 0));
     }
 再使用
 __initializeUnitsPerTurn(targetUnits) {}

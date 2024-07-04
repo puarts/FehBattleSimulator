@@ -65,6 +65,7 @@ const Hero = {
     DuoRobin: 1109,
     DuoSharena: 1125,
     DuoGullveig: 1136,
+    HarmonizedGoldmary: 1143,
 };
 
 const IvStateOptions = [
@@ -188,6 +189,7 @@ const StatusEffectType = {
     ShareSpoils: 64, // 戦果移譲
     Frozen: 65, // 凍結
     Bonded: 66, // 縁
+    Bulwalk: 67, // 防壁
 };
 
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
