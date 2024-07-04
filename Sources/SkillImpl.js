@@ -1,5 +1,43 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 竜の魔防の波・偶
+{
+    let skillId = PassiveC.EvenResWaveD;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分と周囲2マス以内の味方の
+            /** @type {Generator<Unit>} */
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                // - 魔防＋6（1ターン）
+                unit.reserveToApplyBuffs(0, 0, 0, 6);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵が攻撃時に発動する奥義装備時、かつ戦闘中、
+            if (enemyUnit.hasNormalAttackSpecial()) {
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // - 魔防が敵より5以上高い時、
+                        if (targetUnit.isHigherOrEqualResInCombat(enemyUnit, 5)) {
+                            //     - 敵の最初の攻撃前に敵の奥義発動カウント＋1（奥義発動カウントの最大値は超えない）
+                            enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                        }
+                    }
+                );
+            }
+            // 偶数ターンの時、
+            if (this.globalBattleContext.isEvenTurn) {
+                // - 戦闘中、魔防＋6
+                targetUnit.resSpur += 6;
+            }
+        }
+    );
+}
+
 // 絆・神竜破
 {
     let skillId = Special.BondBlast;

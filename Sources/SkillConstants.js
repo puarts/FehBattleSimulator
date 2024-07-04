@@ -3243,6 +3243,9 @@ const PassiveC = {
 
     BeastThreaten: 2913, // 獣の威嚇
 
+    // 汎用C
+    EvenResWaveD: 2934, // 竜の魔防の波・偶
+
     // 専用C
     ForeverYours: 2890, // あなたのシャロン
     AbsoluteClosure: 2884, // すべてを鎖す世界
