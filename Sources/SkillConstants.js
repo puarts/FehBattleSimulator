@@ -1863,6 +1863,15 @@ const Weapon = {
     // https://www.youtube.com/watch?v=tA-Z3bXCklo&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=A7Uf1CNgqoE&ab_channel=NintendoMobile
     CaringMagic: 2924, // 慈愛の王女の魔力
+
+    // 超英雄「大好きな海で」
+    // https://www.youtube.com/watch?v=UTWu9EafSmk&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=OnDV8grCimA&t=7s&ab_channel=NintendoMobile
+    MaritimeArts:  2932, // 海水浴の体術
+    BreakerBow: 2935, // 波間の欠片の鋭弓
+    SmallSpadePlus: 2937, // 小さなスコップ+
+    DivaPairParasol: 2938, // 耳目集める二人の傘
+    AnchorAxePlus: 2940, // 錨の斧+
 };
 
 const Support = {
@@ -2096,6 +2105,7 @@ const Special = {
     TimeIsLight: 2672, // 時は光
     LightIsTime: 2668, // 光は時
     DragonBlast: 2558, // 神竜破
+    BondBlast: 2933, // 絆・神竜破
     HolyKnightAura: 1702, // グランベルの聖騎士
     HolyKnight2: 2865, // グランベルの…・承
     ChivalricAura: 2527, // グランベルの騎士道
@@ -3184,6 +3194,7 @@ const PassiveC = {
     SDReinSnap: 2444, // 速守牽制・運び手
     // 十字牽制
     AtkResCrux: 2907, // 攻撃魔防の十字牽制
+    SpdDefCrux: 2936, // 速さ守備の十字牽制
     SpdResCrux: 2808, // 速さ魔防の十字牽制
 
     OddTempest3: 1515, // 迅雷風烈・奇数3
@@ -3236,6 +3247,10 @@ const PassiveC = {
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
 
     BeastThreaten: 2913, // 獣の威嚇
+
+    // 汎用C
+    EvenAtkWaveN: 2939, // 近間の攻撃の波・偶
+    EvenResWaveD: 2934, // 竜の魔防の波・偶
 
     // 専用C
     ForeverYours: 2890, // あなたのシャロン
@@ -3374,6 +3389,7 @@ const AssistType = {
 
 // 紋章士
 const EmblemHero = {
+    None: -1,
     Marth: 1082,
     Ike: 1105,
     Celica: 1139,

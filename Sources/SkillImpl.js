@@ -1,5 +1,374 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 錨の斧+
+{
+    let skillId = Weapon.AnchorAxePlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、攻撃、守備＋5、
+                targetUnit.addAtkDefSpurs(5);
+                // - （〇は、自身を中心とした縦3列と横3列にいる「攻撃が55以上の味方の数」と「守備が40以上の味方の数」の合計値）
+                let atkCount = 0;
+                let spdCount = 0;
+                let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                for (let unit of units) {
+                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
+                        if (unit.getAtkInPrecombat() >= 55) {
+                            atkCount++;
+                        }
+                        if (unit.getSpdInPrecombat() >= 40) {
+                            spdCount++
+                        }
+                    }
+                }
+                let sum = atkCount + spdCount;
+                // - さらに、攻撃、守備が〇x5（最大15）だけ増加、
+                targetUnit.addAtkDefSpurs(MathUtil.ensureMax(sum * 5, 15));
+                // 自身の奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                // 【暗器（7）】効果
+            }
+        }
+    );
+}
+
+// 近間の攻撃の波・偶
+{
+    let skillId = PassiveC.EvenAtkWaveN;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分と周囲2マス以内の味方の
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                // - 攻撃+6（1ターン）
+                unit.reserveToApplyBuffs(6, 0, 0, 0);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    // 戦闘中、攻撃が「敵の攻撃ー5」以上の時、
+                    if (targetUnit.isHigherOrEqualAtkInCombat(enemyUnit, -5)) {
+                        // - ダメージ＋5（範囲奥義を除く）、かつ戦闘中、
+                        targetUnit.battleContext.additionalDamage += 5;
+                        // - 自分の攻撃でダメージを与えた時、5回復（与えたダメージが0でも効果は発動）
+                        targetUnit.battleContext.healedHpByAttack += 5;
+                    }
+                }
+            );
+            // 偶数ターンの時、
+            if (this.globalBattleContext.isEvenTurn) {
+                // 戦闘中、攻撃＋6
+                targetUnit.atkSpur += 6;
+            }
+        }
+    );
+}
+
+// 耳目集める二人の傘
+{
+    let skillId = Weapon.DivaPairParasol;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            let skillOwner = enemyAllyUnit;
+            // 自身を中心とした縦3列と横3列の敵は、
+            if (targetUnit.isInCrossWithOffset(skillOwner, 1)) {
+                // - 守備が、「スキル所持者の守備＋5」以下の時、
+                if (targetUnit.isLowerOrEqualDefInPrecombat(skillOwner, 5)) {
+                    //     - 戦闘中、攻撃、速さが戦闘開始時の敵の攻撃の15%だけ減少、
+                    let amount = Math.trunc(targetUnit.getAtkInPrecombat() * 0.15);
+                    targetUnit.addAtkSpdSpurs(-amount);
+                }
+            }
+        }
+    );
+
+    applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            let skillOwner = enemyAllyUnit;
+            // 自身を中心とした縦3列と横3列の敵は、
+            if (targetUnit.isInCrossWithOffset(skillOwner, 1)) {
+                // - 守備が、「スキル所持者の守備＋5」以下の時、
+                if (targetUnit.isLowerOrEqualDefInPrecombat(skillOwner, 5)) {
+                    //     - 攻撃、速さの強化の＋が無効になる（無効になるのは、鼓舞や応援等の＋効果）（発動条件の守備の値は戦闘開始時の値）
+                    enemyUnit.battleContext.invalidateBuffs(true, true, false, false);
+                }
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、攻撃、速さ、守備、魔防が周囲3マス以内の味方の数x3+5だけ増加（最大14）、
+                let count = this.unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                targetUnit.addAllSpur(amount);
+                // - ダメージ＋攻撃の15％（範囲奥義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
+                // - 敵の奥義発動カウント変動量－1（同系統効果複数時、最大値適用）、
+                targetUnit.battleContext.reducesCooldownCount = true;
+                // - 戦闘後、自分は、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+// 小さなスコップ+
+{
+    let skillId = Weapon.SmallSpadePlus;
+    // 威力：12 射程：2
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、攻撃、速さ＋5、
+                targetUnit.addAtkSpdSpurs(5);
+                // - （〇は、自身を中心とした縦3列と横3列にいる「攻撃が55以上の味方の数」と「速さが40以上の味方の数」の合計値）
+                let atkCount = 0;
+                let spdCount = 0;
+                let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                for (let unit of units) {
+                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
+                        if (unit.getAtkInPrecombat() >= 55) {
+                            atkCount++;
+                        }
+                        if (unit.getSpdInPrecombat() >= 40) {
+                            spdCount++
+                        }
+                    }
+                }
+                let sum = atkCount + spdCount;
+                // - さらに、攻撃、速さが〇x5（最大15）だけ増加、
+                targetUnit.addAtkSpdSpurs(MathUtil.ensureMax(sum * 5, 15));
+                // 自身の奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                // 【暗器（7）】効果
+            }
+        }
+    );
+}
+
+// 波間の欠片の鋭弓
+{
+    let skillId = Weapon.BreakerBow;
+    // 威力：14
+    // 射程：2
+    // 特効：獣、飛行特効
+    // 奥義が発動しやすい（発動カウントー1）
+    // 【再移動（1）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            // 周囲2マス以内の味方の、周囲2マス以内に移動可能
+            return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 2);
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、敵の速さ、守備の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）
+                targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+                // 戦闘開始時、自身のHPが25%以上なら、
+                // - 戦闘中、攻撃、速さ、守備、魔防＋5、さらに、
+                targetUnit.addAllSpur(5);
+                //     - （〇は、自身を中心とした縦3列と横3列にいる「攻撃が55以上の味方の数」と「速さが40以上の味方の数」の合計値）
+                let atkCount = 0;
+                let spdCount = 0;
+                let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                for (let unit of units) {
+                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
+                        if (unit.getAtkInPrecombat() >= 55) {
+                            atkCount++;
+                        }
+                        if (unit.getSpdInPrecombat() >= 40) {
+                            spdCount++
+                        }
+                    }
+                }
+                let sum = atkCount + spdCount;
+                // - 攻撃、速さが〇x6（最大18）だけ増加、
+                targetUnit.addAtkSpdSpurs(MathUtil.ensureMax(sum * 6, 18));
+                // - かつ攻撃時に発動する奥義を装備している時、
+                if (targetUnit.hasNormalAttackSpecial()) {
+                    let specialCount = targetUnit.battleContext.specialCount;
+                    //     - （Aは、〇+1（上限は、戦闘開始時の自分の奥義発動カウントの値）
+                    let a = MathUtil.ensureMax(sum + 1, specialCount);
+                    //     - Bは、〇＋1ー戦闘開始時の自分の奥義発動カウントの値（下限0））
+                    let b = MathUtil.ensureMin(sum + 1 - specialCount, 0);
+                    //     - 自分の最初の攻撃前に奥義発動カウントーA、
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += a;
+                    //     - 自分の最初の追撃前に奥義発動カウントーB
+                    targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += b;
+                    //     - （〇は、自身を中心とした縦3列と横3列にいる「攻撃が55以上の味方の数」と「速さが40以上の味方の数」の合計値）
+                }
+            }
+        }
+    );
+}
+
+// 竜の魔防の波・偶
+{
+    let skillId = PassiveC.EvenResWaveD;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分と周囲2マス以内の味方の
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                // - 魔防＋6（1ターン）
+                unit.reserveToApplyBuffs(0, 0, 0, 6);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵が攻撃時に発動する奥義装備時、かつ戦闘中、
+            if (enemyUnit.hasNormalAttackSpecial()) {
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // - 魔防が敵より5以上高い時、
+                        if (targetUnit.isHigherOrEqualResInCombat(enemyUnit, 5)) {
+                            //     - 敵の最初の攻撃前に敵の奥義発動カウント＋1（奥義発動カウントの最大値は超えない）
+                            enemyUnit.battleContext.specialCountIncreaseBeforeFirstAttack += 1;
+                        }
+                    }
+                );
+            }
+            // 偶数ターンの時、
+            if (this.globalBattleContext.isEvenTurn) {
+                // - 戦闘中、魔防＋6
+                targetUnit.resSpur += 6;
+            }
+        }
+    );
+}
+
+// 絆・神竜破
+{
+    let skillId = Special.BondBlast;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 速さの50%を奥義ダメージに加算
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.5));
+        }
+    );
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 自軍内に自分と支援を結んでいる相手がいない時、ターン開始時、
+            if (!this.unitManager.isThereAllyInSpecifiedSpaces(skillOwner, u => u.isPartner(skillOwner))) {
+                // - 周囲2マス以内の最も攻撃が高い味方に【縁】を付与
+                let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                let units = IterUtil.maxElements(allies, u => u.statusEvalUnit.getAtkInPrecombat());
+                units.forEach(unit => unit.reserveToAddStatusEffect(StatusEffectType.Bonded));
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自軍内に「自分と支援を結んでいる相手」、または、「【緑】が付与されている味方」がいる時、
+            let pred = u => targetUnit.isPartner(u) || u.hasStatusEffect(StatusEffectType.Bonded);
+            if (this.unitManager.isThereAnyUnitInTheSameGroupOnMap(targetUnit, pred)) {
+                // - 自分と、支援相手と、【縁】が付与されている味方は、
+                //     - 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を無効（範囲奥義を除く）
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 自軍内に「自分と支援を結んでいる相手」、または、「【緑】が付与されている味方」がいる時、
+            let pred = u => allyUnit.isPartner(u) || u.hasStatusEffect(StatusEffectType.Bonded);
+            if (this.unitManager.isThereAnyUnitInTheSameGroupOnMap(allyUnit, pred)) {
+                // - 自分と、支援相手と、【縁】が付与されている味方は、
+                //     - 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を無効（範囲奥義を除く）
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // 「自分または敵が奥義発動可能状態の時」、「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
+            // 2条件のいずれかを満たした時、
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
+                // - かつ、周囲3マス以内に「自分と支援を結んでいる相手」、または、「【縁】が付与されている味方」がいる時、
+                //     - 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）（範囲奥義を除く）
+                // 【縁】
+                // スキル効果の発動条件となる有利な状態（1ターン）
+                let pred = u => defUnit.isPartner(u) || u.hasStatusEffect(StatusEffectType.Bonded);
+                if (this.unitManager.isThereAllyInSpecifiedSpaces(defUnit, 3, pred)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
+// 海水浴の体術
+{
+    let skillId = Weapon.MaritimeArts;
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
+    // 奥義が発動しやすい（発動カウントー1）
+    // 2回攻撃（敵から攻撃された時も、2回攻撃可能）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // - 戦闘中、自身の攻撃、速さ、守備、魔防＋5、
+                targetUnit.addAllSpur(5);
+                // - 敵の攻撃、速さ、守備、魔防が周囲3マス以内の味方の出典の種類数✕3＋4だけ減少
+                let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                let num = Unit.getOriginSet(allies).size;
+                enemyUnit.addAllSpur(-num * 3 + 4);
+                // - （〇は、「自分を除く味方の出典の種類数」と「自分を除くエンゲージしている味方の数」の合計値x5（最大15））（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                let numOrigin = Unit.getOriginSet(this.enumerateUnitsInTheSameGroupOnMap(targetUnit)).size;
+                let isEngaged = u => u.emblemHeroIndex !== EmblemHero.None;
+                let numEngaged =
+                    GeneratorUtil.countIf(this.enumerateUnitsInTheSameGroupOnMap(targetUnit), isEngaged);
+                let n = MathUtil.ensureMax((numOrigin + numEngaged) * 5, 15);
+                this.writeDebugLog(`n: ${n}`);
+                // - ダメージ+〇（範囲奥養を除く）、
+                targetUnit.battleContext.additionalDamage += n;
+                // - 最初に受けた攻撃と2回攻撃のダメージー〇
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += n;
+                // - 自身の奥義発動カウント変動量ーを無効
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+            }
+        }
+    );
+}
+
 // 双姫の月翼・神
 {
     let skillId = PassiveB.MoonTwinWingPlus;
@@ -77,12 +446,12 @@
             targetUnit.battleContext.addSpecialAddDamage(targetUnit.maxSpecialCount * 4);
         }
     );
-    // 周囲5マス以内にいる敵から自分の射程分離れたマスのうち、自分から最も近いマスに移動可能
-    // （敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない
     TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function (unit) {
             let range = unit.isRangedWeaponType() ? 2 : 1;
+            // 周囲5マス以内にいる敵から自分の射程分離れたマスのうち、自分から最も近いマスに移動可能
+            // （敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない
             return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 5, range);
         }
     );
@@ -764,8 +1133,8 @@
                 unit.reservedDebuffsToDelete = [true, true, true, true];
                 // さらに、【不利な状態異常】を2個解除（同タイミングで付与される【不利な状態異常】は解除されない。
                 // 解除される【不利な状態異常】は、受けている効果の一覧で、上に記載される状態を優先）
-                let sortFunc = (a, b) => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(a) - NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(b);
-                let effects = unit.getNegativeStatusEffects().sort(sortFunc);
+                let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+                let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
                 if (effects[0]) {
                     unit.reservedStatusEffectSetToDelete.add(effects[0]);
                 }
@@ -4963,6 +5332,8 @@
     }
     // 攻撃魔防の十字牽制
     setSkill(PassiveC.AtkResCrux, u => u.addAtkResSpurs(-4));
+    // 速さ守備の十字牽制
+    setSkill(PassiveC.SpdDefCrux, u => u.addSpdDefSpurs(-4));
     // 速さ魔防の十字牽制
     setSkill(PassiveC.SpdResCrux, u => u.addSpdResSpurs(-4));
 }

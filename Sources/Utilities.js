@@ -1288,6 +1288,16 @@ class GeneratorUtil {
         }
         return count;
     }
+
+    /**
+     * @template T
+     * @param {Generator<T>} generator
+     * @param {(i: T) => boolean} pred
+     * @returns {number}
+     */
+    static countIf(generator, pred) {
+        return this.count(this.filter(generator, pred));
+    }
 }
 
 class MathUtil {

@@ -538,7 +538,7 @@ class Unit extends BattleMapElement {
 
         // indexが0の英雄が存在するので-1で初期化する
         this.partnerHeroIndex = -1;
-        this.emblemHeroIndex = -1;
+        this.emblemHeroIndex = EmblemHero.None;
         this.partnerLevel = PartnerLevel.None; // 支援レベル
 
         this.isTransformed = false; // 化身
@@ -2212,7 +2212,7 @@ class Unit extends BattleMapElement {
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstructToAdjacentTiles(moveUnit) {
-        let hasSkills = false;
+        let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwalk);
         for (let skillId of this.enumerateSkills()) {
             let func = getSkillFunc(skillId, canActivateObstructToAdjacentTilesFuncMap);
             if (func?.call(this, moveUnit) ?? false) {
@@ -3556,6 +3556,36 @@ class Unit extends BattleMapElement {
 
     getEvalResDiffInPrecombat(enemyUnit) {
         return this.getEvalResInPrecombat() - enemyUnit.getEvalResInPrecombat();
+    }
+
+    /**
+     * 攻撃が相手の攻撃+n以上かどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherOrEqualAtkInCombat(enemyUnit, n = 0) {
+        return this.getEvalAtkInCombat(enemyUnit) >= enemyUnit.getEvalAtkInCombat(this) + n;
+    }
+
+    /**
+     * 守備が「相手の守備+n」以下かどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isLowerOrEqualDefInPrecombat(enemyUnit, n = 0) {
+        return this.statusEvalUnit.getEvalDefInPrecombat() <= enemyUnit.statusEvalUnit.getEvalDefInPrecombat() + n;
+    }
+
+    /**
+     * 守備が相手の守備+n以下かどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isLowerOrEqualDefInCombat(enemyUnit, n = 0) {
+        return this.getEvalDefInCombat(enemyUnit) <= enemyUnit.getEvalDefInCombat(this) + n;
     }
 
     /**

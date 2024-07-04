@@ -525,6 +525,10 @@ targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
 let getStatusFunc = unit => { unit.statusEvalUnit.getAtkInPrecombat() };
 let units = this.__findMaxStatusUnits(unitGroup, getStatusFunc);
 
+周囲2マス以内の最も攻撃が高い味方
+let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+let units = IterUtil.maxElements(allies, u => u.statusEvalUnit.getAtkInPrecombat());
+
 ステータス決定後のバフ効果
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -1751,7 +1755,7 @@ const StatusEffectType = {
 }
 function statusEffectTypeToIconFilePath(value) {}
 /// ステータス効果が不利なステータス効果であるかどうかを判定
-// 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
+// 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 // 有利な場合は不要
 function isNegativeStatusEffect(type) {}
 
@@ -1837,6 +1841,8 @@ Main.js
     __activateDuoOrHarmonizedSkill(duoUnit) {
         // 同じ出典のキャラクターに付与
         this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ZZZ);
+        // 同じ出店のキャラクターにバフ
+        this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.applyBuffs(6, 6, 0, 0));
     }
 再使用
 __initializeUnitsPerTurn(targetUnits) {}

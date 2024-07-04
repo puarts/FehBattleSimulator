@@ -65,6 +65,7 @@ const Hero = {
     DuoRobin: 1109,
     DuoSharena: 1125,
     DuoGullveig: 1136,
+    HarmonizedGoldmary: 1143,
 };
 
 const IvStateOptions = [
@@ -187,6 +188,8 @@ const StatusEffectType = {
     EssenceDrain: 63, // エーギル奪取
     ShareSpoils: 64, // 戦果移譲
     Frozen: 65, // 凍結
+    Bonded: 66, // 縁
+    Bulwalk: 67, // 防壁
 };
 
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
@@ -209,6 +212,7 @@ const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Gravity,
     StatusEffectType.Stall,
     StatusEffectType.Guard,
+    StatusEffectType.Frozen,
     StatusEffectType.TriangleAdept,
     StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately,
 ];
@@ -346,6 +350,7 @@ const STATUS_EFFECT_FILE_NAME_MAP = new Map([
     [StatusEffectType.EssenceDrain, "EssenceDrain.webp"],
     [StatusEffectType.ShareSpoils, "ShareSpoils.webp"],
     [StatusEffectType.Frozen, "Frozen.webp"],
+    [StatusEffectType.Bonded, "Bonded.webp"],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

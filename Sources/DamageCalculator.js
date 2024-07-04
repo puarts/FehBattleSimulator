@@ -141,10 +141,12 @@ class DamageCalcResult {
  */
 class DamageCalculator {
     /**
-     * @param  {LoggerBase} logger
+     * @param {LoggerBase} logger
+     * @param {UnitManager} unitManager
      */
-    constructor(logger) {
+    constructor(logger, unitManager) {
         this._logger = logger;
+        this.unitManager = unitManager;
     }
 
     get isLogEnabled() {
