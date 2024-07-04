@@ -1,5 +1,39 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 錨の斧+
+{
+    let skillId = Weapon.AnchorAxePlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、攻撃、守備＋5、
+                targetUnit.addAtkDefSpurs(5);
+                // - （〇は、自身を中心とした縦3列と横3列にいる「攻撃が55以上の味方の数」と「守備が40以上の味方の数」の合計値）
+                let atkCount = 0;
+                let spdCount = 0;
+                let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                for (let unit of units) {
+                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
+                        if (unit.getAtkInPrecombat() >= 55) {
+                            atkCount++;
+                        }
+                        if (unit.getSpdInPrecombat() >= 40) {
+                            spdCount++
+                        }
+                    }
+                }
+                let sum = atkCount + spdCount;
+                // - さらに、攻撃、守備が〇x5（最大15）だけ増加、
+                targetUnit.addAtkDefSpurs(MathUtil.ensureMax(sum * 5, 15));
+                // 自身の奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                // 【暗器（7）】効果
+            }
+        }
+    );
+}
+
 // 近間の攻撃の波・偶
 {
     let skillId = PassiveC.EvenAtkWaveN;
