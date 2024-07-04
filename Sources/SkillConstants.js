@@ -1869,6 +1869,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=OnDV8grCimA&t=7s&ab_channel=NintendoMobile
     MaritimeArts:  2932, // 海水浴の体術
     BreakerBow: 2935, // 波間の欠片の鋭弓
+    SmallSpadePlus: 2937, // 小さなスコップ+
 };
 
 const Support = {
