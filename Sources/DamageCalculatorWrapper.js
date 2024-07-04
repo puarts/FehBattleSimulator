@@ -10480,26 +10480,29 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffectFromEnemyAllies(targetUnit, enemyUnit, calcPotentialDamage) {
-        if (targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
-            return;
-        }
-        if (enemyUnit.hasStatusEffect(StatusEffectType.Feud)) {
-            return;
-        }
-
-        if (calcPotentialDamage) {
-            return;
-        }
-        for (let enemyAllyUnit of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit, true)) {
-            if (this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAllyUnit)) {
-                continue
+        let disablesSkillsFromEnemyAlliesInCombat = false;
+        if (enemyUnit) {
+            if (enemyUnit.hasStatusEffect(StatusEffectType.Feud) ||
+                targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+                disablesSkillsFromEnemyAlliesInCombat = true;
             }
-            for (let skillId of enemyAllyUnit.enumerateSkills()) {
+        }
+        // enemyAllyにはenemyUnitも含まれる
+        for (let enemyAlly of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit, true)) {
+            let isEnemyAllyNotEnemy = enemyAlly !== enemyUnit;
+            if (disablesSkillsFromEnemyAlliesInCombat && isEnemyAllyNotEnemy) {
+                continue;
+            }
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAlly)) {
+                continue;
+            }
+            for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySkillEffectFromEnemyAlliesFuncMap);
-                func?.call(this, targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage);
+                func?.call(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
             }
             for (let func of targetUnit.battleContext.applySkillEffectFromEnemyAlliesFuncs) {
-                func(targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage);
+                func(targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
             }
         }
     }
@@ -16855,7 +16858,8 @@ class DamageCalculatorWrapper {
         }
         // enemyAllyにはenemyUnitも含まれる
         for (let enemyAlly of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-            if (disablesSkillsFromEnemyAlliesInCombat && (enemyAlly !== enemyUnit)) {
+            let isEnemyAllyNotEnemy = enemyAlly !== enemyUnit;
+            if (disablesSkillsFromEnemyAlliesInCombat && isEnemyAllyNotEnemy) {
                 continue;
             }
             // 特定の色か確認

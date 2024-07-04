@@ -1,5 +1,58 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 耳目集める二人の傘
+{
+    let skillId = Weapon.DivaPairParasol;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            let skillOwner = enemyAllyUnit;
+            // 自身を中心とした縦3列と横3列の敵は、
+            if (targetUnit.isInCrossWithOffset(skillOwner, 1)) {
+                // - 守備が、「スキル所持者の守備＋5」以下の時、
+                if (targetUnit.isLowerOrEqualDefInPrecombat(skillOwner, 5)) {
+                    //     - 戦闘中、攻撃、速さが戦闘開始時の敵の攻撃の15%だけ減少、
+                    let amount = Math.trunc(targetUnit.getAtkInPrecombat() * 0.15);
+                    targetUnit.addAtkSpdSpurs(-amount);
+                }
+            }
+        }
+    );
+
+    applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+            let skillOwner = enemyAllyUnit;
+            // 自身を中心とした縦3列と横3列の敵は、
+            if (targetUnit.isInCrossWithOffset(skillOwner, 1)) {
+                // - 守備が、「スキル所持者の守備＋5」以下の時、
+                if (targetUnit.isLowerOrEqualDefInPrecombat(skillOwner, 5)) {
+                    //     - 攻撃、速さの強化の＋が無効になる（無効になるのは、鼓舞や応援等の＋効果）（発動条件の守備の値は戦闘開始時の値）
+                    enemyUnit.battleContext.invalidateBuffs(true, true, false, false);
+                }
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、攻撃、速さ、守備、魔防が周囲3マス以内の味方の数x3+5だけ増加（最大14）、
+                let count = this.unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                targetUnit.addAllSpur(amount);
+                // - ダメージ＋攻撃の15％（範囲奥義を除く）、
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
+                // - 敵の奥義発動カウント変動量－1（同系統効果複数時、最大値適用）、
+                targetUnit.battleContext.reducesCooldownCount = true;
+                // - 戦闘後、自分は、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 小さなスコップ+
 {
     let skillId = Weapon.SmallSpadePlus;
