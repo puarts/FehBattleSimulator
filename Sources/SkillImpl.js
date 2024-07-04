@@ -1,5 +1,39 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 海水浴の体術
+{
+    let skillId = Weapon.MaritimeArts;
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
+    // 奥義が発動しやすい（発動カウントー1）
+    // 2回攻撃（敵から攻撃された時も、2回攻撃可能）
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // - 戦闘中、自身の攻撃、速さ、守備、魔防＋5、
+                targetUnit.addAllSpur(5);
+                // - 敵の攻撃、速さ、守備、魔防が周囲3マス以内の味方の出典の種類数✕3＋4だけ減少
+                let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                let num = Unit.getOriginSet(allies).size;
+                enemyUnit.addAllSpur(-num * 3 + 4);
+                // - （〇は、「自分を除く味方の出典の種類数」と「自分を除くエンゲージしている味方の数」の合計値x5（最大15））（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                let numOrigin = Unit.getOriginSet(this.enumerateUnitsInTheSameGroupOnMap(targetUnit)).size;
+                let isEngaged = u => u.emblemHeroIndex !== EmblemHero.None;
+                let numEngaged =
+                    GeneratorUtil.countIf(this.enumerateUnitsInTheSameGroupOnMap(targetUnit), isEngaged);
+                let n = MathUtil.ensureMax((numOrigin + numEngaged) * 5, 15);
+                this.writeDebugLog(`n: ${n}`);
+                // - ダメージ+〇（範囲奥養を除く）、
+                targetUnit.battleContext.additionalDamage += n;
+                // - 最初に受けた攻撃と2回攻撃のダメージー〇
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += n;
+                // - 自身の奥義発動カウント変動量ーを無効
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+            }
+        }
+    );
+}
+
 // 双姫の月翼・神
 {
     let skillId = PassiveB.MoonTwinWingPlus;

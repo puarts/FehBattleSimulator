@@ -312,7 +312,7 @@ class AppData extends UnitManager {
             { id: -1, text: "なし" },
         ];
         this.emblemHeroOptions = [
-            { id: -1, text: "なし" },
+            { id: EmblemHero.None, text: "なし" },
         ];
         this.ivStateOptions = [
             { id: StatusType.None, text: "なし" },

@@ -538,7 +538,7 @@ class Unit extends BattleMapElement {
 
         // indexが0の英雄が存在するので-1で初期化する
         this.partnerHeroIndex = -1;
-        this.emblemHeroIndex = -1;
+        this.emblemHeroIndex = EmblemHero.None;
         this.partnerLevel = PartnerLevel.None; // 支援レベル
 
         this.isTransformed = false; // 化身

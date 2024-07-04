@@ -1863,6 +1863,11 @@ const Weapon = {
     // https://www.youtube.com/watch?v=tA-Z3bXCklo&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=A7Uf1CNgqoE&ab_channel=NintendoMobile
     CaringMagic: 2924, // 慈愛の王女の魔力
+
+    // 超英雄「大好きな海で」
+    // https://www.youtube.com/watch?v=UTWu9EafSmk&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=OnDV8grCimA&t=7s&ab_channel=NintendoMobile
+    MaritimeArts:  2932, // 海水浴の体術
 };
 
 const Support = {
@@ -3374,6 +3379,7 @@ const AssistType = {
 
 // 紋章士
 const EmblemHero = {
+    None: -1,
     Marth: 1082,
     Ike: 1105,
     Celica: 1139,
