@@ -1,5 +1,72 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 波間の欠片の鋭弓
+{
+    let skillId = Weapon.BreakerBow;
+    // 威力：14
+    // 射程：2
+    // 特効：獣、飛行特効
+    // 奥義が発動しやすい（発動カウントー1）
+    // 【再移動（1）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        return 1;
+    });
+
+    TELEPORTATION_SKILL_SET.add(skillId);
+    enumerateTeleportTilesForUnitFuncMap.set(skillId,
+        function (unit) {
+            // 周囲2マス以内の味方の、周囲2マス以内に移動可能
+            return this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 2);
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // - 戦闘中、敵の速さ、守備の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）
+                targetUnit.battleContext.invalidateBuffs(false, true, true, false);
+                // 戦闘開始時、自身のHPが25%以上なら、
+                // - 戦闘中、攻撃、速さ、守備、魔防＋5、さらに、
+                targetUnit.addAllSpur(5);
+                //     - （〇は、自身を中心とした縦3列と横3列にいる「攻撃が55以上の味方の数」と「速さが40以上の味方の数」の合計値）
+                let atkCount = 0;
+                let spdCount = 0;
+                let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
+                for (let unit of units) {
+                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
+                        if (unit.getAtkInPrecombat() >= 55) {
+                            atkCount++;
+                        }
+                        if (unit.getSpdInPrecombat() >= 40) {
+                            spdCount++
+                        }
+                    }
+                }
+                let sum = atkCount + spdCount;
+                // - 攻撃、速さが〇x6（最大18）だけ増加、
+                targetUnit.addAtkSpdSpurs(MathUtil.ensureMax(sum * 6, 18));
+                // - かつ攻撃時に発動する奥義を装備している時、
+                if (targetUnit.hasNormalAttackSpecial()) {
+                    let specialCount = targetUnit.battleContext.specialCount;
+                    //     - （Aは、〇+1（上限は、戦闘開始時の自分の奥義発動カウントの値）
+                    let a = MathUtil.ensureMax(sum + 1, specialCount);
+                    //     - Bは、〇＋1ー戦闘開始時の自分の奥義発動カウントの値（下限0））
+                    let b = MathUtil.ensureMin(sum + 1 - specialCount, 0);
+                    //     - 自分の最初の攻撃前に奥義発動カウントーA、
+                    targetUnit.battleContext.specialCountReductionBeforeFirstAttack += a;
+                    //     - 自分の最初の追撃前に奥義発動カウントーB
+                    targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += b;
+                    //     - （〇は、自身を中心とした縦3列と横3列にいる「攻撃が55以上の味方の数」と「速さが40以上の味方の数」の合計値）
+                }
+            }
+        }
+    );
+}
+
 // 竜の魔防の波・偶
 {
     let skillId = PassiveC.EvenResWaveD;
