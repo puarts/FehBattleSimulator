@@ -77,12 +77,12 @@
             targetUnit.battleContext.addSpecialAddDamage(targetUnit.maxSpecialCount * 4);
         }
     );
-    // 周囲5マス以内にいる敵から自分の射程分離れたマスのうち、自分から最も近いマスに移動可能
-    // （敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない
     TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,
         function (unit) {
             let range = unit.isRangedWeaponType() ? 2 : 1;
+            // 周囲5マス以内にいる敵から自分の射程分離れたマスのうち、自分から最も近いマスに移動可能
+            // （敵ごとに判定、その最も近いマスについて、自分が移動できない地形の場合は移動できない
             return this.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, 5, range);
         }
     );
