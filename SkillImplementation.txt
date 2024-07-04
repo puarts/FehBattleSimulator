@@ -525,6 +525,10 @@ targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
 let getStatusFunc = unit => { unit.statusEvalUnit.getAtkInPrecombat() };
 let units = this.__findMaxStatusUnits(unitGroup, getStatusFunc);
 
+周囲2マス以内の最も攻撃が高い味方
+let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+let units = IterUtil.maxElements(allies, u => u.statusEvalUnit.getAtkInPrecombat());
+
 ステータス決定後のバフ効果
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {

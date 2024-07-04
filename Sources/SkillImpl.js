@@ -1,5 +1,78 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 絆・神竜破
+{
+    let skillId = Special.BondBlast;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 速さの50%を奥義ダメージに加算
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.5));
+        }
+    );
+
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 自軍内に自分と支援を結んでいる相手がいない時、ターン開始時、
+            if (!this.unitManager.isThereAllyInSpecifiedSpaces(skillOwner, u => u.isPartner(skillOwner))) {
+                // - 周囲2マス以内の最も攻撃が高い味方に【縁】を付与
+                let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                let units = IterUtil.maxElements(allies, u => u.statusEvalUnit.getAtkInPrecombat());
+                units.forEach(unit => unit.reserveToAddStatusEffect(StatusEffectType.Bonded));
+            }
+        }
+    );
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自軍内に「自分と支援を結んでいる相手」、または、「【緑】が付与されている味方」がいる時、
+            let pred = u => targetUnit.isPartner(u) || u.hasStatusEffect(StatusEffectType.Bonded);
+            if (this.unitManager.isThereAnyUnitInTheSameGroupOnMap(targetUnit, pred)) {
+                // - 自分と、支援相手と、【縁】が付与されている味方は、
+                //     - 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を無効（範囲奥義を除く）
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        }
+    );
+
+    applySkillEffectFromAlliesFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+            // 自軍内に「自分と支援を結んでいる相手」、または、「【緑】が付与されている味方」がいる時、
+            let pred = u => allyUnit.isPartner(u) || u.hasStatusEffect(StatusEffectType.Bonded);
+            if (this.unitManager.isThereAnyUnitInTheSameGroupOnMap(allyUnit, pred)) {
+                // - 自分と、支援相手と、【縁】が付与されている味方は、
+                //     - 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇%軽減」を無効（範囲奥義を除く）
+                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+            }
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // 「自分または敵が奥義発動可能状態の時」、「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
+            // 2条件のいずれかを満たした時、
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
+                // - かつ、周囲3マス以内に「自分と支援を結んでいる相手」、または、「【縁】が付与されている味方」がいる時、
+                //     - 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）（範囲奥義を除く）
+                // 【縁】
+                // スキル効果の発動条件となる有利な状態（1ターン）
+                let pred = u => defUnit.isPartner(u) || u.hasStatusEffect(StatusEffectType.Bonded);
+                if (this.unitManager.isThereAllyInSpecifiedSpaces(defUnit, 3, pred)) {
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
 // 海水浴の体術
 {
     let skillId = Weapon.MaritimeArts;

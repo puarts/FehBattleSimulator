@@ -187,6 +187,7 @@ const StatusEffectType = {
     EssenceDrain: 63, // エーギル奪取
     ShareSpoils: 64, // 戦果移譲
     Frozen: 65, // 凍結
+    Bonded: 66, // 縁
 };
 
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
@@ -347,6 +348,7 @@ const STATUS_EFFECT_FILE_NAME_MAP = new Map([
     [StatusEffectType.EssenceDrain, "EssenceDrain.webp"],
     [StatusEffectType.ShareSpoils, "ShareSpoils.webp"],
     [StatusEffectType.Frozen, "Frozen.webp"],
+    [StatusEffectType.Bonded, "Bonded.webp"],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

@@ -63,7 +63,7 @@ class DamageCalculatorWrapper {
         this._unitManager = unitManager;
         this.map = map;
         this.globalBattleContext = globalBattleContext;
-        this._damageCalc = new DamageCalculator(logger);
+        this._damageCalc = new DamageCalculator(logger, unitManager);
         this.profiler = new PerformanceProfile();
         this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger);
 
