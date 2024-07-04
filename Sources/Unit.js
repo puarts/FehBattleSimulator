@@ -3559,6 +3559,16 @@ class Unit extends BattleMapElement {
     }
 
     /**
+     * 攻撃が相手の攻撃+n以上かどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherOrEqualAtkInCombat(enemyUnit, n = 0) {
+        return this.getEvalAtkInCombat(enemyUnit) >= enemyUnit.getEvalAtkInCombat(this) + n;
+    }
+
+    /**
      * 守備が「相手の守備+n」以下かどうかを返す
      * @param {Unit} enemyUnit
      * @param {number} n

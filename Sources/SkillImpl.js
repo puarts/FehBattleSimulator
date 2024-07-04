@@ -1,5 +1,41 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 近間の攻撃の波・偶
+{
+    let skillId = PassiveC.EvenAtkWaveN;
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自分と周囲2マス以内の味方の
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                // - 攻撃+6（1ターン）
+                unit.reserveToApplyBuffs(6, 0, 0, 0);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    // 戦闘中、攻撃が「敵の攻撃ー5」以上の時、
+                    if (targetUnit.isHigherOrEqualAtkInCombat(enemyUnit, -5)) {
+                        // - ダメージ＋5（範囲奥義を除く）、かつ戦闘中、
+                        targetUnit.battleContext.additionalDamage += 5;
+                        // - 自分の攻撃でダメージを与えた時、5回復（与えたダメージが0でも効果は発動）
+                        targetUnit.battleContext.healedHpByAttack += 5;
+                    }
+                }
+            );
+            // 偶数ターンの時、
+            if (this.globalBattleContext.isEvenTurn) {
+                // 戦闘中、攻撃＋6
+                targetUnit.atkSpur += 6;
+            }
+        }
+    );
+}
+
 // 耳目集める二人の傘
 {
     let skillId = Weapon.DivaPairParasol;
@@ -162,7 +198,6 @@
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             // ターン開始時、自分と周囲2マス以内の味方の
-            /** @type {Generator<Unit>} */
             let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
             for (let unit of units) {
                 // - 魔防＋6（1ターン）
