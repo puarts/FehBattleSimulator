@@ -1,5 +1,57 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ペレジアの将の大斧
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.PiegianWarAxe);
+    // HP+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // ダメージ+敵の攻撃の15%(範囲奥義を除く)、
+                targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Atk, 0.15);
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
+    );
+}
+{
+    let setSkill = skillId => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                // ターン開始時、周囲2マス以内に味方がいる時、
+                if (this.__isThereAllyIn2Spaces(skillOwner, 2)) {
+                    // 自分と周囲2マス以内の味方の
+                    let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                    for (let unit of units) {
+                        // 守備、魔防+6、
+                        unit.reserveToApplyBuffs(0, 0, 6, 6);
+                        // 「敵は追撃不可」を付与(1ターン)
+                        unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                    }
+                }
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    // 戦闘中、攻撃、速さ、守備、魔防+4、
+                    targetUnit.addAllSpur(4);
+                    // 絶対追撃
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        );
+    }
+    setSkill(getNormalSkillId(Weapon.PiegianWarAxe));
+    setSkill(getRefinementSkillId(Weapon.PiegianWarAxe));
+}
+
 // バルフレチェ
 {
     let skillId = getSpecialRefinementSkillId(Weapon.DoubleBow);

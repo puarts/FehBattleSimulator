@@ -750,6 +750,14 @@ class BattleContext {
         });
     }
 
+    addFixedDamageByEnemyStatusInCombat(statusIndex, ratio) {
+        this.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
+            if (isPrecombat) return;
+            let statuses = defUnit.getStatusesInCombat(atkUnit);
+            atkUnit.battleContext.additionalDamage += Math.trunc(statuses[statusIndex] * ratio);
+        });
+    }
+
     setTempo() {
         this.applyInvalidationSkillEffectFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {

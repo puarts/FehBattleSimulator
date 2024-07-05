@@ -1223,7 +1223,10 @@ targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPreco
     atkUnit.battleContext.additionalDamage += N;
 });
 // 範囲奥義を除くステータス参照固定ダメージ
+// 自分のステータス
 targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
+// 敵のステータス
+targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Atk, 0.15);
 もしくは
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     if (isPrecombat) return;

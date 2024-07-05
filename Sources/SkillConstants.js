@@ -1875,6 +1875,7 @@ const Weapon = {
 
     // 2024年7月 武器錬成
     WyvernLance: 2942, // 蒼穹の竜槍
+    PiegianWarAxe: 2941, // ペレジアの将の大斧
 };
 
 const Support = {
