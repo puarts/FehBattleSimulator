@@ -7818,11 +7818,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.StarpointLance] = (targetUnit) => {
-            if (!targetUnit.isOneTimeActionActivatedForWeapon) {
-                targetUnit.addAllSpur(5);
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.ShinenNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (!calcPotentialDamage
@@ -11383,12 +11378,6 @@ class DamageCalculatorWrapper {
                         enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
                     }
                     break;
-                case Weapon.Hrimfaxi:
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        targetUnit.addAllSpur(5);
-                        DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
-                    }
-                    break;
                 case Weapon.BladeOfRenais:
                     if (targetUnit.battleContext.initiatesCombat
                         || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
@@ -11401,20 +11390,6 @@ class DamageCalculatorWrapper {
                             let value = Math.trunc(0.2 * enemyUnit.getDefInCombat(targetUnit));
                             targetUnit.battleContext.healedHpByAttack += value;
                         }
-                    }
-                    break;
-                case Weapon.OrdersSentence:
-                    if (targetUnit.battleContext.restHpPercentage >= 25
-                        || targetUnit.hasPositiveStatusEffect(enemyUnit)
-                    ) {
-                        targetUnit.addAllSpur(5);
-
-                        let maxBuff = 0;
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
-                            maxBuff = Math.max(unit.buffTotal, maxBuff);
-                        }
-
-                        targetUnit.atkSpur += maxBuff;
                     }
                     break;
                 case Weapon.SparkingTome:
@@ -14535,11 +14510,6 @@ class DamageCalculatorWrapper {
                             return true;
                         }
                         break;
-                    case Weapon.DoubleBow:
-                        if (this.__isSolo(defUnit)) {
-                            return true;
-                        }
-                        break;
                     case Weapon.KinsekiNoSyo:
                         if (defUnit.isWeaponSpecialRefined) {
                             if (atkUnit.weaponType === WeaponType.Sword
@@ -16453,9 +16423,6 @@ class DamageCalculatorWrapper {
                 case Weapon.SurvivalistBow:
                     targetUnit.atkSpur += 6;
                     targetUnit.spdSpur += 6;
-                    break;
-                case Weapon.DoubleBow:
-                    targetUnit.addAllSpur(5);
                     break;
                 case Weapon.GousouJikumunto:
                     if (!targetUnit.isWeaponRefined) {

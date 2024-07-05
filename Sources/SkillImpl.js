@@ -1,5 +1,433 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ペレジアの将の大斧
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.PiegianWarAxe);
+    // HP+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // ダメージ+敵の攻撃の15%(範囲奥義を除く)、
+                targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Atk, 0.15);
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+            }
+        }
+    );
+}
+{
+    let setSkill = skillId => {
+        // ターン開始時スキル
+        applySkillForBeginningOfTurnFuncMap.set(skillId,
+            function (skillOwner) {
+                // ターン開始時、周囲2マス以内に味方がいる時、
+                if (this.__isThereAllyIn2Spaces(skillOwner, 2)) {
+                    // 自分と周囲2マス以内の味方の
+                    let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                    for (let unit of units) {
+                        // 守備、魔防+6、
+                        unit.reserveToApplyBuffs(0, 0, 6, 6);
+                        // 「敵は追撃不可」を付与(1ターン)
+                        unit.reserveToAddStatusEffect(StatusEffectType.FollowUpAttackMinus);
+                    }
+                }
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+                if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                    // 戦闘中、攻撃、速さ、守備、魔防+4、
+                    targetUnit.addAllSpur(4);
+                    // 絶対追撃
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        );
+    }
+    setSkill(getNormalSkillId(Weapon.PiegianWarAxe));
+    setSkill(getRefinementSkillId(Weapon.PiegianWarAxe));
+}
+
+// バルフレチェ
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.DoubleBow);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // 敵の攻撃、速さ、守備が8-自分の周囲1マス以内の味方の数×2だけ減少(最低0)、
+                let count = this.countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+                let amount = MathUtil.ensureMin(8 - count * 2, 0);
+                enemyUnit.addSpursWithoutRes(-amount);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 自分が最初に受けた攻撃と2回攻撃のダメージ-速さの20%
+                        // (最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                        let amount = Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.2);
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                    }
+                );
+                // 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに+(その戦闘中のみ。軽減値はスキルによる軽減効果も含む)
+                targetUnit.battleContext.addReducedDamageForNextAttack();
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.DoubleBow);
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲1マス以内の味方が1体以下の時、
+            if (this.countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // かつ、距離に関係なく反撃する、
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+                // 自身の奥義発動カウント変動量-を無効、かつ、
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+                // 戦闘中、自分の攻撃でダメージを与えた時、7回復(与えたダメージが0でも効果は発動)
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.DoubleBow);
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲1マス以内に味方がいない時、
+            if (this.__isSolo(targetUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、かつ、
+                targetUnit.addAllSpur(5);
+                // 距離に関係なく反撃する
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
+    );
+}
+
+// 蒼穹の竜槍
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.WyvernLance);
+    // HP+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、敵の攻撃、守備-5、さらに、
+                enemyUnit.addAtkDefSpurs(-5);
+                // 敵の攻撃、守備が戦闘開始時の自分の守備の15%だけ減少、
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.15);
+                enemyUnit.addAtkDefSpurs(-amount);
+                // 自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)、
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                // 自身の攻撃、守備の弱化を無効
+                targetUnit.battleContext.invalidateDebuffs(true, false, true, false);
+            }
+        }
+    );
+}
+{
+    let setSkill = skillId => {
+        updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+                // 自身を中心とした縦3列と横3列の敵は、
+                if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+                    // 戦闘中、攻撃、守備-5、
+                    targetUnit.addAtkDefSpurs(-5);
+                }
+            }
+        );
+        applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+                // 自身を中心とした縦3列と横3列の敵は、
+                if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+                    // 奥義発動カウント変動量-1(同系統効果複数時、最大値適用)、
+                    enemyUnit.battleContext.reducesCooldownCount = true;
+                    // 絶対追撃を受ける
+                    enemyUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 戦闘後、自分は、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        );
+    }
+    setSkill(getNormalSkillId(Weapon.WyvernLance));
+    setSkill(getRefinementSkillId(Weapon.WyvernLance));
+}
+
+// 海角の星槍
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.StarpointLance);
+    // HP+3
+    // 奥義が発動しやすい(発動カウント-1)
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let isTargetUnit = u =>
+                u.moveType === MoveType.Armor ||
+                (u.isMeleeWeaponType() && u.moveType === MoveType.Infantry) ||
+                (u.isMeleeWeaponType() && u.moveType === MoveType.Flying);
+            // ターン開始時、周囲2マス以内に「重装」「射程1の歩行」「射程1の飛行」のいずれかの味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2, isTargetUnit)) {
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // 自分と周囲2マス以内の「重装」「射程1の歩行」「射程1の飛行」の味方の
+                    if (unit === skillOwner || isTargetUnit(unit)) {
+                        // 攻撃、速さ+6、
+                        unit.reserveToApplyBuffs(6, 6, 0, 0);
+                        // 「移動+1」(重複しない)、
+                        unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                        // 【再移動(1)】、
+                        unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                        // 「戦闘中、奥義発動カウント変動量+1(同系統効果複数時、最大値適用)」を付与(1ターン)
+                        unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // ダメージ+速さの20%(範囲奥義を除く)
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.StarpointLance);
+    // 速さ+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、攻撃、速さ、守備、魔防+5、
+            targetUnit.addAllSpur(5);
+            // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+            targetUnit.battleContext.setNullFollowupAttack();
+            // 敵の奥義以外のスキルによる「ダメージを○○%軽減」を各ターンについて、
+            // このスキル所持者が自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時は80%無効、
+            // そうでない時は40%無効(無効にする数値は端数切捨て)(範囲奥義を除く)
+            let ratio = 0.4;
+            if (targetUnit.battleContext.initiatesCombat) {
+                if (!targetUnit.isOneTimeActionActivatedForWeaponPerGame) {
+                    ratio = 0.8;
+                }
+            } else {
+                if (!targetUnit.isOneTimeActionActivatedForWeaponPerGame2) {
+                    ratio = 0.8;
+                }
+            }
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+            // 戦闘後、10回復
+            targetUnit.battleContext.healedHpAfterCombat += 10;
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.isOneTimeActionActivatedForWeaponPerGame = true;
+            } else {
+                targetUnit.isOneTimeActionActivatedForWeaponPerGame2 = true;
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.StarpointLance);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                targetUnit.reserveHeal(10);
+                targetUnit.isOneTimeActionActivatedForWeapon = true;
+            }
+        }
+    );
+}
+
+// フリムファクシ
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Hrimfaxi);
+    // HP+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、敵の攻撃、速さ、守備-4、
+                enemyUnit.addSpursWithoutRes(-4);
+                // さらに、敵の攻撃、速さ、守備が減少
+                // 減少値は、敵とその周囲2マス以内にいる敵のうち弱化が最も高い値(能力値ごとに計算)、
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
+                        enemyUnit.addSpursWithoutRes(debuffs[0], debuffs[1], debuffs[2]);
+                    }
+                );
+                // 最初に受けた攻撃と2回攻撃のダメージ-7(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
+                // 自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.Hrimfaxi);
+    // 速さ+3
+    // 【天駆の道】効果
+    hasPathfinderEffectFuncMap.set(skillId,
+        function () {
+            return true;
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 自分を除く周囲2マス以内の味方に
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                for (let unit of units) {
+                    // 【奮激】を付与
+                    unit.reserveToAddStatusEffect(StatusEffectType.Incited);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // かつ、戦闘中、攻撃、速さ、守備、魔防が自分と周囲2マス以内にいる味方のうち強化が最も高い値だけ増加(能力値ごとに計算)
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        targetUnit.addSpurs(...amounts);
+                    }
+                );
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.Hrimfaxi);
+    hasPathfinderEffectFuncMap.set(skillId,
+        function () {
+            return true;
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+            }
+        }
+    );
+}
+
+// 正の裁き
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.OrdersSentence);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、敵が射程2の時、
+            if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let buffTotal = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        // (○は、自分と周囲3マス以内にいる味方のうち強化の合計値が最も高い値の50%)
+                        let amount = Math.trunc(MathUtil.ensureMin(buffTotal, 0) * 0.5);
+                        // 最初に受けた攻撃と2回攻撃のダメージ-○
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                        // (最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                    }
+                );
+                // 敵の奥義発動カウント変動量-1(同系統効果複数時、最大値適用)、
+                targetUnit.battleContext.reducesCooldownCount = true;
+                // 戦闘後、自分は、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.OrdersSentence);
+    // 攻撃+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上、または自身が【有利な状態】を受けている時、
+            if (targetUnit.battleContext.restHpPercentage >= 25 ||
+                targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // かつ戦闘中、自分と周囲3マス以内にいる味方のうち強化の合計値が最も高い値の150%を攻撃に加算
+                // (例えば、周囲3マス以内の味方が攻撃、速さ、守備、魔防+6の強化を受けていれば、36を攻撃に加算)、
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 周囲3マス以内の場合
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let buffTotal = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        let amount = Math.trunc(MathUtil.ensureMin(buffTotal, 0) * 1.5);
+                        targetUnit.atkSpur += amount;
+                    }
+                );
+                // 最初に受けた攻撃と2回攻撃のダメージを30%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.OrdersSentence);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25 ||
+                targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                targetUnit.addAllSpur(5);
+
+                let maxBuff = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                    maxBuff = Math.max(unit.buffTotal, maxBuff);
+                }
+
+                targetUnit.atkSpur += maxBuff;
+            }
+        }
+    );
+}
+
 // 錨の斧+
 {
     let skillId = Weapon.AnchorAxePlus;
@@ -405,7 +833,7 @@
                 // 攻撃、魔防+6、かつ
                 ally.reserveToApplyBuffs(6, 0, 0, 6);
                 // 【見切り・パニック】、
-                ally.reserveToAddStatusEffect(StatusEffectType.Panic);
+                ally.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 // 【見切り・追撃効果】、
                 ally.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                 // 【魔刃】を付与(1ターン)
@@ -417,7 +845,7 @@
                 // 自分の攻撃、魔防+6、かつ
                 skillOwner.reserveToApplyBuffs(6, 0, 0, 6);
                 // 【見切り・パニック】
-                skillOwner.reserveToAddStatusEffect(StatusEffectType.Panic);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 // 【見切り・追撃効果】、
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                 // 「戦闘中、敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は数切捨て)(範囲奥義を除く)」を付与(1ターン)
@@ -818,7 +1246,7 @@
                 // - 戦闘中、自身の攻撃、速さ、守備、魔防が、戦闘開始時の敵の攻撃の25%-4だけ増加（最大14、最低5）、
                 let amount = MathUtil.ensureMinMax(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25 - 4), 5, 14);
                 // - 敵の攻撃、速さ、守備、魔防が敵が受けている攻撃、速さ、守備、魔防の強化の値の2倍だけ減少（能力値ごとに計算）（例えば、攻撃＋7の強化を受けていれば、+7-14で、攻撃ー7となる）、自分が受けた攻撃のダメージを40%軽減（範囲奥義を除く）、かつ
-                targetUnit.battleContext.setFoesPenaltyDoubler();
+                targetUnit.battleContext.applyFoesPenaltyDoubler();
                 // - 戦闘中、奥義による攻撃でダメージを与えた時、自分の最大HPの（10＋自分の奥義発動カウントの最大値x20）％回復（与えたダメージが0でも効果は発動）（最大100％）
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += MathUtil.ensureMax(0.1 + targetUnit.maxSpecialCount * 0.2, 1);
             }
@@ -2253,57 +2681,67 @@
     );
 }
 
+// 影の英雄の剣
 // 影の英雄の槍
 {
-    let skillId = getSpecialRefinementSkillId(Weapon.SpearOfShadow);
-    // HP+3
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            // 戦闘開始時、自身のHPが25%以上なら、
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                // 戦闘中、攻撃、速さ、守備、魔防+4、
-                targetUnit.addAllSpur(4);
-                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
-                // ダメージ+速さの20%(範囲奥義を除く)、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
-                // かつ自分の攻撃でダメージを与えた時、7回復(与えたダメージが0でも効果は発動)
-                targetUnit.battleContext.healedHpByAttack += 7;
+    let setSkill = skillId => {
+        // HP+3
+        applySkillEffectForUnitFuncMap.set(getSpecialRefinementSkillId(skillId),
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 戦闘開始時、自身のHPが25%以上なら、
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    // 戦闘中、攻撃、速さ、守備、魔防+4、
+                    targetUnit.addAllSpur(4);
+                    // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                    // ダメージ+速さの20%(範囲奥義を除く)、
+                    targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
+                    // かつ自分の攻撃でダメージを与えた時、7回復(与えたダメージが0でも効果は発動)
+                    targetUnit.battleContext.healedHpByAttack += 7;
+                }
             }
-        }
-    );
+        );
+    }
+    setSkill(Weapon.SpearOfShadow);
+    setSkill(Weapon.BladeOfShadow);
 }
 
 {
-    let skillId = getRefinementSkillId(Weapon.SpearOfShadow);
-    // 奥義が発動しやすい(発動カウント-1)
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            // 敵から攻撃された時、または、敵のHPが75%以上で戦闘開始時、
-            if (enemyUnit.battleContext.initiatesCombat ||
-                enemyUnit.battleContext.restHpPercentage >= 75) {
-                // 戦闘中、自身の弱化を無効化し、
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
-                // 敵の攻撃、速さ、守備-5、
-                enemyUnit.addSpdDefSpurs(-5);
-                // 敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
-                targetUnit.battleContext.setTempo();
+    let setSkill = skillId => {
+        // 奥義が発動しやすい(発動カウント-1)
+        applySkillEffectForUnitFuncMap.set(getRefinementSkillId(skillId),
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 敵から攻撃された時、または、敵のHPが75%以上で戦闘開始時、
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    // 戦闘中、自身の弱化を無効化し、
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    // 敵の攻撃、速さ、守備-5、
+                    enemyUnit.addSpdDefSpurs(-5);
+                    // 敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
+                    targetUnit.battleContext.setTempo();
+                }
             }
-        }
-    );
+        );
+    }
+    setSkill(Weapon.SpearOfShadow);
+    setSkill(Weapon.BladeOfShadow);
 }
 
 {
-    let skillId = getNormalSkillId(Weapon.SpearOfShadow);
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.battleContext.initiatesCombat ||
-                enemyUnit.battleContext.restHpPercentage === 100) {
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
-                enemyUnit.addSpursWithoutRes(-5);
+    let setSkill = skillId => {
+        applySkillEffectForUnitFuncMap.set(getNormalSkillId(skillId),
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (!targetUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    enemyUnit.addSpursWithoutRes(-5);
+                }
             }
-        }
-    );
+        );
+    }
+    setSkill(Weapon.SpearOfShadow);
+    setSkill(Weapon.BladeOfShadow);
 }
 
 // 一夏の神宝

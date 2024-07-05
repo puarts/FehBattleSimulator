@@ -566,6 +566,9 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
 
+        this.isOneTimeActionActivatedForWeaponPerGame = false;
+        this.isOneTimeActionActivatedForWeaponPerGame2 = false;
+
         // 戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
         //（同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
         //（1ターンに1回のみ）

@@ -345,7 +345,7 @@ static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
 }
 
-全距離反撃
+距離に関係なく反撃する[全距離反撃]
 targetUnit.battleContext.canCounterattackToAllDistance = true;
 
 戦闘中、自分が受けている反撃不可を無効
@@ -1223,7 +1223,10 @@ targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPreco
     atkUnit.battleContext.additionalDamage += N;
 });
 // 範囲奥義を除くステータス参照固定ダメージ
+// 自分のステータス
 targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
+// 敵のステータス
+targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Atk, 0.15);
 もしくは
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     if (isPrecombat) return;
@@ -1703,6 +1706,12 @@ canWarpFuncMap.set(skillId,
 CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
 
 天駆の道
+hasPathfinderEffectFuncMap.set(skillId,
+    function () {
+        return true;
+    }
+);
+もしくは
 function hasPathfinderEffect(skillId) {}
 
 攻撃した側(自分からなら自分、敵からなら敵)の移動前と移動後のマスの距離[激突]

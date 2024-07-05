@@ -900,7 +900,6 @@ function hasPathfinderEffect(skillId) {
     switch (skillId) {
         case PassiveB.TwinSkyWing:
         case Weapon.JotnarBow:
-        case Weapon.Hrimfaxi:
         case Captain.Eminence:
             return true;
         default:

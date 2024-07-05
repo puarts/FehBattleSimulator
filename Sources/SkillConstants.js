@@ -1872,6 +1872,10 @@ const Weapon = {
     SmallSpadePlus: 2937, // 小さなスコップ+
     DivaPairParasol: 2938, // 耳目集める二人の傘
     AnchorAxePlus: 2940, // 錨の斧+
+
+    // 2024年7月 武器錬成
+    WyvernLance: 2942, // 蒼穹の竜槍
+    PiegianWarAxe: 2941, // ペレジアの将の大斧
 };
 
 const Support = {
