@@ -2681,57 +2681,67 @@
     );
 }
 
+// 影の英雄の剣
 // 影の英雄の槍
 {
-    let skillId = getSpecialRefinementSkillId(Weapon.SpearOfShadow);
-    // HP+3
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            // 戦闘開始時、自身のHPが25%以上なら、
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                // 戦闘中、攻撃、速さ、守備、魔防+4、
-                targetUnit.addAllSpur(4);
-                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
-                // ダメージ+速さの20%(範囲奥義を除く)、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
-                // かつ自分の攻撃でダメージを与えた時、7回復(与えたダメージが0でも効果は発動)
-                targetUnit.battleContext.healedHpByAttack += 7;
+    let setSkill = skillId => {
+        // HP+3
+        applySkillEffectForUnitFuncMap.set(getSpecialRefinementSkillId(skillId),
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 戦闘開始時、自身のHPが25%以上なら、
+                if (targetUnit.battleContext.restHpPercentage >= 25) {
+                    // 戦闘中、攻撃、速さ、守備、魔防+4、
+                    targetUnit.addAllSpur(4);
+                    // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                    // ダメージ+速さの20%(範囲奥義を除く)、
+                    targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
+                    // かつ自分の攻撃でダメージを与えた時、7回復(与えたダメージが0でも効果は発動)
+                    targetUnit.battleContext.healedHpByAttack += 7;
+                }
             }
-        }
-    );
+        );
+    }
+    setSkill(Weapon.SpearOfShadow);
+    setSkill(Weapon.BladeOfShadow);
 }
 
 {
-    let skillId = getRefinementSkillId(Weapon.SpearOfShadow);
-    // 奥義が発動しやすい(発動カウント-1)
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            // 敵から攻撃された時、または、敵のHPが75%以上で戦闘開始時、
-            if (enemyUnit.battleContext.initiatesCombat ||
-                enemyUnit.battleContext.restHpPercentage >= 75) {
-                // 戦闘中、自身の弱化を無効化し、
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
-                // 敵の攻撃、速さ、守備-5、
-                enemyUnit.addSpdDefSpurs(-5);
-                // 敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
-                targetUnit.battleContext.setTempo();
+    let setSkill = skillId => {
+        // 奥義が発動しやすい(発動カウント-1)
+        applySkillEffectForUnitFuncMap.set(getRefinementSkillId(skillId),
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 敵から攻撃された時、または、敵のHPが75%以上で戦闘開始時、
+                if (enemyUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage >= 75) {
+                    // 戦闘中、自身の弱化を無効化し、
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    // 敵の攻撃、速さ、守備-5、
+                    enemyUnit.addSpdDefSpurs(-5);
+                    // 敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
+                    targetUnit.battleContext.setTempo();
+                }
             }
-        }
-    );
+        );
+    }
+    setSkill(Weapon.SpearOfShadow);
+    setSkill(Weapon.BladeOfShadow);
 }
 
 {
-    let skillId = getNormalSkillId(Weapon.SpearOfShadow);
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (!targetUnit.battleContext.initiatesCombat ||
-                enemyUnit.battleContext.restHpPercentage === 100) {
-                targetUnit.battleContext.invalidateAllOwnDebuffs();
-                enemyUnit.addSpursWithoutRes(-5);
+    let setSkill = skillId => {
+        applySkillEffectForUnitFuncMap.set(getNormalSkillId(skillId),
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                if (!targetUnit.battleContext.initiatesCombat ||
+                    enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.battleContext.invalidateAllOwnDebuffs();
+                    enemyUnit.addSpursWithoutRes(-5);
+                }
             }
-        }
-    );
+        );
+    }
+    setSkill(Weapon.SpearOfShadow);
+    setSkill(Weapon.BladeOfShadow);
 }
 
 // 一夏の神宝
