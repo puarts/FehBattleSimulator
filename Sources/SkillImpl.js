@@ -563,7 +563,7 @@
                 // 攻撃、魔防+6、かつ
                 ally.reserveToApplyBuffs(6, 0, 0, 6);
                 // 【見切り・パニック】、
-                ally.reserveToAddStatusEffect(StatusEffectType.Panic);
+                ally.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 // 【見切り・追撃効果】、
                 ally.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                 // 【魔刃】を付与(1ターン)
@@ -575,7 +575,7 @@
                 // 自分の攻撃、魔防+6、かつ
                 skillOwner.reserveToApplyBuffs(6, 0, 0, 6);
                 // 【見切り・パニック】
-                skillOwner.reserveToAddStatusEffect(StatusEffectType.Panic);
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.NullPanic);
                 // 【見切り・追撃効果】、
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                 // 「戦闘中、敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は数切捨て)(範囲奥義を除く)」を付与(1ターン)
