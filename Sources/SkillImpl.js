@@ -1,5 +1,60 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 蒼穹の竜槍
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.WyvernLance);
+    // HP+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (enemyUnit.battleContext.initiatesCombat ||
+                enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、敵の攻撃、守備-5、さらに、
+                enemyUnit.addAtkDefSpurs(-5);
+                // 敵の攻撃、守備が戦闘開始時の自分の守備の15%だけ減少、
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.15);
+                enemyUnit.addAtkDefSpurs(-amount);
+                // 自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)、
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                // 自身の攻撃、守備の弱化を無効
+                targetUnit.battleContext.invalidateDebuffs(true, false, true, false);
+            }
+        }
+    );
+}
+{
+    let setSkill = skillId => {
+        updateUnitSpurFromEnemyAlliesFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+                // 自身を中心とした縦3列と横3列の敵は、
+                if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+                    // 戦闘中、攻撃、守備-5、
+                    targetUnit.addAtkDefSpurs(-5);
+                }
+            }
+        );
+        applySkillEffectFromEnemyAlliesFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, enemyAllyUnit, calcPotentialDamage) {
+                // 自身を中心とした縦3列と横3列の敵は、
+                if (targetUnit.isInCrossWithOffset(enemyAllyUnit, 1)) {
+                    // 奥義発動カウント変動量-1(同系統効果複数時、最大値適用)、
+                    enemyUnit.battleContext.reducesCooldownCount = true;
+                    // 絶対追撃を受ける
+                    enemyUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        );
+        applySkillEffectForUnitFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, calcPotentialDamage) {
+                // 戦闘後、自分は、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        );
+    }
+    setSkill(getNormalSkillId(Weapon.WyvernLance));
+    setSkill(getRefinementSkillId(Weapon.WyvernLance));
+}
+
 // 海角の星槍
 {
     let skillId = getSpecialRefinementSkillId(Weapon.StarpointLance);
