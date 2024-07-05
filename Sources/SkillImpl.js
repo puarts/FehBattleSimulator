@@ -1,5 +1,79 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 正の裁き
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.OrdersSentence);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、敵が射程2の時、
+            if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let buffTotal = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        // (○は、自分と周囲3マス以内にいる味方のうち強化の合計値が最も高い値の50%)
+                        let amount = Math.trunc(MathUtil.ensureMin(buffTotal, 0) * 0.5);
+                        // 最初に受けた攻撃と2回攻撃のダメージ-○
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                        // (最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                    }
+                );
+                // 敵の奥義発動カウント変動量-1(同系統効果複数時、最大値適用)、
+                targetUnit.battleContext.reducesCooldownCount = true;
+                // 戦闘後、自分は、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.OrdersSentence);
+    // 攻撃+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上、または自身が【有利な状態】を受けている時、
+            if (targetUnit.battleContext.restHpPercentage >= 25 ||
+                targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // かつ戦闘中、自分と周囲3マス以内にいる味方のうち強化の合計値が最も高い値の150%を攻撃に加算
+                // (例えば、周囲3マス以内の味方が攻撃、速さ、守備、魔防+6の強化を受けていれば、36を攻撃に加算)、
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 周囲3マス以内の場合
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let buffTotal = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        let amount = Math.trunc(MathUtil.ensureMin(buffTotal, 0) * 1.5);
+                        targetUnit.atkSpur += amount;
+                    }
+                );
+                // 最初に受けた攻撃と2回攻撃のダメージを30%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.OrdersSentence);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25 ||
+                targetUnit.hasPositiveStatusEffect(enemyUnit)) {
+                targetUnit.addAllSpur(5);
+
+                let maxBuff = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
+                    maxBuff = Math.max(unit.buffTotal, maxBuff);
+                }
+
+                targetUnit.atkSpur += maxBuff;
+            }
+        }
+    );
+}
+
 // 錨の斧+
 {
     let skillId = Weapon.AnchorAxePlus;

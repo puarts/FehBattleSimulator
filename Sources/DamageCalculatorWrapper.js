@@ -11403,20 +11403,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.OrdersSentence:
-                    if (targetUnit.battleContext.restHpPercentage >= 25
-                        || targetUnit.hasPositiveStatusEffect(enemyUnit)
-                    ) {
-                        targetUnit.addAllSpur(5);
-
-                        let maxBuff = 0;
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, false)) {
-                            maxBuff = Math.max(unit.buffTotal, maxBuff);
-                        }
-
-                        targetUnit.atkSpur += maxBuff;
-                    }
-                    break;
                 case Weapon.SparkingTome:
                     if (enemyUnit.battleContext.restHpPercentage >= 50) {
                         enemyUnit.resSpur -= 6;
