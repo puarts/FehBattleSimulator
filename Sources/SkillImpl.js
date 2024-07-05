@@ -1,5 +1,89 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// フリムファクシ
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Hrimfaxi);
+    // HP+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、敵の攻撃、速さ、守備-4、
+                enemyUnit.addSpursWithoutRes(-4);
+                // さらに、敵の攻撃、速さ、守備が減少
+                // 減少値は、敵とその周囲2マス以内にいる敵のうち弱化が最も高い値(能力値ごとに計算)、
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let debuffs = this.__maxDebuffsFromAlliesWithinSpecificSpaces(enemyUnit, 2, true);
+                        enemyUnit.addSpursWithoutRes(debuffs[0], debuffs[1], debuffs[2]);
+                    }
+                );
+                // 最初に受けた攻撃と2回攻撃のダメージ-7(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
+                // 自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.Hrimfaxi);
+    // 速さ+3
+    // 【天駆の道】効果
+    hasPathfinderEffectFuncMap.set(skillId,
+        function () {
+            return true;
+        }
+    );
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、自身のHPが25%以上なら、
+            if (skillOwner.restHpPercentageAtBeginningOfTurn >= 25) {
+                // 自分を除く周囲2マス以内の味方に
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                for (let unit of units) {
+                    // 【奮激】を付与
+                    unit.reserveToAddStatusEffect(StatusEffectType.Incited);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // かつ、戦闘中、攻撃、速さ、守備、魔防が自分と周囲2マス以内にいる味方のうち強化が最も高い値だけ増加(能力値ごとに計算)
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2);
+                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        targetUnit.addSpurs(...amounts);
+                    }
+                );
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.Hrimfaxi);
+    hasPathfinderEffectFuncMap.set(skillId,
+        function () {
+            return true;
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
+            }
+        }
+    );
+}
+
 // 正の裁き
 {
     let skillId = getSpecialRefinementSkillId(Weapon.OrdersSentence);
@@ -892,7 +976,7 @@
                 // - 戦闘中、自身の攻撃、速さ、守備、魔防が、戦闘開始時の敵の攻撃の25%-4だけ増加（最大14、最低5）、
                 let amount = MathUtil.ensureMinMax(Math.trunc(enemyUnit.getAtkInPrecombat() * 0.25 - 4), 5, 14);
                 // - 敵の攻撃、速さ、守備、魔防が敵が受けている攻撃、速さ、守備、魔防の強化の値の2倍だけ減少（能力値ごとに計算）（例えば、攻撃＋7の強化を受けていれば、+7-14で、攻撃ー7となる）、自分が受けた攻撃のダメージを40%軽減（範囲奥義を除く）、かつ
-                targetUnit.battleContext.setFoesPenaltyDoubler();
+                targetUnit.battleContext.applyFoesPenaltyDoubler();
                 // - 戦闘中、奥義による攻撃でダメージを与えた時、自分の最大HPの（10＋自分の奥義発動カウントの最大値x20）％回復（与えたダメージが0でも効果は発動）（最大100％）
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += MathUtil.ensureMax(0.1 + targetUnit.maxSpecialCount * 0.2, 1);
             }

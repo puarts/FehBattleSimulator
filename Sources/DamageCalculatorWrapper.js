@@ -11383,12 +11383,6 @@ class DamageCalculatorWrapper {
                         enemyUnit.resSpur -= enemyUnit.getResBuffInCombat(targetUnit);
                     }
                     break;
-                case Weapon.Hrimfaxi:
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        targetUnit.addAllSpur(5);
-                        DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
-                    }
-                    break;
                 case Weapon.BladeOfRenais:
                     if (targetUnit.battleContext.initiatesCombat
                         || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)

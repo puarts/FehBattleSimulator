@@ -872,7 +872,7 @@ class BattleContext {
         });
     }
 
-    setFoesPenaltyDoubler() {
+    applyFoesPenaltyDoubler() {
         this.applySpurForUnitAfterCombatStatusFixedFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {
                 enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
