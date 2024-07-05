@@ -1,5 +1,104 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 海角の星槍
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.StarpointLance);
+    // HP+3
+    // 奥義が発動しやすい(発動カウント-1)
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            let isTargetUnit = u =>
+                u.moveType === MoveType.Armor ||
+                (u.isMeleeWeaponType() && u.moveType === MoveType.Infantry) ||
+                (u.isMeleeWeaponType() && u.moveType === MoveType.Flying);
+            // ターン開始時、周囲2マス以内に「重装」「射程1の歩行」「射程1の飛行」のいずれかの味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2, isTargetUnit)) {
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // 自分と周囲2マス以内の「重装」「射程1の歩行」「射程1の飛行」の味方の
+                    if (unit === skillOwner || isTargetUnit(unit)) {
+                        // 攻撃、速さ+6、
+                        unit.reserveToApplyBuffs(6, 6, 0, 0);
+                        // 「移動+1」(重複しない)、
+                        unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
+                        // 【再移動(1)】、
+                        unit.reserveToAddStatusEffect(StatusEffectType.Canto1);
+                        // 「戦闘中、奥義発動カウント変動量+1(同系統効果複数時、最大値適用)」を付与(1ターン)
+                        unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    }
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // ダメージ+速さの20%(範囲奥義を除く)
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.StarpointLance);
+    // 速さ+3
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、攻撃、速さ、守備、魔防+5、
+            targetUnit.addAllSpur(5);
+            // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+            targetUnit.battleContext.setNullFollowupAttack();
+            // 敵の奥義以外のスキルによる「ダメージを○○%軽減」を各ターンについて、
+            // このスキル所持者が自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時は80%無効、
+            // そうでない時は40%無効(無効にする数値は端数切捨て)(範囲奥義を除く)
+            let ratio = 0.4;
+            if (targetUnit.battleContext.initiatesCombat) {
+                if (!targetUnit.isOneTimeActionActivatedForWeaponPerGame) {
+                    ratio = 0.8;
+                }
+            } else {
+                if (!targetUnit.isOneTimeActionActivatedForWeaponPerGame2) {
+                    ratio = 0.8;
+                }
+            }
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(ratio);
+            // 戦闘後、10回復
+            targetUnit.battleContext.healedHpAfterCombat += 10;
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (targetUnit.battleContext.initiatesCombat) {
+                targetUnit.isOneTimeActionActivatedForWeaponPerGame = true;
+            } else {
+                targetUnit.isOneTimeActionActivatedForWeaponPerGame2 = true;
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.StarpointLance);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                targetUnit.addAllSpur(5);
+            }
+        }
+    );
+    applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            if (!targetUnit.isOneTimeActionActivatedForWeapon) {
+                targetUnit.reserveHeal(10);
+                targetUnit.isOneTimeActionActivatedForWeapon = true;
+            }
+        }
+    );
+}
+
 // フリムファクシ
 {
     let skillId = getSpecialRefinementSkillId(Weapon.Hrimfaxi);

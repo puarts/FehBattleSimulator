@@ -609,12 +609,6 @@ class PostCombatSkillHander {
                         targetUnit.isOneTimeActionActivatedForWeapon = true;
                     }
                     break;
-                case Weapon.StarpointLance:
-                    if (!targetUnit.isOneTimeActionActivatedForWeapon) {
-                        targetUnit.reserveHeal(10);
-                        targetUnit.isOneTimeActionActivatedForWeapon = true;
-                    }
-                    break;
                 case PassiveB.SealAtk1: enemyUnit.reserveToApplyAtkDebuff(-3); break;
                 case PassiveB.SealAtk2: enemyUnit.reserveToApplyAtkDebuff(-5); break;
                 case PassiveB.SealAtk3: enemyUnit.reserveToApplyAtkDebuff(-7); break;

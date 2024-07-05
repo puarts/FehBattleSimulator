@@ -7818,11 +7818,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.StarpointLance] = (targetUnit) => {
-            if (!targetUnit.isOneTimeActionActivatedForWeapon) {
-                targetUnit.addAllSpur(5);
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.ShinenNoBreath] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (!calcPotentialDamage
