@@ -1,5 +1,69 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// バルフレチェ
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.DoubleBow);
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防+4、
+                targetUnit.addAllSpur(4);
+                // 敵の攻撃、速さ、守備が8-自分の周囲1マス以内の味方の数×2だけ減少(最低0)、
+                let count = this.countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+                let amount = MathUtil.ensureMin(8 - count * 2, 0);
+                enemyUnit.addSpursWithoutRes(-amount);
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 自分が最初に受けた攻撃と2回攻撃のダメージ-速さの20%
+                        // (最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
+                        let amount = Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.2);
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += amount;
+                    }
+                );
+                // 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに+(その戦闘中のみ。軽減値はスキルによる軽減効果も含む)
+                targetUnit.battleContext.addReducedDamageForNextAttack();
+            }
+        }
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.DoubleBow);
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲1マス以内の味方が1体以下の時、
+            if (this.countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // かつ、距離に関係なく反撃する、
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+                // 自身の奥義発動カウント変動量-を無効、かつ、
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+                // 戦闘中、自分の攻撃でダメージを与えた時、7回復(与えたダメージが0でも効果は発動)
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.DoubleBow);
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲1マス以内に味方がいない時、
+            if (this.__isSolo(targetUnit)) {
+                // 戦闘中、攻撃、速さ、守備、魔防+5、かつ、
+                targetUnit.addAllSpur(5);
+                // 距離に関係なく反撃する
+                targetUnit.battleContext.canCounterattackToAllDistance = true;
+            }
+        }
+    );
+}
+
 // 蒼穹の竜槍
 {
     let skillId = getSpecialRefinementSkillId(Weapon.WyvernLance);

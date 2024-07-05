@@ -14510,11 +14510,6 @@ class DamageCalculatorWrapper {
                             return true;
                         }
                         break;
-                    case Weapon.DoubleBow:
-                        if (this.__isSolo(defUnit)) {
-                            return true;
-                        }
-                        break;
                     case Weapon.KinsekiNoSyo:
                         if (defUnit.isWeaponSpecialRefined) {
                             if (atkUnit.weaponType === WeaponType.Sword
@@ -16428,9 +16423,6 @@ class DamageCalculatorWrapper {
                 case Weapon.SurvivalistBow:
                     targetUnit.atkSpur += 6;
                     targetUnit.spdSpur += 6;
-                    break;
-                case Weapon.DoubleBow:
-                    targetUnit.addAllSpur(5);
                     break;
                 case Weapon.GousouJikumunto:
                     if (!targetUnit.isWeaponRefined) {

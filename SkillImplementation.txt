@@ -345,7 +345,7 @@ static __canDisableCounterAttack(atkUnit, defUnit) {
     return true;
 }
 
-全距離反撃
+距離に関係なく反撃する[全距離反撃]
 targetUnit.battleContext.canCounterattackToAllDistance = true;
 
 戦闘中、自分が受けている反撃不可を無効
