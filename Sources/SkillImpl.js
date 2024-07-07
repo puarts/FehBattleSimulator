@@ -809,7 +809,7 @@
             // 戦闘開始時、自身のHPが25%以上なら、
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 // 戦闘中、敵の攻撃、速さ、守備-5、
-                targetUnit.addSpursWithoutRes(-5);
+                enemyUnit.addSpursWithoutRes(-5);
                 // 自分が与えるダメージ+攻撃の10%(範囲奥義を除く)、
                 targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.10);
                 // 敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)、
