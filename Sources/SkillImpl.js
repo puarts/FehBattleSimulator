@@ -809,7 +809,7 @@
             // 戦闘開始時、自身のHPが25%以上なら、
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 // 戦闘中、敵の攻撃、速さ、守備-5、
-                targetUnit.addSpursWithoutRes(-5);
+                enemyUnit.addSpursWithoutRes(-5);
                 // 自分が与えるダメージ+攻撃の10%(範囲奥義を除く)、
                 targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.10);
                 // 敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)、
@@ -1553,9 +1553,9 @@
         function (skillOwner) {
             // 敵軍のターン開始時スキル発動後、
             // 自分と周囲2マス以内にいる味方が受けている弱化を無効化し、強化に変換する、
-            /** @type {Generator<Unit>} */
             let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
             for (let unit of units) {
+                this.writeDebugLog(`${unit.nameWithGroup}の弱化を強化に反転`);
                 let buffs = unit.getDebuffs().map(i => Math.abs(i));
                 unit.reserveToApplyBuffs(...buffs);
                 unit.reservedDebuffsToDelete = [true, true, true, true];
@@ -1563,10 +1563,13 @@
                 // 解除される【不利な状態異常】は、受けている効果の一覧で、上に記載される状態を優先）
                 let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
                 let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
-                if (effects[0]) {
+                this.writeDebugLog(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
+                if (effects.length >= 1) {
+                    this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[0])}を解除予約(1)`);
                     unit.reservedStatusEffectSetToDelete.add(effects[0]);
                 }
-                if (effects[1]) {
+                if (effects.length >= 2) {
+                    this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[1])}を解除予約(2)`);
                     unit.reservedStatusEffectSetToDelete.add(effects[1]);
                 }
             }
