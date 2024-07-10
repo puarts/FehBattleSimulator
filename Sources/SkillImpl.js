@@ -2180,10 +2180,10 @@
                     if (targetUnit.battleContext.initiatesCombat) {
                         // 戦闘中、受けるダメージー〇✕3（範囲義を除く）
                         targetUnit.battleContext.damageReductionValue += amount * 3;
-                        // 戦闘中、敵の奥義による攻撃の時、受けるダメージー〇x3（範囲奥義を除く）
-                        targetUnit.battleContext.damageReductionValueOfSpecialAttack += amount * 3;
                     }
                 }
+                // 戦闘中、敵の奥義による攻撃の時、受けるダメージー〇x3（範囲奥義を除く）
+                targetUnit.battleContext.damageReductionValueOfSpecialAttack += amount * 3;
             }
         );
     }
