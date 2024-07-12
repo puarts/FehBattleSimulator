@@ -10288,28 +10288,6 @@ class DamageCalculatorWrapper {
                                 targetUnit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
                             }
                             break;
-                        case PassiveC.SoaringGuidance: {
-                            let moveType = targetUnit.moveType;
-                            if (moveType === MoveType.Infantry ||
-                                moveType === MoveType.Flying) {
-                                if (targetUnit.getEvalSpdInCombat(enemyUnit) >
-                                    enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                                }
-                            }
-                        }
-                            break;
-                        case PassiveC.Guidance4: {
-                            let moveType = targetUnit.moveType;
-                            if (moveType === MoveType.Infantry ||
-                                moveType === MoveType.Armor) {
-                                if (targetUnit.getEvalSpdInCombat(enemyUnit) >
-                                    enemyUnit.getEvalSpdInCombat(targetUnit)) {
-                                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                                }
-                            }
-                        }
-                            break;
                         case Weapon.RaisenNoSyo:
                             if (allyUnit.isWeaponSpecialRefined) {
                                 if (enemyUnit.battleContext.initiatesCombat) {
@@ -15659,20 +15637,6 @@ class DamageCalculatorWrapper {
                     if (allyUnit.isWeaponSpecialRefined) {
                         targetUnit.addDefResSpurs(6);
                     }
-                    break;
-                case PassiveC.SoaringGuidance: {
-                    let moveType = targetUnit.moveType;
-                    if (moveType === MoveType.Infantry || moveType === MoveType.Flying) {
-                        targetUnit.addAtkSpdSpurs(3);
-                    }
-                }
-                    break;
-                case PassiveC.Guidance4: {
-                    let moveType = targetUnit.moveType;
-                    if (moveType === MoveType.Infantry || moveType === MoveType.Armor) {
-                        targetUnit.addAtkSpdSpurs(3);
-                    }
-                }
                     break;
                 case Weapon.MasyumaroNoTsuePlus:
                     targetUnit.addDefResSpurs(3);

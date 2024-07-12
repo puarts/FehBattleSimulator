@@ -726,17 +726,16 @@ class BattleContext {
         );
     }
 
-    setNullFollowupAttack() {
-        this.invalidatesAbsoluteFollowupAttack = true;
-        this.invalidatesInvalidationOfFollowupAttack = true;
+    setNullFollowupAttack(isAttacking = true, isAttacked = true) {
+        this.invalidatesInvalidationOfFollowupAttack = isAttacking;
+        this.invalidatesAbsoluteFollowupAttack = isAttacked;
     }
 
-    setSpdNullFollowupAttack(diff = 0) {
+    setSpdNullFollowupAttack(diff = 0, isAttacking = true, isAttacked = true) {
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {
                 if (targetUnit.isHigherSpdInCombat(enemyUnit, diff)) {
-                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+                    this.setNullFollowupAttack(isAttacking, isAttacked);
                 }
             }
         );

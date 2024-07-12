@@ -1,5 +1,40 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 先導
+{
+    let skillId = PassiveC.Guidance4;
+    let setSkill = (skillId, distance, pred) => {
+        updateUnitSpurFromAlliesFuncMap.set(skillId,
+            function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+                // 周囲2マス以内の味方歩行、重装は、戦闘中、攻撃、速さ+3、かつ速さが敵より1以上高い時、戦闘中、自分の追撃不可を無効
+                if (targetUnit.distance(allyUnit) <= distance && pred(targetUnit)) {
+                    targetUnit.addAtkSpdSpurs(3);
+                }
+            }
+        );
+        applySkillEffectFromAlliesFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+                // 周囲2マス以内の味方歩行、重装は、戦闘中、攻撃、速さ+3、かつ速さが敵より1以上高い時、戦闘中、自分の追撃不可を無効
+                if (targetUnit.distance(allyUnit) <= distance && pred(targetUnit)) {
+                    targetUnit.battleContext.setSpdNullFollowupAttack(0, true, false);
+                }
+            }
+        );
+        enumerateTeleportTilesForAllyFuncMap.set(skillId,
+            function* (targetUnit, allyUnit) {
+                // 周囲2マス以内の味方歩行、重装は、自身の周囲2マス以内に移動可能
+                if (targetUnit.distance(allyUnit) <= distance && pred(targetUnit)) {
+                    yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                }
+            }
+        );
+    }
+    // 空からの先導4
+    setSkill(PassiveC.Guidance4, 2, u => u.isMoveTypeIn([MoveType.Armor, MoveType.Infantry]));
+    // 飛走の先導
+    setSkill(PassiveC.SoaringGuidance, 2, u => u.isMoveTypeIn([MoveType.Infantry, MoveType.Flying]));
+}
+
 // ペレジアの将の大斧
 {
     let skillId = getSpecialRefinementSkillId(Weapon.PiegianWarAxe);
