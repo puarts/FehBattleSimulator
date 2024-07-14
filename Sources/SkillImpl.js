@@ -2203,12 +2203,13 @@
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 // 攻撃した側（自分からなら自分、敵からなら敵）の移動後のマスが移動前と異なる時、
                 let distance = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                let amount = 0;
                 if (distance > 0) {
                     // 戦闘中、攻撃、速さ＋6、さらに、
                     spurFunc(targetUnit, 6);
                     // （〇は、攻撃した側の
                     // 移動前と移動後のマスの距離（最大4））
-                    let amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
+                    amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
                     // 攻撃、速さ＋〇、
                     spurFunc(targetUnit, amount);
                     // かつ自分から攻撃していれば、
