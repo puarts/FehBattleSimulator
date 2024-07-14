@@ -97,7 +97,7 @@
                 // 戦闘中、自身の攻撃、速さ、守備、魔防+4、
                 targetUnit.addAllSpur(4);
                 // 敵の攻撃、速さ、守備が8-自分の周囲1マス以内の味方の数×2だけ減少(最低0)、
-                let count = this.countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+                let count = this.unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, 1);
                 let amount = MathUtil.ensureMin(8 - count * 2, 0);
                 enemyUnit.addSpursWithoutRes(-amount);
                 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
@@ -121,7 +121,7 @@
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // 周囲1マス以内の味方が1体以下の時、
-            if (this.countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+            if (this.unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 // 戦闘中、攻撃、速さ、守備、魔防+5、
                 targetUnit.addAllSpur(5);
                 // かつ、距離に関係なく反撃する、
