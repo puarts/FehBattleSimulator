@@ -1,5 +1,72 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ニザヴェリルの弩弓
+{
+    let skillId = Weapon.NidavellirBallista;
+    // 射程：2 特効：飛行
+    // 威力：14
+    // 飛行特効
+    // 奥義が発動しやすい（発動カウントー1）
+    // 1～4ターン目の間、
+    // 【再移動（マス間の距離＋1、最大4）］を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return g_appData.currentTurn <= 4;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // マス間の距離+1、最大4
+        let dist = Unit.calcMoveDistance(this)
+        return Math.min(dist + 1, 4);
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 1～4ターン目開始時、
+            if (this.globalBattleContext.currentTurn <= 4) {
+                // 自分の奥義発動カウントー3、
+                skillOwner.reserveToReduceSpecialCount(3);
+                // 自分を除く周囲2マス以内の味方の
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                for (let unit of units) {
+                    // 奥義発動カウントー1、
+                    unit.reserveToReduceSpecialCount(1);
+                    // 自分と周囲2マス以内の味方に
+                    // 【魔刃】を付与
+                    unit.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                }
+                // 自分と周囲2マス以内の味方に
+                // 【魔刃】を付与
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ＋6、
+                targetUnit.addAtkSpdSpurs(6);
+                // さらに、攻撃、速さが
+                // 戦闘開始時の速さの20%だけ増加、
+                targetUnit.addAtkSpdSpurs(Math.trunc(targetUnit.getSpdInPrecombat() * 0.2));
+                // 最初に受けた攻撃と2回攻撃のダメージを30%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+                // （最初に受けた攻撃と2回攻撃：
+                // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1〜2回目の攻撃）
+            }
+        }
+    );
+    // ダメージ＋速さの20％（戦闘前奥義も含む）、
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            if (atkUnit.battleContext.restHpPercentage >= 25) {
+                let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+            }
+        }
+    );
+}
+
 // 奔放なる風の剣
 {
     let skillId = Weapon.WildWindSword;
