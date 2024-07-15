@@ -1881,6 +1881,7 @@ const Weapon = {
     LanceOfGrado: 2945, // グラドの将の重槍
     WildWindSword: 2948, // 奔放なる風の剣
     NidavellirBallista: 2943, // ニザヴェリルの弩弓
+    SisterlyAxe: 2951, // 優しさと強さの絆斧
 };
 
 const Support = {

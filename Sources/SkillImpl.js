@@ -1,5 +1,53 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 優しさと強さの絆斧
+{
+    let skillId = Weapon.SisterlyAxe;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    // 速さの差を比較するスキルの比較判定時、
+    // 自身の速さ＋7として判定
+    evalSpdAddFuncMap.set(skillId, function (unit) {
+        return 7;
+    })
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner, 2)) {
+                // 自分と周囲2マス以内の味方の
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // 攻撃、速さ＋6、
+                    unit.reserveToApplyBuffs(6, 6, 0, 0);
+                    // 【回避】を付与（1ターン）
+                    unit.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // 戦闘中、攻撃、速さ、守備、魔防が
+                // 自身を中心とした縦3列と横3列にいる敵の数x3＋5だけ増加（最大14）、
+                let count = this.unitManager.countEnemiesInCrossWithOffset(targetUnit, 1);
+                targetUnit.addAllSpur(MathUtil.ensureMax(count * 3 + 5, 14));
+                // 受けるダメージー速さの20％（範囲奥義を除く）、
+                targetUnit.battleContext.reduceDamageByStatus([false, true, false, false], 0.2);
+                // 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // （無効にする数値は端数切捨て）
+                // （範囲奥義を除く）、かつ
+                // 戦闘中、自分の攻撃でダメージを与えた時、
+                // 7回復（与えたダメージが0でも効果は発動）
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
+    );
+}
+
 // ニザヴェリルの弩弓
 {
     let skillId = Weapon.NidavellirBallista;
