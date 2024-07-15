@@ -1,5 +1,42 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 黒曜石の教え
+{
+    let skillId = PassiveA.ObsidianTactics;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防＋9、
+                targetUnit.addAllSpur(9);
+                // かつ自分と周囲2マス以内の味方の強化を除く【有利な状態】の数の合計値に応じて異なる効果を発動
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true);
+                let count = 0;
+                for (let unit of units) {
+                    count += unit.getPositiveStatusEffects().length;
+                }
+                // （1以上なら、
+                if (count >= 1) {
+                    // 敵の攻撃、守備が合計値✕2だけ減少（最大12）
+                    enemyUnit.addAtkDefSpurs(-MathUtil.ensureMax(count * 2, 12))
+                }
+                // *  3以上なら、さらに、
+                if (count >= 3) {
+                    // 距離に関係なく反撃する
+                    targetUnit.battleContext.canCounterattackToAllDistance = true;
+                }
+                // *  5以上なら、
+                if (count >= 5) {
+                    // さらに、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
+                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                    // * （無効にする数値は端数切捨て）
+                    // （範囲奥義を除く））
+                }
+            }
+        }
+    );
+}
+
 // グラドの将の重槍
 {
     let skillId = Weapon.LanceOfGrado;
