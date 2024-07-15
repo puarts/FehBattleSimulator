@@ -2828,6 +2828,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    MoonlitBangleQ: 2954, // 華月の腕輪・先
     IcePrincesSeal: 2915, // 氷王の封印
     UnderTheSun: 2912, // 日に育ち地に満ちる
     YunesProtection: 2906, // ユンヌの見守り

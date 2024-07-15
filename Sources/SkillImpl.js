@@ -1,5 +1,37 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 華月の腕輪・先
+{
+    let skillId = PassiveB.MoonlitBangleQ;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、
+            if (enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 自分の速さが「敵の速さー4」以上なら、
+                        if (targetUnit.isHigherOrEqualSpdInCombat(enemyUnit, -4)) {
+                            // 先制攻撃
+                            targetUnit.battleContext.isVantageActivatable = true;
+                        }
+                    }
+                );
+            }
+            // 戦闘中、敵の攻撃、速さ、守備-5
+            enemyUnit.addSpursWithoutRes(5);
+            // 戦闘中、
+            // ダメージ＋敵の守備の25%（範囲奥義を除く）、
+            targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Def, 0.25);
+            // 自分の最初の攻撃前に奥義発動カウントー1、
+            targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+            // 自分の最初の追撃前に奥義発動カウントー1、
+            targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += 1;
+            // 自身の奥義発動カウント変動量ーを無効
+            targetUnit.battleContext.neutralizesReducesCooldownCount();
+        }
+    );
+}
+
 // 陣風
 {
     let skillId = Special.Gust;
