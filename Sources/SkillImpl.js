@@ -5380,6 +5380,8 @@
     }
     // 速さ魔防
     setSkill(PassiveB.SealSpdRes3, [0, 1, 0, 1]);
+    // 守備魔防封じ3
+    setSkill(PassiveB.SealDefRes3, [0, 0, 1, 1]);
 }
 
 // 神聖風
