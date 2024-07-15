@@ -1,5 +1,51 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 奔放なる風の剣
+{
+    let skillId = Weapon.WildWindSword;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 自軍ターン開始時、および、敵軍ターン開始時、
+            // 自分の速さ、守備ー7（次回行動終了まで）
+            skillOwner.reserveToApplyDebuffs(0, -7, -7, 0);
+        }
+    );
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 自軍ターン開始時、および、敵軍ターン開始時、
+            // 自分の速さ、守備ー7（次回行動終了まで）
+            skillOwner.reserveToApplyDebuffs(0, -7, -7, 0);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防＋5、
+                targetUnit.addAllSpur(5);
+                // かつ自分が攻撃、速さ、守備、魔防の弱化を受けていれば、
+                // 攻撃、速さ、守備、魔防が弱化の値の2倍だけ上昇（能力値ごとに計算）
+                targetUnit.battleContext.applyFoesPenaltyDoubler();
+                // （例えば、攻撃ー7の弱化を受けていれば、=7+14+5で、戦闘中、攻撃＋12となる）、
+                // ダメージ＋自分が受けている弱化の合計値の150％（範囲奥義を除く）、
+                targetUnit.battleContext.additionalDamage += Math.trunc(Math.abs(targetUnit.debuffTotal) * 1.5);
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+                targetUnit.battleContext.setNullFollowupAttack();
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                // （最初に受けた攻撃と2回攻撃：
+                // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                // 戦闘後、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
 // 黒曜石の教え
 {
     let skillId = PassiveA.ObsidianTactics;

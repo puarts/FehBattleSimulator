@@ -1879,6 +1879,7 @@ const Weapon = {
 
     // 新英雄「響心エイリーク＆開花アメリア」
     LanceOfGrado: 2945, // グラドの将の重槍
+    WildWindSword: 2948, // 奔放なる風の剣
 };
 
 const Support = {
