@@ -1,5 +1,41 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 陣風
+{
+    let skillId = Special.Gust;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 速さの50%を奥義ダメージに加算
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.5));
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // 「自分または敵が奥義発動可能状態の時」、
+            // 「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
+            // 2条件のいずれかを満たした時、かつ、
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
+                // 戦闘中、自分の速さが「敵の速さー4」以上の時、
+                if (defUnit.isHigherOrEqualSpdInCombat(atkUnit, -4)) {
+                    // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）
+                    // （範囲奥義を除く）
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
 // 優しさと強さの絆斧
 {
     let skillId = Weapon.SisterlyAxe;

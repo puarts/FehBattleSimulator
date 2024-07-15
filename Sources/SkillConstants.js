@@ -2103,6 +2103,8 @@ const Special = {
 
     DragonsRoar: 2796, // 竜の咆哮
 
+    Gust: 2952, // 陣風
+
     // 専用奥義
     WarpRagnarok: 2925, // ワープライナ
     TimeAndLight: 2919, // 時と光
