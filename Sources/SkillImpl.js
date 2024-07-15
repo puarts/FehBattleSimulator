@@ -1,5 +1,47 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// グラドの将の重槍
+{
+    let skillId = Weapon.LanceOfGrado;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                // 自分と周囲2マス以内の味方の
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // 守備、魔防+6、
+                    unit.reserveToApplyBuffs(0, 0, 6, 6);
+                    // 「戦闘中、奥義発動カウント変動量＋1
+                    unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    // （同系統効果複数時、最大値適用）」、
+                    // 「敵の強化の＋を無効」を付与（1ターン）
+                    unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // 戦闘中、攻撃、速さ、守備、魔防が
+                // 周囲3マス以内の味方の数x3＋5だけ増加（最大14）、
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                targetUnit.addAllSpur(MathUtil.ensureMax(count * 3 + 5, 14));
+                // 自身の弱化を無効、
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                // （最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、戦闘後、7回復
+            }
+        }
+    );
+}
+
 // 先導
 {
     let skillId = PassiveC.Guidance4;

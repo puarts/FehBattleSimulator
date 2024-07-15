@@ -1876,6 +1876,9 @@ const Weapon = {
     // 2024年7月 武器錬成
     WyvernLance: 2942, // 蒼穹の竜槍
     PiegianWarAxe: 2941, // ペレジアの将の大斧
+
+    // 新英雄「響心エイリーク＆開花アメリア」
+    LanceOfGrado: 2945, // グラドの将の重槍
 };
 
 const Support = {
