@@ -876,8 +876,6 @@ const TELEPORTATION_SKILL_SET = new Set([
     PassiveB.HentaiHiko2,
     PassiveB.HentaiHiko3,
     PassiveC.SorakaranoSendo3,
-    PassiveC.Guidance4,
-    PassiveC.SoaringGuidance,
     PassiveC.HikonoSendo3,
     PassiveC.OpeningRetainer,
     Weapon.SilentPower,

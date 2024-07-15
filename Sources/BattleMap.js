@@ -2057,16 +2057,6 @@ class BattleMap {
                             yield* ally.placedTile.getMovableNeighborTiles(unit, 1, false, true);
                         }
                         break;
-                    case PassiveC.Guidance4:
-                        if (unit.moveType === MoveType.Armor || unit.moveType === MoveType.Infantry) {
-                            yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
-                        }
-                        break;
-                    case PassiveC.SoaringGuidance:
-                        if (unit.moveType === MoveType.Infantry || unit.moveType === MoveType.Flying) {
-                            yield* ally.placedTile.getMovableNeighborTiles(unit, 2, false, true);
-                        }
-                        break;
                     case PassiveC.HikonoSendo3:
                         if (unit.moveType === MoveType.Flying) {
                             // 飛行の先導

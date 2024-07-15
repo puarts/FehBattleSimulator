@@ -1,5 +1,40 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 先導
+{
+    let skillId = PassiveC.Guidance4;
+    let setSkill = (skillId, distance, pred) => {
+        updateUnitSpurFromAlliesFuncMap.set(skillId,
+            function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+                // 周囲2マス以内の味方歩行、重装は、戦闘中、攻撃、速さ+3、かつ速さが敵より1以上高い時、戦闘中、自分の追撃不可を無効
+                if (targetUnit.distance(allyUnit) <= distance && pred(targetUnit)) {
+                    targetUnit.addAtkSpdSpurs(3);
+                }
+            }
+        );
+        applySkillEffectFromAlliesFuncMap.set(skillId,
+            function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
+                // 周囲2マス以内の味方歩行、重装は、戦闘中、攻撃、速さ+3、かつ速さが敵より1以上高い時、戦闘中、自分の追撃不可を無効
+                if (targetUnit.distance(allyUnit) <= distance && pred(targetUnit)) {
+                    targetUnit.battleContext.setSpdNullFollowupAttack(0, true, false);
+                }
+            }
+        );
+        enumerateTeleportTilesForAllyFuncMap.set(skillId,
+            function* (targetUnit, allyUnit) {
+                // 周囲2マス以内の味方歩行、重装は、自身の周囲2マス以内に移動可能
+                if (targetUnit.distance(allyUnit) <= distance && pred(targetUnit)) {
+                    yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                }
+            }
+        );
+    }
+    // 空からの先導4
+    setSkill(PassiveC.Guidance4, 2, u => u.isMoveTypeIn([MoveType.Armor, MoveType.Infantry]));
+    // 飛走の先導
+    setSkill(PassiveC.SoaringGuidance, 2, u => u.isMoveTypeIn([MoveType.Infantry, MoveType.Flying]));
+}
+
 // ペレジアの将の大斧
 {
     let skillId = getSpecialRefinementSkillId(Weapon.PiegianWarAxe);
@@ -62,7 +97,7 @@
                 // 戦闘中、自身の攻撃、速さ、守備、魔防+4、
                 targetUnit.addAllSpur(4);
                 // 敵の攻撃、速さ、守備が8-自分の周囲1マス以内の味方の数×2だけ減少(最低0)、
-                let count = this.countAlliesWithinSpecifiedSpaces(targetUnit, 1);
+                let count = this.unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, 1);
                 let amount = MathUtil.ensureMin(8 - count * 2, 0);
                 enemyUnit.addSpursWithoutRes(-amount);
                 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
@@ -86,7 +121,7 @@
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // 周囲1マス以内の味方が1体以下の時、
-            if (this.countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
+            if (this.unitManager.countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                 // 戦闘中、攻撃、速さ、守備、魔防+5、
                 targetUnit.addAllSpur(5);
                 // かつ、距離に関係なく反撃する、
@@ -2168,22 +2203,23 @@
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 // 攻撃した側（自分からなら自分、敵からなら敵）の移動後のマスが移動前と異なる時、
                 let distance = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
+                let amount = 0;
                 if (distance > 0) {
                     // 戦闘中、攻撃、速さ＋6、さらに、
                     spurFunc(targetUnit, 6);
                     // （〇は、攻撃した側の
                     // 移動前と移動後のマスの距離（最大4））
-                    let amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
+                    amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
                     // 攻撃、速さ＋〇、
                     spurFunc(targetUnit, amount);
                     // かつ自分から攻撃していれば、
                     if (targetUnit.battleContext.initiatesCombat) {
                         // 戦闘中、受けるダメージー〇✕3（範囲義を除く）
                         targetUnit.battleContext.damageReductionValue += amount * 3;
-                        // 戦闘中、敵の奥義による攻撃の時、受けるダメージー〇x3（範囲奥義を除く）
-                        targetUnit.battleContext.damageReductionValueOfSpecialAttack += amount * 3;
                     }
                 }
+                // 戦闘中、敵の奥義による攻撃の時、受けるダメージー〇x3（範囲奥義を除く）
+                targetUnit.battleContext.damageReductionValueOfSpecialAttack += amount * 3;
             }
         );
     }

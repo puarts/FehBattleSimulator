@@ -5557,6 +5557,15 @@ class Unit extends BattleMapElement {
     static canActivateOrActivatedSpecialEither(targetUnit, enemyUnit) {
         return targetUnit.canActivateOrActivatedSpecial() || enemyUnit.canActivateOrActivatedSpecial();
     }
+
+    isMoveTypeIn(moveTypes) {
+        for (let moveType of moveTypes) {
+            if (this.moveType === moveType) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 
