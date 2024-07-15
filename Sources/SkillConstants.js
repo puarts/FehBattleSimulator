@@ -2587,6 +2587,7 @@ const PassiveB = {
     HardyFighter3: 1872, // 盾壁隊形3
     SavvyFighter3: 1991, // 慧眼隊形3
     SavvyFighter4: 2435, // 慧眼隊形4
+    CleverFighter: 2947, // 慧敏隊形
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     PhysNullFollow: 2457, // 理の見切り・追撃

@@ -1,5 +1,32 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 慧敏隊形
+{
+    let skillId = PassiveB.CleverFighter;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の攻撃、速さー4、
+            enemyUnit.addAtkSpdSpurs(-4);
+            // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、かつ、
+            targetUnit.battleContext.setNullFollowupAttack();
+            // 敵の追撃の速さ条件＋10（例えば、追撃の速さ条件＋10であれば、速さの差が15以上なければ追撃できない）
+            enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 10;
+            // （同系統スキル複数の時、効果は累積する）、
+            // かつ自分の速さが「敵の速さー10」以上の時、
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.isHigherOrEqualSpdInCombat(enemyUnit, -10)) {
+                        // 戦闘中、最初に受けた攻撃と2回攻撃のダメージー10
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += 10;
+                        // （最初に受けた攻撃と2回攻撃：
+                        // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）
+                    }
+                }
+            );
+        }
+    );
+}
+
 // 響・見切り反撃不可
 {
     let skillId = PassiveX.NullCDisruptE;
