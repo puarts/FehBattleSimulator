@@ -349,11 +349,11 @@ static __canDisableCounterAttack(atkUnit, defUnit) {
 targetUnit.battleContext.canCounterattackToAllDistance = true;
 
 戦闘中、自分が受けている反撃不可を無効
+targetUnit.battleContext.nullCounterDisrupt = true;
+もしくは
 __canDisableCounterAttack(atkUnit, defUnit) {
     return false;
 }
-もしくは
-targetUnit.battleContext.nullCounterDisrupt = true;
 
 敵が反撃可能なら
 this.canCounterAttack(atkUnit, defUnit)
@@ -418,7 +418,7 @@ __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDam
 }
 
 弱化を受けていれば、戦闘中、敵の弱化の値だけ減少(能力値ごとに計算)(例えば、攻撃-7の弱化を受けていれば、-7-7で、戦闘中、攻撃-14となる)[弱化増幅]
-targetUnit.battleContext.setFoesPenaltyDoubler();
+targetUnit.battleContext.applyFoesPenaltyDoubler();
 もしくは
 targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {

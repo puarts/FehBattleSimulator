@@ -1876,6 +1876,12 @@ const Weapon = {
     // 2024年7月 武器錬成
     WyvernLance: 2942, // 蒼穹の竜槍
     PiegianWarAxe: 2941, // ペレジアの将の大斧
+
+    // 新英雄「響心エイリーク＆開花アメリア」
+    LanceOfGrado: 2945, // グラドの将の重槍
+    WildWindSword: 2948, // 奔放なる風の剣
+    NidavellirBallista: 2943, // ニザヴェリルの弩弓
+    SisterlyAxe: 2951, // 優しさと強さの絆斧
 };
 
 const Support = {
@@ -2096,6 +2102,8 @@ const Special = {
     NegatingFang2: 2725, // 反竜穿・承
 
     DragonsRoar: 2796, // 竜の咆哮
+
+    Gust: 2952, // 陣風
 
     // 専用奥義
     WarpRagnarok: 2925, // ワープライナ
@@ -2360,6 +2368,7 @@ const PassiveA = {
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
     // 専用A
+    ObsidianTactics: 2946, // 黒曜石の教え
     FellWyrmscale: 2842, // 邪竜の暗鱗
     EmblemsMiracle: 2797, // 紋章の奇跡
     Obsession: 2785, // 執着
@@ -2402,6 +2411,7 @@ const PassiveA = {
     AtkSpdUnity: 1801, // 攻撃速さの連帯
     AtkDefUnity: 1450, // 攻撃守備の連帯
     AtkResUnity: 1575, // 攻撃魔防の連帯
+    SpdDefUnity: 2949, // 速さ守備の連帯
     DefResUnity: 2096, // 守備魔防の連帯
 
     // 機先
@@ -2577,6 +2587,7 @@ const PassiveB = {
     HardyFighter3: 1872, // 盾壁隊形3
     SavvyFighter3: 1991, // 慧眼隊形3
     SavvyFighter4: 2435, // 慧眼隊形4
+    CleverFighter: 2947, // 慧敏隊形
 
     MikiriTsuigeki3: 757, // 見切り・追撃効果3
     PhysNullFollow: 2457, // 理の見切り・追撃
@@ -2682,6 +2693,7 @@ const PassiveB = {
     SealAtkRes2: 1604, // 攻撃魔防封じ2
     SealDefRes1: 1467,
     SealDefRes2: 613,
+    SealDefRes3: 2950, // 守備魔防封じ3
     SealSpdDef1: 1465,
     SealSpdDef2: 855,
     SealSpdRes1: 1466,
@@ -2817,6 +2829,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    MoonlitBangleQ: 2954, // 華月の腕輪・先
     IcePrincesSeal: 2915, // 氷王の封印
     UnderTheSun: 2912, // 日に育ち地に満ちる
     YunesProtection: 2906, // ユンヌの見守り
@@ -3362,6 +3375,7 @@ const PassiveX = {
     GuardEcho: 2822, // 響・キャンセル
     MercyWingEcho: 2859, // 響・救援の行路
     FarTraceEcho: 2908, // 響・遠影
+    NullCDisruptE: 2953, // 響・見切り反撃不可
 };
 
 const Captain = {

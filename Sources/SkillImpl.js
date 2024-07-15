@@ -1,5 +1,350 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 慧敏隊形
+{
+    let skillId = PassiveB.CleverFighter;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の攻撃、速さー4、
+            enemyUnit.addAtkSpdSpurs(-4);
+            // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、かつ、
+            targetUnit.battleContext.setNullFollowupAttack();
+            // 敵の追撃の速さ条件＋10（例えば、追撃の速さ条件＋10であれば、速さの差が15以上なければ追撃できない）
+            enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += 10;
+            // （同系統スキル複数の時、効果は累積する）、
+            // かつ自分の速さが「敵の速さー10」以上の時、
+            targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                (targetUnit, enemyUnit, calcPotentialDamage) => {
+                    if (targetUnit.isHigherOrEqualSpdInCombat(enemyUnit, -10)) {
+                        // 戦闘中、最初に受けた攻撃と2回攻撃のダメージー10
+                        targetUnit.battleContext.damageReductionValueOfFirstAttacks += 10;
+                        // （最初に受けた攻撃と2回攻撃：
+                        // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）
+                    }
+                }
+            );
+        }
+    );
+}
+
+// 響・見切り反撃不可
+{
+    let skillId = PassiveX.NullCDisruptE;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.nullCounterDisrupt = true;
+        }
+    );
+}
+
+// 華月の腕輪・先
+{
+    let skillId = PassiveB.MoonlitBangleQ;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、
+            if (enemyUnit.battleContext.initiatesCombat) {
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 自分の速さが「敵の速さー4」以上なら、
+                        if (targetUnit.isHigherOrEqualSpdInCombat(enemyUnit, -4)) {
+                            // 先制攻撃
+                            targetUnit.battleContext.isVantageActivatable = true;
+                        }
+                    }
+                );
+            }
+            // 戦闘中、敵の攻撃、速さ、守備-5
+            enemyUnit.addSpursWithoutRes(5);
+            // 戦闘中、
+            // ダメージ＋敵の守備の25%（範囲奥義を除く）、
+            targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Def, 0.25);
+            // 自分の最初の攻撃前に奥義発動カウントー1、
+            targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
+            // 自分の最初の追撃前に奥義発動カウントー1、
+            targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += 1;
+            // 自身の奥義発動カウント変動量ーを無効
+            targetUnit.battleContext.neutralizesReducesCooldownCount();
+        }
+    );
+}
+
+// 陣風
+{
+    let skillId = Special.Gust;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 速さの50%を奥義ダメージに加算
+            let status = targetUnit.getSpdInCombat(enemyUnit);
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.5));
+        }
+    );
+
+    // 攻撃奥義のダメージ軽減
+    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+        function (atkUnit, defUnit) {
+            // 「自分または敵が奥義発動可能状態の時」、
+            // 「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
+            // 2条件のいずれかを満たした時、かつ、
+            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
+                // 戦闘中、自分の速さが「敵の速さー4」以上の時、
+                if (defUnit.isHigherOrEqualSpdInCombat(atkUnit, -4)) {
+                    // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）
+                    // （範囲奥義を除く）
+                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                }
+            }
+        }
+    );
+}
+
+// 優しさと強さの絆斧
+{
+    let skillId = Weapon.SisterlyAxe;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    // 速さの差を比較するスキルの比較判定時、
+    // 自身の速さ＋7として判定
+    evalSpdAddFuncMap.set(skillId, function (unit) {
+        return 7;
+    })
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner, 2)) {
+                // 自分と周囲2マス以内の味方の
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // 攻撃、速さ＋6、
+                    unit.reserveToApplyBuffs(6, 6, 0, 0);
+                    // 【回避】を付与（1ターン）
+                    unit.reserveToAddStatusEffect(StatusEffectType.Dodge);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // 戦闘中、攻撃、速さ、守備、魔防が
+                // 自身を中心とした縦3列と横3列にいる敵の数x3＋5だけ増加（最大14）、
+                let count = this.unitManager.countEnemiesInCrossWithOffset(targetUnit, 1);
+                targetUnit.addAllSpur(MathUtil.ensureMax(count * 3 + 5, 14));
+                // 受けるダメージー速さの20％（範囲奥義を除く）、
+                targetUnit.battleContext.reduceDamageByStatus([false, true, false, false], 0.2);
+                // 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
+                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                // （無効にする数値は端数切捨て）
+                // （範囲奥義を除く）、かつ
+                // 戦闘中、自分の攻撃でダメージを与えた時、
+                // 7回復（与えたダメージが0でも効果は発動）
+                targetUnit.battleContext.healedHpByAttack += 7;
+            }
+        }
+    );
+}
+
+// ニザヴェリルの弩弓
+{
+    let skillId = Weapon.NidavellirBallista;
+    // 射程：2 特効：飛行
+    // 威力：14
+    // 飛行特効
+    // 奥義が発動しやすい（発動カウントー1）
+    // 1～4ターン目の間、
+    // 【再移動（マス間の距離＋1、最大4）］を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return g_appData.currentTurn <= 4;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // マス間の距離+1、最大4
+        let dist = Unit.calcMoveDistance(this)
+        return Math.min(dist + 1, 4);
+    });
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 1～4ターン目開始時、
+            if (this.globalBattleContext.currentTurn <= 4) {
+                // 自分の奥義発動カウントー3、
+                skillOwner.reserveToReduceSpecialCount(3);
+                // 自分を除く周囲2マス以内の味方の
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2);
+                for (let unit of units) {
+                    // 奥義発動カウントー1、
+                    unit.reserveToReduceSpecialCount(1);
+                    // 自分と周囲2マス以内の味方に
+                    // 【魔刃】を付与
+                    unit.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+                }
+                // 自分と周囲2マス以内の味方に
+                // 【魔刃】を付与
+                skillOwner.reserveToAddStatusEffect(StatusEffectType.Hexblade);
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ＋6、
+                targetUnit.addAtkSpdSpurs(6);
+                // さらに、攻撃、速さが
+                // 戦闘開始時の速さの20%だけ増加、
+                targetUnit.addAtkSpdSpurs(Math.trunc(targetUnit.getSpdInPrecombat() * 0.2));
+                // 最初に受けた攻撃と2回攻撃のダメージを30%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.3, enemyUnit);
+                // （最初に受けた攻撃と2回攻撃：
+                // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1〜2回目の攻撃）
+            }
+        }
+    );
+    // ダメージ＋速さの20％（戦闘前奥義も含む）、
+    calcFixedAddDamageFuncMap.set(skillId,
+        function (atkUnit, defUnit, isPrecombat) {
+            if (atkUnit.battleContext.restHpPercentage >= 25) {
+                let status = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
+                atkUnit.battleContext.additionalDamage += Math.trunc(status * 0.2);
+            }
+        }
+    );
+}
+
+// 奔放なる風の剣
+{
+    let skillId = Weapon.WildWindSword;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 自軍ターン開始時、および、敵軍ターン開始時、
+            // 自分の速さ、守備ー7（次回行動終了まで）
+            skillOwner.reserveToApplyDebuffs(0, -7, -7, 0);
+        }
+    );
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // 自軍ターン開始時、および、敵軍ターン開始時、
+            // 自分の速さ、守備ー7（次回行動終了まで）
+            skillOwner.reserveToApplyDebuffs(0, -7, -7, 0);
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘開始時、自身のHPが25%以上なら、
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                // 戦闘中、攻撃、速さ、守備、魔防＋5、
+                targetUnit.addAllSpur(5);
+                // かつ自分が攻撃、速さ、守備、魔防の弱化を受けていれば、
+                // 攻撃、速さ、守備、魔防が弱化の値の2倍だけ上昇（能力値ごとに計算）
+                targetUnit.battleContext.applyFoesPenaltyDoubler();
+                // （例えば、攻撃ー7の弱化を受けていれば、=7+14+5で、戦闘中、攻撃＋12となる）、
+                // ダメージ＋自分が受けている弱化の合計値の150％（範囲奥義を除く）、
+                targetUnit.battleContext.additionalDamage += Math.trunc(Math.abs(targetUnit.debuffTotal) * 1.5);
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+                targetUnit.battleContext.setNullFollowupAttack();
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                // （最初に受けた攻撃と2回攻撃：
+                // 通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                // 戦闘後、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
+            }
+        }
+    );
+}
+
+// 黒曜石の教え
+{
+    let skillId = PassiveA.ObsidianTactics;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、または、戦闘開始時、敵のHPが75%以上の時、
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防＋9、
+                targetUnit.addAllSpur(9);
+                // かつ自分と周囲2マス以内の味方の強化を除く【有利な状態】の数の合計値に応じて異なる効果を発動
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true);
+                let count = 0;
+                for (let unit of units) {
+                    count += unit.getPositiveStatusEffects().length;
+                }
+                // （1以上なら、
+                if (count >= 1) {
+                    // 敵の攻撃、守備が合計値✕2だけ減少（最大12）
+                    enemyUnit.addAtkDefSpurs(-MathUtil.ensureMax(count * 2, 12))
+                }
+                // *  3以上なら、さらに、
+                if (count >= 3) {
+                    // 距離に関係なく反撃する
+                    targetUnit.battleContext.canCounterattackToAllDistance = true;
+                }
+                // *  5以上なら、
+                if (count >= 5) {
+                    // さらに、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
+                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                    // * （無効にする数値は端数切捨て）
+                    // （範囲奥義を除く））
+                }
+            }
+        }
+    );
+}
+
+// グラドの将の重槍
+{
+    let skillId = Weapon.LanceOfGrado;
+    // 威力：16 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                // 自分と周囲2マス以内の味方の
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // 守備、魔防+6、
+                    unit.reserveToApplyBuffs(0, 0, 6, 6);
+                    // 「戦闘中、奥義発動カウント変動量＋1
+                    unit.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
+                    // （同系統効果複数時、最大値適用）」、
+                    // 「敵の強化の＋を無効」を付与（1ターン）
+                    unit.reserveToAddStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // 戦闘中、攻撃、速さ、守備、魔防が
+                // 周囲3マス以内の味方の数x3＋5だけ増加（最大14）、
+                let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
+                targetUnit.addAllSpur(MathUtil.ensureMax(count * 3 + 5, 14));
+                // 自身の弱化を無効、
+                targetUnit.battleContext.invalidateAllOwnDebuffs();
+                // 最初に受けた攻撃と2回攻撃のダメージを40%軽減
+                targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
+                // （最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、戦闘後、7回復
+            }
+        }
+    );
+}
+
 // 先導
 {
     let skillId = PassiveC.Guidance4;
@@ -5188,6 +5533,8 @@
     }
     // 速さ魔防
     setSkill(PassiveB.SealSpdRes3, [0, 1, 0, 1]);
+    // 守備魔防封じ3
+    setSkill(PassiveB.SealDefRes3, [0, 0, 1, 1]);
 }
 
 // 神聖風
