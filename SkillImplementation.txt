@@ -349,11 +349,11 @@ static __canDisableCounterAttack(atkUnit, defUnit) {
 targetUnit.battleContext.canCounterattackToAllDistance = true;
 
 戦闘中、自分が受けている反撃不可を無効
+targetUnit.battleContext.nullCounterDisrupt = true;
+もしくは
 __canDisableCounterAttack(atkUnit, defUnit) {
     return false;
 }
-もしくは
-targetUnit.battleContext.nullCounterDisrupt = true;
 
 敵が反撃可能なら
 this.canCounterAttack(atkUnit, defUnit)

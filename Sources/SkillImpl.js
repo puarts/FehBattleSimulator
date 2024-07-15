@@ -1,5 +1,15 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 響・見切り反撃不可
+{
+    let skillId = PassiveX.NullCDisruptE;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            targetUnit.battleContext.nullCounterDisrupt = true;
+        }
+    );
+}
+
 // 華月の腕輪・先
 {
     let skillId = PassiveB.MoonlitBangleQ;

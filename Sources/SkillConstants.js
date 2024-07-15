@@ -3374,6 +3374,7 @@ const PassiveX = {
     GuardEcho: 2822, // 響・キャンセル
     MercyWingEcho: 2859, // 響・救援の行路
     FarTraceEcho: 2908, // 響・遠影
+    NullCDisruptE: 2953, // 響・見切り反撃不可
 };
 
 const Captain = {
