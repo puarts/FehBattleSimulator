@@ -17,7 +17,7 @@
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // 敵から攻撃された時、
             if (enemyUnit.battleContext.initiatesCombat) {
-                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                     (targetUnit, enemyUnit, calcPotentialDamage) => {
                         // 自分の速さが「敵の速さー4」以上なら、
                         if (targetUnit.isHigherOrEqualSpdInCombat(enemyUnit, -4)) {
