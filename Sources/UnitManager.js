@@ -110,6 +110,10 @@ class UnitManager {
         return !this.enumerateUnitsInDifferentGroupInCrossOf(targetUnit, offset).next().done
     }
 
+    isThereAllyInCrossOf(targetUnit, offset) {
+        return !this.enumerateUnitsInTheSameGroupInCrossOf(targetUnit, offset).next().done
+    }
+
     enumerateUnitsWithinSpecifiedSpaces(posX, posY, unitGroupId, spaces) {
         return this.enumerateUnitsWithPredicator(unit => {
             if (unit.groupId !== unitGroupId || !unit.isOnMap) {

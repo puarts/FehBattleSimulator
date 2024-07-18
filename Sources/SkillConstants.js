@@ -1883,6 +1883,7 @@ const Weapon = {
     NidavellirBallista: 2943, // ニザヴェリルの弩弓
     SisterlyAxe: 2951, // 優しさと強さの絆斧
     PursualLancePlus: 2955, // 追撃の槍+
+    SunstonesBlade: 2956, // 日長石の剣
 };
 
 const Support = {

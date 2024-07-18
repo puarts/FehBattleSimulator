@@ -1,5 +1,42 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 日長石の剣
+{
+    let skillId = Weapon.SunstonesBlade;
+    // 守備+3
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 自身を中心とした縦3列と横3列の味方は、
+            if (allyUnit.isInCrossWithOffset(targetUnit, 1)) {
+                // 戦闘中、攻撃、守備+4、
+                targetUnit.addAtkDefSpurs(4);
+                // 戦闘後、10回復
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、
+            // 自身を中心とした縦3列と横3列に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.unitManager.isThereAllyInCrossOf(targetUnit, 1)) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // 敵の攻撃、守備が戦闘開始時の自分の守備の20%だけ減少、
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.2);
+                enemyUnit.addAtkDefSpurs(-amount);
+                // 自分が受けるダメージ-自分の守備の15%(範囲奥義を除く)、
+                targetUnit.battleContext.reduceDamageByStatus([false, false, true, false], 0.15);
+                // 自分は絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // 戦闘後、自分は、10回復
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+    );
+}
+
 // 追撃の槍+
 {
     let skillId = Weapon.PursualLancePlus;
