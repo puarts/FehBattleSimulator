@@ -904,7 +904,7 @@
                         </tr>
                         <tr>
                             <td class='skillHeader'>
-                                <img :src="g_imageRootPath + 'Special.png'" width="25" height="25" />
+                                <img class="specialIcon" v-bind:src="EngagedSpecialIcon[value.emblemHeroIndex]" width="25" height="25" />
                                 <span v-if="value.specialInfo != null" class="skillTypeText">
                                     {{value.maxSpecialCount}}
                                 </span>
@@ -1070,6 +1070,20 @@
                                     {{ option.text }}
                                 </option>
                             </select>
+                        </dd>
+                        <dt><label class="title">エンゲージ:</label></dt>
+                        <dd>
+                            <label class="normal">紋章士: </label>
+                            <select2 :options="g_app.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
+                                        class="hero"
+                                        @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur()">
+                            </select2>
+                            <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.emblemHeroIndex}})</span>
+
+                            <label class="normal">＋: </label>
+                            <input name="emblemHeroMerge" type="number"
+                                    v-model="value.emblemHeroMerge" min="0" v-bind:max="10"
+                                    class="numeric" @input="g_app.vm.emblemHeroMergeChanged" />
                         </dd>
                         <dt v-if="value.providableBlessingSeason == SeasonType.None && !value.isPairUpUnit">
                             <label class="title">祝福:</label></dt>
