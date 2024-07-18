@@ -2554,7 +2554,7 @@
                     spurFunc(targetUnit, 6);
                     // （〇は、攻撃した側の
                     // 移動前と移動後のマスの距離（最大4））
-                    amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
+                    amount = MathUtil.ensureMax(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 4);
                     // 攻撃、速さ＋〇、
                     spurFunc(targetUnit, amount);
                     // かつ自分から攻撃していれば、
@@ -2596,6 +2596,7 @@
                 // 戦闘中、攻撃、速さ、守備、魔防が自分を中心とした縦3列と横3列にいる味方の数x3＋5だけ増加（最大14）、
                 let allies = this.unitManager.enumerateUnitsInTheSameGroupInCrossOf(targetUnit, 1);
                 let amount = MathUtil.ensureMax(GeneratorUtil.count(allies) * 3 + 5, 14);
+                targetUnit.addAllSpur(amount);
                 // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
                 targetUnit.battleContext.setNullFollowupAttack();
                 // ダメージ＋速さの20%（範囲奥義を除く）、
