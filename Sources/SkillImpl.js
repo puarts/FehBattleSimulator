@@ -1,5 +1,21 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 追撃の槍+
+{
+    let skillId = Weapon.PursualLancePlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 攻撃、守備+5、
+                targetUnit.addAtkDefSpurs(5);
+                // 絶対追撃
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+}
+
 // 慧敏隊形
 {
     let skillId = PassiveB.CleverFighter;
