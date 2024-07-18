@@ -1867,7 +1867,7 @@ const Weapon = {
     // 超英雄「大好きな海で」
     // https://www.youtube.com/watch?v=UTWu9EafSmk&ab_channel=NintendoMobile
     // https://www.youtube.com/watch?v=OnDV8grCimA&t=7s&ab_channel=NintendoMobile
-    MaritimeArts:  2932, // 海水浴の体術
+    MaritimeArts: 2932, // 海水浴の体術
     BreakerBow: 2935, // 波間の欠片の鋭弓
     SmallSpadePlus: 2937, // 小さなスコップ+
     DivaPairParasol: 2938, // 耳目集める二人の傘
@@ -2922,7 +2922,7 @@ const PassiveB = {
     BeastNTrace3: 2303, // 絶対化身・近影3
     BeastFollowUp3: 2335, // 絶対化身・追撃3
     BeastSense4: 2515, // 絶対化身・察知4
-    BeastAssault4 : 2883, // 絶対化身・強襲4
+    BeastAssault4: 2883, // 絶対化身・強襲4
 
     // 咆哮
     CounterRoar4: 2546, // 反撃の咆哮4
@@ -3413,6 +3413,14 @@ const EmblemHero = {
     Celica: 1139,
 };
 
+// エンゲージしたときの奥義アイコン
+const EngagedSpecialIcon = {};
+EngagedSpecialIcon[EmblemHero.None] = g_imageRootPath + "Special.png";
+const g_engagedSpecialIconRoot = g_skillIconRootPath + "EngagedSpecial/";
+EngagedSpecialIcon[EmblemHero.Marth] = g_engagedSpecialIconRoot + "Marth_Of_Beginnings_ES.webp";
+EngagedSpecialIcon[EmblemHero.Ike] = g_engagedSpecialIconRoot + "Ike_Of_Radiance_ES.webp";
+EngagedSpecialIcon[EmblemHero.Celica] = g_engagedSpecialIconRoot + "Celica_Of_Echoes_ES.webp";
+
 const EffectiveType = {
     None: -1,
 
@@ -3446,7 +3454,7 @@ const ColorType = {
 // パフォーマンスに影響しやすくて、辞書にアクセスしたくない時に使う値型
 const NoneValue = -1;
 
-const NoneOption = {id: NoneValue, text: "なし"};
+const NoneOption = { id: NoneValue, text: "なし" };
 
 ///
 /// Functions

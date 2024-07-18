@@ -1988,7 +1988,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <th class='param'><img class="specialIcon" style="max-width:15px" />
+                            <th class='param'>
+                                <img class="specialIcon" v-bind:src="EngagedSpecialIcon[value.emblemHeroIndex]" width="25" />
                             </th>
                             <td>
                                 <select2 :options="g_app.vm.specialOptions" v-model="value.special" v-if="g_app.vm.enableAllSkillOptions"
