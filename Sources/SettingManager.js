@@ -13,8 +13,6 @@ function changeCurrentUnitTab(tabIndex) {
     // アイコン
     $('.weaponIcon').attr('src', g_imageRootPath + "Weapon.png");
     $('.supportIcon').attr('src', g_imageRootPath + "Support.png");
-    $('.specialIcon').attr('src', g_imageRootPath + "Special.png");
-    // $('.urlJumpIcon').attr('src', g_imageRootPath + "UrlJump.png");
 }
 
 /// シリアライズ可能なシミュレーターの設定を管理するクラスです。
