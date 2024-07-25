@@ -839,7 +839,10 @@
                                             <img v-else v-bind:src="g_imageRootPath + 'UnknownCaptainSkill.webp'"
                                                 width="25" height="25" />
                                         </span>
-                                        <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
+                                        <div class="team-container">
+                                            <img :key=" unit.id" v-bind:src="unit.icon" class="unit-img" style="max-width: 35px;" />
+                                            <img v-if="unit.emblemHeroIndex !== EmblemHero.None" class="engage-img" v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20" />
+                                        </div>
 
                                     </button>
                                     <!-- <img v-for="unit in allyUnits" :key="unit.id" src="/images/dummy.png" v-bind:data-src="unit.icon"
@@ -869,7 +872,10 @@
                                             <img v-else v-bind:src="g_imageRootPath + 'UnknownCaptainSkill.webp'"
                                                 width="25" height="25" />
                                         </span>
-                                        <img :key=" unit.id" v-bind:src="unit.icon" style="max-width: 35px;" />
+                                        <div class="team-container">
+                                            <img :key=" unit.id" v-bind:src="unit.icon" class="unit-img" style="max-width: 35px;" />
+                                            <img v-if="unit.emblemHeroIndex !== EmblemHero.None" class="engage-img" v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20" />
+                                        </div>
                                     </button>
                                 </draggable>
                             </td>
