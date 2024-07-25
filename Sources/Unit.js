@@ -5566,6 +5566,14 @@ class Unit extends BattleMapElement {
         }
         return false;
     }
+
+    resetSkillsForSettingByImage() {
+        this.passiveS = PassiveS.None;
+        this.passiveX = PassiveX.None;
+        this.emblemHeroIndex = EmblemHero.None;
+        this.emblemHeroMerge = 0;
+        this.isBonusChar = false;
+    }
 }
 
 
