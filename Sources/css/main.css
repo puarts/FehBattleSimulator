@@ -569,22 +569,3 @@ input[type=checkbox].chromeLikeCheck + label span {
 input[type=checkbox].chromeLikeCheck:checked + label span {
     background: url(/images/check_radio_sheet.png) -19px top no-repeat
 }
-
-.team-container {
-    position: relative;
-    display: inline-block;
-}
-
-.team-container .unit-img {
-    display: block;
-    width: 100%;
-}
-
-.team-container .engage-img {
-    position: absolute;
-    bottom: -3px;
-    right: -3px;
-    width: 50%; /* 必要に応じてサイズを調整 */
-    /*border: 1px solid white; !* 任意のスタイル *!*/
-    border-radius: 50%; /* 任意のスタイル */
-}
