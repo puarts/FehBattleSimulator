@@ -13,6 +13,36 @@ class BattleContext {
     #healAmountsAfterAfterBeginningOfCombatSkills = [0]; // 番兵
     // 戦闘中、奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」をN％無効（最大100%、無効にする数値は端数切捨て）（範囲奥義を除く）
     #reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation = [];
+    /**
+     * ダメージ軽減
+     * @type {Number[]}
+     */
+    #damageReductionRatios = [];
+    /**
+     * 最初に受けた攻撃のダメージ軽減
+     * @type {Number[]}
+     */
+    #damageReductionRatiosOfFirstAttack = [];
+    /**
+     * 最初に受けた攻撃と2回攻撃のダメージ軽減
+     * @type {Number[]}
+     */
+    #damageReductionRatiosOfFirstAttacks = [];
+    /**
+     * 連撃のダメージ軽減
+     * @type {Number[]}
+     */
+    #damageReductionRatiosOfConsecutiveAttacks = [];
+    /**
+     * 追撃のダメージ軽減
+     * @type {Number[]}
+     */
+    #damageReductionRatiosOfFollowupAttack = [];
+    /**
+     * チェインガードのダメージ軽減
+     * @type {Number[]}
+     */
+    #damageReductionRatiosByChainGuard = [];
 
     constructor() {
         this.initContext();
@@ -31,19 +61,16 @@ class BattleContext {
         this.isDesperationActivated = false; // 攻め立てが実際に発動するか(これはisDesperationActivatableから設定されるので直接設定しない)
         this.isDefDesperationActivatable = false; // 受け攻め立ての発動条件を満たすか
         this.isDefDesperationActivated = false; // 最後の聖戦のように攻め立て受け側バージョン
-        this.damageReductionRatioOfFirstAttack = 0; // 最初の1撃だけ
-        this.damageReductionRatioOfFirstAttacks = 0; // 連撃の場合は1,2回目の攻撃(3,4回目が対象外)
-        this.damageReductionRatioOfConsecutiveAttacks = 0;
-        this.damageReductionRatioOfFollowupAttack = 0;
-        /**
-         * フランなどのチェインガードによる回避効果
-         * @type {[[Unit, Number]]}
-         * */
         this.damageReductionRatiosByChainGuard = [];
         this.isChainGuardActivated = false;
         this.reductionRatiosOfDamageReductionRatioExceptSpecial = []; // 奥義以外のダメージ軽減効果の軽減率(シャールヴィ)
         this.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack = []; // 奥義以外のダメージ軽減効果の軽減率
         this.#reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation = [];
+        this.#damageReductionRatiosOfFirstAttack = [];
+        this.#damageReductionRatiosOfFirstAttacks = [];
+        this.#damageReductionRatiosOfConsecutiveAttacks = [];
+        this.#damageReductionRatiosOfFollowupAttack = [];
+        this.#damageReductionRatiosByChainGuard = [];
         this.isEffectiveToOpponent = false;
         this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
         this.attackCount = 1;
@@ -152,6 +179,7 @@ class BattleContext {
         // 戦闘中常に有効になるダメージ軽減率
         // @NOTE: ダメージ軽減無効を考慮する必要があるので基本this.multDamageReductionRatioメソッドで値を設定する
         this.damageReductionRatio = 0;
+        this.#damageReductionRatios = [];
 
         // 防御系奥義によるダメージ軽減率
         this.damageReductionRatioBySpecial = 0;
@@ -480,6 +508,7 @@ class BattleContext {
     clearPrecombatState() {
         // 戦闘前奥義と戦闘中の両方で参照する設定だけ戦闘前奥義発動後に再評価が必要なのでクリアする
         this.damageReductionRatio = 0;
+        this.#damageReductionRatios = [];
         this.additionalDamage = 0;
         this.additionalDamageOfSpecial = 0;
         this.damageReductionValue = 0;
@@ -574,39 +603,33 @@ class BattleContext {
         ];
     }
 
-    // ダメージ軽減積
-    static multDamageReductionRatio(sourceRatio, ratio, atkUnit) {
-        return 1 - (1 - sourceRatio) * (1 - ratio);
-    }
-
     // 奥義のダメージ軽減積
     static multDamageReductionRatioForSpecial(sourceRatio, ratio) {
         return 1 - (1 - sourceRatio) * (1 - ratio);
     }
 
-    // ダメージ軽減積
-    multDamageReductionRatio(ratio, atkUnit) {
-        this.damageReductionRatio = BattleContext.multDamageReductionRatio(this.damageReductionRatio, ratio, atkUnit);
-    }
-
+    // TODO: 置き換える
     // 最初の攻撃のダメージ軽減積
     multDamageReductionRatioOfFirstAttack(ratio, atkUnit) {
-        this.damageReductionRatioOfFirstAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttack, ratio, atkUnit);
+        this.addDamageReductionRatioOfFirstAttack(ratio);
     }
 
+    // TODO: 置き換える
     // 最初の攻撃のダメージ軽減積
     multDamageReductionRatioOfFirstAttacks(ratio, atkUnit) {
-        this.damageReductionRatioOfFirstAttacks = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFirstAttacks, ratio, atkUnit);
+        this.addDamageReductionRatioOfFirstAttacks(ratio);
     }
 
+    // TODO: 置き換える
     // 連撃のダメージ軽減積
     multDamageReductionRatioOfConsecutiveAttacks(ratio, atkUnit) {
-        this.damageReductionRatioOfConsecutiveAttacks = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfConsecutiveAttacks, ratio, atkUnit);
+        this.addDamageReductionRatioOfConsecutiveAttacks(ratio);
     }
 
+    // TODO: 置き換える
     // 追撃のダメージ軽減積
     multDamageReductionRatioOfFollowupAttack(ratio, atkUnit) {
-        this.damageReductionRatioOfFollowupAttack = BattleContext.multDamageReductionRatio(this.damageReductionRatioOfFollowupAttack, ratio, atkUnit);
+        this.addDamageReductionRatioOfFollowupAttack(ratio);
     }
 
     // 範囲奥義のダメージ軽減積
@@ -889,5 +912,53 @@ class BattleContext {
                 enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
             }
         );
+    }
+
+    addDamageReductionRatio(ratio) {
+        this.#damageReductionRatios.push(ratio);
+    }
+
+    getDamageReductionRatios() {
+        return this.#damageReductionRatios;
+    }
+
+    addDamageReductionRatioOfFirstAttack(ratio) {
+        this.#damageReductionRatiosOfFirstAttack.push(ratio);
+    }
+
+    getDamageReductionRatiosOfFirstAttack(ratio) {
+        return this.#damageReductionRatiosOfFirstAttack;
+    }
+
+    addDamageReductionRatioOfFirstAttacks(ratio) {
+        this.#damageReductionRatiosOfFirstAttacks.push(ratio);
+    }
+
+    getDamageReductionRatiosOfFirstAttacks(ratio) {
+        return this.#damageReductionRatiosOfFirstAttacks;
+    }
+
+    addDamageReductionRatioOfConsecutiveAttacks(ratio) {
+        this.#damageReductionRatiosOfConsecutiveAttacks.push(ratio);
+    }
+
+    getDamageReductionRatiosOfConsecutiveAttacks(ratio) {
+        return this.#damageReductionRatiosOfConsecutiveAttacks;
+    }
+
+    addDamageReductionRatioOfFollowupAttack(ratio) {
+        this.#damageReductionRatiosOfFollowupAttack.push(ratio);
+    }
+
+    getDamageReductionRatiosOfFollowupAttack(ratio) {
+        return this.#damageReductionRatiosOfFollowupAttack;
+    }
+
+    addDamageReductionRatioByChainGuard(ratio) {
+        this.#damageReductionRatiosByChainGuard.push(ratio);
+    }
+
+    getDamageReductionRatiosByChainGuard(ratio) {
+        return this.#damageReductionRatiosByChainGuard;
     }
 }

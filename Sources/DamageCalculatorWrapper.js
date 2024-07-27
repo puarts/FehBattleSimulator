@@ -10299,7 +10299,7 @@ class DamageCalculatorWrapper {
                         case Weapon.KittyCatParasol:
                             targetUnit.battleContext.increaseCooldownCountForBoth();
                             targetUnit.battleContext.invalidateAllBuffs();
-                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            targetUnit.battleContext.addDamageReductionRatio(0.3);
                             break;
                         case Weapon.SacrificeStaff:
                             if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
@@ -10342,7 +10342,7 @@ class DamageCalculatorWrapper {
                             }
                             break;
                         case Weapon.CaduceusStaff:
-                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            targetUnit.battleContext.addDamageReductionRatio(0.3);
                             break;
                         case Weapon.Flykoogeru:
                             if (!targetUnit.isWeaponRefined) {
@@ -10390,7 +10390,7 @@ class DamageCalculatorWrapper {
                             }
                             break;
                         case PassiveC.HolyGround:
-                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            targetUnit.battleContext.addDamageReductionRatio(0.3);
                             targetUnit.defSpur += 4;
                             targetUnit.resSpur += 4;
                             break;
@@ -13278,21 +13278,21 @@ class DamageCalculatorWrapper {
         for (let func of defUnit.battleContext.getDamageReductionRatioFuncs) {
             let ratio = func(atkUnit, defUnit);
             if (ratio > 0) {
-                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+                defUnit.battleContext.addDamageReductionRatio(ratio);
             }
         }
 
         for (let skillId of defUnit.enumerateSkills()) {
             let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
             if (ratio > 0) {
-                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+                defUnit.battleContext.addDamageReductionRatio(ratio);
             }
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
             let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
             if (ratio > 0) {
-                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+                defUnit.battleContext.addDamageReductionRatio(ratio);
             }
         }
     }

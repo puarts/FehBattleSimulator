@@ -406,7 +406,7 @@ class DamageCalcData {
 
         this.atkUnit.battleContext.isThereAllyOnAdjacentTiles = true;
 
-        this.defUnit.battleContext.damageReductionRatio = roundFloat(this.damageReductionPercentage * 0.01);
+        this.defUnit.battleContext.addDamageReductionRatio(roundFloat(this.damageReductionPercentage * 0.01));
         this.atkUnit.tmpSpecialCount = 0;
 
         this.damageCalc.clearLog();
