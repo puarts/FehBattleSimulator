@@ -4250,6 +4250,7 @@ class BattleSimulatorBase {
      */
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
         g_appData.isCombatOccuredInCurrentTurn = false;
+        g_appData.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[group] = false;
 
         if (targetUnits.length === 0) {
             return;
@@ -8475,6 +8476,36 @@ class BattleSimulatorBase {
         }
     }
 
+    applyDivineNectarSkills(assistUnit, targetUnit) {
+        // 自分を除く【神獣の蜜】が付与されている味方が応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、
+        if (assistUnit.hasStatusEffect(StatusEffectType.DivineNectar)) {
+            for (let skillId of assistUnit.enumerateSkills()) {
+                if (DIVINE_NECTAR_SKILL_SET.has(skillId)) {
+                    return;
+                }
+            }
+            let found = false;
+            let units = this.enumerateUnitsInTheSameGroupOnMap(assistUnit);
+            for (let unit of units) {
+                for (let skillId of unit.enumerateSkills()) {
+                    if (DIVINE_NECTAR_SKILL_SET.has(skillId)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (found) {
+                // その味方を行動可能な状態にする
+                // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
+                // （1ターンに1回のみ）
+                if (assistUnit.isActionDone &&
+                    !g_appData.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[assistUnit.groupId]) {
+                    assistUnit.grantsAnotherActionByAssist();
+                }
+            }
+        }
+    }
+
     #applyMovementAssistSkill(skillId, assistUnit, targetUnit) {
         switch (skillId) {
             case Weapon.RetainersReport:
@@ -9465,6 +9496,7 @@ class BattleSimulatorBase {
             executeTrapIfPossible(supporterUnit, true);
             executeTrapIfPossible(targetUnit, false);
 
+            g_appData.globalBattleContext.applyReservedStateForSupportSkills(supporterUnit.groupId);
             this.__goToNextPhaseIfPossible(supporterUnit.groupId);
         }
 
@@ -9472,6 +9504,8 @@ class BattleSimulatorBase {
     }
 
     #applySupportSkillForSupporter(skillId, supporterUnit, targetUnit) {
+        // 神獣の蜜
+        this.applyDivineNectarSkills(supporterUnit, targetUnit);
         switch (skillId) {
             case Support.GoldSerpent: {
                 let currentTurn = g_appData.globalBattleContext.currentTurn;
@@ -9488,17 +9522,17 @@ class BattleSimulatorBase {
                     targetUnit.addStatusEffect(StatusEffectType.DualStrike);
                 }
                 if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
-                    supporterUnit.isActionDone = false;
                     supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                    supporterUnit.grantsAnotherActionByAssist();
                 }
             }
                 break;
             case Weapon.JollyJadeLance:
                 if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
+                    supporterUnit.isOneTimeActionActivatedForWeapon = true;
                     supporterUnit.applyAtkBuff(6);
                     supporterUnit.applySpdBuff(6);
-                    supporterUnit.isActionDone = false;
-                    supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                    supporterUnit.grantsAnotherActionByAssist();
                 }
                 break;
             case Support.DragonsDance:
@@ -9506,7 +9540,7 @@ class BattleSimulatorBase {
                 if (g_appData.globalBattleContext.currentTurn >= 2 &&
                     supporterUnit.restSupportSkillAvailableTurn === 0) {
                     this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
-                    supporterUnit.isActionDone = false;
+                    supporterUnit.grantsAnotherActionByAssist();
                     supporterUnit.applyBuffs(6, 6, 0, 0);
                     supporterUnit.addStatusEffect(StatusEffectType.Isolation);
                     supporterUnit.restSupportSkillAvailableTurn = 3;
@@ -9517,9 +9551,9 @@ class BattleSimulatorBase {
                 break;
             case Support.FateUnchanged:
                 if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                    supporterUnit.isActionDone = false;
                     supporterUnit.isOneTimeActionActivatedForSupport = true;
+                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                    supporterUnit.grantsAnotherActionByAssist();
                 }
                 for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
@@ -9534,9 +9568,9 @@ class BattleSimulatorBase {
                 break;
             case Support.AFateChanged:
                 if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                    supporterUnit.isActionDone = false;
                     supporterUnit.isOneTimeActionActivatedForSupport = true;
+                    supporterUnit.addStatusEffect(StatusEffectType.Isolation);
+                    supporterUnit.grantsAnotherActionByAssist();
                 }
                 for (let effect of targetUnit.getPositiveStatusEffects()) {
                     supporterUnit.addStatusEffect(effect);
@@ -9550,27 +9584,27 @@ class BattleSimulatorBase {
                 break;
             case Support.ToChangeFate:
                 if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                    supporterUnit.isOneTimeActionActivatedForSupport = true;
                     supporterUnit.applyAtkBuff(6);
                     supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                    supporterUnit.isActionDone = false;
-                    supporterUnit.isOneTimeActionActivatedForSupport = true;
+                    supporterUnit.grantsAnotherActionByAssist();
                 }
                 break;
             case Support.ToChangeFate2:
                 if (!supporterUnit.isOneTimeActionActivatedForSupport) {
+                    supporterUnit.isOneTimeActionActivatedForSupport = true;
                     supporterUnit.applyAtkBuff(6);
                     supporterUnit.applyDefBuff(6);
                     supporterUnit.addStatusEffect(StatusEffectType.Isolation);
                     supporterUnit.addStatusEffect(StatusEffectType.BonusDoubler);
-                    supporterUnit.isActionDone = false;
-                    supporterUnit.isOneTimeActionActivatedForSupport = true;
+                    supporterUnit.grantsAnotherActionByAssist();
                 }
                 break;
             case Support.FutureVision:
             case Support.FutureVision2:
                 if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                    supporterUnit.isActionDone = false;
                     supporterUnit.isOneTimeActionActivatedForSupport = true;
+                    supporterUnit.grantsAnotherActionByAssist();
                 }
                 if (supporterUnit.support === Support.FutureVision2) {
                     for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {

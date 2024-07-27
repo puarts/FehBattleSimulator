@@ -1619,6 +1619,8 @@ class AppData extends UnitManager {
             + ValueDelimiter + this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy]
             + ValueDelimiter + this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally]
             + ValueDelimiter + this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy]
+            + ValueDelimiter + this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy]
             ;
     }
 
@@ -1660,6 +1662,8 @@ class AppData extends UnitManager {
         if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy] = Number(values[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {

@@ -1884,6 +1884,10 @@ const Weapon = {
     SisterlyAxe: 2951, // 優しさと強さの絆斧
     PursualLancePlus: 2955, // 追撃の槍+
     SunstonesBlade: 2956, // 日長石の剣
+
+    // Ｗ神階英雄「ヘイズルーン＆エイクスルニル」
+    NectarHorn: 2957, // 蜜の癒し手の角
+    QuietingAntler: 2923, // 体の葬り手の角
 };
 
 const Support = {
@@ -2106,6 +2110,7 @@ const Special = {
     DragonsRoar: 2796, // 竜の咆哮
 
     Gust: 2952, // 陣風
+    FierceBeast: 2960, // 猛獣
 
     // 専用奥義
     WarpRagnarok: 2925, // ワープライナ
@@ -2512,6 +2517,9 @@ const PassiveA = {
 
     // 突破
     AtkSpdExcel: 2889, // 攻撃速さの突破
+    AtkDefExcel: 2961, // 攻撃守備の突破
+
+    Stronghold: 2958, // 堅牢城塞
 };
 
 const PassiveB = {
@@ -2831,6 +2839,7 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
 
     // 専用B
+    DivineStrength: 2962, // 神獣の肉体
     MoonlitBangleQ: 2954, // 華月の腕輪・先
     IcePrincesSeal: 2915, // 氷王の封印
     UnderTheSun: 2912, // 日に育ち地に満ちる
@@ -3272,6 +3281,7 @@ const PassiveC = {
     EvenResWaveD: 2934, // 竜の魔防の波・偶
 
     // 専用C
+    DivineNectar: 2959, // 神獣の蜜
     ForeverYours: 2890, // あなたのシャロン
     AbsoluteClosure: 2884, // すべてを鎖す世界
     CorruptedDragon: 2869, // 異形なる竜王

@@ -143,6 +143,7 @@ class BattleContext {
         this.followupAttackPriorityIncrement = 0;
         this.followupAttackPriorityDecrement = 0;
 
+        // TODO: 軽減無効が来た時は配列に入れるように修正する
         // 戦闘前の範囲奥義で有効になるダメージ軽減率
         this.damageReductionRatioForPrecombat = 0;
         // 戦闘前の範囲奥義のダメージ軽減

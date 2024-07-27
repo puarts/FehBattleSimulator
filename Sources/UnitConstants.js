@@ -190,6 +190,7 @@ const StatusEffectType = {
     Frozen: 65, // 凍結
     Bonded: 66, // 縁
     Bulwalk: 67, // 防壁
+    DivineNectar: 68, // 神獣の蜜
 };
 
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
@@ -351,6 +352,7 @@ const STATUS_EFFECT_FILE_NAME_MAP = new Map([
     [StatusEffectType.ShareSpoils, "ShareSpoils.webp"],
     [StatusEffectType.Frozen, "Frozen.webp"],
     [StatusEffectType.Bonded, "Bonded.webp"],
+    [StatusEffectType.DivineNectar, "DivineNectar.webp"],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

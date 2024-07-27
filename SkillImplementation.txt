@@ -55,7 +55,7 @@ applyEnemySkillForBeginningOfTurn(skillId, skillOwner) {}
 applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {}
 
 自軍のターン開始時スキル発動後
-applyAfterSkillsSkillForBeginningOfTurnFuncMap.set(skillId,
+applySkillAfterSkillsForBeginningOfTurnFuncMap.set(skillId,
     function (skillOwner) {
     }
 );
@@ -70,6 +70,12 @@ applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId,
 獣の共通の化身スキル
 WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
 BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
+
+化身状態になる条件を無条件にする[絶対化身]
+hasTransformSkillsFuncMap.set(skillId, function () {
+    // 化身状態になる条件を無条件にする
+    return true;
+});
 
 敵が赤属性の時
 if (enemyUnit.color === ColorType.Red)
