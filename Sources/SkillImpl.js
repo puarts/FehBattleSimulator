@@ -4739,24 +4739,28 @@
     // 応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、または、行動済みの自分に使用された時、
     // - 自分を行動可能にする（1ターンに1回のみ）
     /** @type {(this: BattleSimulatorBase, owner: Unit) => void} */
-    let actionFunc = function (skillOwner) {
+    let actionFunc = function (skillOwner, isSupporter) {
         if (!skillOwner.isActionDone) {
             return;
         }
         if (!skillOwner.isOneTimeActionActivatedForWeapon) {
             skillOwner.isOneTimeActionActivatedForWeapon = true;
             this.writeDebugLogLine(`${DebugUtil.getSkillName(skillOwner, skillOwner.weaponInfo)}により${skillOwner.nameWithGroup}は再行動`);
-            skillOwner.grantsAnotherActionByAssist();
+            if (isSupporter) {
+                skillOwner.grantsAnotherActionOnAssist();
+            } else {
+                skillOwner.grantsAnotherActionOnAssisted();
+            }
         }
     };
     applySupportSkillForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
-            actionFunc.call(this, supporterUnit);
+            actionFunc.call(this, supporterUnit, true);
         }
     );
     applySupportSkillForTargetUnitFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
-            actionFunc.call(this, targetUnit);
+            actionFunc.call(this, targetUnit, false);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
@@ -5060,7 +5064,7 @@
                         supporterUnit.isOneTimeActionActivatedForSupport = true;
 
                         // その後、自分を行動可能にし、自分とダブル相手に移動を最大1マスに制限する状態異常を付与（次回行動終了時まで）
-                        supporterUnit.grantsAnotherActionByAssist();
+                        supporterUnit.grantsAnotherActionOnAssist();
                         supporterUnit.addStatusEffect(StatusEffectType.Gravity);
                         this.writeLogLine(`${supporterUnit.getNameWithGroup()}は${supporterUnit.supportInfo.name}により再行動`);
 
@@ -6594,7 +6598,7 @@
         function (supporterUnit, targetUnit, supportTile) {
             if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
                 supporterUnit.isOneTimeActionActivatedForWeapon = true;
-                supporterUnit.grantsAnotherActionByAssist();
+                supporterUnit.grantsAnotherActionOnAssist();
             }
         }
     );
@@ -6752,7 +6756,7 @@
             if (supporterUnit.isWeaponRefined) {
                 if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
                     supporterUnit.isOneTimeActionActivatedForWeapon = true;
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
             }
         }
@@ -10864,7 +10868,7 @@
         function (supporterUnit, targetUnit, supportTile) {
             if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                 supporterUnit.isOneTimeActionActivatedForSupport = true;
-                supporterUnit.grantsAnotherActionByAssist();
+                supporterUnit.grantsAnotherActionOnAssist();
             }
             supporterUnit.applyBuffs(6, 6, 0, 0);
             targetUnit.applyBuffs(6, 6, 0, 0);
@@ -12102,7 +12106,7 @@
         function (supporterUnit, targetUnit, supportTile) {
             if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
                 supporterUnit.isOneTimeActionActivatedForWeapon = true;
-                supporterUnit.grantsAnotherActionByAssist();
+                supporterUnit.grantsAnotherActionOnAssist();
             }
         }
     );

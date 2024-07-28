@@ -5604,9 +5604,13 @@ class Unit extends BattleMapElement {
         this.isBonusChar = false;
     }
 
-    grantsAnotherActionByAssist() {
+    grantsAnotherActionOnAssist() {
         this.isActionDone = false;
         g_appData.globalBattleContext.reservedIsAnotherActionByAssistActivatedInCurrentTurn[this.groupId] = true;
+    }
+
+    grantsAnotherActionOnAssisted() {
+        this.isActionDone = false;
     }
 }
 

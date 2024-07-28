@@ -8500,7 +8500,7 @@ class BattleSimulatorBase {
                 // （1ターンに1回のみ）
                 if (assistUnit.isActionDone &&
                     !g_appData.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[assistUnit.groupId]) {
-                    assistUnit.grantsAnotherActionByAssist();
+                    assistUnit.grantsAnotherActionOnAssist();
                 }
             }
         }
@@ -9523,7 +9523,7 @@ class BattleSimulatorBase {
                 }
                 if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
                     supporterUnit.isOneTimeActionActivatedForWeapon = true;
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
             }
                 break;
@@ -9532,7 +9532,7 @@ class BattleSimulatorBase {
                     supporterUnit.isOneTimeActionActivatedForWeapon = true;
                     supporterUnit.applyAtkBuff(6);
                     supporterUnit.applySpdBuff(6);
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
                 break;
             case Support.DragonsDance:
@@ -9540,7 +9540,7 @@ class BattleSimulatorBase {
                 if (g_appData.globalBattleContext.currentTurn >= 2 &&
                     supporterUnit.restSupportSkillAvailableTurn === 0) {
                     this.writeSimpleLogLine(`${supporterUnit.nameWithGroup}の補助スキル効果が発動`);
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                     supporterUnit.applyBuffs(6, 6, 0, 0);
                     supporterUnit.addStatusEffect(StatusEffectType.Isolation);
                     supporterUnit.restSupportSkillAvailableTurn = 3;
@@ -9553,7 +9553,7 @@ class BattleSimulatorBase {
                 if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                     supporterUnit.isOneTimeActionActivatedForSupport = true;
                     supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
                 for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
@@ -9570,7 +9570,7 @@ class BattleSimulatorBase {
                 if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                     supporterUnit.isOneTimeActionActivatedForSupport = true;
                     supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
                 for (let effect of targetUnit.getPositiveStatusEffects()) {
                     supporterUnit.addStatusEffect(effect);
@@ -9587,7 +9587,7 @@ class BattleSimulatorBase {
                     supporterUnit.isOneTimeActionActivatedForSupport = true;
                     supporterUnit.applyAtkBuff(6);
                     supporterUnit.addStatusEffect(StatusEffectType.Isolation);
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
                 break;
             case Support.ToChangeFate2:
@@ -9597,14 +9597,14 @@ class BattleSimulatorBase {
                     supporterUnit.applyDefBuff(6);
                     supporterUnit.addStatusEffect(StatusEffectType.Isolation);
                     supporterUnit.addStatusEffect(StatusEffectType.BonusDoubler);
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
                 break;
             case Support.FutureVision:
             case Support.FutureVision2:
                 if (!supporterUnit.isOneTimeActionActivatedForSupport) {
                     supporterUnit.isOneTimeActionActivatedForSupport = true;
-                    supporterUnit.grantsAnotherActionByAssist();
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
                 if (supporterUnit.support === Support.FutureVision2) {
                     for (let unit of this.__findNearestEnemies(supporterUnit, 4)) {
