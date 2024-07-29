@@ -4746,11 +4746,7 @@
         if (!skillOwner.isOneTimeActionActivatedForWeapon) {
             skillOwner.isOneTimeActionActivatedForWeapon = true;
             this.writeDebugLogLine(`${DebugUtil.getSkillName(skillOwner, skillOwner.weaponInfo)}により${skillOwner.nameWithGroup}は再行動`);
-            if (isSupporter) {
-                skillOwner.grantsAnotherActionOnAssist();
-            } else {
-                skillOwner.grantsAnotherActionOnAssisted();
-            }
+            skillOwner.grantsAnotherActionWhenAssist(isSupporter);
         }
     };
     applySupportSkillForSupporterFuncMap.set(skillId,
