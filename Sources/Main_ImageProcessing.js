@@ -663,6 +663,7 @@ class ImageProcessor {
      * @param  {Canvas[]} ocrCanvases
      */
     setUnitByImage(unit, file, sourceCanvas, binarizedCanvas, ocrCanvases) {
+        unit.resetSkillsForSettingByImage();
         let app = g_app;
         let self = this;
         app.vm.ocrProgress = `画像の読み込み(${unit.id})..`;

@@ -1334,6 +1334,10 @@ class MathUtil {
     static ensureMax(value, max) {
         return Math.min(value, max);
     }
+
+    static truncByPercentage(ratio) {
+        return Math.trunc(ratio * 100) / 100;
+    }
 }
 
 class DebugUtil {

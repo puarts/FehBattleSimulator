@@ -26,6 +26,11 @@ class GlobalBattleContext {
         this.summonerDuelsCaptureScores[UnitGroupType.Enemy] = 0;
 
         this.isCombatOccuredInCurrentTurn = false; // 現在のターンで戦闘が発生したかどうか
+
+        // 現在のターンで補助の際の再行動が発動したかどうか
+        this.isAnotherActionByAssistActivatedInCurrentTurn = [false, false];
+        this.reservedIsAnotherActionByAssistActivatedInCurrentTurn = [false, false];
+
         // 戦闘でHP0になって退場になったユニットの数
         this.RemovedUnitCountsInCombat = {};
         this.RemovedUnitCountsInCombat[UnitGroupType.Ally] = 0;
@@ -237,5 +242,12 @@ class GlobalBattleContext {
 
     setChaosSeasonFromCurrentSeasons() {
         this.isChaosSeason = !this.isLightSeason && !this.isAstraSeason;
+    }
+
+    applyReservedStateForSupportSkills(group) {
+        if (this.reservedIsAnotherActionByAssistActivatedInCurrentTurn[group]) {
+            this.isAnotherActionByAssistActivatedInCurrentTurn[group] = true;
+            this.reservedIsAnotherActionByAssistActivatedInCurrentTurn[group] = false;
+        }
     }
 }

@@ -2245,6 +2245,24 @@ class DamageCalculatorWrapper {
             // さらに、自分の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
             enemyUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
         }
+        // 神獣の蜜
+        if (targetUnit.hasStatusEffect(StatusEffectType.DivineNectar)) {
+            // 【神獣の蜜】
+            // 戦闘中、【回復不可】を無効
+            targetUnit.battleContext.addNullInvalidatesHealRatios(1);
+            // 各ターンについて、自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時、戦闘中、
+            // 受けるダメージー10（範囲奥義を除く）
+            if (targetUnit.battleContext.initiatesCombat) {
+                if (targetUnit.isAttackDone) {
+                    targetUnit.battleContext.damageReductionValue += 10;
+                }
+            } else {
+                if (targetUnit.isCombatDone && !targetUnit.isAttackDone) {
+                    targetUnit.battleContext.damageReductionValue += 10;
+                }
+            }
+        }
+
         if (!targetUnit.isOneTimeActionActivatedForFallenStar
             && targetUnit.hasStatusEffect(StatusEffectType.FallenStar)
         ) {
@@ -10281,7 +10299,7 @@ class DamageCalculatorWrapper {
                         case Weapon.KittyCatParasol:
                             targetUnit.battleContext.increaseCooldownCountForBoth();
                             targetUnit.battleContext.invalidateAllBuffs();
-                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            targetUnit.battleContext.addDamageReductionRatio(0.3);
                             break;
                         case Weapon.SacrificeStaff:
                             if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
@@ -10324,7 +10342,7 @@ class DamageCalculatorWrapper {
                             }
                             break;
                         case Weapon.CaduceusStaff:
-                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            targetUnit.battleContext.addDamageReductionRatio(0.3);
                             break;
                         case Weapon.Flykoogeru:
                             if (!targetUnit.isWeaponRefined) {
@@ -10372,7 +10390,7 @@ class DamageCalculatorWrapper {
                             }
                             break;
                         case PassiveC.HolyGround:
-                            targetUnit.battleContext.multDamageReductionRatio(0.3, enemyUnit);
+                            targetUnit.battleContext.addDamageReductionRatio(0.3);
                             targetUnit.defSpur += 4;
                             targetUnit.resSpur += 4;
                             break;
@@ -13260,21 +13278,21 @@ class DamageCalculatorWrapper {
         for (let func of defUnit.battleContext.getDamageReductionRatioFuncs) {
             let ratio = func(atkUnit, defUnit);
             if (ratio > 0) {
-                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+                defUnit.battleContext.addDamageReductionRatio(ratio);
             }
         }
 
         for (let skillId of defUnit.enumerateSkills()) {
             let ratio = this.__getDamageReductionRatio(skillId, atkUnit, defUnit);
             if (ratio > 0) {
-                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+                defUnit.battleContext.addDamageReductionRatio(ratio);
             }
         }
 
         if (defUnit.hasStatusEffect(StatusEffectType.Dodge)) {
             let ratio = DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
             if (ratio > 0) {
-                defUnit.battleContext.multDamageReductionRatio(ratio, atkUnit);
+                defUnit.battleContext.addDamageReductionRatio(ratio);
             }
         }
     }
@@ -17307,6 +17325,12 @@ class DamageCalculatorWrapper {
     }
 
     applySkillEffectsAfterAfterBeginningOfCombat(targetUnit, enemyUnit) {
+        // 神獣の蜜
+        if (targetUnit.hasStatusEffect(StatusEffectType.DivineNectar)) {
+            // 戦闘開始後（戦闘開始後にダメージを受ける効果の後）、
+            // 20回復（同系統効果複数時、最大値適用）
+            targetUnit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(20);
+        }
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillEffectsAfterAfterBeginningOfCombatFuncMap)?.call(this, targetUnit, enemyUnit);
         }

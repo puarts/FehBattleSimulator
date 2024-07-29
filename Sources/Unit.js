@@ -2521,6 +2521,21 @@ class Unit extends BattleMapElement {
         this.reservedResBuff = Math.max(this.reservedResBuff, res);
     }
 
+    reserveToIncreaseAllBuffs(amount, max) {
+        if (this.atkBuff > 0) {
+            this.reserveToApplyAtkBuff(MathUtil.ensureMax(this.atkBuff + amount, max));
+        }
+        if (this.spdBuff > 0) {
+            this.reserveToApplySpdBuff(MathUtil.ensureMax(this.spdBuff + amount, max));
+        }
+        if (this.defBuff > 0) {
+            this.reserveToApplyDefBuff(MathUtil.ensureMax(this.defBuff + amount, max));
+        }
+        if (this.resBuff > 0) {
+            this.reserveToApplyResBuff(MathUtil.ensureMax(this.resBuff + amount, max));
+        }
+    }
+
     applyAtkSpdBuffs(atk, spd = atk) {
         this.applyAtkBuff(atk);
         this.applySpdBuff(spd);
@@ -3513,8 +3528,12 @@ class Unit extends BattleMapElement {
         return (Number(this.resWithSkills) + this.getResDebuffInCombat() + Number(this.resSpur));
     }
 
+    getEvalAtkInPrecombat() {
+        return this.getAtkInPrecombat() + this.__getEvalAtkAdd();
+    }
+
     getEvalDefInPrecombat() {
-        return this.getDefInPrecombat() + this.__getEvalDefAdd();
+        return this.getAtkInPrecombat() + this.__getEvalAtkAdd();
     }
 
     getEvalDefInCombat(enemyUnit = null) {
@@ -3589,6 +3608,16 @@ class Unit extends BattleMapElement {
      */
     isLowerOrEqualDefInCombat(enemyUnit, n = 0) {
         return this.getEvalDefInCombat(enemyUnit) <= enemyUnit.getEvalDefInCombat(this) + n;
+    }
+
+    /**
+     * 攻撃が相手の攻撃+n以上かどうかを返す
+     * @param {Unit} enemyUnit
+     * @param {number} n
+     * @return {boolean}
+     */
+    isHigherOrEqualAtkInPrecombat(enemyUnit, n = 0) {
+        return this.statusEvalUnit.getEvalAtkInPrecombat() >= enemyUnit.statusEvalUnit.getEvalAtkInPrecombat() + n;
     }
 
     /**
@@ -5565,6 +5594,31 @@ class Unit extends BattleMapElement {
             }
         }
         return false;
+    }
+
+    resetSkillsForSettingByImage() {
+        this.passiveS = PassiveS.None;
+        this.passiveX = PassiveX.None;
+        this.emblemHeroIndex = EmblemHero.None;
+        this.emblemHeroMerge = 0;
+        this.isBonusChar = false;
+    }
+
+    grantsAnotherActionWhenAssist(isAssist) {
+        if (isAssist) {
+            this.grantsAnotherActionOnAssist();
+        } else {
+            this.grantsAnotherActionOnAssisted();
+        }
+    }
+
+    grantsAnotherActionOnAssist() {
+        this.isActionDone = false;
+        g_appData.globalBattleContext.reservedIsAnotherActionByAssistActivatedInCurrentTurn[this.groupId] = true;
+    }
+
+    grantsAnotherActionOnAssisted() {
+        this.isActionDone = false;
     }
 }
 

@@ -1,5 +1,305 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 神獣の肉体
+{
+    let skillId = PassiveB.DivineStrength;
+    hasTransformSkillsFuncMap.set(skillId, function () {
+        // 化身状態になる条件を無条件にする
+        return true;
+    });
+
+    let func = function (skillOwner) {
+        // 自軍ターン、および、敵軍ターンの開始時スキル発動後、
+        // 自分の【不利な状態異常】を解除
+        skillOwner.reservedDebuffsToDelete = [true, true, true, true];
+        skillOwner.reserveToClearNegativeStatusEffects();
+        // （同タイミングで付与される【不利な状態異常】は解除されない）
+    };
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    // 敵軍ターン開始時
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, func);
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 戦闘中、敵の攻撃、守備一5、
+            enemyUnit.addAtkDefSpurs(-5);
+            // 自分は絶対追撃、
+            targetUnit.battleContext.followupAttackPriorityIncrement++;
+            // 戦闘後、自分は、7回復
+            targetUnit.battleContext.healedHpAfterCombat += 7;
+            // 戦闘開始時、自分の攻撃が、戦闘開始時の「敵の攻撃-5」以上の時、戦闘中、
+            if (targetUnit.isHigherOrEqualDefInPrecombat(enemyUnit, -5)) {
+                // 敵の攻撃、守備-6
+                enemyUnit.addAtkDefSpurs(-6);
+            }
+            // 戦闘開始時、自分の守備が、戦闘開始時の「敵の守備-5」以上の時、戦闘中、
+            if (targetUnit.isHigherOrEqualDefInPrecombat(enemyUnit, -5)) {
+                // 敵の攻撃、守備-6
+                enemyUnit.addAtkDefSpurs(-6);
+            }
+        }
+    );
+}
+
+// 猛獣
+{
+    let skillId = Special.FierceBeast;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+    INHERITABLE_COUNT2_SPECIALS.push(skillId);
+
+    initApplySpecialSkillEffectFuncMap.set(skillId,
+        function (targetUnit, enemyUnit) {
+            // 攻撃の〇%を奥義ダメージに加算（〇は、化身時は25、そうでない時は20）
+            let status = targetUnit.getAtkInCombat(enemyUnit);
+            let ratio = targetUnit.isTransformed ? 0.25 : 0.2;
+            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * ratio));
+            // 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効
+            targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
+        }
+    );
+}
+
+// 体の葬り手の角
+{
+    let skillId = Weapon.QuietingAntler;
+    // 威力：14
+    // 射程：1
+    // 【再移動（2）】を発動可能
+    canActivateCantoFuncMap.set(skillId, function (unit) {
+        // 無条件再移動
+        return true;
+    });
+    calcMoveCountForCantoFuncMap.set(skillId, function () {
+        // 再移動N
+        return 2;
+    });
+    // 奥義が発動しやすい（発動カウントー1）
+
+    // ターン開始時、竜、獣以外の味方と隣接していない場合
+    // 化身状態になる（そうでない場合、化身状態を解除）
+    // 化身状態なら、攻撃＋2、かつ戦闘中、敵の攻撃、守備一3、さらに、敵の攻撃、守備が
+    // 攻撃した側（自分からなら自分、敵からなら敵）の移動と移動後のマスの距離（最大3）だけ減少、かつ移動と移動後のマスの距離が2以上の時、戦闘中、自分が最初に受けた攻撃のダメージを30%軽減
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
+
+    // ターン開始時スキル
+    applySkillForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時、周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner, 2)) {
+                // 自分と周囲2マス以内の味方の
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // 攻撃、守備＋6（1ターン）、
+                    unit.reserveToApplyBuffs(6, 0, 6, 0);
+                    // 【強化増幅】を付与
+                    unit.reserveToAddStatusEffect(StatusEffectType.BonusDoubler);
+                }
+            }
+        }
+    );
+    // 自軍のターン開始時スキル発動後
+    applySkillAfterSkillsForBeginningOfTurnFuncMap.set(skillId,
+        function (skillOwner) {
+            // ターン開始時スキル発動後、
+            // 周囲2マス以内に味方がいる時、
+            if (this.__isThereAllyIn2Spaces(skillOwner)) {
+                // 自分と周囲2マス以内にいる味方が攻撃、速さ、守備、魔防の強化を受けていれば、
+                let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+                for (let unit of units) {
+                    // 対象が受けている各能力の強化を＋3した値を付与（1ターン、能力値ごとに計算、上限10）
+                    unit.reserveToIncreaseAllBuffs(3, 10);
+                }
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 敵の攻撃、守備が、戦闘開始時の自分の守備の20%＋6だけ減少、
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.2 + 6);
+                enemyUnit.addAtkDefSpurs(-amount);
+                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
+                    (targetUnit, enemyUnit, calcPotentialDamage) => {
+                        // 自分が与えるダメージ＋〇（範囲奥義を除く）、自分が受けるダメージー〇の50%（範囲奥義を除く）
+                        // ●は、自分と周囲3マス以内にいる味方のうち強化の合計値が最も高い値
+                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
+                        let buffTotal = this.__getHighestTotalBuff(targetUnit, enemyUnit, units, true); // 自分を含む場合はtrueを指定
+                        targetUnit.battleContext.additionalDamage += buffTotal;
+                        targetUnit.battleContext.damageReductionValue += Math.trunc(buffTotal * 0.5);
+                    }
+                );
+            }
+        }
+    );
+}
+
+// 神獣の蜜
+{
+    let skillId = PassiveC.DivineNectar;
+    let applySkillForBeginningOfTurn = function (skillOwner) {
+        // 自軍ターン開始時、および、敵軍ターン開始時、周囲2マス以内に味方がいる時、
+        if (this.__isThereAllyIn2Spaces(skillOwner)) {
+            // 自分と周囲2マス以内の味方に【神獣の蜜】を付与（1ターン）
+            let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
+            for (let unit of units) {
+                unit.reserveToAddStatusEffect(StatusEffectType.DivineNectar);
+            }
+        }
+    };
+    applySkillForBeginningOfTurnFuncMap.set(skillId, applySkillForBeginningOfTurn);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, applySkillForBeginningOfTurn);
+
+    // 自分を除く【神獣の蜜】が付与されている味方が応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、
+    // その味方を行動可能な状態にする
+    // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
+    // （1ターンに1回のみ）
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 周囲3マス以内に味方がいる時、戦闘中、
+            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
+                // 敵の攻撃、守備-5、
+                enemyUnit.addAtkDefSpurs(-5);
+                // 敵の奥義発動カウント変動量-1
+                targetUnit.battleContext.reducesCooldownCount = true;
+                // （同系統効果複数時、最大値適用）
+            }
+        }
+    );
+    DIVINE_NECTAR_SKILL_SET.add(skillId);
+}
+
+// 堅牢城塞
+{
+    // 攻撃ー3、守備、魔防＋7
+    let skillId = PassiveA.Stronghold;
+    let func = function (skillOwner) {
+        // 自軍ターン開始時、および、敵軍ターン開始時、
+        // 自分に、このとき付与される
+        // 守備、魔防の弱化、
+        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[2] |= true;
+        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3] |= true;
+        // 【パニック】を無効化
+        skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
+    };
+    applySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, func);
+}
+
+// 蜜の癒し手の角
+{
+    let skillId = Weapon.NectarHorn;
+    // 威力：14 射程：1
+    // 奥義が発動しやすい（発動カウントー1）
+
+    let func = function (skillOwner) {
+        // 自分を中心とした縦3列と横3列にいる魔防が「自分の魔防＋5」より低い敵の
+        let units = this.unitManager.enumerateUnitsInDifferentGroupInCrossOf(skillOwner, 1);
+        for (let unit of units) {
+            if (unit.isLowerResInPrecombat(skillOwner, 5)) {
+                // 攻撃、守備一7、
+                unit.reserveToApplyDebuffs(-7, 0, -7, 0);
+                // 不和、
+                // を付与（敵の次回行動終了まで）
+                unit.reserveToAddStatusEffect(StatusEffectType.Discord);
+                // 回復不可、
+                unit.reserveToAddStatusEffect(StatusEffectType.DeepWounds);
+                // 「奥義以外の「敵の致死攻撃を受けた時、ダメージをHPが1残るように軽減」する効果を無効」
+                unit.reserveToAddStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP);
+            }
+        }
+    };
+    // 自軍ターン開始時、および、敵軍ターン開始時、
+    applySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, func);
+
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 敵から攻撃された時、または、戦闘開始時、敵のHPが75%以上の時、戦闘中、
+            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                // 敵の攻撃、守備一6、さらに、
+                enemyUnit.addAtkDefSpurs(-6);
+                // 敵の攻撃、守備が戦闘開始時の自分の魔防の20%だけ減少、
+                let amount = Math.trunc(targetUnit.getResInPrecombat() * 0.2);
+                enemyUnit.addAtkDefSpurs(-amount);
+                // 敵の攻撃、守備の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）、
+                targetUnit.battleContext.invalidateBuffs(true, false, true, false);
+                // 自分が受けるダメージー自分の魔防の20%
+                targetUnit.battleContext.reduceDamageByStatus([false, false, false, true], 0.2);
+                // （範囲奥義を除く）、
+                // 自身の奥義発動カウント変動量＋1
+                targetUnit.battleContext.increaseCooldownCountForBoth();
+                // （同系統効果複数時、最大値適用）
+            }
+        }
+    );
+    // ターン開始時、竜、獣以外の味方と隣接していない場合化身状態になる（そうでない場合、化身状態を解除）
+    // 化身状態なら、攻撃＋2、かつ奥義発動時、奥義によるダメージ＋7、戦闘中、敵の奥義発動カウント変動量＋を無効、かつ自身の奥義発動カウント変動量ーを無効
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry2);
+}
+
+// 日長石の剣
+{
+    let skillId = Weapon.SunstonesBlade;
+    // 守備+3
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 自身を中心とした縦3列と横3列の味方は、
+            if (allyUnit.isInCrossWithOffset(targetUnit, 1)) {
+                // 戦闘中、攻撃、守備+4、
+                targetUnit.addAtkDefSpurs(4);
+                // 戦闘後、10回復
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+    );
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、
+            // 自身を中心とした縦3列と横3列に味方がいる時、
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.unitManager.isThereAllyInCrossOf(targetUnit, 1)) {
+                // 戦闘中、自身の攻撃、速さ、守備、魔防+5、
+                targetUnit.addAllSpur(5);
+                // 敵の攻撃、守備が戦闘開始時の自分の守備の20%だけ減少、
+                let amount = Math.trunc(targetUnit.getDefInPrecombat() * 0.2);
+                enemyUnit.addAtkDefSpurs(-amount);
+                // 自分が受けるダメージ-自分の守備の15%(範囲奥義を除く)、
+                targetUnit.battleContext.reduceDamageByStatus([false, false, true, false], 0.15);
+                // 自分は絶対追撃、
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+                // 戦闘後、自分は、10回復
+                targetUnit.battleContext.healedHpAfterCombat += 10;
+            }
+        }
+    );
+}
+
+// 追撃の槍+
+{
+    let skillId = Weapon.PursualLancePlus;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、
+            if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
+                // 攻撃、守備+5、
+                targetUnit.addAtkDefSpurs(5);
+                // 絶対追撃
+                targetUnit.battleContext.followupAttackPriorityIncrement++;
+            }
+        }
+    );
+}
+
 // 慧敏隊形
 {
     let skillId = PassiveB.CleverFighter;
@@ -2554,7 +2854,7 @@
                     spurFunc(targetUnit, 6);
                     // （〇は、攻撃した側の
                     // 移動前と移動後のマスの距離（最大4））
-                    amount = MathUtil.ensureMax(Unit.calcMoveDistance(targetUnit), 4);
+                    amount = MathUtil.ensureMax(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 4);
                     // 攻撃、速さ＋〇、
                     spurFunc(targetUnit, amount);
                     // かつ自分から攻撃していれば、
@@ -2570,6 +2870,8 @@
     }
     // 攻撃速さの突破
     setSkill(PassiveA.AtkSpdExcel, (u, v) => u.addAtkSpdSpurs(v));
+    // 攻撃守備の突破
+    setSkill(PassiveA.AtkDefExcel, (u, v) => u.addAtkDefSpurs(v));
 }
 
 // 二国の花嫁のブーケ
@@ -2596,6 +2898,7 @@
                 // 戦闘中、攻撃、速さ、守備、魔防が自分を中心とした縦3列と横3列にいる味方の数x3＋5だけ増加（最大14）、
                 let allies = this.unitManager.enumerateUnitsInTheSameGroupInCrossOf(targetUnit, 1);
                 let amount = MathUtil.ensureMax(GeneratorUtil.count(allies) * 3 + 5, 14);
+                targetUnit.addAllSpur(amount);
                 // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
                 targetUnit.battleContext.setNullFollowupAttack();
                 // ダメージ＋速さの20%（範囲奥義を除く）、
@@ -3506,11 +3809,6 @@
         }
     );
 
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-        }
-    );
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             // 自分を中心とした縦5x横5マスに味方がいる時、
@@ -4440,26 +4738,25 @@
     );
     // 応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、または、行動済みの自分に使用された時、
     // - 自分を行動可能にする（1ターンに1回のみ）
-
     /** @type {(this: BattleSimulatorBase, owner: Unit) => void} */
-    let actionFunc = function (skillOwner) {
+    let actionFunc = function (skillOwner, isSupporter) {
         if (!skillOwner.isActionDone) {
             return;
         }
         if (!skillOwner.isOneTimeActionActivatedForWeapon) {
             skillOwner.isOneTimeActionActivatedForWeapon = true;
             this.writeDebugLogLine(`${DebugUtil.getSkillName(skillOwner, skillOwner.weaponInfo)}により${skillOwner.nameWithGroup}は再行動`);
-            skillOwner.isActionDone = false;
+            skillOwner.grantsAnotherActionWhenAssist(isSupporter);
         }
     };
     applySupportSkillForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
-            actionFunc.call(this, supporterUnit);
+            actionFunc.call(this, supporterUnit, true);
         }
     );
     applySupportSkillForTargetUnitFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
-            actionFunc.call(this, targetUnit);
+            actionFunc.call(this, targetUnit, false);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,
@@ -4763,7 +5060,7 @@
                         supporterUnit.isOneTimeActionActivatedForSupport = true;
 
                         // その後、自分を行動可能にし、自分とダブル相手に移動を最大1マスに制限する状態異常を付与（次回行動終了時まで）
-                        supporterUnit.isActionDone = false;
+                        supporterUnit.grantsAnotherActionOnAssist();
                         supporterUnit.addStatusEffect(StatusEffectType.Gravity);
                         this.writeLogLine(`${supporterUnit.getNameWithGroup()}は${supporterUnit.supportInfo.name}により再行動`);
 
@@ -6296,8 +6593,8 @@
     applySupportSkillForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
             if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
-                supporterUnit.isActionDone = false;
                 supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                supporterUnit.grantsAnotherActionOnAssist();
             }
         }
     );
@@ -6454,8 +6751,8 @@
         function (supporterUnit, targetUnit, supportTile) {
             if (supporterUnit.isWeaponRefined) {
                 if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
-                    supporterUnit.isActionDone = false;
                     supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                    supporterUnit.grantsAnotherActionOnAssist();
                 }
             }
         }
@@ -10566,8 +10863,8 @@
     applySupportSkillForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
             if (!supporterUnit.isOneTimeActionActivatedForSupport) {
-                supporterUnit.isActionDone = false;
                 supporterUnit.isOneTimeActionActivatedForSupport = true;
+                supporterUnit.grantsAnotherActionOnAssist();
             }
             supporterUnit.applyBuffs(6, 6, 0, 0);
             targetUnit.applyBuffs(6, 6, 0, 0);
@@ -11804,8 +12101,8 @@
     applySupportSkillForSupporterFuncMap.set(skillId,
         function (supporterUnit, targetUnit, supportTile) {
             if (!supporterUnit.isOneTimeActionActivatedForWeapon) {
-                supporterUnit.isActionDone = false;
                 supporterUnit.isOneTimeActionActivatedForWeapon = true;
+                supporterUnit.grantsAnotherActionOnAssist();
             }
         }
     );

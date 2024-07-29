@@ -1107,9 +1107,9 @@ class DamageCalculator {
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
 
         // ダメカを半分無効
-        let reductionRatios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
+        let neutralizationRatiosOfDamageReduction = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
         if (atkUnit.hasStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent)) {
-            reductionRatios.push(0.5);
+            neutralizationRatiosOfDamageReduction.push(0.5);
         }
 
         let totalDamage = 0;
@@ -1134,48 +1134,10 @@ class DamageCalculator {
             let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
             let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0 &&
                 this.__isSatisfiedDefenderSpecialCond(defUnit, atkUnit);
-            let damageReductionRatio = 1.0;
-            let damageReductionValue = 0;
 
             // 奥義以外のダメージ軽減
-            {
-                // 計算機の外側で設定されたダメージ軽減率
-                damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatio;
-
-                if (context.isFirstAttack(atkUnit)) {
-                    // 初回攻撃
-                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFirstAttack;
-                } else if (context.isConsecutiveAttack(atkUnit)) {
-                    // 連続した攻撃
-                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfConsecutiveAttacks;
-                }
-
-                if (context.isFollowupOrPotentFollowupAttack()) {
-                    // 追撃
-                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFollowupAttack;
-                } else {
-                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioOfFirstAttacks;
-                }
-
-                // 戦闘中1回の軽減効果
-                // 奥義による攻撃でダメージを与えた時、次の敵の攻撃のダメージを50%軽減(その戦闘中のみ)
-                if (defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
-                    for (let ratio of defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated) {
-                        damageReductionRatio *= 1.0 - ratio;
-                    }
-                    // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
-                    defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated = null;
-                }
-
-                // チェインガード
-                for (let [unit, ratio] of defUnit.battleContext.damageReductionRatiosByChainGuard) {
-                    if (this.isLogEnabled) {
-                        this.writeDebugLog(`${unit.nameWithGroup}によるチェインガードによるダメージ軽減。ratio: [${ratio}]`);
-                    }
-                    damageReductionRatio *= 1.0 - ratio;
-                    unit.battleContext.isChainGuardActivated = true;
-                }
-            }
+            let damageReductionRatios = this.#getDamageReductionRatios(atkUnit, defUnit, context);
+            let damageReductionValues = [];
 
             let invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack =
                 invalidatesDamageReductionExceptSpecialOnSpecialActivation ||
@@ -1185,201 +1147,59 @@ class DamageCalculator {
                 invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack &&
                 !atkUnit.battleContext.preventedAttackerSpecial;
 
-            // ダメージ軽減をN%無効
-            // 奥義発動時
-            if (canActivateAttackerSpecial) {
-                let ratios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation;
-                reductionRatios = reductionRatios.concat(ratios);
-            }
+            // ダメージ軽減無効
+            let invalidatesDamageReduction = invalidatesOnSpecialActivation || invalidatesDamageReductionExceptSpecial;
+            let damageReductionRatiosAfterNeutralization =
+                this.#getNeutralizationOfDamageReduction(
+                    damageReductionRatios,
+                    invalidatesDamageReduction,
+                    neutralizationRatiosOfDamageReduction,
+                    atkUnit,
+                    canActivateAttackerSpecial);
 
-            let reductionRatiosPerAttack = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack;
-            reductionRatios = reductionRatios.concat(reductionRatiosPerAttack);
-            if (reductionRatios.length >= 1) {
-                let reducedRatio = 1 - damageReductionRatio;
-                if (this.isLogEnabled) {
-                    this.writeDebugLog(`奥義以外のダメージ軽減をN%無効: [${reductionRatios}]`);
-                }
-                for (let ratio of reductionRatios) {
-                    let tmpRatio = reducedRatio;
-                    reducedRatio -= Math.trunc(reducedRatio * 100 * ratio) * 0.01;
-                    reducedRatio = Math.min(reducedRatio, 1);
-                    if (this.isLogEnabled) {
-                        this.writeDebugLog(`奥義以外のダメージ軽減を${floorNumberWithFloatError(ratio * 100)}%無効。軽減率: ${floorNumberWithFloatError(tmpRatio * 100)}% → ${floorNumberWithFloatError(reducedRatio * 100)}%`);
-                    }
-                }
-                damageReductionRatio = 1 - reducedRatio;
-            }
-
-            // ダメージ軽減を無効
-            if (invalidatesOnSpecialActivation || invalidatesDamageReductionExceptSpecial) {
-                if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
-                damageReductionRatio = 1.0;
-            }
+            // 奥義によるダメージ軽減
+            // 攻撃を受けた際に発動する奥義によるダメージ軽減
+            let damageReductionRatiosByDefenderSpecial = [];
+            // それ以外の奥義扱いのダメージ軽減
+            let damageReductionRatiosByNonDefenderSpecial = [];
 
             // 攻撃ごとに変化する可能性がある奥義によるダメージ軽減
             this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
 
             // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
-            if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
-                for (let skillId of defUnit.enumerateSkills()) {
-                    let func = getSkillFunc(skillId, applyDamageReductionRatiosWhenCondSatisfiedFuncMap);
-                    func?.call(this, atkUnit, defUnit);
-                    switch (skillId) {
-                        case Special.DragonBlast:
-                            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
-                                if (defUnit.battleContext.specialSkillCondSatisfied) {
-                                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
-                                }
-                            }
-                            break;
-                        case Special.ArmoredFloe:
-                        case Special.ArmoredBeacon:
-                            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
-                                if (isRangedWeaponType(atkUnit.weaponType)) {
-                                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
-                                }
-                            }
-                            break;
-                    }
-                }
-                // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
-                if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.length > 0) {
-                    for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
-                        let oldRatio = damageReductionRatio;
-                        damageReductionRatio *= 1.0 - ratio;
-                        this.writeDebugLog(`1戦闘1回の奥義によるダメージ軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
-                    }
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
-                }
-                // 防御系奥義以外によるダメージ軽減
-                let reductionRatios = defUnit.battleContext.damageReductionRatiosByNonDefenderSpecial;
-                if (reductionRatios.length > 0) {
-                    for (let ratio of reductionRatios) {
-                        let oldRatio = damageReductionRatio;
-                        damageReductionRatio *= 1.0 - ratio;
-                        this.writeDebugLog(`防御系奥義以外の奥義によるダメージ軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
-                    }
-                }
-            }
-
-            // 攻撃ごとに変化する可能性のある奥義扱いのダメージ軽減
-            damageReductionRatio = this.#applyDamageReductionRatiosBySpecialPerAttack(defUnit, damageReductionRatio);
+            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit);
 
             // 防御系奥義によるダメージ軽減
-            let isDefenderSpecialActivated = false;
-            // 奥義の次の攻撃のダメージ軽減
-            for (let ratio of defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack) {
-                damageReductionRatio *= 1.0 - ratio;
-            }
-            defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack = [];
-
-            let preventedDefenderSpecial =
-                defUnit.battleContext.preventedDefenderSpecial ||
-                defUnit.battleContext.preventedDefenderSpecialPerAttack;
-            if (activatesDefenderSpecial && !preventedDefenderSpecial) {
-                if (defUnit.battleContext.damageReductionRatioBySpecial > 0) {
-                    damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioBySpecial;
-                    if (defUnit.passiveB === PassiveB.HardyFighter3) {
-                        damageReductionRatio *= 1.0 - defUnit.battleContext.damageReductionRatioBySpecial;
-                    }
-                    isDefenderSpecialActivated = true;
-                }
-
-                // 攻撃を受ける際に発動する奥義発動可能時に奥義を発動する処理
-                if (isDefenderSpecialActivated) {
-                    defUnit.battleContext.isSpecialActivated = true;
-                    defUnit.battleContext.specialActivatedCount++;
-                    // ダメージ軽減
-                    if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
-                        defUnit.passiveB === PassiveB.HardyFighter3) {
-                        damageReductionValue += 5;
-                    } else if (defUnit.weapon === Weapon.MoonlightStone) {
-                        if (atkUnit.battleContext.initiatesCombat ||
-                            atkUnit.battleContext.restHpPercentage >= 75) {
-                            damageReductionValue += 8;
-                        }
-                    } else if (defUnit.weapon === Weapon.IceBoundBrand) {
-                        if (atkUnit.battleContext.initiatesCombat ||
-                            atkUnit.battleContext.restHpPercentage >= 75) {
-                            damageReductionValue += 5;
-                        }
-                    }
-                    // 次の攻撃のダメージ加算
-                    for (let skillId of defUnit.enumerateSkills()) {
-                        switch (skillId) {
-                            case PassiveB.Spurn4:
-                                defUnit.battleContext.additionalDamageOfNextAttack += 5;
-                                break;
-                        }
-                    }
-                    // 奥義カウントを最大まで戻す
-                    this.__restoreMaxSpecialCount(defUnit);
-                    // 奥義発動直後のスキル効果（奥義カウント変動など）
-                    this.applySkillEffectAfterSpecialActivated(defUnit, atkUnit, context);
-
-                    if (defUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial) {
-                        defUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = true;
-                    }
-                }
-            }
+            let isDefenderSpecialActivated =
+                this.#applyDamageReductionByDefenderSpecial(
+                    damageReductionRatiosByDefenderSpecial,
+                    damageReductionValues,
+                    activatesDefenderSpecial,
+                    atkUnit,
+                    defUnit,
+                    context
+                );
 
             // 神速追撃によるダメージ軽減
-            let potentRatio = 1;
-            if (context.isPotentFollowupAttack) {
-                if (atkUnit.battleContext.potentOverwriteRatio === null) {
-                    for (let ratio of atkUnit.battleContext.potentRatios) {
-                        let oldRatio = potentRatio;
-                        potentRatio *= ratio;
-                        this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
-                        this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
-                    }
-                } else {
-                    let ratio = atkUnit.battleContext.potentOverwriteRatio;
-                    this.writeDebugLog(`神速追撃上書き値による軽減。ratios: ${atkUnit.battleContext.potentRatios} → ratio: ${ratio}`);
-                    let oldRatio = potentRatio;
-                    potentRatio *= ratio;
-                    this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
-                    this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
-                }
-            }
+            let potentRatio = this.#getDamageReductionRatioByPotent(atkUnit, context);
 
-            damageReductionRatio = 1.0 - damageReductionRatio;
-            damageReductionValue += defUnit.battleContext.damageReductionValue;
-            damageReductionValue += defUnit.battleContext.damageReductionValuePerAttack;
-            if (context.isFollowupOrPotentFollowupAttack()) {
-                damageReductionValue += defUnit.battleContext.damageReductionValueOfFollowupAttack;
-            } else {
-                damageReductionValue += defUnit.battleContext.damageReductionValueOfFirstAttacks;
-            }
+            // 受けるダメージマイナス(固定値軽減)
+            DamageCalculator.#applyDamageReductionValues(damageReductionValues, defUnit, context);
 
             let currentDamage = 0;
             normalDamage += atkUnit.battleContext.additionalDamagePerAttack;
             specialDamage +=
-                atkUnit.battleContext.additionalDamagePerAttack + atkUnit.battleContext.getSpecialAddDamagePerAttack();
+                atkUnit.battleContext.additionalDamagePerAttack +
+                atkUnit.battleContext.getSpecialAddDamagePerAttack();
             if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
                 atkUnit.battleContext.specialActivatedCount++;
-                for (let skillId of atkUnit.enumerateSkills()) {
-                    switch (skillId) {
-                        case Weapon.ChildsCompass:
-                            if (atkUnit.battleContext.restHpPercentage >= 25) {
-                                // この戦闘中にすでにこの効果が発動済みの場合は[]ではなくnullが入るので処理を止める（1戦闘中1回まで）
-                                if (atkUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
-                                    atkUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated.push(0.5);
-                                }
-                            }
-                            break;
-                        case Special.DevinePulse: {
-                            atkUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack.push(0.75);
-                            let spd = atkUnit.getSpdInCombat(defUnit);
-                            atkUnit.battleContext.additionalDamageOfNextAttack += Math.trunc(spd * 0.2);
-                        }
-                            break;
-                    }
-                }
+
+                DamageCalculator.#applySkillEffectsOnSpecial(atkUnit, defUnit);
+
                 // 奥義発動
-                damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttack;
-                damageReductionValue += defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack;
+                damageReductionValues.push(defUnit.battleContext.damageReductionValueOfSpecialAttack);
+                damageReductionValues.push(defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack);
                 if (atkUnit.battleContext.isBaneSpecial) {
                     // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
                     if (specialDamage < defUnit.restHp - 1) {
@@ -1394,7 +1214,10 @@ class DamageCalculator {
                 currentDamage = this.__calcUnitAttackDamage(
                     defUnit, atkUnit,
                     specialDamage,
-                    damageReductionRatio, damageReductionValue,
+                    damageReductionRatiosAfterNeutralization,
+                    damageReductionRatiosByDefenderSpecial,
+                    damageReductionRatiosByNonDefenderSpecial,
+                    damageReductionValues,
                     potentRatio,
                     activatesDefenderSpecial, context
                 );
@@ -1431,7 +1254,10 @@ class DamageCalculator {
                 currentDamage = this.__calcUnitAttackDamage(
                     defUnit, atkUnit,
                     normalDamage,
-                    damageReductionRatio, damageReductionValue,
+                    damageReductionRatiosAfterNeutralization,
+                    damageReductionRatiosByDefenderSpecial,
+                    damageReductionRatiosByNonDefenderSpecial,
+                    damageReductionValues,
                     potentRatio,
                     activatesDefenderSpecial, context
                 );
@@ -1450,121 +1276,8 @@ class DamageCalculator {
                 }
             }
 
-            // 祈り処理開始
-            // 奥義による祈り
-            let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
-            // 奥義以外による祈り
-            let canActivateNonSpecialMiracle = this.__canActivateNonSpecialMiracle(defUnit, atkUnit);
-            // 奥義による祈り(1マップ1回)
-            let canActivateSpecialOneTimePerMapMiracle = this.__canActivateSpecialOneTimePerMapMiracle(defUnit, atkUnit);
-            // 奥義以外による祈り(1マップ1回)
-            let canActivateNonSpecialOneTimePerMapMiracle = this.__canActivateNonSpecialOneTimePerMapMiracle(defUnit, atkUnit);
-            // 奥義による祈り+99回復
-            let canActivateSpecialMiracleAndHeal = this.__canActivateSpecialMiracleAndHeal(defUnit, atkUnit);
-            // 奥義以外による祈り+99回復
-            let canActivateNonSpecialMiracleAndHeal = this.__canActivateNonSpecialMiracleAndHeal(defUnit, atkUnit);
-
-            // 祈りの消費優先順位
-            // 1. 奥義以外の祈り+99回復
-            // 2. 奥義以外の祈り
-            // 3. 奥義以外の祈り(1マップ1回)
-            // 4. 奥義による祈り(奥義祈り+99回復、奥義祈り、奥義祈り(1マップ1回)が同時に発動することはない)
-            // TODO: 以下を検証する
-            // 1戦闘で奥義以外の祈りの後に奥義の祈りを出すことは可能(奥義の祈りは戦闘中何回でも発動可能)
-            // 1戦闘で奥義の祈りを出した後に奥義以外の祈りは発動可能か？
-
-            // 奥義以外の祈り無効
-            let neutralizesNoneSpecialMiracle = message => {
-                if (this.isLogEnabled) {
-                    if (canActivateNonSpecialMiracle ||
-                        canActivateNonSpecialOneTimePerMapMiracle ||
-                        canActivateNonSpecialMiracleAndHeal) {
-                        this.writeLog(message);
-                        this.writeSimpleLog(message);
-                    }
-                }
-                canActivateNonSpecialMiracle = false;
-                canActivateNonSpecialOneTimePerMapMiracle = false;
-                canActivateNonSpecialMiracleAndHeal = false;
-            }
-            if (atkUnit.battleContext.neutralizesNonSpecialMiracle) {
-                let message = `${atkUnit.nameWithGroup}のスキル効果により${defUnit.nameWithGroup}の奥義以外の祈りを無効`;
-                neutralizesNoneSpecialMiracle(message);
-            }
-            if (defUnit.hasStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP)) {
-                let message = `ステータス効果(${name})により${defUnit.nameWithGroup}の奥義以外の祈りを無効`;
-                neutralizesNoneSpecialMiracle(message);
-            }
-
-            // 奥義/奥義以外による祈りの判定(ナンナなどの防御奥義不可はこの時点で既に考慮されている)
-            let canActivateAnyMiracles =
-                canActivateSpecialMiracle ||
-                canActivateNonSpecialMiracle ||
-                canActivateSpecialOneTimePerMapMiracle ||
-                canActivateNonSpecialOneTimePerMapMiracle ||
-                canActivateSpecialMiracleAndHeal ||
-                canActivateNonSpecialMiracleAndHeal;
-            let isRestHpGreaterOne = defUnit.restHp - totalDamage > 1;
-            let isDeadWithoutMiracle = defUnit.restHp - totalDamage - currentDamage <= 0;
-
-            // 奥義/奥義以外による祈りの判定(ナンナなどの防御奥義不可はこの時点で既に考慮されている)
-            if (canActivateAnyMiracles &&
-                isRestHpGreaterOne &&
-                isDeadWithoutMiracle) {
-                // どの祈りが発動するのか判定する
-                let logMiracle = message => {
-                    if (this.isLogEnabled) {
-                        this.writeLog(message);
-                        this.writeSimpleLog(message);
-                    }
-                }
-                if (canActivateNonSpecialMiracleAndHeal) {
-                    logMiracle(`奥義以外の祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
-                    defUnit.battleContext.isNonSpecialMiracleAndHealAcitivated = true;
-                } else if (canActivateNonSpecialMiracle) {
-                    logMiracle(`奥義以外の祈り発動、${defUnit.getNameWithGroup()}はHP1残る`);
-                    defUnit.battleContext.isNonSpecialMiracleActivated = true;
-                } else if (canActivateNonSpecialOneTimePerMapMiracle) {
-                    logMiracle(`奥義以外の祈り発動(1マップ1回)、${defUnit.getNameWithGroup()}はHP1残る`);
-                    // TODO: リファクタリング(現状使用していない)
-                    defUnit.battleContext.isNonSpecialOneTimePerMapMiracleAcitivated = true;
-                    // TODO: リファクタリング
-                    defUnit.battleContext.isOncePerMapSpecialActivated = true;
-                    // 1マップ1回でない奥義以外の祈りも発動したとみなす
-                    defUnit.battleContext.isNonSpecialMiracleActivated = true;
-                } else if (canActivateSpecialMiracleAndHeal) {
-                    logMiracle(`奥義による祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
-                    defUnit.battleContext.isSpecialMiracleAndHealAcitivated = true;
-                } else if (canActivateSpecialMiracle) {
-                    logMiracle(`奥義による祈り発動、${defUnit.getNameWithGroup()}はHP1残る`);
-                    defUnit.battleContext.isSpecialMiracleActivated = true;
-                } else if (canActivateSpecialOneTimePerMapMiracle) {
-                    logMiracle(`奥義による祈り発動(1マップ1回)、${defUnit.getNameWithGroup()}はHP1残る`);
-                    defUnit.battleContext.isSpecialOneTimePerMapMiracleAcitivated = true;
-                }
-
-                // 祈りの軽減分も軽減ダメージに含める
-                // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する
-                if (defUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                    let currentHp = defUnit.restHp - totalDamage;
-                    let miracleDamage = currentHp - 1;
-                    let miracleReducedDamage = currentDamage - miracleDamage;
-                    defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
-                }
-
-                totalDamage += defUnit.restHp - totalDamage - 1;
-
-                let isActivatedAnySpecialMiracles =
-                    defUnit.battleContext.isSpecialMiracleActivated ||
-                    defUnit.battleContext.isSpecialOneTimePerMapMiracleAcitivated ||
-                    defUnit.battleContext.isSpecialMiracleAndHealAcitivated;
-                if (isActivatedAnySpecialMiracles) {
-                    defUnit.battleContext.isSpecialActivated = true;
-                    this.__restoreMaxSpecialCount(defUnit);
-                }
-            } else {
-                totalDamage += currentDamage;
-            }
+            // 祈り処理
+            totalDamage = this.#activateMiracle(atkUnit, defUnit, currentDamage, totalDamage);
 
             if (!isDefenderSpecialActivated) {
                 this.__reduceSpecialCount(defUnit, defReduceSpCount);
@@ -1579,23 +1292,349 @@ class DamageCalculator {
         return totalDamage;
     }
 
-    #applyDamageReductionRatiosBySpecialPerAttack(defUnit, damageReductionRatio) {
-        let reductionRatios = defUnit.battleContext.damageReductionRatiosBySpecialPerAttack;
-        let logMessage = "攻撃のたびに変化する可能性がある奥義扱いのダメージ軽減。";
-        return this.#applyDamageReductionRatios(damageReductionRatio, reductionRatios, logMessage);
+    static #applySkillEffectsOnSpecial(atkUnit, defUnit) {
+        for (let skillId of atkUnit.enumerateSkills()) {
+            switch (skillId) {
+                case Weapon.ChildsCompass:
+                    if (atkUnit.battleContext.restHpPercentage >= 25) {
+                        // この戦闘中にすでにこの効果が発動済みの場合は[]ではなくnullが入るので処理を止める（1戦闘中1回まで）
+                        if (atkUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
+                            atkUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated.push(0.5);
+                        }
+                    }
+                    break;
+                case Special.DevinePulse: {
+                    atkUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack.push(0.75);
+                    let spd = atkUnit.getSpdInCombat(defUnit);
+                    atkUnit.battleContext.additionalDamageOfNextAttack += Math.trunc(spd * 0.2);
+                }
+                    break;
+            }
+        }
     }
 
-    #applyDamageReductionRatios(damageReductionRatio, reductionRatios, logMessage = '') {
-        if (reductionRatios.length <= 0) {
-            return damageReductionRatio;
+    #activateMiracle(atkUnit, defUnit, currentDamage, totalDamage) {
+        // 奥義による祈り
+        let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
+        // 奥義以外による祈り
+        let canActivateNonSpecialMiracle = this.__canActivateNonSpecialMiracle(defUnit, atkUnit);
+        // 奥義による祈り(1マップ1回)
+        let canActivateSpecialOneTimePerMapMiracle = this.__canActivateSpecialOneTimePerMapMiracle(defUnit, atkUnit);
+        // 奥義以外による祈り(1マップ1回)
+        let canActivateNonSpecialOneTimePerMapMiracle = this.__canActivateNonSpecialOneTimePerMapMiracle(defUnit, atkUnit);
+        // 奥義による祈り+99回復
+        let canActivateSpecialMiracleAndHeal = this.__canActivateSpecialMiracleAndHeal(defUnit, atkUnit);
+        // 奥義以外による祈り+99回復
+        let canActivateNonSpecialMiracleAndHeal = this.__canActivateNonSpecialMiracleAndHeal(defUnit, atkUnit);
+
+        // 祈りの消費優先順位
+        // 1. 奥義以外の祈り+99回復
+        // 2. 奥義以外の祈り
+        // 3. 奥義以外の祈り(1マップ1回)
+        // 4. 奥義による祈り(奥義祈り+99回復、奥義祈り、奥義祈り(1マップ1回)が同時に発動することはない)
+        // TODO: 以下を検証する
+        // 1戦闘で奥義以外の祈りの後に奥義の祈りを出すことは可能(奥義の祈りは戦闘中何回でも発動可能)
+        // 1戦闘で奥義の祈りを出した後に奥義以外の祈りは発動可能か？
+
+        // 奥義以外の祈り無効
+        let neutralizesNoneSpecialMiracle = message => {
+            if (this.isLogEnabled) {
+                if (canActivateNonSpecialMiracle ||
+                    canActivateNonSpecialOneTimePerMapMiracle ||
+                    canActivateNonSpecialMiracleAndHeal) {
+                    this.writeLog(message);
+                    this.writeSimpleLog(message);
+                }
+            }
+            canActivateNonSpecialMiracle = false;
+            canActivateNonSpecialOneTimePerMapMiracle = false;
+            canActivateNonSpecialMiracleAndHeal = false;
         }
-        this.writeDebugLog(`${logMessage} ratios: [${reductionRatios}]`);
-        for (let ratio of reductionRatios) {
-            let oldRatio = damageReductionRatio;
-            damageReductionRatio *= 1.0 - ratio;
-            this.writeDebugLog(`ratio: ${ratio}, damage ratio: ${oldRatio} → ${damageReductionRatio}`);
+        if (atkUnit.battleContext.neutralizesNonSpecialMiracle) {
+            let message = `${atkUnit.nameWithGroup}のスキル効果により${defUnit.nameWithGroup}の奥義以外の祈りを無効`;
+            neutralizesNoneSpecialMiracle(message);
         }
-        return damageReductionRatio;
+        if (defUnit.hasStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP)) {
+            let message = `ステータス効果(${name})により${defUnit.nameWithGroup}の奥義以外の祈りを無効`;
+            neutralizesNoneSpecialMiracle(message);
+        }
+
+        // 奥義/奥義以外による祈りの判定(ナンナなどの防御奥義不可はこの時点で既に考慮されている)
+        let canActivateAnyMiracles =
+            canActivateSpecialMiracle ||
+            canActivateNonSpecialMiracle ||
+            canActivateSpecialOneTimePerMapMiracle ||
+            canActivateNonSpecialOneTimePerMapMiracle ||
+            canActivateSpecialMiracleAndHeal ||
+            canActivateNonSpecialMiracleAndHeal;
+        let isRestHpGreaterOne = defUnit.restHp - totalDamage > 1;
+        let isDeadWithoutMiracle = defUnit.restHp - totalDamage - currentDamage <= 0;
+
+        // 奥義/奥義以外による祈りの判定(ナンナなどの防御奥義不可はこの時点で既に考慮されている)
+        if (canActivateAnyMiracles &&
+            isRestHpGreaterOne &&
+            isDeadWithoutMiracle) {
+            // どの祈りが発動するのか判定する
+            let logMiracle = message => {
+                if (this.isLogEnabled) {
+                    this.writeLog(message);
+                    this.writeSimpleLog(message);
+                }
+            }
+            if (canActivateNonSpecialMiracleAndHeal) {
+                logMiracle(`奥義以外の祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
+                defUnit.battleContext.isNonSpecialMiracleAndHealAcitivated = true;
+            } else if (canActivateNonSpecialMiracle) {
+                logMiracle(`奥義以外の祈り発動、${defUnit.getNameWithGroup()}はHP1残る`);
+                defUnit.battleContext.isNonSpecialMiracleActivated = true;
+            } else if (canActivateNonSpecialOneTimePerMapMiracle) {
+                logMiracle(`奥義以外の祈り発動(1マップ1回)、${defUnit.getNameWithGroup()}はHP1残る`);
+                // TODO: リファクタリング(現状使用していない)
+                defUnit.battleContext.isNonSpecialOneTimePerMapMiracleAcitivated = true;
+                // TODO: リファクタリング
+                defUnit.battleContext.isOncePerMapSpecialActivated = true;
+                // 1マップ1回でない奥義以外の祈りも発動したとみなす
+                defUnit.battleContext.isNonSpecialMiracleActivated = true;
+            } else if (canActivateSpecialMiracleAndHeal) {
+                logMiracle(`奥義による祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
+                defUnit.battleContext.isSpecialMiracleAndHealAcitivated = true;
+            } else if (canActivateSpecialMiracle) {
+                logMiracle(`奥義による祈り発動、${defUnit.getNameWithGroup()}はHP1残る`);
+                defUnit.battleContext.isSpecialMiracleActivated = true;
+            } else if (canActivateSpecialOneTimePerMapMiracle) {
+                logMiracle(`奥義による祈り発動(1マップ1回)、${defUnit.getNameWithGroup()}はHP1残る`);
+                defUnit.battleContext.isSpecialOneTimePerMapMiracleAcitivated = true;
+            }
+
+            // 祈りの軽減分も軽減ダメージに含める
+            // @TODO: 現在の実装だとフィヨルムの氷の聖鏡に将来祈りが外付け出来るようになった場合も祈り軽減がダメージに加算されるのでその時にこの挙動が正しいのか検証する
+            if (defUnit.battleContext.nextAttackAddReducedDamageActivated) {
+                let currentHp = defUnit.restHp - totalDamage;
+                let miracleDamage = currentHp - 1;
+                let miracleReducedDamage = currentDamage - miracleDamage;
+                defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
+            }
+
+            totalDamage += defUnit.restHp - totalDamage - 1;
+
+            let isActivatedAnySpecialMiracles =
+                defUnit.battleContext.isSpecialMiracleActivated ||
+                defUnit.battleContext.isSpecialOneTimePerMapMiracleAcitivated ||
+                defUnit.battleContext.isSpecialMiracleAndHealAcitivated;
+            if (isActivatedAnySpecialMiracles) {
+                defUnit.battleContext.isSpecialActivated = true;
+                this.__restoreMaxSpecialCount(defUnit);
+            }
+        } else {
+            totalDamage += currentDamage;
+        }
+        return totalDamage;
+    }
+
+    static #applyDamageReductionValues(damageReductionValues, defUnit, context) {
+        damageReductionValues.push(defUnit.battleContext.damageReductionValue);
+        damageReductionValues.push(defUnit.battleContext.damageReductionValuePerAttack);
+        if (context.isFollowupOrPotentFollowupAttack()) {
+            damageReductionValues.push(defUnit.battleContext.damageReductionValueOfFollowupAttack);
+        } else {
+            damageReductionValues.push(defUnit.battleContext.damageReductionValueOfFirstAttacks);
+        }
+    }
+
+    #getDamageReductionRatioByPotent(atkUnit, context) {
+        let potentRatio = 1;
+        if (context.isPotentFollowupAttack) {
+            if (atkUnit.battleContext.potentOverwriteRatio === null) {
+                for (let ratio of atkUnit.battleContext.potentRatios) {
+                    let oldRatio = potentRatio;
+                    potentRatio *= ratio;
+                    this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
+                    this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
+                }
+            } else {
+                let ratio = atkUnit.battleContext.potentOverwriteRatio;
+                this.writeDebugLog(`神速追撃上書き値による軽減。ratios: ${atkUnit.battleContext.potentRatios} → ratio: ${ratio}`);
+                let oldRatio = potentRatio;
+                potentRatio *= ratio;
+                this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
+                this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
+            }
+        }
+        return potentRatio;
+    }
+
+    #applyDamageReductionByDefenderSpecial(damageReductionRatiosByDefenderSpecial, damageReductionValues, activatesDefenderSpecial, atkUnit, defUnit, context) {
+        let isDefenderSpecialActivated = false;
+        let preventedDefenderSpecial =
+            defUnit.battleContext.preventedDefenderSpecial ||
+            defUnit.battleContext.preventedDefenderSpecialPerAttack;
+        if (activatesDefenderSpecial && !preventedDefenderSpecial) {
+            if (defUnit.battleContext.damageReductionRatioBySpecial > 0) {
+                damageReductionRatiosByDefenderSpecial.push(defUnit.battleContext.damageReductionRatioBySpecial);
+                if (defUnit.passiveB === PassiveB.HardyFighter3) {
+                    damageReductionRatiosByDefenderSpecial.push(defUnit.battleContext.damageReductionRatioBySpecial);
+                }
+                isDefenderSpecialActivated = true;
+            }
+
+            // 攻撃を受ける際に発動する奥義発動可能時に奥義を発動する処理
+            if (isDefenderSpecialActivated) {
+                defUnit.battleContext.isSpecialActivated = true;
+                defUnit.battleContext.specialActivatedCount++;
+                // ダメージ軽減
+                if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
+                    defUnit.passiveB === PassiveB.HardyFighter3) {
+                    damageReductionValues.push(5);
+                } else if (defUnit.weapon === Weapon.MoonlightStone) {
+                    if (atkUnit.battleContext.initiatesCombat ||
+                        atkUnit.battleContext.restHpPercentage >= 75) {
+                        damageReductionValues.push(8);
+                    }
+                } else if (defUnit.weapon === Weapon.IceBoundBrand) {
+                    if (atkUnit.battleContext.initiatesCombat ||
+                        atkUnit.battleContext.restHpPercentage >= 75) {
+                        damageReductionValues.push(5);
+                    }
+                }
+                // 次の攻撃のダメージ加算
+                for (let skillId of defUnit.enumerateSkills()) {
+                    switch (skillId) {
+                        case PassiveB.Spurn4:
+                            defUnit.battleContext.additionalDamageOfNextAttack += 5;
+                            break;
+                    }
+                }
+                // 奥義カウントを最大まで戻す
+                this.__restoreMaxSpecialCount(defUnit);
+                // 奥義発動直後のスキル効果（奥義カウント変動など）
+                this.applySkillEffectAfterSpecialActivated(defUnit, atkUnit, context);
+
+                if (defUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial) {
+                    defUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = true;
+                }
+            }
+        }
+        return isDefenderSpecialActivated;
+    }
+
+    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit) {
+        if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
+            for (let skillId of defUnit.enumerateSkills()) {
+                let func = getSkillFunc(skillId, applyDamageReductionRatiosWhenCondSatisfiedFuncMap);
+                func?.call(this, atkUnit, defUnit);
+                switch (skillId) {
+                    case Special.DragonBlast:
+                        if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
+                            if (defUnit.battleContext.specialSkillCondSatisfied) {
+                                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                            }
+                        }
+                        break;
+                    case Special.ArmoredFloe:
+                    case Special.ArmoredBeacon:
+                        if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
+                            if (isRangedWeaponType(atkUnit.weaponType)) {
+                                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                            }
+                        }
+                        break;
+                }
+            }
+            // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
+            if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.length > 0) {
+                for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
+                    damageReductionRatiosByNonDefenderSpecial.push(ratio);
+                    this.writeDebugLog(`1戦闘1回の奥義によるダメージ軽減。ratio: ${ratio}`);
+                }
+                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
+            }
+            // 防御系奥義以外によるダメージ軽減
+            let reductionRatios = defUnit.battleContext.damageReductionRatiosByNonDefenderSpecial;
+            if (reductionRatios.length > 0) {
+                for (let ratio of reductionRatios) {
+                    damageReductionRatiosByNonDefenderSpecial.push(ratio);
+                    this.writeDebugLog(`防御系奥義以外の奥義によるダメージ軽減。ratio: ${ratio}`);
+                }
+            }
+        }
+
+        // 攻撃ごとに変化する可能性のある奥義扱いのダメージ軽減
+        damageReductionRatiosByNonDefenderSpecial.push(...defUnit.battleContext.damageReductionRatiosBySpecialPerAttack);
+
+        // 奥義の次の攻撃のダメージ軽減
+        damageReductionRatiosByNonDefenderSpecial.push(...defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack);
+        defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack = [];
+    }
+
+    #getDamageReductionRatios(atkUnit, defUnit, context) {
+        let damageReductionRatios = [];
+        // 計算機の外側で設定されたダメージ軽減率
+        damageReductionRatios.push(...defUnit.battleContext.getDamageReductionRatios());
+
+        if (context.isFirstAttack(atkUnit)) {
+            // 初回攻撃
+            damageReductionRatios.push(...defUnit.battleContext.getDamageReductionRatiosOfFirstAttack());
+        } else if (context.isConsecutiveAttack(atkUnit)) {
+            // 連続した攻撃
+            damageReductionRatios.push(...defUnit.battleContext.getDamageReductionRatiosOfConsecutiveAttacks());
+        }
+
+        if (context.isFollowupOrPotentFollowupAttack()) {
+            // 追撃
+            damageReductionRatios.push(...defUnit.battleContext.getDamageReductionRatiosOfFollowupAttack());
+        } else {
+            // 最初の攻撃と2回攻撃
+            damageReductionRatios.push(...defUnit.battleContext.getDamageReductionRatiosOfFirstAttacks());
+        }
+
+        // 戦闘中1回の軽減効果
+        // 奥義による攻撃でダメージを与えた時、次の敵の攻撃のダメージを50%軽減(その戦闘中のみ)
+        if (defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated !== null) {
+            damageReductionRatios.push(
+                ...defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated
+            );
+            // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
+            defUnit.battleContext.damageReductionRatiosOfNextAttackWhenSpecialActivated = null;
+        }
+
+        // チェインガード
+        for (let [unit, ratio] of defUnit.battleContext.damageReductionRatiosByChainGuard) {
+            if (this.isLogEnabled) {
+                this.writeDebugLog(`${unit.nameWithGroup}によるチェインガードによるダメージ軽減。ratio: [${ratio}]`);
+            }
+            damageReductionRatios.push(ratio);
+            unit.battleContext.isChainGuardActivated = true;
+        }
+        return damageReductionRatios;
+    }
+
+    #getNeutralizationOfDamageReduction(damageReductionRatios,
+                                        invalidatesDamageReduction,
+                                        neutralizationRatiosOfDamageReduction,
+                                        atkUnit,
+                                        canActivateAttackerSpecial) {
+        let damageReductionRatiosAfterNeutralization = [];
+        // ダメージ軽減をN%無効
+        // 奥義発動時のダメージ軽減無効
+        if (canActivateAttackerSpecial) {
+            let ratios = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation;
+            neutralizationRatiosOfDamageReduction.push(...ratios);
+        }
+
+        let reductionRatiosPerAttack = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack;
+        neutralizationRatiosOfDamageReduction.push(...reductionRatiosPerAttack);
+
+        let neutralizeOne = (accum, current) => accum - MathUtil.truncByPercentage(accum * current);
+        let neutralizeAll = r => neutralizationRatiosOfDamageReduction.reduce(neutralizeOne, r);
+        damageReductionRatiosAfterNeutralization.push(...damageReductionRatios.map(neutralizeAll));
+        this.writeDebugLog(`ダメージ軽減: [${damageReductionRatios}]`);
+        this.writeDebugLog(`軽減無効後のダメージ軽減: [${damageReductionRatiosAfterNeutralization}]`);
+        // ダメージ軽減を無効
+        if (invalidatesDamageReduction) {
+            if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
+            damageReductionRatiosAfterNeutralization.fill(0);
+        }
+        return damageReductionRatiosAfterNeutralization;
     }
 
     /**
@@ -1849,29 +1888,50 @@ class DamageCalculator {
      * @param {Unit} defUnit
      * @param {Unit} atkUnit
      * @param {number} damage
-     * @param {number} damageReductionRatio
-     * @param {number|string} damageReductionValue
+     * @param {number[]} damageReductionRatiosAfterNeutralization
+     * @param {number[]} damageReductionRatiosByDefenderSpecial
+     * @param {number[]} damageReductionRatiosByNonDefenderSpecial
+     * @param {number[]} damageReductionValues
      * @param {number} potentRatio
      * @param {boolean} activatesDefenderSpecial
      * @param {DamageCalcContext} context
      */
     __calcUnitAttackDamage(defUnit, atkUnit,
                            damage,
-                           damageReductionRatio, damageReductionValue,
+                           damageReductionRatiosAfterNeutralization,
+                           damageReductionRatiosByDefenderSpecial,
+                           damageReductionRatiosByNonDefenderSpecial,
+                           damageReductionValues,
                            potentRatio,
                            activatesDefenderSpecial, context) {
         // 軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする
         // （巨影など一部の敵を除く）
-        let reducedDamage = Math.trunc(damage * damageReductionRatio) + damageReductionValue;
+        let damageReductionValue = damageReductionValues.reduce((a, c) => a + c, 0);
+        let reductionRatios = [];
+        reductionRatios.push(...damageReductionRatiosAfterNeutralization);
+        reductionRatios.push(...damageReductionRatiosByDefenderSpecial);
+        reductionRatios.push(...damageReductionRatiosByNonDefenderSpecial);
+        // 【検証】回避・盾奥義・連撃防御が重なった時の端数計算
+        // https://www.mattari-feh.com/entry/2020/06/22/201217
+        // > m.（回避×盾奥義×連撃防御）
+        // > という事で、実用上はmのケースで理解しておけば良さそうです。
+        let damageRatio = reductionRatios.reduce((a, c) => a * (1 - c), 1);
+        let reduceRatio = 1 - damageRatio;
+        // let reducedDamage = Math.trunc(damage * (1 - ratio)) + damageReductionValue;
+        let reducedDamage = Math.trunc(damage * reduceRatio) + damageReductionValue;
         let currentDamage = Math.max(damage - reducedDamage, 0);
-        currentDamage = Math.trunc(currentDamage * potentRatio);
         if (this.isLogEnabled) {
-            this.writeDebugLog(`ダメージ計算: (${damage} - trunc(${damage} * ${roundFloat(damageReductionRatio)})) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
-            this.writeDebugLog(`軽減前ダメージ${damage}`);
-            this.writeDebugLog(`ダメージ軽減率${floorNumberWithFloatError(damageReductionRatio * 100)}%`);
-            this.writeDebugLog(`固定ダメージ軽減値-${damageReductionValue}`);
-            this.writeDebugLog(`神速追撃ダメージ倍率${floorNumberWithFloatError(potentRatio * 100)}%`);
-            this.writeDebugLog(`ダメージ変化:${damage}→${currentDamage} (${damage - currentDamage}軽減)`);
+            this.writeDebugLog(`ダメージ軽減計算開始`);
+            this.writeDebugLog(`軽減前ダメージ: ${damage}`);
+            this.writeDebugLog(`ダメージ軽減率(奥義以外): [${damageReductionRatiosAfterNeutralization}]`);
+            this.writeDebugLog(`ダメージ軽減率(守備奥義): [${damageReductionRatiosByDefenderSpecial}]`);
+            this.writeDebugLog(`ダメージ軽減率(奥義): [${damageReductionRatiosByNonDefenderSpecial}]`);
+            this.writeDebugLog(`最終ダメージ率: ${floorNumberWithFloatError(damageRatio * 100)}%`);
+            this.writeDebugLog(`最終ダメージ軽減率: ${floorNumberWithFloatError(reduceRatio * 100)}%`);
+            this.writeDebugLog(`固定ダメージ軽減値: -${damageReductionValue}`);
+            this.writeDebugLog(`神速追撃ダメージ倍率: ${floorNumberWithFloatError(potentRatio * 100)}%`);
+            this.writeDebugLog(`ダメージ計算: (${damage} - trunc(${damage} * ${roundFloat(reduceRatio)})) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
+            this.writeDebugLog(`ダメージ変化: ${damage}→${currentDamage} (${damage - currentDamage}軽減)`);
         }
 
         if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
