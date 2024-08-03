@@ -1,5 +1,87 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 虎の剛斧
+{
+    let skillId = Weapon.TigerRoarAxe;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                targetUnit.addAllSpur(5);
+                if (enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        }
+    );
+}
+
+// アッサルの槍
+{
+    let skillId = Weapon.SpearOfAssal;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                targetUnit.addAtkSpdSpurs(4);
+                targetUnit.battleContext.invalidatesAtkBuff = true;
+                targetUnit.battleContext.invalidatesSpdBuff = true;
+            }
+        }
+    );
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 周囲2マス以内
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.addAtkSpdSpurs(4);
+            }
+        }
+    );
+}
+
+// 盛夏の神宝
+{
+    let skillId = Weapon.SunsPercussors;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat() ||
+                enemyUnit.battleContext.restHpPercentage === 100) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+    );
+}
+
+// フェイルノート
+{
+    let skillId = Weapon.Failnaught;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+    );
+}
+
+// 聖弓イチイバル
+{
+    let skillId = Weapon.HolyYewfelle;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
+                targetUnit.addAtkSpdSpurs(6);
+                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
+                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
+                targetUnit.battleContext.neutralizesReducesCooldownCount();
+            }
+        }
+    );
+}
+
 // 神獣の肉体
 {
     let skillId = PassiveB.DivineStrength;
