@@ -3266,7 +3266,7 @@ class BeginningOfTurnSkillHandler {
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwnerUnit, 2)) {
             let moveType = unit.moveType;
             if (unitsMap.has(moveType) &&
-                unitsMap.get(moveType).length > 3) {
+                unitsMap.get(moveType).length >= 3) {
                 continue;
             }
             applyBuffFunc(unit);
