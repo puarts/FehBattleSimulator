@@ -449,7 +449,7 @@
                 );
             }
             // 戦闘中、敵の攻撃、速さ、守備-5
-            enemyUnit.addSpursWithoutRes(5);
+            enemyUnit.addSpursWithoutRes(-5);
             // 戦闘中、
             // ダメージ＋敵の守備の25%（範囲奥義を除く）、
             targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Def, 0.25);
