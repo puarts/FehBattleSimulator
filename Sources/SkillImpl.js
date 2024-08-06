@@ -69,16 +69,28 @@
 
 // 聖弓イチイバル
 {
-    let skillId = Weapon.HolyYewfelle;
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.addAtkSpdSpurs(6);
-                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
-                targetUnit.battleContext.neutralizesReducesCooldownCount();
-            }
-        }
+    let skillId = getSpecialRefinementSkillId(Weapon.HolyYewfelle);
+    applySkillEffectForUnitMap.addSkill(skillId, () =>
+        new ApplySkillEffectForUnitNode(
+            new IfNode(IS_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_25_NODE,
+                ADD_ATK_SPD_SPUR_5_NODE,
+                new AddAtkSpdSpurNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
+                new InvalidateEnemyBuffsNode(false, true, true, false),
+                ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE,
+            )
+        )
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.HolyYewfelle);
+    applySkillEffectForUnitMap.addSkill(skillId, () =>
+        new ApplySkillEffectForUnitNode(
+            new IfNode(new OrNode(INITIATE_COMBAT_NODE, IS_ENEMY_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_75_NODE),
+                ADD_ATK_SPD_SPUR_6_NODE,
+                new InvalidateOwnDebuffsNode(true, true, false, false),
+                NEUTRALIZES_REDUCES_COOLDOWN_COUNT_NODE,
+            )
+        )
     );
 }
 
