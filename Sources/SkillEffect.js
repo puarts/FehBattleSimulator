@@ -29,7 +29,7 @@ class MultiValueMap extends Map {
  * @template {SkillEffectNode} N
  * @template E
  */
-class SkillEffectMap {
+class SkillEffectHooks {
     /** @type {MultiValueMap<number|string, () => N>} */
     #delayedMap = new MultiValueMap();
     /** @type {MultiValueMap<number|string, N>} */
@@ -59,6 +59,28 @@ class SkillEffectMap {
      */
     evaluate(skillId, env) {
         return this.getSkills(skillId).map(skillNode => skillNode.evaluate(env));
+    }
+
+    /**
+     * @param {number|string} skillId
+     * @param {E} env
+     * @returns boolean
+     */
+    evaluateSome(skillId, env) {
+        return this.evaluate(skillId, env).some(result => result);
+    }
+
+    /**
+     * @param {number|string} skillId
+     * @param {E} env
+     * @returns number
+     */
+    evaluateNumber(skillId, env) {
+        let results = this.evaluate(skillId, env);
+        console.log(`results: ${results}`);
+        if (results.length > 0) {
+            return results[results.length - 1];
+        }
     }
 }
 
@@ -116,6 +138,14 @@ class SkillEffectNode {
 }
 
 class NumberNode extends SkillEffectNode {
+    /**
+     * @returns {number}
+     */
+    evaluate(env) {
+    }
+}
+
+class ConstantNumberNode extends NumberNode {
     #value;
 
     constructor(value) {
@@ -172,7 +202,7 @@ class TrueNode extends CondNode {
 TRUE_NODE = new TrueNode();
 
 class FalseNode extends CondNode {
-    evaluate() {
+    evaluate(env) {
         return false;
     }
 }
@@ -183,7 +213,7 @@ class NumberOperationNode extends SkillEffectNode {
     constructor(...values) {
         super();
         values.forEach(value => {
-                let v = typeof value === 'number' ? new NumberNode(value) : value;
+                let v = typeof value === 'number' ? new ConstantNumberNode(value) : value;
                 this.addChild(v);
             }
         );
@@ -233,6 +263,28 @@ class DamageCalculatorWrapperEnv {
     }
 }
 
+class BattleSimulatorBaseEnv {
+    /**
+     * @param {BattleSimulatorBase} battleSimulatorBase
+     * @param {Unit} targetUnit
+     */
+    constructor(battleSimulatorBase, targetUnit) {
+        this.battleSimulatorBase = battleSimulatorBase;
+        this.targetUnit = targetUnit;
+    }
+}
+
+class CantoEnv {
+    /**
+     * @param {Unit} targetUnit
+     * @param {number} moveCountForCanto
+     */
+    constructor(targetUnit, moveCountForCanto) {
+        this.targetUnit = targetUnit;
+        this.moveCountForCanto = moveCountForCanto;
+    }
+}
+
 /**
  * @template {SkillEffectNode} C
  * @extends {SkillEffectNode<C>}
@@ -240,6 +292,15 @@ class DamageCalculatorWrapperEnv {
 class ApplySkillEffectForUnitNode extends SkillEffectNode {
     /**
      * @param {DamageCalculatorWrapperEnv} env
+     */
+    evaluate(env) {
+        return super.evaluate(env);
+    }
+}
+
+class CanActivateCantoNode extends SkillEffectNode {
+    /**
+     * @param {BattleSimulatorBaseEnv} env
      */
     evaluate(env) {
         return super.evaluate(env);
@@ -290,7 +351,7 @@ class AddSpursNode extends SkillEffectNode {
         super();
         values.forEach(value => {
                 if (typeof value === 'number') {
-                    this.addChild(new NumberNode(value));
+                    this.addChild(new ConstantNumberNode(value));
                 } else {
                     this.addChild(value);
                 }
@@ -373,12 +434,15 @@ class InvalidateEnemyBuffsNode extends SetBoolToEachStatusNode {
 class ValueNode extends SkillEffectNode {
     constructor(value) {
         if (typeof value === 'number') {
-            super(new NumberNode(value));
+            super(new ConstantNumberNode(value));
         } else if (typeof value === 'boolean') {
             super(new BoolNode(value));
         } else {
-            super();
+            super(value);
         }
+    }
+    evaluate() {
+        return super.evaluate()[0];
     }
 }
 
@@ -388,7 +452,8 @@ class AddReductionRatiosOfDamageReductionRatioExceptSpecialNode extends ValueNod
     }
 }
 
-const ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE = new AddReductionRatiosOfDamageReductionRatioExceptSpecialNode(0.5);
+const ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE
+    = new AddReductionRatiosOfDamageReductionRatioExceptSpecialNode(0.5);
 
 class NeutralizesReducesCooldownCountNode extends SkillEffectNode {
     evaluate(env) {
@@ -398,5 +463,18 @@ class NeutralizesReducesCooldownCountNode extends SkillEffectNode {
 
 const NEUTRALIZES_REDUCES_COOLDOWN_COUNT_NODE = new NeutralizesReducesCooldownCountNode()
 
-/** @type {SkillEffectMap<ApplySkillEffectForUnitNode, DamageCalculatorWrapperEnv>} */
-const applySkillEffectForUnitMap = new SkillEffectMap();
+class DisablesSkillsFromEnemyAlliesInCombatNode extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
+    }
+}
+
+const DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT_NODE = new DisablesSkillsFromEnemyAlliesInCombatNode();
+
+// TODO: rename(to upper case)
+/** @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const applySkillEffectForUnitHooks = new SkillEffectHooks();
+/** @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const canActivateCantoHooks = new SkillEffectHooks();
+/** @type {SkillEffectHooks<SkillEffectNode, CantoEnv>} */
+const calcMoveCountForCantoHooks = new SkillEffectHooks();

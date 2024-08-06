@@ -2346,7 +2346,7 @@ class DamageCalculatorWrapper {
             }
             getSkillFunc(skillId, applySkillEffectForUnitFuncMap)?.call(this, targetUnit, enemyUnit, calcPotentialDamage);
             let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-            applySkillEffectForUnitMap.evaluate(skillId, env);
+            applySkillEffectForUnitHooks.evaluate(skillId, env);
         }
     }
 

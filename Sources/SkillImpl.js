@@ -72,6 +72,9 @@
     let skillId = getSpecialRefinementSkillId(Weapon.HolyYewfelle);
     applySkillEffectForUnitMap.addSkill(skillId, () =>
         new ApplySkillEffectForUnitNode(
+
+    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+        new SkillEffectNode(
             new IfNode(IS_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_25_NODE,
                 ADD_ATK_SPD_SPUR_5_NODE,
                 new AddAtkSpdSpurNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
@@ -82,9 +85,22 @@
     );
 }
 {
+    let skillId = getRefinementSkillId(Weapon.HolyYewfelle);
+    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(new OrNode(INITIATE_COMBAT_NODE, IS_ENEMY_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_75_NODE),
+                ADD_ATK_SPD_SPUR_6_NODE,
+                new InvalidateOwnDebuffsNode(true, true, false, false),
+                NEUTRALIZES_REDUCES_COOLDOWN_COUNT_NODE,
+                DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT_NODE,
+            )
+        )
+    );
+}
+{
     let skillId = getNormalSkillId(Weapon.HolyYewfelle);
-    applySkillEffectForUnitMap.addSkill(skillId, () =>
-        new ApplySkillEffectForUnitNode(
+    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+        new SkillEffectNode(
             new IfNode(new OrNode(INITIATE_COMBAT_NODE, IS_ENEMY_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_75_NODE),
                 ADD_ATK_SPD_SPUR_6_NODE,
                 new InvalidateOwnDebuffsNode(true, true, false, false),

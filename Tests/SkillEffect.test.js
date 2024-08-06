@@ -34,10 +34,10 @@ describe('Test skill effect', () => {
         });
     });
 
-    describe(`Test ${SkillEffectMap.name}`, () => {
+    describe(`Test ${SkillEffectHooks.name}`, () => {
         beforeEach(() => {
-            /** @type {SkillEffectMap<NumberNode>} */
-            skillEffectMap = new SkillEffectMap();
+            /** @type {SkillEffectHooks<ConstantNumberNode>} */
+            skillEffectMap = new SkillEffectHooks();
         });
 
         test('Test constructor should return an empty map', () => {
@@ -45,12 +45,12 @@ describe('Test skill effect', () => {
         });
 
         test('Test addSkill(), getSkills() and evaluate()', () => {
-            skillEffectMap.addSkill(1, () => new NumberNode(1));
+            skillEffectMap.addSkill(1, () => new ConstantNumberNode(1));
             expect(skillEffectMap.getSkills(1).length).toEqual(1);
-            skillEffectMap.addSkill(1, () => new NumberNode(2));
-            skillEffectMap.addSkill(1, () => new NumberNode(3));
+            skillEffectMap.addSkill(1, () => new ConstantNumberNode(2));
+            skillEffectMap.addSkill(1, () => new ConstantNumberNode(3));
             expect(skillEffectMap.getSkills(1).length).toEqual(3);
-            skillEffectMap.addSkill(2, () => new NumberNode(3));
+            skillEffectMap.addSkill(2, () => new ConstantNumberNode(3));
             expect(skillEffectMap.evaluate(1, null)).toEqual([1, 2, 3]);
             expect(skillEffectMap.evaluate(2, null)).toEqual([3]);
         });
@@ -72,7 +72,7 @@ describe('Test skill effect', () => {
         });
 
         test('Test evaluate()', () => {
-            let sen = new SkillEffectNode(new NumberNode(1), new NumberNode(3));
+            let sen = new SkillEffectNode(new ConstantNumberNode(1), new ConstantNumberNode(3));
             expect(sen.evaluate()).toEqual([1, 3]);
         });
     });
@@ -116,19 +116,19 @@ describe('Test skill effect', () => {
             expect(
                 new IfNode(
                     new OrNode(FALSE_NODE, FALSE_NODE, TRUE_NODE),
-                    new NumberNode(3)
+                    new ConstantNumberNode(3)
                 ).evaluate()).toEqual([3]);
             expect(
                 new IfNode(
                     new OrNode(FALSE_NODE, FALSE_NODE, TRUE_NODE),
-                    new NumberNode(3),
-                    new NumberNode(7),
+                    new ConstantNumberNode(3),
+                    new ConstantNumberNode(7),
                 ).evaluate()).toEqual([3, 7]);
 
             expect(
                 new IfNode(
                     new OrNode(FALSE_NODE, FALSE_NODE, FALSE_NODE),
-                    new NumberNode(3)
+                    new ConstantNumberNode(3)
                 ).evaluate()).toBeUndefined();
         });
     });
@@ -144,14 +144,14 @@ describe('Test skill effect', () => {
 
     describe(`Test ${MultNode.name}`, () => {
         test('Test evaluate()', () => {
-            expect(new MultNode(new NumberNode(61), 0.15, 2).evaluate(null)).toBe(18.3);
+            expect(new MultNode(new ConstantNumberNode(61), 0.15, 2).evaluate(null)).toBe(18.3);
             expect(() => new MultNode().evaluate(null)).toThrowError();
         });
     });
 
     describe(`Test ${MultTruncNode.name}`, () => {
         test('Test evaluate()', () => {
-            expect(new MultTruncNode(new NumberNode(61), 0.15, 2).evaluate(null)).toBe(18);
+            expect(new MultTruncNode(new ConstantNumberNode(61), 0.15, 2).evaluate(null)).toBe(18);
             expect(() => new MultTruncNode().evaluate(null)).toThrowError();
         });
     });

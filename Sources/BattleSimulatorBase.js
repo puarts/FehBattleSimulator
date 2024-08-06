@@ -6830,6 +6830,9 @@ class BattleSimulatorBase {
             if (getSkillFunc(skillId, canActivateCantoFuncMap)?.call(this, unit)) {
                 return true;
             }
+            if (canActivateCantoHooks.evaluateSome(skillId, new BattleSimulatorBaseEnv(this, unit))) {
+                return true;
+            }
             switch (skillId) {
                 case Weapon.PaydayPouch: // 再移動条件
                     if (unit.getPositiveStatusEffects().length >= 3) {
