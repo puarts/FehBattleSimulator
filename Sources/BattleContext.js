@@ -571,6 +571,13 @@ class BattleContext {
         ];
     }
 
+    invalidateOwnDebuffs(atk, spd, def, res) {
+        this.invalidatesOwnAtkDebuff |= atk;
+        this.invalidatesOwnSpdDebuff |= spd;
+        this.invalidatesOwnDefDebuff |= def;
+        this.invalidatesOwnResDebuff |= res;
+    }
+
     invalidateAllOwnDebuffs() {
         this.invalidatesOwnAtkDebuff = true;
         this.invalidatesOwnSpdDebuff = true;
