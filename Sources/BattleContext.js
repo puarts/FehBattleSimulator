@@ -458,8 +458,12 @@ class BattleContext {
         this.addReducedDamageForNextAttackFuncs = [];
         // ステータス決定後の戦闘中バフ
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
+        /** @type {SkillEffectNode[]} */
+        this.applySpurForUnitAfterCombatStatusFixedNodes = [];
         // ステータス決定後のスキル効果
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
+        /** @type {SkillEffectNode[]} */
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes = [];
         // 2回攻撃
         this.setAttackCountFuncs = [];
         // 戦闘後

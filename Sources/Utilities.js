@@ -1300,6 +1300,24 @@ class GeneratorUtil {
     }
 }
 
+class ArrayUtil {
+    /**
+     * @param {number[]} array1
+     * @param {number[]} array2
+     */
+    static sub(array1, array2) {
+        return array1.map((value, index) => value - array2[index]);
+    }
+
+    /**
+     * @param {number[]} array1
+     * @param {number[]} array2
+     */
+    static mult(array1, array2) {
+        return array1.map((value, index) => value * array2[index]);
+    }
+}
+
 class MathUtil {
     /**
      * 「最低min、最大max」した値を返す。

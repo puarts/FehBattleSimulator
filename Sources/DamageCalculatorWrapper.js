@@ -10885,6 +10885,8 @@ class DamageCalculatorWrapper {
         for (let func of targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs) {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
             if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
                 this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
@@ -11885,6 +11887,9 @@ class DamageCalculatorWrapper {
         for (let func of targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs) {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
+
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
                 DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);

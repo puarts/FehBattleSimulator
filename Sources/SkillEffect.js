@@ -40,6 +40,9 @@ class SkillEffectHooks {
      * @param {() => N} nodeFunc
      */
     addSkill(skillId, nodeFunc) {
+        if (typeof nodeFunc !== 'function') {
+            throw new Error('Argument nodeFunc must be a function');
+        }
         this.#delayedMap.addValue(skillId, nodeFunc);
     }
 
@@ -149,6 +152,82 @@ class NumberNode extends SkillEffectNode {
     }
 }
 
+/**
+ * @abstract
+ */
+class FromNumberNode extends SkillEffectNode {
+    /**
+     * @param {number|NumberNode} numberOrNode
+     */
+    constructor(numberOrNode) {
+        if (typeof numberOrNode === 'number') {
+            super(new ConstantNumberNode(numberOrNode));
+        } else {
+            super(numberOrNode);
+        }
+    }
+
+    /**
+     * @returns {number}
+     */
+    evaluateChildren(env) {
+        return super.evaluateChildren(env)[0];
+    }
+
+    /**
+     * @abstract
+     */
+    evaluate(env) {
+    }
+}
+
+/**
+ * @abstract
+ */
+class FromNumbersNode extends SkillEffectNode {
+    /**
+     * @param {...number|NumberNode} numerics
+     */
+    constructor(...numerics) {
+        super();
+        numerics.forEach(n => {
+                if (typeof n === 'number') {
+                    this.addChildren(new ConstantNumberNode(n));
+                } else {
+                    this.addChildren(n);
+                }
+            }
+        );
+    }
+
+    /**
+     * @abstract
+     */
+    evaluate(env) {
+        super.evaluateChildren(env);
+    }
+}
+
+class FromPositiveNumberNode extends FromNumberNode {
+    evaluateChildren(env) {
+        let value = super.evaluateChildren(env);
+        if (value < 0) {
+            throw new Error('Children must be a positive number');
+        }
+        return value;
+    }
+}
+
+class FromPositiveNumbersNode extends FromNumbersNode {
+    evaluateChildren(env) {
+        let evaluatedValues = super.evaluateChildren(env);
+        if (evaluatedValues.some(value => value < 0)) {
+            throw new Error('Children must be a positive number');
+        }
+        return evaluatedValues;
+    }
+}
+
 class ConstantNumberNode extends NumberNode {
     #value;
 
@@ -212,21 +291,17 @@ class BoolToBoolNode extends BoolNode {
     }
 }
 
-class TrueNode extends BoolNode {
-    evaluate() {
+const TRUE_NODE = new class extends BoolNode {
+    evaluate(env) {
         return true;
     }
-}
+}();
 
-const TRUE_NODE = new TrueNode();
-
-class FalseNode extends BoolNode {
+const FALSE_NODE = new class extends BoolNode {
     evaluate(env) {
         return false;
     }
-}
-
-const FALSE_NODE = new FalseNode();
+}();
 
 /**
  * @abstract
@@ -256,10 +331,10 @@ class EnsureMaxNode extends NumberOperationNode {
     #max = Number.MAX_SAFE_INTEGER;
 
     /**
-     * @param {number} max
      * @param {number|NumberNode} child
+     * @param {number} max
      */
-    constructor(max, child) {
+    constructor(child, max) {
         super(child);
         this.#max = max;
     }
@@ -270,6 +345,40 @@ class EnsureMaxNode extends NumberOperationNode {
 
     evaluate(env) {
         return MathUtil.ensureMax(this.evaluateChildren(env), this.#max);
+    }
+}
+
+class EnsureMinMaxNode extends NumberOperationNode {
+    #min = Number.MIN_SAFE_INTEGER;
+    #max = Number.MAX_SAFE_INTEGER;
+
+    /**
+     * @param {number|NumberNode} child
+     * @param {number} min
+     * @param {number} max
+     */
+    constructor(child, min, max) {
+        super(child);
+        this.#min = min;
+        this.#max = max;
+    }
+
+    evaluateChildren(env) {
+        return super.evaluateChildren(env)[0];
+    }
+
+    evaluate(env) {
+        return MathUtil.ensureMinMax(this.evaluateChildren(env), this.#min, this.#max);
+    }
+}
+
+class AddNode extends NumberOperationNode {
+    /**
+     * @override
+     * @returns {number}
+     */
+    evaluate(env) {
+        return super.evaluateChildren(env).reduce((a, b) => a + b);
     }
 }
 
@@ -357,28 +466,6 @@ class AtStartOfTurnEnv {
     }
 }
 
-/**
- * @template {SkillEffectNode} C
- * @extends {SkillEffectNode<C>}
- */
-class ApplySkillEffectForUnitNode extends SkillEffectNode {
-    /**
-     * @param {DamageCalculatorWrapperEnv} env
-     */
-    evaluate(env) {
-        return super.evaluate(env);
-    }
-}
-
-class CanActivateCantoNode extends SkillEffectNode {
-    /**
-     * @param {BattleSimulatorBaseEnv} env
-     */
-    evaluate(env) {
-        return super.evaluate(env);
-    }
-}
-
 class CalcMoveCountForCantoNode extends NumberNode {
     /**
      * @param {CantoEnv} env
@@ -409,13 +496,11 @@ class CantoRem extends CalcMoveCountForCantoNode {
 
 const CANTO_REM_PLUS_ONE_NODE = new CantoRem(1);
 
-class IsCombatInitiatedByUnit extends BoolNode {
+const IS_COMBAT_INITIATED_BY_UNIT = new class extends BoolNode {
     evaluate(env) {
         return env.targetUnit.battleContext.initiatesCombat;
     }
-}
-
-const IS_COMBAT_INITIATED_BY_UNIT = new IsCombatInitiatedByUnit();
+}();
 
 class PercentageCondNode extends BoolNode {
     _percentage;
@@ -458,44 +543,32 @@ class ApplyNumericNode extends SkillEffectNode {
     }
 }
 
-/**
- * @template {NumberNode} C
- * @extends {SkillEffectNode<NumberNode>}
- */
-class GrantBonusNode extends SkillEffectNode {
-    constructor(...values) {
-        super();
-        values.forEach(value => {
-                if (typeof value === 'number') {
-                    this.addChild(new ConstantNumberNode(value));
-                } else {
-                    this.addChild(value);
-                }
-            }
-        );
-    }
-}
-
-class GrantBonusToAllNode extends GrantBonusNode {
+class GrantingBonusToAllNode extends FromPositiveNumberNode {
     evaluate(env) {
-        env.targetUnit.addAllSpur(...super.evaluate(env));
+        env.targetUnit.addAllSpur(this.evaluateChildren(env));
     }
 }
 
-class GrantBonusToAtk extends GrantBonusNode {
+class GrantingBonusToAtk extends FromPositiveNumberNode {
     evaluate(env) {
-        env.targetUnit.atkSpur += super.evaluate(env)[0];
+        env.targetUnit.atkSpur += this.evaluateChildren(env);
     }
 }
 
-class GrantBonusToAtkSpdNode extends GrantBonusNode {
+class GrantingBonusToAtkSpdNode extends FromPositiveNumbersNode {
     evaluate(env) {
-        env.targetUnit.addAtkSpdSpurs(...super.evaluate(env));
+        env.targetUnit.addAtkSpdSpurs(...this.evaluateChildren(env));
     }
 }
 
-const GRANT_BONUS_TO_ATK_5_NODE = new GrantBonusToAtkSpdNode(5);
-const GRANT_BONUS_TO_ATK_6_NODE = new GrantBonusToAtkSpdNode(6);
+const GRANTING_BONUS_TO_ATK_5_NODE = new GrantingBonusToAtkSpdNode(5);
+const GRANTING_BONUS_TO_ATK_6_NODE = new GrantingBonusToAtkSpdNode(6);
+
+class InflictingEachMinusNode extends FromPositiveNumbersNode {
+    evaluate(env) {
+        env.enemyUnit.addSpurs(...this.evaluateChildren(env).map(v => -v));
+    }
+}
 
 class PrecombatStatusNode extends NumberNode {
     #index;
@@ -514,6 +587,30 @@ const PRECOMBAT_ATK_NODE = new PrecombatStatusNode(STATUS_INDEX.Atk);
 const PRECOMBAT_SPD_NODE = new PrecombatStatusNode(STATUS_INDEX.Spd);
 const PRECOMBAT_DEF_NODE = new PrecombatStatusNode(STATUS_INDEX.Def);
 const PRECOMBAT_RES_NODE = new PrecombatStatusNode(STATUS_INDEX.Res);
+
+const MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.followupAttackPriorityIncrement++;
+    }
+}();
+
+const FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.followupAttackPriorityDecrement--;
+    }
+}();
+
+const NULL_FOLLOW_UP_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.setNullFollowupAttack();
+    }
+};
+
+class IncreasingSpdDiffNecessaryForFoesFollowUpNode extends FromNumberNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += this.evaluateChildren(env);
+    }
+}
 
 class SetBoolToEachStatusNode extends SkillEffectNode {
     /** @type {[boolean, boolean, boolean, boolean]} */
@@ -567,29 +664,6 @@ class InvalidateEnemyBuffsNode extends SetBoolToEachStatusNode {
     }
 }
 
-// TODO: 移動する
-/**
- * @abstract
- */
-class FromNumberNode extends SkillEffectNode {
-    /**
-     * @param {number|NumberNode} numberOrNode
-     */
-    constructor(numberOrNode) {
-        if (typeof numberOrNode === 'number') {
-            super(new ConstantNumberNode(numberOrNode));
-        } else {
-            super(numberOrNode);
-        }
-    }
-
-    /**
-     * @abstract
-     */
-    evaluate(env) {
-    }
-}
-
 class ApplyValueNode extends SkillEffectNode {
     #value;
 
@@ -616,56 +690,58 @@ class ApplyValuesNode extends SkillEffectNode {
     }
 }
 
-class NumOfBonusOnUnitAndFoeExcludingStatNode extends NumberNode {
+const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
     evaluate(env) {
         return env.targetUnit.getPositiveStatusEffects().length + env.enemyUnit.getPositiveStatusEffects().length;
     }
-}
+}();
 
-const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new NumOfBonusOnUnitAndFoeExcludingStatNode();
-
-class DealDamageNode extends ApplyNumericNode {
+class DealingDamageNode extends ApplyNumericNode {
     evaluate(env) {
         env.targetUnit.battleContext.additionalDamage += this.evaluateChildren(env);
     }
 }
 
-class ReduceDamageNode extends ApplyNumericNode {
+class ReducingDamageNode extends ApplyNumericNode {
     evaluate(env) {
         env.targetUnit.battleContext.damageReductionValue += this.evaluateChildren(env);
     }
 }
 
-class ReduceDamageWhenFoesSpecial extends ApplyNumericNode {
+class ReducingDamageWhenFoesSpecialNode extends ApplyNumericNode {
     evaluate(env) {
         env.targetUnit.battleContext.damageReductionValueOfSpecialAttack += this.evaluateChildren(env);
     }
 }
 
-class RestoresHpAfterCombatNode extends ApplyNumericNode {
+class ReducingDamageFromFirstAttackNode extends ApplyNumericNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.damageReductionValueOfFirstAttacks += this.evaluateChildren(env);
+    }
+}
+
+class RestoringHpAfterCombatNode extends ApplyNumericNode {
     evaluate(env) {
         env.targetUnit.battleContext.healedHpAfterCombat += this.evaluateChildren(env);
     }
 }
 
-const RESTORE_7_HP_AFTER_COMBAT_NODE = new RestoresHpAfterCombatNode(7);
+const RESTORE_7_HP_AFTER_COMBAT_NODE = new RestoringHpAfterCombatNode(7);
 
 class AddReductionRatiosOfDamageReductionRatioExceptSpecialNode extends FromNumberNode {
     evaluate(env) {
-        env.targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(super.evaluate(env));
+        env.targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(this.evaluateChildren(env));
     }
 }
 
 const ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE
     = new AddReductionRatiosOfDamageReductionRatioExceptSpecialNode(0.5);
 
-class NeutralizeSpecialCooldownChargeMinus extends SkillEffectNode {
+const NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS = new class extends SkillEffectNode {
     evaluate(env) {
         env.targetUnit.battleContext.neutralizesReducesCooldownCount();
     }
-}
-
-const NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS = new NeutralizeSpecialCooldownChargeMinus()
+}()
 
 class DisablesSkillsFromEnemyAlliesInCombatNode extends SkillEffectNode {
     evaluate(env) {
@@ -673,7 +749,51 @@ class DisablesSkillsFromEnemyAlliesInCombatNode extends SkillEffectNode {
     }
 }
 
-const DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT_NODE = new DisablesSkillsFromEnemyAlliesInCombatNode();
+const DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
+    }
+}();
+
+class GrantingOrInflictingAfterStatusFixedNode extends SkillEffectNode {
+    evaluate(env) {
+        let node = new SkillEffectNode(...this.getChildren());
+        env.targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedNodes.push(node);
+    }
+}
+
+class ApplyingStatusEffectsAfterStatusFixedNode extends SkillEffectNode {
+    evaluate(env) {
+        let node = new SkillEffectNode(...this.getChildren());
+        env.targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes.push(node);
+    }
+}
+
+class IsGteStatusSumNode extends BoolNode {
+    #unitAdd;
+    #foeAdd;
+    #ratios;
+
+    /**
+     * @param {number} unitAdd
+     * @param {number} foeAdd
+     * @param {[number, number, number, number]} ratios
+     */
+    constructor(unitAdd, foeAdd, ratios) {
+        super();
+        this.#unitAdd = unitAdd;
+        this.#foeAdd = foeAdd;
+        this.#ratios = ratios;
+    }
+
+    evaluate(env) {
+        let unitStatuses = env.targetUnit.getStatusesInCombat(env.enemyUnit);
+        let foeStatuses = env.enemyUnit.getStatusesInCombat(env.targetUnit);
+        let diffs = ArrayUtil.sub(unitStatuses, foeStatuses);
+        let total = ArrayUtil.mult(diffs, this.#ratios).reduce((prev, curr) => prev + curr);
+        return total + this.#unitAdd - this.#foeAdd >= 0;
+    }
+}
 
 // ターン開始時
 class GrantStatusAtStartOfTurnNode extends ApplyNumberToEachStatusNode {

@@ -20,16 +20,16 @@
     applySkillEffectForUnitHooks.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                new GrantBonusToAllNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
+                new GrantingBonusToAllNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
                 NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
-                new DealDamageNode(
-                    new EnsureMaxNode(30, new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5))
+                new DealingDamageNode(
+                    new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
                 ),
-                new ReduceDamageNode(
-                    new EnsureMaxNode(18, new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3))
+                new ReducingDamageNode(
+                    new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
                 ),
-                new ReduceDamageWhenFoesSpecial(
-                    new EnsureMaxNode(18, new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3))
+                new ReducingDamageWhenFoesSpecialNode(
+                    new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
                 ),
                 RESTORE_7_HP_AFTER_COMBAT_NODE,
             )
@@ -111,8 +111,8 @@
     applySkillEffectForUnitHooks.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                GRANT_BONUS_TO_ATK_5_NODE,
-                new GrantBonusToAtkSpdNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
+                GRANTING_BONUS_TO_ATK_5_NODE,
+                new GrantingBonusToAtkSpdNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
                 new InvalidateEnemyBuffsNode(false, true, true, false),
                 ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE,
             )
@@ -124,7 +124,7 @@
     applySkillEffectForUnitHooks.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
-                GRANT_BONUS_TO_ATK_6_NODE,
+                GRANTING_BONUS_TO_ATK_6_NODE,
                 new InvalidateOwnDebuffsNode(true, true, false, false),
                 NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT_NODE,
@@ -137,7 +137,7 @@
     applySkillEffectForUnitHooks.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
-                GRANT_BONUS_TO_ATK_6_NODE,
+                GRANTING_BONUS_TO_ATK_6_NODE,
                 new InvalidateOwnDebuffsNode(true, true, false, false),
                 NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
             )
