@@ -2843,6 +2843,7 @@ const PassiveB = {
     // （巻き添え範囲攻撃を60%軽減して尚且つ60%軽減の権利が消えない）
     GuardBearing4: 2417, // 警戒姿勢4
     DiveBomb3: 1430, // 空からの急襲3
+    PegasusRift: 2968, // 天馬裂空
 
     // 専用B
     DivineStrength: 2962, // 神獣の肉体

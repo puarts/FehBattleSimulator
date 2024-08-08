@@ -1,5 +1,28 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 天馬裂空
+{
+    let skillId = PassiveB.PegasusRift;
+    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new InflictingEachMinusNode(4, 4, 0, 0),
+            new ApplyingStatusEffectsAfterStatusFixedNode(
+                new IfNode(new IsGteStatusSumNode(0, -10, [0, 1, 0, 1]),
+                    new DealingDamageNode(
+                        new EnsureMinMaxNode(new AddNode(PRECOMBAT_RES_NODE, -30), 0, 10)
+                    ),
+                    new ReducingDamageFromFirstAttackNode(
+                        new EnsureMinMaxNode(new AddNode(PRECOMBAT_RES_NODE, -30), 0, 10)
+                    ),
+                    MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+                    FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
+                    new IncreasingSpdDiffNecessaryForFoesFollowUpNode(20),
+                ),
+            ),
+        ),
+    );
+}
+
 // 意気軒昂の夏祭の斧
 {
     let skillId = Weapon.SummertimeAxe;
