@@ -10415,6 +10415,7 @@
     };
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdPrime4, generatePrimeFunc((u, n) => u.addAtkSpdSpurs(n)));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkDefPrime4, generatePrimeFunc((u, n) => u.addAtkDefSpurs(n)));
+    applySkillEffectForUnitFuncMap.set(PassiveA.SpdDefPrime4, generatePrimeFunc((u, n) => u.addSpdDefSpurs(n)));
 }
 
 // 重装の大炎
