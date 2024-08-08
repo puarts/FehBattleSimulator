@@ -441,6 +441,10 @@ class BattleContext {
         // 瞬殺
         this.isBaneSpecial = false;
 
+        // 自分の戦闘順序入れ替えスキル(待ち伏せ、攻め立てなど)を無効
+        this.canUnitDisableSkillsThatChangeAttackPriority = false;
+
+        //
         // フック関数
         // 固定ダメージ
         this.calcFixedAddDamageFuncs = [];

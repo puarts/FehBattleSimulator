@@ -423,7 +423,7 @@ class DamageCalculatorWrapperEnv {
      * @param {DamageCalculatorWrapper} damageCalculator
      * @param {Unit} targetUnit
      * @param {Unit} enemyUnit
-     * @param {boolean} calcPotentialDamage
+     * @param {boolean|null} calcPotentialDamage
      */
     constructor(damageCalculator, targetUnit, enemyUnit, calcPotentialDamage) {
         this.damageCalculator = damageCalculator;
@@ -848,3 +848,8 @@ const calcMoveCountForCantoHooks = new SkillEffectHooks();
  * ターン開始時
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
 const atStartOfTurnHooks = new SkillEffectHooks();
+
+/**
+ * ターン開始時
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const beforePrecombatHooks = new SkillEffectHooks();

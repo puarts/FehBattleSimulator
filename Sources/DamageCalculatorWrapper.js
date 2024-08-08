@@ -376,6 +376,7 @@ class DamageCalculatorWrapper {
 
     __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
+            beforePrecombatHooks.evaluate(skillId, new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null));
             switch (skillId) {
                 case Weapon.Queensblade:
                     atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
@@ -15382,9 +15383,14 @@ class DamageCalculatorWrapper {
         this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(atkUnit, defUnit);
         this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(defUnit, atkUnit);
 
-        if (!atkUnit.canDisableAttackOrderSwapSkill(atkUnit.battleContext.restHpPercentage, defUnit)
-            && !defUnit.canDisableAttackOrderSwapSkill(defUnit.battleContext.restHpPercentage, atkUnit)
-        ) {
+        let canAtkUnitDisableAttackPrioritySkills =
+            atkUnit.canDisableAttackOrderSwapSkill(atkUnit.battleContext.restHpPercentage, defUnit) ||
+            atkUnit.battleContext.canUnitDisableSkillsThatChangeAttackPriority;
+        let canDefUnitDisableAttackPrioritySkills =
+            defUnit.canDisableAttackOrderSwapSkill(defUnit.battleContext.restHpPercentage, atkUnit) ||
+            defUnit.battleContext.canUnitDisableSkillsThatChangeAttackPriority;
+        if (!canAtkUnitDisableAttackPrioritySkills &&
+            !canDefUnitDisableAttackPrioritySkills) {
             atkUnit.battleContext.isDesperationActivated = atkUnit.battleContext.isDesperationActivatable || atkUnit.hasStatusEffect(StatusEffectType.Desperation);
             defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantageActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
 
@@ -15401,8 +15407,7 @@ class DamageCalculatorWrapper {
                     this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
                 }
             }
-        }
-        else {
+        } else {
             atkUnit.battleContext.isDesperationActivated = false;
             defUnit.battleContext.isVantageActivated = false;
         }
