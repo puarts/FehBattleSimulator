@@ -1888,6 +1888,11 @@ const Weapon = {
     // Ｗ神階英雄「ヘイズルーン＆エイクスルニル」
     NectarHorn: 2957, // 蜜の癒し手の角
     QuietingAntler: 2923, // 体の葬り手の角
+
+    // 超英雄「人見知り王女の試練」
+    // https://www.youtube.com/watch?v=SbOjgSWJ6SY&t=28s&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=7DA9CGAHF-c&t=31s&ab_channel=NintendoMobile
+    SummertimeAxe: 2966, // 意気軒昂の夏祭の斧
 };
 
 const Support = {

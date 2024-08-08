@@ -103,10 +103,10 @@ class SkillEffectNode {
     }
 
     evaluate() {
-        return this.evaluateChild(...arguments);
+        return this.evaluateChildren(...arguments);
     }
 
-    evaluateChild() {
+    evaluateChildren() {
         return this._children.map(child => child.evaluate(...arguments));
     }
 
@@ -168,7 +168,7 @@ class ConstantNumberNode extends NumberNode {
 /**
  * @abstract
  */
-class CondNode extends SkillEffectNode {
+class BoolNode extends SkillEffectNode {
     /**
      * @abstract
      * @returns {boolean} */
@@ -176,21 +176,21 @@ class CondNode extends SkillEffectNode {
     }
 }
 
-class AndNode extends CondNode {
+class AndNode extends BoolNode {
     evaluate(env) {
         return this.getChildren().every(child => child.evaluate(env));
     }
 }
 
-class OrNode extends CondNode {
+class OrNode extends BoolNode {
     evaluate(env) {
         return this.getChildren().some(child => child.evaluate(env));
     }
 }
 
-class BoolNode extends CondNode {
+class BoolToBoolNode extends BoolNode {
     /**
-     * @param {boolean|CondNode} value
+     * @param {boolean|BoolNode} value
      */
     constructor(value) {
         if (typeof value === 'boolean') {
@@ -200,12 +200,19 @@ class BoolNode extends CondNode {
         }
     }
 
+    /**
+     * @returns {boolean}
+     */
+    evaluateChildren(env) {
+        return super.getChildren()[0].evaluate(env);
+    }
+
     evaluate(env) {
-        return this._children[0].evaluate(env);
+        return this.evaluateChildren(env);
     }
 }
 
-class TrueNode extends CondNode {
+class TrueNode extends BoolNode {
     evaluate() {
         return true;
     }
@@ -213,23 +220,13 @@ class TrueNode extends CondNode {
 
 const TRUE_NODE = new TrueNode();
 
-class FalseNode extends CondNode {
+class FalseNode extends BoolNode {
     evaluate(env) {
         return false;
     }
 }
 
 const FALSE_NODE = new FalseNode();
-
-/**
- * @template T1
- * @template T2
- */
-class PairNode extends SkillEffectNode {
-    getFirst() {
-        return this.getChildren()[0];
-    }
-}
 
 /**
  * @abstract
@@ -255,17 +252,34 @@ class NumberOperationNode extends NumberNode {
     }
 }
 
-class MultNode extends NumberOperationNode {
-    setValue(value) {
-        this.getValueNode().setValue(value);
+class EnsureMaxNode extends NumberOperationNode {
+    #max = Number.MAX_SAFE_INTEGER;
+
+    /**
+     * @param {number} max
+     * @param {number|NumberNode} child
+     */
+    constructor(max, child) {
+        super(child);
+        this.#max = max;
     }
 
+    evaluateChildren(env) {
+        return super.evaluateChildren(env)[0];
+    }
+
+    evaluate(env) {
+        return MathUtil.ensureMax(this.evaluateChildren(env), this.#max);
+    }
+}
+
+class MultNode extends NumberOperationNode {
     /**
      * @override
      * @returns {number}
      */
     evaluate(env) {
-        return super.evaluateChild(env).reduce((a, b) => a * b);
+        return super.evaluateChildren(env).reduce((a, b) => a * b);
     }
 }
 
@@ -275,12 +289,12 @@ class MultTruncNode extends NumberOperationNode {
      * @returns {number}
      */
     evaluate(env) {
-        return super.evaluateChild(env).reduce((a, b) => Math.trunc(a * b));
+        return super.evaluateChildren(env).reduce((a, b) => Math.trunc(a * b));
     }
 }
 
 class IfNode extends SkillEffectNode {
-    /** @type {CondNode} */
+    /** @type {BoolNode} */
     #condNode;
 
     constructor(condNode, ...stmtNodes) {
@@ -395,15 +409,15 @@ class CantoRem extends CalcMoveCountForCantoNode {
 
 const CANTO_REM_PLUS_ONE_NODE = new CantoRem(1);
 
-class InitiateCombatNode extends CondNode {
+class IsCombatInitiatedByUnit extends BoolNode {
     evaluate(env) {
         return env.targetUnit.battleContext.initiatesCombat;
     }
 }
 
-const INITIATE_COMBAT_NODE = new InitiateCombatNode();
+const IS_COMBAT_INITIATED_BY_UNIT = new IsCombatInitiatedByUnit();
 
-class PercentageCondNode extends CondNode {
+class PercentageCondNode extends BoolNode {
     _percentage;
 
     constructor(percentage) {
@@ -413,113 +427,34 @@ class PercentageCondNode extends CondNode {
 
 }
 
-class IsRestHpPercentageHigherOrEqualNode extends PercentageCondNode {
+class IsHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
         return env.targetUnit.battleContext.restHpPercentage >= this._percentage;
     }
 }
 
-const IS_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_25_NODE = new IsRestHpPercentageHigherOrEqualNode(25);
+const IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsHpGTENPercentAtStartOfCombatNode(25);
 
-class IsEnemyRestHpPercentageHigherOrEqualNode extends PercentageCondNode {
+class IsFoesHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
         return env.enemyUnit.battleContext.restHpPercentage >= this._percentage;
     }
 }
 
-const IS_ENEMY_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_75_NODE = new IsEnemyRestHpPercentageHigherOrEqualNode(75);
+const IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGTENPercentAtStartOfCombatNode(75);
 
-/**
- * @template {NumberNode} C
- * @extends {SkillEffectNode<NumberNode>}
- */
 class ApplyNumericNode extends SkillEffectNode {
+    /**
+     * @param {number|NumberNode} numberOrNumberNode
+     */
     constructor(numberOrNumberNode = null) {
         let value =
             typeof numberOrNumberNode === 'number' ? new ConstantNumberNode(numberOrNumberNode) : numberOrNumberNode;
         super(value);
     }
 
-    /**
-     * @param {number} value
-     */
-    setValue(value) {
-        this._children = [new ConstantNumberNode(value)];
-    }
-
-    getValueNode() {
-        return this._children[0];
-    }
-
-    evaluateChild(env) {
-        return super.evaluateChild(env)[0];
-    }
-}
-
-/**
- * @abstract
- */
-class TransNumericNode extends ApplyNumericNode {
-    /**
-     * @param {NumberOperationNode} numOpNode
-     * @param {ApplyNumericNode} node
-     */
-    constructor(numOpNode, node) {
-        super(node);
-        this._numOpNode = numOpNode;
-    }
-
-    /**
-     * @abstract
-     */
-    evaluate(env) {
-        // 演算を行う
-        // return this.evaluateChild(env);
-    }
-}
-
-class MultValueNode extends TransNumericNode {
-
-}
-
-class ApplyCommonNumericNode extends SkillEffectNode {
-    /**
-     * @param {NumberNode} numNode
-     * @param {...[ApplyNumericNode, NumberOperationNode]} nodes
-     */
-    constructor(numNode, ...nodes) {
-        super(...nodes);
-        this._numNode = numNode;
-    }
-
-    evaluate(env) {
-        let value = this._numNode.evaluate(env);
-        return this._children.map(node => {
-            node.setValue(value);
-            return node.evaluate(env);
-        });
-    }
-}
-
-class MultValue extends ApplyNumericNode {
-    /**
-     * @param {number} n
-     * @param {ApplyNumericNode} node
-     */
-    constructor(n, node) {
-        super();
-        this._n = n;
-        this._node = node;
-    }
-
-    setValue(value) {
-        this._node.setValue(value);
-    }
-
-    evaluate(env) {
-        this._node.setValue(this.evaluateChild(env));
-        // TODO: returnをどうするか考える
-        this._node.evaluate(env);
+    evaluateChildren(env) {
+        return super.evaluateChildren(env)[0];
     }
 }
 
@@ -632,19 +567,26 @@ class InvalidateEnemyBuffsNode extends SetBoolToEachStatusNode {
     }
 }
 
-class ValueNode extends SkillEffectNode {
-    constructor(value) {
-        if (typeof value === 'number') {
-            super(new ConstantNumberNode(value));
-        } else if (typeof value === 'boolean') {
-            super(new BoolNode(value));
+// TODO: 移動する
+/**
+ * @abstract
+ */
+class FromNumberNode extends SkillEffectNode {
+    /**
+     * @param {number|NumberNode} numberOrNode
+     */
+    constructor(numberOrNode) {
+        if (typeof numberOrNode === 'number') {
+            super(new ConstantNumberNode(numberOrNode));
         } else {
-            super(value);
+            super(numberOrNode);
         }
     }
 
-    evaluate() {
-        return super.evaluate()[0];
+    /**
+     * @abstract
+     */
+    evaluate(env) {
     }
 }
 
@@ -674,13 +616,41 @@ class ApplyValuesNode extends SkillEffectNode {
     }
 }
 
-class DealDamageNode extends ApplyNumericNode {
+class NumOfBonusOnUnitAndFoeExcludingStatNode extends NumberNode {
     evaluate(env) {
-        env.targetUnit.battleContext.additionalDamage += this.evaluateChild(env);
+        return env.targetUnit.getPositiveStatusEffects().length + env.enemyUnit.getPositiveStatusEffects().length;
     }
 }
 
-class AddReductionRatiosOfDamageReductionRatioExceptSpecialNode extends ValueNode {
+const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new NumOfBonusOnUnitAndFoeExcludingStatNode();
+
+class DealDamageNode extends ApplyNumericNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.additionalDamage += this.evaluateChildren(env);
+    }
+}
+
+class ReduceDamageNode extends ApplyNumericNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.damageReductionValue += this.evaluateChildren(env);
+    }
+}
+
+class ReduceDamageWhenFoesSpecial extends ApplyNumericNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.damageReductionValueOfSpecialAttack += this.evaluateChildren(env);
+    }
+}
+
+class RestoresHpAfterCombatNode extends ApplyNumericNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.healedHpAfterCombat += this.evaluateChildren(env);
+    }
+}
+
+const RESTORE_7_HP_AFTER_COMBAT_NODE = new RestoresHpAfterCombatNode(7);
+
+class AddReductionRatiosOfDamageReductionRatioExceptSpecialNode extends FromNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(super.evaluate(env));
     }

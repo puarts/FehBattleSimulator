@@ -1,5 +1,42 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 意気軒昂の夏祭の斧
+{
+    let skillId = Weapon.SummertimeAxe;
+    canActivateCantoHooks.addSkill(skillId, () => TRUE_NODE);
+    calcMoveCountForCantoHooks.addSkill(skillId, () => CANTO_REM_PLUS_ONE_NODE);
+
+    atStartOfTurnHooks.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new GrantStatusAtStartOfTurnNode(0, 6, 6, 6),
+                new GrantStatusEffectsAtStartOfTurnNode([
+                    StatusEffectType.ShieldFlying,
+                    StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent
+                ]),
+            )
+        )
+    );
+    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new GrantBonusToAllNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
+                NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                new DealDamageNode(
+                    new EnsureMaxNode(30, new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5))
+                ),
+                new ReduceDamageNode(
+                    new EnsureMaxNode(18, new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3))
+                ),
+                new ReduceDamageWhenFoesSpecial(
+                    new EnsureMaxNode(18, new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3))
+                ),
+                RESTORE_7_HP_AFTER_COMBAT_NODE,
+            )
+        )
+    );
+}
+
 // 虎の剛斧
 {
     let skillId = Weapon.TigerRoarAxe;
@@ -70,14 +107,12 @@
 // 聖弓イチイバル
 {
     let skillId = getSpecialRefinementSkillId(Weapon.HolyYewfelle);
-    applySkillEffectForUnitMap.addSkill(skillId, () =>
-        new ApplySkillEffectForUnitNode(
 
     applySkillEffectForUnitHooks.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(IS_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_25_NODE,
-                ADD_ATK_SPD_SPUR_5_NODE,
-                new AddAtkSpdSpurNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
+            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                GRANT_BONUS_TO_ATK_5_NODE,
+                new GrantBonusToAtkSpdNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
                 new InvalidateEnemyBuffsNode(false, true, true, false),
                 ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE,
             )
@@ -88,10 +123,10 @@
     let skillId = getRefinementSkillId(Weapon.HolyYewfelle);
     applySkillEffectForUnitHooks.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(new OrNode(INITIATE_COMBAT_NODE, IS_ENEMY_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_75_NODE),
-                ADD_ATK_SPD_SPUR_6_NODE,
+            new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+                GRANT_BONUS_TO_ATK_6_NODE,
                 new InvalidateOwnDebuffsNode(true, true, false, false),
-                NEUTRALIZES_REDUCES_COOLDOWN_COUNT_NODE,
+                NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT_NODE,
             )
         )
@@ -101,10 +136,10 @@
     let skillId = getNormalSkillId(Weapon.HolyYewfelle);
     applySkillEffectForUnitHooks.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(new OrNode(INITIATE_COMBAT_NODE, IS_ENEMY_REST_HP_PERCENTAGE_HIGHER_OR_EQUAL_75_NODE),
-                ADD_ATK_SPD_SPUR_6_NODE,
+            new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+                GRANT_BONUS_TO_ATK_6_NODE,
                 new InvalidateOwnDebuffsNode(true, true, false, false),
-                NEUTRALIZES_REDUCES_COOLDOWN_COUNT_NODE,
+                NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
             )
         )
     );
@@ -2958,13 +2993,12 @@
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 // 攻撃した側（自分からなら自分、敵からなら敵）の移動後のマスが移動前と異なる時、
                 let distance = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
-                let amount = 0;
+                // （〇は、攻撃した側の
+                // 移動前と移動後のマスの距離（最大4））
+                let amount = MathUtil.ensureMax(distance, 4);
                 if (distance > 0) {
                     // 戦闘中、攻撃、速さ＋6、さらに、
                     spurFunc(targetUnit, 6);
-                    // （〇は、攻撃した側の
-                    // 移動前と移動後のマスの距離（最大4））
-                    amount = MathUtil.ensureMax(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 4);
                     // 攻撃、速さ＋〇、
                     spurFunc(targetUnit, amount);
                     // かつ自分から攻撃していれば、

@@ -133,12 +133,12 @@ describe('Test skill effect', () => {
         });
     });
 
-    describe(`Test ${BoolNode.name}`, () => {
+    describe(`Test ${BoolToBoolNode.name}`, () => {
         test('Test evaluate()', () => {
-            expect(new BoolNode(true).evaluate(null)).toEqual(true);
-            expect(new BoolNode(false).evaluate(null)).toEqual(false);
-            expect(new BoolNode(new OrNode(FALSE_NODE, TRUE_NODE)).evaluate(null)).toEqual(true);
-            expect(new BoolNode(new OrNode(FALSE_NODE, FALSE_NODE)).evaluate(null)).toEqual(false);
+            expect(new BoolToBoolNode(true).evaluate(null)).toEqual(true);
+            expect(new BoolToBoolNode(false).evaluate(null)).toEqual(false);
+            expect(new BoolToBoolNode(new OrNode(FALSE_NODE, TRUE_NODE)).evaluate(null)).toEqual(true);
+            expect(new BoolToBoolNode(new OrNode(FALSE_NODE, FALSE_NODE)).evaluate(null)).toEqual(false);
         });
     })
 
