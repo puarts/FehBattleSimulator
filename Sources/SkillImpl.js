@@ -1,5 +1,51 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 清風明月の夏祭の槍
+{
+    let skillId = Weapon.BreezySpear;
+    beforePrecombatHooks.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // 範囲奥義無効
+            UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+            FOE_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+            // 防御地形無効
+            UNIT_DISABLES_DEFENSIVE_TERRAIN_EFFECTS,
+            FOE_DISABLES_DEFENSIVE_TERRAIN_EFFECTS,
+            // 支援無効
+            UNIT_DISABLES_SUPPORT_EFFECTS,
+            FOE_DISABLES_SUPPORT_EFFECTS,
+        ),
+    );
+    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+        new SkillEffectNode(
+            GRANTING_BONUS_TO_ALL_5_NODE,
+            new GrantingBonusToAllNode(new MultTruncNode(IN_PRE_COMBAT_SPD_NODE, 0.15)),
+            new ApplyingStatusEffectsAfterStatusFixedNode(
+                new DealingDamageNode(
+                    new MultTruncNode(IN_COMBAT_SPD_NODE, 0.20),
+                ),
+            ),
+            // 奥義無効
+            UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+            FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+            UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+            FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+            // 見切り追撃
+            NULL_FOLLOW_UP_NODE,
+            NULL_FOE_FOLLOW_UP_NODE,
+            // 攻撃順序入れ替えスキル無効
+            UNIT_CAN_DISABLE_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+            FOE_CAN_DISABLE_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+            // 暗闘
+            UNIT_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+            FOE_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+            // 反撃不可無効
+            UNIT_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE,
+            FOE_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE,
+        )
+    );
+}
+
 // 天馬裂空
 {
     let skillId = PassiveB.PegasusRift;
