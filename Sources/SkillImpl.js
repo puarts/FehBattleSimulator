@@ -196,7 +196,7 @@
                 GRANTING_BONUS_TO_ATK_6_NODE,
                 new InvalidateOwnDebuffsNode(true, true, false, false),
                 NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
-                DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT_NODE,
+                UNIT_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
             )
         )
     );
