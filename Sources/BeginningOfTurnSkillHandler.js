@@ -198,7 +198,7 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         getSkillFunc(skillId, applySkillForBeginningOfTurnFuncMap)?.call(this, skillOwner);
-        atStartOfTurnHooks.evaluate(skillId, new AtStartOfTurnEnv(this, skillOwner));
+        AT_START_OF_TURN_HOOKS.evaluate(skillId, new AtStartOfTurnEnv(this, skillOwner));
         switch (skillId) {
             case Weapon.PaydayPouch: {
                 let count = this.__countAlliesWithinSpecifiedSpaces(skillOwner, 2);

@@ -376,7 +376,7 @@ class DamageCalculatorWrapper {
 
     __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
         for (let skillId of atkUnit.enumerateSkills()) {
-            beforePrecombatHooks.evaluate(skillId, new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null));
+            BEFORE_PRECOMBAT_HOOKS.evaluate(skillId, new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null));
             switch (skillId) {
                 case Weapon.Queensblade:
                     atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
@@ -2347,7 +2347,7 @@ class DamageCalculatorWrapper {
             }
             getSkillFunc(skillId, applySkillEffectForUnitFuncMap)?.call(this, targetUnit, enemyUnit, calcPotentialDamage);
             let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-            applySkillEffectForUnitHooks.evaluate(skillId, env);
+            APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.evaluate(skillId, env);
         }
     }
 

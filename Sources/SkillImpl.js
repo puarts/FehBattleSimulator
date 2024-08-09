@@ -3,7 +3,7 @@
 // 清風明月の夏祭の槍
 {
     let skillId = Weapon.BreezySpear;
-    beforePrecombatHooks.addSkill(skillId, () =>
+    BEFORE_PRECOMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // 範囲奥義無効
             UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
@@ -16,7 +16,7 @@
             FOE_DISABLES_SUPPORT_EFFECTS,
         ),
     );
-    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             GRANTING_BONUS_TO_ALL_5_NODE,
             new GrantingBonusToAllNode(new MultTruncNode(IN_PRE_COMBAT_SPD_NODE, 0.15)),
@@ -49,7 +49,7 @@
 // 天馬裂空
 {
     let skillId = PassiveB.PegasusRift;
-    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new InflictingEachMinusNode(4, 4, 0, 0),
             new ApplyingStatusEffectsAfterStatusFixedNode(
@@ -72,10 +72,10 @@
 // 意気軒昂の夏祭の斧
 {
     let skillId = Weapon.SummertimeAxe;
-    canActivateCantoHooks.addSkill(skillId, () => TRUE_NODE);
-    calcMoveCountForCantoHooks.addSkill(skillId, () => CANTO_REM_PLUS_ONE_NODE);
+    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => CANTO_REM_PLUS_ONE_NODE);
 
-    atStartOfTurnHooks.addSkill(skillId, () =>
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 new GrantStatusAtStartOfTurnNode(0, 6, 6, 6),
@@ -86,7 +86,7 @@
             )
         )
     );
-    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 new GrantingBonusToAllNode(new MultTruncNode(IN_PRE_COMBAT_SPD_NODE, 0.15)),
@@ -177,7 +177,7 @@
 {
     let skillId = getSpecialRefinementSkillId(Weapon.HolyYewfelle);
 
-    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 GRANTING_BONUS_TO_ATK_5_NODE,
@@ -190,7 +190,7 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.HolyYewfelle);
-    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTING_BONUS_TO_ATK_6_NODE,
@@ -203,7 +203,7 @@
 }
 {
     let skillId = getNormalSkillId(Weapon.HolyYewfelle);
-    applySkillEffectForUnitHooks.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTING_BONUS_TO_ATK_6_NODE,

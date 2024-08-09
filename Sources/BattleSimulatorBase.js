@@ -6785,24 +6785,30 @@ class BattleSimulatorBase {
             unit.isCantoActivating = true;
             this.writeDebugLogLine("再移動の発動");
             let count = unit.calcMoveCountForCanto();
-            // 4マス以内にいるだけで再移動発動時に効果を発揮する
-            // activateCantoIfPossible内で再移動の発動を判定しているのでここでは4マス以内の判定結果だけを保存
-            let cantoControlledIfCantoActivated = false;
-            for (let u of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 4)) {
+            // Nマス以内にいるだけで再移動発動時に効果を発揮する
+            // activateCantoIfPossible内で再移動の発動を判定しているのでここではNマス以内の判定結果だけを保存
+            let isThereAnyUnitThatInflictCantoControlWithinRange = false;
+            for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
+                let env = new BattleSimulatorBaseEnv(this, u);
                 for (let skillId of u.enumerateSkills()) {
+                    CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSome(skillId, env);
                     switch (skillId) {
                         case Weapon.DotingStaff:
                             if (u.isWeaponSpecialRefined) {
-                                cantoControlledIfCantoActivated = true;
+                                if (unit.distance(u) <= 4) {
+                                    isThereAnyUnitThatInflictCantoControlWithinRange = true;
+                                }
                             }
                             break;
                         case PassiveC.CantoControl3:
-                            cantoControlledIfCantoActivated = true;
+                            if (unit.distance(u) <= 4) {
+                                isThereAnyUnitThatInflictCantoControlWithinRange = true;
+                            }
                             break;
                     }
                 }
             }
-            unit.activateCantoIfPossible(count, cantoControlledIfCantoActivated);
+            unit.activateCantoIfPossible(count, isThereAnyUnitThatInflictCantoControlWithinRange);
             return true;
         }
         return false;
@@ -6830,7 +6836,7 @@ class BattleSimulatorBase {
             if (getSkillFunc(skillId, canActivateCantoFuncMap)?.call(this, unit)) {
                 return true;
             }
-            if (canActivateCantoHooks.evaluateSome(skillId, new BattleSimulatorBaseEnv(this, unit))) {
+            if (CAN_ACTIVATE_CANTO_HOOKS.evaluateSome(skillId, new BattleSimulatorBaseEnv(this, unit))) {
                 return true;
             }
             switch (skillId) {

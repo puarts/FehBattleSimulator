@@ -5413,7 +5413,7 @@ class Unit extends BattleMapElement {
         }
         for (let skillId of this.enumerateSkills()) {
             let moveCount1 = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
-            let moveCount2 = calcMoveCountForCantoHooks.evaluateNumber(skillId, new CantoEnv(this, moveCountForCanto)) ?? 0;
+            let moveCount2 = CALC_MOVE_COUNT_FOR_CANTO_HOOKS.evaluateNumber(skillId, new CantoEnv(this, moveCountForCanto)) ?? 0;
             moveCountForCanto = Math.max(moveCountForCanto, moveCount1, moveCount2);
             // 同系統効果複数時、最大値適用
             switch (skillId) {

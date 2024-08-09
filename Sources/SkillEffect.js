@@ -940,28 +940,32 @@ class GrantStatusEffectsAtStartOfTurnNode extends ApplyValuesNode {
     }
 }
 
-// TODO: rename(to upper case)
 /**
  * 戦闘時
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
-const applySkillEffectForUnitHooks = new SkillEffectHooks();
+const APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動条件
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
-const canActivateCantoHooks = new SkillEffectHooks();
+const CAN_ACTIVATE_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動量
  * @type {SkillEffectHooks<SkillEffectNode, CantoEnv>} */
-const calcMoveCountForCantoHooks = new SkillEffectHooks();
+const CALC_MOVE_COUNT_FOR_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
  * ターン開始時
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
-const atStartOfTurnHooks = new SkillEffectHooks();
+const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 
 /**
- * ターン開始時
+ * 戦闘前
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
-const beforePrecombatHooks = new SkillEffectHooks();
+const BEFORE_PRECOMBAT_HOOKS = new SkillEffectHooks();
+
+/**
+ * 再移動制限評価時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const CAN_INFLICT_CANTO_CONTROL_HOOKS = new SkillEffectHooks();
