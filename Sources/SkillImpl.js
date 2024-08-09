@@ -11808,8 +11808,8 @@
         }
     );
     canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
-        function (unit, moveUnit) {
-            return unit.isWeaponSpecialRefined && moveUnit.isRangedWeaponType();
+        function (moveUnit) {
+            return this.isWeaponSpecialRefined && moveUnit.isRangedWeaponType();
         }
     );
 }
