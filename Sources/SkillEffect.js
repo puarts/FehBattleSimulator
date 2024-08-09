@@ -418,6 +418,8 @@ class IfNode extends SkillEffectNode {
     }
 }
 
+// TODO: 別ファイルに分ける
+
 class DamageCalculatorWrapperEnv {
     /**
      * @param {DamageCalculatorWrapper} damageCalculator
@@ -443,6 +445,42 @@ class BattleSimulatorBaseEnv {
         this.targetUnit = targetUnit;
     }
 }
+
+const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.cannotTriggerPrecombatSpecial = true;
+    }
+}();
+
+const FOE_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.cannotTriggerPrecombatSpecial = true;
+    }
+}();
+
+const UNIT_DISABLES_DEFENSIVE_TERRAIN_EFFECTS = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.invalidatesDefensiveTerrainEffect = true;
+    }
+}();
+
+const FOE_DISABLES_DEFENSIVE_TERRAIN_EFFECTS = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.invalidatesDefensiveTerrainEffect = true;
+    }
+}();
+
+const UNIT_DISABLES_SUPPORT_EFFECTS = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.invalidatesSupportEffect = true;
+    }
+}();
+
+const FOE_DISABLES_SUPPORT_EFFECTS = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.invalidatesSupportEffect = true;
+    }
+}();
 
 class CantoEnv {
     /**
@@ -549,6 +587,8 @@ class GrantingBonusToAllNode extends FromPositiveNumberNode {
     }
 }
 
+const GRANTING_BONUS_TO_ALL_5_NODE = new GrantingBonusToAllNode(5);
+
 class GrantingBonusToAtk extends FromPositiveNumberNode {
     evaluate(env) {
         env.targetUnit.atkSpur += this.evaluateChildren(env);
@@ -570,7 +610,7 @@ class InflictingEachMinusNode extends FromPositiveNumbersNode {
     }
 }
 
-class PrecombatStatusNode extends NumberNode {
+class InPreCombatStatusNode extends NumberNode {
     #index;
 
     constructor(index) {
@@ -583,10 +623,28 @@ class PrecombatStatusNode extends NumberNode {
     }
 }
 
-const PRECOMBAT_ATK_NODE = new PrecombatStatusNode(STATUS_INDEX.Atk);
-const PRECOMBAT_SPD_NODE = new PrecombatStatusNode(STATUS_INDEX.Spd);
-const PRECOMBAT_DEF_NODE = new PrecombatStatusNode(STATUS_INDEX.Def);
-const PRECOMBAT_RES_NODE = new PrecombatStatusNode(STATUS_INDEX.Res);
+const IN_PRE_COMBAT_ATK_NODE = new InPreCombatStatusNode(STATUS_INDEX.Atk);
+const IN_PRE_COMBAT_SPD_NODE = new InPreCombatStatusNode(STATUS_INDEX.Spd);
+const IN_PRE_COMBAT_DEF_NODE = new InPreCombatStatusNode(STATUS_INDEX.Def);
+const IN_PRE_COMBAT_RES_NODE = new InPreCombatStatusNode(STATUS_INDEX.Res);
+
+class InCombatStatusNode extends NumberNode {
+    #index;
+
+    constructor(index) {
+        super();
+        this.#index = index;
+    }
+
+    evaluate(env) {
+        return env.targetUnit.getStatusesInCombat(env.enemyUnit)[this.#index];
+    }
+}
+
+const IN_COMBAT_ATK_NODE = new InCombatStatusNode(STATUS_INDEX.Atk);
+const IN_COMBAT_SPD_NODE = new InCombatStatusNode(STATUS_INDEX.Spd);
+const IN_COMBAT_DEF_NODE = new InCombatStatusNode(STATUS_INDEX.Def);
+const IN_COMBAT_RES_NODE = new InCombatStatusNode(STATUS_INDEX.Res);
 
 const MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -604,7 +662,61 @@ const NULL_FOLLOW_UP_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         env.targetUnit.battleContext.setNullFollowupAttack();
     }
-};
+}();
+
+const NULL_FOE_FOLLOW_UP_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.setNullFollowupAttack();
+    }
+}();
+
+const UNIT_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.nullCounterDisrupt = true;
+    }
+}
+
+const FOE_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.nullCounterDisrupt = true;
+    }
+}
+
+const UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.preventedAttackerSpecial = true;
+    }
+}();
+
+const FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.preventedAttackerSpecial = true;
+    }
+}();
+
+const UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.preventedDefenderSpecial = true;
+    }
+}();
+
+const FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.preventedDefenderSpecial = true;
+    }
+}();
+
+const UNIT_CAN_DISABLE_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.canUnitDisableSkillsThatChangeAttackPriority = true;
+    }
+}();
+
+const FOE_CAN_DISABLE_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.enemyUnit.battleContext.canUnitDisableSkillsThatChangeAttackPriority = true;
+    }
+}();
 
 class IncreasingSpdDiffNecessaryForFoesFollowUpNode extends FromNumberNode {
     evaluate(env) {
@@ -743,15 +855,15 @@ const NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS = new class extends SkillEffectNo
     }
 }()
 
-class DisablesSkillsFromEnemyAlliesInCombatNode extends SkillEffectNode {
+const UNIT_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         env.targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
     }
-}
+}();
 
-const DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT_NODE = new class extends SkillEffectNode {
+const FOE_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = new class extends SkillEffectNode {
     evaluate(env) {
-        env.targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
+        env.enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
     }
 }();
 

@@ -9,10 +9,10 @@
             new ApplyingStatusEffectsAfterStatusFixedNode(
                 new IfNode(new IsGteStatusSumNode(0, -10, [0, 1, 0, 1]),
                     new DealingDamageNode(
-                        new EnsureMinMaxNode(new AddNode(PRECOMBAT_RES_NODE, -30), 0, 10)
+                        new EnsureMinMaxNode(new AddNode(IN_PRE_COMBAT_RES_NODE, -30), 0, 10)
                     ),
                     new ReducingDamageFromFirstAttackNode(
-                        new EnsureMinMaxNode(new AddNode(PRECOMBAT_RES_NODE, -30), 0, 10)
+                        new EnsureMinMaxNode(new AddNode(IN_PRE_COMBAT_RES_NODE, -30), 0, 10)
                     ),
                     MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
                     FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
@@ -43,7 +43,7 @@
     applySkillEffectForUnitHooks.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                new GrantingBonusToAllNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
+                new GrantingBonusToAllNode(new MultTruncNode(IN_PRE_COMBAT_SPD_NODE, 0.15)),
                 NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 new DealingDamageNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
@@ -135,7 +135,7 @@
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 GRANTING_BONUS_TO_ATK_5_NODE,
-                new GrantingBonusToAtkSpdNode(new MultTruncNode(PRECOMBAT_SPD_NODE, 0.15)),
+                new GrantingBonusToAtkSpdNode(new MultTruncNode(IN_PRE_COMBAT_SPD_NODE, 0.15)),
                 new InvalidateEnemyBuffsNode(false, true, true, false),
                 ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE,
             )
