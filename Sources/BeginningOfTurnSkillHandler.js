@@ -130,19 +130,28 @@ class BeginningOfTurnSkillHandler {
      * @param {boolean} isBeginningOfTurn
      */
     applyReservedState(unit, isBeginningOfTurn = true) {
-        unit.applyReservedBuffs();
-        if (isBeginningOfTurn) {
-            if (unit.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
-                // 予約されたデバフと不利なステータス状態を解除
-                unit.resetReservedDebuffs();
-                unit.resetReservedNegativeStatusEffects();
-            }
-            let isNotNeutralized = e => !unit.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.has(e);
-            unit.reservedStatusEffects = unit.reservedStatusEffects.filter(isNotNeutralized);
-        }
-        unit.applyReservedDebuffs(unit.battleContext.neutralizedDebuffsWhileBeginningOfTurn);
-        unit.applyReservedStatusEffects();
+        // 解除
+        this.#neutralizeReservedState(unit);
+        // 付与
+        this.#grantReservedState(unit, isBeginningOfTurn);
+
+        // 奥義カウント
         unit.applyReservedSpecialCount();
+    }
+
+    /**
+     * @param {Unit} unit
+     */
+    #neutralizeReservedState(unit) {
+        unit.neutralizeReservedBuffsToNeutralize();
+        unit.neutralizeReservedDebuffsToNeutralize();
+        unit.neutralizeReservedStatusEffectsToNeutralize();
+    }
+
+    #grantReservedState(unit, isBeginningOfTurn) {
+        unit.applyReservedBuffs();
+        unit.applyReservedDebuffs(isBeginningOfTurn);
+        unit.applyReservedStatusEffects(isBeginningOfTurn);
     }
 
     /**
@@ -783,8 +792,8 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 if (found) {
-                    skillOwner.reservedDebuffsToDelete = [true, true, true, true];
-                    skillOwner.reserveToClearNegativeStatusEffects();
+                    skillOwner.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                    skillOwner.reserveToNeutralizeNegativeStatusEffects();
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
                 }
             }
@@ -1526,11 +1535,11 @@ class BeginningOfTurnSkillHandler {
                 for (let target of targets) {
                     target.reserveToApplyAtkBuff(6);
                     target.reserveToApplySpdBuff(6);
-                    target.reservedDebuffsToDelete = [true, true, true, true];
+                    target.reservedDebuffFlagsToNeutralize = [true, true, true, true];
 
                     // キアの杖の効果が重なると2回目の実行で対象が変化してしまうので予約する
                     // todo: 他の場所も状態が変化するものはすべて予約にしないといけない
-                    target.reserveToClearNegativeStatusEffects();
+                    target.reserveToNeutralizeNegativeStatusEffects();
                 }
                 break;
             }
@@ -1542,48 +1551,48 @@ class BeginningOfTurnSkillHandler {
             case PassiveC.OddRecovery1:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reservedDebuffsToDelete = [true, true, true, true];
-                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                        unit.reserveToNeutralizeNegativeStatusEffects();
                     }
                 }
                 break;
             case PassiveC.OddRecovery2:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reservedDebuffsToDelete = [true, true, true, true];
-                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                        unit.reserveToNeutralizeNegativeStatusEffects();
                     }
                 }
                 break;
             case PassiveC.OddRecovery3:
                 if (this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reservedDebuffsToDelete = [true, true, true, true];
-                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                        unit.reserveToNeutralizeNegativeStatusEffects();
                     }
                 }
                 break;
             case PassiveC.EvenRecovery1:
                 if (!this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reservedDebuffsToDelete = [true, true, true, true];
-                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                        unit.reserveToNeutralizeNegativeStatusEffects();
                     }
                 }
                 break;
             case PassiveC.EvenRecovery2:
                 if (!this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reservedDebuffsToDelete = [true, true, true, true];
-                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                        unit.reserveToNeutralizeNegativeStatusEffects();
                     }
                 }
                 break;
             case PassiveC.EvenRecovery3:
                 if (!this.isOddTurn) {
                     for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        unit.reservedDebuffsToDelete = [true, true, true, true];
-                        unit.reserveToClearNegativeStatusEffects();
+                        unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                        unit.reserveToNeutralizeNegativeStatusEffects();
                     }
                 }
                 break;
@@ -2966,7 +2975,7 @@ class BeginningOfTurnSkillHandler {
                 break;
             case PassiveC.FettersOfDromi:
                 if (skillOwner.hasStatusEffect(StatusEffectType.Stall)) {
-                    skillOwner.reservedStatusEffectSetToDelete.add(StatusEffectType.MobilityIncreased);
+                    skillOwner.reservedStatusEffectSetToNeutralize.add(StatusEffectType.MobilityIncreased);
                 }
                 break;
         }

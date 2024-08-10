@@ -225,8 +225,8 @@
     let func = function (skillOwner) {
         // 自軍ターン、および、敵軍ターンの開始時スキル発動後、
         // 自分の【不利な状態異常】を解除
-        skillOwner.reservedDebuffsToDelete = [true, true, true, true];
-        skillOwner.reserveToClearNegativeStatusEffects();
+        skillOwner.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+        skillOwner.reserveToNeutralizeNegativeStatusEffects();
         // （同タイミングで付与される【不利な状態異常】は解除されない）
     };
 
@@ -399,8 +399,8 @@
         // 自軍ターン開始時、および、敵軍ターン開始時、
         // 自分に、このとき付与される
         // 守備、魔防の弱化、
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[2] |= true;
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[2] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[3] |= true;
         // 【パニック】を無効化
         skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
     };
@@ -2452,7 +2452,7 @@
                 this.writeDebugLog(`${unit.nameWithGroup}の弱化を強化に反転`);
                 let buffs = unit.getDebuffs().map(i => Math.abs(i));
                 unit.reserveToApplyBuffs(...buffs);
-                unit.reservedDebuffsToDelete = [true, true, true, true];
+                unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
                 // さらに、【不利な状態異常】を2個解除（同タイミングで付与される【不利な状態異常】は解除されない。
                 // 解除される【不利な状態異常】は、受けている効果の一覧で、上に記載される状態を優先）
                 let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
@@ -2460,11 +2460,11 @@
                 this.writeDebugLog(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
                 if (effects.length >= 1) {
                     this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[0])}を解除予約(1)`);
-                    unit.reservedStatusEffectSetToDelete.add(effects[0]);
+                    unit.reservedStatusEffectSetToNeutralize.add(effects[0]);
                 }
                 if (effects.length >= 2) {
                     this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[1])}を解除予約(2)`);
-                    unit.reservedStatusEffectSetToDelete.add(effects[1]);
+                    unit.reservedStatusEffectSetToNeutralize.add(effects[1]);
                 }
             }
         }
@@ -3294,8 +3294,8 @@
                 // 自分に【回避】を付与、
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
                 // 自分の【不利な状態異常】を解除
-                skillOwner.reservedDebuffsToDelete = [true, true, true, true];
-                skillOwner.reserveToClearNegativeStatusEffects();
+                skillOwner.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                skillOwner.reserveToNeutralizeNegativeStatusEffects();
                 // （同ターン開始時に受けた不利な状態異常は解除されない）
             }
         }
@@ -4129,8 +4129,8 @@
         // 自軍ターン開始時、および、敵軍ターン開始時、
         // 自分に、このとき付与される
         // 攻撃、速さの弱化、
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0] |= true;
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[1] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[0] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[1] |= true;
         // 【パニック】を無効化
         skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
     };
@@ -4264,8 +4264,8 @@
         // 自軍ターン開始時、および、敵軍ターン開始時、
         // 自分に、このとき付与される
         // 攻撃、魔防の弱化、
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0] |= true;
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[0] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[3] |= true;
         // 【パニック】を無効化
         skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
     };
@@ -4425,8 +4425,8 @@
             // 自分を中心とした縦3列と横3列にいる強化を除いた【有利な状態】の数が3以上の敵の【有利な状態】を解除(同じタイミングで付与される【有利な状態】は解除されない)
             if (enemy.isInCrossWithOffset(skillOwner, 1)) {
                 if (enemy.getPositiveStatusEffects().length >= 3) {
-                    enemy.reservedBuffsToDelete = [true, true, true, true];
-                    enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
+                    enemy.reservedBuffFlagsToNeutralize = [true, true, true, true];
+                    enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToNeutralize.add(e));
                     let skillName = DebugUtil.getSkillName(skillOwner, skillOwner.passiveBInfo);
                     let statuses = enemy.getPositiveStatusEffects().map(e => getStatusEffectName(e)).join(", ");
                     this.writeDebugLog(`${skillName}により${enemy.nameWithGroup}の${statuses}を解除`);
@@ -6435,8 +6435,8 @@
                     if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
                         for (let unit of units) {
-                            unit.reservedDebuffsToDelete = [true, true, true, true];
-                            unit.reserveToClearNegativeStatusEffects();
+                            unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                            unit.reserveToNeutralizeNegativeStatusEffects();
                             unit.reserveHeal(10);
                         }
                     }
@@ -9445,8 +9445,8 @@
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                unit.reservedDebuffsToDelete = [true, true, true, true];
-                unit.reserveToClearNegativeStatusEffects();
+                unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                unit.reserveToNeutralizeNegativeStatusEffects();
             }
         }
     );

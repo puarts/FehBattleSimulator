@@ -419,7 +419,7 @@ class BattleContext {
         this.neutralizedStatusEffectSetWhileBeginningOfTurn = new Set();
 
         // ターン開始時付与に無効化されるステータス
-        this.neutralizedDebuffsWhileBeginningOfTurn = [false, false, false, false];
+        this.neutralizedDebuffFlagsWhileBeginningOfTurn = [false, false, false, false];
 
         // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
         this.damageAfterBeginningOfCombat = 0;

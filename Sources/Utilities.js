@@ -1302,6 +1302,22 @@ class GeneratorUtil {
 
 class ArrayUtil {
     /**
+     * @param {boolean[]} array1
+     * @param {boolean[]} array2
+     */
+    static and(array1, array2) {
+        return array1.map((value, index) => value && array2[index]);
+    }
+
+    /**
+     * @param {boolean[]} array1
+     * @param {boolean[]} array2
+     */
+    static or(array1, array2) {
+        return array1.map((value, index) => value || array2[index]);
+    }
+
+    /**
      * @param {number[]} array1
      * @param {number[]} array2
      */

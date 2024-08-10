@@ -2997,7 +2997,7 @@ class BattleMap {
                     return `<img src='${statusEffectTypeToIconFilePath(e)}' style='height:11px' alt="">`;
                 };
                 // 付与されているステータスの数が7以上のときは省略表示にする
-                if (unit.statusEffects.length >= 7) {
+                if (unit.countStatusEffects() >= 7) {
                     let pes = unit.getPositiveStatusEffects();
                     let nes = unit.getNegativeStatusEffects();
                     let getStatusHtml = (imgTag, es) => {
@@ -3014,7 +3014,7 @@ class BattleMap {
                     let statusColor = "#ffffff";
                     cell.innerText += `<span style='font-size:10px;color:${statusColor};bottom:0;left:0;${shadowCss};pointer-events: none'>${statusCounts}</span>`;
                 } else {
-                    for (let statusEffect of unit.statusEffects) {
+                    for (let statusEffect of unit.getStatusEffects()) {
                         cell.innerText += getStatusImgTag(statusEffect);
                     }
                 }

@@ -285,7 +285,7 @@ class AppData extends UnitManager {
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
 
-        /** 
+        /**
          * ダブル補正が有効かどうか
          * @type {Boolean}
          */
@@ -1973,26 +1973,26 @@ class AppData extends UnitManager {
     }
 
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateAllEnemyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, 1000);
     }
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateAllAllyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Ally, 1000);
     }
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateAllyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Ally, this.allyUnits.length);
     }
 
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
     enumerateEnemyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, this.enemyUnits.length);

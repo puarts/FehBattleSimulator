@@ -1428,8 +1428,8 @@ function stealBonusEffects(enemies, targetAllies, logger = null) {
     // ステータス解除予約
     for (let enemy of enemyArray) {
         // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
-        enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
-        enemy.reservedBuffsToDelete = [true, true, true, true];
+        enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToNeutralize.add(e));
+        enemy.reservedBuffFlagsToNeutralize = [true, true, true, true];
     }
 }
 

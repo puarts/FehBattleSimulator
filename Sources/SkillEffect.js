@@ -59,6 +59,7 @@ class SkillEffectHooks {
     /**
      * @param {number|string} skillId
      * @param {E} env
+     * @return {*[]}
      */
     evaluate(skillId, env) {
         return this.getSkills(skillId).map(skillNode => skillNode.evaluate(env));
@@ -83,6 +84,36 @@ class SkillEffectHooks {
         if (results.length > 0) {
             return results[results.length - 1];
         }
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {E} env
+     * @returns {*[][]}
+     */
+    evaluateWithUnit(unit, env) {
+        return Array.from(unit.enumerateSkills()).map(skillId => this.evaluate(skillId, env));
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {AddStatusEffectEnv|BattleSimulatorBaseEnv} env
+     * @returns {boolean}
+     */
+    evaluateSomeWithUnit(unit, env) {
+        return Array.from(unit.enumerateSkills()).some(skillId => this.evaluateSome(skillId, env));
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {E} env
+     * @returns {number}
+     */
+    evaluateMaxWithUnit(unit, env) {
+        /** @type {(number|string)[]} */
+        let skillIds = Array.from(unit.enumerateSkills());
+        let evaluate = skillId => this.evaluateNumber(skillId, env) ?? Number.NEGATIVE_INFINITY;
+        return Math.max(...skillIds.map(evaluate));
     }
 }
 
@@ -446,6 +477,19 @@ class BattleSimulatorBaseEnv {
     }
 }
 
+class AddStatusEffectEnv {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} allyOrUnit
+     * @param {number} statusEffect
+     */
+    constructor(targetUnit, allyOrUnit, statusEffect) {
+        this.targetUnit = targetUnit;
+        this.allyOrUnit = allyOrUnit;
+        this.statusEffect = statusEffect;
+    }
+}
+
 const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         env.targetUnit.battleContext.cannotTriggerPrecombatSpecial = true;
@@ -485,11 +529,9 @@ const FOE_DISABLES_SUPPORT_EFFECTS = new class extends SkillEffectNode {
 class CantoEnv {
     /**
      * @param {Unit} targetUnit
-     * @param {number} moveCountForCanto
      */
-    constructor(targetUnit, moveCountForCanto) {
+    constructor(targetUnit) {
         this.targetUnit = targetUnit;
-        this.moveCountForCanto = moveCountForCanto;
     }
 }
 
@@ -940,6 +982,7 @@ class GrantStatusEffectsAtStartOfTurnNode extends ApplyValuesNode {
     }
 }
 
+// Hooks
 /**
  * 戦闘時
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
@@ -947,12 +990,12 @@ const APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動条件
- * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+ * @type {SkillEffectHooks<BoolNode, BattleSimulatorBaseEnv>} */
 const CAN_ACTIVATE_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動量
- * @type {SkillEffectHooks<SkillEffectNode, CantoEnv>} */
+ * @type {SkillEffectHooks<NumberNode, CantoEnv>} */
 const CALC_MOVE_COUNT_FOR_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
@@ -967,5 +1010,10 @@ const BEFORE_PRECOMBAT_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動制限評価時
- * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+ * @type {SkillEffectHooks<BoolNode, BattleSimulatorBaseEnv>} */
 const CAN_INFLICT_CANTO_CONTROL_HOOKS = new SkillEffectHooks();
+
+/**
+ * ステータス付与時
+ * @type {SkillEffectHooks<BoolNode, AddStatusEffectEnv>} */
+const CAN_PREVENT_STATUS_EFFECTS_HOOKS = new SkillEffectHooks();

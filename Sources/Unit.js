@@ -339,6 +339,7 @@ class ActionContext {
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
     #hpAddAfterEnteringBattle = 0;
+    #statusEffects = [];
     constructor(id = "", name = "",
                 unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
@@ -419,8 +420,7 @@ class Unit extends BattleMapElement {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
         this.reservedStatusEffects = [];
-        this.currentStatusEffectSet = new Set();
-        this.reservedStatusEffectSetToDelete = new Set();
+        this.reservedStatusEffectSetToNeutralize = new Set();
         this.reservedAtkBuff = 0;
         this.reservedSpdBuff = 0;
         this.reservedDefBuff = 0;
@@ -430,8 +430,10 @@ class Unit extends BattleMapElement {
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
         this.reservedSpecialCount = 0;
-        this.reservedBuffsToDelete = [false, false, false, false];
-        this.reservedDebuffsToDelete = [false, false, false, false];
+        /** @type {boolean[]} */
+        this.reservedBuffFlagsToNeutralize = [false, false, false, false];
+        /** @type {boolean[]} */
+        this.reservedDebuffFlagsToNeutralize = [false, false, false, false];
 
         this.tmpSpecialCount = 0; // ダメージ計算で使う奥義カウント
         this.weaponType = WeaponType.None;
@@ -508,7 +510,7 @@ class Unit extends BattleMapElement {
 
         this.isBonusChar = false;
 
-        this.statusEffects = [];
+        this.#statusEffects = [];
         // TODO: 何に使用しているか調べる
         // noinspection JSUnusedGlobalSymbols
         this.bonuses = [];
@@ -1746,13 +1748,10 @@ class Unit extends BattleMapElement {
      * 状態変化の表示用の文字列を取得します。
      */
     statusEffectsToDisplayString() {
-        if (this.statusEffects.length === 0) {
+        if (this.countStatusEffects() === 0) {
             return "なし";
         }
-        let result = "";
-        for (let statusEffect of this.statusEffects) {
-            result += getKeyByValue(StatusEffectType, statusEffect) + " ";
-        }
+        let result = this.getStatusEffects().reduce((prev, curr) => prev + getKeyByValue(StatusEffectType, curr) + " ", "");
         return result.substring(0, result.length - 1);
     }
 
@@ -1760,33 +1759,32 @@ class Unit extends BattleMapElement {
      * 状態変化のシリアライズ用の文字列を取得します。
      */
     statusEffectsToString() {
-        if (this.statusEffects.length === 0) {
+        if (this.countStatusEffects() === 0) {
             return String(StatusEffectType.None);
         }
-        let result = "";
-        for (let statusEffect of this.statusEffects) {
-            result += statusEffect + ArrayValueElemDelimiter;
-        }
+        let result =  this.getStatusEffects().reduce((prev, curr) => prev + curr + ArrayValueElemDelimiter, "");
         return result.substring(0, result.length - 1);
     }
 
     setStatusEffectsFromString(value) {
-        this.statusEffects = [];
         if (value == null) {
             return;
         }
         if (Number(value) === StatusEffectType.None) {
             return;
         }
+        /** @type {Set<number>} */
+        let statusEffectSet = new Set();
         for (let valueStr of value.split(ArrayValueElemDelimiter)) {
             if (valueStr === "") {
                 continue;
             }
             let statusEffect = Number(valueStr);
             if (Number.isInteger(statusEffect)) {
-                this.addStatusEffect(statusEffect);
+                statusEffectSet.add(statusEffect);
             }
         }
+        this.forceSetStatusEffects(...statusEffectSet);
     }
 
     addAllSpur(amount) {
@@ -2042,43 +2040,70 @@ class Unit extends BattleMapElement {
         this.reserveToApplyResBuff(value);
     }
 
-    reserveToClearNegativeStatusEffects() {
-        this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectSetToDelete.add(e));
+    reserveToNeutralizeNegativeStatusEffects() {
+        this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectSetToNeutralize.add(e));
     }
 
-    clearNegativeStatusEffects() {
-        let negativeStatusEffects = this.getNegativeStatusEffects();
-        this.statusEffects = this.getPositiveStatusEffects();
-        if (negativeStatusEffects.includes(StatusEffectType.Schism)) {
-            this.clearPositiveStatusEffect(StatusEffectType.TriangleAttack);
-            this.clearPositiveStatusEffect(StatusEffectType.DualStrike);
-            this.clearPositiveStatusEffect(StatusEffectType.Pathfinder);
+    /**
+     * @param statusEffect
+     * @returns {boolean} Return true if had the status effect and removed.
+     */
+    removeStatusEffects(statusEffect) {
+        let lengthBefore = this.getStatusEffects().length;
+        this.forceSetStatusEffects(...this.getStatusEffects().filter(e => e !== statusEffect));
+        return lengthBefore !== this.getStatusEffects().length;
+    }
+
+    /**
+     * @param {number} statusEffect
+     */
+    neutralizeStatusEffect(statusEffect) {
+        let removed = this.removeStatusEffects(statusEffect);
+        if (statusEffect === StatusEffectType.Schism && removed) {
+            this.neutralizePositiveStatusEffect(StatusEffectType.TriangleAttack);
+            this.neutralizePositiveStatusEffect(StatusEffectType.DualStrike);
+            this.neutralizePositiveStatusEffect(StatusEffectType.Pathfinder);
+        }
+        if (statusEffect === StatusEffectType.GrandStrategy && removed) {
+            this.neutralizeAllDebuffs();
         }
     }
 
-    clearPositiveStatusEffect(statusEffect) {
-        if (statusEffect === StatusEffectType.GrandStrategy &&
-            this.statusEffects.includes(StatusEffectType.GrandStrategy)) {
-            this.resetDebuffs();
-        }
-        this.statusEffects = this.statusEffects.filter(se => se !== statusEffect)
+    /**
+     * @param {number[]} statusEffects
+     */
+    neutralizeStatusEffects(statusEffects) {
+        statusEffects.forEach(e => this.neutralizeStatusEffect(e));
     }
 
-    clearPositiveStatusEffects() {
-        if (this.statusEffects.includes(StatusEffectType.GrandStrategy)) {
-            this.resetDebuffs();
-        }
-        this.statusEffects = this.getNegativeStatusEffects();
+    neutralizeReservedStatusEffectsToNeutralize() {
+        this.neutralizeStatusEffects([...this.reservedStatusEffectSetToNeutralize]);
+        this.reservedStatusEffectSetToNeutralize.clear();
+    }
+
+    neutralizeNegativeStatusEffects() {
+        this.getNegativeStatusEffects().forEach(e => this.neutralizeStatusEffect(e));
+    }
+
+    neutralizeNegativeStatusEffectsAtEndOfAction() {
+        this.neutralizeNegativeStatusEffects();
+    }
+
+    neutralizePositiveStatusEffect(statusEffect) {
+        this.neutralizeStatusEffect(statusEffect);
+    }
+
+    neutralizePositiveStatusEffects() {
+        this.getPositiveStatusEffects().forEach(e => this.neutralizePositiveStatusEffect(e));
+    }
+
+    neutralizePositiveStatusEffectsAtStartOfTurn() {
+        this.neutralizeNegativeStatusEffects();
     }
 
     // 弱化以外の状態異常が付与されているか
     hasNonStatDebuff() {
-        for (let effect of this.statusEffects) {
-            if (isNegativeStatusEffect(effect)) {
-                return true;
-            }
-        }
-        return false;
+        return this.getNegativeStatusEffects().length > 0;
     }
 
     // 弱化が付与されているか
@@ -2094,11 +2119,26 @@ class Unit extends BattleMapElement {
     }
 
     hasPositiveStatusEffect(enemyUnit = null) {
-        if (this.statusEffects.some(e => isPositiveStatusEffect(e))) {
+        if (this.getPositiveStatusEffects().length > 0) {
             return true;
         }
         let buffs = enemyUnit == null ? this.buffs : this.getBuffsInCombat(enemyUnit);
         return buffs.some(buff => buff > 0);
+    }
+
+    /**
+     * @param {...number} effects
+     */
+    forceSetStatusEffects(...effects) {
+        this.#statusEffects = [...effects];
+    }
+
+    getStatusEffects() {
+        return [...this.#statusEffects];
+    }
+
+    countStatusEffects() {
+        return this.getStatusEffects().length;
     }
 
     __getPositiveStatusEffects(statusEffects) {
@@ -2106,21 +2146,28 @@ class Unit extends BattleMapElement {
     }
 
     getPositiveStatusEffects() {
-        return this.__getPositiveStatusEffects(this.statusEffects);
+        return this.__getPositiveStatusEffects(this.getStatusEffects());
     }
 
     getNegativeStatusEffects() {
-        return this.statusEffects.filter(e => isNegativeStatusEffect(e));
+        return this.getStatusEffects().filter(e => isNegativeStatusEffect(e));
     }
 
     /**
-     * @param  {number} statusEffectType
+     * @param {number} statusEffectType
      */
     addStatusEffect(statusEffectType) {
+        let units = g_appData.enumerateAllUnitsOnMap();
+        for (let unitIncludingSelf of units) {
+            let env = new AddStatusEffectEnv(this, unitIncludingSelf, statusEffectType);
+            if (CAN_PREVENT_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+                return;
+            }
+        }
         if (this.hasStatusEffect(statusEffectType)) {
             return;
         }
-        this.statusEffects.push(statusEffectType);
+        this.#statusEffects.push(statusEffectType);
     }
 
     /**
@@ -2148,7 +2195,7 @@ class Unit extends BattleMapElement {
     }
 
     get hasAnyStatusEffect() {
-        return this.statusEffects.length > 0;
+        return this.getStatusEffects().length > 0;
     }
 
     hasPerTurnStatus(value) {
@@ -2161,12 +2208,7 @@ class Unit extends BattleMapElement {
     }
 
     hasStatusEffect(statusEffectType) {
-        for (let statusEffect of this.statusEffects) {
-            if (statusEffect === statusEffectType) {
-                return true;
-            }
-        }
-        return false;
+        return this.getStatusEffects().includes(statusEffectType);
     }
 
     isNextTo(unit) {
@@ -2280,9 +2322,9 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
         this.isTransformed = false;
         this.setMoveCountFromMoveType();
-        this.resetBuffs();
-        this.resetDebuffs();
-        this.statusEffects = [];
+        this.forceResetBuffs();
+        this.forceResetDebuffs();
+        this.forceSetStatusEffects(...[]);
         this.duoOrHarmonizedSkillActivationCount = 0;
         this.isDuoOrHarmonicSkillActivatedInThisTurn = false;
         this.initPosX = this.posX;
@@ -2314,7 +2356,34 @@ class Unit extends BattleMapElement {
         this.snapshot.battleContext.invalidatesResBuff = this.battleContext.invalidatesResBuff;
     }
 
-    resetBuffs() {
+    /**
+     * @param {boolean} atk
+     * @param {boolean} spd
+     * @param {boolean} def
+     * @param {boolean} res
+     */
+    neutralizeBuffs(atk, spd, def, res) {
+        if (atk) this.atkBuff = 0;
+        if (spd) this.spdBuff = 0;
+        if (def) this.defBuff = 0;
+        if (res) this.resBuff = 0;
+    }
+
+    neutralizeAllBuffs() {
+        this.neutralizeBuffs(true, true, true, true);
+    }
+
+    neutralizeBuffsAtStartOfAction() {
+        this.neutralizeAllBuffs();
+    }
+
+    neutralizeReservedBuffsToNeutralize() {
+        this.neutralizeBuffs(...this.reservedBuffFlagsToNeutralize);
+        // clear
+        this.reservedBuffFlagsToNeutralize = [false, false, false, false];
+    }
+
+    forceResetBuffs() {
         this.atkBuff = 0;
         this.spdBuff = 0;
         this.defBuff = 0;
@@ -2329,11 +2398,41 @@ class Unit extends BattleMapElement {
         this.reservedResDebuff = 0;
     }
 
-    resetDebuffs() {
+    /**
+     * @param {boolean} atk
+     * @param {boolean} spd
+     * @param {boolean} def
+     * @param {boolean} res
+     */
+    neutralizeDebuffs(atk, spd, def, res) {
+        if (atk) this.atkDebuff = 0;
+        if (spd) this.spdDebuff = 0;
+        if (def) this.defDebuff = 0;
+        if (res) this.resDebuff = 0;
+    }
+
+    neutralizeAllDebuffs() {
+        this.neutralizeDebuffs(true, true, true, true);
+    }
+
+    neutralizeReservedDebuffsToNeutralize() {
+        this.neutralizeDebuffs(...this.reservedDebuffFlagsToNeutralize);
+        // clear
+        this.reservedDebuffFlagsToNeutralize = [false, false, false, false];
+    }
+
+    forceResetDebuffs() {
         this.atkDebuff = 0;
         this.spdDebuff = 0;
         this.defDebuff = 0;
         this.resDebuff = 0;
+    }
+
+    neutralizeDebuffsAtEndOfAction() {
+        if (this.hasStatusEffect(StatusEffectType.GrandStrategy)) {
+            return;
+        }
+        this.neutralizeAllDebuffs();
     }
 
     resetOneTimeActionActivationStates() {
@@ -2388,9 +2487,9 @@ class Unit extends BattleMapElement {
 
         this.isActionDone = false;
         this.isAttackDone = false;
-        this.resetBuffs();
+        this.neutralizeBuffsAtStartOfAction();
         this.setMoveCountFromMoveType();
-        this.clearPositiveStatusEffects();
+        this.neutralizePositiveStatusEffectsAtStartOfTurn();
     }
 
     // 行動終了状態にする
@@ -2404,10 +2503,8 @@ class Unit extends BattleMapElement {
         if (this.isMovementRestricted) {
             this.setMoveCountFromMoveType();
         }
-        if (!this.hasStatusEffect(StatusEffectType.GrandStrategy)) {
-            this.resetDebuffs();
-        }
-        this.clearNegativeStatusEffects();
+        this.neutralizeDebuffsAtEndOfAction();
+        this.neutralizeNegativeStatusEffectsAtEndOfAction();
     }
 
     applyEndActionSkills() {
@@ -2668,8 +2765,6 @@ class Unit extends BattleMapElement {
 
     initReservedStatusEffects() {
         this.reservedStatusEffects = [];
-        // 現在付与されているステータス(this.statusEffects)を保存する（シーフなどによる解除対象と対象外の付与予約を区別するため）
-        this.currentStatusEffectSet = new Set(this.statusEffects);
     }
 
     initReservedDebuffs() {
@@ -2679,8 +2774,26 @@ class Unit extends BattleMapElement {
         this.reservedResDebuff = this.resDebuff;
     }
 
+    getReservedBuffs() {
+        return [
+            this.reservedAtkBuff,
+            this.reservedSpdBuff,
+            this.reservedDefBuff,
+            this.reservedResBuff
+        ];
+    }
+
+    getReservedDebuffs() {
+        return [
+            this.reservedAtkDebuff,
+            this.reservedSpdDebuff,
+            this.reservedDefDebuff,
+            this.reservedResDebuff
+        ];
+    }
+
     applyReservedBuffs() {
-        this.applyBuffs(this.reservedAtkBuff, this.reservedSpdBuff, this.reservedDefBuff, this.reservedResBuff);
+        this.applyBuffs(...this.getReservedBuffs());
         this.resetReservedBuffs();
     }
 
@@ -2691,17 +2804,25 @@ class Unit extends BattleMapElement {
         this.reservedResBuff = 0;
     }
 
-    applyReservedDebuffs(neutralizesDebuffs = [false, false, false, false]) {
-        if (!neutralizesDebuffs[0]) {
+    applyReservedDebuffs(isBeginningOfTurn = false) {
+        let neutralizedFlags = [false, false, false, false];
+        if (isBeginningOfTurn) {
+            neutralizedFlags =
+                ArrayUtil.or(neutralizedFlags, this.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn);
+            if (this.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
+                neutralizedFlags = [true, true, true, true];
+            }
+        }
+        if (!neutralizedFlags[0]) {
             this.applyAtkDebuff(this.reservedAtkDebuff);
         }
-        if (!neutralizesDebuffs[1]) {
+        if (!neutralizedFlags[1]) {
             this.applySpdDebuff(this.reservedSpdDebuff);
         }
-        if (!neutralizesDebuffs[2]) {
+        if (!neutralizedFlags[2]) {
             this.applyDefDebuff(this.reservedDefDebuff);
         }
-        if (!neutralizesDebuffs[3]) {
+        if (!neutralizedFlags[3]) {
             this.applyResDebuff(this.reservedResDebuff);
         }
 
@@ -2715,31 +2836,28 @@ class Unit extends BattleMapElement {
         this.reservedResDebuff = 0;
     }
 
-    resetReservedNegativeStatusEffects() {
-        this.reservedStatusEffects = this.reservedStatusEffects.filter(e => isPositiveStatusEffect(e));
-    }
-
-    applyReservedStatusEffects() {
-        // 削除予約を反映
-        for (let e of this.reservedStatusEffectSetToDelete) {
-            this.currentStatusEffectSet.delete(e);
+    applyReservedStatusEffects(isBeginningOfTurn = false) {
+        let neutralizedStatusEffectSet = new Set();
+        if (isBeginningOfTurn) {
+            neutralizedStatusEffectSet = this.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn;
+            if (this.battleContext.neutralizesAnyPenaltyWhileBeginningOfTurn) {
+                this.reservedStatusEffects.forEach(e => {
+                    if (isNegativeStatusEffect(e)) {
+                        neutralizedStatusEffectSet.add(e);
+                    }
+                });
+            }
         }
-        if (this.reservedBuffsToDelete[0]) this.atkBuff = 0;
-        if (this.reservedBuffsToDelete[1]) this.spdBuff = 0;
-        if (this.reservedBuffsToDelete[2]) this.defBuff = 0;
-        if (this.reservedBuffsToDelete[3]) this.resBuff = 0;
+        // 付与予約を反映
+        for (let e of this.reservedStatusEffects) {
+            // 付与無効
+            if (neutralizedStatusEffectSet.has(e)) {
+                continue;
+            }
+            this.addStatusEffect(e);
+        }
 
-        if (this.reservedDebuffsToDelete[0]) this.atkDebuff = 0;
-        if (this.reservedDebuffsToDelete[1]) this.spdDebuff = 0;
-        if (this.reservedDebuffsToDelete[2]) this.defDebuff = 0;
-        if (this.reservedDebuffsToDelete[3]) this.resDebuff = 0;
-
-        this.reservedStatusEffectSetToDelete.clear();
-        this.reservedBuffsToDelete = [false, false, false, false];
-        this.reservedDebuffsToDelete = [false, false, false, false];
-        // すでに付与されている状態（解除は反映済み）に予約された状態を加える
-        this.reservedStatusEffects.forEach(e => this.currentStatusEffectSet.add(e));
-        this.statusEffects = [...this.currentStatusEffectSet];
+        // 反映済みの付与予約を解除
         this.reservedStatusEffects = [];
     }
 
@@ -5411,10 +5529,11 @@ class Unit extends BattleMapElement {
         if (this.hasStatusEffect(StatusEffectType.Canto1)) {
             moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
+        let env = new CantoEnv(this);
+        moveCountForCanto = Math.max(moveCountForCanto, CALC_MOVE_COUNT_FOR_CANTO_HOOKS.evaluateMaxWithUnit(this, env));
         for (let skillId of this.enumerateSkills()) {
-            let moveCount1 = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
-            let moveCount2 = CALC_MOVE_COUNT_FOR_CANTO_HOOKS.evaluateNumber(skillId, new CantoEnv(this, moveCountForCanto)) ?? 0;
-            moveCountForCanto = Math.max(moveCountForCanto, moveCount1, moveCount2);
+            let moveCount = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
+            moveCountForCanto = Math.max(moveCountForCanto, moveCount);
             // 同系統効果複数時、最大値適用
             switch (skillId) {
                 // 再移動(1)
