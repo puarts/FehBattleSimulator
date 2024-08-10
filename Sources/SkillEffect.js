@@ -614,6 +614,14 @@ class PercentageCondNode extends BoolNode {
 
 }
 
+class IsHpGTENPercentAtStartOfTurnNode extends PercentageCondNode {
+    evaluate(env) {
+        return env.targetUnit.restHpPercentageAtBeginningOfTurn >= this._percentage;
+    }
+}
+
+const IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = new IsHpGTENPercentAtStartOfTurnNode(25);
+
 class IsHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
         return env.targetUnit.battleContext.restHpPercentage >= this._percentage;
@@ -651,6 +659,7 @@ class GrantingBonusToAllNode extends FromPositiveNumberNode {
     }
 }
 
+const GRANTING_BONUS_TO_ALL_4_NODE = new GrantingBonusToAllNode(4);
 const GRANTING_BONUS_TO_ALL_5_NODE = new GrantingBonusToAllNode(5);
 
 class GrantingBonusToAtk extends FromPositiveNumberNode {
@@ -1014,6 +1023,7 @@ class CanInflictCantoControlWithinNSpacesNode extends BoolNode {
         super();
         this.#n = n;
     }
+
     /**
      * @param {CantoControlEnv} env
      */

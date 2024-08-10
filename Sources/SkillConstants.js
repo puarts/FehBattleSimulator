@@ -1894,6 +1894,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=7DA9CGAHF-c&t=31s&ab_channel=NintendoMobile
     SummertimeAxe: 2966, // 意気軒昂の夏祭の斧
     BreezySpear: 2969, // 清風明月の夏祭の槍
+    JuicyBucketfulPlus: 2971, // 夏野菜の桶+
 };
 
 const Support = {
