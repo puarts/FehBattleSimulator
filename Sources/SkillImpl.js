@@ -1,5 +1,22 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 再移動制限・不惑
+{
+    let skillId = PassiveC.FirmCantoCurb;
+    CAN_INFLICT_CANTO_CONTROL_HOOKS.addSkill(skillId, () =>
+        CAN_INFLICT_CANTO_CONTROL_WITHIN_4_SPACES_NODE,
+    );
+    CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>
+        CAN_NEUTRALIZE_END_ACTION_WITHIN_3_SPACES_NODE
+    );
+    CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.addSkill(skillId, () =>
+        CAN_NEUTRAL_AFTER_START_OF_TURN_SKILLS_TRIGGER_ACTION_ENDS_IMMEDIATELY_WITHIN_3_SPACES_NODE,
+    );
+    CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.addSkill(skillId, () =>
+        CAN_NEUTRALIZE_END_ACTION_WITHIN_3_SPACES_NODE
+    );
+}
+
 // 清風明月の夏祭の槍
 {
     let skillId = Weapon.BreezySpear;
@@ -9882,7 +9899,7 @@
             for (let unit of units) {
                 if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3 - 5) {
                     if (!unit.hasStatusEffect(StatusEffectType.TimesGrip)) {
-                        unit.endAction();
+                        unit.endActionBySkillEffect();
                         unit.reserveToAddStatusEffect(StatusEffectType.TimesGrip);
                     }
                 }

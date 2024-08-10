@@ -97,7 +97,7 @@ class SkillEffectHooks {
 
     /**
      * @param {Unit} unit
-     * @param {AddStatusEffectEnv|BattleSimulatorBaseEnv} env
+     * @param {E} env
      * @returns {boolean}
      */
     evaluateSomeWithUnit(unit, env) {
@@ -490,6 +490,17 @@ class AddStatusEffectEnv {
     }
 }
 
+class NeutralizingEndActionEnv {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} allyOrUnit
+     */
+    constructor(targetUnit, allyOrUnit) {
+        this.targetUnit = targetUnit;
+        this.allyOrUnit = allyOrUnit;
+    }
+}
+
 const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         env.targetUnit.battleContext.cannotTriggerPrecombatSpecial = true;
@@ -532,6 +543,17 @@ class CantoEnv {
      */
     constructor(targetUnit) {
         this.targetUnit = targetUnit;
+    }
+}
+
+class CantoControlEnv {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} unitThatControlCanto
+     */
+    constructor(targetUnit, unitThatControlCanto) {
+        this.targetUnit = targetUnit;
+        this.unitThatControlCanto = unitThatControlCanto;
     }
 }
 
@@ -982,6 +1004,75 @@ class GrantStatusEffectsAtStartOfTurnNode extends ApplyValuesNode {
     }
 }
 
+class CanInflictCantoControlWithinNSpacesNode extends BoolNode {
+    #n;
+
+    /**
+     * @param {number} n
+     */
+    constructor(n) {
+        super();
+        this.#n = n;
+    }
+    /**
+     * @param {CantoControlEnv} env
+     */
+    evaluate(env) {
+        return (env.targetUnit.distance(env.unitThatControlCanto) <= this.#n);
+    }
+}
+
+const CAN_INFLICT_CANTO_CONTROL_WITHIN_4_SPACES_NODE = new CanInflictCantoControlWithinNSpacesNode(4);
+
+class CanNeutralStatusEffectWithinNSpacesNode extends BoolNode {
+    #statusEffect;
+    #n;
+
+    /**
+     * @param {number} statusEffect
+     * @param {number} n
+     */
+    constructor(statusEffect, n) {
+        super();
+        this.#statusEffect = statusEffect;
+        this.#n = n;
+    }
+
+    /**
+     * @param {AddStatusEffectEnv} env
+     * @returns {boolean}
+     */
+    evaluate(env) {
+        return env.statusEffect === this.#statusEffect &&
+            env.targetUnit.distance(env.allyOrUnit) <= this.#n;
+    }
+}
+
+const CAN_NEUTRAL_AFTER_START_OF_TURN_SKILLS_TRIGGER_ACTION_ENDS_IMMEDIATELY_WITHIN_3_SPACES_NODE =
+    new CanNeutralStatusEffectWithinNSpacesNode(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately, 3);
+
+class CanNeutralizeEndActionWithinNSpacesNode extends BoolNode {
+    #n;
+
+    /**
+     * @param {number} n
+     */
+    constructor(n) {
+        super();
+        this.#n = n;
+    }
+
+    /**
+     * @param {NeutralizingEndActionEnv} env
+     * @returns {boolean}
+     */
+    evaluate(env) {
+        return env.targetUnit.distance(env.allyOrUnit) <= this.#n;
+    }
+}
+
+const CAN_NEUTRALIZE_END_ACTION_WITHIN_3_SPACES_NODE = new CanNeutralizeEndActionWithinNSpacesNode(3);
+
 // Hooks
 /**
  * 戦闘時
@@ -1010,10 +1101,20 @@ const BEFORE_PRECOMBAT_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動制限評価時
- * @type {SkillEffectHooks<BoolNode, BattleSimulatorBaseEnv>} */
+ * @type {SkillEffectHooks<BoolNode, CantoControlEnv>} */
 const CAN_INFLICT_CANTO_CONTROL_HOOKS = new SkillEffectHooks();
 
 /**
  * ステータス付与時
  * @type {SkillEffectHooks<BoolNode, AddStatusEffectEnv>} */
-const CAN_PREVENT_STATUS_EFFECTS_HOOKS = new SkillEffectHooks();
+const CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS = new SkillEffectHooks();
+
+/**
+ * スキルによる行動停止無効
+ * @type {SkillEffectHooks<BoolNode, NeutralizingEndActionEnv>} */
+const CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS = new SkillEffectHooks();
+
+/**
+ * ステータスによる行動停止無効
+ * @type {SkillEffectHooks<BoolNode, NeutralizingEndActionEnv>} */
+const CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS = new SkillEffectHooks();

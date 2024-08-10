@@ -2098,7 +2098,7 @@ class Unit extends BattleMapElement {
     }
 
     neutralizePositiveStatusEffectsAtStartOfTurn() {
-        this.neutralizeNegativeStatusEffects();
+        this.neutralizePositiveStatusEffects();
     }
 
     // 弱化以外の状態異常が付与されているか
@@ -2160,7 +2160,7 @@ class Unit extends BattleMapElement {
         let units = g_appData.enumerateAllUnitsOnMap();
         for (let unitIncludingSelf of units) {
             let env = new AddStatusEffectEnv(this, unitIncludingSelf, statusEffectType);
-            if (CAN_PREVENT_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+            if (CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
                 return;
             }
         }
@@ -2505,6 +2505,28 @@ class Unit extends BattleMapElement {
         }
         this.neutralizeDebuffsAtEndOfAction();
         this.neutralizeNegativeStatusEffectsAtEndOfAction();
+    }
+
+    endActionBySkillEffect() {
+        let units = g_appData.enumerateAllUnitsOnMap();
+        for (let unitIncludingSelf of units) {
+            let env = new NeutralizingEndActionEnv(this, unitIncludingSelf);
+            if (CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+                return;
+            }
+        }
+        this.endAction();
+    }
+
+    endActionByStatusEffect() {
+        let units = g_appData.enumerateAllUnitsOnMap();
+        for (let unitIncludingSelf of units) {
+            let env = new NeutralizingEndActionEnv(this, unitIncludingSelf);
+            if (CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+                return;
+            }
+        }
+        this.endAction();
     }
 
     applyEndActionSkills() {

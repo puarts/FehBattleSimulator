@@ -3275,6 +3275,7 @@ const PassiveC = {
 
     // 再移動制限
     CantoControl3: 2067, // 再移動制限3
+    FirmCantoCurb: 2970, // 再移動制限・不惑
 
     // 一斉突撃
     AssaultTroop3: 2117, // 一斉突撃3

@@ -77,7 +77,7 @@ class BeginningOfTurnSkillHandler {
     applySkillsAfterSkillsForBeginningOfTurn(unit) {
         if (unit.hasStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately)) {
             this.writeDebugLog(`${unit.nameWithGroup}はステータス${getStatusEffectName(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately)}により行動終了`);
-            unit.endAction();
+            unit.endActionByStatusEffect();
         }
         for (let skillId of unit.enumerateSkills()) {
             this.applySkillAfterSkillsForBeginningOfTurn(skillId, unit);
@@ -2939,7 +2939,7 @@ class BeginningOfTurnSkillHandler {
                     let unitsInCross = GeneratorUtil.filter(enemyUnits, u => skillOwner.isInCrossOf(u));
                     let nearestUnits= IterUtil.minElements(unitsInCross, u => skillOwner.distance(u));
                     let lowerRes = u => skillOwner.isHigherResInPrecombat(u, u.distance(skillOwner) * 3);
-                    nearestUnits.filter(lowerRes).forEach(u => u.endAction());
+                    nearestUnits.filter(lowerRes).forEach(u => u.endActionBySkillEffect());
                 }
                 break;
         }

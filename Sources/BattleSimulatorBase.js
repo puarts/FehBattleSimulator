@@ -1211,7 +1211,7 @@ class BattleSimulatorBase {
                             if (unit.isActionDone) {
                                 unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
                             } else {
-                                unit.endAction();
+                                unit.endActionBySkillEffect();
                             }
                         }
                     }
@@ -6789,7 +6789,7 @@ class BattleSimulatorBase {
             // activateCantoIfPossible内で再移動の発動を判定しているのでここではNマス以内の判定結果だけを保存
             let isThereAnyUnitThatInflictCantoControlWithinRange = false;
             for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
-                let env = new BattleSimulatorBaseEnv(this, u);
+                let env = new CantoControlEnv(unit, u);
                 isThereAnyUnitThatInflictCantoControlWithinRange |=
                     CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
                 for (let skillId of u.enumerateSkills()) {
