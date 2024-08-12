@@ -1174,6 +1174,8 @@ class BattleSimulatorBase {
         if (!this.canActivateDuoSkillOrHarmonizedSkill(duoUnit)) {
             return;
         }
+        let env = new EnumerationEnv(g_appData, duoUnit);
+        ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
             case Hero.HarmonizedGoldmary:
                 // 自分と同じ出典の味方と、自分自身に

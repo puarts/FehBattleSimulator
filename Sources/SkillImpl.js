@@ -1,5 +1,22 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 双界ネフェニーの双界スキル
+{
+    // TODO: indexを直接書かないで良いように依存関係を修正する
+    ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.addValue(1157,
+        new SkillEffectNode(
+            new EnumeratingUnitsFromSameTitlesNode(
+                new GrantingStatusToUnitFor1Turn(6, 6, 0, 0),
+                new GrantingStatusEffectsToUnitFor1Turn(
+                    StatusEffectType.ResonantBlades,
+                    StatusEffectType.MobilityIncreased,
+                ),
+                NEUTRALIZING_ANY_PENALTY_ON_UNIT_NODE,
+            )
+        )
+    )
+}
+
 // 攻撃速さの制空
 {
     let skillId = PassiveA.AtkSpdMastery;
@@ -104,8 +121,8 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         // ターン開始時、自身のHPが25%以上なら、自分の攻撃+6、「自分から攻撃時、絶対追撃」を付与(1ターン)
         new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
-            new GrantStatusAtStartOfTurnNode(6, 0, 0, 0),
-            new GrantStatusEffectAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
+            new GrantingStatusAtStartOfTurnNode(6, 0, 0, 0),
+            new GrantingStatusEffectAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
         )
     );
     // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
@@ -214,11 +231,11 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                new GrantStatusAtStartOfTurnNode(0, 6, 6, 6),
-                new GrantStatusEffectsAtStartOfTurnNode([
+                new GrantingStatusAtStartOfTurnNode(0, 6, 6, 6),
+                new GrantingStatusEffectsAtStartOfTurnNode(
                     StatusEffectType.ShieldFlying,
                     StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent
-                ]),
+                ),
             )
         )
     );

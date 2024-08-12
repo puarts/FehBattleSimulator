@@ -159,6 +159,34 @@ class UnitManager {
     }
 
     /**
+     * @param {Unit} targetUnit
+     * @returns {Generator<Unit>}
+     */
+    * enumerateAlliesThatHaveSameOrigin(targetUnit) {
+        let targetOrigins = targetUnit.heroInfo.origin.split('|');
+        let alliesAndUnit = this.enumerateUnitsInTheSameGroupOnMap(targetUnit, true);
+        yield* GeneratorUtil.filter(alliesAndUnit, u => this.#isSameOrigin(u, targetOrigins));
+    }
+
+    #isSameOrigin(unit, targetOrigins) {
+        let origins = unit.heroInfo.origin.split('|');
+        for (let origin of origins) {
+            let includesEmblem = origin.indexOf("紋章の謎") >= 0;
+            for (let targetOrigin of targetOrigins) {
+                if (includesEmblem) {
+                    if (targetOrigin.indexOf("紋章の謎") >= 0) {
+                        return true;
+                    }
+                }
+                else if (origin === targetOrigin) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param {number} unitGroup
      * @param {(u: Unit) => number} getStatusFunc
      * @param {(u: Unit) => boolean} exceptUnitFunc

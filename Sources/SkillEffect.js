@@ -585,6 +585,17 @@ class BattleSimulatorBaseEnv {
     }
 }
 
+class EnumerationEnv {
+    /**
+     * @param {UnitManager} unitManager
+     * @param {Unit} targetUnit
+     */
+    constructor(unitManager, targetUnit) {
+        this.unitManager = unitManager;
+        this.targetUnit = targetUnit;
+    }
+}
+
 class ForAlliesEnv {
     /**
      * @param {DamageCalculatorWrapper} damageCalculator
@@ -1186,19 +1197,6 @@ class ApplyValueNode extends SkillEffectNode {
     }
 }
 
-class ApplyValuesNode extends SkillEffectNode {
-    #values = [];
-
-    constructor(values) {
-        super();
-        values.forEach(v => this.#values.push(v));
-    }
-
-    getValues() {
-        return this.#values;
-    }
-}
-
 const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
     evaluate(env) {
         return env.targetUnit.getPositiveStatusEffects().length + env.enemyUnit.getPositiveStatusEffects().length;
@@ -1320,14 +1318,54 @@ class IsGteStatusSumNode extends BoolNode {
     }
 }
 
+class GrantingStatusToUnitFor1Turn extends FromNumbersNode {
+    evaluate(env) {
+        env.targetUnit.applyBuffs(...this.evaluateChildren(env));
+    }
+}
+
+class GrantingStatusEffectsToUnitFor1Turn extends FromNumbersNode {
+    /**
+     * @param {...number} values
+     */
+    constructor(...values) {
+        super(...values);
+    }
+
+    evaluate(env) {
+        this.evaluateChildren(env).forEach(e => env.targetUnit.addStatusEffect(e));
+    }
+}
+
+const NEUTRALIZING_ANY_PENALTY_ON_UNIT_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.neutralizeAllDebuffs();
+        env.targetUnit.neutralizeNegativeStatusEffects();
+    }
+}();
+
+class EnumerationNode extends SkillEffectNode {
+}
+
+class EnumeratingUnitsFromSameTitlesNode extends EnumerationNode {
+    /**
+     * @param {EnumerationEnv} env
+     */
+    evaluate(env) {
+        for (let unit of env.unitManager.enumerateAlliesThatHaveSameOrigin(env.targetUnit)) {
+            this.evaluateChildren(new EnumerationEnv(env.unitManager, unit));
+        }
+    }
+}
+
 // ターン開始時
-class GrantStatusAtStartOfTurnNode extends ApplyNumberToEachStatusNode {
+class GrantingStatusAtStartOfTurnNode extends ApplyNumberToEachStatusNode {
     evaluate(env) {
         env.targetUnit.reserveToApplyBuffs(...this.getValues());
     }
 }
 
-class GrantStatusEffectAtStartOfTurnNode extends ApplyValueNode {
+class GrantingStatusEffectAtStartOfTurnNode extends ApplyValueNode {
     /**
      * @param {number} value
      */
@@ -1340,16 +1378,16 @@ class GrantStatusEffectAtStartOfTurnNode extends ApplyValueNode {
     }
 }
 
-class GrantStatusEffectsAtStartOfTurnNode extends ApplyValuesNode {
+class GrantingStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
     /**
-     * @param {number[]} values
+     * @param {...number} values
      */
-    constructor(values) {
-        super(values);
+    constructor(...values) {
+        super(...values);
     }
 
     evaluate(env) {
-        this.getValues().forEach(v => env.targetUnit.reserveToAddStatusEffect(v));
+        this.evaluateChildren(env).forEach(e => env.targetUnit.reserveToAddStatusEffect(e));
     }
 }
 
@@ -1478,3 +1516,9 @@ const FOR_ALLIES_GRANTING_BONUS_HOOKS = new SkillEffectHooks();
  * 周囲に対するスキル効果
  * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
 const FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS = new SkillEffectHooks();
+
+/**
+ * ボタンを押したときのスキル効果
+ * @type {MultiValueMap<number, SkillEffectNode>} */
+const ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP = new MultiValueMap();
+
