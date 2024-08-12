@@ -1896,6 +1896,7 @@ const Weapon = {
     BreezySpear: 2969, // 清風明月の夏祭の槍
     JuicyBucketfulPlus: 2971, // 夏野菜の桶+
     FlutteringFan: 2972, // 人見知りの縁の祭器
+    StallGameBowPlus: 2974, // 射的の弓+
 };
 
 const Support = {

@@ -1,5 +1,27 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 射的の弓+
+{
+    let skillId = Weapon.StallGameBowPlus
+    // 飛行特効
+    // ターン開始時、自身のHPが25%以上なら、自分の攻撃+6、「自分から攻撃時、絶対追撃」を付与(1ターン)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
+        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            new GrantingStatusAtStartOfTurnNode(6, 0, 0, 0),
+            new GrantingStatusEffectsAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
+        )
+    );
+    // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            GRANTING_BONUS_TO_ALL_4_NODE,
+            new DealingDamageNode(
+                new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25)
+            ),
+        )
+    )
+}
+
 // 双界ネフェニーの双界スキル
 {
     // TODO: indexを直接書かないで良いように依存関係を修正する
