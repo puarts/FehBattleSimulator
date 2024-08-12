@@ -2879,6 +2879,7 @@ const PassiveB = {
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖
+    YngviAscendantPlus: 2965, // ユングヴィの祖・神
     MoonlightBangle: 1798, // 華月の腕輪
     MoonlitBangleF: 2127, // 華月の腕輪・遠
     Prescience: 1822, // 未来を知る力

@@ -1,8 +1,25 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// ユングヴィの祖・神
+{
+    let skillId = PassiveB.YngviAscendantPlus;
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new InflictingStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
+            NULL_FOLLOW_UP_NODE,
+            new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
+                UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE
+            ),
+        )
+    );
+    APPLYING_POTENT_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>
+        new ApplyingPotentSkillEffectNode(1, -10)
+    );
+}
+
 // 射的の弓+
 {
-    let skillId = Weapon.StallGameBowPlus
+    let skillId = Weapon.StallGameBowPlus;
     // 飛行特効
     // ターン開始時、自身のHPが25%以上なら、自分の攻撃+6、「自分から攻撃時、絶対追撃」を付与(1ターン)
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
