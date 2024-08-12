@@ -175,6 +175,14 @@ class SkillEffectNode {
  */
 class NumberNode extends SkillEffectNode {
     /**
+     * @param {number|NumberNode} numberOrNode
+     * @returns {ConstantNumberNode|NumberNode}
+     */
+    static makeNumberNodeFrom(numberOrNode) {
+        return typeof numberOrNode === 'number' ? new ConstantNumberNode(numberOrNode) : numberOrNode;
+    }
+
+    /**
      * @abstract
      * @returns {number}
      */
@@ -279,6 +287,18 @@ class ConstantNumberNode extends NumberNode {
  * @abstract
  */
 class BoolNode extends SkillEffectNode {
+    /**
+     * @param {boolean|BoolNode} boolOrNode
+     * @returns {BoolNode}
+     */
+    static makeBoolNodeFrom(boolOrNode) {
+        if (typeof boolOrNode === 'boolean') {
+            return boolOrNode ? TRUE_NODE : FALSE_NODE;
+        } else {
+            return boolOrNode;
+        }
+    }
+
     /**
      * @abstract
      * @returns {boolean} */
@@ -433,6 +453,54 @@ class MultTruncNode extends NumberOperationNode {
     }
 }
 
+/**
+ * @abstract
+ */
+class CompareNode extends BoolNode {
+    /**
+     * @param {number|NumberNode} left
+     * @param {number|NumberNode} right
+     */
+    constructor(left, right) {
+        super(NumberNode.makeNumberNodeFrom(left), NumberNode.makeNumberNodeFrom(right));
+    }
+}
+
+class GTNode extends CompareNode {
+    evaluate(env) {
+        let [left, right] = this.evaluateChildren(env);
+        return left > right;
+    }
+}
+
+class GTENode extends CompareNode {
+    evaluate(env) {
+        let [left, right] = this.evaluateChildren(env);
+        return left >= right;
+    }
+}
+
+class LTNode extends CompareNode {
+    evaluate(env) {
+        let [left, right] = this.evaluateChildren(env);
+        return left < right;
+    }
+}
+
+class LTENode extends CompareNode {
+    evaluate(env) {
+        let [left, right] = this.evaluateChildren(env);
+        return left <= right;
+    }
+}
+
+class EqNode extends CompareNode {
+    evaluate(env) {
+        let [left, right] = this.evaluateChildren(env);
+        return left === right;
+    }
+}
+
 class IfNode extends SkillEffectNode {
     /** @type {BoolNode} */
     #condNode;
@@ -446,6 +514,33 @@ class IfNode extends SkillEffectNode {
         if (this.#condNode.evaluate(env)) {
             return super.evaluate(env);
         }
+    }
+}
+
+class TernaryConditionalNumberNode extends NumberNode {
+    /** @type {BoolNode} */
+    #condNode;
+
+    /**
+     * @param {BoolNode} condNode
+     * @param {number|NumberNode} trueNode
+     * @param {number|NumberNode} falseNode
+     */
+    constructor(condNode, trueNode, falseNode) {
+        super(NumberNode.makeNumberNodeFrom(trueNode), NumberNode.makeNumberNodeFrom(falseNode));
+        this.#condNode = condNode;
+    }
+
+    /**
+     * @returns {NumberNode[]}
+     */
+    getChildren() {
+        return super.getChildren();
+    }
+
+    evaluate(env) {
+        let index = this.#condNode.evaluate(env) ? 0 : 1;
+        return this.getChildren()[index].evaluate(env);
     }
 }
 
@@ -466,6 +561,19 @@ class DamageCalculatorWrapperEnv {
     }
 }
 
+class DamageCalculatorEnv {
+    /**
+     * @param {DamageCalculator} damageCalculator
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     */
+    constructor(damageCalculator, targetUnit, enemyUnit) {
+        this.damageCalculator = damageCalculator;
+        this.targetUnit = targetUnit;
+        this.enemyUnit = enemyUnit;
+    }
+}
+
 class BattleSimulatorBaseEnv {
     /**
      * @param {BattleSimulatorBase} battleSimulatorBase
@@ -474,6 +582,21 @@ class BattleSimulatorBaseEnv {
     constructor(battleSimulatorBase, targetUnit) {
         this.battleSimulatorBase = battleSimulatorBase;
         this.targetUnit = targetUnit;
+    }
+}
+
+class ForAlliesEnv {
+    /**
+     * @param {DamageCalculatorWrapper} damageCalculator
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {Unit} allyUnit
+     */
+    constructor(damageCalculator, targetUnit, enemyUnit, allyUnit) {
+        this.damageCalculator = damageCalculator;
+        this.targetUnit = targetUnit;
+        this.enemyUnit = enemyUnit;
+        this.allyUnit = allyUnit;
     }
 }
 
@@ -500,6 +623,105 @@ class NeutralizingEndActionEnv {
         this.allyOrUnit = allyOrUnit;
     }
 }
+
+class isThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
+    #n;
+
+    /**
+     * @param {number} n
+     */
+    constructor(n) {
+        super();
+        this.#n = n;
+    }
+
+    /**
+     * @param {DamageCalculatorWrapperEnv} env
+     */
+    evaluate(env) {
+        return env.damageCalculator.unitManager.isThereAllyInCrossOf(env.targetUnit, Math.trunc(this.#n / 2));
+    }
+}
+
+const IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new isThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
+
+class numOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode extends NumberNode {
+    #n;
+
+    /**
+     * @param {number} n
+     */
+    constructor(n) {
+        super();
+        this.#n = n;
+    }
+
+    /**
+     * @param {DamageCalculatorWrapperEnv} env
+     */
+    evaluate(env) {
+        return env.damageCalculator.unitManager.countEnemiesInCrossWithOffset(env.targetUnit, Math.trunc(this.#n / 2));
+    }
+}
+
+const NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new numOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode(3);
+
+class isThereSpaceWithinNSpacesSatisfyCondNode extends BoolNode {
+    /**
+     * @param {number} distance
+     * @param {(t: Tile) => boolean} pred
+     */
+    constructor(distance, pred) {
+        super();
+        this._distance = distance;
+        this._pred = pred;
+    }
+
+    /**
+     * @param {DamageCalculatorWrapperEnv} env
+     */
+    evaluate(env) {
+        let tiles =
+            env.damageCalculator.map.enumerateTilesWithinSpecifiedDistance(env.targetUnit.placedTile, this._distance);
+        return GeneratorUtil.some(tiles, this._pred);
+    }
+}
+
+class isThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode extends isThereSpaceWithinNSpacesSatisfyCondNode {
+    /**
+     * @param {number} distance
+     */
+    constructor(distance) {
+        let pred = tile =>
+            tile.hasDivineVein() ||
+            (tile.isPassableAnyMoveType() && tile.isCountedAsDifficultTerrain());
+        super(distance, pred);
+    }
+}
+
+const IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
+    new isThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode(2);
+
+class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
+    #n;
+
+    /**
+     * @param {number} n
+     */
+    constructor(n) {
+        super();
+        this.#n = n;
+    }
+
+    /**
+     * @param {ForAlliesEnv} env
+     */
+    evaluate(env) {
+        return env.allyUnit.isInCrossWithOffset(env.targetUnit, this.#n / 2);
+    }
+}
+
+const IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
 
 const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -630,6 +852,15 @@ class IsHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
 
 const IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsHpGTENPercentAtStartOfCombatNode(25);
 
+class IsHpLTENPercentInCombatNode extends PercentageCondNode {
+    evaluate(env) {
+        // env.targetUnit.battleContext.restHpPercentage ではなくこちらが正しい
+        return env.targetUnit.restHpPercentage <= this._percentage;
+    }
+}
+
+const IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE = new IsHpLTENPercentInCombatNode(99);
+
 class IsFoesHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
         return env.enemyUnit.battleContext.restHpPercentage >= this._percentage;
@@ -637,6 +868,12 @@ class IsFoesHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
 }
 
 const IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGTENPercentAtStartOfCombatNode(75);
+
+const CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE = new class extends BoolNode {
+    evaluate(env) {
+        return env.targetUnit.hasNormalAttackSpecial();
+    }
+}();
 
 class ApplyNumericNode extends SkillEffectNode {
     /**
@@ -676,6 +913,48 @@ class GrantingBonusToAtkSpdNode extends FromPositiveNumbersNode {
 
 const GRANTING_BONUS_TO_ATK_5_NODE = new GrantingBonusToAtkSpdNode(5);
 const GRANTING_BONUS_TO_ATK_6_NODE = new GrantingBonusToAtkSpdNode(6);
+
+class NeutralizingFoesBonusesToStatus extends SkillEffectNode {
+    /**
+     * @param {boolean|BoolNode} atk
+     * @param {boolean|BoolNode} spd
+     * @param {boolean|BoolNode} def
+     * @param {boolean|BoolNode} res
+     */
+    constructor(atk, spd, def, res) {
+        super(...[atk, spd, def, res].map(b => BoolNode.makeBoolNodeFrom(b)));
+    }
+
+    evaluate(env) {
+        env.targetUnit.battleContext.invalidateBuffs(...this.evaluateChildren(env));
+    }
+}
+
+// 自分の最初の攻撃前に自身の奥義発動カウント-N(符号に注意Nは自然数)
+class GrantingSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode extends FromPositiveNumberNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.specialCountReductionBeforeFirstAttack += this.evaluateChildren(env);
+    }
+}
+
+const GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE =
+    new GrantingSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode(1);
+
+// 自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
+class GrantingSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode extends FromPositiveNumberNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += this.evaluateChildren(env);
+    }
+}
+
+const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.invalidatesCounterattack = true;
+    }
+}();
+
+const GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE =
+    new GrantingSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode(1);
 
 class InflictingEachMinusNode extends FromPositiveNumbersNode {
     evaluate(env) {
@@ -718,6 +997,42 @@ const IN_COMBAT_ATK_NODE = new InCombatStatusNode(STATUS_INDEX.Atk);
 const IN_COMBAT_SPD_NODE = new InCombatStatusNode(STATUS_INDEX.Spd);
 const IN_COMBAT_DEF_NODE = new InCombatStatusNode(STATUS_INDEX.Def);
 const IN_COMBAT_RES_NODE = new InCombatStatusNode(STATUS_INDEX.Res);
+
+class InCombatFoesEvalStatusNode extends NumberNode {
+    #index;
+
+    constructor(index) {
+        super();
+        this.#index = index;
+    }
+
+    evaluate(env) {
+        return env.enemyUnit.getStatusesInCombat(env.targetUnit)[this.#index];
+    }
+}
+
+const IN_COMBAT_FOES_EVAL_ATK_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Atk);
+const IN_COMBAT_FOES_EVAL_SPD_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Spd);
+const IN_COMBAT_FOES_EVAL_DEF_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Def);
+const IN_COMBAT_FOES_EVAL_RES_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Res);
+
+class InCombatEvalStatusNode extends NumberNode {
+    #index;
+
+    constructor(index) {
+        super();
+        this.#index = index;
+    }
+
+    evaluate(env) {
+        return env.targetUnit.getStatusesInCombat(env.enemyUnit)[this.#index];
+    }
+}
+
+const IN_COMBAT_EVAL_ATK_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Atk);
+const IN_COMBAT_EVAL_SPD_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Spd);
+const IN_COMBAT_EVAL_DEF_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Def);
+const IN_COMBAT_EVAL_RES_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Res);
 
 const MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -905,6 +1220,12 @@ class ReducingDamageFromFirstAttackNode extends ApplyNumericNode {
     }
 }
 
+class DealingDamagePerAttackNode extends ApplyNumericNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat += this.evaluateChildren(env);
+    }
+}
+
 class RestoringHpAfterCombatNode extends ApplyNumericNode {
     evaluate(env) {
         env.targetUnit.battleContext.healedHpAfterCombat += this.evaluateChildren(env);
@@ -951,6 +1272,16 @@ class ApplyingStatusEffectsAfterStatusFixedNode extends SkillEffectNode {
     evaluate(env) {
         let node = new SkillEffectNode(...this.getChildren());
         env.targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes.push(node);
+    }
+}
+
+class ApplyingSkillEffectsPerAttack extends SkillEffectNode {
+    /**
+     * @param {DamageCalculatorEnv} env
+     */
+    evaluate(env) {
+        let node = new SkillEffectNode(...this.getChildren());
+        env.targetUnit.battleContext.applySkillEffectPerAttackNodes.push(node);
     }
 }
 
@@ -1087,7 +1418,7 @@ const CAN_NEUTRALIZE_END_ACTION_WITHIN_3_SPACES_NODE = new CanNeutralizeEndActio
 /**
  * 戦闘時
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
-const APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS = new SkillEffectHooks();
+const APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動条件
@@ -1128,3 +1459,13 @@ const CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS = new SkillEffectHooks();
  * ステータスによる行動停止無効
  * @type {SkillEffectHooks<BoolNode, NeutralizingEndActionEnv>} */
 const CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS = new SkillEffectHooks();
+
+/**
+ * 周囲に対する紋章効果
+ * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
+const FOR_ALLIES_GRANTING_BONUS_HOOKS = new SkillEffectHooks();
+
+/**
+ * 周囲に対するスキル効果
+ * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
+const FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS = new SkillEffectHooks();

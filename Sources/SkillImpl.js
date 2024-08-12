@@ -1,5 +1,79 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 人見知りの縁の祭器
+{
+    let skillId = Weapon.FlutteringFan;
+    // 奥義が発動しやすい(発動カウント-1)
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // 自身を中心とした縦3列と横3列に味方がいる時、戦闘中、
+            new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+                // 自身の攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列にいる敵の数×3+5だけ増加
+                // (最大14、自身の周囲2マス以内に以下のいずれかのマスがある時は14として扱う・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)、
+                new GrantingBonusToAllNode(
+                    new TernaryConditionalNumberNode(
+                        IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
+                        14,
+                        new EnsureMaxNode(
+                            new AddNode(new MultNode(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                            14,
+                        ),
+                    ),
+                ),
+                // 敵の速さ、魔防の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)、
+                new NeutralizingFoesBonusesToStatus(false, true, false, true),
+                // かつ自分が攻撃時に発動する奥義を装備している時、戦闘中、
+                new IfNode(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                    // 自分の最初の攻撃前に奥義発動カウント-1、
+                    GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
+                    // 自分の最初の追撃前に奥義発動カウント-1、かつ
+                    GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE,
+                    new ApplyingSkillEffectsPerAttack(
+                        // 自身のHPが99%以下で
+                        new IfNode(IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
+                            // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
+                            new DealingDamagePerAttackNode(10),
+                        ),
+                    ),
+                ),
+            )
+        )
+    );
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // 自身を中心とした縦3列と横3列に味方がいる時、
+            // 戦闘中、速さが敵より1以上高ければ、敵は反撃不可
+            new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+                new ApplyingStatusEffectsAfterStatusFixedNode(
+                    new IfNode(new GTNode(IN_COMBAT_EVAL_SPD_NODE, IN_COMBAT_FOES_EVAL_SPD_NODE),
+                        // 反撃不可
+                        FOE_CANNOT_COUNTERATTACK_NODE,
+                    ),
+                ),
+            ),
+        )
+    );
+    FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>
+        // 自身を中心とした縦3列と横3列の味方は、
+        new IfNode(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            // 攻撃時に発動する奥義を装備している時、戦闘中、
+            new IfNode(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                // 奥義発動カウント変動量-を無効、
+                NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                // 自分の最初の攻撃前に奥義発動カウント-1、
+                GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
+                new ApplyingSkillEffectsPerAttack(
+                    // 自身のHPが99%以下で
+                    new IfNode(IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
+                        // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
+                        new DealingDamagePerAttackNode(10),
+                    ),
+                ),
+            )
+        )
+    );
+}
+
 // 夏野菜の桶+
 {
     let skillId = Weapon.JuicyBucketfulPlus;
@@ -11,7 +85,7 @@
         )
     );
     // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
-    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             GRANTING_BONUS_TO_ALL_4_NODE,
             new DealingDamageNode(
@@ -54,7 +128,7 @@
             FOE_DISABLES_SUPPORT_EFFECTS,
         ),
     );
-    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             GRANTING_BONUS_TO_ALL_5_NODE,
             new GrantingBonusToAllNode(new MultTruncNode(IN_PRE_COMBAT_SPD_NODE, 0.15)),
@@ -87,7 +161,7 @@
 // 天馬裂空
 {
     let skillId = PassiveB.PegasusRift;
-    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new InflictingEachMinusNode(4, 4, 0, 0),
             new ApplyingStatusEffectsAfterStatusFixedNode(
@@ -124,7 +198,7 @@
             )
         )
     );
-    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 new GrantingBonusToAllNode(new MultTruncNode(IN_PRE_COMBAT_SPD_NODE, 0.15)),
@@ -215,7 +289,7 @@
 {
     let skillId = getSpecialRefinementSkillId(Weapon.HolyYewfelle);
 
-    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 GRANTING_BONUS_TO_ATK_5_NODE,
@@ -228,7 +302,7 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.HolyYewfelle);
-    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTING_BONUS_TO_ATK_6_NODE,
@@ -241,7 +315,7 @@
 }
 {
     let skillId = getNormalSkillId(Weapon.HolyYewfelle);
-    APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTING_BONUS_TO_ATK_6_NODE,
@@ -10637,14 +10711,12 @@
                 );
                 if (targetUnit.battleContext.initiatesCombat) {
                     let dist = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
-                    let found = false;
-                    for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2)) {
-                        if (tile.hasDivineVein() ||
-                            (tile.isPassableAnyMoveType() && tile.isCountedAsDifficultTerrain())) {
-                            found = true;
-                            break;
-                        }
-                    }
+                    let pred = tile => {
+                        return tile.hasDivineVein() ||
+                            (tile.isPassableAnyMoveType() && tile.isCountedAsDifficultTerrain());
+                    };
+                    let tiles = this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2);
+                    let found = GeneratorUtil.some(tiles, pred);
                     if (found) {
                         dist = 3;
                     }

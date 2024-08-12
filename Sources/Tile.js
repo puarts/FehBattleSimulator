@@ -824,7 +824,7 @@ class Tile extends BattleMapElement {
             TileType.Trench,
             TileType.DefensiveTrench,
             TileType.DefensiveForest,
-        ].some(t => t.type === this.type);
+        ].some(tileType => tileType === this.type);
     }
 
     isNotCountedAsDifficultTerrain() {

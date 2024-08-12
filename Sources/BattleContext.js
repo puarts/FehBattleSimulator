@@ -233,6 +233,9 @@ class BattleContext {
         // 攻撃ごとに変化する可能性がある追加ダメージ
         this.additionalDamagePerAttack = 0;
 
+        // 戦闘中攻撃ごとに変化する可能性がある奥義発動時の追加ダメージ
+        this.additionalDamageOfSpecialPerAttackInCombat = 0;
+
         // 固定ダメージ軽減
         this.damageReductionValue = 0;
 
@@ -482,10 +485,16 @@ class BattleContext {
         this.applySkillEffectFromEnemyAlliesFuncs = [];
         // 攻撃を行った時、戦闘後
         this.applyAttackSkillEffectAfterCombatFuncs = [];
+
+        // 攻撃ごとのスキル効果
+        /** @type {SkillEffectNode[]} */
+        this.applySkillEffectPerAttackNodes = [];
     }
 
     initContextPerAttack() {
         this.additionalDamagePerAttack = 0;
+        this.additionalDamageOfSpecialPerAttackInCombat = 0;
+        this.additionalDamageOfSpecialPerAttack = 0;
         this.healedHpByAttackPerAttack = 0;
         this.preventedDefenderSpecialPerAttack = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;

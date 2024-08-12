@@ -1895,6 +1895,7 @@ const Weapon = {
     SummertimeAxe: 2966, // 意気軒昂の夏祭の斧
     BreezySpear: 2969, // 清風明月の夏祭の槍
     JuicyBucketfulPlus: 2971, // 夏野菜の桶+
+    FlutteringFan: 2972, // 人見知りの縁の祭器
 };
 
 const Support = {

@@ -2341,7 +2341,7 @@ class DamageCalculatorWrapper {
         }
 
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        APPLY_SKILL_EFFECT_FOR_UNIT_HOOKS.evaluateWithUnit(targetUnit, env);
+        APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
             if (skillFunc) {
@@ -10213,6 +10213,8 @@ class DamageCalculatorWrapper {
                 if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
                     continue
                 }
+                let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
+                FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS.evaluateWithUnit(allyUnit, env);
                 for (let skillId of allyUnit.enumerateSkills()) {
                     let func = getSkillFunc(skillId, applySkillEffectFromAlliesFuncMap);
                     func?.call(this, targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
@@ -17047,6 +17049,8 @@ class DamageCalculatorWrapper {
                 continue;
             }
             // 距離に関係ないもの
+            let env = new ForAlliesEnv(this, targetUnit, enemyUnit, ally);
+            FOR_ALLIES_GRANTING_BONUS_HOOKS.evaluateWithUnit(ally, env);
             for (let skillId of ally.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromAlliesFuncMap);
                 func?.call(this, targetUnit, ally, enemyUnit, calcPotentialDamage);
