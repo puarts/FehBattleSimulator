@@ -624,7 +624,7 @@ class NeutralizingEndActionEnv {
     }
 }
 
-class isThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
+class IsThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
     #n;
 
     /**
@@ -643,9 +643,9 @@ class isThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
     }
 }
 
-const IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new isThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
+const IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
 
-class numOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode extends NumberNode {
+class NumOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode extends NumberNode {
     #n;
 
     /**
@@ -664,9 +664,9 @@ class numOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode extends NumberNode {
     }
 }
 
-const NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new numOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode(3);
+const NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new NumOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode(3);
 
-class isThereSpaceWithinNSpacesSatisfyCondNode extends BoolNode {
+class IsThereSpaceWithinNSpacesSatisfyCondNode extends BoolNode {
     /**
      * @param {number} distance
      * @param {(t: Tile) => boolean} pred
@@ -687,7 +687,7 @@ class isThereSpaceWithinNSpacesSatisfyCondNode extends BoolNode {
     }
 }
 
-class isThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode extends isThereSpaceWithinNSpacesSatisfyCondNode {
+class IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode extends IsThereSpaceWithinNSpacesSatisfyCondNode {
     /**
      * @param {number} distance
      */
@@ -700,7 +700,7 @@ class isThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExclud
 }
 
 const IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
-    new isThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode(2);
+    new IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode(2);
 
 class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
     #n;
@@ -826,6 +826,12 @@ const IS_COMBAT_INITIATED_BY_UNIT = new class extends BoolNode {
     }
 }();
 
+const HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new class extends BoolNode {
+    evaluate(env) {
+        return env.targetUnit.isCombatDone;
+    }
+}();
+
 class PercentageCondNode extends BoolNode {
     _percentage;
 
@@ -867,6 +873,7 @@ class IsFoesHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
     }
 }
 
+const IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGTENPercentAtStartOfCombatNode(50);
 const IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGTENPercentAtStartOfCombatNode(75);
 
 const CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE = new class extends BoolNode {
@@ -911,8 +918,10 @@ class GrantingBonusToAtkSpdNode extends FromPositiveNumbersNode {
     }
 }
 
-const GRANTING_BONUS_TO_ATK_5_NODE = new GrantingBonusToAtkSpdNode(5);
-const GRANTING_BONUS_TO_ATK_6_NODE = new GrantingBonusToAtkSpdNode(6);
+const GRANTING_BONUS_TO_ATK_SPD_4_NODE = new GrantingBonusToAtkSpdNode(4);
+const GRANTING_BONUS_TO_ATK_SPD_5_NODE = new GrantingBonusToAtkSpdNode(5);
+const GRANTING_BONUS_TO_ATK_SPD_6_NODE = new GrantingBonusToAtkSpdNode(6);
+const GRANTING_BONUS_TO_ATK_SPD_7_NODE = new GrantingBonusToAtkSpdNode(7);
 
 class NeutralizingFoesBonusesToStatus extends SkillEffectNode {
     /**

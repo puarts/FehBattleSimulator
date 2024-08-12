@@ -2382,6 +2382,8 @@ const PassiveA = {
     EarthfireBoost3: 2768, // 生命の業火大地3
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
+    AtkSpdMastery: 2973, // 攻撃速さの制空
+
     // 専用A
     ObsidianTactics: 2946, // 黒曜石の教え
     FellWyrmscale: 2842, // 邪竜の暗鱗

@@ -1,5 +1,29 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 攻撃速さの制空
+{
+    let skillId = PassiveA.AtkSpdMastery;
+    // 現在のターン中に自分が戦闘を行っている時、【再移動(2)】を発動可能
+    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () =>
+        HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+    );
+    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(2));
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // 戦闘開始時、敵のHPが50%以上の時、戦闘中、
+            new IfNode(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
+                // 自分の攻撃、速さ+7、かつ
+                GRANTING_BONUS_TO_ATK_SPD_7_NODE,
+                // 自身の周囲2マス以内に以下のいずれかのマスがある時、戦闘中、さらに、
+                new IfNode(IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
+                    // 自分の攻撃、速さ+4(・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)
+                    GRANTING_BONUS_TO_ATK_SPD_4_NODE
+                )
+            )
+        )
+    );
+}
+
 // 人見知りの縁の祭器
 {
     let skillId = Weapon.FlutteringFan;
@@ -292,7 +316,7 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                GRANTING_BONUS_TO_ATK_5_NODE,
+                GRANTING_BONUS_TO_ATK_SPD_5_NODE,
                 new GrantingBonusToAtkSpdNode(new MultTruncNode(IN_PRE_COMBAT_SPD_NODE, 0.15)),
                 new InvalidateEnemyBuffsNode(false, true, true, false),
                 ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE,
@@ -305,7 +329,7 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
-                GRANTING_BONUS_TO_ATK_6_NODE,
+                GRANTING_BONUS_TO_ATK_SPD_6_NODE,
                 new InvalidateOwnDebuffsNode(true, true, false, false),
                 NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 UNIT_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
@@ -318,7 +342,7 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
-                GRANTING_BONUS_TO_ATK_6_NODE,
+                GRANTING_BONUS_TO_ATK_SPD_6_NODE,
                 new InvalidateOwnDebuffsNode(true, true, false, false),
                 NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS,
             )
