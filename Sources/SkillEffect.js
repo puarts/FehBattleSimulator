@@ -135,12 +135,12 @@ class SkillEffectNode {
         this._skillName = skillName;
     }
 
-    evaluate() {
-        return this.evaluateChildren(...arguments);
+    evaluate(env) {
+        return this.evaluateChildren(env);
     }
 
-    evaluateChildren() {
-        return this._children.map(child => child.evaluate(...arguments));
+    evaluateChildren(env) {
+        return this._children.map(child => child.evaluate(env));
     }
 
     addParent(node) {
@@ -869,49 +869,57 @@ const CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE = new class extends BoolNode {
     }
 }();
 
-class ApplyNumericNode extends SkillEffectNode {
+/**
+ * @abstract
+ */
+class ApplyingNumberNode extends SkillEffectNode {
     /**
-     * @param {number|NumberNode} numberOrNumberNode
+     * @param {number|NumberNode} value
      */
-    constructor(numberOrNumberNode = null) {
-        let value =
-            typeof numberOrNumberNode === 'number' ? new ConstantNumberNode(numberOrNumberNode) : numberOrNumberNode;
-        super(value);
+    constructor(value) {
+        super(NumberNode.makeNumberNodeFrom(value));
     }
 
     evaluateChildren(env) {
         return super.evaluateChildren(env)[0];
     }
+
+    /**
+     * @abstract
+     * @param env
+     */
+    evaluate(env) {
+    }
 }
 
-class GrantingBonusToAllNode extends FromPositiveNumberNode {
+class GrantingAllStatsPlusDuringCombatNode extends FromPositiveNumberNode {
     evaluate(env) {
         env.targetUnit.addAllSpur(this.evaluateChildren(env));
     }
 }
 
-const GRANTING_BONUS_TO_ALL_4_NODE = new GrantingBonusToAllNode(4);
-const GRANTING_BONUS_TO_ALL_5_NODE = new GrantingBonusToAllNode(5);
+const GRANTING_ALL_STATS_PLUS_4_DURING_COMBAT_NODE = new GrantingAllStatsPlusDuringCombatNode(4);
+const GRANTING_ALL_STATS_PLUS_5_DURING_COMBAT_NODE = new GrantingAllStatsPlusDuringCombatNode(5);
 
 // noinspection JSUnusedGlobalSymbols
-class GrantingBonusToAtk extends FromPositiveNumberNode {
+class GrantingAtkPlusDuringCombatNode extends FromPositiveNumberNode {
     evaluate(env) {
         env.targetUnit.atkSpur += this.evaluateChildren(env);
     }
 }
 
-class GrantingBonusToAtkSpdNode extends FromPositiveNumbersNode {
+class GrantingAtkSpdPlusDuringCombatNode extends FromPositiveNumbersNode {
     evaluate(env) {
         env.targetUnit.addAtkSpdSpurs(...this.evaluateChildren(env));
     }
 }
 
-const GRANTING_BONUS_TO_ATK_SPD_4_NODE = new GrantingBonusToAtkSpdNode(4);
-const GRANTING_BONUS_TO_ATK_SPD_5_NODE = new GrantingBonusToAtkSpdNode(5);
-const GRANTING_BONUS_TO_ATK_SPD_6_NODE = new GrantingBonusToAtkSpdNode(6);
-const GRANTING_BONUS_TO_ATK_SPD_7_NODE = new GrantingBonusToAtkSpdNode(7);
+const GRANTING_ATK_SPD_PLUS_4_DURING_COMBAT_NODE = new GrantingAtkSpdPlusDuringCombatNode(4);
+const GRANTING_ATK_SPD_PLUS_5_DURING_COMBAT_NODE = new GrantingAtkSpdPlusDuringCombatNode(5);
+const GRANTING_ATK_SPD_PLUS_6_DURING_COMBAT_NODE = new GrantingAtkSpdPlusDuringCombatNode(6);
+const GRANTING_ATK_SPD_PLUS_7_DURING_COMBAT_NODE = new GrantingAtkSpdPlusDuringCombatNode(7);
 
-class NeutralizingFoesBonusesToStatus extends SkillEffectNode {
+class NeutralizingFoesBonusesToStatsDuringCombatNode extends SkillEffectNode {
     /**
      * @param {boolean|BoolNode} atk
      * @param {boolean|BoolNode} spd
@@ -953,13 +961,13 @@ const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
 const GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE =
     new GrantingSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode(1);
 
-class InflictingEachMinusNode extends FromPositiveNumbersNode {
+class InflictingStatsMinusOnFoeDuringCombatNode extends FromPositiveNumbersNode {
     evaluate(env) {
         env.enemyUnit.addSpurs(...this.evaluateChildren(env).map(v => -v));
     }
 }
 
-class InPreCombatStatusNode extends NumberNode {
+class StatsAtStartOfCombatNode extends NumberNode {
     #index;
 
     constructor(index) {
@@ -973,13 +981,13 @@ class InPreCombatStatusNode extends NumberNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
-const IN_PRE_COMBAT_ATK_NODE = new InPreCombatStatusNode(STATUS_INDEX.Atk);
-const IN_PRE_COMBAT_SPD_NODE = new InPreCombatStatusNode(STATUS_INDEX.Spd);
+const ATK_AT_START_OF_COMBAT_NODE = new StatsAtStartOfCombatNode(STATUS_INDEX.Atk);
+const SPD_AT_START_OF_COMBAT_NODE = new StatsAtStartOfCombatNode(STATUS_INDEX.Spd);
 // noinspection JSUnusedGlobalSymbols
-const IN_PRE_COMBAT_DEF_NODE = new InPreCombatStatusNode(STATUS_INDEX.Def);
-const IN_PRE_COMBAT_RES_NODE = new InPreCombatStatusNode(STATUS_INDEX.Res);
+const DEF_AT_START_OF_COMBAT_NODE = new StatsAtStartOfCombatNode(STATUS_INDEX.Def);
+const RES_AT_START_OF_COMBAT_NODE = new StatsAtStartOfCombatNode(STATUS_INDEX.Res);
 
-class InCombatStatusNode extends NumberNode {
+class StatsDuringCombat extends NumberNode {
     #index;
 
     constructor(index) {
@@ -993,14 +1001,14 @@ class InCombatStatusNode extends NumberNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_ATK_NODE = new InCombatStatusNode(STATUS_INDEX.Atk);
-const IN_COMBAT_SPD_NODE = new InCombatStatusNode(STATUS_INDEX.Spd);
+const ATK_DURING_COMBAT_NODE = new StatsDuringCombat(STATUS_INDEX.Atk);
+const SPD_DURING_COMBAT_NODE = new StatsDuringCombat(STATUS_INDEX.Spd);
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_DEF_NODE = new InCombatStatusNode(STATUS_INDEX.Def);
+const DEF_DURING_COMBAT_NODE = new StatsDuringCombat(STATUS_INDEX.Def);
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_RES_NODE = new InCombatStatusNode(STATUS_INDEX.Res);
+const RES_DURING_COMBAT_NODE = new StatsDuringCombat(STATUS_INDEX.Res);
 
-class InCombatFoesEvalStatusNode extends NumberNode {
+class FoesEvalStatsDuringCombatNode extends NumberNode {
     #index;
 
     constructor(index) {
@@ -1014,14 +1022,14 @@ class InCombatFoesEvalStatusNode extends NumberNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_FOES_EVAL_ATK_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Atk);
-const IN_COMBAT_FOES_EVAL_SPD_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Spd);
+const FOES_EVAL_ATK_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Atk);
+const FOES_EVAL_SPD_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Spd);
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_FOES_EVAL_DEF_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Def);
+const FOES_EVAL_DEF_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Def);
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_FOES_EVAL_RES_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Res);
+const FOES_EVAL_RES_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Res);
 
-class InCombatEvalStatusNode extends NumberNode {
+class EvalStatsDuringCombatNode extends NumberNode {
     #index;
 
     constructor(index) {
@@ -1035,12 +1043,12 @@ class InCombatEvalStatusNode extends NumberNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_EVAL_ATK_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Atk);
-const IN_COMBAT_EVAL_SPD_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Spd);
+const EVAL_ATK_DURING_COMBAT_NODE = new EvalStatsDuringCombatNode(STATUS_INDEX.Atk);
+const EVAL_SPD_DURING_COMBAT_NODE = new EvalStatsDuringCombatNode(STATUS_INDEX.Spd);
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_EVAL_DEF_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Def);
+const EVAL_DEF_DURING_COMBAT_NODE = new EvalStatsDuringCombatNode(STATUS_INDEX.Def);
 // noinspection JSUnusedGlobalSymbols
-const IN_COMBAT_EVAL_RES_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Res);
+const EVAL_RES_DURING_COMBAT_NODE = new EvalStatsDuringCombatNode(STATUS_INDEX.Res);
 
 const MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -1140,25 +1148,31 @@ class SetBoolToEachStatusNode extends SkillEffectNode {
     }
 }
 
-class ApplyNumberToEachStatusNode extends FromNumbersNode {
+class ApplyingNumberToEachStatNode extends FromNumbersNode {
     /**
-     * @param {number} atk
-     * @param {number} spd
-     * @param {number} def
-     * @param {number} res
+     * @param {number|NumberNode} atk
+     * @param {number|NumberNode} spd
+     * @param {number|NumberNode} def
+     * @param {number|NumberNode} res
      */
     constructor(atk, spd, def, res) {
-        super(atk, spd, def, res);
+        super(...[atk, spd, def, res].map(v => NumberNode.makeNumberNodeFrom(v)));
     }
 }
 
-class InvalidateOwnDebuffsNode extends SetBoolToEachStatusNode {
+/**
+ * neutralizes penalties to unit's Atk/Spd
+ */
+class NeutralizingPenaltiesToStatsNode extends SetBoolToEachStatusNode {
     evaluate(env) {
         env.targetUnit.battleContext.invalidateOwnDebuffs(...this.getValues());
     }
 }
 
-class InvalidateEnemyBuffsNode extends SetBoolToEachStatusNode {
+/**
+ * neutralizes foe's bonuses to Spd/Def
+ */
+class NeutralizingFoesBonusesToStatsNode extends SetBoolToEachStatusNode {
     evaluate(env) {
         env.targetUnit.battleContext.invalidateBuffs(...this.getValues());
     }
@@ -1170,37 +1184,37 @@ const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends Numbe
     }
 }();
 
-class DealingDamageNode extends ApplyNumericNode {
+class DealingDamageNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.additionalDamage += this.evaluateChildren(env);
     }
 }
 
-class ReducingDamageNode extends ApplyNumericNode {
+class ReducingDamageNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.damageReductionValue += this.evaluateChildren(env);
     }
 }
 
-class ReducingDamageWhenFoesSpecialNode extends ApplyNumericNode {
+class ReducingDamageWhenFoesSpecialNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.damageReductionValueOfSpecialAttack += this.evaluateChildren(env);
     }
 }
 
-class ReducingDamageFromFirstAttackNode extends ApplyNumericNode {
+class ReducingDamageFromFirstAttackNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.damageReductionValueOfFirstAttacks += this.evaluateChildren(env);
     }
 }
 
-class DealingDamagePerAttackNode extends ApplyNumericNode {
+class DealingDamageWhenTriggeringSpecialPerAttackNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat += this.evaluateChildren(env);
     }
 }
 
-class RestoringHpAfterCombatNode extends ApplyNumericNode {
+class RestoringHpAfterCombatNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.healedHpAfterCombat += this.evaluateChildren(env);
     }
@@ -1208,16 +1222,16 @@ class RestoringHpAfterCombatNode extends ApplyNumericNode {
 
 const RESTORE_7_HP_AFTER_COMBAT_NODE = new RestoringHpAfterCombatNode(7);
 
-class AddReductionRatiosOfDamageReductionRatioExceptSpecialNode extends FromNumberNode {
+class ReducingPercentageOfNonSpecialDamageReductionByNPercentDuringCombatNode extends FromNumberNode {
     evaluate(env) {
-        env.targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(this.evaluateChildren(env));
+        env.targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(this.evaluateChildren(env) / 100);
     }
 }
 
-const ADD_REDUCTION_RATIOS_OF_DAMAGE_REDUCTION_RATIO_EXCEPT_SPECIAL_BY_50_PERCENT_NODE
-    = new AddReductionRatiosOfDamageReductionRatioExceptSpecialNode(0.5);
+const REDUCING_PERCENTAGE_OF_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
+    = new ReducingPercentageOfNonSpecialDamageReductionByNPercentDuringCombatNode(50);
 
-const NEUTRALIZE_SPECIAL_COOLDOWN_CHARGE_MINUS = new class extends SkillEffectNode {
+const NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS = new class extends SkillEffectNode {
     evaluate(env) {
         env.targetUnit.battleContext.neutralizesReducesCooldownCount();
     }
@@ -1260,7 +1274,7 @@ class ApplyingSkillEffectsPerAttack extends SkillEffectNode {
     }
 }
 
-class IsGteStatusSumNode extends BoolNode {
+class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
     #unitAdd;
     #foeAdd;
     #ratios;
@@ -1278,21 +1292,21 @@ class IsGteStatusSumNode extends BoolNode {
     }
 
     evaluate(env) {
-        let unitStatuses = env.targetUnit.getStatusesInCombat(env.enemyUnit);
-        let foeStatuses = env.enemyUnit.getStatusesInCombat(env.targetUnit);
-        let diffs = ArrayUtil.sub(unitStatuses, foeStatuses);
+        let unitsStats = env.targetUnit.getStatusesInCombat(env.enemyUnit);
+        let foesStats = env.enemyUnit.getStatusesInCombat(env.targetUnit);
+        let diffs = ArrayUtil.sub(unitsStats, foesStats);
         let total = ArrayUtil.mult(diffs, this.#ratios).reduce((prev, curr) => prev + curr);
         return total + this.#unitAdd - this.#foeAdd >= 0;
     }
 }
 
-class GrantingStatusToUnitFor1Turn extends FromNumbersNode {
+class GrantingStatsNode extends FromNumbersNode {
     evaluate(env) {
         env.targetUnit.applyBuffs(...this.evaluateChildren(env));
     }
 }
 
-class GrantingStatusEffectsToUnitFor1Turn extends FromNumbersNode {
+class GrantingStatusEffectsNode extends FromNumbersNode {
     /**
      * @param {...number} values
      */
@@ -1327,7 +1341,7 @@ class EnumeratingUnitsFromSameTitlesNode extends EnumerationNode {
 }
 
 // ターン開始時
-class GrantingStatusAtStartOfTurnNode extends ApplyNumberToEachStatusNode {
+class GrantingStatsAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     evaluate(env) {
         env.targetUnit.reserveToApplyBuffs(...this.evaluateChildren(env));
     }
