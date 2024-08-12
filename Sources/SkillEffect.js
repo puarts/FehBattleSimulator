@@ -1,5 +1,3 @@
-// TODO: 遅延評価のためのMap作成
-
 /**
  * @template K
  * @template V
@@ -131,6 +129,7 @@ class SkillEffectNode {
         this.addChildren(...children);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     setSkill(skillId, skillName) {
         this._skillId = skillId;
         this._skillName = skillName;
@@ -148,6 +147,7 @@ class SkillEffectNode {
         this._parent = node;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      * @param {SkillEffectNode} node
      */
@@ -162,6 +162,7 @@ class SkillEffectNode {
     addChildren(...children) {
         for (const child of children) {
             this._children.push(child);
+            child.addParent(this);
         }
     }
 
@@ -225,25 +226,25 @@ class FromNumberNode extends SkillEffectNode {
  */
 class FromNumbersNode extends SkillEffectNode {
     /**
-     * @param {...number|NumberNode} numerics
+     * @param {...number|NumberNode} values
      */
-    constructor(...numerics) {
-        super();
-        numerics.forEach(n => {
-                if (typeof n === 'number') {
-                    this.addChildren(new ConstantNumberNode(n));
-                } else {
-                    this.addChildren(n);
-                }
-            }
-        );
+    constructor(...values) {
+        super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
+    }
+
+    /**
+     * @param env
+     * @returns {number[]}
+     */
+    evaluateChildren(env) {
+        return super.evaluateChildren(env);
     }
 
     /**
      * @abstract
      */
     evaluate(env) {
-        super.evaluateChildren(env);
+        return super.evaluateChildren(env);
     }
 }
 
@@ -270,6 +271,9 @@ class FromPositiveNumbersNode extends FromNumbersNode {
 class ConstantNumberNode extends NumberNode {
     #value;
 
+    /**
+     * @param {number} value
+     */
     constructor(value) {
         super();
         this.#value = value;
@@ -318,30 +322,6 @@ class OrNode extends BoolNode {
     }
 }
 
-class BoolToBoolNode extends BoolNode {
-    /**
-     * @param {boolean|BoolNode} value
-     */
-    constructor(value) {
-        if (typeof value === 'boolean') {
-            super(value ? TRUE_NODE : FALSE_NODE);
-        } else {
-            super(value);
-        }
-    }
-
-    /**
-     * @returns {boolean}
-     */
-    evaluateChildren(env) {
-        return super.getChildren()[0].evaluate(env);
-    }
-
-    evaluate(env) {
-        return this.evaluateChildren(env);
-    }
-}
-
 const TRUE_NODE = new class extends BoolNode {
     evaluate(env) {
         return true;
@@ -362,19 +342,7 @@ class NumberOperationNode extends NumberNode {
      * @param {...(number|NumberNode)} values
      */
     constructor(...values) {
-        super();
-        values.forEach(value => {
-                let v = typeof value === 'number' ? new ConstantNumberNode(value) : value;
-                this.addChild(v);
-            }
-        );
-    }
-
-    /**
-     * @abstract
-     * @returns {number}
-     */
-    evaluate(env) {
+        super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
     }
 }
 
@@ -466,34 +434,38 @@ class CompareNode extends BoolNode {
     }
 }
 
-class GTNode extends CompareNode {
+class GtNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
         return left > right;
     }
 }
 
-class GTENode extends CompareNode {
+// noinspection JSUnusedGlobalSymbols
+class GteNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
         return left >= right;
     }
 }
 
-class LTNode extends CompareNode {
+// noinspection JSUnusedGlobalSymbols
+class LtNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
         return left < right;
     }
 }
 
-class LTENode extends CompareNode {
+// noinspection JSUnusedGlobalSymbols
+class LteNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
         return left <= right;
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 class EqNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
@@ -568,6 +540,7 @@ class DamageCalculatorEnv {
      * @param {Unit} enemyUnit
      */
     constructor(damageCalculator, targetUnit, enemyUnit) {
+        // noinspection JSUnusedGlobalSymbols
         this.damageCalculator = damageCalculator;
         this.targetUnit = targetUnit;
         this.enemyUnit = enemyUnit;
@@ -580,6 +553,7 @@ class BattleSimulatorBaseEnv {
      * @param {Unit} targetUnit
      */
     constructor(battleSimulatorBase, targetUnit) {
+        // noinspection JSUnusedGlobalSymbols
         this.battleSimulatorBase = battleSimulatorBase;
         this.targetUnit = targetUnit;
     }
@@ -604,6 +578,7 @@ class ForAlliesEnv {
      * @param {Unit} allyUnit
      */
     constructor(damageCalculator, targetUnit, enemyUnit, allyUnit) {
+        // noinspection JSUnusedGlobalSymbols
         this.damageCalculator = damageCalculator;
         this.targetUnit = targetUnit;
         this.enemyUnit = enemyUnit;
@@ -796,6 +771,7 @@ class AtStartOfTurnEnv {
      * @param {Unit} targetUnit
      */
     constructor(handler, targetUnit) {
+        // noinspection JSUnusedGlobalSymbols
         this.handler = handler;
         this.targetUnit = targetUnit;
     }
@@ -853,39 +829,39 @@ class PercentageCondNode extends BoolNode {
 
 }
 
-class IsHpGTENPercentAtStartOfTurnNode extends PercentageCondNode {
+class IsHpGteNPercentAtStartOfTurnNode extends PercentageCondNode {
     evaluate(env) {
         return env.targetUnit.restHpPercentageAtBeginningOfTurn >= this._percentage;
     }
 }
 
-const IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = new IsHpGTENPercentAtStartOfTurnNode(25);
+const IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = new IsHpGteNPercentAtStartOfTurnNode(25);
 
-class IsHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
+class IsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
         return env.targetUnit.battleContext.restHpPercentage >= this._percentage;
     }
 }
 
-const IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsHpGTENPercentAtStartOfCombatNode(25);
+const IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsHpGteNPercentAtStartOfCombatNode(25);
 
-class IsHpLTENPercentInCombatNode extends PercentageCondNode {
+class IsHpLteNPercentInCombatNode extends PercentageCondNode {
     evaluate(env) {
         // env.targetUnit.battleContext.restHpPercentage ではなくこちらが正しい
         return env.targetUnit.restHpPercentage <= this._percentage;
     }
 }
 
-const IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE = new IsHpLTENPercentInCombatNode(99);
+const IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE = new IsHpLteNPercentInCombatNode(99);
 
-class IsFoesHpGTENPercentAtStartOfCombatNode extends PercentageCondNode {
+class IsFoesHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
         return env.enemyUnit.battleContext.restHpPercentage >= this._percentage;
     }
 }
 
-const IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGTENPercentAtStartOfCombatNode(50);
-const IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGTENPercentAtStartOfCombatNode(75);
+const IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(50);
+const IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(75);
 
 const CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE = new class extends BoolNode {
     evaluate(env) {
@@ -917,6 +893,7 @@ class GrantingBonusToAllNode extends FromPositiveNumberNode {
 const GRANTING_BONUS_TO_ALL_4_NODE = new GrantingBonusToAllNode(4);
 const GRANTING_BONUS_TO_ALL_5_NODE = new GrantingBonusToAllNode(5);
 
+// noinspection JSUnusedGlobalSymbols
 class GrantingBonusToAtk extends FromPositiveNumberNode {
     evaluate(env) {
         env.targetUnit.atkSpur += this.evaluateChildren(env);
@@ -995,8 +972,10 @@ class InPreCombatStatusNode extends NumberNode {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 const IN_PRE_COMBAT_ATK_NODE = new InPreCombatStatusNode(STATUS_INDEX.Atk);
 const IN_PRE_COMBAT_SPD_NODE = new InPreCombatStatusNode(STATUS_INDEX.Spd);
+// noinspection JSUnusedGlobalSymbols
 const IN_PRE_COMBAT_DEF_NODE = new InPreCombatStatusNode(STATUS_INDEX.Def);
 const IN_PRE_COMBAT_RES_NODE = new InPreCombatStatusNode(STATUS_INDEX.Res);
 
@@ -1013,9 +992,12 @@ class InCombatStatusNode extends NumberNode {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_ATK_NODE = new InCombatStatusNode(STATUS_INDEX.Atk);
 const IN_COMBAT_SPD_NODE = new InCombatStatusNode(STATUS_INDEX.Spd);
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_DEF_NODE = new InCombatStatusNode(STATUS_INDEX.Def);
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_RES_NODE = new InCombatStatusNode(STATUS_INDEX.Res);
 
 class InCombatFoesEvalStatusNode extends NumberNode {
@@ -1031,9 +1013,12 @@ class InCombatFoesEvalStatusNode extends NumberNode {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_FOES_EVAL_ATK_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Atk);
 const IN_COMBAT_FOES_EVAL_SPD_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Spd);
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_FOES_EVAL_DEF_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Def);
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_FOES_EVAL_RES_NODE = new InCombatFoesEvalStatusNode(STATUS_INDEX.Res);
 
 class InCombatEvalStatusNode extends NumberNode {
@@ -1049,9 +1034,12 @@ class InCombatEvalStatusNode extends NumberNode {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_EVAL_ATK_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Atk);
 const IN_COMBAT_EVAL_SPD_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Spd);
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_EVAL_DEF_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Def);
+// noinspection JSUnusedGlobalSymbols
 const IN_COMBAT_EVAL_RES_NODE = new InCombatEvalStatusNode(STATUS_INDEX.Res);
 
 const MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
@@ -1152,10 +1140,7 @@ class SetBoolToEachStatusNode extends SkillEffectNode {
     }
 }
 
-class ApplyNumberToEachStatusNode extends SkillEffectNode {
-    /** @type {[number, number, number, number]} */
-    #values;
-
+class ApplyNumberToEachStatusNode extends FromNumbersNode {
     /**
      * @param {number} atk
      * @param {number} spd
@@ -1163,12 +1148,7 @@ class ApplyNumberToEachStatusNode extends SkillEffectNode {
      * @param {number} res
      */
     constructor(atk, spd, def, res) {
-        super();
-        this.#values = [atk, spd, def, res];
-    }
-
-    getValues() {
-        return this.#values;
+        super(atk, spd, def, res);
     }
 }
 
@@ -1181,19 +1161,6 @@ class InvalidateOwnDebuffsNode extends SetBoolToEachStatusNode {
 class InvalidateEnemyBuffsNode extends SetBoolToEachStatusNode {
     evaluate(env) {
         env.targetUnit.battleContext.invalidateBuffs(...this.getValues());
-    }
-}
-
-class ApplyValueNode extends SkillEffectNode {
-    #value;
-
-    constructor(value) {
-        super();
-        this.#value = value;
-    }
-
-    getValue() {
-        return this.#value;
     }
 }
 
@@ -1268,6 +1235,7 @@ const FOE_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = n
     }
 }();
 
+// noinspection JSUnusedGlobalSymbols
 class GrantingOrInflictingAfterStatusFixedNode extends SkillEffectNode {
     evaluate(env) {
         let node = new SkillEffectNode(...this.getChildren());
@@ -1361,11 +1329,11 @@ class EnumeratingUnitsFromSameTitlesNode extends EnumerationNode {
 // ターン開始時
 class GrantingStatusAtStartOfTurnNode extends ApplyNumberToEachStatusNode {
     evaluate(env) {
-        env.targetUnit.reserveToApplyBuffs(...this.getValues());
+        env.targetUnit.reserveToApplyBuffs(...this.evaluateChildren(env));
     }
 }
 
-class GrantingStatusEffectAtStartOfTurnNode extends ApplyValueNode {
+class GrantingStatusEffectAtStartOfTurnNode extends FromNumberNode {
     /**
      * @param {number} value
      */
@@ -1374,7 +1342,7 @@ class GrantingStatusEffectAtStartOfTurnNode extends ApplyValueNode {
     }
 
     evaluate(env) {
-        env.targetUnit.reserveToAddStatusEffect(this.getValue());
+        env.targetUnit.reserveToAddStatusEffect(this.evaluateChildren(env));
     }
 }
 
@@ -1521,4 +1489,3 @@ const FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS = new SkillEffectHooks();
  * ボタンを押したときのスキル効果
  * @type {MultiValueMap<number, SkillEffectNode>} */
 const ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP = new MultiValueMap();
-

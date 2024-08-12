@@ -133,15 +133,6 @@ describe('Test skill effect', () => {
         });
     });
 
-    describe(`Test ${BoolToBoolNode.name}`, () => {
-        test('Test evaluate()', () => {
-            expect(new BoolToBoolNode(true).evaluate(null)).toEqual(true);
-            expect(new BoolToBoolNode(false).evaluate(null)).toEqual(false);
-            expect(new BoolToBoolNode(new OrNode(FALSE_NODE, TRUE_NODE)).evaluate(null)).toEqual(true);
-            expect(new BoolToBoolNode(new OrNode(FALSE_NODE, FALSE_NODE)).evaluate(null)).toEqual(false);
-        });
-    })
-
     describe(`Test ${MultNode.name}`, () => {
         test('Test evaluate()', () => {
             expect(new MultNode(new ConstantNumberNode(61), 0.15, 2).evaluate(null)).toBe(18.3);

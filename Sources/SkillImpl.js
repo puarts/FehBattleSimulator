@@ -108,7 +108,7 @@
             // 戦闘中、速さが敵より1以上高ければ、敵は反撃不可
             new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
                 new ApplyingStatusEffectsAfterStatusFixedNode(
-                    new IfNode(new GTNode(IN_COMBAT_EVAL_SPD_NODE, IN_COMBAT_FOES_EVAL_SPD_NODE),
+                    new IfNode(new GtNode(IN_COMBAT_EVAL_SPD_NODE, IN_COMBAT_FOES_EVAL_SPD_NODE),
                         // 反撃不可
                         FOE_CANNOT_COUNTERATTACK_NODE,
                     ),
