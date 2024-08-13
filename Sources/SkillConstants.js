@@ -2872,6 +2872,7 @@ const PassiveB = {
     BindingNecklace: 1540, // 束縛の首飾り
     BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
+    FallenStar2: 2964, // 落星・承
     SunTwinWing: 1680, // 双姫の陽翼
     SunTwinWingPlus: 2799, // 双姫の陽翼・神
     MoonTwinWing: 1732, // 双姫の月翼

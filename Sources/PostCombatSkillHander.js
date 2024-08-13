@@ -13,6 +13,11 @@ class PostCombatSkillHander {
         this.globalBattleContext = globalBattleContext;
         this._logger = logger;
     }
+
+    get unitManager() {
+        return this._unitManager;
+    }
+
     writeLogLine(log) {
         this._logger.writeLog(log);
     }
@@ -354,6 +359,8 @@ class PostCombatSkillHander {
                     break;
             }
         }
+        let env = new AfterCombatEnv(this, targetUnit, enemyUnit);
+        APPLY_SKILL_EFFECTS_AFTER_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillEffectAfterCombatForUnitFuncMap)?.call(this, targetUnit, enemyUnit);
             switch (skillId) {

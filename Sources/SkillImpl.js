@@ -1,5 +1,43 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 落星・承
+{
+    let skillId = PassiveB.FallenStar2;
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT,
+                    new IsStatusEffectActiveOnUnitNode(StatusEffectType.DeepStar)),
+                new InflictingStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
+                new DealingDamageExcludingAoeSpecialsNode(
+                    new EnsureMaxNode(
+                        new MultNode(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+                        25
+                    ),
+                ),
+                new ReducingDamageFromFoesFirstAttackByNDuringCombatNode(
+                    new EnsureMaxNode(
+                        new MultNode(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 3),
+                        15
+                    ),
+                ),
+            ),
+            new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
+                new ReducingDamageFromFoesFirstAttackByNPercentDuringCombatNode(80),
+            )
+        )
+    );
+    APPLY_SKILL_EFFECTS_AFTER_COMBAT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
+                new GrantingStatusEffectsAfterCombatNode(StatusEffectType.DeepStar),
+                new EnumeratingTargetAndFoesWithin1SpacesNode(
+                    new GrantingStatusEffectsAfterCombatNode(StatusEffectType.Gravity),
+                ),
+            )
+        )
+    );
+}
+
 // ユングヴィの祖・神
 {
     let skillId = PassiveB.YngviAscendantPlus;
@@ -32,7 +70,7 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             GRANTING_ALL_STATS_PLUS_4_DURING_COMBAT_NODE,
-            new DealingDamageNode(
+            new DealingDamageExcludingAoeSpecialsNode(
                 new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25)
             ),
         )
@@ -112,7 +150,7 @@
                         // 自身のHPが99%以下で
                         new IfNode(IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                             // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
-                            new DealingDamageWhenTriggeringSpecialPerAttackNode(10),
+                            new DealingDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
                         ),
                     ),
                 ),
@@ -145,7 +183,7 @@
                     // 自身のHPが99%以下で
                     new IfNode(IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                         // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
-                        new DealingDamageWhenTriggeringSpecialPerAttackNode(10),
+                        new DealingDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
                     ),
                 ),
             )
@@ -167,7 +205,7 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             GRANTING_ALL_STATS_PLUS_4_DURING_COMBAT_NODE,
-            new DealingDamageNode(
+            new DealingDamageExcludingAoeSpecialsNode(
                 new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25)
             ),
         )
@@ -212,7 +250,7 @@
             GRANTING_ALL_STATS_PLUS_5_DURING_COMBAT_NODE,
             new GrantingAllStatsPlusDuringCombatNode(new MultTruncNode(SPD_AT_START_OF_COMBAT_NODE, 0.15)),
             new ApplyingStatusEffectsAfterStatusFixedNode(
-                new DealingDamageNode(
+                new DealingDamageExcludingAoeSpecialsNode(
                     new MultTruncNode(SPD_DURING_COMBAT_NODE, 0.20),
                 ),
             ),
@@ -245,10 +283,10 @@
             new InflictingStatsMinusOnFoeDuringCombatNode(4, 4, 0, 0),
             new ApplyingStatusEffectsAfterStatusFixedNode(
                 new IfNode(new IsGteSumOfStatsDuringCombatExcludingPhantomNode(0, -10, [0, 1, 0, 1]),
-                    new DealingDamageNode(
+                    new DealingDamageExcludingAoeSpecialsNode(
                         new EnsureMinMaxNode(new AddNode(RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
                     ),
-                    new ReducingDamageFromFirstAttackNode(
+                    new ReducingDamageFromFoesFirstAttackByNDuringCombatNode(
                         new EnsureMinMaxNode(new AddNode(RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
                     ),
                     MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
@@ -282,13 +320,13 @@
             new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 new GrantingAllStatsPlusDuringCombatNode(new MultTruncNode(SPD_AT_START_OF_COMBAT_NODE, 0.15)),
                 NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
-                new DealingDamageNode(
+                new DealingDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
                 ),
-                new ReducingDamageNode(
+                new ReducingDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
                 ),
-                new ReducingDamageWhenFoesSpecialNode(
+                new ReducingDamageWhenFoesSpecialExcludingAoeSpecialNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
                 ),
                 RESTORE_7_HP_AFTER_COMBAT_NODE,

@@ -563,10 +563,12 @@ class EnumerationEnv {
     /**
      * @param {UnitManager} unitManager
      * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
      */
-    constructor(unitManager, targetUnit) {
+    constructor(unitManager, targetUnit, enemyUnit) {
         this.unitManager = unitManager;
         this.targetUnit = targetUnit;
+        this.enemyUnit = enemyUnit;
     }
 }
 
@@ -777,6 +779,21 @@ class AtStartOfTurnEnv {
     }
 }
 
+class AfterCombatEnv {
+    /**
+     * @param {PostCombatSkillHander} handler
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     */
+    constructor(handler, targetUnit, enemyUnit) {
+        // noinspection JSUnusedGlobalSymbols
+        this.handler = handler;
+        this.targetUnit = targetUnit;
+        this.enemyUnit = enemyUnit;
+        this.unitManager = handler.unitManager;
+    }
+}
+
 class CalcMoveCountForCantoNode extends NumberNode {
     /**
      * @param {CantoEnv} env
@@ -812,6 +829,22 @@ const IS_COMBAT_INITIATED_BY_UNIT = new class extends BoolNode {
         return env.targetUnit.battleContext.initiatesCombat;
     }
 }();
+
+/**
+ * 【StatusEffect】is active on unit
+ */
+class IsStatusEffectActiveOnUnitNode extends BoolNode {
+    /**
+     * @param {number|NumberNode} value
+     */
+    constructor(value) {
+        super(NumberNode.makeNumberNodeFrom(value));
+    }
+
+    evaluate(env) {
+        return env.targetUnit.hasStatusEffect(this.evaluateChildren(env)[0]);
+    }
+}
 
 const HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new class extends BoolNode {
     evaluate(env) {
@@ -1074,6 +1107,38 @@ const NULL_FOE_FOLLOW_UP_NODE = new class extends SkillEffectNode {
     }
 }();
 
+// noinspection JSUnusedGlobalSymbols
+/**
+ * neutralizes effects that guarantee foe's follow-up attacks during combat.
+ */
+const NEUTRALIZING_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        // 敵の絶対追撃を無効
+        env.targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+    }
+}
+
+// noinspection JSUnusedGlobalSymbols
+/**
+ * neutralizes effects that prevent unit's follow-up attacks during combat.
+ */
+const NEUTRALIZING_EFFECTS_THAT_PREVENT_UNITS_FOLLOW_UP_ATTACKS_DURING_COMBAT = new class extends SkillEffectNode {
+    evaluate(env) {
+        // 自身の追撃不可を無効
+        env.targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+    }
+}
+
+/**
+ * unit can make a follow-up attack before foe's next attack.
+ */
+const UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        // 攻め立て
+        env.targetUnit.battleContext.isDesperationActivatable = true;
+    }
+}
+
 const UNIT_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         env.targetUnit.battleContext.nullCounterDisrupt = true;
@@ -1178,37 +1243,69 @@ class NeutralizingFoesBonusesToStatsNode extends SetBoolToEachStatusNode {
     }
 }
 
+/**
+ * number of【Bonus】effects active on unit, excluding stat bonuses + number of【Penalty】effects active on foe, excluding stat penalties
+ */
+const NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
+    evaluate(env) {
+        return env.targetUnit.getPositiveStatusEffects().length + env.targetUnit.getNegativeStatusEffects().length;
+    }
+}();
+
 const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
     evaluate(env) {
         return env.targetUnit.getPositiveStatusEffects().length + env.enemyUnit.getPositiveStatusEffects().length;
     }
 }();
 
+// noinspection JSUnusedGlobalSymbols
 class DealingDamageNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.additionalDamage += this.evaluateChildren(env);
     }
 }
 
-class ReducingDamageNode extends ApplyingNumberNode {
+/**
+ * TODO: 範囲奥義を除く値を管理する変数をbattleContextに追加する。
+ */
+class DealingDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.additionalDamage += this.evaluateChildren(env);
+    }
+}
+
+class ReducingDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.damageReductionValue += this.evaluateChildren(env);
     }
 }
 
-class ReducingDamageWhenFoesSpecialNode extends ApplyingNumberNode {
+/**
+ * reduces damage from foe's first attack by X% during combat
+ * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)
+ */
+class ReducingDamageFromFoesFirstAttackByNPercentDuringCombatNode extends ApplyingNumberNode {
     evaluate(env) {
-        env.targetUnit.battleContext.damageReductionValueOfSpecialAttack += this.evaluateChildren(env);
+        env.targetUnit.battleContext.addDamageReductionRatioOfFirstAttacks(this.evaluateChildren(env) / 100);
     }
 }
 
-class ReducingDamageFromFirstAttackNode extends ApplyingNumberNode {
+/**
+ * reduces damage from foe's first attack by X during combat
+ */
+class ReducingDamageFromFoesFirstAttackByNDuringCombatNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.damageReductionValueOfFirstAttacks += this.evaluateChildren(env);
     }
 }
 
-class DealingDamageWhenTriggeringSpecialPerAttackNode extends ApplyingNumberNode {
+class ReducingDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumberNode {
+    evaluate(env) {
+        env.targetUnit.battleContext.damageReductionValueOfSpecialAttack += this.evaluateChildren(env);
+    }
+}
+
+class DealingDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends ApplyingNumberNode {
     evaluate(env) {
         env.targetUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat += this.evaluateChildren(env);
     }
@@ -1329,6 +1426,43 @@ const NEUTRALIZING_ANY_PENALTY_ON_UNIT_NODE = new class extends SkillEffectNode 
 class EnumerationNode extends SkillEffectNode {
 }
 
+class EnumeratingTargetAndFoesWithinNSpacesNode extends EnumerationNode {
+    /**
+     * @param {number|NumberNode} distance
+     * @param {...SkillEffectNode} children
+     */
+    constructor(distance, ...children) {
+        super(...children);
+        this._distance = NumberNode.makeNumberNodeFrom(distance);
+    }
+
+    /**
+     * @param {EnumerationEnv} env
+     */
+    evaluate(env) {
+        let distance = this._distance.evaluate(env);
+        let targetUnits = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(env.enemyUnit, distance);
+        for (let targetUnit of targetUnits) {
+            // targetが直接の戦闘相手じゃない場合はenemyUnitにnullを設定する
+            let enemyUnit = targetUnit === env.enemyUnit ? env.targetUnit : null;
+            this.evaluateChildren(new EnumerationEnv(env.unitManager, targetUnit, enemyUnit));
+        }
+    }
+}
+
+class EnumeratingTargetAndFoesWithin1SpacesNode extends EnumeratingTargetAndFoesWithinNSpacesNode {
+    constructor(...children) {
+        super(1, ...children);
+    }
+}
+
+// noinspection JSUnusedGlobalSymbols
+class EnumeratingTargetAndFoesWithin2SpacesNode extends EnumeratingTargetAndFoesWithinNSpacesNode {
+    constructor(...children) {
+        super(2, ...children);
+    }
+}
+
 class EnumeratingUnitsFromSameTitlesNode extends EnumerationNode {
     /**
      * @param {EnumerationEnv} env
@@ -1337,6 +1471,26 @@ class EnumeratingUnitsFromSameTitlesNode extends EnumerationNode {
         for (let unit of env.unitManager.enumerateAlliesThatHaveSameOrigin(env.targetUnit)) {
             this.evaluateChildren(new EnumerationEnv(env.unitManager, unit));
         }
+    }
+}
+
+class ApplyingPotentSkillEffectNode extends FromNumbersNode {
+    /**
+     * @param {number|NumberNode} ratio
+     * @param {number|NumberNode} spdDiff
+     */
+    constructor(ratio = 0.4, spdDiff = -25) {
+        super(NumberNode.makeNumberNodeFrom(ratio), NumberNode.makeNumberNodeFrom(spdDiff));
+    }
+
+    /**
+     * @param {DamageCalculatorWrapperEnv} env
+     */
+    evaluate(env) {
+        // 追撃の速さ条件を25した状態で追撃の速さ条件を満たしている時（絶対追撃、追撃不可は含まない）、
+        // 戦闘中、【神速追撃：ダメージ●%】を発動（〇は、自分が2回攻撃でない、かつ追撃ができない時は80、それ以外は40）
+        let [ratio, spdDiff] = this.evaluateChildren(env);
+        return env.damageCalculator.__applyPotent(env.targetUnit, env.enemyUnit, ratio, spdDiff);
     }
 }
 
@@ -1371,6 +1525,9 @@ class GrantingStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
     evaluate(env) {
         this.evaluateChildren(env).forEach(e => env.targetUnit.reserveToAddStatusEffect(e));
     }
+}
+
+class GrantingStatusEffectsAfterCombatNode extends GrantingStatusEffectsAtStartOfTurnNode {
 }
 
 class CanInflictCantoControlWithinNSpacesNode extends BoolNode {
@@ -1503,3 +1660,13 @@ const FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS = new SkillEffectHooks();
  * ボタンを押したときのスキル効果
  * @type {MultiValueMap<number, SkillEffectNode>} */
 const ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP = new MultiValueMap();
+
+/**
+ * ボタンを押したときのスキル効果
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const APPLYING_POTENT_SKILL_EFFECTS_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘後
+ * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
+const APPLY_SKILL_EFFECTS_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
