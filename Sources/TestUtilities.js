@@ -163,6 +163,7 @@ function test_calcDamageWithUnits(atkUnit, defUnit, additionalUnits, isLogEnable
 
 function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
     let calclator = new test_DamageCalculator();
+    g_appData = calclator.unitManager;
     calclator.isLogEnabled = isLogEnabled;
     return calclator.calcDamage(atkUnit, defUnit);
 }

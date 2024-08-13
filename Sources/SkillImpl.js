@@ -1,5 +1,393 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 射的の弓+
+{
+    let skillId = Weapon.StallGameBowPlus
+    // 飛行特効
+    // ターン開始時、自身のHPが25%以上なら、自分の攻撃+6、「自分から攻撃時、絶対追撃」を付与(1ターン)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
+        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            new GrantingStatsAtStartOfTurnNode(6, 0, 0, 0),
+            new GrantingStatusEffectsAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
+        )
+    );
+    // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            GRANTING_ALL_STATS_PLUS_4_DURING_COMBAT_NODE,
+            new DealingDamageNode(
+                new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25)
+            ),
+        )
+    )
+}
+
+// 双界ネフェニーの双界スキル
+{
+    // TODO: indexを直接書かないで良いように依存関係を修正する
+    ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.addValue(1157,
+        new SkillEffectNode(
+            new EnumeratingUnitsFromSameTitlesNode(
+                new GrantingStatsNode(6, 6, 0, 0),
+                new GrantingStatusEffectsNode(
+                    StatusEffectType.ResonantBlades,
+                    StatusEffectType.MobilityIncreased,
+                ),
+                NEUTRALIZING_ANY_PENALTY_ON_UNIT_NODE,
+            )
+        )
+    )
+}
+
+// 攻撃速さの制空
+{
+    let skillId = PassiveA.AtkSpdMastery;
+    // 現在のターン中に自分が戦闘を行っている時、【再移動(2)】を発動可能
+    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () =>
+        HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+    );
+    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(2));
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // 戦闘開始時、敵のHPが50%以上の時、戦闘中、
+            new IfNode(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
+                // 自分の攻撃、速さ+7、かつ
+                GRANTING_ATK_SPD_PLUS_7_DURING_COMBAT_NODE,
+                // 自身の周囲2マス以内に以下のいずれかのマスがある時、戦闘中、さらに、
+                new IfNode(IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
+                    // 自分の攻撃、速さ+4(・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)
+                    GRANTING_ATK_SPD_PLUS_4_DURING_COMBAT_NODE
+                )
+            )
+        )
+    );
+}
+
+// 人見知りの縁の祭器
+{
+    let skillId = Weapon.FlutteringFan;
+    // 奥義が発動しやすい(発動カウント-1)
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // 自身を中心とした縦3列と横3列に味方がいる時、戦闘中、
+            new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+                // 自身の攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列にいる敵の数×3+5だけ増加
+                // (最大14、自身の周囲2マス以内に以下のいずれかのマスがある時は14として扱う・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)、
+                new GrantingAllStatsPlusDuringCombatNode(
+                    new TernaryConditionalNumberNode(
+                        IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
+                        14,
+                        new EnsureMaxNode(
+                            new AddNode(new MultNode(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                            14,
+                        ),
+                    ),
+                ),
+                // 敵の速さ、魔防の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)、
+                new NeutralizingFoesBonusesToStatsDuringCombatNode(false, true, false, true),
+                // かつ自分が攻撃時に発動する奥義を装備している時、戦闘中、
+                new IfNode(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                    // 自分の最初の攻撃前に奥義発動カウント-1、
+                    GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
+                    // 自分の最初の追撃前に奥義発動カウント-1、かつ
+                    GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE,
+                    new ApplyingSkillEffectsPerAttack(
+                        // 自身のHPが99%以下で
+                        new IfNode(IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
+                            // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
+                            new DealingDamageWhenTriggeringSpecialPerAttackNode(10),
+                        ),
+                    ),
+                ),
+            )
+        )
+    );
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // 自身を中心とした縦3列と横3列に味方がいる時、
+            // 戦闘中、速さが敵より1以上高ければ、敵は反撃不可
+            new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+                new ApplyingStatusEffectsAfterStatusFixedNode(
+                    new IfNode(new GtNode(EVAL_SPD_DURING_COMBAT_NODE, FOES_EVAL_SPD_DURING_COMBAT_NODE),
+                        FOE_CANNOT_COUNTERATTACK_NODE,
+                    ),
+                ),
+            ),
+        )
+    );
+    FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>
+        // 自身を中心とした縦3列と横3列の味方は、
+        new IfNode(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            // 攻撃時に発動する奥義を装備している時、戦闘中、
+            new IfNode(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                // 奥義発動カウント変動量-を無効、
+                NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                // 自分の最初の攻撃前に奥義発動カウント-1、
+                GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
+                new ApplyingSkillEffectsPerAttack(
+                    // 自身のHPが99%以下で
+                    new IfNode(IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
+                        // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
+                        new DealingDamageWhenTriggeringSpecialPerAttackNode(10),
+                    ),
+                ),
+            )
+        )
+    );
+}
+
+// 夏野菜の桶+
+{
+    let skillId = Weapon.JuicyBucketfulPlus;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
+        // ターン開始時、自身のHPが25%以上なら、自分の攻撃+6、「自分から攻撃時、絶対追撃」を付与(1ターン)
+        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            new GrantingStatsAtStartOfTurnNode(6, 0, 0, 0),
+            new GrantingStatusEffectAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
+        )
+    );
+    // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            GRANTING_ALL_STATS_PLUS_4_DURING_COMBAT_NODE,
+            new DealingDamageNode(
+                new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25)
+            ),
+        )
+    );
+}
+
+// 再移動制限・不惑
+{
+    let skillId = PassiveC.FirmCantoCurb;
+    CAN_INFLICT_CANTO_CONTROL_HOOKS.addSkill(skillId, () =>
+        CAN_INFLICT_CANTO_CONTROL_WITHIN_4_SPACES_NODE,
+    );
+    CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>
+        CAN_NEUTRALIZE_END_ACTION_WITHIN_3_SPACES_NODE
+    );
+    CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.addSkill(skillId, () =>
+        CAN_NEUTRAL_AFTER_START_OF_TURN_SKILLS_TRIGGER_ACTION_ENDS_IMMEDIATELY_WITHIN_3_SPACES_NODE,
+    );
+    CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.addSkill(skillId, () =>
+        CAN_NEUTRALIZE_END_ACTION_WITHIN_3_SPACES_NODE
+    );
+}
+
+// 清風明月の夏祭の槍
+{
+    let skillId = Weapon.BreezySpear;
+    BEFORE_PRECOMBAT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // 範囲奥義無効
+            UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+            FOE_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+            // 防御地形無効
+            UNIT_DISABLES_DEFENSIVE_TERRAIN_EFFECTS,
+            FOE_DISABLES_DEFENSIVE_TERRAIN_EFFECTS,
+            // 支援無効
+            UNIT_DISABLES_SUPPORT_EFFECTS,
+            FOE_DISABLES_SUPPORT_EFFECTS,
+        ),
+    );
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            GRANTING_ALL_STATS_PLUS_5_DURING_COMBAT_NODE,
+            new GrantingAllStatsPlusDuringCombatNode(new MultTruncNode(SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+            new ApplyingStatusEffectsAfterStatusFixedNode(
+                new DealingDamageNode(
+                    new MultTruncNode(SPD_DURING_COMBAT_NODE, 0.20),
+                ),
+            ),
+            // 奥義無効
+            UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+            FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+            UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+            FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+            // 見切り追撃
+            NULL_FOLLOW_UP_NODE,
+            NULL_FOE_FOLLOW_UP_NODE,
+            // 攻撃順序入れ替えスキル無効
+            UNIT_CAN_DISABLE_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+            FOE_CAN_DISABLE_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+            // 暗闘
+            UNIT_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+            FOE_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+            // 反撃不可無効
+            UNIT_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE,
+            FOE_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE,
+        )
+    );
+}
+
+// 天馬裂空
+{
+    let skillId = PassiveB.PegasusRift;
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new InflictingStatsMinusOnFoeDuringCombatNode(4, 4, 0, 0),
+            new ApplyingStatusEffectsAfterStatusFixedNode(
+                new IfNode(new IsGteSumOfStatsDuringCombatExcludingPhantomNode(0, -10, [0, 1, 0, 1]),
+                    new DealingDamageNode(
+                        new EnsureMinMaxNode(new AddNode(RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
+                    ),
+                    new ReducingDamageFromFirstAttackNode(
+                        new EnsureMinMaxNode(new AddNode(RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
+                    ),
+                    MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+                    FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
+                    new IncreasingSpdDiffNecessaryForFoesFollowUpNode(20),
+                ),
+            ),
+        ),
+    );
+}
+
+// 意気軒昂の夏祭の斧
+{
+    let skillId = Weapon.SummertimeAxe;
+    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => CANTO_REM_PLUS_ONE_NODE);
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new GrantingStatsAtStartOfTurnNode(0, 6, 6, 6),
+                new GrantingStatusEffectsAtStartOfTurnNode(
+                    StatusEffectType.ShieldFlying,
+                    StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent
+                ),
+            )
+        )
+    );
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new GrantingAllStatsPlusDuringCombatNode(new MultTruncNode(SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+                NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                new DealingDamageNode(
+                    new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
+                ),
+                new ReducingDamageNode(
+                    new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
+                ),
+                new ReducingDamageWhenFoesSpecialNode(
+                    new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
+                ),
+                RESTORE_7_HP_AFTER_COMBAT_NODE,
+            )
+        )
+    );
+}
+
+// 虎の剛斧
+{
+    let skillId = Weapon.TigerRoarAxe;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.initiatesCombat ||
+                this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                targetUnit.addAllSpur(5);
+                if (enemyUnit.battleContext.restHpPercentage === 100) {
+                    targetUnit.battleContext.followupAttackPriorityIncrement++;
+                }
+            }
+        }
+    );
+}
+
+// アッサルの槍
+{
+    let skillId = Weapon.SpearOfAssal;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
+                targetUnit.addAtkSpdSpurs(4);
+                targetUnit.battleContext.invalidatesAtkBuff = true;
+                targetUnit.battleContext.invalidatesSpdBuff = true;
+            }
+        }
+    );
+    updateUnitSpurFromAlliesFuncMap.set(skillId,
+        function (targetUnit, allyUnit, calcPotentialDamage, enemyUnit) {
+            // 周囲2マス以内
+            if (targetUnit.distance(allyUnit) <= 2) {
+                targetUnit.addAtkSpdSpurs(4);
+            }
+        }
+    );
+}
+
+// 盛夏の神宝
+{
+    let skillId = Weapon.SunsPercussors;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat() ||
+                enemyUnit.battleContext.restHpPercentage === 100) {
+                targetUnit.addAtkSpdSpurs(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+    );
+}
+
+// フェイルノート
+{
+    let skillId = Weapon.Failnaught;
+    applySkillEffectForUnitFuncMap.set(skillId,
+        function (targetUnit, enemyUnit, calcPotentialDamage) {
+            if (targetUnit.battleContext.restHpPercentage >= 25) {
+                targetUnit.addAllSpur(5);
+                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+            }
+        }
+    );
+}
+
+// 聖弓イチイバル
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.HolyYewfelle);
+
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                GRANTING_ATK_SPD_PLUS_5_DURING_COMBAT_NODE,
+                new GrantingAtkSpdPlusDuringCombatNode(new MultTruncNode(SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+                new NeutralizingFoesBonusesToStatsNode(false, true, true, false),
+                REDUCING_PERCENTAGE_OF_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            )
+        )
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.HolyYewfelle);
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+                GRANTING_ATK_SPD_PLUS_6_DURING_COMBAT_NODE,
+                new NeutralizingPenaltiesToStatsNode(true, true, false, false),
+                NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                UNIT_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+            )
+        )
+    );
+}
+{
+    let skillId = getNormalSkillId(Weapon.HolyYewfelle);
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+                GRANTING_ATK_SPD_PLUS_6_DURING_COMBAT_NODE,
+                new NeutralizingPenaltiesToStatsNode(true, true, false, false),
+                NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            )
+        )
+    );
+}
+
 // 神獣の肉体
 {
     let skillId = PassiveB.DivineStrength;
@@ -11,8 +399,8 @@
     let func = function (skillOwner) {
         // 自軍ターン、および、敵軍ターンの開始時スキル発動後、
         // 自分の【不利な状態異常】を解除
-        skillOwner.reservedDebuffsToDelete = [true, true, true, true];
-        skillOwner.reserveToClearNegativeStatusEffects();
+        skillOwner.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+        skillOwner.reserveToNeutralizeNegativeStatusEffects();
         // （同タイミングで付与される【不利な状態異常】は解除されない）
     };
 
@@ -185,8 +573,8 @@
         // 自軍ターン開始時、および、敵軍ターン開始時、
         // 自分に、このとき付与される
         // 守備、魔防の弱化、
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[2] |= true;
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[2] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[3] |= true;
         // 【パニック】を無効化
         skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
     };
@@ -355,7 +743,7 @@
                 );
             }
             // 戦闘中、敵の攻撃、速さ、守備-5
-            enemyUnit.addSpursWithoutRes(5);
+            enemyUnit.addSpursWithoutRes(-5);
             // 戦闘中、
             // ダメージ＋敵の守備の25%（範囲奥義を除く）、
             targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Def, 0.25);
@@ -2238,7 +2626,7 @@
                 this.writeDebugLog(`${unit.nameWithGroup}の弱化を強化に反転`);
                 let buffs = unit.getDebuffs().map(i => Math.abs(i));
                 unit.reserveToApplyBuffs(...buffs);
-                unit.reservedDebuffsToDelete = [true, true, true, true];
+                unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
                 // さらに、【不利な状態異常】を2個解除（同タイミングで付与される【不利な状態異常】は解除されない。
                 // 解除される【不利な状態異常】は、受けている効果の一覧で、上に記載される状態を優先）
                 let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
@@ -2246,11 +2634,11 @@
                 this.writeDebugLog(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
                 if (effects.length >= 1) {
                     this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[0])}を解除予約(1)`);
-                    unit.reservedStatusEffectSetToDelete.add(effects[0]);
+                    unit.reservedStatusEffectSetToNeutralize.add(effects[0]);
                 }
                 if (effects.length >= 2) {
                     this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[1])}を解除予約(2)`);
-                    unit.reservedStatusEffectSetToDelete.add(effects[1]);
+                    unit.reservedStatusEffectSetToNeutralize.add(effects[1]);
                 }
             }
         }
@@ -2848,13 +3236,12 @@
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 // 攻撃した側（自分からなら自分、敵からなら敵）の移動後のマスが移動前と異なる時、
                 let distance = Unit.calcAttackerMoveDistance(targetUnit, enemyUnit);
-                let amount = 0;
+                // （〇は、攻撃した側の
+                // 移動前と移動後のマスの距離（最大4））
+                let amount = MathUtil.ensureMax(distance, 4);
                 if (distance > 0) {
                     // 戦闘中、攻撃、速さ＋6、さらに、
                     spurFunc(targetUnit, 6);
-                    // （〇は、攻撃した側の
-                    // 移動前と移動後のマスの距離（最大4））
-                    amount = MathUtil.ensureMax(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 4);
                     // 攻撃、速さ＋〇、
                     spurFunc(targetUnit, amount);
                     // かつ自分から攻撃していれば、
@@ -3081,8 +3468,8 @@
                 // 自分に【回避】を付与、
                 skillOwner.reserveToAddStatusEffect(StatusEffectType.Dodge);
                 // 自分の【不利な状態異常】を解除
-                skillOwner.reservedDebuffsToDelete = [true, true, true, true];
-                skillOwner.reserveToClearNegativeStatusEffects();
+                skillOwner.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                skillOwner.reserveToNeutralizeNegativeStatusEffects();
                 // （同ターン開始時に受けた不利な状態異常は解除されない）
             }
         }
@@ -3916,8 +4303,8 @@
         // 自軍ターン開始時、および、敵軍ターン開始時、
         // 自分に、このとき付与される
         // 攻撃、速さの弱化、
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0] |= true;
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[1] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[0] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[1] |= true;
         // 【パニック】を無効化
         skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
     };
@@ -4051,8 +4438,8 @@
         // 自軍ターン開始時、および、敵軍ターン開始時、
         // 自分に、このとき付与される
         // 攻撃、魔防の弱化、
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[0] |= true;
-        skillOwner.battleContext.neutralizedDebuffsWhileBeginningOfTurn[3] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[0] |= true;
+        skillOwner.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn[3] |= true;
         // 【パニック】を無効化
         skillOwner.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(StatusEffectType.Panic);
     };
@@ -4212,8 +4599,8 @@
             // 自分を中心とした縦3列と横3列にいる強化を除いた【有利な状態】の数が3以上の敵の【有利な状態】を解除(同じタイミングで付与される【有利な状態】は解除されない)
             if (enemy.isInCrossWithOffset(skillOwner, 1)) {
                 if (enemy.getPositiveStatusEffects().length >= 3) {
-                    enemy.reservedBuffsToDelete = [true, true, true, true];
-                    enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
+                    enemy.reservedBuffFlagsToNeutralize = [true, true, true, true];
+                    enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToNeutralize.add(e));
                     let skillName = DebugUtil.getSkillName(skillOwner, skillOwner.passiveBInfo);
                     let statuses = enemy.getPositiveStatusEffects().map(e => getStatusEffectName(e)).join(", ");
                     this.writeDebugLog(`${skillName}により${enemy.nameWithGroup}の${statuses}を解除`);
@@ -6222,8 +6609,8 @@
                     if (this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
                         let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true);
                         for (let unit of units) {
-                            unit.reservedDebuffsToDelete = [true, true, true, true];
-                            unit.reserveToClearNegativeStatusEffects();
+                            unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                            unit.reserveToNeutralizeNegativeStatusEffects();
                             unit.reserveHeal(10);
                         }
                     }
@@ -9232,8 +9619,8 @@
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                unit.reservedDebuffsToDelete = [true, true, true, true];
-                unit.reserveToClearNegativeStatusEffects();
+                unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+                unit.reserveToNeutralizeNegativeStatusEffects();
             }
         }
     );
@@ -9669,7 +10056,7 @@
             for (let unit of units) {
                 if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + distance * 3 - 5) {
                     if (!unit.hasStatusEffect(StatusEffectType.TimesGrip)) {
-                        unit.endAction();
+                        unit.endActionBySkillEffect();
                         unit.reserveToAddStatusEffect(StatusEffectType.TimesGrip);
                     }
                 }
@@ -10271,6 +10658,7 @@
     };
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdPrime4, generatePrimeFunc((u, n) => u.addAtkSpdSpurs(n)));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkDefPrime4, generatePrimeFunc((u, n) => u.addAtkDefSpurs(n)));
+    applySkillEffectForUnitFuncMap.set(PassiveA.SpdDefPrime4, generatePrimeFunc((u, n) => u.addSpdDefSpurs(n)));
 }
 
 // 重装の大炎
@@ -10385,14 +10773,12 @@
                 );
                 if (targetUnit.battleContext.initiatesCombat) {
                     let dist = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
-                    let found = false;
-                    for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2)) {
-                        if (tile.hasDivineVein() ||
-                            (tile.isPassableAnyMoveType() && tile.isCountedAsDifficultTerrain())) {
-                            found = true;
-                            break;
-                        }
-                    }
+                    let pred = tile => {
+                        return tile.hasDivineVein() ||
+                            (tile.isPassableAnyMoveType() && tile.isCountedAsDifficultTerrain());
+                    };
+                    let tiles = this.map.enumerateTilesWithinSpecifiedDistance(targetUnit.placedTile, 2);
+                    let found = GeneratorUtil.some(tiles, pred);
                     if (found) {
                         dist = 3;
                     }
@@ -11640,8 +12026,8 @@
         }
     );
     canActivateObstructToTilesIn2SpacesFuncMap.set(skillId,
-        function (unit, moveUnit) {
-            return unit.isWeaponSpecialRefined && moveUnit.isRangedWeaponType();
+        function (moveUnit) {
+            return this.isWeaponSpecialRefined && moveUnit.isRangedWeaponType();
         }
     );
 }

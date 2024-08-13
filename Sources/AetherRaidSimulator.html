@@ -1935,7 +1935,7 @@
                                     <span v-for="statusEffect in value.getNegativeStatusEffects()">
                                         <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px;background-color: #FFCCCC" v-bind:title="getStatusEffectName(statusEffect)" v-bind:alt="getStatusEffectName(statusEffect)" />
                                     </span>
-                                    <span v-bind:style="g_app.vm.debugMenuStyle">{{ value.statusEffects.map(e => getStatusEffectName(e)) }}</span>
+                                    <span v-bind:style="g_app.vm.debugMenuStyle">{{ value.getStatusEffects().map(e => getStatusEffectName(e)) }}</span>
                                 </div>
                             </td>
                         </tr>
@@ -2567,6 +2567,7 @@
                     "Logger.js",
                     "SkillConstants.js",
                     "Skill.js",
+                    "SkillEffect.js",
                     "SkillImpl.js",
                     "BattleMapElement.js",
                     "Tile.js",

@@ -6,6 +6,7 @@ SOURCE_FILE_NAMES=(
     Logger
     SkillConstants
     Skill
+    SkillEffect
     SkillImpl
     BattleMapElement
     Tile
@@ -38,6 +39,7 @@ TEST_FILE_NAMES=(
     DamageCalculator
     UnitManager
     BeginningOfTurnSkillHandler
+    SkillEffect
     )
 
 TARGET_FILE=All.test.js

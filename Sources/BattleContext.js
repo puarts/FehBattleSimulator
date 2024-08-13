@@ -233,6 +233,9 @@ class BattleContext {
         // 攻撃ごとに変化する可能性がある追加ダメージ
         this.additionalDamagePerAttack = 0;
 
+        // 戦闘中攻撃ごとに変化する可能性がある奥義発動時の追加ダメージ
+        this.additionalDamageOfSpecialPerAttackInCombat = 0;
+
         // 固定ダメージ軽減
         this.damageReductionValue = 0;
 
@@ -419,7 +422,7 @@ class BattleContext {
         this.neutralizedStatusEffectSetWhileBeginningOfTurn = new Set();
 
         // ターン開始時付与に無効化されるステータス
-        this.neutralizedDebuffsWhileBeginningOfTurn = [false, false, false, false];
+        this.neutralizedDebuffFlagsWhileBeginningOfTurn = [false, false, false, false];
 
         // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
         this.damageAfterBeginningOfCombat = 0;
@@ -441,6 +444,10 @@ class BattleContext {
         // 瞬殺
         this.isBaneSpecial = false;
 
+        // 自分の戦闘順序入れ替えスキル(待ち伏せ、攻め立てなど)を無効
+        this.canUnitDisableSkillsThatChangeAttackPriority = false;
+
+        //
         // フック関数
         // 固定ダメージ
         this.calcFixedAddDamageFuncs = [];
@@ -458,8 +465,12 @@ class BattleContext {
         this.addReducedDamageForNextAttackFuncs = [];
         // ステータス決定後の戦闘中バフ
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
+        /** @type {SkillEffectNode[]} */
+        this.applySpurForUnitAfterCombatStatusFixedNodes = [];
         // ステータス決定後のスキル効果
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs = [];
+        /** @type {SkillEffectNode[]} */
+        this.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes = [];
         // 2回攻撃
         this.setAttackCountFuncs = [];
         // 戦闘後
@@ -474,10 +485,16 @@ class BattleContext {
         this.applySkillEffectFromEnemyAlliesFuncs = [];
         // 攻撃を行った時、戦闘後
         this.applyAttackSkillEffectAfterCombatFuncs = [];
+
+        // 攻撃ごとのスキル効果
+        /** @type {SkillEffectNode[]} */
+        this.applySkillEffectPerAttackNodes = [];
     }
 
     initContextPerAttack() {
         this.additionalDamagePerAttack = 0;
+        this.additionalDamageOfSpecialPerAttackInCombat = 0;
+        this.additionalDamageOfSpecialPerAttack = 0;
         this.healedHpByAttackPerAttack = 0;
         this.preventedDefenderSpecialPerAttack = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
@@ -569,6 +586,13 @@ class BattleContext {
             this.invalidatesDefBuff,
             this.invalidatesResBuff,
         ];
+    }
+
+    invalidateOwnDebuffs(atk, spd, def, res) {
+        this.invalidatesOwnAtkDebuff |= atk;
+        this.invalidatesOwnSpdDebuff |= spd;
+        this.invalidatesOwnDefDebuff |= def;
+        this.invalidatesOwnResDebuff |= res;
     }
 
     invalidateAllOwnDebuffs() {

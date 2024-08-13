@@ -1190,7 +1190,8 @@ class DamageCalculator {
             normalDamage += atkUnit.battleContext.additionalDamagePerAttack;
             specialDamage +=
                 atkUnit.battleContext.additionalDamagePerAttack +
-                atkUnit.battleContext.getSpecialAddDamagePerAttack();
+                atkUnit.battleContext.getSpecialAddDamagePerAttack() +
+                atkUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
             if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
                 atkUnit.battleContext.isSpecialActivated = true;
                 atkUnit.battleContext.specialActivatedCount++;
@@ -1680,6 +1681,8 @@ class DamageCalculator {
      * @param {DamageCalcContext} context
      */
     __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
+        let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit);
+        targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectsPerAttackFuncMap);
             func?.call(this, targetUnit, enemyUnit, canActivateAttackerSpecial, context);

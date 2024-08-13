@@ -1788,13 +1788,13 @@ stealBonusEffects(enemies, targetUnits, logger);
 
 ステータス解除予約
 // バフ解除予約
-enemy.reservedBuffsToDelete = [true, true, true, true];
+enemy.reservedBuffFlagsToNeutralize = [true, true, true, true];
 // デバフ解除予約
-enemy.reservedDebuffsToDelete = [true, true, true, true];
+enemy.reservedDebuffFlagsToNeutralize = [true, true, true, true];
 // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
-enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToDelete.add(e));
+enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToNeutralize.add(e));
 // ステータスを一つ解除
-unit.reservedStatusEffectSetToDelete.add(e);
+unit.reservedStatusEffectSetToNeutralize.add(e);
 
 [ターン開始時スキル無効]
 このとき付与される【不利な状態異常】を無効化

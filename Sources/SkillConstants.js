@@ -1888,6 +1888,15 @@ const Weapon = {
     // Ｗ神階英雄「ヘイズルーン＆エイクスルニル」
     NectarHorn: 2957, // 蜜の癒し手の角
     QuietingAntler: 2923, // 体の葬り手の角
+
+    // 超英雄「人見知り王女の試練」
+    // https://www.youtube.com/watch?v=SbOjgSWJ6SY&t=28s&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=7DA9CGAHF-c&t=31s&ab_channel=NintendoMobile
+    SummertimeAxe: 2966, // 意気軒昂の夏祭の斧
+    BreezySpear: 2969, // 清風明月の夏祭の槍
+    JuicyBucketfulPlus: 2971, // 夏野菜の桶+
+    FlutteringFan: 2972, // 人見知りの縁の祭器
+    StallGameBowPlus: 2974, // 射的の弓+
 };
 
 const Support = {
@@ -2374,6 +2383,8 @@ const PassiveA = {
     EarthfireBoost3: 2768, // 生命の業火大地3
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
+    AtkSpdMastery: 2973, // 攻撃速さの制空
+
     // 専用A
     ObsidianTactics: 2946, // 黒曜石の教え
     FellWyrmscale: 2842, // 邪竜の暗鱗
@@ -2508,6 +2519,7 @@ const PassiveA = {
     // 備え
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
     AtkDefPrime4: 2699, // 攻撃守備の備え4
+    SpdDefPrime4: 2967, // 速さ守備の備え4
 
     // 野生
     AtkSpdWild: 2712, // 攻撃速さの野生
@@ -2837,6 +2849,7 @@ const PassiveB = {
     // （巻き添え範囲攻撃を60%軽減して尚且つ60%軽減の権利が消えない）
     GuardBearing4: 2417, // 警戒姿勢4
     DiveBomb3: 1430, // 空からの急襲3
+    PegasusRift: 2968, // 天馬裂空
 
     // 専用B
     DivineStrength: 2962, // 神獣の肉体
@@ -3267,6 +3280,7 @@ const PassiveC = {
 
     // 再移動制限
     CantoControl3: 2067, // 再移動制限3
+    FirmCantoCurb: 2970, // 再移動制限・不惑
 
     // 一斉突撃
     AssaultTroop3: 2117, // 一斉突撃3

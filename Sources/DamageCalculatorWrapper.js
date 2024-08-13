@@ -375,6 +375,7 @@ class DamageCalculatorWrapper {
     }
 
     __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
+        BEFORE_PRECOMBAT_HOOKS.evaluate(atkUnit, new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null));
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Queensblade:
@@ -2339,6 +2340,8 @@ class DamageCalculatorWrapper {
                 break;
         }
 
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
             if (skillFunc) {
@@ -6763,14 +6766,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.YngviAscendant] = (targetUnit) => {
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.HolyYewfelle] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Ginnungagap] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -7341,13 +7336,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.8, enemyUnit);
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Failnaught] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.SilesseFrost] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.restHpPercentage >= 50) {
                 targetUnit.atkSpur += 6;
@@ -7561,20 +7549,6 @@ class DamageCalculatorWrapper {
                 targetUnit.atkSpur += 5;
                 targetUnit.spdSpur += 5;
                 targetUnit.resSpur += 5;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.TigerRoarAxe] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.addAllSpur(5);
-                if (enemyUnit.battleContext.restHpPercentage === 100) {
-                    targetUnit.battleContext.followupAttackPriorityIncrement++;
-                }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.SpearOfAssal] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.battleContext.invalidatesAtkBuff = true;
-                targetUnit.battleContext.invalidatesSpdBuff = true;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Thunderbrand] = (targetUnit, enemyUnit) => {
@@ -7812,16 +7786,6 @@ class DamageCalculatorWrapper {
                     targetUnit.defSpur += 5;
                     targetUnit.battleContext.invalidateAllOwnDebuffs();
                 }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.SunsPercussors] = (targetUnit, enemyUnit) => {
-            if (targetUnit.getEvalSpdInPrecombat() > enemyUnit.getEvalSpdInPrecombat()
-                || enemyUnit.battleContext.restHpPercentage === 100
-            ) {
-                targetUnit.atkSpur += 5;
-                targetUnit.spdSpur += 5;
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveB.DragonsIre4] = (targetUnit, enemyUnit) => {
@@ -10249,6 +10213,8 @@ class DamageCalculatorWrapper {
                 if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
                     continue
                 }
+                let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
+                FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS.evaluateWithUnit(allyUnit, env);
                 for (let skillId of allyUnit.enumerateSkills()) {
                     let func = getSkillFunc(skillId, applySkillEffectFromAlliesFuncMap);
                     func?.call(this, targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
@@ -10922,6 +10888,8 @@ class DamageCalculatorWrapper {
         for (let func of targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs) {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
             if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
                 this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
@@ -11922,6 +11890,9 @@ class DamageCalculatorWrapper {
         for (let func of targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs) {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
+
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
                 DamageCalculatorWrapper.__applyBonusDoubler(targetUnit, enemyUnit);
@@ -15045,11 +15016,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.HolyYewfelle:
-                    if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                        targetUnit.battleContext.invalidatesReduceCooldownCount = true;
-                    }
-                    break;
                 case Weapon.SyunsenAiraNoKen:
                     if (targetUnit.isWeaponRefined) {
                         targetUnit.battleContext.invalidateCooldownCountSkills();
@@ -15419,9 +15385,14 @@ class DamageCalculatorWrapper {
         this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(atkUnit, defUnit);
         this.__setBothOfAtkDefSkillEffetToContextForEnemyUnit(defUnit, atkUnit);
 
-        if (!atkUnit.canDisableAttackOrderSwapSkill(atkUnit.battleContext.restHpPercentage, defUnit)
-            && !defUnit.canDisableAttackOrderSwapSkill(defUnit.battleContext.restHpPercentage, atkUnit)
-        ) {
+        let canAtkUnitDisableAttackPrioritySkills =
+            atkUnit.canDisableAttackOrderSwapSkill(atkUnit.battleContext.restHpPercentage, defUnit) ||
+            atkUnit.battleContext.canUnitDisableSkillsThatChangeAttackPriority;
+        let canDefUnitDisableAttackPrioritySkills =
+            defUnit.canDisableAttackOrderSwapSkill(defUnit.battleContext.restHpPercentage, atkUnit) ||
+            defUnit.battleContext.canUnitDisableSkillsThatChangeAttackPriority;
+        if (!canAtkUnitDisableAttackPrioritySkills &&
+            !canDefUnitDisableAttackPrioritySkills) {
             atkUnit.battleContext.isDesperationActivated = atkUnit.battleContext.isDesperationActivatable || atkUnit.hasStatusEffect(StatusEffectType.Desperation);
             defUnit.battleContext.isVantageActivated = defUnit.battleContext.isVantageActivatable || defUnit.hasStatusEffect(StatusEffectType.Vantage);
 
@@ -15438,8 +15409,7 @@ class DamageCalculatorWrapper {
                     this.__writeDamageCalcDebugLog(defUnit.getNameWithGroup() + "は待ち伏せ効果発動、先制攻撃");
                 }
             }
-        }
-        else {
+        } else {
             atkUnit.battleContext.isDesperationActivated = false;
             defUnit.battleContext.isVantageActivated = false;
         }
@@ -15830,10 +15800,6 @@ class DamageCalculatorWrapper {
             case Weapon.TannenbatonPlus:
                 targetUnit.defSpur += 2;
                 targetUnit.resSpur += 2;
-                break;
-            case Weapon.SpearOfAssal:
-                targetUnit.atkSpur += 4;
-                targetUnit.spdSpur += 4;
                 break;
             case Weapon.Geirusukeguru:
                 if (targetUnit.isPhysicalAttacker()) {
@@ -16360,10 +16326,6 @@ class DamageCalculatorWrapper {
                             targetUnit.atkSpur += 4;
                             targetUnit.spdSpur += 4;
                         }
-                        break;
-                    case Weapon.SpearOfAssal:
-                        targetUnit.atkSpur += 4;
-                        targetUnit.spdSpur += 4;
                         break;
                     case Weapon.ChichiNoSenjutsusyo:
                         targetUnit.atkSpur += 3;
@@ -17087,6 +17049,8 @@ class DamageCalculatorWrapper {
                 continue;
             }
             // 距離に関係ないもの
+            let env = new ForAlliesEnv(this, targetUnit, enemyUnit, ally);
+            FOR_ALLIES_GRANTING_BONUS_HOOKS.evaluateWithUnit(ally, env);
             for (let skillId of ally.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromAlliesFuncMap);
                 func?.call(this, targetUnit, ally, enemyUnit, calcPotentialDamage);

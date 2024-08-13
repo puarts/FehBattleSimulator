@@ -1174,6 +1174,8 @@ class BattleSimulatorBase {
         if (!this.canActivateDuoSkillOrHarmonizedSkill(duoUnit)) {
             return;
         }
+        let env = new EnumerationEnv(g_appData, duoUnit);
+        ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
             case Hero.HarmonizedGoldmary:
                 // 自分と同じ出典の味方と、自分自身に
@@ -1211,7 +1213,7 @@ class BattleSimulatorBase {
                             if (unit.isActionDone) {
                                 unit.addStatusEffect(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately);
                             } else {
-                                unit.endAction();
+                                unit.endActionBySkillEffect();
                             }
                         }
                     }
@@ -1251,11 +1253,11 @@ class BattleSimulatorBase {
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.ResonantBlades);
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.MobilityIncreased);
                 this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.applyBuffs(6, 6, 0, 0));
-                this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.clearNegativeStatusEffects());
+                this.__applySkillEffectToSameOriginUnits(duoUnit, unit => unit.neutralizeNegativeStatusEffects());
                 break;
             case Hero.DuoYmir:
                 for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
-                    unit.clearNegativeStatusEffects();
+                    unit.neutralizeNegativeStatusEffects();
                     unit.heal(20);
                 }
                 break;
@@ -1320,7 +1322,7 @@ class BattleSimulatorBase {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit)) {
                     if (Math.abs(unit.posX - duoUnit.posX) <= 2 &&
                         Math.abs(unit.posY - duoUnit.posY) <= 2) {
-                        unit.clearNegativeStatusEffects();
+                        unit.neutralizeNegativeStatusEffects();
                         unit.addStatusEffect(StatusEffectType.NeutralizesFoesBonusesDuringCombat);
                         unit.heal(30);
                     }
@@ -1345,9 +1347,9 @@ class BattleSimulatorBase {
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(duoUnit)) {
                     if (Math.abs(unit.posX - duoUnit.posX) <= 2 ||
                         Math.abs(unit.posY - duoUnit.posY) <= 2) {
-                        unit.clearPositiveStatusEffects();
+                        unit.neutralizePositiveStatusEffects();
                         if (!unit.hasStatusEffect(StatusEffectType.Panic)) {
-                            unit.resetBuffs();
+                            unit.neutralizeAllBuffs();
                         }
                     }
                 }
@@ -1615,8 +1617,8 @@ class BattleSimulatorBase {
                 break;
             case Hero.ValentineAlm:
                 for (let unit of this.enumerateUnitsWithinSpecifiedRange(duoUnit.posX, duoUnit.posY, UnitGroupType.Ally, 5, 5)) {
-                    unit.clearNegativeStatusEffects();
-                    unit.resetDebuffs();
+                    unit.neutralizeNegativeStatusEffects();
+                    unit.neutralizeAllDebuffs();
                     unit.applyAtkBuff(6);
                     unit.applySpdBuff(6);
 
@@ -4952,8 +4954,8 @@ class BattleSimulatorBase {
         /** @type {SkillInfo} */
         const originalEnemySacredSealInfo = enemyUnit.passiveSInfo;
         let reducedEnemySpecialCount = enemyUnit.maxSpecialCount - enemyUnit.specialCount;
-        let targetUnitStatusEffects = targetUnit.statusEffects;
-        let enemyUnitStatusEffects = enemyUnit.statusEffects;
+        let targetUnitStatusEffects = targetUnit.getStatusEffects();
+        let enemyUnitStatusEffects = enemyUnit.getStatusEffects();
 
         let loseEnemies = [];
         let drawEnemies = [];
@@ -6785,24 +6787,31 @@ class BattleSimulatorBase {
             unit.isCantoActivating = true;
             this.writeDebugLogLine("再移動の発動");
             let count = unit.calcMoveCountForCanto();
-            // 4マス以内にいるだけで再移動発動時に効果を発揮する
-            // activateCantoIfPossible内で再移動の発動を判定しているのでここでは4マス以内の判定結果だけを保存
-            let cantoControlledIfCantoActivated = false;
-            for (let u of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 4)) {
+            // Nマス以内にいるだけで再移動発動時に効果を発揮する
+            // activateCantoIfPossible内で再移動の発動を判定しているのでここではNマス以内の判定結果だけを保存
+            let isThereAnyUnitThatInflictCantoControlWithinRange = false;
+            for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
+                let env = new CantoControlEnv(unit, u);
+                isThereAnyUnitThatInflictCantoControlWithinRange |=
+                    CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
                 for (let skillId of u.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DotingStaff:
                             if (u.isWeaponSpecialRefined) {
-                                cantoControlledIfCantoActivated = true;
+                                if (unit.distance(u) <= 4) {
+                                    isThereAnyUnitThatInflictCantoControlWithinRange = true;
+                                }
                             }
                             break;
                         case PassiveC.CantoControl3:
-                            cantoControlledIfCantoActivated = true;
+                            if (unit.distance(u) <= 4) {
+                                isThereAnyUnitThatInflictCantoControlWithinRange = true;
+                            }
                             break;
                     }
                 }
             }
-            unit.activateCantoIfPossible(count, cantoControlledIfCantoActivated);
+            unit.activateCantoIfPossible(count, isThereAnyUnitThatInflictCantoControlWithinRange);
             return true;
         }
         return false;
@@ -6826,6 +6835,9 @@ class BattleSimulatorBase {
         }
 
         // スキル毎の追加条件
+        if (CAN_ACTIVATE_CANTO_HOOKS.evaluateSomeWithUnit(unit, new BattleSimulatorBaseEnv(this, unit))) {
+            return true;
+        }
         for (let skillId of unit.enumerateSkills()) {
             if (getSkillFunc(skillId, canActivateCantoFuncMap)?.call(this, unit)) {
                 return true;
@@ -8527,7 +8539,7 @@ class BattleSimulatorBase {
                 let unitSet = new Set(units);
                 for (let u of unitSet) {
                     u.heal(10);
-                    u.clearNegativeStatusEffects();
+                    u.neutralizeNegativeStatusEffects();
                 }
                 break;
             }
@@ -9220,7 +9232,7 @@ class BattleSimulatorBase {
                 let unitSet = new Set(units);
                 for (let u of unitSet) {
                     u.heal(10);
-                    u.clearNegativeStatusEffects();
+                    u.neutralizeNegativeStatusEffects();
                 }
                 break;
             }
@@ -9415,8 +9427,8 @@ class BattleSimulatorBase {
             case Support.Restore:
             case Support.RestorePlus:
                 if (supportTargetUnit.isDebuffed || supportTargetUnit.hasAnyStatusEffect) {
-                    supportTargetUnit.resetDebuffs();
-                    supportTargetUnit.clearNegativeStatusEffects();
+                    supportTargetUnit.neutralizeAllDebuffs();
+                    supportTargetUnit.neutralizeNegativeStatusEffects();
                     return true;
                 }
                 break;
@@ -9640,7 +9652,7 @@ class BattleSimulatorBase {
             if (targetUnit.resDebuff < 0 && -targetUnit.resDebuff > targetUnit.resBuff) {
                 targetUnit.applyResBuff(-targetUnit.resDebuff);
             }
-            targetUnit.resetDebuffs();
+            targetUnit.neutralizeAllDebuffs();
             return true;
         }
         return false;
@@ -9748,7 +9760,7 @@ class BattleSimulatorBase {
                         this.writeSimpleLogLine(`${targetUnit.getNameWithGroup()}は${healAmount}回復`);
                     }
                     if (supporterUnit.support === Support.MaidensSolace) {
-                        targetUnit.clearNegativeStatusEffects();
+                        targetUnit.neutralizeNegativeStatusEffects();
                     }
                     return healAmount > 0 || this.__executeHarshCommand(targetUnit);
                 } else {
@@ -9780,7 +9792,7 @@ class BattleSimulatorBase {
                         return this.__applyRallyUp(supporterUnit, targetUnit);
                     case Support.HarshCommandPlus: {
                         let hasNegativeStatusEffect = targetUnit.hasNegativeStatusEffect();
-                        targetUnit.clearNegativeStatusEffects();
+                        targetUnit.neutralizeNegativeStatusEffects();
                         return this.__executeHarshCommand(targetUnit) || hasNegativeStatusEffect;
                     }
                     case Support.HarshCommand:
