@@ -6,27 +6,27 @@
 /// 英雄情報です。ユニットの初期化に使用します。
 class HeroInfo {
     constructor(name, icon, moveType, weaponType, attackRange,
-                hp, atk, spd, def, res,
-                hpLv1, atkLv1, spdLv1, defLv1, resLv1,
-                hpVar, atkVar, spdVar, defVar, resVar,
-                weapon, support, special, passiveA, passiveB, passiveC, passiveX,
-                seasonType,
-                blessingType,
-                epithet,
-                pureNames,
-                duelScore,
-                weapons,
-                supports,
-                id,
-                resplendent,
-                origin,
-                howToGet,
-                releaseDate,
-                specials,
-                passiveAs,
-                passiveBs,
-                passiveCs,
-                passiveXs = [],
+        hp, atk, spd, def, res,
+        hpLv1, atkLv1, spdLv1, defLv1, resLv1,
+        hpVar, atkVar, spdVar, defVar, resVar,
+        weapon, support, special, passiveA, passiveB, passiveC, passiveX,
+        seasonType,
+        blessingType,
+        epithet,
+        pureNames,
+        duelScore,
+        weapons,
+        supports,
+        id,
+        resplendent,
+        origin,
+        howToGet,
+        releaseDate,
+        specials,
+        passiveAs,
+        passiveBs,
+        passiveCs,
+        passiveXs = [],
     ) {
         this.id = id;
         this.seasonType = seasonType;
@@ -256,7 +256,7 @@ class HeroInfo {
     get maxDragonflower() {
         let releaseDate = this.releaseDateAsNumber;
         let i = 1;
-        for (let year = 2023; year >= 2020; --year) {
+        for (let year = 2024; year >= 2020; --year) {
             let date = year * 10000 + 812; // 8/12に総選挙がリリースされたことはないので12固定にしておく
             if (releaseDate > date) {
                 return 5 * i;
@@ -503,7 +503,7 @@ class HeroInfo {
         for (let infos of allInfos) {
             for (let info of infos) {
                 if (canInheritFunc(info)) {
-                    options.push({id: info.id, text: info.getDisplayName()});
+                    options.push({ id: info.id, text: info.getDisplayName() });
                 }
             }
         }
@@ -540,10 +540,10 @@ class HeroInfo {
         this.hpLv1ForStar1 = this.hpLv1ForStar2;
 
         let statusList = [
-            {type: StatusType.Atk, value: this.atkLv1},
-            {type: StatusType.Spd, value: this.spdLv1},
-            {type: StatusType.Def, value: this.defLv1},
-            {type: StatusType.Res, value: this.resLv1},
+            { type: StatusType.Atk, value: this.atkLv1 },
+            { type: StatusType.Spd, value: this.spdLv1 },
+            { type: StatusType.Def, value: this.defLv1 },
+            { type: StatusType.Res, value: this.resLv1 },
         ];
 
         statusList.sort((a, b) => {
