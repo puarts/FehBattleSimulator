@@ -139,7 +139,7 @@ class Tile extends BattleMapElement {
 
     // 天脈の予約を行う
     reserveDivineVein(divineVein, divineVeinGroup) {
-        if (this.isWall()) return;
+        if (this.cannotApplyDivineVein()) return;
         this.reservedDivineVeinSet.add(divineVein);
         this.reservedDivineVeinGroup = divineVeinGroup;
     }
@@ -816,6 +816,13 @@ class Tile extends BattleMapElement {
 
     isWall() {
         return this.obj instanceof Wall;
+    }
+
+    cannotApplyDivineVein() {
+        return this.obj instanceof Wall ||
+            this.obj instanceof ExcapeLadder ||
+            this.obj instanceof OfFortress ||
+            this.obj instanceof DefFortress;
     }
 
     isCountedAsDifficultTerrain() {
