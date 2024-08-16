@@ -1897,6 +1897,11 @@ const Weapon = {
     JuicyBucketfulPlus: 2971, // 夏野菜の桶+
     FlutteringFan: 2972, // 人見知りの縁の祭器
     StallGameBowPlus: 2974, // 射的の弓+
+
+    // 2024年 総選挙
+    // https://www.youtube.com/watch?v=HeTPTeGqnTc
+    // https://www.youtube.com/watch?v=ezkrMU7iBNA
+    MajesticGlitnir: 2988, // 王斧グリトニル
 };
 
 const Support = {

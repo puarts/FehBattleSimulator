@@ -6791,10 +6791,10 @@ class BattleSimulatorBase {
         if (unit.isDead) {
             return false;
         }
-        if (this.__canActivateCanto(unit)) {
+        let count = unit.calcMoveCountForCanto();
+        if (this.__canActivateCanto(unit, count)) {
             unit.isCantoActivating = true;
             this.writeDebugLogLine("再移動の発動");
-            let count = unit.calcMoveCountForCanto();
             // Nマス以内にいるだけで再移動発動時に効果を発揮する
             // activateCantoIfPossible内で再移動の発動を判定しているのでここではNマス以内の判定結果だけを保存
             let isThereAnyUnitThatInflictCantoControlWithinRange = false;
@@ -6826,13 +6826,13 @@ class BattleSimulatorBase {
         return false;
     }
 
-    __canActivateCanto(unit) {
+    __canActivateCanto(unit, count) {
         if (!unit.canActivateCanto()) {
             return false;
         }
 
         // 移動力が0かつワープでの移動先が無い場合再移動は発動しない
-        if (unit.calcMoveCountForCanto() === 0) {
+        if (count === 0) {
             let movableWarpTileCount = Array.from(this.map.enumerateWarpCantoTiles(unit)).length;
             if (movableWarpTileCount === 0) {
                 return false;

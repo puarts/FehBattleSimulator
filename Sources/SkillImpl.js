@@ -1,6 +1,62 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 王斧グリトニル
+{
+    let skillId = Weapon.MajesticGlitnir;
+    // 【再移動(マス間の距離+1、最大4)】を発動可能
+    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => CANTO_DIST_PLUS_1_MAX_4_NODE);
+    // 奥義が発動しやすい(発動カウント-1)
+    // ターン開始時、自身を中心とした縦3列と横3列に味方がいる時、
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            // 自身の守備、魔防+6、
+            new GrantsStatsPlusAtStartOfTurnNode(0, 0, 6, 6),
+            // 「移動+1」(重複しない)を付与(1ターン)、
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
+            // 奥義発動カウントが最大値なら、奥義発動カウント-1
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AT_START_OF_TURN_NODE,
+        )
+    ));
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分から攻撃した時、または、自身を中心とした縦3列と横3列に味方がいる時、
+        IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
+            // 戦闘中、自身の守備、魔防+、
+            new GrantsStatsPlusNToUnitDuringCombatNode(
+                // (○は、自身を中心とした縦3列と横3列にいる味方の数×3+5(最大14))、
+                new EnsureMaxNode(
+                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14
+                ),
+                [0, 0, 1, 1]
+            ),
+            // 敵の守備、魔防一○
+            new InflictsStatsMinusNOnFoeDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14
+                ),
+                [0, 0, 1, 1]
+            ),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // 自分は与えるダメージ+守備の10%(範囲奥義を除く)、
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(UNITS_DEF_DURING_COMBAT_NODE, 0.1)),
+                // 受けるダメージ-守備の10%(範囲奥義を除く)、
+                new UnitReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(UNITS_DEF_DURING_COMBAT_NODE, 0.1)),
+            ),
+            // かつ奥義発動時、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(範囲肉義を除く)
+            NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        )
+    ));
+    // 自分から攻撃した時、または、自身を中心とした縦3列と横3列に味方がいる時、戦闘後、奥義発動カウントが最大値なら、奥義発動カウント-1
+    APPLY_SKILL_EFFECTS_AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AFTER_COMBAT_NODE,
+        )
+    ));
+}
+
 // 落星・承
 {
     let skillId = PassiveB.FallenStar2;
