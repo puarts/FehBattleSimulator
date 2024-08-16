@@ -1330,6 +1330,14 @@ class ArrayUtil {
      * @param {number[]} array1
      * @param {number[]} array2
      */
+    static add(array1, array2) {
+        return array1.map((value, index) => value + array2[index]);
+    }
+
+    /**
+     * @param {number[]} array1
+     * @param {number[]} array2
+     */
     static sub(array1, array2) {
         return array1.map((value, index) => value - array2[index]);
     }

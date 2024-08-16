@@ -287,6 +287,11 @@ class UnitManager {
         return count;
     }
 
+    countAlliesInCrossWithOffset(targetUnit, offset) {
+        let isInCross = u => u.isInCrossWithOffset(targetUnit, offset);
+        return this.countAlliesWithinSpecifiedSpaces(targetUnit, 99, isInCross);
+    }
+
     countEnemiesInCrossWithOffset(targetUnit, offset) {
         let isInCross = u => u.isInCrossWithOffset(targetUnit, offset);
         return this.countEnemiesWithinSpecifiedSpaces(targetUnit, 99, isInCross);

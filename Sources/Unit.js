@@ -477,6 +477,14 @@ class Unit extends BattleMapElement {
         this.passiveS = -1;
         this.passiveX = -1;
         this.captain = -1;
+
+        /**
+         * TODO: 値の保存に対応する。初期局面に戻った場合に全てリセットする
+         * 大器
+         * @type {[number, number, number,number]}
+         */
+        this._greatTalents = [0, 0, 0, 0];
+
         // TODO: 削除
         // noinspection JSUnusedGlobalSymbols
         this.deffensiveTile = false; // 防御床
@@ -1250,6 +1258,10 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restPassiveBSkillAvailableTurn
             + ValueDelimiter + boolToInt(this.isSupportDone)
             + ValueDelimiter + boolToInt(this.isAnotherActionInPostCombatActivated)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Atk)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
             ;
     }
 
@@ -1379,6 +1391,10 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.restPassiveBSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isSupportDone = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isAnotherActionInPostCombatActivated = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Atk, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
     }
 
 
@@ -1430,6 +1446,10 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.initPosX
             + ValueDelimiter + this.initPosY
             + ValueDelimiter + this.passiveX
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Atk)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
             ;
     }
 
@@ -1487,6 +1507,10 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.initPosX = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.initPosY = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Atk, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -1707,6 +1731,7 @@ class Unit extends BattleMapElement {
         this.snapshot.passiveXInfo = this.passiveXInfo;
         this.snapshot.captainInfo = this.captainInfo;
         this.snapshot.fromString(this.toString());
+        this.snapshot._greatTalents = [...this.getGreatTalents()];
         return this.snapshot;
     }
 
@@ -1795,6 +1820,12 @@ class Unit extends BattleMapElement {
         this.resSpur += amountNum;
     }
 
+    /**
+     * @param {number} atk
+     * @param {number} spd
+     * @param {number} def
+     * @param {number} res
+     */
     addSpurs(atk, spd, def, res) {
         this.atkSpur += atk;
         this.spdSpur += spd;
@@ -2333,6 +2364,7 @@ class Unit extends BattleMapElement {
         this.fromPosX = this.posX;
         this.fromPosY = this.posY;
         this.isEnemyActionTriggered = this.groupId !== UnitGroupType.Enemy;
+        this.forceResetGreatTalents();
     }
 
     resetSpurs() {
@@ -2355,6 +2387,7 @@ class Unit extends BattleMapElement {
         this.snapshot.battleContext.invalidatesSpdBuff = this.battleContext.invalidatesSpdBuff;
         this.snapshot.battleContext.invalidatesDefBuff = this.battleContext.invalidatesDefBuff;
         this.snapshot.battleContext.invalidatesResBuff = this.battleContext.invalidatesResBuff;
+        this.snapshot._greatTalents = [...this._greatTalents];
     }
 
     /**
@@ -3430,8 +3463,63 @@ class Unit extends BattleMapElement {
         return this.hasStatusEffect(StatusEffectType.NullPanic);
     }
 
+    resetGreatTalents() {
+        this._greatTalents = [0, 0, 0, 0];
+    }
+
+    forceResetGreatTalents() {
+        this._greatTalents = [0, 0, 0, 0];
+    }
+
+    /**
+     * NOTE: Returns copy.
+     * @returns {number[]}
+     */
+    getGreatTalents() {
+        return [...this._greatTalents];
+    }
+
+    getGreatTalent(index) {
+        return this._greatTalents[index];
+    }
+
+    /**
+     * @param {number} index
+     * @param {number} value
+     */
+    setGreatTalent(index, value) {
+        this._greatTalents[index] = value;
+    }
+
+    /**
+     * @param {number} atk
+     * @param {number} spd
+     * @param {number} def
+     * @param {number} res
+     */
+    setGreatTalents(atk, spd, def, res) {
+        this._greatTalents[STATUS_INDEX.Atk] = atk;
+        this._greatTalents[STATUS_INDEX.Spd] = spd;
+        this._greatTalents[STATUS_INDEX.Def] = def;
+        this._greatTalents[STATUS_INDEX.Res] = res;
+    }
+
+    /**
+     * @param {number[]} stats
+     */
+    setGreatTalentsFrom(stats) {
+        this._greatTalents = [...stats];
+    }
+
+    /**
+     * @param {number[]} values
+     */
+    addGreatTalentsFrom(values) {
+        this._greatTalents = ArrayUtil.add(this._greatTalents, values);
+    }
+
     getSpdInPrecombatWithoutDebuff() {
-        return Number(this.spdWithSkills) + Number(this.spdBuff) * this.__getBuffMultiply();
+        return Number(this.spdWithSkills) + Number(this.spdBuff) * this.__getBuffMultiply() + this.getGreatTalent(STATUS_INDEX.Spd);
     }
 
     getSpdInPrecombat() {
@@ -3459,7 +3547,7 @@ class Unit extends BattleMapElement {
     }
 
     getAtkInPrecombatWithoutDebuff() {
-        return Number(this.atkWithSkills) + Number(this.atkBuff) * this.__getBuffMultiply();
+        return Number(this.atkWithSkills) + Number(this.atkBuff) * this.__getBuffMultiply() + this.getGreatTalent(STATUS_INDEX.Atk);
     }
 
     getAtkInPrecombat() {
@@ -3669,19 +3757,19 @@ class Unit extends BattleMapElement {
     }
 
     __getAtkInCombatWithoutBuff() {
-        return (Number(this.atkWithSkills) + this.getAtkDebuffInCombat() + Number(this.atkSpur));
+        return Number(this.atkWithSkills) + this.getAtkDebuffInCombat() + Number(this.atkSpur) + this.getGreatTalent(STATUS_INDEX.Atk);
     }
 
     __getSpdInCombatWithoutBuff() {
-        return (Number(this.spdWithSkills) + this.getSpdDebuffInCombat() + Number(this.spdSpur));
+        return Number(this.spdWithSkills) + this.getSpdDebuffInCombat() + Number(this.spdSpur) + this.getGreatTalent(STATUS_INDEX.Spd);
     }
 
     __getDefInCombatWithoutBuff() {
-        return (Number(this.defWithSkills) + this.getDefDebuffInCombat() + Number(this.defSpur));
+        return Number(this.defWithSkills) + this.getDefDebuffInCombat() + Number(this.defSpur) + this.getGreatTalent(STATUS_INDEX.Def);
     }
 
     __getResInCombatWithoutBuff() {
-        return (Number(this.resWithSkills) + this.getResDebuffInCombat() + Number(this.resSpur));
+        return Number(this.resWithSkills) + this.getResDebuffInCombat() + Number(this.resSpur) + this.getGreatTalent(STATUS_INDEX.Res);
     }
 
     getEvalAtkInPrecombat() {
@@ -3699,7 +3787,7 @@ class Unit extends BattleMapElement {
     getDefInPrecombatWithoutDebuff() {
         let mit = Number(this.defWithSkills);
         let mitBuff = Number(this.defBuff) * this.__getBuffMultiply();
-        return mit + mitBuff;
+        return mit + mitBuff + this.getGreatTalent(STATUS_INDEX.Def);
     }
 
     getDefInPrecombat() {
@@ -3713,7 +3801,7 @@ class Unit extends BattleMapElement {
     getResInPrecombatWithoutDebuff() {
         let mit = Number(this.resWithSkills);
         let mitBuff = Number(this.resBuff) * this.__getBuffMultiply();
-        return mit + mitBuff;
+        return mit + mitBuff + this.getGreatTalent(STATUS_INDEX.Res);
     }
 
     getResInPrecombat() {
@@ -4891,6 +4979,7 @@ class Unit extends BattleMapElement {
         this.passiveX = PassiveX.None;
         this.merge = 0;
         this.dragonflower = 0;
+        this._greatTalents = [0, 0, 0, 0];
     }
 
     /**
@@ -5576,6 +5665,7 @@ class Unit extends BattleMapElement {
             moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         let env = new CantoEnv(this);
+        env.setName('再移動距離計算時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
         moveCountForCanto = Math.max(moveCountForCanto, CALC_MOVE_COUNT_FOR_CANTO_HOOKS.evaluateMaxWithUnit(this, env));
         for (let skillId of this.enumerateSkills()) {
             let moveCount = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
