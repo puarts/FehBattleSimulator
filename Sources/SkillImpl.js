@@ -188,7 +188,7 @@
             new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
                 // 自身の攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列にいる敵の数×3+5だけ増加
                 // (最大14、自身の周囲2マス以内に以下のいずれかのマスがある時は14として扱う・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)、
-                new UnitGrantsAllStatsPlusToUnitDuringCombatNode(
+                new GrantsAllStatsPlusToUnitDuringCombatNode(
                     new TernaryConditionalNumberNode(
                         IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
                         14,
@@ -222,7 +222,7 @@
             // 自身を中心とした縦3列と横3列に味方がいる時、
             // 戦闘中、速さが敵より1以上高ければ、敵は反撃不可
             new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
-                new UnitAppliesSkillEffectsAfterStatusFixedNode(
+                new AppliesSkillEffectsAfterStatusFixedNode(
                     new IfNode(new GtNode(UNITS_EVAL_SPD_DURING_COMBAT_NODE, FOES_EVAL_SPD_DURING_COMBAT_NODE),
                         FOE_CANNOT_COUNTERATTACK_NODE,
                     ),
@@ -308,8 +308,8 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
-            new UnitGrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
-            new UnitAppliesSkillEffectsAfterStatusFixedNode(
+            new GrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+            new AppliesSkillEffectsAfterStatusFixedNode(
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new MultTruncNode(UNITS_SPD_DURING_COMBAT_NODE, 0.20),
                 ),
@@ -341,7 +341,7 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 0, 0),
-            new UnitAppliesSkillEffectsAfterStatusFixedNode(
+            new AppliesSkillEffectsAfterStatusFixedNode(
                 new IfNode(new IsGteSumOfStatsDuringCombatExcludingPhantomNode(0, -10, [0, 1, 0, 1]),
                     new UnitDealsDamageExcludingAoeSpecialsNode(
                         new EnsureMinMaxNode(new AddNode(UNITS_RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
@@ -378,7 +378,7 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                new UnitGrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+                new GrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
                 NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
@@ -511,7 +511,7 @@
         new SkillEffectNode(
             new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 UNIT_GRANTS_ATK_SPD_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
-                new UnitGrantsAtkSpdPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+                new GrantsAtkSpdPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
                 new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, true, false),
                 REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
             )
