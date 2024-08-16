@@ -139,6 +139,7 @@ class Tile extends BattleMapElement {
 
     // 天脈の予約を行う
     reserveDivineVein(divineVein, divineVeinGroup) {
+        if (this.isWall()) return;
         this.reservedDivineVeinSet.add(divineVein);
         this.reservedDivineVeinGroup = divineVeinGroup;
     }
