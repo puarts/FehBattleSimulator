@@ -20,3 +20,4 @@ const ValueDelimiter = '|';
 const ArrayValueElemDelimiter = '+';
 const DebugModeDefault = true;
 const TabChar = "&emsp;&emsp;";
+const G_SKILL_LOG_LEVEL = 7; // TRACE

@@ -1,5 +1,6 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// TODO: 絶対化身を実装
 // 落星・承
 {
     let skillId = PassiveB.FallenStar2;
@@ -7,14 +8,14 @@
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT,
                     new IsStatusEffectActiveOnUnitNode(StatusEffectType.DeepStar)),
-                new InflictingStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
-                new DealingDamageExcludingAoeSpecialsNode(
+                new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
+                new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(
                         new MultNode(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
                         25
                     ),
                 ),
-                new ReducingDamageFromFoesFirstAttackByNDuringCombatNode(
+                new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(
                     new EnsureMaxNode(
                         new MultNode(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 3),
                         15
@@ -22,16 +23,19 @@
                 ),
             ),
             new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
-                new ReducingDamageFromFoesFirstAttackByNPercentDuringCombatNode(80),
+                new UnitReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(80),
             )
         )
     );
     APPLY_SKILL_EFFECTS_AFTER_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
+            // If unit initiates combat,
             new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
-                new GrantingStatusEffectsAfterCombatNode(StatusEffectType.DeepStar),
-                new EnumeratingTargetAndFoesWithin1SpacesNode(
-                    new GrantingStatusEffectsAfterCombatNode(StatusEffectType.Gravity),
+                // grants【Deep Star】to unit and
+                new GrantsStatusEffectsAfterCombatNode(StatusEffectType.DeepStar),
+                // inflicts【Gravity】on target and foes within 1 space of target after combat.
+                FOR_EACH_TARGET_AND_FOE_WITHIN_1_SPACE_OF_TARGET_NODE(
+                    new GrantsStatusEffectsAfterCombatNode(StatusEffectType.Gravity),
                 ),
             )
         )
@@ -43,15 +47,15 @@
     let skillId = PassiveB.YngviAscendantPlus;
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            new InflictingStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
-            NULL_FOLLOW_UP_NODE,
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
+            NULL_UNIT_FOLLOW_UP_NODE,
             new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
                 UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE
             ),
         )
     );
     APPLYING_POTENT_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>
-        new ApplyingPotentSkillEffectNode(1, -10)
+        new AppliesPotentEffectNode(1, -10)
     );
 }
 
@@ -61,16 +65,16 @@
     // 飛行特効
     // ターン開始時、自身のHPが25%以上なら、自分の攻撃+6、「自分から攻撃時、絶対追撃」を付与(1ターン)
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
-        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
-            new GrantingStatsAtStartOfTurnNode(6, 0, 0, 0),
-            new GrantingStatusEffectsAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
+        new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            new GrantsStatsPlusAtStartOfTurnNode(6, 0, 0, 0),
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
         )
     );
     // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
-        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-            GRANTING_ALL_STATS_PLUS_4_DURING_COMBAT_NODE,
-            new DealingDamageExcludingAoeSpecialsNode(
+        new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
+            new UnitDealsDamageExcludingAoeSpecialsNode(
                 new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25)
             ),
         )
@@ -82,13 +86,13 @@
     // TODO: indexを直接書かないで良いように依存関係を修正する
     ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.addValue(1157,
         new SkillEffectNode(
-            new EnumeratingUnitsFromSameTitlesNode(
-                new GrantingStatsNode(6, 6, 0, 0),
-                new GrantingStatusEffectsNode(
+            new ForEachUnitFromSameTitlesNode(
+                new GrantsStatsNode(6, 6, 0, 0),
+                new GrantsStatusEffectsNode(
                     StatusEffectType.ResonantBlades,
                     StatusEffectType.MobilityIncreased,
                 ),
-                NEUTRALIZING_ANY_PENALTY_ON_UNIT_NODE,
+                NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
             )
         )
     )
@@ -107,11 +111,11 @@
             // 戦闘開始時、敵のHPが50%以上の時、戦闘中、
             new IfNode(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
                 // 自分の攻撃、速さ+7、かつ
-                GRANTING_ATK_SPD_PLUS_7_DURING_COMBAT_NODE,
+                UNIT_GRANTS_ATK_SPD_PLUS_7_TO_UNIT_DURING_COMBAT_NODE,
                 // 自身の周囲2マス以内に以下のいずれかのマスがある時、戦闘中、さらに、
                 new IfNode(IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
                     // 自分の攻撃、速さ+4(・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)
-                    GRANTING_ATK_SPD_PLUS_4_DURING_COMBAT_NODE
+                    UNIT_GRANTS_ATK_SPD_PLUS_4_TO_UNIT_DURING_COMBAT_NODE
                 )
             )
         )
@@ -128,7 +132,7 @@
             new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
                 // 自身の攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列にいる敵の数×3+5だけ増加
                 // (最大14、自身の周囲2マス以内に以下のいずれかのマスがある時は14として扱う・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)、
-                new GrantingAllStatsPlusDuringCombatNode(
+                new UnitGrantsAllStatsPlusToUnitDuringCombatNode(
                     new TernaryConditionalNumberNode(
                         IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
                         14,
@@ -139,18 +143,18 @@
                     ),
                 ),
                 // 敵の速さ、魔防の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)、
-                new NeutralizingFoesBonusesToStatsDuringCombatNode(false, true, false, true),
+                new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, false, true),
                 // かつ自分が攻撃時に発動する奥義を装備している時、戦闘中、
                 new IfNode(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
                     // 自分の最初の攻撃前に奥義発動カウント-1、
-                    GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
+                    UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
                     // 自分の最初の追撃前に奥義発動カウント-1、かつ
-                    GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE,
-                    new ApplyingSkillEffectsPerAttack(
+                    UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE,
+                    new UnitAppliesSkillEffectsPerAttack(
                         // 自身のHPが99%以下で
-                        new IfNode(IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
+                        new IfNode(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                             // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
-                            new DealingDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
+                            new UnitDealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
                         ),
                     ),
                 ),
@@ -162,28 +166,28 @@
             // 自身を中心とした縦3列と横3列に味方がいる時、
             // 戦闘中、速さが敵より1以上高ければ、敵は反撃不可
             new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
-                new ApplyingStatusEffectsAfterStatusFixedNode(
-                    new IfNode(new GtNode(EVAL_SPD_DURING_COMBAT_NODE, FOES_EVAL_SPD_DURING_COMBAT_NODE),
+                new UnitAppliesSkillEffectsAfterStatusFixedNode(
+                    new IfNode(new GtNode(UNITS_EVAL_SPD_DURING_COMBAT_NODE, FOES_EVAL_SPD_DURING_COMBAT_NODE),
                         FOE_CANNOT_COUNTERATTACK_NODE,
                     ),
                 ),
             ),
         )
     );
-    FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>
+    GRANTING_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () =>
         // 自身を中心とした縦3列と横3列の味方は、
         new IfNode(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
             // 攻撃時に発動する奥義を装備している時、戦闘中、
             new IfNode(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
                 // 奥義発動カウント変動量-を無効、
-                NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 // 自分の最初の攻撃前に奥義発動カウント-1、
-                GRANTING_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
-                new ApplyingSkillEffectsPerAttack(
+                UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
+                new UnitAppliesSkillEffectsPerAttack(
                     // 自身のHPが99%以下で
-                    new IfNode(IS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
+                    new IfNode(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                         // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
-                        new DealingDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
+                        new UnitDealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
                     ),
                 ),
             )
@@ -196,16 +200,16 @@
     let skillId = Weapon.JuicyBucketfulPlus;
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         // ターン開始時、自身のHPが25%以上なら、自分の攻撃+6、「自分から攻撃時、絶対追撃」を付与(1ターン)
-        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
-            new GrantingStatsAtStartOfTurnNode(6, 0, 0, 0),
-            new GrantingStatusEffectAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
+        new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            new GrantsStatsPlusAtStartOfTurnNode(6, 0, 0, 0),
+            new GrantsStatusEffectAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
         )
     );
     // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
-        new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-            GRANTING_ALL_STATS_PLUS_4_DURING_COMBAT_NODE,
-            new DealingDamageExcludingAoeSpecialsNode(
+        new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
+            new UnitDealsDamageExcludingAoeSpecialsNode(
                 new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25)
             ),
         )
@@ -222,7 +226,7 @@
         CAN_NEUTRALIZE_END_ACTION_WITHIN_3_SPACES_NODE
     );
     CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.addSkill(skillId, () =>
-        CAN_NEUTRAL_AFTER_START_OF_TURN_SKILLS_TRIGGER_ACTION_ENDS_IMMEDIATELY_WITHIN_3_SPACES_NODE,
+        CAN_NEUTRALIZE_ACTION_ENDS_SKILL_FOR_UNIT_AND_ALLIES_WITHIN_3_SPACES_NODE,
     );
     CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.addSkill(skillId, () =>
         CAN_NEUTRALIZE_END_ACTION_WITHIN_3_SPACES_NODE
@@ -247,11 +251,11 @@
     );
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            GRANTING_ALL_STATS_PLUS_5_DURING_COMBAT_NODE,
-            new GrantingAllStatsPlusDuringCombatNode(new MultTruncNode(SPD_AT_START_OF_COMBAT_NODE, 0.15)),
-            new ApplyingStatusEffectsAfterStatusFixedNode(
-                new DealingDamageExcludingAoeSpecialsNode(
-                    new MultTruncNode(SPD_DURING_COMBAT_NODE, 0.20),
+            UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            new UnitGrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+            new UnitAppliesSkillEffectsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(
+                    new MultTruncNode(UNITS_SPD_DURING_COMBAT_NODE, 0.20),
                 ),
             ),
             // 奥義無効
@@ -260,17 +264,17 @@
             UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL,
             FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
             // 見切り追撃
-            NULL_FOLLOW_UP_NODE,
+            NULL_UNIT_FOLLOW_UP_NODE,
             NULL_FOE_FOLLOW_UP_NODE,
             // 攻撃順序入れ替えスキル無効
-            UNIT_CAN_DISABLE_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
-            FOE_CAN_DISABLE_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+            UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+            FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
             // 暗闘
-            UNIT_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
-            FOE_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+            UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+            FOE_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
             // 反撃不可無効
-            UNIT_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE,
-            FOE_DISABLE_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE,
+            UNIT_DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE,
+            FOE_DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE,
         )
     );
 }
@@ -280,18 +284,18 @@
     let skillId = PassiveB.PegasusRift;
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            new InflictingStatsMinusOnFoeDuringCombatNode(4, 4, 0, 0),
-            new ApplyingStatusEffectsAfterStatusFixedNode(
+            new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 0, 0),
+            new UnitAppliesSkillEffectsAfterStatusFixedNode(
                 new IfNode(new IsGteSumOfStatsDuringCombatExcludingPhantomNode(0, -10, [0, 1, 0, 1]),
-                    new DealingDamageExcludingAoeSpecialsNode(
-                        new EnsureMinMaxNode(new AddNode(RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
+                    new UnitDealsDamageExcludingAoeSpecialsNode(
+                        new EnsureMinMaxNode(new AddNode(UNITS_RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
                     ),
-                    new ReducingDamageFromFoesFirstAttackByNDuringCombatNode(
-                        new EnsureMinMaxNode(new AddNode(RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
+                    new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(
+                        new EnsureMinMaxNode(new AddNode(UNITS_RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
                     ),
-                    MAKING_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+                    UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
                     FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
-                    new IncreasingSpdDiffNecessaryForFoesFollowUpNode(20),
+                    new IncreasesSpdDiffNecessaryForFoesFollowUpNode(20),
                 ),
             ),
         ),
@@ -306,9 +310,9 @@
 
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                new GrantingStatsAtStartOfTurnNode(0, 6, 6, 6),
-                new GrantingStatusEffectsAtStartOfTurnNode(
+            new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+                new GrantsStatsPlusAtStartOfTurnNode(0, 6, 6, 6),
+                new GrantsStatusEffectsAtStartOfTurnNode(
                     StatusEffectType.ShieldFlying,
                     StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent
                 ),
@@ -317,19 +321,19 @@
     );
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                new GrantingAllStatsPlusDuringCombatNode(new MultTruncNode(SPD_AT_START_OF_COMBAT_NODE, 0.15)),
-                NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
-                new DealingDamageExcludingAoeSpecialsNode(
+            new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new UnitGrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
                 ),
-                new ReducingDamageExcludingAoeSpecialsNode(
+                new UnitReducesDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
                 ),
-                new ReducingDamageWhenFoesSpecialExcludingAoeSpecialNode(
+                new UnitReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
                 ),
-                RESTORE_7_HP_AFTER_COMBAT_NODE,
+                RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
             )
         )
     );
@@ -390,16 +394,57 @@
 
 // フェイルノート
 {
-    let skillId = Weapon.Failnaught;
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-            }
-        }
-    );
+    let skillId = getSpecialRefinementSkillId(Weapon.Failnaught);
+    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(1));
+    GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_FOE_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            new InflictsStatsMinusOnUnitDuringCombatNode(0, 5, 5, 0),
+        ),
+    ));
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        )
+    ));
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.Failnaught);
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // ターン開始時、自身のHPが25%以上なら
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // 最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【キャンセル】、【混乱】を付与(敵の次回行動終了まで)
+            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+                new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Guard, StatusEffectType.Sabotage),
+            )
+        )
+    ));
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘開始時、自身のHPが25%以上なら戦闘中、攻撃、速さ、守備、魔防+5、かつ、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            NULL_UNIT_FOLLOW_UP_NODE)
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.Failnaught);
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘開始時、自身のHPが25%以上なら戦闘中、攻撃、速さ、守備、魔防+5、かつ、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            NULL_UNIT_FOLLOW_UP_NODE
+        )
+    ));
 }
 
 // 聖弓イチイバル
@@ -408,11 +453,11 @@
 
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(IS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                GRANTING_ATK_SPD_PLUS_5_DURING_COMBAT_NODE,
-                new GrantingAtkSpdPlusDuringCombatNode(new MultTruncNode(SPD_AT_START_OF_COMBAT_NODE, 0.15)),
-                new NeutralizingFoesBonusesToStatsNode(false, true, true, false),
-                REDUCING_PERCENTAGE_OF_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                UNIT_GRANTS_ATK_SPD_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+                new UnitGrantsAtkSpdPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+                new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, true, false),
+                REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
             )
         )
     );
@@ -422,10 +467,10 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
-                GRANTING_ATK_SPD_PLUS_6_DURING_COMBAT_NODE,
-                new NeutralizingPenaltiesToStatsNode(true, true, false, false),
-                NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
-                UNIT_DISABLE_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+                UNIT_GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
+                new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
             )
         )
     );
@@ -435,9 +480,9 @@
     APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
-                GRANTING_ATK_SPD_PLUS_6_DURING_COMBAT_NODE,
-                new NeutralizingPenaltiesToStatsNode(true, true, false, false),
-                NEUTRALIZING_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                UNIT_GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
+                new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
             )
         )
     );

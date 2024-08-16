@@ -929,6 +929,12 @@
                         @change="showDetailLogChanged"><label class="normal" for="showDetailLog">詳細ログを出力</label>
                     <input type="button" @click="g_app.clearLog()" value="クリア" style="font-size: 8px;" />
                     <input type="button" @click="copyDebugLogToClipboard()" value="コピー" style="font-size: 8px;" />
+                    <span style="font-size:12px"><b>スキル効果デバッグログレベル</b></span>
+                    <select v-model="skillLogLevel">
+                        <option v-for="option in skillLogLevelOption" :key="option.value" :value="option.value">
+                            {{ option.text }}
+                        </option>
+                    </select>
                     <div v-html="damageCalcLog" id="debugLogPanel"
                         style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
                     </div>

@@ -191,7 +191,7 @@ class DamageCalculator {
      * ダメージ計算を行います。
      * @param  {Unit} atkUnit 攻撃をするユニットです。
      * @param  {Unit} defUnit 攻撃を受けるユニットです。
-     * @param  {DamageType} damageType 潜在ダメージ計算かどうかを指定します。
+     * @param  {number} damageType 潜在ダメージ計算かどうかを指定します。
      */
     calcCombatResult(atkUnit, defUnit, damageType) {
         // 初期化
@@ -1682,6 +1682,7 @@ class DamageCalculator {
      */
     __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
         let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit);
+        env.setName('攻撃時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(context.damageType);
         targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectsPerAttackFuncMap);

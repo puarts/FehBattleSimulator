@@ -820,7 +820,6 @@ class Tile extends BattleMapElement {
     isCountedAsDifficultTerrain() {
         return [
             TileType.Forest,
-            TileType.Flier,
             TileType.Trench,
             TileType.DefensiveTrench,
             TileType.DefensiveForest,

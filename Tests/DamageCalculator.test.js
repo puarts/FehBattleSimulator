@@ -25,6 +25,7 @@ describe('Test feud skills', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
+    g_appData = calclator.unitManager;
   });
 
   describe('Test disable skills from other enemies', () => {

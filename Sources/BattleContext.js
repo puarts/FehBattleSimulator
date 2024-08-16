@@ -116,6 +116,7 @@ class BattleContext {
         this.damageAfterCombat = 0;
 
         // 強化無効
+        // unit invalidate foe's bonus
         this.invalidatesAtkBuff = false;
         this.invalidatesSpdBuff = false;
         this.invalidatesDefBuff = false;
@@ -950,7 +951,7 @@ class BattleContext {
         this.#damageReductionRatiosOfFirstAttack.push(ratio);
     }
 
-    getDamageReductionRatiosOfFirstAttack(ratio) {
+    getDamageReductionRatiosOfFirstAttack() {
         return this.#damageReductionRatiosOfFirstAttack;
     }
 
@@ -958,7 +959,7 @@ class BattleContext {
         this.#damageReductionRatiosOfFirstAttacks.push(ratio);
     }
 
-    getDamageReductionRatiosOfFirstAttacks(ratio) {
+    getDamageReductionRatiosOfFirstAttacks() {
         return this.#damageReductionRatiosOfFirstAttacks;
     }
 
@@ -966,7 +967,7 @@ class BattleContext {
         this.#damageReductionRatiosOfConsecutiveAttacks.push(ratio);
     }
 
-    getDamageReductionRatiosOfConsecutiveAttacks(ratio) {
+    getDamageReductionRatiosOfConsecutiveAttacks() {
         return this.#damageReductionRatiosOfConsecutiveAttacks;
     }
 
@@ -974,7 +975,7 @@ class BattleContext {
         this.#damageReductionRatiosOfFollowupAttack.push(ratio);
     }
 
-    getDamageReductionRatiosOfFollowupAttack(ratio) {
+    getDamageReductionRatiosOfFollowupAttack() {
         return this.#damageReductionRatiosOfFollowupAttack;
     }
 
@@ -982,7 +983,7 @@ class BattleContext {
         this.#damageReductionRatiosByChainGuard.push(ratio);
     }
 
-    getDamageReductionRatiosByChainGuard(ratio) {
+    getDamageReductionRatiosByChainGuard() {
         return this.#damageReductionRatiosByChainGuard;
     }
 }

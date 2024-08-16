@@ -2158,9 +2158,10 @@ class Unit extends BattleMapElement {
      */
     addStatusEffect(statusEffectType) {
         let units = g_appData.enumerateAllUnitsOnMap();
-        for (let unitIncludingSelf of units) {
-            let env = new AddStatusEffectEnv(this, unitIncludingSelf, statusEffectType);
-            if (CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+        for (let unit of units) {
+            let env = new PreventingStatusEffectEnv(unit, this, statusEffectType);
+            env.setName('ステータス付与時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            if (CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
         }
@@ -2509,9 +2510,10 @@ class Unit extends BattleMapElement {
 
     endActionBySkillEffect() {
         let units = g_appData.enumerateAllUnitsOnMap();
-        for (let unitIncludingSelf of units) {
-            let env = new NeutralizingEndActionEnv(this, unitIncludingSelf);
-            if (CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+        for (let unit of units) {
+            let env = new NeutralizingEndActionEnv(unit, this);
+            env.setName('スキルによる行動終了時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            if (CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
         }
@@ -2520,9 +2522,10 @@ class Unit extends BattleMapElement {
 
     endActionByStatusEffect() {
         let units = g_appData.enumerateAllUnitsOnMap();
-        for (let unitIncludingSelf of units) {
-            let env = new NeutralizingEndActionEnv(this, unitIncludingSelf);
-            if (CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+        for (let unit of units) {
+            let env = new NeutralizingEndActionEnv(unit, this);
+            env.setName('ステータスによる行動終了時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            if (CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
         }
@@ -5362,6 +5365,14 @@ class Unit extends BattleMapElement {
             default:
                 throw new Error("Invalid groupId");
         }
+    }
+
+    isSameGroup(otherUnit) {
+        return this.groupId === otherUnit.groupId;
+    }
+
+    isDifferentGroup(otherUnit) {
+        return !this.isSameGroup(otherUnit);
     }
 
     canCounterAttackToAllDistance() {

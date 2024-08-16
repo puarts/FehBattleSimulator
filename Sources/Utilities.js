@@ -1298,6 +1298,15 @@ class GeneratorUtil {
     static countIf(generator, pred) {
         return this.count(this.filter(generator, pred));
     }
+
+    /**
+     * @template T
+     * @param {Generator<T>} generator
+     * @returns {T[]}
+     */
+    static toArray(generator) {
+        return Array.from(generator);
+    }
 }
 
 class ArrayUtil {

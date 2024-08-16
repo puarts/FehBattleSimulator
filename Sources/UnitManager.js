@@ -13,6 +13,9 @@ class UnitManager {
         }
     }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     *enumerateUnits() {
         for (let unit of this.units) {
             yield unit;

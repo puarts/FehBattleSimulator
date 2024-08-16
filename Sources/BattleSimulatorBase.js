@@ -809,6 +809,13 @@ class BattleSimulatorBase {
         updateAllUi();
     }
 
+    /**
+     * @returns {UnitManager}
+     */
+    get unitManager() {
+        return g_appData;
+    }
+
     __findMaxSpWeaponId(defaultSkillId, options) {
         let skillInfoArrays = [g_appData.weaponInfos];
         let maxSpSkillInfo = this.__findSkillInfoFromArrays(skillInfoArrays, defaultSkillId);
@@ -1175,6 +1182,7 @@ class BattleSimulatorBase {
             return;
         }
         let env = new EnumerationEnv(g_appData, duoUnit);
+        env.setName('比翼双界スキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
         ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
             case Hero.HarmonizedGoldmary:
@@ -6792,6 +6800,7 @@ class BattleSimulatorBase {
             let isThereAnyUnitThatInflictCantoControlWithinRange = false;
             for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
                 let env = new CantoControlEnv(unit, u);
+                env.setName('再移動制限時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
                 isThereAnyUnitThatInflictCantoControlWithinRange |=
                     CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
                 for (let skillId of u.enumerateSkills()) {
@@ -6835,7 +6844,9 @@ class BattleSimulatorBase {
         }
 
         // スキル毎の追加条件
-        if (CAN_ACTIVATE_CANTO_HOOKS.evaluateSomeWithUnit(unit, new BattleSimulatorBaseEnv(this, unit))) {
+        let env = new BattleSimulatorBaseEnv(this, unit);
+        env.setName('再移動判定時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        if (CAN_ACTIVATE_CANTO_HOOKS.evaluateSomeWithUnit(unit, env)) {
             return true;
         }
         for (let skillId of unit.enumerateSkills()) {
