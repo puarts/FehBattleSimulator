@@ -155,6 +155,7 @@ class BeginningOfTurnSkillHandler {
         unit.applyReservedBuffs();
         unit.applyReservedDebuffs(isBeginningOfTurn);
         unit.applyReservedStatusEffects(isBeginningOfTurn);
+        unit.applyReservedGreatTalents();
     }
 
     /**

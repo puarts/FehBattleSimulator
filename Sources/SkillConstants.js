@@ -2127,6 +2127,7 @@ const Special = {
     FierceBeast: 2960, // 猛獣
 
     // 専用奥義
+    MakingsOfAKing: 2989, // 王器
     WarpRagnarok: 2925, // ワープライナ
     TimeAndLight: 2919, // 時と光
     Bane: 2903, // 瞬殺

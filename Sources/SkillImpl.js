@@ -1,12 +1,74 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 王器
+{
+    let skillId = Special.MakingsOfAKing;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT2_SPECIALS.push(skillId);
+
+    // Boosts damage by 30% of unit's Def + Def【Great Talent】when Special triggers.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            ADD_NODE(MULT_TRUNC_NODE(UNITS_DEF_DURING_COMBAT_NODE, 0.3), UNITS_DEF_GREAT_TALENT_NODE),
+        ),
+    ));
+
+    // Reduces damage from attacks during combat by percentage = 40, - 10 × current Special cooldown count value.
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new ReducesDamageDuringCombatByPercentageNBySpecialPerAttackNode(
+            SUB_NODE(40, MULT_NODE(10, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT))
+        ),
+    ));
+
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // grants Atk/Def/Res 【Great Talent】+2 to unit and
+        new GrantsGreatTalentsPlusToTargetNode(
+            StatsNode.makeStatsNodeFrom(2, 0, 2, 2),
+            StatsNode.makeStatsNodeFrom(20, 20, 20, 20),
+        ),
+        // Atk/Def/Res 【Great Talent】+1 to allies within 3 rows or 3 columns centered on unit.
+        new ForEachAllyNode(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            new GrantsGreatTalentsPlusToTargetNode(
+                StatsNode.makeStatsNodeFrom(1, 0, 1, 1),
+                StatsNode.makeStatsNodeFrom(10, 10, 10, 10),
+            ),
+        ),
+    ));
+
+    // After combat,
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // if unit's Special triggered,
+        // grants Atk/Def/Res【Great Talent】+4 to unit and
+        IF_NODE(IS_UNITS_SPECIAL_TRIGGERED,
+            new GrantsGreatTalentsPlusToTargetNode(
+                StatsNode.makeStatsNodeFrom(4, 0, 4, 4),
+                StatsNode.makeStatsNodeFrom(20, 20, 20, 20),
+            ),
+        ),
+        // Atk/Def/Res【Great Talent】+2 to allies within 3 rows or 3 columns centered on unit.
+        new ForEachAllyNode(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            new GrantsGreatTalentsPlusToTargetNode(
+                StatsNode.makeStatsNodeFrom(2, 0, 2, 2),
+                StatsNode.makeStatsNodeFrom(10, 10, 10, 10),
+            ),
+        ),
+    ));
+    // (This skill grants max of【Great Talent】+20 for unit and 【Great Talent】+10 for allies.)
+    // 【Great Talent】
+    // Adds value of Great Talent (+X) to specified stats (until end of battle; max value of X is determined by the stat reaching the limit of 99, each stat calculated separately; stat increases are not treated as Bonus effects).
+}
+
 // 王斧グリトニル
 {
     let skillId = Weapon.MajesticGlitnir;
     // 【再移動(マス間の距離+1、最大4)】を発動可能
-    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => CANTO_DIST_PLUS_1_MAX_4_NODE);
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => CANTO_DIST_PLUS_1_MAX_4_NODE);
     // 奥義が発動しやすい(発動カウント-1)
     // ターン開始時、自身を中心とした縦3列と横3列に味方がいる時、
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -19,7 +81,7 @@
             GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AT_START_OF_TURN_NODE,
         )
     ));
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // 自分から攻撃した時、または、自身を中心とした縦3列と横3列に味方がいる時、
         IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
             // 戦闘中、自身の守備、魔防+、
@@ -50,7 +112,7 @@
         )
     ));
     // 自分から攻撃した時、または、自身を中心とした縦3列と横3列に味方がいる時、戦闘後、奥義発動カウントが最大値なら、奥義発動カウント-1
-    APPLY_SKILL_EFFECTS_AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
             GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AFTER_COMBAT_NODE,
         )
@@ -60,7 +122,7 @@
 // 落星・承
 {
     let skillId = PassiveB.FallenStar2;
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT,
                     new IsStatusEffectActiveOnUnitNode(StatusEffectType.DeepStar)),
@@ -83,7 +145,7 @@
             )
         )
     );
-    APPLY_SKILL_EFFECTS_AFTER_COMBAT_HOOKS.addSkill(skillId, () =>
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // If unit initiates combat,
             new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
@@ -101,7 +163,7 @@
 // ユングヴィの祖・神
 {
     let skillId = PassiveB.YngviAscendantPlus;
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
             NULL_UNIT_FOLLOW_UP_NODE,
@@ -110,7 +172,7 @@
             ),
         )
     );
-    APPLYING_POTENT_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>
+    WHEN_APPLIES_POTENT_EFFECTS_HOOKS.addSkill(skillId, () =>
         new AppliesPotentEffectNode(1, -10)
     );
 }
@@ -127,7 +189,7 @@
         )
     );
     // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
             new UnitDealsDamageExcludingAoeSpecialsNode(
@@ -140,7 +202,7 @@
 // 双界ネフェニーの双界スキル
 {
     // TODO: indexを直接書かないで良いように依存関係を修正する
-    ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.addValue(1157,
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(1157,
         new SkillEffectNode(
             new ForEachUnitFromSameTitlesNode(
                 new GrantsStatsNode(6, 6, 0, 0),
@@ -158,11 +220,11 @@
 {
     let skillId = PassiveA.AtkSpdMastery;
     // 現在のターン中に自分が戦闘を行っている時、【再移動(2)】を発動可能
-    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () =>
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () =>
         HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
     );
-    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(2));
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(2));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // 戦闘開始時、敵のHPが50%以上の時、戦闘中、
             new IfNode(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
@@ -182,7 +244,7 @@
 {
     let skillId = Weapon.FlutteringFan;
     // 奥義が発動しやすい(発動カウント-1)
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // 自身を中心とした縦3列と横3列に味方がいる時、戦闘中、
             new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
@@ -217,7 +279,7 @@
             )
         )
     );
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // 自身を中心とした縦3列と横3列に味方がいる時、
             // 戦闘中、速さが敵より1以上高ければ、敵は反撃不可
@@ -230,7 +292,7 @@
             ),
         )
     );
-    GRANTING_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () =>
+    WHEN_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () =>
         // 自身を中心とした縦3列と横3列の味方は、
         new IfNode(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
             // 攻撃時に発動する奥義を装備している時、戦闘中、
@@ -262,7 +324,7 @@
         )
     );
     // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
             new UnitDealsDamageExcludingAoeSpecialsNode(
@@ -292,7 +354,7 @@
 // 清風明月の夏祭の槍
 {
     let skillId = Weapon.BreezySpear;
-    BEFORE_PRECOMBAT_HOOKS.addSkill(skillId, () =>
+    PRE_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // 範囲奥義無効
             UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
@@ -305,7 +367,7 @@
             FOE_DISABLES_SUPPORT_EFFECTS,
         ),
     );
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
             new GrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
@@ -338,7 +400,7 @@
 // 天馬裂空
 {
     let skillId = PassiveB.PegasusRift;
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 0, 0),
             new AppliesSkillEffectsAfterStatusFixedNode(
@@ -361,8 +423,8 @@
 // 意気軒昂の夏祭の斧
 {
     let skillId = Weapon.SummertimeAxe;
-    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => CANTO_REM_PLUS_ONE_NODE);
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => CANTO_REM_PLUS_ONE_NODE);
 
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
@@ -375,7 +437,7 @@
             )
         )
     );
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 new GrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
@@ -451,15 +513,15 @@
 // フェイルノート
 {
     let skillId = getSpecialRefinementSkillId(Weapon.Failnaught);
-    CAN_ACTIVATE_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CALC_MOVE_COUNT_FOR_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(1));
-    GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        IF_NODE(IS_FOE_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(1));
+    WHEN_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             new InflictsStatsMinusOnUnitDuringCombatNode(0, 5, 5, 0),
         ),
     ));
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
             NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
@@ -482,7 +544,7 @@
             )
         )
     ));
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // 戦闘開始時、自身のHPが25%以上なら戦闘中、攻撃、速さ、守備、魔防+5、かつ、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
@@ -494,7 +556,7 @@
     let skillId = getNormalSkillId(Weapon.Failnaught);
     // 飛行特効
     // 奥義が発動しやすい(発動カウント-1)
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // 戦闘開始時、自身のHPが25%以上なら戦闘中、攻撃、速さ、守備、魔防+5、かつ、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
@@ -507,7 +569,7 @@
 {
     let skillId = getSpecialRefinementSkillId(Weapon.HolyYewfelle);
 
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 UNIT_GRANTS_ATK_SPD_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
@@ -520,7 +582,7 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.HolyYewfelle);
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 UNIT_GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
@@ -533,7 +595,7 @@
 }
 {
     let skillId = getNormalSkillId(Weapon.HolyYewfelle);
-    APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.addSkill(skillId, () =>
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 UNIT_GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,

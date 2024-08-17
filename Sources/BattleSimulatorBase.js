@@ -1183,7 +1183,7 @@ class BattleSimulatorBase {
         }
         let env = new EnumerationEnv(g_appData, duoUnit);
         env.setName('比翼双界スキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
-        ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
+        WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
             case Hero.HarmonizedGoldmary:
                 // 自分と同じ出典の味方と、自分自身に
@@ -6846,7 +6846,7 @@ class BattleSimulatorBase {
         // スキル毎の追加条件
         let env = new BattleSimulatorBaseEnv(this, unit);
         env.setName('再移動判定時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
-        if (CAN_ACTIVATE_CANTO_HOOKS.evaluateSomeWithUnit(unit, env)) {
+        if (CAN_TRIGGER_CANTO_HOOKS.evaluateSomeWithUnit(unit, env)) {
             return true;
         }
         for (let skillId of unit.enumerateSkills()) {

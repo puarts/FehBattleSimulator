@@ -1682,8 +1682,9 @@ class DamageCalculator {
      */
     __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
         let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit);
-        env.setName('攻撃時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(context.damageType);
+        env.setName('攻撃開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(context.damageType);
         targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
+        AT_START_OF_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectsPerAttackFuncMap);
             func?.call(this, targetUnit, enemyUnit, canActivateAttackerSpecial, context);

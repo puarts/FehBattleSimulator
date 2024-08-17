@@ -479,11 +479,13 @@ class Unit extends BattleMapElement {
         this.captain = -1;
 
         /**
-         * TODO: 値の保存に対応する。初期局面に戻った場合に全てリセットする
+         * TODO: 初期局面に戻った場合に全てリセットする必要があるか検証する
          * 大器
          * @type {[number, number, number,number]}
          */
         this._greatTalents = [0, 0, 0, 0];
+        this._reservedGreatTalents = [0, 0, 0, 0];
+        this._reservedMaxGreatTalents = [0, 0, 0, 0];
 
         // TODO: 削除
         // noinspection JSUnusedGlobalSymbols
@@ -3472,50 +3474,80 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * NOTE: Returns copy.
-     * @returns {number[]}
+     * @param {number} index
      */
-    getGreatTalents() {
-        return [...this._greatTalents];
-    }
-
     getGreatTalent(index) {
         return this._greatTalents[index];
     }
 
     /**
+     * NOTE: Returns copy.
+     * @returns {[number, number, number, number]}
+     */
+    getGreatTalents() {
+        return [...this._greatTalents];
+    }
+
+    /**
      * @param {number} index
      * @param {number} value
+     * @param {number} maxValue
      */
-    setGreatTalent(index, value) {
-        this._greatTalents[index] = value;
+    setGreatTalent(index, value, maxValue = 99) {
+        this._greatTalents[index] = MathUtil.ensureMax(value, maxValue);
     }
 
     /**
-     * @param {number} atk
-     * @param {number} spd
-     * @param {number} def
-     * @param {number} res
+     * @param {[number, number, number, number]} values
+     * @param {[number, number, number, number]} maxValues
      */
-    setGreatTalents(atk, spd, def, res) {
-        this._greatTalents[STATUS_INDEX.Atk] = atk;
-        this._greatTalents[STATUS_INDEX.Spd] = spd;
-        this._greatTalents[STATUS_INDEX.Def] = def;
-        this._greatTalents[STATUS_INDEX.Res] = res;
+    setGreatTalentsFrom(values, maxValues = [99, 99, 99, 99]) {
+        this._greatTalents = ArrayUtil.apply(values, maxValues, MathUtil.ensureMax);
     }
 
-    /**
-     * @param {number[]} stats
-     */
-    setGreatTalentsFrom(stats) {
-        this._greatTalents = [...stats];
+    getReservedGreatTalents() {
+        return [...this._reservedGreatTalents];
     }
 
-    /**
-     * @param {number[]} values
-     */
-    addGreatTalentsFrom(values) {
-        this._greatTalents = ArrayUtil.add(this._greatTalents, values);
+    getReservedMaxGreatTalents() {
+        return [...this._reservedMaxGreatTalents];
+    }
+
+    reserveToAddGreatTalentsFrom(values, maxValues) {
+        let addableValues = this.getAddableGreatTalents(values, maxValues);
+        this.addReservedGreatTalents(addableValues);
+        this.calculateMaxReservedGreatTalents(maxValues);
+    }
+
+    getAddableGreatTalents(values, maxValues) {
+        let subbed = ArrayUtil.sub(maxValues, this.getGreatTalents()).map(v => MathUtil.ensureMin(v, 0));
+        return ArrayUtil.min(values, subbed);
+    }
+
+    addReservedGreatTalents(values) {
+        this._reservedGreatTalents = ArrayUtil.add(this.getReservedGreatTalents(), values);
+    }
+
+    calculateMaxReservedGreatTalents(maxValues) {
+        this._reservedMaxGreatTalents = ArrayUtil.max(this.getReservedMaxGreatTalents(), maxValues);
+    }
+
+    applyReservedGreatTalents() {
+        // 今の値を保存
+        let currentValues = this.getGreatTalents();
+        // 上限を気にせず加算する
+        let addedValues = ArrayUtil.add(this.getGreatTalents(), this.getReservedGreatTalents());
+        // 予約された最大値を適用(最大値とのmin)
+        let minValues = ArrayUtil.min(addedValues, this.getReservedMaxGreatTalents());
+        // 適用したものとcurrentのmaxを選択(現在より減ることはない)
+        this.setGreatTalentsFrom(ArrayUtil.max(currentValues, minValues));
+        // 値をクリア
+        this.clearReservedGreatTalents();
+    }
+
+    clearReservedGreatTalents() {
+        this._reservedGreatTalents = [0, 0, 0 ,0];
+        this._reservedMaxGreatTalents = [0, 0, 0, 0];
     }
 
     getSpdInPrecombatWithoutDebuff() {
@@ -5666,7 +5698,7 @@ class Unit extends BattleMapElement {
         }
         let env = new CantoEnv(this);
         env.setName('再移動距離計算時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
-        moveCountForCanto = Math.max(moveCountForCanto, CALC_MOVE_COUNT_FOR_CANTO_HOOKS.evaluateMaxWithUnit(this, env));
+        moveCountForCanto = Math.max(moveCountForCanto, CALCULATES_DISTANCE_OF_CANTO_HOOKS.evaluateMaxWithUnit(this, env));
         for (let skillId of this.enumerateSkills()) {
             let moveCount = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
             moveCountForCanto = Math.max(moveCountForCanto, moveCount);

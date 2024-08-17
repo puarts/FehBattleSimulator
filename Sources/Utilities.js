@@ -1349,6 +1349,34 @@ class ArrayUtil {
     static mult(array1, array2) {
         return array1.map((value, index) => value * array2[index]);
     }
+
+    /**
+     * @param {number[]} array1
+     * @param {number[]} array2
+     */
+    static min(array1, array2) {
+        return array1.map((value, index) => Math.min(value, array2[index]));
+    }
+
+    /**
+     * @param {number[]} array1
+     * @param {number[]} array2
+     */
+    static max(array1, array2) {
+        return array1.map((value, index) => Math.max(value, array2[index]));
+    }
+
+    /**
+     * @template T1
+     * @template T2
+     * @template T3
+     * @param {T1[]} array1
+     * @param {T2[]} array2
+     * @param {function(T1, T2): T3} func
+     */
+    static apply(array1, array2, func) {
+        return array1.map((value, index) => func(value, array2[index]));
+    }
 }
 
 class MathUtil {
