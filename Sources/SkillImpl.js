@@ -1,6 +1,39 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 野戦築城
+{
+    let skillId = PassiveA.Fortifications;
+    // Inflicts Atk-5. Grants Def/Res+7.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is in a space where a Divine Vein effect is applied,
+        IF_NODE(IS_TARGET_IS_IN_SPACE_WHERE_DIVINE_VEIN_EFFECT_IS_APPLIED_NODE,
+            // unit can counterattack regardless of foe's range.
+            TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE
+        ),
+        // If unit initiates combat,
+        IF_NODE(IS_COMBAT_INITIATED_BY_UNIT,
+            // grants Def/Res+6 to unit and
+            new GrantsStatsPlusToUnitDuringCombatNode(0, 0, 6, 6),
+            // reduces damage from foe's Specials by 10 during combat (excluding area-of-effect Specials).
+            new UnitReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(10)
+        )
+    ));
+
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit has entered combat during the current turn,
+        // after unit acts (if Canto triggers, after Canto),
+        IF_NODE(HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+            // applies【Divine Vein (Stone)】to unit's space and spaces within 2 spaces of unit for 1 turn.
+            new AppliesDivineVeinNode(
+                DivineVeinType.Stone,
+                new IsTargetsSpaceAndSpacesWithinNSpacesOfTargetNode(2),
+            )
+        )
+    ));
+}
+
 // 王器
 {
     let skillId = Special.MakingsOfAKing;

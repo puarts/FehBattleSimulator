@@ -657,6 +657,8 @@ class NodeEnv {
     postCombatHandler = null;
     /** @type {number|null} */
     damageType = null;
+    /** @type {Tile|null} */
+    tile = null;
 
     #logLevel = NodeEnv.LOG_LEVEL.OFF;
 
@@ -2300,6 +2302,21 @@ const FOE_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = 
     }
 }();
 
+/**
+ * unit can counterattack regardless of foe's range.
+ */
+class TargetCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
+    evaluate(env) {
+        let unit = env.target;
+        env.debug(`${unit.nameWithGroup}は距離に関係なく反撃する)`);
+        unit.battleContext.canCounterattackToAllDistance = true;
+    }
+}
+
+const TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new TargetCanCounterattackRegardlessOfRangeNode();
+
+// BattleContextに値を設定
+
 // noinspection JSUnusedGlobalSymbols
 class GrantsOrInflictsStatsAfterStatusFixedNode extends SkillEffectNode {
     evaluate(env) {
@@ -2605,6 +2622,70 @@ class AppliesPotentEffectNode extends FromNumbersNode {
     }
 }
 
+// Tileへの効果
+
+/**
+ * applies【Divine Vein (Stone)】to unit's space and spaces within 2 spaces of unit for 1 turn.
+ */
+class AppliesDivineVeinNode extends SkillEffectNode {
+    /**
+     * TODO: 文字列を渡せるようにする
+     * TODO: traceログを追加
+     * @param {number} divineVein
+     * @param {BoolNode} predNode
+     */
+    constructor(divineVein, predNode) {
+        super(predNode);
+        this._divineVein = divineVein;
+    }
+    getUnit(env) {
+        return env.target;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.debug(`${unit.nameWithGroup}は天脈(${this._divineVein})を付与`);
+        for (let tile of g_appData.map.enumerateTiles()) {
+            let copyEnv = env.copy();
+            copyEnv.tile = tile;
+            if (this.evaluateChildren(copyEnv)[0]) {
+                tile.reserveDivineVein(this._divineVein, unit.groupId);
+            }
+        }
+    }
+}
+
+class IsTargetsSpaceAndSpacesWithinNSpacesOfTargetNode extends BoolNode {
+    /**
+     * TODO: traceログを追加
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let distance = env.tile.calculateDistance(env.target.placedTile);
+        return distance <= this.evaluateChildren(env)[0];
+    }
+}
+
+class IsTargetIsInSpaceWhereDivineVeinEffectIsAppliedNode extends BoolNode {
+    getUnit(env) {
+        return env.target;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let tile = unit.placedTile;
+        let result = tile != null && tile.divineVein !== DivineVeinType.None;
+        env.debug(`${unit.nameWithGroup}は天脈が付与されたマスにいるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_IS_IN_SPACE_WHERE_DIVINE_VEIN_EFFECT_IS_APPLIED_NODE = new IsTargetIsInSpaceWhereDivineVeinEffectIsAppliedNode();
+
 // ターン開始時
 // TODO: 以下の関数群をPhaseを見て予約するかどうか決定して汎用的なノードにする
 class GrantsStatsPlusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
@@ -2867,3 +2948,8 @@ const WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS = new SkillEffectHoo
  * 攻撃開始時
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorEnv>} */
 const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
+
+/**
+ * 攻撃開始時
+ * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>} */
+const AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS = new SkillEffectHooks();
