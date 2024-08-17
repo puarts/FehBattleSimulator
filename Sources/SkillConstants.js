@@ -2859,6 +2859,8 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
     PegasusRift: 2968, // 天馬裂空
 
+    Reopening: 2991, // 一新
+
     // 専用B
     DivineStrength: 2962, // 神獣の肉体
     MoonlitBangleQ: 2954, // 華月の腕輪・先

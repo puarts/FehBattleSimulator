@@ -1,6 +1,45 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 一新
+{
+    let skillId = PassiveB.Reopening;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // inflicts Atk-5 on foe, inflicts Special cooldown charge -1 on foe per attack (only highest value applied; does not stack),
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 0, 0, 0),
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        )
+    ));
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // deals damage = X% of unit's Def (excluding area-of-effect Specials), and
+        new UnitDealsDamageExcludingAoeSpecialsNode(
+            // if unit can make a follow-up attack or if unit triggers the "unit attacks twice" effect, X = 10; otherwise, X = 20).
+            MULT_TRUNC_NODE(
+                COND_OP(
+                    OR_NODE(CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
+                    0.1,
+                    0.2,
+                ),
+                UNITS_DEF_DURING_COMBAT_NODE,
+            )
+        ),
+        // reduces damage from foe's attacks by X% of unit's Def during combat (excluding area-of-effect Specials;
+        new UnitReducesDamageExcludingAoeSpecialsNode(
+            MULT_TRUNC_NODE(
+                COND_OP(
+                    OR_NODE(CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
+                    0.1,
+                    0.2,
+                ),
+                UNITS_DEF_DURING_COMBAT_NODE,
+            )
+        )
+    ));
+}
+
 // 野戦築城
 {
     let skillId = PassiveA.Fortifications;

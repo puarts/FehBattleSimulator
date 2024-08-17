@@ -767,6 +767,14 @@ class BattleContext {
         );
     }
 
+    isTriggeringAttackTwice() {
+        if (this.initiatesCombat) {
+            return this.attackCount === 2;
+        } else {
+            return this.counterattackCount === 2;
+        }
+    }
+
     neutralizesReducesCooldownCount() {
         this.applyInvalidationSkillEffectFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {

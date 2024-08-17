@@ -572,8 +572,8 @@ class DamageCalculatorWrapper {
         self.__applyPotentSkillEffect(defUnit, atkUnit, damageType);
 
         // 追撃可能かどうかが条件として必要なスキル効果の適用
-        self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
-        self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
+        self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit, calcPotentialDamage, damageType);
+        self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit, calcPotentialDamage, damageType);
 
         // 効果を無効化するスキル
         self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
@@ -14809,7 +14809,17 @@ class DamageCalculatorWrapper {
     }
 
     /// 追撃可能かどうかが条件として必要なスキル効果の適用
-    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit) {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {number} damageType
+     * @private
+     */
+    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        env.setName('追撃判定後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        AFTER_FOLLOW_UP_CONFIGURED_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectRelatedToFollowupAttackPossibilityFuncMap);
             func?.call(this, targetUnit, enemyUnit);

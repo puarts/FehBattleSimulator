@@ -602,6 +602,9 @@ class TernaryConditionalNumberNode extends NumberNode {
     }
 }
 
+const COND_OP =
+    (cond, trueNode, falseNode) => new TernaryConditionalNumberNode(cond, trueNode, falseNode);
+
 // TODO: 別ファイルに分ける
 
 // TODO: 直接設定されたくない値をプライベートにする(targetUnitOrAlly, targetFoe)
@@ -1603,10 +1606,10 @@ class GrantsGreatTalentsPlusToTargetNode extends SkillEffectNode {
         let [values, maxValues] = this.evaluateChildren(env);
         let unit = env.target;
         env.debug(`${unit.nameWithGroup}への大器の予約を開始: ターン開始前 [${unit.getGreatTalents()}]`);
-        env.trace(`現在の予約　: [${unit.getReservedGreatTalents()}], max [${unit.getReservedMaxGreatTalents()}]`);
-        env.trace(`大器を予約　: [${values}], max [${maxValues}]`);
+        env.trace(`現在の予約: [${unit.getReservedGreatTalents()}], max [${unit.getReservedMaxGreatTalents()}]`);
+        env.trace(`大器を予約: [${values}], max [${maxValues}]`);
         unit.reserveToAddGreatTalentsFrom(values, maxValues);
-        env.debug(`反映後の予約: [${unit.getReservedGreatTalents()}], max [${unit.getReservedMaxGreatTalents()}]`);
+        env.debug(`反映後予約: [${unit.getReservedGreatTalents()}], max [${unit.getReservedMaxGreatTalents()}]`);
         env.trace(`${unit.nameWithGroup}へ大器を予約処理を終了`);
     }
 }
@@ -2284,7 +2287,15 @@ const NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS = new class extends SkillEffectN
         env.debug(`${unit.nameWithGroup}は奥義発動カウント変動量-を無効`);
         unit.battleContext.neutralizesReducesCooldownCount();
     }
-}()
+}();
+
+const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        env.debug(`${unit.nameWithGroup}は敵の奥義発動カウント変動量-1`);
+        unit.battleContext.reducesCooldownCount = true;
+    }
+}();
 
 const UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -2316,6 +2327,39 @@ class TargetCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
 const TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new TargetCanCounterattackRegardlessOfRangeNode();
 
 // BattleContextに値を設定
+
+class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
+    getUnit(env) {
+        return env.target
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canFollowupAttackIncludingPotent();
+        env.debug(`${unit.nameWithGroup}は追撃可能か: ${result}`);
+        return result;
+    }
+}
+
+const CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetCanMakeFollowUpIncludingPotentNode();
+
+// TODO: 命名規則を統一させる
+class IfTargetTriggersAttacksTwiceNode extends BoolNode {
+    getUnit(env) {
+        return env.target
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.isTriggeringAttackTwice();
+        env.debug(`${unit.nameWithGroup}は2回攻撃を発動しているか: ${result}`);
+        return result;
+    }
+}
+
+const IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE = new IfTargetTriggersAttacksTwiceNode();
+
+// BattleContextの値を参照
 
 // noinspection JSUnusedGlobalSymbols
 class GrantsOrInflictsStatsAfterStatusFixedNode extends SkillEffectNode {
@@ -2638,6 +2682,7 @@ class AppliesDivineVeinNode extends SkillEffectNode {
         super(predNode);
         this._divineVein = divineVein;
     }
+
     getUnit(env) {
         return env.target;
     }
@@ -2953,3 +2998,8 @@ const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
  * 攻撃開始時
  * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>} */
 const AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘開始時奥義
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const AFTER_FOLLOW_UP_CONFIGURED_HOOKS = new SkillEffectHooks();
