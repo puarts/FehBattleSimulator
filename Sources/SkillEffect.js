@@ -1200,6 +1200,24 @@ class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
 
 const IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
 
+/**
+ * number of allies adjacent to unit
+ */
+const NUMBER_OF_TARGET_ALLIES_ADJACENT_TO_TARGET = new class extends NumberNode {
+    getUnit(env) {
+        return env.target;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = env.unitManager.countAlliesWithinSpecifiedSpaces(unit, 1);
+        env.debug(`${unit.nameWithGroup}の周囲1マスの味方の数: ${result}`);
+        return result;
+    }
+}();
+
+// 周囲のユニット
+
 const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
@@ -1538,7 +1556,7 @@ class GrantsAllStatsPlusToUnitDuringCombatNode extends FromPositiveNumberNode {
 }
 
 const GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusToUnitDuringCombatNode(4);
-const UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusToUnitDuringCombatNode(5);
+const GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusToUnitDuringCombatNode(5);
 
 class GrantsAtkSpdPlusToUnitDuringCombatNode extends FromPositiveNumbersNode {
     evaluate(env) {
@@ -2325,6 +2343,17 @@ class TargetCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
 }
 
 const TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new TargetCanCounterattackRegardlessOfRangeNode();
+
+/**
+ * Calculates damage using the lower of foe's Def or Res.
+ */
+const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        let unit = env.target;
+        env.debug(`${unit.nameWithGroup}は敵の守備か魔防の低い方でダメージ計算)`);
+        unit.battleContext.refersMinOfDefOrRes = true;
+    }
+}
 
 // BattleContextに値を設定
 

@@ -1902,6 +1902,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=HeTPTeGqnTc
     // https://www.youtube.com/watch?v=ezkrMU7iBNA
     MajesticGlitnir: 2988, // 王斧グリトニル
+    NewLevinSword: 2982, // 錬磨サンダーソード
 };
 
 const Support = {

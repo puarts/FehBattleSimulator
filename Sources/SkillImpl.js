@@ -1,6 +1,32 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 錬磨サンダーソード
+{
+    let skillId = Weapon.NewLevinSword;
+    // Accelerates Special trigger (cooldown count-2; max cooldown count value cannot be reduced below 1).
+
+    // At start of combat,
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Unit can counterattack regardless of foe's range.
+        TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+        // Calculates damage using the lower of foe's Def or Res.
+        CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
+        // if foe's HP ≥ 75% or if number of allies adjacent to unit ≤ 1,
+        IF_NODE(OR_NODE(IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE,
+                new LteNode(NUMBER_OF_TARGET_ALLIES_ADJACENT_TO_TARGET, 1)),
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat,
+            new GrantsAllStatsPlusToUnitDuringCombatNode(MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit, and
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        )
+    ));
+}
+
 // 一新
 {
     let skillId = PassiveB.Reopening;
@@ -441,7 +467,7 @@
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
             new GrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
             new AppliesSkillEffectsAfterStatusFixedNode(
                 new UnitDealsDamageExcludingAoeSpecialsNode(
@@ -619,7 +645,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // 戦闘開始時、自身のHPが25%以上なら戦闘中、攻撃、速さ、守備、魔防+5、かつ、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-            UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
             NULL_UNIT_FOLLOW_UP_NODE)
     ));
 }
@@ -631,7 +657,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // 戦闘開始時、自身のHPが25%以上なら戦闘中、攻撃、速さ、守備、魔防+5、かつ、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-            UNIT_GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
             NULL_UNIT_FOLLOW_UP_NODE
         )
     ));

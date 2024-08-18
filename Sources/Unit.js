@@ -5292,7 +5292,7 @@ class Unit extends BattleMapElement {
             }
         }
         // TODO: 常に奥義カウントが0になるスキルが実装されたら修正する
-        if (specialCountMax === 0) {
+        if (specialCountMax <= 0) {
             specialCountMax = 1;
         }
 
