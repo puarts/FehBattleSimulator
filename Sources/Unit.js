@@ -2066,6 +2066,15 @@ class Unit extends BattleMapElement {
         this.reservedStatusEffects.push(statusEffect);
     }
 
+    /**
+     * @param {...number} statusEffects
+     */
+    reserveToAddStatusEffects(...statusEffects) {
+        for (let effect of statusEffects) {
+            this.reserveToAddStatusEffect(effect);
+        }
+    }
+
     reserveToApplyAtkBuff(value) {
         this.reservedAtkBuff = Math.max(this.reservedAtkBuff, value);
     }

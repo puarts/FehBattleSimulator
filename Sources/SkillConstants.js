@@ -3313,6 +3313,7 @@ const PassiveC = {
     EndlessTempest: 2984, // 迅雷風烈・無極
 
     // 専用C
+    Paranoia: 2987, // 被害妄想
     DivineNectar: 2959, // 神獣の蜜
     ForeverYours: 2890, // あなたのシャロン
     AbsoluteClosure: 2884, // すべてを鎖す世界

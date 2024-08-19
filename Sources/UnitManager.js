@@ -219,6 +219,15 @@ class UnitManager {
         return false;
     }
 
+    isThereEnemyInSpecifiedSpaces(targetUnit, spaces, predicator = null) {
+        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces)) {
+            if (predicator === null || predicator?.(unit)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     isThereAnyUnitInTheSameGroupOnMap(unit, conditionFunc) {
         for (let ally of this.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
             if (conditionFunc(ally)) {

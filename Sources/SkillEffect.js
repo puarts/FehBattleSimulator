@@ -1079,6 +1079,10 @@ const GetValueMixin = Object.assign({}, GetUnitMixin, {
     },
 });
 
+const NSpacesMixin = {
+    nSpaces: 0,
+}
+
 class IsThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
     #n;
 
@@ -1190,6 +1194,29 @@ class IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExclud
 
 const IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
     new IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode(2);
+
+// TODO: 条件を指定できるようにする
+/**
+ * if unit is within 5 spaces of a foe
+ */
+class IfTargetIsWithinNSpacesOfFoe extends BoolNode {
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env)[0];
+        let result = env.unitManager.isThereEnemyInSpecifiedSpaces(unit, n);
+        env.debug(`${unit.nameWithGroup}の周囲${n}マスに敵がいるか: ${result}`);
+        return result;
+    }
+}
+
+Object.assign(IfTargetIsWithinNSpacesOfFoe.prototype, GetUnitMixin);
 
 class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
     // TODO: 定数を使用するのかNodeを使用するのか統一する
@@ -2450,7 +2477,7 @@ const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE = new class exte
 const TARGET_ATTACKS_TWICE_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は2回攻撃)`);
+        env.debug(`${unit.nameWithGroup}は2回攻撃): ${unit.battleContext.attackCount} => 2`);
         unit.battleContext.attackCount = 2;
     }
 }();
@@ -2458,7 +2485,7 @@ const TARGET_ATTACKS_TWICE_NODE = new class extends SkillEffectNode {
 const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は受け時に2回攻撃)`);
+        env.debug(`${unit.nameWithGroup}は受け時に2回攻撃): ${unit.battleContext.counterattackCount} => ${2}`);
         unit.battleContext.counterattackCount = 2;
     }
 }();
@@ -2639,6 +2666,26 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
 class InflictStatusEffects extends GrantsStatusEffectsNode {
 }
 
+/**
+ * inflicts【Penalty】effects active on unit
+ */
+class InflictsPenaltyEffectsActiveOnSkillOwner extends SkillEffectNode {
+    evaluate(env) {
+        let unit = env.target;
+        let skillOwner = env.skillOwner;
+        let negativeStatusEffects = skillOwner.getNegativeStatusEffects();
+        let debuffs = skillOwner.getDebuffs();
+        skillOwner.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+        skillOwner.reservedStatusEffectSetToNeutralize = new Set(negativeStatusEffects);
+        unit.reserveToApplyDebuffs(...debuffs);
+        unit.reserveToAddStatusEffects(...negativeStatusEffects);
+        env.debug(`反射されるデバフ: [${debuffs}]`);
+        env.debug(`反射される不利なステータス: [${negativeStatusEffects.map(e => getStatusEffectName(e))}]`);
+    }
+}
+
+Object.assign(InflictStatusEffects, GetUnitMixin);
+
 const NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
@@ -2701,7 +2748,22 @@ class ForEachUnitAndAllyNode extends ForEachUnitOnMapNode {
     }
 }
 
-class ForEachTargetAndOtherUnitWithinNSpacesOfTargetNode extends ForEachUnitAndAllyNode {
+class ForEachTargetsFoeWithinNSpacesOfTargetNode extends ForEachUnitOnMapNode {
+    constructor(n, predNode, ...children) {
+        super(predNode, ...children);
+        this.nSpaces = n;
+    }
+    getUnits(env) {
+        let unit = this.getUnit(env);
+        let results = GeneratorUtil.toArray(env.unitManager.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, this.nSpaces));
+        env.debug(`${unit.nameWithGroup}の周囲${this.nSpaces}の敵: ${results.map(u => u.nameWithGroup)}`);
+        return results;
+    }
+}
+
+Object.assign(ForEachTargetsFoeWithinNSpacesOfTargetNode.prototype, GetUnitMixin, NSpacesMixin);
+
+class ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode extends ForEachUnitAndAllyNode {
     /** @type {NumberNode} */
     _nNode;
 
@@ -2728,27 +2790,13 @@ class ForEachTargetAndOtherUnitWithinNSpacesOfTargetNode extends ForEachUnitAndA
     }
 }
 
-class ForEachUnitAndAllyWithinNSpacesOfUnitNode extends ForEachTargetAndOtherUnitWithinNSpacesOfTargetNode {
-    getUnits(env) {
-        return super.getUnits(env.copy().setTarget(env.unitDuringCombat));
-    }
-}
-
-// noinspection JSUnusedGlobalSymbols
-class ForEachUnitAndAllyWithin1SpaceOfUnitNode extends ForEachUnitAndAllyWithinNSpacesOfUnitNode {
-    constructor(predNode, ...children) {
-        super(1, predNode, ...children);
-    }
-}
-
-// noinspection JSUnusedGlobalSymbols
-class ForEachUnitAndAllyWithin2SpacesOfUnitNode extends ForEachUnitAndAllyWithinNSpacesOfUnitNode {
+class ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
     constructor(predNode, ...children) {
         super(2, predNode, ...children);
     }
 }
 
-class ForEachTargetAndFoeWithinNSpacesOfTargetNode extends ForEachTargetAndOtherUnitWithinNSpacesOfTargetNode {
+class ForEachTargetAndFoeWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
     getUnits(env) {
         return super.getUnits(env.copy().setTarget(env.foeDuringCombat));
     }
@@ -2941,19 +2989,6 @@ class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     }
 }
 
-class GrantsStatusEffectAtStartOfTurnNode extends FromNumberNode {
-    /**
-     * @param {number} value
-     */
-    constructor(value) {
-        super(value);
-    }
-
-    evaluate(env) {
-        env.target.reserveToAddStatusEffect(this.evaluateChildren(env));
-    }
-}
-
 // TODO: rename
 class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
     /**
@@ -2981,6 +3016,18 @@ class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
 }
 
 class GrantsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAtStartOfTurnNode {
+}
+
+/**
+ * deals 1 damage to unit and those allies.
+ */
+class DealsDamageToTargetAtStartOfTurnNode extends FromPositiveNumberNode {
+    evaluate(env) {
+        let unit = env.target;
+        let result = this.evaluateChildren(env);
+        unit.reservedDamage += result;
+        env.debug(`${unit.nameWithGroup}は${result}ダメージを予約`);
+    }
 }
 
 // 再行動・再移動

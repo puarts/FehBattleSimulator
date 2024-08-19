@@ -1,6 +1,38 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 被害妄想
+{
+    let skillId = PassiveC.Paranoia;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // grants【Null Follow-Up】 to unit and
+        new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.NullFollowUp),
+        // grants【Paranoia】to unit and allies within 2 spaces of unit for 1 turn, and
+        new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Paranoia),
+            // deals 1 damage to unit and those allies.
+            new DealsDamageToTargetAtStartOfTurnNode(1),
+        ),
+        // At start of turn, if unit is within 5 spaces of a foe,
+        IF_NODE(new IfTargetIsWithinNSpacesOfFoe(5),
+            // inflicts【Penalty】effects active on unit on closest foes and any foe within 2 spaces of those foes,
+            // and neutralizes any【Penalty】 effects active on unit (excluding penalties inflicted at the start of the same turn).
+            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+                new InflictsPenaltyEffectsActiveOnSkillOwner(),
+            ),
+        )
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat, if unit's HP ≤ 99%, grants Atk/Spd+5 to unit and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        IF_NODE(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
+            new GrantsStatsPlusToUnitDuringCombatNode(5, 5, 0, 0),
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+        )
+    ));
+}
+
 // 曲射
 {
     let skillId = Special.CurvedShot;
@@ -36,10 +68,14 @@
     // Accelerates Special trigger (cooldown count-1).
     // Effective against flying foes.
 
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    // TODO: 攻撃回数設定時のHOOKSを作成するか検討する
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Unit attacks twice (even if foe initiates combat, unit attacks twice).
         TARGET_ATTACKS_TWICE_NODE,
         TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or【Bonus】is active on unit,
         IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_BONUS_ACTIVE_ON_UNIT_NODE),
             // grants Atk/Spd/Def/Res+5 to unit,
@@ -59,7 +95,7 @@
     let skillId = PassiveC.EndlessTempest;
     // At start of turn, unit can move 1 extra space (that turn only; does not stack).
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        new GrantsStatusEffectAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
+        new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
     ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -557,7 +593,7 @@
         // ターン開始時、自身のHPが25%以上なら、自分の攻撃+6、「自分から攻撃時、絶対追撃」を付与(1ターン)
         new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
             new GrantsStatsPlusAtStartOfTurnNode(6, 0, 0, 0),
-            new GrantsStatusEffectAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.FollowUpAttackPlus),
         )
     );
     // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+4、ダメージ+○×5(最大25、範囲奥義を除く)(○は自身と敵が受けている強化を除いた【有利な状態】の数の合計値)

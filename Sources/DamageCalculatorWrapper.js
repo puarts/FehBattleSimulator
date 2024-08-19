@@ -2234,6 +2234,28 @@ class DamageCalculatorWrapper {
      * @param  {GameMode} gameMode
      */
     ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, damageType, gameMode) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.Paranoia)) {
+            // 【Paranoia】
+            // At start of combat, if unit's HP ≤ 99%, grants Atk+5 to unit during combat, and also, if unit initiates combat, unit can make a follow-up attack before foe's next attack.
+            // At start of combat, if unit's HP ≤ 99%, if foe initiates combat, and if either that foe's Range = unit's Range or number of【Penalty】effects active on foe excluding stat penalties ≥ 3, unit can counterattack before foe's first attack (excluding when unit's Savior effect triggers).
+            if (targetUnit.battleContext.restHpPercentage <= 99) {
+                targetUnit.atkSpur += 5;
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.isDesperationActivatable = true;
+                }
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    let areRanged = targetUnit.isRangedWeaponType() && enemyUnit.isRangedWeaponType();
+                    let areMelee = targetUnit.isMeleeWeaponType() && enemyUnit.isMeleeWeaponType();
+                    let areSameRange = areRanged || areMelee;
+                    let negativeCount = enemyUnit.getNegativeStatusEffects().length;
+                    if (areSameRange || negativeCount >= 3) {
+                        if (!targetUnit.battleContext.isSaviorActivated) {
+                            targetUnit.battleContext.isVantageActivatable = true;
+                        }
+                    }
+                }
+            }
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.TimesGrip)) {
             targetUnit.addAllSpur(-4);
         }
