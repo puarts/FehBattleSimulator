@@ -3308,6 +3308,8 @@ const PassiveC = {
     EvenAtkWaveN: 2939, // 近間の攻撃の波・偶
     EvenResWaveD: 2934, // 竜の魔防の波・偶
 
+    EndlessTempest: 2984, // 迅雷風烈・無極
+
     // 専用C
     DivineNectar: 2959, // 神獣の蜜
     ForeverYours: 2890, // あなたのシャロン

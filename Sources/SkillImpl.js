@@ -1,6 +1,28 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 迅雷風烈・無極
+{
+    let skillId = PassiveC.EndlessTempest;
+    // At start of turn, unit can move 1 extra space (that turn only; does not stack).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new GrantsStatusEffectAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit or foe initiates combat after moving to a different space,
+        IF_NODE(IF_UNIT_OR_FOE_INITIATES_COMBAT_AFTER_MOVING_TO_A_DIFFERENT_SPACE_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = number of spaces from start position to end position of whoever initiated combat (max 3) and
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(
+                new EnsureMaxNode(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT,
+                    3)
+            ),
+            // neutralizes foe's bonuses (from skills like Fortify, Rally, etc.) during combat.
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+        )
+    ));
+}
+
 // 一匹狼
 {
     let skillId = PassiveB.LoneWolf;
@@ -82,7 +104,7 @@
             // grants Atk/Spd/Def/Res+5 to unit,
             GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat,
-            new GrantsAllStatsPlusToUnitDuringCombatNode(MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
             // neutralizes effects that inflict "Special cooldown charge -X" on unit, and
             NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
             // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
@@ -412,7 +434,7 @@
             new IfNode(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
                 // 自身の攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列にいる敵の数×3+5だけ増加
                 // (最大14、自身の周囲2マス以内に以下のいずれかのマスがある時は14として扱う・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)、
-                new GrantsAllStatsPlusToUnitDuringCombatNode(
+                new GrantsAllStatsPlusNToUnitDuringCombatNode(
                     new TernaryConditionalNumberNode(
                         IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
                         14,
@@ -532,7 +554,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
-            new GrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
             new AppliesSkillEffectsAfterStatusFixedNode(
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new MultTruncNode(UNITS_SPD_DURING_COMBAT_NODE, 0.20),
@@ -602,7 +624,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                new GrantsAllStatsPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+                new GrantsAllStatsPlusNToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
                 NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)

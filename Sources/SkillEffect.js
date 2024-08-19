@@ -1582,7 +1582,7 @@ class GrantsStatsPlusNToUnitDuringCombatNode extends SkillEffectNode {
     }
 }
 
-class GrantsAllStatsPlusToUnitDuringCombatNode extends FromPositiveNumberNode {
+class GrantsAllStatsPlusNToUnitDuringCombatNode extends FromPositiveNumberNode {
     evaluate(env) {
         let amount = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;
@@ -1592,8 +1592,8 @@ class GrantsAllStatsPlusToUnitDuringCombatNode extends FromPositiveNumberNode {
     }
 }
 
-const GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusToUnitDuringCombatNode(4);
-const GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusToUnitDuringCombatNode(5);
+const GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(4);
+const GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(5);
 
 class GrantsAtkSpdPlusToUnitDuringCombatNode extends FromPositiveNumbersNode {
     evaluate(env) {
@@ -2173,6 +2173,8 @@ class NeutralizesFoesBonusesToStatsDuringCombatNode extends SetBoolToEachStatusN
         unit.battleContext.invalidateBuffs(...values);
     }
 }
+
+const NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE = new NeutralizesFoesBonusesToStatsDuringCombatNode(true, true, true, true);
 
 /**
  * number of【Bonus】effects active on unit, excluding stat bonuses + number of【Penalty】effects active on foe, excluding stat penalties

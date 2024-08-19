@@ -6712,6 +6712,7 @@ class BattleSimulatorBase {
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
         let func = function () {
             if (unit.isActionDone) {
+                // TODO: 動作確認をする
                 let env = new BattleSimulatorBaseEnv(this, unit);
                 env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
                 AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
