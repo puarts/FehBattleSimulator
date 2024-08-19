@@ -68,6 +68,10 @@ class BeginningOfTurnSkillHandler {
      * @param  {Unit} unit
      */
     applyEnemySkillsForBeginningOfTurn(unit) {
+        let env = new AtStartOfTurnEnv(this, unit);
+        env.setName('敵軍ターン開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AT_START_OF_ENEMY_PHASE_HOOK.evaluateWithUnit(unit, env);
+
         for (let skillId of unit.enumerateSkills()) {
             this.applyEnemySkillForBeginningOfTurn(skillId, unit);
         }
@@ -113,6 +117,7 @@ class BeginningOfTurnSkillHandler {
             }
             this.applyReservedState(unit, isBeginningOfTurn);
         }
+        this.map.applyReservedDivineVein();
     }
 
     /**

@@ -2603,6 +2603,7 @@ class Unit extends BattleMapElement {
 
         // ここでは天脈の予約を行う
         // 同時タイミングに異なる複数の天脈が付与されていなければ天脈付与を確定させる
+        // After unit acts (if Canto triggers, after Canto)
         for (let skillId of this.enumerateSkills()) {
             getSkillFunc(skillId, applyEndActionSkillsFuncMap)?.call(this);
         }

@@ -1792,6 +1792,26 @@ class InflictsStatsMinusNOnFoeDuringCombatNode extends FromPositiveNumbersNode {
 
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusNOnFoeDuringCombatNode(5, [1, 1, 1, 1]);
 
+class InflictsStatsNToFoeDuringCombatNode extends SkillEffectNode {
+    /**
+     * @param {number|NumberNode} n
+     * @param {[number, number, number, number]} ratios
+     */
+    constructor(n, ratios) {
+        super(NumberNode.makeNumberNodeFrom(n));
+        this.ratios = [...ratios];
+    }
+
+    evaluate(env) {
+        let amount = this.evaluateChildren(env);
+        let unit = env.foeDuringCombat;
+        let beforeSpurs = unit.getSpurs();
+        let amounts = this.ratios.map(r => amount * r);
+        unit.addSpurs(...amounts.map(v => -v));
+        env.debug(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防-[${amounts}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+    }
+}
+
 class UnitsStatsAtStartOfCombatNode extends NumberNode {
     #index;
 
@@ -2394,7 +2414,7 @@ class UnitRestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
 
 const RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE = new UnitRestoresHpToUnitAfterCombatNode(7);
 
-const NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE = new class extends SkillEffectNode {
+const WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
         env.debug(`${unit.nameWithGroup}は奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)`);
@@ -2561,6 +2581,16 @@ const IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFOR
         return result;
     }
 }();
+
+/**
+ * when defending in Aether Raids
+ */
+const WHEN_DEFENDING_IN_AETHER_RAIDS_NODE = new class extends BoolNode {
+    evaluate(env) {
+        // TODO: 値を渡すようにする
+        return g_appData.gameMode === GameMode.AetherRaid && env.skillOwner.groupId === UnitGroupType.Enemy;
+    }
+}
 
 class TargetCanAttackDuringCombatNode extends BoolNode {
     debugMessage = "は攻撃可能か";
@@ -2904,7 +2934,7 @@ class AppliesPotentEffectNode extends FromNumbersNode {
     }
 }
 
-// Tileへの効果
+// Tileへの効果 START
 
 /**
  * applies【Divine Vein (Stone)】to unit's space and spaces within 2 spaces of unit for 1 turn.
@@ -2953,6 +2983,75 @@ class IsTargetsSpaceAndSpacesWithinNSpacesOfTargetNode extends BoolNode {
     }
 }
 
+class IsSpacesNSpacesAwayFromTargetNode extends BoolNode {
+    /**
+     * TODO: traceログを追加
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let distance = env.tile.calculateDistance(env.target.placedTile);
+        let n = this.evaluateChildren(env)[0];
+        // TODO: 警告が出ないようにする
+        // noinspection JSIncompatibleTypesComparison
+        return distance === n;
+    }
+}
+
+// TODO: renameを検討
+class IsNotSpaceOccupiedByTargetsFoeNode extends BoolNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let placedUnit = env.tile.placedUnit;
+        return !(placedUnit && placedUnit.groupId !== unit.groupId);
+    }
+}
+
+Object.assign(IsNotSpaceOccupiedByTargetsFoeNode.prototype, GetUnitMixin);
+const IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE = new IsNotSpaceOccupiedByTargetsFoeNode();
+
+const IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE = new class extends BoolNode {
+    evaluate(env) {
+        let unit = env.skillOwner;
+        let tile = env.tile;
+        if (tile.obj == null) {
+            return true;
+        }
+        let obj = tile.obj;
+        if (obj instanceof OffenceStructureBase || obj instanceof DefenceStructureBase) {
+            if (obj.isBreakable) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+class IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode extends BoolNode {
+    evaluate(env) {
+        /** @type {Unit} */
+        let unit = this.getUnit(env);
+        // TODO: envで渡すようにする
+        let tiles = g_appData.map.enumerateTiles();
+        for (let tile of tiles) {
+            if (tile.divineVein === DivineVeinType.Ice &&
+                tile.divineVeinGroup === unit.groupId) {
+                env.debug(`天脈・氷がすでに存在: ${tile}`);
+                return false;
+            }
+        }
+        env.debug(`天脈・氷が存在しない`);
+        return true;
+    }
+}
+
+Object.assign(IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode.prototype, GetUnitMixin);
+const IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE =
+    new IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode();
+
 class IsTargetIsInSpaceWhereDivineVeinEffectIsAppliedNode extends BoolNode {
     getUnit(env) {
         return env.target;
@@ -2968,6 +3067,8 @@ class IsTargetIsInSpaceWhereDivineVeinEffectIsAppliedNode extends BoolNode {
 }
 
 const IS_TARGET_IS_IN_SPACE_WHERE_DIVINE_VEIN_EFFECT_IS_APPLIED_NODE = new IsTargetIsInSpaceWhereDivineVeinEffectIsAppliedNode();
+
+// Tileへの効果 END
 
 // ターン開始時
 // TODO: 以下の関数群をPhaseを見て予約するかどうか決定して汎用的なノードにする
@@ -3215,6 +3316,11 @@ const CALCULATES_DISTANCE_OF_CANTO_HOOKS = new SkillEffectHooks();
 const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 
 /**
+ * 敵軍ターン開始時
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const AT_START_OF_ENEMY_PHASE_HOOK = new SkillEffectHooks();
+
+/**
  * 戦闘前
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const PRE_COMBAT_HOOKS = new SkillEffectHooks();
@@ -3325,3 +3431,23 @@ const BEFORE_AOE_SPECIAL_HOOKS = new SkillEffectHooks();
  * ターゲットはダメージを受ける側のユニット
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorEnv>} */
 const AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 応援を使用した時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK = new SkillEffectHooks();
+
+/**
+ * 応援を使用された時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_RALLY_SKILL_IS_USED_BY_ALLY_HOOK = new SkillEffectHooks();
+
+/**
+ * 移動補助を使用した時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK = new SkillEffectHooks();
+
+/**
+ * 移動補助を使用された時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK = new SkillEffectHooks();

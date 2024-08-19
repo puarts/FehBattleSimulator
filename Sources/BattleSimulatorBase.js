@@ -8514,7 +8514,19 @@ class BattleSimulatorBase {
         if (applesMovementSkill) {
             this.__applyMovementAssistSkill(unit, targetUnit);
             this.__applyMovementAssistSkill(targetUnit, unit);
+
+            let env;
+            env = new BattleSimulatorBaseEnv(this, unit);
+
+            env.setName('移動補助を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(unit, env);
+
+            env = new BattleSimulatorBaseEnv(this, targetUnit);
+            env.setName('移動補助を使用された時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK.evaluateWithUnit(targetUnit, env);
         }
+        // for assister
+        // for assisted
 
         return true;
     }
@@ -9143,11 +9155,17 @@ class BattleSimulatorBase {
         if (isBuffed) {
             this.__applySkillsAfterRally(supporterUnit, targetUnit);
         }
+        this.map.applyReservedDivineVein();
         return isBuffed;
     }
 
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
+        let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+        env.setName('応援を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(supporterUnit, env);
+        console.log("応援後");
+
         for (let skillId of supporterUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillsAfterRallyForSupporterFuncMap)?.call(this, supporterUnit, targetUnit);
             this.#applySkillsAfterRallyForSupporter(skillId, targetUnit, supporterUnit);

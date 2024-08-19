@@ -1,6 +1,70 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// TODO: 天脈・氷を実装する
+// 聖王の参謀の術書
+{
+    let skillId = Weapon.ExaltsTactics;
+    // Accelerates Special trigger (cooldown count-1).
+
+    let nodeFunc = () => new SkillEffectNode(
+        // if there is no【Divine Vein (Ice)】 currently applied by unit or allies,
+        IF_NODE(IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE,
+            // applies 【Divine Vein (Ice)】to spaces 2 spaces away from target after movement for 1 turn
+            new AppliesDivineVeinNode(
+                DivineVeinType.Ice,
+                AND_NODE(
+                    new IsSpacesNSpacesAwayFromTargetNode(2),
+                    // (excludes spaces occupied by a foe,
+                    IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                    // destructible terrain other than【Divine Vein (Ice)】, and
+                    IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE,
+                    // TODO: ワープができるコンテンツが来たら実装する
+                    // warp spaces in Rival Domains).
+                ),
+            ),
+        )
+    );
+
+    // If a Rally or movement Assist skill (like Reposition, Shove, Pivot, etc.) is used by unit and
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK.addSkill(skillId, nodeFunc);
+
+    // After unit acts (if Canto triggers, after Canto),
+    // or at start of enemy phase when defending in Aether Raids,
+    // if there is no【Divine Vein (Ice)】 currently applied by unit or allies,
+    // applies 【Divine Vein (Ice)】to spaces 2 spaces away from unit for 1 turn
+    // (excludes spaces occupied by a foe, destructible terrain, and warp spaces in Rival Domains).
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOK.addSkill(skillId, () =>
+        IF_NODE(WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
+            nodeFunc(),
+        )
+    );
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // inflicts penalty on foe's Atk/Spd/Res = 5 + number of allies within 3 rows or 3 columns centered on unit × 3 (max 14),
+            new InflictsStatsNToFoeDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(5, MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)),
+                    14
+                ),
+                [1, 1, 0, 1]
+            ),
+            // neutralizes penalties on unit, and
+            new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, true, true),
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            // when Special triggers, neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills (excluding area-of-effect Specials).
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        )
+    ));
+}
+
 // 被害妄想
 {
     let skillId = PassiveC.Paranoia;
@@ -381,7 +445,7 @@
                 new UnitReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(UNITS_DEF_DURING_COMBAT_NODE, 0.1)),
             ),
             // かつ奥義発動時、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(範囲肉義を除く)
-            NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
         )
     ));
     // 自分から攻撃した時、または、自身を中心とした縦3列と横3列に味方がいる時、戦闘後、奥義発動カウントが最大値なら、奥義発動カウント-1

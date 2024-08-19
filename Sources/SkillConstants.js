@@ -1904,6 +1904,7 @@ const Weapon = {
     MajesticGlitnir: 2988, // 王斧グリトニル
     NewLevinSword: 2982, // 錬磨サンダーソード
     TheInexhaustible: 2985, // 尽きざるもの
+    ExaltsTactics: 2979, // 聖王の参謀の術書
 };
 
 const Support = {

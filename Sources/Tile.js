@@ -49,8 +49,9 @@ const DivineVeinType = {
     Green: 3,
     Haze: 4,
     Water: 5,
+    Ice: 6,
 };
-const DivineVeinStrings = ['', '護', '炎', '緑', '瘴', '水'];
+const DivineVeinStrings = ['', '護', '炎', '緑', '瘴', '水', '氷'];
 
 function divineVeinColor(divineVeinGroup) {
     switch (divineVeinGroup) {

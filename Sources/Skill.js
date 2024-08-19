@@ -1612,7 +1612,7 @@ const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
  * @type {Map<number|string, (this: BattleSimulatorBase, skillOwner: Unit, ally: Unit) => void>}
  */
 const applyMovementAssistSkillFuncMap = new Map();
-// 2023年11月時点では片方にだけかかるスキルは存在しない
+// 2023年11月時点では片方にだけかかるスキルは存在しない => 2024年総選挙ルフレ(女で実装)
 // const applyMovementAssistSkillForSupporterFuncMap = new Map();
 // const applyMovementAssistSkillForTargetUnitFuncMap = new Map();
 // サポートスキル後
