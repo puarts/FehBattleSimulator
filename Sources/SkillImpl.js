@@ -2,6 +2,27 @@
 // 各スキルの実装
 // TODO: 絶対化身を実装
 // TODO: 天脈・氷を実装する
+// 開闢の鼓動
+{
+    let skillId = PassiveC.CreationPulse;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If【Penalty】is active on foe,
+        IF_NODE(IF_PENALTY_IS_ACTIVE_ON_FOE_NODE,
+            // grants Atk/Spd+3 to unit during combat, and also,
+            new GrantsStatsPlusNToUnitDuringCombatNode(3, [1, 1, 0, 0]),
+            // if unit's attack can trigger unit's Special,
+            IF_NODE(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                // grants Special cooldown count-X to unit before unit's first attack during combat
+                new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(
+                    // (X = number of 【Penalty】effects active on foe, excluding stat penalties; max 2).
+                    new EnsureMaxNode(NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 2),
+                ),
+            )
+        )
+    ));
+}
+
 // 読み通りです!
 {
     let skillId = PassiveB.AccordingToPlan;
@@ -160,7 +181,7 @@
                 IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
                 TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
             ),
-            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombat(40),
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
         )
     ));
 }

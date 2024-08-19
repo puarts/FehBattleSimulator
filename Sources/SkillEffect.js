@@ -2255,6 +2255,12 @@ const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends Numbe
     }
 }();
 
+const NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
+    evaluate(env) {
+        return env.foeDuringCombat.getNegativeStatusEffects().length;
+    }
+}();
+
 class BoostsDamageWhenSpecialTriggersNode extends FromPositiveNumberNode {
     evaluate(env) {
         let unit = env.target;
@@ -2510,7 +2516,7 @@ const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE = new class
     }
 }();
 
-class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombat extends FromPositiveNumberNode {
+class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode extends FromPositiveNumberNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
@@ -2520,7 +2526,19 @@ class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombat extends From
     }
 }
 
-Object.assign(ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombat.prototype, GetUnitMixin);
+Object.assign(ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode.prototype, GetUnitMixin);
+
+class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode extends FromPositiveNumberNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountReductionBeforeFirstAttack += n;
+        let result = unit.battleContext.specialCountReductionBeforeFirstAttack;
+        env.debug(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+    }
+}
+
+Object.assign(GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode.prototype, GetUnitMixin);
 
 // Unit or BattleContextに値を設定 END
 
@@ -2591,6 +2609,20 @@ const WHEN_DEFENDING_IN_AETHER_RAIDS_NODE = new class extends BoolNode {
         return g_appData.gameMode === GameMode.AetherRaid && env.skillOwner.groupId === UnitGroupType.Enemy;
     }
 }
+
+/**
+ * If【Penalty】is active on foe,
+ */
+class IfPenaltyIsActiveOnFoeNode extends BoolNode {
+    evaluate(env) {
+        let foe = env.foeDuringCombat;
+        let result = foe.hasNegativeStatusEffect()
+        env.debug(`${foe.nameWithGroup}は不利な状態を受けているか: ${result}`);
+        return result;
+    }
+}
+
+const IF_PENALTY_IS_ACTIVE_ON_FOE_NODE = new IfPenaltyIsActiveOnFoeNode();
 
 class TargetCanAttackDuringCombatNode extends BoolNode {
     debugMessage = "は攻撃可能か";
