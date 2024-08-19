@@ -1062,6 +1062,23 @@ class NeutralizingEndActionEnv extends NodeEnv {
     }
 }
 
+// Mixin
+// TODO: 冗長なものはMixinを使用するようにする
+const GetUnitMixin = {
+    getUnit(env) {
+        return env.target
+    },
+};
+
+const GetValueMixin = Object.assign({}, GetUnitMixin, {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = this.getValue(unit);
+        env.debug(`${unit.nameWithGroup}${this.debugMessage}: ${result}`);
+        return result;
+    },
+});
+
 class IsThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
     #n;
 
@@ -2446,23 +2463,19 @@ const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE = new class
     }
 }();
 
-// Unit or BattleContextに値を設定 END
-
-// TODO: 冗長なものはMixinを使用するようにする
-const GetUnitMixin = {
-    getUnit(env) {
-        return env.target
-    },
-};
-
-const GetValueMixin = Object.assign({}, GetUnitMixin, {
+class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombat extends FromPositiveNumberNode {
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = this.getValue(unit);
-        env.debug(`${unit.nameWithGroup}${this.debugMessage}: ${result}`);
-        return result;
-    },
-});
+        let n = this.evaluateChildren(env);
+        unit.battleContext.damageReductionRatiosWhenCondSatisfied.push(n / 100.0);
+        let ratios = unit.battleContext.damageReductionRatiosWhenCondSatisfied;
+        env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${n}%軽減(1戦闘1回のみ): ratios [${ratios}]`);
+    }
+}
+
+Object.assign(ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombat.prototype, GetUnitMixin);
+
+// Unit or BattleContextに値を設定 END
 
 class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
     debugMessage = "は追撃可能か";
@@ -2512,7 +2525,17 @@ class IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode extends BoolNode {
 Object.assign(IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode.prototype, GetValueMixin);
 const IF_TARGET_HAS_NOT_BEEN_TARGET_OF_ASSIST_DURING_CURRENT_TURN_NODE = new IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode();
 
-class TargetCanAttackDuringCombat extends BoolNode {
+const IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE = new class extends BoolNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let foe = env.foeDuringCombat;
+        let result = Unit.canActivateOrActivatedSpecialEither(unit, foe);
+        env.debug(`${unit.nameWithGroup}または${foe.nameWithGroup}が奥義発動可能もしくは発動済みであるか: ${result}`);
+        return result;
+    }
+}();
+
+class TargetCanAttackDuringCombatNode extends BoolNode {
     debugMessage = "は攻撃可能か";
 
     getValue(unit) {
@@ -2520,8 +2543,8 @@ class TargetCanAttackDuringCombat extends BoolNode {
     }
 }
 
-Object.assign(TargetCanAttackDuringCombat.prototype, GetValueMixin);
-const TARGET_CAN_ATTACK_DURING_COMBAT = new TargetCanAttackDuringCombat();
+Object.assign(TargetCanAttackDuringCombatNode.prototype, GetValueMixin);
+const TARGET_CAN_ATTACK_DURING_COMBAT_NODE = new TargetCanAttackDuringCombatNode();
 
 // Unit or BattleContextの値を参照 END
 
@@ -3251,7 +3274,7 @@ const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHook
 const BEFORE_AOE_SPECIAL_HOOKS = new SkillEffectHooks();
 
 /**
- * 戦闘以外の行動後の再行動評価時
+ * 1戦闘1回の奥義によるダメージ軽減
  * ターゲットはダメージを受ける側のユニット
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorEnv>} */
 const AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS = new SkillEffectHooks();

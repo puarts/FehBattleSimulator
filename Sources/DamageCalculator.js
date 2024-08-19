@@ -1171,7 +1171,7 @@ class DamageCalculator {
             this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
 
             // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
-            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit);
+            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context);
 
             // 防御系奥義によるダメージ軽減
             let isDefenderSpecialActivated =
@@ -1522,10 +1522,10 @@ class DamageCalculator {
         return isDefenderSpecialActivated;
     }
 
-    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit) {
+    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context) {
         if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
             let env = new DamageCalculatorEnv(this, defUnit, atkUnit);
-            env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(context.damageType);
             AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
             for (let skillId of defUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applyDamageReductionRatiosWhenCondSatisfiedFuncMap);

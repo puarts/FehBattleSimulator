@@ -2127,6 +2127,7 @@ const Special = {
 
     Gust: 2952, // 陣風
     FierceBeast: 2960, // 猛獣
+    CurvedShot: 2986, // 曲射
 
     // 専用奥義
     MakingsOfAKing: 2989, // 王器

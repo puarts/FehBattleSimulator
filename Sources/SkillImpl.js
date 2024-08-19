@@ -1,6 +1,32 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 曲射
+{
+    let skillId = Special.CurvedShot;
+    // Boosts Special damage by 30% of the greater of foe's Spd or Def.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MAX_NODE(
+                MULT_TRUNC_NODE(0.3, UNITS_SPD_DURING_COMBAT_NODE),
+                MULT_TRUNC_NODE(0.3, UNITS_DEF_DURING_COMBAT_NODE),
+            ),
+        ),
+    ));
+
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's or foe's Special is ready or unit's or foe's Special triggered before or during this combat
+        // and if unit can attack during combat,
+        // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+        IF_NODE(AND_NODE(
+                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+            ),
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombat(40),
+        )
+    ));
+}
+
 // 尽きざるもの
 {
     let skillId = Weapon.TheInexhaustible;
@@ -1210,7 +1236,6 @@
             // 「自分または敵が奥義発動可能状態の時」、
             // 「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
             // 2条件のいずれかを満たした時、かつ、
-            // PAUSE: ここから以下2つのノードを作成する
             if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // 戦闘中、自分の速さが「敵の速さー4」以上の時、
                 if (defUnit.isHigherOrEqualSpdInCombat(atkUnit, -4)) {
