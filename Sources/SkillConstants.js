@@ -2866,6 +2866,7 @@ const PassiveB = {
     Reopening: 2991, // 一新
 
     // 専用B
+    AccordingToPlan: 2980, // 読み通りです!
     LoneWolf: 2983, // 一匹狼
     DivineStrength: 2962, // 神獣の肉体
     MoonlitBangleQ: 2954, // 華月の腕輪・先

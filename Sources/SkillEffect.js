@@ -3119,6 +3119,9 @@ class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
 class GrantsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAtStartOfTurnNode {
 }
 
+class InflictsStatusEffectsAtStartOfTurnNode extends GrantsStatusEffectsAtStartOfTurnNode {
+}
+
 /**
  * deals 1 damage to unit and those allies.
  */

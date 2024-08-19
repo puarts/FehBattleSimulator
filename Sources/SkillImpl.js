@@ -2,6 +2,48 @@
 // 各スキルの実装
 // TODO: 絶対化身を実装
 // TODO: 天脈・氷を実装する
+// 読み通りです!
+{
+    let skillId = PassiveB.AccordingToPlan;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn and
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Atk/Spd+6 and
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Canto (１)】
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Canto1),
+            ),
+            // on closest foes and any foe within 2 spaces of those foes through their next actions.
+            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+                // inflicts【Hush Spectrum】and【Panic】
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.HushSpectrum, StatusEffectType.Panic),
+            ),
+        )
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat, if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // inflicts Atk/Spd/Res-5 on foe,
+            new InflictsStatsNToFoeDuringCombatNode(5, [1, 1, 0, 1]),
+            // unit deals +X × 5 damage (max 25; excluding area-of-effect Specials), and
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                new EnsureMaxNode(MULT_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5), 25)
+            ),
+            // reduces damage from foe's first attack by X × 3 (max 15) during combat
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(
+                new EnsureMaxNode(MULT_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 3), 15)
+            ),
+            // (X = number of Bonus effects active on unit,
+            // excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties;
+            // "first attack" normally means only the first strike;
+            // for effects that grant "unit attacks twice," it means the first and second strikes).
+        )
+    ));
+}
+
 // 聖王の参謀の術書
 {
     let skillId = Weapon.ExaltsTactics;
