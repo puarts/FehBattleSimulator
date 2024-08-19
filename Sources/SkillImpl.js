@@ -1,6 +1,33 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 尽きざるもの
+{
+    let skillId = Weapon.TheInexhaustible;
+    // Enables【Canto (Dist.; Max ３)】.
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => CANTO_DIST_MAX_3_NODE);
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Unit attacks twice (even if foe initiates combat, unit attacks twice).
+        TARGET_ATTACKS_TWICE_NODE,
+        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        // If unit initiates combat or【Bonus】is active on unit,
+        IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_BONUS_ACTIVE_ON_UNIT_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat,
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials), and
+            new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
 // 迅雷風烈・無極
 {
     let skillId = PassiveC.EndlessTempest;

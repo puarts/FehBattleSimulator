@@ -1903,6 +1903,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=ezkrMU7iBNA
     MajesticGlitnir: 2988, // 王斧グリトニル
     NewLevinSword: 2982, // 錬磨サンダーソード
+    TheInexhaustible: 2985, // 尽きざるもの
 };
 
 const Support = {
