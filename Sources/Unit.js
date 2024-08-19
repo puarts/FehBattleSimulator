@@ -683,6 +683,9 @@ class Unit extends BattleMapElement {
 
         this.nameWithGroup = "";
         this.__updateNameWithGroup();
+
+        // TODO: リファクタリングする
+        this.isActionDoneDuringMoveCommand = false;
     }
 
     /**

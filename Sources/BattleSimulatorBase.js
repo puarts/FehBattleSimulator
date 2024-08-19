@@ -6720,6 +6720,10 @@ class BattleSimulatorBase {
                 return;
             }
 
+            if (unit.isActionDoneDuringMoveCommand) {
+                return;
+            }
+
             // サウンド
             switch (unit.supportInfo.assistType) {
                 case AssistType.Refresh:
@@ -6770,6 +6774,12 @@ class BattleSimulatorBase {
                 // 移動時にトラップ発動した場合は行動終了している
                 // その場合でも天脈は発動する
                 unit.applyEndActionSkills();
+                return;
+            }
+
+            if (unit.isActionDoneDuringMoveCommand) {
+                // TODO: 必要か検討する
+                // unit.applyEndActionSkills();
                 return;
             }
 
@@ -6984,6 +6994,7 @@ class BattleSimulatorBase {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let func = function () {
+            unit.isActionDoneDuringMoveCommand = false;
             if (enableSoundEffect) {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
             }
@@ -7025,6 +7036,10 @@ class BattleSimulatorBase {
                 unit.deactivateCanto();
                 unit.applyEndActionSkills();
             }
+
+            if (unit.isActionDone) {
+                unit.isActionDoneDuringMoveCommand = true;
+            }
             self.__updateDistanceFromClosestEnemy(unit);
 
             let env = new BattleSimulatorBaseEnv(this, unit);
@@ -7055,6 +7070,10 @@ class BattleSimulatorBase {
         let func = function () {
             if (attackerUnit.isActionDone) {
                 // 移動時にトラップ発動した場合は行動終了している
+                return;
+            }
+
+            if (attackerUnit.isActionDoneDuringMoveCommand) {
                 return;
             }
 
