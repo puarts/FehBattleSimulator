@@ -2863,6 +2863,7 @@ const PassiveB = {
     Reopening: 2991, // 一新
 
     // 専用B
+    LoneWolf: 2983, // 一匹狼
     DivineStrength: 2962, // 神獣の肉体
     MoonlitBangleQ: 2954, // 華月の腕輪・先
     IcePrincesSeal: 2915, // 氷王の封印

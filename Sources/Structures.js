@@ -946,6 +946,7 @@ class BreakableWall extends DefenceStructureBase {
     }
 }
 
+// TODO: 引数にユニットもしくはグループを追加する(天脈・氷のため)
 /// ユニットが通行可能な配置物であるかどうかを判定します。
 function isMovableForUnit(structure) {
     if (structure == null) {

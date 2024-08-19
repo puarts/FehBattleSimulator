@@ -225,6 +225,8 @@ class BattleContext {
         // TODO: 戦闘前と戦闘中で変数を分ける
         this.additionalDamage = 0;
 
+        this.additionalDamageInPrecombat = 0;
+
         // 最初の攻撃の追加ダメージ
         this.additionalDamageOfFirstAttack = 0;
 
@@ -530,6 +532,8 @@ class BattleContext {
         this.additionalDamage = 0;
         this.additionalDamageOfSpecial = 0;
         this.damageReductionValue = 0;
+        // TODO: renameを検討
+        this.damageReductionForPrecombat = 0;
     }
 
     clear() {

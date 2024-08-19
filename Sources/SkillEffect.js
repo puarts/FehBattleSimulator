@@ -65,33 +65,12 @@ class SkillEffectHooks {
     }
 
     /**
-     * @param {number|string} skillId
-     * @param {E} env
-     * @returns boolean
-     */
-    evaluateSome(skillId, env) {
-        return this.evaluate(skillId, env).some(result => result);
-    }
-
-    /**
-     * @param {number|string} skillId
-     * @param {E} env
-     * @returns number
-     */
-    evaluateNumber(skillId, env) {
-        let results = this.evaluate(skillId, env);
-        if (results.length > 0) {
-            return results[results.length - 1];
-        }
-    }
-
-    /**
      * @param {Unit} unit
      * @param {E} env
-     * @returns {*[][]}
+     * @returns {*[]}
      */
     evaluateWithUnit(unit, env) {
-        return Array.from(unit.enumerateSkills()).map(skillId => this.evaluate(skillId, env));
+        return Array.from(unit.enumerateSkills()).map(skillId => this.evaluate(skillId, env)).flat();
     }
 
     /**
@@ -100,7 +79,7 @@ class SkillEffectHooks {
      * @returns {boolean}
      */
     evaluateSomeWithUnit(unit, env) {
-        return Array.from(unit.enumerateSkills()).some(skillId => this.evaluateSome(skillId, env));
+        return this.evaluateWithUnit(unit, env).some(v => v);
     }
 
     /**
@@ -109,10 +88,16 @@ class SkillEffectHooks {
      * @returns {number}
      */
     evaluateMaxWithUnit(unit, env) {
-        /** @type {(number|string)[]} */
-        let skillIds = Array.from(unit.enumerateSkills());
-        let evaluate = skillId => this.evaluateNumber(skillId, env) ?? Number.NEGATIVE_INFINITY;
-        return Math.max(...skillIds.map(evaluate));
+        return Math.max(...this.evaluateWithUnit(unit, env));
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {E} env
+     * @returns {[number, number, number, number]}
+     */
+    evaluateStatsSumWithUnit(unit, env) {
+        return this.evaluateWithUnit(unit, env).reduce((a, b) => ArrayUtil.add(a, b), [0, 0, 0, 0]);
     }
 }
 
@@ -495,6 +480,21 @@ class MultTruncNode extends NumberOperationNode {
 }
 
 const MULT_TRUNC_NODE = (...node) => new MultTruncNode(...node);
+
+class MaxNode extends NumberOperationNode {
+    /**
+     * @override
+     * @returns {number}
+     */
+    evaluate(env) {
+        let evaluated = super.evaluateChildren(env);
+        let result = Math.max(...evaluated);
+        env?.trace(`[MaxNode] max trunc [${[evaluated]}] = ${result}`);
+        return result;
+    }
+}
+
+const MAX_NODE = (...node) => new MaxNode(...node);
 
 /**
  * @abstract
@@ -1216,6 +1216,29 @@ const NUMBER_OF_TARGET_ALLIES_ADJACENT_TO_TARGET = new class extends NumberNode 
     }
 }();
 
+class IfUnitOrFoeInitiatesCombatAfterMovingToADifferentSpaceNode extends BoolNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let foe = env.foeDuringCombat;
+        let distance = Unit.calcAttackerMoveDistance(unit, foe);
+        let result = distance > 0;
+        env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}はどちらかが異なるマスに移動したか: ${result}`);
+        return result;
+    }
+}
+
+const IF_UNIT_OR_FOE_INITIATES_COMBAT_AFTER_MOVING_TO_A_DIFFERENT_SPACE_NODE = new IfUnitOrFoeInitiatesCombatAfterMovingToADifferentSpaceNode();
+
+const NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT = new class extends NumberNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let foe = env.foeDuringCombat;
+        let result = Unit.calcAttackerMoveDistance(unit, foe);
+        env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}の移動距離: ${result}`);
+        return result;
+    }
+}();
+
 // 周囲のユニット
 
 const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
@@ -1382,12 +1405,26 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
 }
 
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
+const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
 
 const IS_COMBAT_INITIATED_BY_UNIT = new class extends BoolNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let result = unit.battleContext.initiatesCombat;
         env.debug(`${unit.nameWithGroup}から攻撃したか: ${result}`);
+        return result;
+    }
+}();
+
+/**
+ * 【Bonus】is active on unit
+ */
+const IS_BONUS_ACTIVE_ON_UNIT_NODE = new class extends BoolNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let foe = env.foeDuringCombat;
+        let result = unit.hasPositiveStatusEffect(foe);
+        env.debug(`${unit.nameWithGroup}は有利な状態を受けているか: ${result}`);
         return result;
     }
 }();
@@ -1592,7 +1629,6 @@ class StatsNode extends SkillEffectNode {
     }
 
     /**
-     * @abstract
      * @param {NodeEnv} env
      * @return {[number, number, number, number]}
      */
@@ -1602,6 +1638,8 @@ class StatsNode extends SkillEffectNode {
         return result;
     }
 }
+
+const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
 
 class GrantsGreatTalentsPlusToTargetNode extends SkillEffectNode {
     /**
@@ -1707,6 +1745,8 @@ class InflictsStatsMinusNOnFoeDuringCombatNode extends FromPositiveNumbersNode {
         env.debug(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防-[${amounts}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
     }
 }
+
+const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusNOnFoeDuringCombatNode(5, [1, 1, 1, 1]);
 
 class UnitsStatsAtStartOfCombatNode extends NumberNode {
     #index;
@@ -2184,6 +2224,21 @@ class UnitDealsDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     }
 }
 
+class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
+    getDescription(n) {
+        return `与えるダメージ+${n}(戦闘前)`;
+    }
+
+    evaluate(env) {
+        let n = this.evaluateChildren(env);
+        let unit = env.unitDuringCombat;
+        let context = unit.battleContext;
+        let beforeValue = context.additionalDamageInPrecombat;
+        context.additionalDamageInPrecombat += n;
+        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.additionalDamageInPrecombat}`);
+    }
+}
+
 class UnitReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     getDescription(n) {
         return `受けるダメージ-${n}`;
@@ -2196,6 +2251,21 @@ class UnitReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
         let beforeValue = context.damageReductionValue;
         context.damageReductionValue += n;
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValue}`);
+    }
+}
+
+class UnitReducesDamageBeforeCombatNode extends ApplyingNumberNode {
+    getDescription(n) {
+        return `受けるダメージ-${n}(戦闘前)`;
+    }
+
+    evaluate(env) {
+        let n = this.evaluateChildren(env);
+        let unit = env.unitDuringCombat;
+        let context = unit.battleContext;
+        let beforeValue = context.damageReductionForPrecombat;
+        context.damageReductionForPrecombat += n;
+        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionForPrecombat}`);
     }
 }
 
@@ -2353,42 +2423,105 @@ const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE = new class exte
         env.debug(`${unit.nameWithGroup}は敵の守備か魔防の低い方でダメージ計算)`);
         unit.battleContext.refersMinOfDefOrRes = true;
     }
-}
+}();
 
-// BattleContextに値を設定
+/**
+ * Unit attacks twice (even if foe initiates combat, unit attacks twice).
+ */
+const TARGET_ATTACKS_TWICE_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        let unit = env.target;
+        env.debug(`${unit.nameWithGroup}は2回攻撃)`);
+        unit.battleContext.attackCount = 2;
+    }
+}();
 
-class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
+const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        let unit = env.target;
+        env.debug(`${unit.nameWithGroup}は受け時に2回攻撃)`);
+        unit.battleContext.counterattackCount = 2;
+    }
+}();
+
+// Unit or BattleContextに値を設定 END
+
+// TODO: 冗長なものはMixinを使用するようにする
+const GetUnitMixin = {
     getUnit(env) {
         return env.target
-    }
+    },
+};
 
+const GetValueMixin = Object.assign({}, GetUnitMixin, {
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = unit.battleContext.canFollowupAttackIncludingPotent();
-        env.debug(`${unit.nameWithGroup}は追撃可能か: ${result}`);
+        let result = this.getValue(unit);
+        env.debug(`${unit.nameWithGroup}${this.debugMessage}: ${result}`);
         return result;
+    },
+});
+
+class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
+    debugMessage = "は追撃可能か";
+
+    getValue(unit) {
+        return unit.battleContext.canFollowupAttackIncludingPotent();
     }
 }
 
+Object.assign(CanTargetCanMakeFollowUpIncludingPotentNode.prototype, GetValueMixin);
 const CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetCanMakeFollowUpIncludingPotentNode();
 
 // TODO: 命名規則を統一させる
 class IfTargetTriggersAttacksTwiceNode extends BoolNode {
-    getUnit(env) {
-        return env.target
-    }
+    debugMessage = "は2回攻撃を発動しているか";
 
-    evaluate(env) {
-        let unit = this.getUnit(env);
-        let result = unit.battleContext.isTriggeringAttackTwice();
-        env.debug(`${unit.nameWithGroup}は2回攻撃を発動しているか: ${result}`);
-        return result;
+    getValue(unit) {
+        return unit.battleContext.isTriggeringAttackTwice();
     }
 }
 
+Object.assign(IfTargetTriggersAttacksTwiceNode.prototype, GetValueMixin);
 const IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE = new IfTargetTriggersAttacksTwiceNode();
 
-// BattleContextの値を参照
+/**
+ * If unit has not used or been the target of an Assist skill during the current turn,
+ */
+class IfTargetHasNotUsedAssistDuringCurrentTurnNode extends BoolNode {
+    debugMessage = "は現在ターン中に補助を使用していないか";
+
+    getValue(unit) {
+        return !unit.isSupportDone;
+    }
+}
+
+Object.assign(IfTargetHasNotUsedAssistDuringCurrentTurnNode.prototype, GetValueMixin);
+const IF_TARGET_HAS_NOT_USED_ASSIST_DURING_CURRENT_TURN_NODE = new IfTargetHasNotUsedAssistDuringCurrentTurnNode();
+
+class IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode extends BoolNode {
+    debugMessage = "は現在ターン中に補助を使用されていないか";
+
+    getValue(unit) {
+        return !unit.isSupportedDone;
+    }
+}
+
+Object.assign(IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode.prototype, GetValueMixin);
+const IF_TARGET_HAS_NOT_BEEN_TARGET_OF_ASSIST_DURING_CURRENT_TURN_NODE = new IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode();
+
+class TargetCanAttackDuringCombat extends BoolNode {
+    debugMessage = "は攻撃可能か";
+
+    getValue(unit) {
+        return unit.battleContext.canAttackInCombat();
+    }
+}
+
+Object.assign(TargetCanAttackDuringCombat.prototype, GetValueMixin);
+const TARGET_CAN_ATTACK_DURING_COMBAT = new TargetCanAttackDuringCombat();
+
+// Unit or BattleContextの値を参照 END
 
 // noinspection JSUnusedGlobalSymbols
 class GrantsOrInflictsStatsAfterStatusFixedNode extends SkillEffectNode {
@@ -2476,6 +2609,9 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
             unit.addStatusEffect(e)
         });
     }
+}
+
+class InflictStatusEffects extends GrantsStatusEffectsNode {
 }
 
 const NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE = new class extends SkillEffectNode {
@@ -2822,6 +2958,65 @@ class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
 class GrantsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAtStartOfTurnNode {
 }
 
+// 再行動・再移動
+class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.trace(`${unit.nameWithGroup}の${this.getPhase()}の再行動判定を開始`);
+        if (unit.isActionDone) {
+            env.trace(`${unit.nameWithGroup}は行動を終了している`);
+            if (!this.hasGrantedAnotherAction(unit)) {
+                env.trace(`${unit.nameWithGroup}はこのターン再行動を発動していない`);
+                this.setHasGrantedAnotherAction(unit);
+                env.trace(`${unit.nameWithGroup}の再行動を設定`);
+                unit.grantsAnotherAction();
+                env.debug(`${unit.nameWithGroup}は再行動`);
+                unit.addStatusEffect(StatusEffectType.Isolation);
+                env.debug(`${unit.nameWithGroup}は自分とダブル相手に${getStatusEffectName(StatusEffectType.Isolation)}を付与`);
+            } else {
+                env.trace(`${unit.nameWithGroup}はこのターン再行動を発動している`);
+            }
+        } else {
+            env.trace(`${unit.nameWithGroup}は行動を終了していない`);
+        }
+    }
+}
+
+class GrantsAnotherActionAndInflictsIsolationAfterTargetInitiatedCombatNode extends GrantsAnotherActionAndInflictsIsolationNode {
+    getPhase() {
+        return "戦闘後";
+    }
+
+    setHasGrantedAnotherAction(unit) {
+        unit.hasGrantedAnotherActionAfterCombatInitiation = true;
+    }
+
+    hasGrantedAnotherAction(unit) {
+        return unit.hasGrantedAnotherActionAfterCombatInitiation;
+    }
+}
+
+Object.assign(GrantsAnotherActionAndInflictsIsolationAfterTargetInitiatedCombatNode.prototype, GetUnitMixin);
+const GRANTS_ANOTHER_ACTION_AND_INFLICTS_ISOLATION_AFTER_TARGET_INITIATED_COMBAT_NODE =
+    new GrantsAnotherActionAndInflictsIsolationAfterTargetInitiatedCombatNode()
+
+class GrantsAnotherActionAndInflictsIsolationAfterActionWithoutCombatNode extends GrantsAnotherActionAndInflictsIsolationNode {
+    getPhase() {
+        return "戦闘以外の行動後";
+    }
+
+    setHasGrantedAnotherAction(unit) {
+        unit.hasGrantedAnotherActionAfterActionWithoutCombat = true;
+    }
+
+    hasGrantedAnotherAction(unit) {
+        return unit.hasGrantedAnotherActionAfterActionWithoutCombat;
+    }
+}
+
+Object.assign(GrantsAnotherActionAndInflictsIsolationAfterActionWithoutCombatNode.prototype, GetUnitMixin);
+const GRANTS_ANOTHER_ACTION_AND_INFLICTS_ISOLATION_AFTER_ACTION_WITHOUT_COMBAT_NODE = new GrantsAnotherActionAndInflictsIsolationAfterActionWithoutCombatNode()
+
 class CanInflictCantoControlWithinNSpacesNode extends BoolNode {
     #n;
 
@@ -3029,6 +3224,32 @@ const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
 const AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
- * 戦闘開始時奥義
+ * 追撃判定後
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const AFTER_FOLLOW_UP_CONFIGURED_HOOKS = new SkillEffectHooks();
+
+/**
+ * ステータス比較時(虚勢など)
+ * @type {SkillEffectHooks<StatsNode, NodeEnv>} */
+const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘後の再行動評価時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘以外の行動後の再行動評価時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘以外の行動後の再行動評価時
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const BEFORE_AOE_SPECIAL_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘以外の行動後の再行動評価時
+ * ターゲットはダメージを受ける側のユニット
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorEnv>} */
+const AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS = new SkillEffectHooks();

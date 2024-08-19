@@ -3599,6 +3599,11 @@ class BattleSimulatorBase {
             }
         }
 
+        // 優先度が高いスキルの後かつ奥義の再行動の前
+        let env = new BattleSimulatorBaseEnv(this, atkUnit);
+        env.setName('奥義以外の再行動時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
+
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         if (atkUnit.isAlive) {
             for (let skillId of atkUnit.enumerateSkills()) {
@@ -4369,6 +4374,7 @@ class BattleSimulatorBase {
         for (let unit of units) {
             unit.isCombatDone = false;
             unit.isSupportDone = false;
+            unit.isSupportedDone = false;
         }
     }
 
@@ -6706,6 +6712,9 @@ class BattleSimulatorBase {
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
         let func = function () {
             if (unit.isActionDone) {
+                let env = new BattleSimulatorBaseEnv(this, unit);
+                env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+                AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
             }
@@ -7016,6 +7025,10 @@ class BattleSimulatorBase {
                 unit.applyEndActionSkills();
             }
             self.__updateDistanceFromClosestEnemy(unit);
+
+            let env = new BattleSimulatorBaseEnv(this, unit);
+            env.setName('奥義以外の再行動時[移動]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
         };
         return this.__createCommand(
             `${unit.id}-m-${tileToMove.id}`,
@@ -9492,6 +9505,7 @@ class BattleSimulatorBase {
                 supporterUnit.battleContext.isRefreshActivated = true;
             }
             supporterUnit.isSupportDone = true;
+            targetUnit.isSupportedDone = true;
             if (!supporterUnit.isActionDone) {
                 // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
@@ -9509,6 +9523,10 @@ class BattleSimulatorBase {
                 let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
             }
+
+            let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+            env.setName('奥義以外の再行動時[補助]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(supporterUnit, env);
 
             // 再移動の評価
             let activated = this.__activateCantoIfPossible(supporterUnit);
@@ -9894,15 +9912,24 @@ class BattleSimulatorBase {
     }
 
     __endUnitActionOrActivateCanto(unit) {
+        // Break Command
         unit.endAction();
 
-        // 再移動の評価
+        // 再行動の評価
+        this.__grantsAnotherActionIfPossibleWithoutAfterCombat(unit);
+
         let activated = this.__activateCantoIfPossible(unit);
         if (!activated) {
             unit.applyEndActionSkills();
         }
 
         this.__goToNextPhaseIfPossible(unit.groupId);
+    }
+
+    __grantsAnotherActionIfPossibleWithoutAfterCombat(unit) {
+        let env = new BattleSimulatorBaseEnv(this, unit);
+        env.setName('奥義以外の再行動時[破壊]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
     }
 
     __goToNextPhaseIfPossible(groupId) {

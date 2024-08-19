@@ -729,6 +729,7 @@ class BattleMap {
         this._tiles = [];
         /** @type {Unit[]} */
         this._units = [];
+        /** @type {BreakableWall[]} */
         this._breakableWalls = [];
         this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));
         this._breakableWalls.push(new BreakableWall(idGenerator == null ? "" : idGenerator.generate()));

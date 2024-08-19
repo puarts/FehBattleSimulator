@@ -517,6 +517,8 @@ class Unit extends BattleMapElement {
         this.isCombatDone = false;
         // このターン補助を行ったか
         this.isSupportDone = false;
+        // このターン補助を行ったか
+        this.isSupportedDone = false;
 
         this.isBonusChar = false;
 
@@ -577,6 +579,11 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
+        // 総選挙フェリクスの一匹狼
+        // 戦闘後
+        // 戦闘以外の行動後
+        this.hasGrantedAnotherActionAfterCombatInitiation = false;
+        this.hasGrantedAnotherActionAfterActionWithoutCombat = false;
 
         this.isOneTimeActionActivatedForWeaponPerGame = false;
         this.isOneTimeActionActivatedForWeaponPerGame2 = false;
@@ -1264,6 +1271,9 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
+            + ValueDelimiter + boolToInt(this.isSupportedDone)
+            + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterCombatInitiation)
+            + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterActionWithoutCombat)
             ;
     }
 
@@ -1397,6 +1407,9 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isSupportedDone = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterCombatInitiation = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterActionWithoutCombat = intToBool(Number(values[i])); ++i; }
     }
 
 
@@ -2480,6 +2493,8 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
+        this.hasGrantedAnotherActionAfterCombatInitiation = false;
+        this.hasGrantedAnotherActionAfterActionWithoutCombat = false;
         this.isCantoActivatedInCurrentTurn = false;
         this.isAnotherActionInPostCombatActivated = false;
     }
@@ -5894,6 +5909,10 @@ class Unit extends BattleMapElement {
         this.emblemHeroIndex = EmblemHero.None;
         this.emblemHeroMerge = 0;
         this.isBonusChar = false;
+    }
+
+    grantsAnotherAction() {
+        this.isActionDone = false;
     }
 
     grantsAnotherActionWhenAssist(isAssist) {

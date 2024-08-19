@@ -1,6 +1,70 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 一匹狼
+{
+    let skillId = PassiveB.LoneWolf;
+    // If a skill compares unit's Spd to a foe's or ally's Spd, treats unit's Spd as if granted +7.
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 7, 0, 0));
+
+    // If unit has not used or been the target of an Assist skill during the current turn,
+    // grants another action to unit and
+    // inflicts【Isolation】 on unit and Pair Up cohort
+    // through their next action
+    // in the following cases:
+    // A) unit initiated combat, or
+    // B) unit took action without entering combat
+    // (takes priority over Canto; once per turn, with A and B counted separately).
+    AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(AND_NODE(
+                IF_TARGET_HAS_NOT_USED_ASSIST_DURING_CURRENT_TURN_NODE,
+                IF_TARGET_HAS_NOT_BEEN_TARGET_OF_ASSIST_DURING_CURRENT_TURN_NODE),
+            GRANTS_ANOTHER_ACTION_AND_INFLICTS_ISOLATION_AFTER_TARGET_INITIATED_COMBAT_NODE,
+        )
+    ));
+    AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(AND_NODE(
+                IF_TARGET_HAS_NOT_USED_ASSIST_DURING_CURRENT_TURN_NODE,
+                IF_TARGET_HAS_NOT_BEEN_TARGET_OF_ASSIST_DURING_CURRENT_TURN_NODE),
+            GRANTS_ANOTHER_ACTION_AND_INFLICTS_ISOLATION_AFTER_ACTION_WITHOUT_COMBAT_NODE,
+        )
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat, if unit's HP ≥ 25% or if number of allies adjacent to unit ≤ 1,
+        IF_NODE(OR_NODE(
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new LteNode(NUMBER_OF_TARGET_ALLIES_ADJACENT_TO_TARGET, 1)
+            ),
+            // inflicts Atk/Spd/Def/Res-5 on foe,
+            INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+            // deals damage = 20% of unit's Spd (including when dealing damage with a Special triggered before combat), and
+            new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            // reduces damage from foe's attacks by 20% of unit's Spd during combat (including when taking damage from a Special triggered before combat), and also,
+            new UnitReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            // when foe's attack triggers foe's Special,
+            // reduces damage by 20% of unit's Spd (including when taking damage from a Special triggered before combat).
+            new UnitReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+        )
+    ));
+
+    // At start of combat, if unit's HP ≥ 25% or if number of allies adjacent to unit ≤ 1,
+    // deals damage = 20% of unit's Spd (including when dealing damage with a Special triggered before combat), and
+    // reduces damage from foe's attacks by 20% of unit's Spd during combat (including when taking damage from a Special triggered before combat), and also,
+    // when foe's attack triggers foe's Special,
+    // reduces damage by 20% of unit's Spd (including when taking damage from a Special triggered before combat).
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(OR_NODE(
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new LteNode(NUMBER_OF_TARGET_ALLIES_ADJACENT_TO_TARGET, 1)
+            ),
+            new UnitDealsDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            new UnitReducesDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            new UnitReducesDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+        )
+    ));
+}
+
 // 錬磨サンダーソード
 {
     let skillId = Weapon.NewLevinSword;
@@ -1097,6 +1161,7 @@
             // 「自分または敵が奥義発動可能状態の時」、
             // 「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
             // 2条件のいずれかを満たした時、かつ、
+            // PAUSE: ここから以下2つのノードを作成する
             if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // 戦闘中、自分の速さが「敵の速さー4」以上の時、
                 if (defUnit.isHigherOrEqualSpdInCombat(atkUnit, -4)) {

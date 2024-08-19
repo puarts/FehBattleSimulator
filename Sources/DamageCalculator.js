@@ -570,6 +570,10 @@ class DamageCalculator {
             atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage,
             isPrecombat
         );
+
+        if (isPrecombat) {
+            fixedAddDamage += atkUnit.battleContext.additionalDamageInPrecombat;
+        }
         return fixedAddDamage;
     }
 
@@ -1520,6 +1524,9 @@ class DamageCalculator {
 
     #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit) {
         if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
+            let env = new DamageCalculatorEnv(this, defUnit, atkUnit);
+            env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
             for (let skillId of defUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applyDamageReductionRatiosWhenCondSatisfiedFuncMap);
                 func?.call(this, atkUnit, defUnit);
