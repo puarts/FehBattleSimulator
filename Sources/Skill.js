@@ -959,6 +959,9 @@ const EVAL_SPD_ADD_MAP = new Map([
  */
 function getEvalSpdAdd(unit) {
     let amount = 0;
+    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
+    let stats = AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(unit, env);
+    amount += stats[STATUS_INDEX.Spd];
     for (let skillId of unit.enumerateSkills()) {
         amount += EVAL_SPD_ADD_MAP.get(skillId) ?? 0;
         amount += getSkillFunc(skillId, evalSpdAddFuncMap)?.call(this, unit) ?? 0;
@@ -984,6 +987,9 @@ const EVAL_RES_ADD_MAP = new Map([
  */
 function getEvalResAdd(unit) {
     let value = 0;
+    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
+    let stats = AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(unit, env);
+    value += stats[STATUS_INDEX.Res];
     for (let skillId of unit.enumerateSkills()) {
         value = EVAL_RES_ADD_MAP.get(skillId);
         value += getSkillFunc(skillId, evalResAddFuncMap)?.call(this, unit) ?? 0;
@@ -1236,6 +1242,7 @@ const StatusEffectType = {
     Bonded: 66, // 縁
     Bulwalk: 67, // 防壁
     DivineNectar: 68, // 神獣の蜜
+    Paranoia: 69, // 被害妄想
 };
 
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
@@ -1605,7 +1612,7 @@ const applySkillsAfterRallyForTargetUnitFuncMap = new Map();
  * @type {Map<number|string, (this: BattleSimulatorBase, skillOwner: Unit, ally: Unit) => void>}
  */
 const applyMovementAssistSkillFuncMap = new Map();
-// 2023年11月時点では片方にだけかかるスキルは存在しない
+// 2023年11月時点では片方にだけかかるスキルは存在しない => 2024年総選挙ルフレ(女で実装)
 // const applyMovementAssistSkillForSupporterFuncMap = new Map();
 // const applyMovementAssistSkillForTargetUnitFuncMap = new Map();
 // サポートスキル後

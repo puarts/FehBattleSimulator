@@ -477,6 +477,16 @@ class Unit extends BattleMapElement {
         this.passiveS = -1;
         this.passiveX = -1;
         this.captain = -1;
+
+        /**
+         * TODO: 初期局面に戻った場合に全てリセットする必要があるか検証する
+         * 大器
+         * @type {[number, number, number,number]}
+         */
+        this._greatTalents = [0, 0, 0, 0];
+        this._reservedGreatTalents = [0, 0, 0, 0];
+        this._reservedMaxGreatTalents = [0, 0, 0, 0];
+
         // TODO: 削除
         // noinspection JSUnusedGlobalSymbols
         this.deffensiveTile = false; // 防御床
@@ -507,6 +517,8 @@ class Unit extends BattleMapElement {
         this.isCombatDone = false;
         // このターン補助を行ったか
         this.isSupportDone = false;
+        // このターン補助を行ったか
+        this.isSupportedDone = false;
 
         this.isBonusChar = false;
 
@@ -567,6 +579,11 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
+        // 総選挙フェリクスの一匹狼
+        // 戦闘後
+        // 戦闘以外の行動後
+        this.hasGrantedAnotherActionAfterCombatInitiation = false;
+        this.hasGrantedAnotherActionAfterActionWithoutCombat = false;
 
         this.isOneTimeActionActivatedForWeaponPerGame = false;
         this.isOneTimeActionActivatedForWeaponPerGame2 = false;
@@ -666,6 +683,9 @@ class Unit extends BattleMapElement {
 
         this.nameWithGroup = "";
         this.__updateNameWithGroup();
+
+        // TODO: リファクタリングする
+        this.isActionDoneDuringMoveCommand = false;
     }
 
     /**
@@ -1250,6 +1270,13 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restPassiveBSkillAvailableTurn
             + ValueDelimiter + boolToInt(this.isSupportDone)
             + ValueDelimiter + boolToInt(this.isAnotherActionInPostCombatActivated)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Atk)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
+            + ValueDelimiter + boolToInt(this.isSupportedDone)
+            + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterCombatInitiation)
+            + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterActionWithoutCombat)
             ;
     }
 
@@ -1379,6 +1406,13 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.restPassiveBSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isSupportDone = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isAnotherActionInPostCombatActivated = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Atk, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isSupportedDone = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterCombatInitiation = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterActionWithoutCombat = intToBool(Number(values[i])); ++i; }
     }
 
 
@@ -1430,6 +1464,10 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.initPosX
             + ValueDelimiter + this.initPosY
             + ValueDelimiter + this.passiveX
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Atk)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
+            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
             ;
     }
 
@@ -1487,6 +1525,10 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.initPosX = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.initPosY = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Atk, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -1707,6 +1749,7 @@ class Unit extends BattleMapElement {
         this.snapshot.passiveXInfo = this.passiveXInfo;
         this.snapshot.captainInfo = this.captainInfo;
         this.snapshot.fromString(this.toString());
+        this.snapshot._greatTalents = [...this.getGreatTalents()];
         return this.snapshot;
     }
 
@@ -1795,6 +1838,12 @@ class Unit extends BattleMapElement {
         this.resSpur += amountNum;
     }
 
+    /**
+     * @param {number} atk
+     * @param {number} spd
+     * @param {number} def
+     * @param {number} res
+     */
     addSpurs(atk, spd, def, res) {
         this.atkSpur += atk;
         this.spdSpur += spd;
@@ -2017,6 +2066,15 @@ class Unit extends BattleMapElement {
         this.reservedStatusEffects.push(statusEffect);
     }
 
+    /**
+     * @param {...number} statusEffects
+     */
+    reserveToAddStatusEffects(...statusEffects) {
+        for (let effect of statusEffects) {
+            this.reserveToAddStatusEffect(effect);
+        }
+    }
+
     reserveToApplyAtkBuff(value) {
         this.reservedAtkBuff = Math.max(this.reservedAtkBuff, value);
     }
@@ -2158,9 +2216,10 @@ class Unit extends BattleMapElement {
      */
     addStatusEffect(statusEffectType) {
         let units = g_appData.enumerateAllUnitsOnMap();
-        for (let unitIncludingSelf of units) {
-            let env = new AddStatusEffectEnv(this, unitIncludingSelf, statusEffectType);
-            if (CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+        for (let unit of units) {
+            let env = new PreventingStatusEffectEnv(unit, this, statusEffectType);
+            env.setName('ステータス付与時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            if (CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
         }
@@ -2332,6 +2391,7 @@ class Unit extends BattleMapElement {
         this.fromPosX = this.posX;
         this.fromPosY = this.posY;
         this.isEnemyActionTriggered = this.groupId !== UnitGroupType.Enemy;
+        this.forceResetGreatTalents();
     }
 
     resetSpurs() {
@@ -2354,6 +2414,7 @@ class Unit extends BattleMapElement {
         this.snapshot.battleContext.invalidatesSpdBuff = this.battleContext.invalidatesSpdBuff;
         this.snapshot.battleContext.invalidatesDefBuff = this.battleContext.invalidatesDefBuff;
         this.snapshot.battleContext.invalidatesResBuff = this.battleContext.invalidatesResBuff;
+        this.snapshot._greatTalents = [...this._greatTalents];
     }
 
     /**
@@ -2444,6 +2505,8 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForShieldEffect = false;
         this.isOneTimeActionActivatedForFallenStar = false;
         this.isOneTimeActionActivatedForDeepStar = false;
+        this.hasGrantedAnotherActionAfterCombatInitiation = false;
+        this.hasGrantedAnotherActionAfterActionWithoutCombat = false;
         this.isCantoActivatedInCurrentTurn = false;
         this.isAnotherActionInPostCombatActivated = false;
     }
@@ -2509,9 +2572,10 @@ class Unit extends BattleMapElement {
 
     endActionBySkillEffect() {
         let units = g_appData.enumerateAllUnitsOnMap();
-        for (let unitIncludingSelf of units) {
-            let env = new NeutralizingEndActionEnv(this, unitIncludingSelf);
-            if (CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+        for (let unit of units) {
+            let env = new NeutralizingEndActionEnv(unit, this);
+            env.setName('スキルによる行動終了時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            if (CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
         }
@@ -2520,9 +2584,10 @@ class Unit extends BattleMapElement {
 
     endActionByStatusEffect() {
         let units = g_appData.enumerateAllUnitsOnMap();
-        for (let unitIncludingSelf of units) {
-            let env = new NeutralizingEndActionEnv(this, unitIncludingSelf);
-            if (CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unitIncludingSelf, env)) {
+        for (let unit of units) {
+            let env = new NeutralizingEndActionEnv(unit, this);
+            env.setName('ステータスによる行動終了時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            if (CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
         }
@@ -2538,9 +2603,14 @@ class Unit extends BattleMapElement {
 
         // ここでは天脈の予約を行う
         // 同時タイミングに異なる複数の天脈が付与されていなければ天脈付与を確定させる
+        // After unit acts (if Canto triggers, after Canto)
         for (let skillId of this.enumerateSkills()) {
             getSkillFunc(skillId, applyEndActionSkillsFuncMap)?.call(this);
         }
+
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this);
+        env.setName('行動後or再移動後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
 
         // 同時タイミングに付与された天脈を消滅させる
         g_appData.map.applyReservedDivineVein();
@@ -3427,8 +3497,93 @@ class Unit extends BattleMapElement {
         return this.hasStatusEffect(StatusEffectType.NullPanic);
     }
 
+    resetGreatTalents() {
+        this._greatTalents = [0, 0, 0, 0];
+    }
+
+    forceResetGreatTalents() {
+        this._greatTalents = [0, 0, 0, 0];
+    }
+
+    /**
+     * @param {number} index
+     */
+    getGreatTalent(index) {
+        return this._greatTalents[index];
+    }
+
+    /**
+     * NOTE: Returns copy.
+     * @returns {[number, number, number, number]}
+     */
+    getGreatTalents() {
+        return [...this._greatTalents];
+    }
+
+    /**
+     * @param {number} index
+     * @param {number} value
+     * @param {number} maxValue
+     */
+    setGreatTalent(index, value, maxValue = 99) {
+        this._greatTalents[index] = MathUtil.ensureMax(value, maxValue);
+    }
+
+    /**
+     * @param {[number, number, number, number]} values
+     * @param {[number, number, number, number]} maxValues
+     */
+    setGreatTalentsFrom(values, maxValues = [99, 99, 99, 99]) {
+        this._greatTalents = ArrayUtil.apply(values, maxValues, MathUtil.ensureMax);
+    }
+
+    getReservedGreatTalents() {
+        return [...this._reservedGreatTalents];
+    }
+
+    getReservedMaxGreatTalents() {
+        return [...this._reservedMaxGreatTalents];
+    }
+
+    reserveToAddGreatTalentsFrom(values, maxValues) {
+        let addableValues = this.getAddableGreatTalents(values, maxValues);
+        this.addReservedGreatTalents(addableValues);
+        this.calculateMaxReservedGreatTalents(maxValues);
+    }
+
+    getAddableGreatTalents(values, maxValues) {
+        let subbed = ArrayUtil.sub(maxValues, this.getGreatTalents()).map(v => MathUtil.ensureMin(v, 0));
+        return ArrayUtil.min(values, subbed);
+    }
+
+    addReservedGreatTalents(values) {
+        this._reservedGreatTalents = ArrayUtil.add(this.getReservedGreatTalents(), values);
+    }
+
+    calculateMaxReservedGreatTalents(maxValues) {
+        this._reservedMaxGreatTalents = ArrayUtil.max(this.getReservedMaxGreatTalents(), maxValues);
+    }
+
+    applyReservedGreatTalents() {
+        // 今の値を保存
+        let currentValues = this.getGreatTalents();
+        // 上限を気にせず加算する
+        let addedValues = ArrayUtil.add(this.getGreatTalents(), this.getReservedGreatTalents());
+        // 予約された最大値を適用(最大値とのmin)
+        let minValues = ArrayUtil.min(addedValues, this.getReservedMaxGreatTalents());
+        // 適用したものとcurrentのmaxを選択(現在より減ることはない)
+        this.setGreatTalentsFrom(ArrayUtil.max(currentValues, minValues));
+        // 値をクリア
+        this.clearReservedGreatTalents();
+    }
+
+    clearReservedGreatTalents() {
+        this._reservedGreatTalents = [0, 0, 0 ,0];
+        this._reservedMaxGreatTalents = [0, 0, 0, 0];
+    }
+
     getSpdInPrecombatWithoutDebuff() {
-        return Number(this.spdWithSkills) + Number(this.spdBuff) * this.__getBuffMultiply();
+        return Number(this.spdWithSkills) + Number(this.spdBuff) * this.__getBuffMultiply() + this.getGreatTalent(STATUS_INDEX.Spd);
     }
 
     getSpdInPrecombat() {
@@ -3456,7 +3611,7 @@ class Unit extends BattleMapElement {
     }
 
     getAtkInPrecombatWithoutDebuff() {
-        return Number(this.atkWithSkills) + Number(this.atkBuff) * this.__getBuffMultiply();
+        return Number(this.atkWithSkills) + Number(this.atkBuff) * this.__getBuffMultiply() + this.getGreatTalent(STATUS_INDEX.Atk);
     }
 
     getAtkInPrecombat() {
@@ -3666,19 +3821,19 @@ class Unit extends BattleMapElement {
     }
 
     __getAtkInCombatWithoutBuff() {
-        return (Number(this.atkWithSkills) + this.getAtkDebuffInCombat() + Number(this.atkSpur));
+        return Number(this.atkWithSkills) + this.getAtkDebuffInCombat() + Number(this.atkSpur) + this.getGreatTalent(STATUS_INDEX.Atk);
     }
 
     __getSpdInCombatWithoutBuff() {
-        return (Number(this.spdWithSkills) + this.getSpdDebuffInCombat() + Number(this.spdSpur));
+        return Number(this.spdWithSkills) + this.getSpdDebuffInCombat() + Number(this.spdSpur) + this.getGreatTalent(STATUS_INDEX.Spd);
     }
 
     __getDefInCombatWithoutBuff() {
-        return (Number(this.defWithSkills) + this.getDefDebuffInCombat() + Number(this.defSpur));
+        return Number(this.defWithSkills) + this.getDefDebuffInCombat() + Number(this.defSpur) + this.getGreatTalent(STATUS_INDEX.Def);
     }
 
     __getResInCombatWithoutBuff() {
-        return (Number(this.resWithSkills) + this.getResDebuffInCombat() + Number(this.resSpur));
+        return Number(this.resWithSkills) + this.getResDebuffInCombat() + Number(this.resSpur) + this.getGreatTalent(STATUS_INDEX.Res);
     }
 
     getEvalAtkInPrecombat() {
@@ -3696,7 +3851,7 @@ class Unit extends BattleMapElement {
     getDefInPrecombatWithoutDebuff() {
         let mit = Number(this.defWithSkills);
         let mitBuff = Number(this.defBuff) * this.__getBuffMultiply();
-        return mit + mitBuff;
+        return mit + mitBuff + this.getGreatTalent(STATUS_INDEX.Def);
     }
 
     getDefInPrecombat() {
@@ -3710,7 +3865,7 @@ class Unit extends BattleMapElement {
     getResInPrecombatWithoutDebuff() {
         let mit = Number(this.resWithSkills);
         let mitBuff = Number(this.resBuff) * this.__getBuffMultiply();
-        return mit + mitBuff;
+        return mit + mitBuff + this.getGreatTalent(STATUS_INDEX.Res);
     }
 
     getResInPrecombat() {
@@ -4890,6 +5045,7 @@ class Unit extends BattleMapElement {
         this.passiveX = PassiveX.None;
         this.merge = 0;
         this.dragonflower = 0;
+        this._greatTalents = [0, 0, 0, 0];
     }
 
     /**
@@ -5166,7 +5322,7 @@ class Unit extends BattleMapElement {
             }
         }
         // TODO: 常に奥義カウントが0になるスキルが実装されたら修正する
-        if (specialCountMax === 0) {
+        if (specialCountMax <= 0) {
             specialCountMax = 1;
         }
 
@@ -5364,6 +5520,14 @@ class Unit extends BattleMapElement {
             default:
                 throw new Error("Invalid groupId");
         }
+    }
+
+    isSameGroup(otherUnit) {
+        return this.groupId === otherUnit.groupId;
+    }
+
+    isDifferentGroup(otherUnit) {
+        return !this.isSameGroup(otherUnit);
     }
 
     canCounterAttackToAllDistance() {
@@ -5567,7 +5731,8 @@ class Unit extends BattleMapElement {
             moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         let env = new CantoEnv(this);
-        moveCountForCanto = Math.max(moveCountForCanto, CALC_MOVE_COUNT_FOR_CANTO_HOOKS.evaluateMaxWithUnit(this, env));
+        env.setName('再移動距離計算時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        moveCountForCanto = Math.max(moveCountForCanto, CALCULATES_DISTANCE_OF_CANTO_HOOKS.evaluateMaxWithUnit(this, env));
         for (let skillId of this.enumerateSkills()) {
             let moveCount = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
             moveCountForCanto = Math.max(moveCountForCanto, moveCount);
@@ -5759,6 +5924,10 @@ class Unit extends BattleMapElement {
         this.emblemHeroIndex = EmblemHero.None;
         this.emblemHeroMerge = 0;
         this.isBonusChar = false;
+    }
+
+    grantsAnotherAction() {
+        this.isActionDone = false;
     }
 
     grantsAnotherActionWhenAssist(isAssist) {

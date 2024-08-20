@@ -254,6 +254,7 @@ const STATUS_EFFECT_FILE_NAME_MAP = new Map([
     [StatusEffectType.Frozen, "Frozen.webp"],
     [StatusEffectType.Bonded, "Bonded.webp"],
     [StatusEffectType.DivineNectar, "DivineNectar.webp"],
+    [StatusEffectType.Paranoia, "Paranoia.webp"],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

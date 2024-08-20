@@ -284,6 +284,18 @@ class AppData extends UnitManager {
         this.isDebugMenuEnabled = DebugModeDefault;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
+        this.skillLogLevel = G_SKILL_LOG_LEVEL;
+        this.skillLogLevelOption = [
+            { value: 1, text: "OFF" },
+            { value: 2, text: "FATAL" },
+            { value: 3, text: "ERROR" },
+            { value: 4, text: "WARN" },
+            { value: 5, text: "INFO" },
+            { value: 6, text: "DEBUG" },
+            { value: 7, text: "TRACE" },
+            { value: 8, text: "ALL" },
+        ];
+
 
         /**
          * ダブル補正が有効かどうか

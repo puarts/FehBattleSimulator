@@ -55,6 +55,9 @@ class BeginningOfTurnSkillHandler {
      */
     applySkillsForBeginningOfTurn(unit) {
         this.applyTransformSkillForBeginningOfTurn(unit);
+        let env = new AtStartOfTurnEnv(this, unit);
+        env.setName('ターン開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AT_START_OF_TURN_HOOKS.evaluateWithUnit(unit, env);
         for (let skillId of unit.enumerateSkills()) {
             this.applySkillForBeginningOfTurn(skillId, unit);
         }
@@ -65,6 +68,10 @@ class BeginningOfTurnSkillHandler {
      * @param  {Unit} unit
      */
     applyEnemySkillsForBeginningOfTurn(unit) {
+        let env = new AtStartOfTurnEnv(this, unit);
+        env.setName('敵軍ターン開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AT_START_OF_ENEMY_PHASE_HOOK.evaluateWithUnit(unit, env);
+
         for (let skillId of unit.enumerateSkills()) {
             this.applyEnemySkillForBeginningOfTurn(skillId, unit);
         }
@@ -110,6 +117,7 @@ class BeginningOfTurnSkillHandler {
             }
             this.applyReservedState(unit, isBeginningOfTurn);
         }
+        this.map.applyReservedDivineVein();
     }
 
     /**
@@ -152,6 +160,7 @@ class BeginningOfTurnSkillHandler {
         unit.applyReservedBuffs();
         unit.applyReservedDebuffs(isBeginningOfTurn);
         unit.applyReservedStatusEffects(isBeginningOfTurn);
+        unit.applyReservedGreatTalents();
     }
 
     /**
@@ -207,7 +216,6 @@ class BeginningOfTurnSkillHandler {
         if (skillOwner.hasStatusEffect(StatusEffectType.FalseStart)) return;
 
         getSkillFunc(skillId, applySkillForBeginningOfTurnFuncMap)?.call(this, skillOwner);
-        AT_START_OF_TURN_HOOKS.evaluate(skillId, new AtStartOfTurnEnv(this, skillOwner));
         switch (skillId) {
             case Weapon.PaydayPouch: {
                 let count = this.__countAlliesWithinSpecifiedSpaces(skillOwner, 2);

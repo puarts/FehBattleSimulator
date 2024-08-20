@@ -169,8 +169,8 @@ class DamageCalculatorWrapper {
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
         // 攻撃対象以外の戦闘前の範囲奥義ダメージ
         let precombatDamages = new Map();
-        this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit);
-        this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit);
+        this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, DamageType.ActualDamage, false);
+        this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit, DamageType.ActualDamage, false);
         if (atkUnit.canActivatePrecombatSpecial() &&
             !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
             // 範囲攻撃ダメージを周囲の敵に反映
@@ -268,8 +268,8 @@ class DamageCalculatorWrapper {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
-     * @param  {DamageType} damageType=DamageType.ActualDamage
-     * @param  {Number} gameMode=GameMode.Arena
+     * @param  {number} damageType=DamageType.ActualDamage
+     * @param  {number} gameMode=GameMode.Arena
      * @returns {DamageCalcResult}
      */
     calcDamage(
@@ -288,8 +288,8 @@ class DamageCalculatorWrapper {
         }), () => {
             this.#initBattleContext(atkUnit, defUnit);
 
-            this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit);
-            this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit);
+            this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageType, true);
+            this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit, damageType, true);
 
             // 戦闘前奥義の計算に影響するマップ関連の設定
             {
@@ -307,7 +307,7 @@ class DamageCalculatorWrapper {
             let canTriggerPrecombatSpecial = !atkUnit.battleContext.cannotTriggerPrecombatSpecial;
             let canActivatePrecombatSpecial = atkUnit.canActivatePrecombatSpecial() && canTriggerPrecombatSpecial;
             if (canActivatePrecombatSpecial && !calcPotentialDamage) {
-                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit);
+                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit, damageType);
                 // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
                 defUnit.battleContext.clearPrecombatState();
 
@@ -328,7 +328,7 @@ class DamageCalculatorWrapper {
                         // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
                         for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
                             if (tile.placedUnit === saverUnit) {
-                                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit);
+                                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit, damageType);
                                 saverUnit.battleContext.clearPrecombatState();
                                 saverUnit.battleContext.restHp = saverUnit.restHp;
                             }
@@ -374,8 +374,17 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
-        BEFORE_PRECOMBAT_HOOKS.evaluate(atkUnit, new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null));
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {number} damageType
+     * @param {boolean} isTargetFoe
+     */
+    __applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageType, isTargetFoe) {
+        let env = new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null);
+        let target = isTargetFoe ? "敵" : "周囲";
+        env.setName(`範囲奥義前(${target})`).setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        PRE_COMBAT_HOOKS.evaluateWithUnit(atkUnit, env);
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Queensblade:
@@ -421,10 +430,11 @@ class DamageCalculatorWrapper {
     }
 
     /**
-     * @param  {Unit} atkUnit
-     * @param  {Unit} defUnit
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {number} damageType
      */
-    __applyPrecombatSkills(atkUnit, defUnit) {
+    __applyPrecombatSkills(atkUnit, defUnit, damageType = DamageType.ActualDamage) {
         // 範囲奥義と戦闘中のどちらにも効くスキル効果の適用
         this.__applySkillEffectForPrecombatAndCombat(atkUnit, defUnit, false);
         this.__applySkillEffectForPrecombatAndCombat(defUnit, atkUnit, false);
@@ -439,21 +449,31 @@ class DamageCalculatorWrapper {
         // 守備、魔防のどちらを参照するか決定
         defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit, true);
         this.__selectReferencingResOrDef(atkUnit, defUnit);
+
+        this.#applySkillEffectsBeforePrecombatSpecial(atkUnit, defUnit, damageType);
+        this.#applySkillEffectsBeforePrecombatSpecial(defUnit, atkUnit, damageType);
+    }
+
+    #applySkillEffectsBeforePrecombatSpecial(targetUnit, enemyUnit, damageType) {
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, false);
+        env.setName('範囲奥義前').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        BEFORE_AOE_SPECIAL_HOOKS.evaluateWithUnit(targetUnit, env);
     }
 
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
+     * @param damageType
      */
-    calcPrecombatSpecialResult(atkUnit, defUnit) {
-        this.__applyPrecombatSkills(atkUnit, defUnit);
+    calcPrecombatSpecialResult(atkUnit, defUnit, damageType) {
+        this.__applyPrecombatSkills(atkUnit, defUnit, damageType);
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
-     * @param  {DamageType} damageType
-     * @param  {Number} gameMode
+     * @param  {number} damageType
+     * @param  {number} gameMode
      * @returns {DamageCalcResult}
      */
     calcCombatResult(atkUnit, defUnit, damageType, gameMode) {
@@ -470,8 +490,8 @@ class DamageCalculatorWrapper {
         this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
 
         self.__applySkillEffect(atkUnit, defUnit, calcPotentialDamage);
-        self.__applySkillEffectForUnit(atkUnit, defUnit, calcPotentialDamage, gameMode);
-        self.__applySkillEffectForUnit(defUnit, atkUnit, calcPotentialDamage, gameMode);
+        self.__applySkillEffectForUnit(atkUnit, defUnit, calcPotentialDamage, damageType, gameMode);
+        self.__applySkillEffectForUnit(defUnit, atkUnit, calcPotentialDamage, damageType, gameMode);
 
         self.__applySkillEffectRelatedToEnemyStatusEffects(atkUnit, defUnit, calcPotentialDamage);
         self.__applySkillEffectRelatedToEnemyStatusEffects(defUnit, atkUnit, calcPotentialDamage);
@@ -481,8 +501,8 @@ class DamageCalculatorWrapper {
         // 紋章を除く味方ユニットからの戦闘中バフ
         // self.profile.profile("__applySkillEffectFromAllies", () => {
         // self.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
-        self.__applySkillEffectFromAllies(atkUnit, defUnit, calcPotentialDamage);
-        self.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage);
+        self.__applySkillEffectFromAllies(atkUnit, defUnit, calcPotentialDamage, damageType);
+        self.__applySkillEffectFromAllies(defUnit, atkUnit, calcPotentialDamage, damageType);
         // });
 
         // 周囲の敵からのスキル効果
@@ -510,11 +530,11 @@ class DamageCalculatorWrapper {
 
         // 戦闘中バフが決まった後に評価するスキル効果
         {
-            self.__applySpurForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
-            self.__applySpurForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
+            self.__applySpurForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage, damageType);
+            self.__applySpurForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage, damageType);
 
-            self.__applySkillEffectForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage);
-            self.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage);
+            self.__applySkillEffectForUnitAfterCombatStatusFixed(atkUnit, defUnit, calcPotentialDamage, damageType);
+            self.__applySkillEffectForUnitAfterCombatStatusFixed(defUnit, atkUnit, calcPotentialDamage, damageType);
         }
 
         // self.profile.profile("__applySkillEffectFromSkillInfo", () => {
@@ -559,20 +579,20 @@ class DamageCalculatorWrapper {
         // 神速
         // 他の追撃可能かどうかを条件とするスキルは神速も追撃と見なすのでそれより前に神速判定をしなければならない
         // 神速自体も追撃可能かどうかを条件とするので追撃判定の後に効果を適用しなければならない
-        self.__applyPotentSkillEffect(atkUnit, defUnit);
-        self.__applyPotentSkillEffect(defUnit, atkUnit);
+        self.__applyPotentSkillEffect(atkUnit, defUnit, damageType);
+        self.__applyPotentSkillEffect(defUnit, atkUnit, damageType);
 
         // 追撃可能かどうかが条件として必要なスキル効果の適用
-        self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit);
-        self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit);
+        self.__applySkillEffectRelatedToFollowupAttackPossibility(atkUnit, defUnit, calcPotentialDamage, damageType);
+        self.__applySkillEffectRelatedToFollowupAttackPossibility(defUnit, atkUnit, calcPotentialDamage, damageType);
 
         // 効果を無効化するスキル
         self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
         self.__applyInvalidationSkillEffect(defUnit, atkUnit, calcPotentialDamage);
 
         // 奥義
-        self.__applySpecialSkillEffect(atkUnit, defUnit);
-        self.__applySpecialSkillEffect(defUnit, atkUnit);
+        self.__applySpecialSkillEffect(atkUnit, defUnit, calcPotentialDamage, damageType);
+        self.__applySpecialSkillEffect(defUnit, atkUnit, calcPotentialDamage, damageType);
 
         // 間接的な設定から実際に戦闘で利用する値を評価して戦闘コンテキストに設定
         self.__setSkillEffetToContext(atkUnit, defUnit);
@@ -2200,19 +2220,42 @@ class DamageCalculatorWrapper {
         return false;
     }
 
-    __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
+    __applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, damageType, gameMode) {
         let self = this;
         this.profiler.profile("__applySkillEffectForUnit", () => {
-            self.____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode);
+            self.____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, damageType, gameMode);
         });
     }
     /**
      * @param  {Unit} targetUnit
      * @param  {Unit} enemyUnit
      * @param  {Boolean} calcPotentialDamage
+     * @param  {number} damageType
      * @param  {GameMode} gameMode
      */
-    ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, gameMode) {
+    ____applySkillEffectForUnit(targetUnit, enemyUnit, calcPotentialDamage, damageType, gameMode) {
+        if (targetUnit.hasStatusEffect(StatusEffectType.Paranoia)) {
+            // 【Paranoia】
+            // At start of combat, if unit's HP ≤ 99%, grants Atk+5 to unit during combat, and also, if unit initiates combat, unit can make a follow-up attack before foe's next attack.
+            // At start of combat, if unit's HP ≤ 99%, if foe initiates combat, and if either that foe's Range = unit's Range or number of【Penalty】effects active on foe excluding stat penalties ≥ 3, unit can counterattack before foe's first attack (excluding when unit's Savior effect triggers).
+            if (targetUnit.battleContext.restHpPercentage <= 99) {
+                targetUnit.atkSpur += 5;
+                if (targetUnit.battleContext.initiatesCombat) {
+                    targetUnit.battleContext.isDesperationActivatable = true;
+                }
+                if (enemyUnit.battleContext.initiatesCombat) {
+                    let areRanged = targetUnit.isRangedWeaponType() && enemyUnit.isRangedWeaponType();
+                    let areMelee = targetUnit.isMeleeWeaponType() && enemyUnit.isMeleeWeaponType();
+                    let areSameRange = areRanged || areMelee;
+                    let negativeCount = enemyUnit.getNegativeStatusEffects().length;
+                    if (areSameRange || negativeCount >= 3) {
+                        if (!targetUnit.battleContext.isSaviorActivated) {
+                            targetUnit.battleContext.isVantageActivatable = true;
+                        }
+                    }
+                }
+            }
+        }
         if (targetUnit.hasStatusEffect(StatusEffectType.TimesGrip)) {
             targetUnit.addAllSpur(-4);
         }
@@ -2341,7 +2384,8 @@ class DamageCalculatorWrapper {
         }
 
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        APPLY_SKILL_EFFECTS_FOR_UNIT_HOOKS.evaluateWithUnit(targetUnit, env);
+        env.setName('戦闘開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
             if (skillFunc) {
@@ -10198,8 +10242,9 @@ class DamageCalculatorWrapper {
      * @param  {Unit} targetUnit
      * @param  {Unit} enemyUnit
      * @param  {Boolean} calcPotentialDamage
+     * @param  {number} damageType
      */
-    __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
+    __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
             return;
         }
@@ -10214,7 +10259,8 @@ class DamageCalculatorWrapper {
                     continue
                 }
                 let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
-                FOR_ALLIES_APPLY_SKILL_EFFECTS_HOOKS.evaluateWithUnit(allyUnit, env);
+                env.setName('周囲の味方のスキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+                WHEN_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
                 for (let skillId of allyUnit.enumerateSkills()) {
                     let func = getSkillFunc(skillId, applySkillEffectFromAlliesFuncMap);
                     func?.call(this, targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
@@ -10884,12 +10930,20 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {number} damageType
+     */
+    __applySpurForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         for (let func of targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs) {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        env.setName('ステータス決定後バフ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
         targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
+        WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.evaluateWithUnit(targetUnit, env);
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
             if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
                 this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
@@ -11870,8 +11924,9 @@ class DamageCalculatorWrapper {
      * @param  {Unit} targetUnit
      * @param  {Unit} enemyUnit
      * @param  {Boolean} calcPotentialDamage
+     * @param  {number} damageType
      */
-    __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage) {
+    __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         // 【凍結】
         if (targetUnit.hasStatusEffect(StatusEffectType.Frozen)) {
             // 以下の効果により、自分の追撃が発生しにくくなり、敵の追撃が発生しやすくなる状態異常（敵の次回行動終了まで）
@@ -11891,7 +11946,9 @@ class DamageCalculatorWrapper {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        env.setName('ステータス決定後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
         targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
+        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.evaluateWithUnit(targetUnit, env);
 
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
@@ -14773,15 +14830,29 @@ class DamageCalculatorWrapper {
      * 神速追撃を行うスキル
      * @param {Unit} targetUnit
      * @param {Unit} enemyUnit
+     * @param {number} damageType
      */
-    __applyPotentSkillEffect(targetUnit, enemyUnit) {
+    __applyPotentSkillEffect(targetUnit, enemyUnit, damageType) {
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, null);
+        env.setName('神速判定時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        WHEN_APPLIES_POTENT_EFFECTS_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applyPotentSkillEffectFuncMap)?.call(this, targetUnit, enemyUnit);
         }
     }
 
     /// 追撃可能かどうかが条件として必要なスキル効果の適用
-    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit) {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {number} damageType
+     * @private
+     */
+    __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        env.setName('追撃判定後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        AFTER_FOLLOW_UP_CONFIGURED_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectRelatedToFollowupAttackPossibilityFuncMap);
             func?.call(this, targetUnit, enemyUnit);
@@ -15372,7 +15443,16 @@ class DamageCalculatorWrapper {
         };
     }
 
-    __applySpecialSkillEffect(targetUnit, enemyUnit) {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {number} damageType
+     */
+    __applySpecialSkillEffect(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, false);
+        env.setName('戦闘開始時奥義効果').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         let func = this._applySpecialSkillEffectFuncDict[targetUnit.special];
         if (func) {
             func(targetUnit, enemyUnit);
@@ -16784,6 +16864,9 @@ class DamageCalculatorWrapper {
                 continue;
             }
 
+            let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
+            env.setName('周囲の敵からのデバフ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromEnemyAlliesFuncMap);
                 func?.call(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
@@ -17050,7 +17133,7 @@ class DamageCalculatorWrapper {
             }
             // 距離に関係ないもの
             let env = new ForAlliesEnv(this, targetUnit, enemyUnit, ally);
-            FOR_ALLIES_GRANTING_BONUS_HOOKS.evaluateWithUnit(ally, env);
+            WHEN_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(ally, env);
             for (let skillId of ally.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromAlliesFuncMap);
                 func?.call(this, targetUnit, ally, enemyUnit, calcPotentialDamage);

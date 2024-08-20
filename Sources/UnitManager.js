@@ -13,6 +13,9 @@ class UnitManager {
         }
     }
 
+    /**
+     * @returns {Generator<Unit>}
+     */
     *enumerateUnits() {
         for (let unit of this.units) {
             yield unit;
@@ -216,6 +219,15 @@ class UnitManager {
         return false;
     }
 
+    isThereEnemyInSpecifiedSpaces(targetUnit, spaces, predicator = null) {
+        for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces)) {
+            if (predicator === null || predicator?.(unit)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     isThereAnyUnitInTheSameGroupOnMap(unit, conditionFunc) {
         for (let ally of this.enumerateUnitsInTheSameGroupOnMap(unit, false)) {
             if (conditionFunc(ally)) {
@@ -282,6 +294,11 @@ class UnitManager {
             }
         }
         return count;
+    }
+
+    countAlliesInCrossWithOffset(targetUnit, offset) {
+        let isInCross = u => u.isInCrossWithOffset(targetUnit, offset);
+        return this.countAlliesWithinSpecifiedSpaces(targetUnit, 99, isInCross);
     }
 
     countEnemiesInCrossWithOffset(targetUnit, offset) {

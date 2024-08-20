@@ -25,6 +25,7 @@ describe('Test feud skills', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
+    g_appData = calclator.unitManager;
   });
 
   describe('Test disable skills from other enemies', () => {
@@ -908,6 +909,42 @@ test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
     expect(result.preCombatDamage).toBe(1);
   }
 }));
+
+describe('Test great talent', () => {
+  beforeEach(() => {
+    heroDatabase = g_testHeroDatabase;
+
+    atkUnit = heroDatabase.createUnit("アルフォンス");
+    atkUnit.atkWithSkills = 40;
+    atkUnit.setGreatTalent(STATUS_INDEX.Atk, 6);
+    atkUnit.passiveA = PassiveA.None;
+    atkUnit.placedTile.posX = 0;
+    atkUnit.placedTile.posY = 1;
+
+    defAllyUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+    defUnit.defWithSkills = 30;
+    defUnit.setGreatTalent(STATUS_INDEX.Def, 4);
+    defAllyUnit.placedTile.posX = 1;
+    defAllyUnit.placedTile.posY = 0;
+
+    calclator = new test_DamageCalculator();
+    calclator.isLogEnabled = false;
+    g_appData = calclator.unitManager;
+  });
+
+  test('Test great talent applied', () => {
+    calclator.updateAllUnitSpur();
+    let result = calclator.calcDamage(atkUnit, defUnit);
+
+    expect(atkUnit.atkWithSkills).toBe(40);
+    expect(atkUnit.getAtkInPrecombat()).toBe(40 + 6);
+    expect(atkUnit.getAtkInCombat(defUnit)).toBe(40 + 6);
+    expect(defUnit.defWithSkills).toBe(30);
+    expect(defUnit.getDefInPrecombat()).toBe(30 + 4);
+    expect(defUnit.getDefInCombat(atkUnit)).toBe(30 + 4);
+    expect(result.atkUnit_normalAttackDamage).toBe(40 + 6 - 30 - 4);
+  });
+});
 
 test('DamageCalculator_CreateSnapshot', () => test_executeTest(() => {
   let atkUnit = test_createDefaultUnit();

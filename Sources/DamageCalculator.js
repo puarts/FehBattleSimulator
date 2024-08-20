@@ -191,7 +191,7 @@ class DamageCalculator {
      * ダメージ計算を行います。
      * @param  {Unit} atkUnit 攻撃をするユニットです。
      * @param  {Unit} defUnit 攻撃を受けるユニットです。
-     * @param  {DamageType} damageType 潜在ダメージ計算かどうかを指定します。
+     * @param  {number} damageType 潜在ダメージ計算かどうかを指定します。
      */
     calcCombatResult(atkUnit, defUnit, damageType) {
         // 初期化
@@ -570,6 +570,10 @@ class DamageCalculator {
             atkUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage,
             isPrecombat
         );
+
+        if (isPrecombat) {
+            fixedAddDamage += atkUnit.battleContext.additionalDamageInPrecombat;
+        }
         return fixedAddDamage;
     }
 
@@ -1167,7 +1171,7 @@ class DamageCalculator {
             this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
 
             // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
-            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit);
+            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context);
 
             // 防御系奥義によるダメージ軽減
             let isDefenderSpecialActivated =
@@ -1518,8 +1522,11 @@ class DamageCalculator {
         return isDefenderSpecialActivated;
     }
 
-    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit) {
+    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context) {
         if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
+            let env = new DamageCalculatorEnv(this, defUnit, atkUnit);
+            env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(context.damageType);
+            AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
             for (let skillId of defUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applyDamageReductionRatiosWhenCondSatisfiedFuncMap);
                 func?.call(this, atkUnit, defUnit);
@@ -1682,7 +1689,9 @@ class DamageCalculator {
      */
     __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
         let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit);
+        env.setName('攻撃開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(context.damageType);
         targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
+        AT_START_OF_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectsPerAttackFuncMap);
             func?.call(this, targetUnit, enemyUnit, canActivateAttackerSpecial, context);

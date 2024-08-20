@@ -116,6 +116,7 @@ class BattleContext {
         this.damageAfterCombat = 0;
 
         // 強化無効
+        // unit invalidate foe's bonus
         this.invalidatesAtkBuff = false;
         this.invalidatesSpdBuff = false;
         this.invalidatesDefBuff = false;
@@ -223,6 +224,8 @@ class BattleContext {
         // 攻撃時の追加ダメージ
         // TODO: 戦闘前と戦闘中で変数を分ける
         this.additionalDamage = 0;
+
+        this.additionalDamageInPrecombat = 0;
 
         // 最初の攻撃の追加ダメージ
         this.additionalDamageOfFirstAttack = 0;
@@ -529,6 +532,8 @@ class BattleContext {
         this.additionalDamage = 0;
         this.additionalDamageOfSpecial = 0;
         this.damageReductionValue = 0;
+        // TODO: renameを検討
+        this.damageReductionForPrecombat = 0;
     }
 
     clear() {
@@ -766,6 +771,14 @@ class BattleContext {
         );
     }
 
+    isTriggeringAttackTwice() {
+        if (this.initiatesCombat) {
+            return this.attackCount === 2;
+        } else {
+            return this.counterattackCount === 2;
+        }
+    }
+
     neutralizesReducesCooldownCount() {
         this.applyInvalidationSkillEffectFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -950,7 +963,7 @@ class BattleContext {
         this.#damageReductionRatiosOfFirstAttack.push(ratio);
     }
 
-    getDamageReductionRatiosOfFirstAttack(ratio) {
+    getDamageReductionRatiosOfFirstAttack() {
         return this.#damageReductionRatiosOfFirstAttack;
     }
 
@@ -958,7 +971,7 @@ class BattleContext {
         this.#damageReductionRatiosOfFirstAttacks.push(ratio);
     }
 
-    getDamageReductionRatiosOfFirstAttacks(ratio) {
+    getDamageReductionRatiosOfFirstAttacks() {
         return this.#damageReductionRatiosOfFirstAttacks;
     }
 
@@ -966,7 +979,7 @@ class BattleContext {
         this.#damageReductionRatiosOfConsecutiveAttacks.push(ratio);
     }
 
-    getDamageReductionRatiosOfConsecutiveAttacks(ratio) {
+    getDamageReductionRatiosOfConsecutiveAttacks() {
         return this.#damageReductionRatiosOfConsecutiveAttacks;
     }
 
@@ -974,7 +987,7 @@ class BattleContext {
         this.#damageReductionRatiosOfFollowupAttack.push(ratio);
     }
 
-    getDamageReductionRatiosOfFollowupAttack(ratio) {
+    getDamageReductionRatiosOfFollowupAttack() {
         return this.#damageReductionRatiosOfFollowupAttack;
     }
 
@@ -982,7 +995,7 @@ class BattleContext {
         this.#damageReductionRatiosByChainGuard.push(ratio);
     }
 
-    getDamageReductionRatiosByChainGuard(ratio) {
+    getDamageReductionRatiosByChainGuard() {
         return this.#damageReductionRatiosByChainGuard;
     }
 }

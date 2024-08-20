@@ -1897,6 +1897,14 @@ const Weapon = {
     JuicyBucketfulPlus: 2971, // 夏野菜の桶+
     FlutteringFan: 2972, // 人見知りの縁の祭器
     StallGameBowPlus: 2974, // 射的の弓+
+
+    // 2024年 総選挙
+    // https://www.youtube.com/watch?v=HeTPTeGqnTc
+    // https://www.youtube.com/watch?v=ezkrMU7iBNA
+    MajesticGlitnir: 2988, // 王斧グリトニル
+    NewLevinSword: 2982, // 錬磨サンダーソード
+    TheInexhaustible: 2985, // 尽きざるもの
+    ExaltsTactics: 2979, // 聖王の参謀の術書
 };
 
 const Support = {
@@ -2120,8 +2128,10 @@ const Special = {
 
     Gust: 2952, // 陣風
     FierceBeast: 2960, // 猛獣
+    CurvedShot: 2986, // 曲射
 
     // 専用奥義
+    MakingsOfAKing: 2989, // 王器
     WarpRagnarok: 2925, // ワープライナ
     TimeAndLight: 2919, // 時と光
     Bane: 2903, // 瞬殺
@@ -2384,6 +2394,8 @@ const PassiveA = {
     EarthwindBoost3: 2789, // 生命の疾風大地3
 
     AtkSpdMastery: 2973, // 攻撃速さの制空
+
+    Fortifications: 2990, // 野戦築城
 
     // 専用A
     ObsidianTactics: 2946, // 黒曜石の教え
@@ -2851,7 +2863,11 @@ const PassiveB = {
     DiveBomb3: 1430, // 空からの急襲3
     PegasusRift: 2968, // 天馬裂空
 
+    Reopening: 2991, // 一新
+
     // 専用B
+    AccordingToPlan: 2980, // 読み通りです!
+    LoneWolf: 2983, // 一匹狼
     DivineStrength: 2962, // 神獣の肉体
     MoonlitBangleQ: 2954, // 華月の腕輪・先
     IcePrincesSeal: 2915, // 氷王の封印
@@ -2872,6 +2888,7 @@ const PassiveB = {
     BindingNecklace: 1540, // 束縛の首飾り
     BindingNecklacePlus: 2538, // 束縛の首飾り・神
     FallenStar: 1651, // 落星
+    FallenStar2: 2964, // 落星・承
     SunTwinWing: 1680, // 双姫の陽翼
     SunTwinWingPlus: 2799, // 双姫の陽翼・神
     MoonTwinWing: 1732, // 双姫の月翼
@@ -2879,6 +2896,7 @@ const PassiveB = {
     ArmoredWall: 1706, // 覇鎧障壁
     MurderousLion: 1712, // 蒼き殺人鬼
     YngviAscendant: 1780, // ユングヴィの祖
+    YngviAscendantPlus: 2965, // ユングヴィの祖・神
     MoonlightBangle: 1798, // 華月の腕輪
     MoonlitBangleF: 2127, // 華月の腕輪・遠
     Prescience: 1822, // 未来を知る力
@@ -3294,7 +3312,12 @@ const PassiveC = {
     EvenAtkWaveN: 2939, // 近間の攻撃の波・偶
     EvenResWaveD: 2934, // 竜の魔防の波・偶
 
+    EndlessTempest: 2984, // 迅雷風烈・無極
+
+    CreationPulse: 2981, // 開闢の鼓動
+
     // 専用C
+    Paranoia: 2987, // 被害妄想
     DivineNectar: 2959, // 神獣の蜜
     ForeverYours: 2890, // あなたのシャロン
     AbsoluteClosure: 2884, // すべてを鎖す世界

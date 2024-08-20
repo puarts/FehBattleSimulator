@@ -809,6 +809,13 @@ class BattleSimulatorBase {
         updateAllUi();
     }
 
+    /**
+     * @returns {UnitManager}
+     */
+    get unitManager() {
+        return g_appData;
+    }
+
     __findMaxSpWeaponId(defaultSkillId, options) {
         let skillInfoArrays = [g_appData.weaponInfos];
         let maxSpSkillInfo = this.__findSkillInfoFromArrays(skillInfoArrays, defaultSkillId);
@@ -1175,7 +1182,8 @@ class BattleSimulatorBase {
             return;
         }
         let env = new EnumerationEnv(g_appData, duoUnit);
-        ACTIVATE_DUO_OR_HARMONIZED_SKILL_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
+        env.setName('比翼双界スキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
             case Hero.HarmonizedGoldmary:
                 // 自分と同じ出典の味方と、自分自身に
@@ -3591,6 +3599,11 @@ class BattleSimulatorBase {
             }
         }
 
+        // 優先度が高いスキルの後かつ奥義の再行動の前
+        let env = new BattleSimulatorBaseEnv(this, atkUnit);
+        env.setName('奥義以外の再行動時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
+
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         if (atkUnit.isAlive) {
             for (let skillId of atkUnit.enumerateSkills()) {
@@ -4018,7 +4031,7 @@ class BattleSimulatorBase {
     __createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile) {
         let divineHtml = "";
         if (tile.divineVein !== DivineVeinType.None) {
-            let divineString = DivineVeinStrings[tile.divineVein];
+            let divineString = DIVINE_VEIN_STRINGS[tile.divineVein];
             let color = divineVeinColor(tile.divineVeinGroup);
             divineHtml += `<span style='color:${color};font-weight: bold'>【</span>`;
             divineHtml += divineString;
@@ -4361,6 +4374,7 @@ class BattleSimulatorBase {
         for (let unit of units) {
             unit.isCombatDone = false;
             unit.isSupportDone = false;
+            unit.isSupportedDone = false;
         }
     }
 
@@ -6403,7 +6417,12 @@ class BattleSimulatorBase {
                 // ブロック破壊
                 let blockTile = bestTileContextToBreakBlock.tile;
                 let moveTile = bestTileContextToBreakBlock.bestTileToBreakBlock;
-                this.__enqueueBreakStructureCommand(unit, moveTile, blockTile.obj);
+                // ブロックによってコマンドを分ける
+                if (blockTile.hasEnemyBreakableDivineVein(unit.groupId)) {
+                    this.__enqueueBreakDivineVeinCommand(unit, moveTile, blockTile);
+                } else {
+                    this.__enqueueBreakStructureCommand(unit, moveTile, blockTile);
+                }
             }
             else if (isPivotRequired) {
                 // 回り込み
@@ -6443,6 +6462,8 @@ class BattleSimulatorBase {
         let unitsSortedBySlot = Array.from(targetUnits).sort((a, b) => a.slotOrder - b.slotOrder);
         for (let unit of unitsSortedBySlot) {
             for (let skillId of unit.enumerateSkills()) {
+                // TODO: 総選挙ルフレに持たせるか検討する
+                // TODO: 天脈実装の際に実装を忘れないようにドキュメント化する
                 let result = getSkillFunc(skillId, hasDivineVeinSkillsWhenActionDoneFuncMap)?.call(this);
                 if (result && !unit.isActionDone) {
                     unit.endAction();
@@ -6698,7 +6719,15 @@ class BattleSimulatorBase {
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
         let func = function () {
             if (unit.isActionDone) {
+                // TODO: 動作確認をする
+                let env = new BattleSimulatorBaseEnv(this, unit);
+                env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+                AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
                 // 移動時に罠を踏んで動けなくなるケース
+                return;
+            }
+
+            if (unit.isActionDoneDuringMoveCommand) {
                 return;
             }
 
@@ -6740,6 +6769,14 @@ class BattleSimulatorBase {
         return commands;
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param obj
+     * @param {number} commandType
+     * @returns {Command}
+     * @private
+     */
     __createBreakStructureCommand(unit, moveTile, obj, commandType = CommandType.Normal) {
         let serial = null;
         if (this.vm.isCommandUndoable) {
@@ -6752,6 +6789,12 @@ class BattleSimulatorBase {
                 // 移動時にトラップ発動した場合は行動終了している
                 // その場合でも天脈は発動する
                 unit.applyEndActionSkills();
+                return;
+            }
+
+            if (unit.isActionDoneDuringMoveCommand) {
+                // TODO: 必要か検討する
+                // unit.applyEndActionSkills();
                 return;
             }
 
@@ -6779,19 +6822,74 @@ class BattleSimulatorBase {
         );
     }
 
+    __createBreakDivineVeinCommands(unit, moveTile, targetTile) {
+        let commands = [];
+        commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
+        commands.push(this.__createBreakDivineVeinCommand(unit, moveTile, targetTile, CommandType.End));
+        return commands;
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param {Tile} targetTile
+     * @param {number} commandType
+     * @returns {Command}
+     * @private
+     */
+    __createBreakDivineVeinCommand(unit, moveTile, targetTile, commandType = CommandType.Normal) {
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertUnitPerTurnStatusToSerial(unit);
+        }
+        let self = this;
+        let func = function () {
+            if (unit.isActionDone) {
+                // 移動時にトラップ発動した場合は行動終了している
+                // その場合でも天脈は発動する
+                unit.applyEndActionSkills();
+                return;
+            }
+
+            if (unit.isActionDoneDuringMoveCommand) {
+                // TODO: 必要か検討する
+                // unit.applyEndActionSkills();
+                return;
+            }
+
+            self.audioManager.playSoundEffectImmediately(SoundEffectId.Break);
+            if (self.isCommandLogEnabled) {
+                g_app.writeLogLine(unit.getNameWithGroup() + "は天脈を破壊");
+            }
+
+            // TODO: 予約しなくて良いのか検討
+            targetTile.removeDivineVein();
+
+            self.__endUnitActionOrActivateCanto(unit);
+        };
+        return this.__createCommand(
+            `${unit.id}-bd-${targetTile.divineVein}-${moveTile.id}`,
+            `天脈・${DIVINE_VEIN_STRINGS[targetTile.divineVein]}破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
+            func,
+            serial,
+            commandType
+        );
+    }
+
     __activateCantoIfPossible(unit) {
         if (unit.isDead) {
             return false;
         }
-        if (this.__canActivateCanto(unit)) {
+        let count = unit.calcMoveCountForCanto();
+        if (this.__canActivateCanto(unit, count)) {
             unit.isCantoActivating = true;
             this.writeDebugLogLine("再移動の発動");
-            let count = unit.calcMoveCountForCanto();
             // Nマス以内にいるだけで再移動発動時に効果を発揮する
             // activateCantoIfPossible内で再移動の発動を判定しているのでここではNマス以内の判定結果だけを保存
             let isThereAnyUnitThatInflictCantoControlWithinRange = false;
             for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
                 let env = new CantoControlEnv(unit, u);
+                env.setName('再移動制限時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
                 isThereAnyUnitThatInflictCantoControlWithinRange |=
                     CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
                 for (let skillId of u.enumerateSkills()) {
@@ -6817,13 +6915,13 @@ class BattleSimulatorBase {
         return false;
     }
 
-    __canActivateCanto(unit) {
+    __canActivateCanto(unit, count) {
         if (!unit.canActivateCanto()) {
             return false;
         }
 
         // 移動力が0かつワープでの移動先が無い場合再移動は発動しない
-        if (unit.calcMoveCountForCanto() === 0) {
+        if (count === 0) {
             let movableWarpTileCount = Array.from(this.map.enumerateWarpCantoTiles(unit)).length;
             if (movableWarpTileCount === 0) {
                 return false;
@@ -6835,7 +6933,9 @@ class BattleSimulatorBase {
         }
 
         // スキル毎の追加条件
-        if (CAN_ACTIVATE_CANTO_HOOKS.evaluateSomeWithUnit(unit, new BattleSimulatorBaseEnv(this, unit))) {
+        let env = new BattleSimulatorBaseEnv(this, unit);
+        env.setName('再移動判定時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        if (CAN_TRIGGER_CANTO_HOOKS.evaluateSomeWithUnit(unit, env)) {
             return true;
         }
         for (let skillId of unit.enumerateSkills()) {
@@ -6947,8 +7047,25 @@ class BattleSimulatorBase {
         return false;
     }
 
-    __enqueueBreakStructureCommand(unit, moveTile, obj) {
-        let commands = this.__createBreakStructureCommands(unit, moveTile, obj);
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param {Tile} targetTile
+     * @private
+     */
+    __enqueueBreakStructureCommand(unit, moveTile, targetTile) {
+        let commands = this.__createBreakStructureCommands(unit, moveTile, targetTile.obj);
+        this.__enqueueCommandsImpl(commands);
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param {Tile} targetTile
+     * @private
+     */
+    __enqueueBreakDivineVeinCommand(unit, moveTile, targetTile) {
+        let commands = this.__createBreakDivineVeinCommands(unit, moveTile, targetTile);
         this.__enqueueCommandsImpl(commands);
     }
 
@@ -6963,6 +7080,7 @@ class BattleSimulatorBase {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let func = function () {
+            unit.isActionDoneDuringMoveCommand = false;
             if (enableSoundEffect) {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
             }
@@ -7004,7 +7122,15 @@ class BattleSimulatorBase {
                 unit.deactivateCanto();
                 unit.applyEndActionSkills();
             }
+
+            if (unit.isActionDone) {
+                unit.isActionDoneDuringMoveCommand = true;
+            }
             self.__updateDistanceFromClosestEnemy(unit);
+
+            let env = new BattleSimulatorBaseEnv(this, unit);
+            env.setName('奥義以外の再行動時[移動]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
         };
         return this.__createCommand(
             `${unit.id}-m-${tileToMove.id}`,
@@ -7030,6 +7156,10 @@ class BattleSimulatorBase {
         let func = function () {
             if (attackerUnit.isActionDone) {
                 // 移動時にトラップ発動した場合は行動終了している
+                return;
+            }
+
+            if (attackerUnit.isActionDoneDuringMoveCommand) {
                 return;
             }
 
@@ -7170,10 +7300,20 @@ class BattleSimulatorBase {
         }
     }
 
+    /**
+     * @param {number} groupId
+     * @returns {Tile[]}
+     * @private
+     */
     __getBreakableStructureTiles(groupId) {
         return Array.from(this.map.enumerateBreakableStructureTiles(groupId));
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {Tile} bestTileToMove
+     * @param {Tile[]} movableTiles
+     */
     __findBestTileToBreakBlock(unit, bestTileToMove, movableTiles) {
         if (!unit.hasWeapon) {
             return null;
@@ -7181,6 +7321,10 @@ class BattleSimulatorBase {
 
         this.writeDebugLogLine(unit.getNameWithGroup() + "が破壊可能なブロックを評価..");
         let blockTiles = this.__getBreakableStructureTiles(unit.groupId);
+        // 破壊可能な天脈もブロックリストに入れる
+        let breakableDivineVeinTiles =
+            GeneratorUtil.toArray(this.map.enumerateTiles(t => t.hasEnemyBreakableDivineVein(unit.groupId)));
+        blockTiles = [...(new Set(blockTiles.concat(breakableDivineVeinTiles)))];
         if (blockTiles.length === 0) {
             this.writeDebugLogLine("破壊可能なブロックがマップ上に存在しない");
             return null;
@@ -7956,7 +8100,7 @@ class BattleSimulatorBase {
                     unit.actionContext.attackableUnitInfos.push(info);
                 }
 
-                if (tile === unit.placedTile || tile.isUnitPlacable()) {
+                if (tile === unit.placedTile || tile.isUnitPlacable(unit)) {
                     info.tiles.push(tile);
                 }
             }
@@ -8376,7 +8520,7 @@ class BattleSimulatorBase {
         if (moveTile == null) {
             return new MovementAssistResult(false, null, null);
         }
-        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable()) {
+        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable(unit)) {
             return new MovementAssistResult(false, null, null);
         }
         return new MovementAssistResult(true, moveTile, targetUnit.placedTile);
@@ -8397,7 +8541,7 @@ class BattleSimulatorBase {
             return new MovementAssistResult(false, null, null);
         }
 
-        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable()) {
+        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable(unit)) {
             return new MovementAssistResult(false, null, null);
         }
 
@@ -8470,6 +8614,16 @@ class BattleSimulatorBase {
         if (applesMovementSkill) {
             this.__applyMovementAssistSkill(unit, targetUnit);
             this.__applyMovementAssistSkill(targetUnit, unit);
+
+            let env;
+            env = new BattleSimulatorBaseEnv(this, unit);
+
+            env.setName('移動補助を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
+            AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(unit, env);
+
+            env = new BattleSimulatorBaseEnv(this, targetUnit);
+            env.setName('移動補助を使用された時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK.evaluateWithUnit(targetUnit, env);
         }
 
         return true;
@@ -9099,11 +9253,17 @@ class BattleSimulatorBase {
         if (isBuffed) {
             this.__applySkillsAfterRally(supporterUnit, targetUnit);
         }
+        this.map.applyReservedDivineVein();
         return isBuffed;
     }
 
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
+        let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+        env.setName('応援を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
+        AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(supporterUnit, env);
+        console.log("応援後");
+
         for (let skillId of supporterUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillsAfterRallyForSupporterFuncMap)?.call(this, supporterUnit, targetUnit);
             this.#applySkillsAfterRallyForSupporter(skillId, targetUnit, supporterUnit);
@@ -9481,6 +9641,7 @@ class BattleSimulatorBase {
                 supporterUnit.battleContext.isRefreshActivated = true;
             }
             supporterUnit.isSupportDone = true;
+            targetUnit.isSupportedDone = true;
             if (!supporterUnit.isActionDone) {
                 // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
                 supporterUnit.endAction();
@@ -9498,6 +9659,10 @@ class BattleSimulatorBase {
                 let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
             }
+
+            let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+            env.setName('奥義以外の再行動時[補助]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(supporterUnit, env);
 
             // 再移動の評価
             let activated = this.__activateCantoIfPossible(supporterUnit);
@@ -9883,15 +10048,24 @@ class BattleSimulatorBase {
     }
 
     __endUnitActionOrActivateCanto(unit) {
+        // Break Command
         unit.endAction();
 
-        // 再移動の評価
+        // 再行動の評価
+        this.__grantsAnotherActionIfPossibleWithoutAfterCombat(unit);
+
         let activated = this.__activateCantoIfPossible(unit);
         if (!activated) {
             unit.applyEndActionSkills();
         }
 
         this.__goToNextPhaseIfPossible(unit.groupId);
+    }
+
+    __grantsAnotherActionIfPossibleWithoutAfterCombat(unit) {
+        let env = new BattleSimulatorBaseEnv(this, unit);
+        env.setName('奥義以外の再行動時[破壊]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
     }
 
     __goToNextPhaseIfPossible(groupId) {
