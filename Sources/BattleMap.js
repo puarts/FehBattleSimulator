@@ -1209,6 +1209,10 @@ class BattleMap {
         }
     }
 
+    /**
+     * @param {number} groupId
+     * @returns {Generator<Tile>}
+     */
     *enumerateBreakableStructureTiles(groupId) {
         for (let block of this.enumerateBreakableStructures(groupId)) {
             if (block.placedTile != null) {
@@ -1422,25 +1426,25 @@ class BattleMap {
 
         return null;
     }
-    findNeighborUnitEmptyTile(x, y) {
+    findNeighborUnitEmptyTile(x, y, unit) {
         let targetTile = this.getTile(x, y);
         if (targetTile == null) {
             return null;
         }
-        if (targetTile.isUnitPlacable()) {
+        if (targetTile.isUnitPlacable(unit)) {
             return targetTile;
         }
 
         for (let i = 0; i < targetTile.neighbors.length; ++i) {
             let tile = targetTile.neighbors[i];
-            if (tile.isUnitPlacable()) {
+            if (tile.isUnitPlacable(unit)) {
                 return tile;
             }
         }
 
         for (let neighbor of targetTile.neighbors) {
             for (let neighborNeighbor of neighbor.neighbors) {
-                if (neighborNeighbor.isUnitPlacable()) {
+                if (neighborNeighbor.isUnitPlacable(unit)) {
                     return neighborNeighbor;
                 }
             }
@@ -1450,7 +1454,7 @@ class BattleMap {
         for (let neighbor of targetTile.neighbors) {
             for (let neighborNeighbor of neighbor.neighbors) {
                 for (let neighborNeighborNeighbor of neighborNeighbor.neighbors) {
-                    if (neighborNeighborNeighbor.isUnitPlacable()) {
+                    if (neighborNeighborNeighbor.isUnitPlacable(unit)) {
                         return neighborNeighborNeighbor;
                     }
                 }
@@ -1500,7 +1504,7 @@ class BattleMap {
     }
 
     /**
-     * @param  {Function} predicatorFunc=null
+     * @param  {function(Tile): boolean} predicatorFunc=null
      * @returns {Generator<Tile>}
      */
     *enumerateTiles(predicatorFunc = null) {
@@ -1611,7 +1615,7 @@ class BattleMap {
 
         // console.log("x = " + x + ", y = " + y);
 
-        let tile = this.findNeighborUnitEmptyTile(x, y);
+        let tile = this.findNeighborUnitEmptyTile(x, y, unit);
         if (tile == null) {
             console.error("could not find empty tile near the tile: (" + x + ", " + y + ")");
             return;
@@ -1861,7 +1865,7 @@ class BattleMap {
     }
     enumerateSafeTilesNextToThreatenedTiles(groupId) {
         return this.enumerateTiles(tile => {
-            if (!tile.isMovableTileForMoveType(MoveType.Flying)) {
+            if (!tile.isMovableTileForMoveType(MoveType.Flying, groupId)) {
                 return false;
             }
             if (tile.getEnemyThreatFor(groupId) > 0) {
@@ -2332,6 +2336,15 @@ class BattleMap {
         return true;
     }
 
+    /**
+     * @param unit
+     * @param moveCount
+     * @param ignoresUnits
+     * @param ignoresTeleportTile
+     * @param unitPlacedTile
+     * @returns {Generator<Tile>}
+     * @private
+     */
     *__enumerateAllMovableTilesImpl(
         unit,
         moveCount,
@@ -2427,8 +2440,11 @@ class BattleMap {
             }
             enumerated[tile.positionToString()] = tile;
             if (!includesUnitPlacedTile
-                && tile.placedUnit != unit
-                && !tile.isUnitPlacable()) {
+                && tile.placedUnit !== unit
+                && !tile.isUnitPlacable(unit)) {
+                continue;
+            }
+            if (tile.hasEnemyBreakableDivineVein(unit.groupId)) {
                 continue;
             }
             yield tile;
@@ -2566,7 +2582,7 @@ class BattleMap {
         }
 
         for (let unit of this._units) {
-            if (unit.groupId == UnitGroupType.Enemy) {
+            if (unit.groupId === UnitGroupType.Enemy) {
                 for (let tile of unit.movableTiles) {
                     tile.isMovableForEnemy = true;
                 }
@@ -2758,7 +2774,7 @@ class BattleMap {
                 }
                 if (tile.divineVein !== DivineVeinType.None) {
                     let divineString = "";
-                    divineString = DivineVeinStrings[tile.divineVein];
+                    divineString = DIVINE_VEIN_STRINGS[tile.divineVein];
                     let divineColor = divineVeinColor(tile.divineVeinGroup);
                     additionalInnerText += `<span style='color:${divineColor};font-size:12px;${shadowCss};'><b>${divineString}</b></span>`;
                 }

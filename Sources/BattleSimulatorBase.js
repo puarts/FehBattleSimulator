@@ -4031,7 +4031,7 @@ class BattleSimulatorBase {
     __createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile) {
         let divineHtml = "";
         if (tile.divineVein !== DivineVeinType.None) {
-            let divineString = DivineVeinStrings[tile.divineVein];
+            let divineString = DIVINE_VEIN_STRINGS[tile.divineVein];
             let color = divineVeinColor(tile.divineVeinGroup);
             divineHtml += `<span style='color:${color};font-weight: bold'>【</span>`;
             divineHtml += divineString;
@@ -6417,7 +6417,12 @@ class BattleSimulatorBase {
                 // ブロック破壊
                 let blockTile = bestTileContextToBreakBlock.tile;
                 let moveTile = bestTileContextToBreakBlock.bestTileToBreakBlock;
-                this.__enqueueBreakStructureCommand(unit, moveTile, blockTile.obj);
+                // ブロックによってコマンドを分ける
+                if (blockTile.hasEnemyBreakableDivineVein(unit.groupId)) {
+                    this.__enqueueBreakDivineVeinCommand(unit, moveTile, blockTile);
+                } else {
+                    this.__enqueueBreakStructureCommand(unit, moveTile, blockTile);
+                }
             }
             else if (isPivotRequired) {
                 // 回り込み
@@ -6457,6 +6462,8 @@ class BattleSimulatorBase {
         let unitsSortedBySlot = Array.from(targetUnits).sort((a, b) => a.slotOrder - b.slotOrder);
         for (let unit of unitsSortedBySlot) {
             for (let skillId of unit.enumerateSkills()) {
+                // TODO: 総選挙ルフレに持たせるか検討する
+                // TODO: 天脈実装の際に実装を忘れないようにドキュメント化する
                 let result = getSkillFunc(skillId, hasDivineVeinSkillsWhenActionDoneFuncMap)?.call(this);
                 if (result && !unit.isActionDone) {
                     unit.endAction();
@@ -6762,6 +6769,14 @@ class BattleSimulatorBase {
         return commands;
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param obj
+     * @param {number} commandType
+     * @returns {Command}
+     * @private
+     */
     __createBreakStructureCommand(unit, moveTile, obj, commandType = CommandType.Normal) {
         let serial = null;
         if (this.vm.isCommandUndoable) {
@@ -6801,6 +6816,60 @@ class BattleSimulatorBase {
         return this.__createCommand(
             `${unit.id}-b-${obj.id}-${moveTile.id}`,
             obj.name + `破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
+            func,
+            serial,
+            commandType
+        );
+    }
+
+    __createBreakDivineVeinCommands(unit, moveTile, targetTile) {
+        let commands = [];
+        commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
+        commands.push(this.__createBreakDivineVeinCommand(unit, moveTile, targetTile, CommandType.End));
+        return commands;
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param {Tile} targetTile
+     * @param {number} commandType
+     * @returns {Command}
+     * @private
+     */
+    __createBreakDivineVeinCommand(unit, moveTile, targetTile, commandType = CommandType.Normal) {
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertUnitPerTurnStatusToSerial(unit);
+        }
+        let self = this;
+        let func = function () {
+            if (unit.isActionDone) {
+                // 移動時にトラップ発動した場合は行動終了している
+                // その場合でも天脈は発動する
+                unit.applyEndActionSkills();
+                return;
+            }
+
+            if (unit.isActionDoneDuringMoveCommand) {
+                // TODO: 必要か検討する
+                // unit.applyEndActionSkills();
+                return;
+            }
+
+            self.audioManager.playSoundEffectImmediately(SoundEffectId.Break);
+            if (self.isCommandLogEnabled) {
+                g_app.writeLogLine(unit.getNameWithGroup() + "は天脈を破壊");
+            }
+
+            // TODO: 予約しなくて良いのか検討
+            targetTile.removeDivineVein();
+
+            self.__endUnitActionOrActivateCanto(unit);
+        };
+        return this.__createCommand(
+            `${unit.id}-bd-${targetTile.divineVein}-${moveTile.id}`,
+            `天脈・${DIVINE_VEIN_STRINGS[targetTile.divineVein]}破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
             func,
             serial,
             commandType
@@ -6978,8 +7047,25 @@ class BattleSimulatorBase {
         return false;
     }
 
-    __enqueueBreakStructureCommand(unit, moveTile, obj) {
-        let commands = this.__createBreakStructureCommands(unit, moveTile, obj);
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param {Tile} targetTile
+     * @private
+     */
+    __enqueueBreakStructureCommand(unit, moveTile, targetTile) {
+        let commands = this.__createBreakStructureCommands(unit, moveTile, targetTile.obj);
+        this.__enqueueCommandsImpl(commands);
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param {Tile} targetTile
+     * @private
+     */
+    __enqueueBreakDivineVeinCommand(unit, moveTile, targetTile) {
+        let commands = this.__createBreakDivineVeinCommands(unit, moveTile, targetTile);
         this.__enqueueCommandsImpl(commands);
     }
 
@@ -7214,10 +7300,20 @@ class BattleSimulatorBase {
         }
     }
 
+    /**
+     * @param {number} groupId
+     * @returns {Tile[]}
+     * @private
+     */
     __getBreakableStructureTiles(groupId) {
         return Array.from(this.map.enumerateBreakableStructureTiles(groupId));
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {Tile} bestTileToMove
+     * @param {Tile[]} movableTiles
+     */
     __findBestTileToBreakBlock(unit, bestTileToMove, movableTiles) {
         if (!unit.hasWeapon) {
             return null;
@@ -7225,6 +7321,10 @@ class BattleSimulatorBase {
 
         this.writeDebugLogLine(unit.getNameWithGroup() + "が破壊可能なブロックを評価..");
         let blockTiles = this.__getBreakableStructureTiles(unit.groupId);
+        // 破壊可能な天脈もブロックリストに入れる
+        let breakableDivineVeinTiles =
+            GeneratorUtil.toArray(this.map.enumerateTiles(t => t.hasEnemyBreakableDivineVein(unit.groupId)));
+        blockTiles = [...(new Set(blockTiles.concat(breakableDivineVeinTiles)))];
         if (blockTiles.length === 0) {
             this.writeDebugLogLine("破壊可能なブロックがマップ上に存在しない");
             return null;
@@ -8000,7 +8100,7 @@ class BattleSimulatorBase {
                     unit.actionContext.attackableUnitInfos.push(info);
                 }
 
-                if (tile === unit.placedTile || tile.isUnitPlacable()) {
+                if (tile === unit.placedTile || tile.isUnitPlacable(unit)) {
                     info.tiles.push(tile);
                 }
             }
@@ -8420,7 +8520,7 @@ class BattleSimulatorBase {
         if (moveTile == null) {
             return new MovementAssistResult(false, null, null);
         }
-        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable()) {
+        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable(unit)) {
             return new MovementAssistResult(false, null, null);
         }
         return new MovementAssistResult(true, moveTile, targetUnit.placedTile);
@@ -8441,7 +8541,7 @@ class BattleSimulatorBase {
             return new MovementAssistResult(false, null, null);
         }
 
-        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable()) {
+        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable(unit)) {
             return new MovementAssistResult(false, null, null);
         }
 

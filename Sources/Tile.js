@@ -51,7 +51,7 @@ const DivineVeinType = {
     Water: 5,
     Ice: 6,
 };
-const DivineVeinStrings = ['', '護', '炎', '緑', '瘴', '水', '氷'];
+const DIVINE_VEIN_STRINGS = ['', '護', '炎', '緑', '瘴', '水', '氷'];
 
 function divineVeinColor(divineVeinGroup) {
     switch (divineVeinGroup) {
@@ -196,6 +196,7 @@ class Tile extends BattleMapElement {
     }
 
     get isStructurePlacable() {
+        // 画像認識で使用。氷には影響ない
         return !(this.type != TileType.Normal || this.obj instanceof BreakableWall || this.isWall());
     }
 
@@ -322,28 +323,53 @@ class Tile extends BattleMapElement {
         return this._type == TileType.Normal && !(this._obj instanceof Wall);
     }
 
-    isUnitPlacable() {
-        return this.isMovableTile()
-            && this._placedUnit == null
-            && isMovableForUnit(this._obj);
+    /**
+     * @param {Unit} unit
+     * @returns {boolean}
+     */
+    isUnitPlacable(unit) {
+        if (unit) {
+            return this.isMovableTile()
+                && this._placedUnit == null
+                && !this.hasEnemyBreakableDivineVein(unit.groupId)
+                && isMovableForUnit(this._obj);
+        } else {
+            return this.isMovableTile()
+                && this._placedUnit == null
+                && !this.hasBreakableDivineVein()
+                && isMovableForUnit(this._obj);
+        }
     }
+
+    /**
+     * @param {Unit} unit
+     * @returns {boolean}
+     */
     isUnitPlacableForUnit(unit) {
         return this.isMovableTileForUnit(unit)
             && this._placedUnit == null
+            && !this.hasEnemyBreakableDivineVein(unit.groupId)
             && isMovableForUnit(this._obj);
     }
 
     isMovableTile() {
-        return (this._type != TileType.Wall);
+        return this._type !== TileType.Wall;
     }
 
     isMovableTileForUnit(unit) {
-        return this.isMovableTileForMoveType(unit.moveType);
+        return this.isMovableTileForMoveType(unit.moveType, unit.groupId);
     }
 
-    isMovableTileForMoveType(moveType) {
-        return this._moveWeights[moveType] != CanNotReachTile
-            && (this._obj == null || this._obj instanceof TrapBase || this._obj instanceof BreakableWall);
+    // TODO: なぜBreakableWallが条件になっているのか調べる
+    // とりあえずはBreakableDivineVeinも同じように判定する
+    isMovableTileForMoveType(moveType, groupId) {
+        let canReachForThisMoveType = this._moveWeights[moveType] !== CanNotReachTile;
+        return canReachForThisMoveType && (
+            this._obj == null ||
+            this._obj instanceof TrapBase ||
+            this._obj instanceof BreakableWall ||
+            (this.hasEnemyBreakableDivineVein(groupId)) // 敵のDivineVeinだけがBreakableWallと同じ働きをする
+        );
     }
 
     get tempData() {
@@ -396,16 +422,23 @@ class Tile extends BattleMapElement {
     }
 
     __isForestType() {
-        return this._type == TileType.Forest || this._type == TileType.DefensiveForest;
+        return this._type === TileType.Forest || this._type === TileType.DefensiveForest;
     }
 
-    __getTileMoveWeight(unit, isPathfinderEnabled = true) {
+    __getTileMoveWeight(unit, ignoreBreakableWalls, isPathfinderEnabled = true) {
+        // 天脈・氷(敵)の場合は通れない
+        if (!ignoreBreakableWalls) {
+            if (this.hasEnemyBreakableDivineVein(unit.groupId)) {
+                return CanNotReachTile;
+            }
+        }
+
         if (isPathfinderEnabled && this.__canActivatePathfinder(unit) &&
             this._moveWeights[unit.moveType] !== CanNotReachTile) {
             return 0;
         }
 
-        if (this.__isForestType() && unit.moveType == MoveType.Infantry && unit.moveCount == 1) {
+        if (this.__isForestType() && unit.moveType === MoveType.Infantry && unit.moveCount === 1) {
             // 歩行に1マス移動制限がかかっている場合は森地形のウェイトは通常地形と同じ
             return 1;
         }
@@ -436,7 +469,7 @@ class Tile extends BattleMapElement {
             return false;
         }
 
-        return this._placedUnit.groupId == unit.groupId
+        return this._placedUnit.groupId === unit.groupId
             && this._placedUnit.hasPathfinderEffect();
     }
     /**
@@ -510,12 +543,13 @@ class Tile extends BattleMapElement {
     calculateDistanceToClosestEnemyTile(moveUnit) {
         let alreadyTraced = [this];
         let maxDepth = this.__getMaxDepth();
+        // 氷は無視されるので気にしなくて良い
         let ignoresBreakableWalls = moveUnit.hasWeapon;
         return this._calculateDistanceToClosestTile(
             alreadyTraced, this.placedUnit, maxDepth,
             tile => {
                 return tile._placedUnit != null
-                    && tile._placedUnit.groupId != this.placedUnit.groupId;
+                    && tile._placedUnit.groupId !== this.placedUnit.groupId;
             },
             neighbors => {
             },
@@ -540,6 +574,7 @@ class Tile extends BattleMapElement {
             return 0;
         }
 
+        // 武器がない時には氷に対して処理を行わなければいけないかもしれない
         let ignoresBreakableWalls = moveUnit.hasWeapon;
         let alreadyTraced = [fromTile];
 
@@ -738,7 +773,7 @@ class Tile extends BattleMapElement {
                     }
                 }
 
-                let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
+                let weight = this.__getTileMoveWeight(unit, ignoresBreakableWalls, isPathfinderEnabled);
                 // 隣接マスに進軍阻止持ちがいるか確認
                 for (let tile1Space of this.neighbors) {
                     if (tile1Space.existsEnemyUnit(unit) &&
@@ -763,7 +798,7 @@ class Tile extends BattleMapElement {
             }
         }
 
-        let weight = this.__getTileMoveWeight(unit, isPathfinderEnabled);
+        let weight = this.__getTileMoveWeight(unit, ignoresBreakableWalls, isPathfinderEnabled);
         // 自身が移動可能な地形を平地のように移動可能
         if (weight !== CanNotReachTile && weight !== 0) {
             for (let skillId of unit.enumerateSkills()) {
@@ -852,6 +887,24 @@ class Tile extends BattleMapElement {
 
     hasDivineVein() {
         return this.divineVein !== DivineVeinType.None
+    }
+
+    hasBreakableDivineVein() {
+        return this.divineVein === DivineVeinType.Ice;
+    }
+
+    /**
+     * @param {number} groupId
+     * @returns {boolean}
+     */
+    hasEnemyBreakableDivineVein(groupId) {
+        return this.hasBreakableDivineVein() && this.divineVeinGroup !== groupId;
+    }
+
+    // TODO: 削除予約にした方が良いのか検討
+    removeDivineVein() {
+        this.divineVein = DivineVeinType.None;
+        this.divineVeinGroup = null;
     }
 }
 

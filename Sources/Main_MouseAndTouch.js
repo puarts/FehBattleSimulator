@@ -277,14 +277,14 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
 function dragoverImplForTargetTile(unit, targetTile) {
     g_app.clearDamageCalcSummary();
 
-    if (targetTile.isUnitPlacable()) {
-        if (g_dragoverTileHistory.lastValue != targetTile) {
+    if (targetTile.isUnitPlacable(unit)) {
+        if (g_dragoverTileHistory.lastValue !== targetTile) {
             g_dragoverTileHistory.enqueue(targetTile);
         }
     } else {
         // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
         let unitPlacedOnTargetTile = targetTile.placedUnit;
-        if (unitPlacedOnTargetTile != null && unit.groupId != unitPlacedOnTargetTile.groupId) {
+        if (unitPlacedOnTargetTile != null && unit.groupId !== unitPlacedOnTargetTile.groupId) {
             let attackTile = findBestActionTile(targetTile, unit.attackRange);
             // TODO: 応急処置なのできちんと修正する
             if (attackTile === null) {
@@ -330,7 +330,11 @@ function moveToBestActionTile(unit, targetTile, spaces) {
     return MoveResult.Success;
 }
 
-function examinesCanBreak(unit, obj) {
+function examinesCanBreak(unit, obj, tile) {
+    if (tile.hasEnemyBreakableDivineVein(unit.groupId)) {
+        return true;
+    }
+
     if (!obj.isBreakable) { return false }
 
     if (obj instanceof BreakableWall) {
@@ -421,13 +425,18 @@ function dropToUnitImpl(unit, dropTargetId) {
                 }
             }
         } else {
-            if (targetTile.obj != null) {
+            if (targetTile.obj != null || targetTile.hasEnemyBreakableDivineVein(unit.groupId)) {
                 let obj = targetTile.obj;
-                if (examinesCanBreak(unit, obj)) {
+                if (examinesCanBreak(unit, obj, targetTile)) {
                     // 壊せる壁や施設を破壊
                     let tile = getBestActionTile(unit, targetTile, unit.attackRange);
                     if (tile != null) {
-                        g_app.__enqueueBreakStructureCommand(unit, tile, obj);
+                        // 破壊対象が施設か天脈かでコマンドを分ける
+                        if (targetTile.hasEnemyBreakableDivineVein(unit.groupId)) {
+                            g_app.__enqueueBreakDivineVeinCommand(unit, tile, targetTile);
+                        } else {
+                            g_app.__enqueueBreakStructureCommand(unit, tile, targetTile);
+                        }
                         isActioned = true;
                     }
                 } else if (obj instanceof TrapBase) {
@@ -485,7 +494,7 @@ function dropEventImpl(objId, dropTargetId) {
                 let y = xy[1];
                 moveStructureToMap(structure, x - g_appData.map.cellOffsetX, y);
             }
-            else if (dropTargetId == "trashArea") {
+            else if (dropTargetId === "trashArea") {
                 moveStructureToTrashBox(structure);
             }
             else {
@@ -507,7 +516,7 @@ function dropEventImpl(objId, dropTargetId) {
                 let y = xy[1];
                 moveStructureToMap(structure, x - g_appData.map.cellOffsetX, y);
             }
-            else if (dropTargetId == "trashArea") {
+            else if (dropTargetId === "trashArea") {
                 moveStructureToTrashBox(structure);
             }
             else {
@@ -530,7 +539,7 @@ function dropEventImpl(objId, dropTargetId) {
                 let y = xy[1];
                 moveStructureToMap(wall, x - g_appData.map.cellOffsetX, y);
             }
-            else if (dropTargetId == "trashArea") {
+            else if (dropTargetId === "trashArea") {
                 moveStructureToTrashBox(wall);
             }
             // UI の更新

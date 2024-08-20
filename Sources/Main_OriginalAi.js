@@ -488,13 +488,17 @@ class OriginalAi {
                     attackableTiles.push(tile);
                 }
 
-                if (attackableTiles.length == 0) {
+                if (attackableTiles.length === 0) {
                     continue;
                 }
 
                 let moveTile = attackableTiles[0];
                 // ブロック破壊
-                self.__enqueueBreakStructureCommand(unit, moveTile, blockTile.obj);
+                if (blockTile.hasEnemyBreakableDivineVein(unit.groupId)) {
+                    g_app.__enqueueBreakDivineVeinCommand(unit, moveTile, blockTile);
+                } else {
+                    g_app.__enqueueBreakStructureCommand(unit, moveTile, blockTile);
+                }
                 return true;
             }
         }
