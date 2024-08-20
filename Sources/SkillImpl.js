@@ -1,7 +1,6 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
-// TODO: 天脈・氷を実装する
 // 開闢の鼓動
 {
     let skillId = PassiveC.CreationPulse;
@@ -70,6 +69,25 @@
     let skillId = Weapon.ExaltsTactics;
     // Accelerates Special trigger (cooldown count-1).
 
+    let nodeFuncForAssist = () => new SkillEffectNode(
+        // if there is no【Divine Vein (Ice)】 currently applied by unit or allies,
+        IF_NODE(IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE,
+            // applies 【Divine Vein (Ice)】to spaces 2 spaces away from target after movement for 1 turn
+            new AppliesDivineVeinNode(
+                DivineVeinType.Ice,
+                AND_NODE(
+                    new IsSpacesNSpacesAwayFromAssistedNode(2),
+                    // (excludes spaces occupied by a foe,
+                    IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                    // destructible terrain other than【Divine Vein (Ice)】, and
+                    IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE,
+                    // TODO: ワープができるコンテンツが来たら実装する
+                    // warp spaces in Rival Domains).
+                ),
+            ),
+        )
+    );
+
     let nodeFunc = () => new SkillEffectNode(
         // if there is no【Divine Vein (Ice)】 currently applied by unit or allies,
         IF_NODE(IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE,
@@ -90,8 +108,8 @@
     );
 
     // If a Rally or movement Assist skill (like Reposition, Shove, Pivot, etc.) is used by unit and
-    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK.addSkill(skillId, nodeFunc);
-    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK.addSkill(skillId, nodeFunc);
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK.addSkill(skillId, nodeFuncForAssist);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK.addSkill(skillId, nodeFuncForAssist);
 
     // After unit acts (if Canto triggers, after Canto),
     // or at start of enemy phase when defending in Aether Raids,

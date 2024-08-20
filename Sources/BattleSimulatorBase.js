@@ -8618,15 +8618,13 @@ class BattleSimulatorBase {
             let env;
             env = new BattleSimulatorBaseEnv(this, unit);
 
-            env.setName('移動補助を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('移動補助を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(unit, env);
 
             env = new BattleSimulatorBaseEnv(this, targetUnit);
             env.setName('移動補助を使用された時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK.evaluateWithUnit(targetUnit, env);
         }
-        // for assister
-        // for assisted
 
         return true;
     }
@@ -9262,7 +9260,7 @@ class BattleSimulatorBase {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
         let env = new BattleSimulatorBaseEnv(this, supporterUnit);
-        env.setName('応援を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('応援を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
         AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(supporterUnit, env);
         console.log("応援後");
 

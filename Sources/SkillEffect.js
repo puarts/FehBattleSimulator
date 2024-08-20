@@ -645,6 +645,8 @@ class NodeEnv {
     /** @type {Unit} */
     #targetFoe = null;
     /** @type {Unit} */
+    assisted = null;
+    /** @type {Unit} */
     #referenceUnit = null;
     /** @type {UnitManager} */
     #unitManager = null;
@@ -670,7 +672,6 @@ class NodeEnv {
         // console.log(_message);
     };
 
-    // TODO: 削除する
     setName(name) {
         this.name = name;
         return this;
@@ -831,6 +832,11 @@ class NodeEnv {
 
     setReferenceUnit(unit) {
         this.#referenceUnit = unit;
+        return this;
+    }
+
+    setAssisted(unit) {
+        this.assisted = unit;
         return this;
     }
 
@@ -3026,6 +3032,24 @@ class IsSpacesNSpacesAwayFromTargetNode extends BoolNode {
 
     evaluate(env) {
         let distance = env.tile.calculateDistance(env.target.placedTile);
+        let n = this.evaluateChildren(env)[0];
+        // TODO: 警告が出ないようにする
+        // noinspection JSIncompatibleTypesComparison
+        return distance === n;
+    }
+}
+
+class IsSpacesNSpacesAwayFromAssistedNode extends BoolNode {
+    /**
+     * TODO: traceログを追加
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let distance = env.tile.calculateDistance(env.assisted.placedTile);
         let n = this.evaluateChildren(env)[0];
         // TODO: 警告が出ないようにする
         // noinspection JSIncompatibleTypesComparison
