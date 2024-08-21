@@ -877,19 +877,71 @@ class NodeEnv {
      */
     #log(logLevel, message) {
         let name = this.name ? `[${this.name}] ` : '';
-        let logMessage = `[${logLevel.padEnd(5)}] ${name}${message}`;
+        let messageWithName = `${name}${message}`;
+        let paddedLevel = logLevel.padEnd(5);
+        let logMessage = `[${paddedLevel}] ${messageWithName}`;
         this.#logFunc(logMessage);
 
         if (this.damageCalculatorWrapper) {
             if (this.damageType !== null && this.damageType === DamageType.ActualDamage) {
-                console.log(logMessage);
+                this.logWithLevelForBlackGB(paddedLevel, messageWithName);
             }
         } else if (this.damageCalculator) {
             if (this.damageType !== null && this.damageType === DamageType.ActualDamage) {
-                console.log(logMessage);
+                this.logWithLevelForBlackGB(paddedLevel, messageWithName);
             }
         } else {
-            console.log(logMessage);
+            this.logWithLevelForBlackGB(paddedLevel, messageWithName);
+        }
+    }
+
+    logWithLevelForBlackGB(level, message) {
+        switch (level) {
+            case 'FATAL':
+                console.log('[%cFATAL%c] ' + message, 'color: #FF6B6B; font-weight: bold;', '');
+                break;
+            case 'ERROR':
+                console.log('[%cERROR%c] ' + message, 'color: #FF5252; font-weight: bold;', '');
+                break;
+            case 'WARN':
+                console.log('[%cWARN%c] ' + message, 'color: #FFC107; font-weight: bold;', '');
+                break;
+            case 'INFO':
+                console.log('[%cINFO%c] ' + message, 'color: #64B5F6;', '');
+                break;
+            case 'DEBUG':
+                console.log('[%cDEBUG%c] ' + message, 'color: #81C784;', '');
+                break;
+            case 'TRACE':
+                console.log('[%cTRACE%c] ' + `%c${message}%c`, 'color: #888888;', '', 'color: #888888', '');
+                break;
+            default:
+                console.log('[%cUNKNOWN%c] ' + message, 'color: white;', '');
+        }
+    }
+
+    logWithLevelForWhiteBG(level, message) {
+        switch (level) {
+            case 'FATAL':
+                console.log('[%cFATAL%c] ' + message, 'color: darkred; font-weight: bold;', '');
+                break;
+            case 'ERROR':
+                console.log('[%cERROR%c] ' + message, 'color: red; font-weight: bold;', '');
+                break;
+            case 'WARN':
+                console.log('[%cWARN%c] ' + message, 'color: orange; font-weight: bold;', '');
+                break;
+            case 'INFO':
+                console.log('[%cINFO%c] ' + message, 'color: blue;', '');
+                break;
+            case 'DEBUG':
+                console.log('[%cDEBUG%c] ' + message, 'color: green;', '');
+                break;
+            case 'TRACE':
+                console.log('[%cTRACE%c] ' + `%c${message}%c`, 'color: #888888;', '', 'color: #888888', '');
+                break;
+            default:
+                console.log('[%cUNKNOWN%c]' + message, 'color: black;', '');
         }
     }
 
