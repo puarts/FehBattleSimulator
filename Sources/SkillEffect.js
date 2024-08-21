@@ -884,66 +884,64 @@ class NodeEnv {
 
         if (this.damageCalculatorWrapper) {
             if (this.damageType !== null && this.damageType === DamageType.ActualDamage) {
-                this.logWithLevelForBlackGB(paddedLevel, messageWithName);
+                this.logWithLevel(logLevel, messageWithName, this.blackBGStyles);
             }
         } else if (this.damageCalculator) {
             if (this.damageType !== null && this.damageType === DamageType.ActualDamage) {
-                this.logWithLevelForBlackGB(paddedLevel, messageWithName);
+                this.logWithLevel(logLevel, messageWithName, this.blackBGStyles);
             }
         } else {
-            this.logWithLevelForBlackGB(paddedLevel, messageWithName);
+            this.logWithLevel(logLevel, messageWithName, this.blackBGStyles);
         }
     }
 
-    logWithLevelForBlackGB(level, message) {
+    logWithLevel(level, message, styles) {
+        const {FATAL, ERROR, WARN, INFO, DEBUG, TRACE, UNKNOWN} = styles;
         switch (level) {
             case 'FATAL':
-                console.log('[%cFATAL%c] ' + message, 'color: #FF6B6B; font-weight: bold;', '');
+                console.log('[%cFATAL%c] ' + message, FATAL, '');
                 break;
             case 'ERROR':
-                console.log('[%cERROR%c] ' + message, 'color: #FF5252; font-weight: bold;', '');
+                console.log('[%cERROR%c] ' + message, ERROR, '');
                 break;
             case 'WARN':
-                console.log('[%cWARN%c] ' + message, 'color: #FFC107; font-weight: bold;', '');
+                console.log('[%cWARN %c] ' + message, WARN, '');
                 break;
             case 'INFO':
-                console.log('[%cINFO%c] ' + message, 'color: #64B5F6;', '');
+                console.log('[%cINFO %c] ' + message, INFO, '');
                 break;
             case 'DEBUG':
-                console.log('[%cDEBUG%c] ' + message, 'color: #81C784;', '');
+                console.log('[%cDEBUG%c] ' + message, DEBUG, '');
                 break;
             case 'TRACE':
-                console.log('[%cTRACE%c] ' + `%c${message}%c`, 'color: #888888;', '', 'color: #888888', '');
+                console.log('[%cTRACE%c] ' + `%c${message}%c`, TRACE, '', TRACE, '');
                 break;
             default:
-                console.log('[%cUNKNOWN%c] ' + message, 'color: white;', '');
+                console.log(`[%cUNKNOWN:${level}%c] ` + message, UNKNOWN, '');
         }
     }
 
-    logWithLevelForWhiteBG(level, message) {
-        switch (level) {
-            case 'FATAL':
-                console.log('[%cFATAL%c] ' + message, 'color: darkred; font-weight: bold;', '');
-                break;
-            case 'ERROR':
-                console.log('[%cERROR%c] ' + message, 'color: red; font-weight: bold;', '');
-                break;
-            case 'WARN':
-                console.log('[%cWARN%c] ' + message, 'color: orange; font-weight: bold;', '');
-                break;
-            case 'INFO':
-                console.log('[%cINFO%c] ' + message, 'color: blue;', '');
-                break;
-            case 'DEBUG':
-                console.log('[%cDEBUG%c] ' + message, 'color: green;', '');
-                break;
-            case 'TRACE':
-                console.log('[%cTRACE%c] ' + `%c${message}%c`, 'color: #888888;', '', 'color: #888888', '');
-                break;
-            default:
-                console.log('[%cUNKNOWN%c]' + message, 'color: black;', '');
-        }
-    }
+    // 黒背景用のスタイル
+    blackBGStyles = {
+        FATAL: 'color: #FF6B6B; font-weight: bold;',
+        ERROR: 'color: #FF5252; font-weight: bold;',
+        WARN: 'color: #FFC107; font-weight: bold;',
+        INFO: 'color: #64B5F6;',
+        DEBUG: 'color: #81C784;',
+        TRACE: 'color: #888888;',
+        UNKNOWN: 'color: white;'
+    };
+
+    // 白背景用のスタイル
+    whiteBGStyles = {
+        FATAL: 'color: darkred; font-weight: bold;',
+        ERROR: 'color: red; font-weight: bold;',
+        WARN: 'color: orange; font-weight: bold;',
+        INFO: 'color: blue;',
+        DEBUG: 'color: green;',
+        TRACE: 'color: #888888;',
+        UNKNOWN: 'color: black;'
+    };
 
     /**
      * @param {string} message
