@@ -3510,3 +3510,9 @@ const AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK = new SkillEffectHooks();
  * 移動補助を使用された時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK = new SkillEffectHooks();
+
+/**
+ * TODO: rename
+ * AIの天脈処理
+ */
+const HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS = new SkillEffectHooks();
