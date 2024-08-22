@@ -1,6 +1,54 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
 // TODO: 絶対化身を実装
+// 重歩傭兵の槍
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.MercenaryLance);
+    // Mercenary Lance can be upgraded with the additional effect Mercenary Lance W
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // "At start of combat, if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new NumThatIsNode(
+                    // inflicts Atk/Def-X on foe during combat (X = 5 + 15% of unit's Def) and
+                    new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                    ADD_NODE(5, MULT_TRUNC_NODE(0.15, UNITS_DEF_DURING_COMBAT_NODE)),
+                ),
+            ),
+            // restores 10 HP to unit after combat, and also,
+            new RestoresHpToUnitAfterCombatNode(10),
+            // if foe initiates combat,
+            IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+                // grants Special cooldown count-2 to unit before foe's first attack during combat.
+                new GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNode(2),
+            ),
+        ),
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.MercenaryLance);
+    let refinedId = getRefinementSkillId(Weapon.MercenaryLance);
+    let nodeFunc = () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            // inflicts Atk/Def-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 0, 5, 0),
+            // neutralizes penalties on unit,
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+            // reduces damage from foe's attacks by 20% of unit's Def (excluding area-of-effect Specials), and
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_DEF_DURING_COMBAT_NODE)),
+            ),
+            // grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack).
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+        ),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_COMBAT_HOOKS.addSkill(refinedId, nodeFunc);
+}
+
 // 開闢の鼓動
 {
     let skillId = PassiveC.CreationPulse;
@@ -143,7 +191,7 @@
                 ),
             ),
             // neutralizes penalties on unit, and
-            new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, true, true),
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
             // neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also,
             NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
             // when Special triggers, neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills (excluding area-of-effect Specials).
@@ -237,7 +285,7 @@
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or【Bonus】is active on unit,
-        IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_BONUS_ACTIVE_ON_UNIT_NODE),
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_BONUS_ACTIVE_ON_UNIT_NODE),
             // grants Atk/Spd/Def/Res+5 to unit,
             GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat,
@@ -312,10 +360,10 @@
             // deals damage = 20% of unit's Spd (including when dealing damage with a Special triggered before combat), and
             new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
             // reduces damage from foe's attacks by 20% of unit's Spd during combat (including when taking damage from a Special triggered before combat), and also,
-            new UnitReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
             // when foe's attack triggers foe's Special,
             // reduces damage by 20% of unit's Spd (including when taking damage from a Special triggered before combat).
-            new UnitReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
         )
     ));
 
@@ -330,8 +378,8 @@
                 new LteNode(NUMBER_OF_TARGET_ALLIES_ADJACENT_TO_TARGET, 1)
             ),
             new UnitDealsDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
-            new UnitReducesDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
-            new UnitReducesDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            new ReducesDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            new ReducesDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
         )
     ));
 }
@@ -388,7 +436,7 @@
             )
         ),
         // reduces damage from foe's attacks by X% of unit's Def during combat (excluding area-of-effect Specials;
-        new UnitReducesDamageExcludingAoeSpecialsNode(
+        new ReducesDamageExcludingAoeSpecialsNode(
             MULT_TRUNC_NODE(
                 COND_OP(
                     OR_NODE(CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
@@ -413,11 +461,11 @@
             TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE
         ),
         // If unit initiates combat,
-        IF_NODE(IS_COMBAT_INITIATED_BY_UNIT,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
             // grants Def/Res+6 to unit and
             new GrantsStatsPlusToUnitDuringCombatNode(0, 0, 6, 6),
             // reduces damage from foe's Specials by 10 during combat (excluding area-of-effect Specials).
-            new UnitReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(10)
+            new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(10)
         )
     ));
 
@@ -516,7 +564,7 @@
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // 自分から攻撃した時、または、自身を中心とした縦3列と横3列に味方がいる時、
-        IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
             new NumThatIsNode(
                 new SkillEffectNode(
                     // 戦闘中、自身の守備、魔防+、
@@ -534,7 +582,7 @@
                 // 自分は与えるダメージ+守備の10%(範囲奥義を除く)、
                 new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(UNITS_DEF_DURING_COMBAT_NODE, 0.1)),
                 // 受けるダメージ-守備の10%(範囲奥義を除く)、
-                new UnitReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(UNITS_DEF_DURING_COMBAT_NODE, 0.1)),
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(UNITS_DEF_DURING_COMBAT_NODE, 0.1)),
             ),
             // かつ奥義発動時、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(範囲肉義を除く)
             WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
@@ -542,7 +590,7 @@
     ));
     // 自分から攻撃した時、または、自身を中心とした縦3列と横3列に味方がいる時、戦闘後、奥義発動カウントが最大値なら、奥義発動カウント-1
     AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
             GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AFTER_COMBAT_NODE,
         )
     ));
@@ -553,7 +601,7 @@
     let skillId = PassiveB.FallenStar2;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT,
+            new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE,
                     new IsStatusEffectActiveOnUnitNode(StatusEffectType.DeepStar)),
                 new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
                 new UnitDealsDamageExcludingAoeSpecialsNode(
@@ -569,15 +617,15 @@
                     ),
                 ),
             ),
-            new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
-                new UnitReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(80),
+            new IfNode(DOES_UNIT_INITIATE_COMBAT_NODE,
+                new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(80),
             )
         )
     );
     AFTER_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // If unit initiates combat,
-            new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
+            new IfNode(DOES_UNIT_INITIATE_COMBAT_NODE,
                 // grants【Deep Star】to unit and
                 new GrantsStatusEffectsAfterCombatNode(StatusEffectType.DeepStar),
                 // inflicts【Gravity】on target and foes within 1 space of target after combat.
@@ -596,7 +644,7 @@
         new SkillEffectNode(
             new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
             NULL_UNIT_FOLLOW_UP_NODE,
-            new IfNode(IS_COMBAT_INITIATED_BY_UNIT,
+            new IfNode(DOES_UNIT_INITIATE_COMBAT_NODE,
                 UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE
             ),
         )
@@ -701,7 +749,7 @@
                         // 自身のHPが99%以下で
                         new IfNode(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                             // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
-                            new UnitDealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
+                            new DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
                         ),
                     ),
                 ),
@@ -734,7 +782,7 @@
                     // 自身のHPが99%以下で
                     new IfNode(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                         // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
-                        new UnitDealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
+                        new DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(10),
                     ),
                 ),
             )
@@ -874,10 +922,10 @@
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
                 ),
-                new UnitReducesDamageExcludingAoeSpecialsNode(
+                new ReducesDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
                 ),
-                new UnitReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(
+                new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 3), 18)
                 ),
                 RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
@@ -1082,9 +1130,9 @@
     let skillId = getRefinementSkillId(Weapon.HolyYewfelle);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
-                new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
+                new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
                 NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
             )
@@ -1095,9 +1143,9 @@
     let skillId = getNormalSkillId(Weapon.HolyYewfelle);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
-                new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
+                new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
                 NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
             )
         )

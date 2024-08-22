@@ -1615,14 +1615,29 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
 const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
 
-const IS_COMBAT_INITIATED_BY_UNIT = new class extends BoolNode {
+class DoesTargetInitiateCombatNode extends BoolNode {
     evaluate(env) {
-        let unit = env.unitDuringCombat;
+        let unit = this.getUnit(env);
         let result = unit.battleContext.initiatesCombat;
         env.debug(`${unit.nameWithGroup}から攻撃したか: ${result}`);
         return result;
     }
-}();
+}
+
+Object.assign(DoesTargetInitiateCombatNode.prototype, GetUnitMixin);
+const DOES_TARGET_INITIATE_COMBAT_NODE = new DoesTargetInitiateCombatNode();
+
+class DoesUnitInitiateCombatNode extends DoesTargetInitiateCombatNode {
+}
+
+Object.assign(DoesUnitInitiateCombatNode.prototype, GetUnitDuringCombatMixin);
+const DOES_UNIT_INITIATE_COMBAT_NODE = new DoesUnitInitiateCombatNode();
+
+class DoesFoeInitiateCombatNode extends DoesTargetInitiateCombatNode {
+}
+
+Object.assign(DoesFoeInitiateCombatNode.prototype, GetFoeDuringCombatMixin);
+const DOES_FOE_INITIATE_COMBAT_NODE = new DoesFoeInitiateCombatNode();
 
 /**
  * 【Bonus】is active on unit
@@ -2367,14 +2382,22 @@ class ApplyingNumberToEachStatNode extends FromNumbersNode {
 /**
  * neutralizes penalties to unit's Atk/Spd
  */
-class UnitNeutralizesPenaltiesToUnitsStatsNode extends SetBoolToEachStatusNode {
+class NeutralizesPenaltiesToTargetsStatsNode extends SetBoolToEachStatusNode {
     evaluate(env) {
         let values = this.getValues();
-        let unit = env.unitDuringCombat;
+        let unit = this.getUnit(env);
         env.debug(`${unit.nameWithGroup}は自身の弱化を無効: [${values}]`);
         unit.battleContext.invalidateOwnDebuffs(...this.getValues());
     }
 }
+
+Object.assign(NeutralizesPenaltiesToTargetsStatsNode.prototype, GetUnitMixin);
+
+class NeutralizesPenaltiesToUnitsStatsNode extends SetBoolToEachStatusNode {
+}
+
+Object.assign(NeutralizesPenaltiesToUnitsStatsNode.prototype, GetUnitDuringCombatMixin);
+const NEUTRALIZES_PENALTIES_ON_UNIT_NODE = new NeutralizesPenaltiesToUnitsStatsNode(true, true, true, true);
 
 /**
  * neutralizes foe's bonuses to Spd/Def
@@ -2468,7 +2491,7 @@ class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
     }
 }
 
-class UnitReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
+class ReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     getDescription(n) {
         return `受けるダメージ-${n}`;
     }
@@ -2483,7 +2506,7 @@ class UnitReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     }
 }
 
-class UnitReducesDamageBeforeCombatNode extends ApplyingNumberNode {
+class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
     getDescription(n) {
         return `受けるダメージ-${n}(戦闘前)`;
     }
@@ -2502,7 +2525,7 @@ class UnitReducesDamageBeforeCombatNode extends ApplyingNumberNode {
  * reduces damage from foe's first attack by X% during combat
  * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)
  */
-class UnitReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends ApplyingNumberNode {
+class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends ApplyingNumberNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let percentage = this.evaluateChildren(env);
@@ -2525,7 +2548,7 @@ class ReducesDamageFromFoesFirstAttackByNDuringCombatNode extends ApplyingNumber
     }
 }
 
-class UnitReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumberNode {
+class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumberNode {
     getDescription(n) {
         return `敵の奥義による攻撃の時、受けるダメージ-${n}`;
     }
@@ -2540,7 +2563,7 @@ class UnitReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNu
     }
 }
 
-class UnitDealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends ApplyingNumberNode {
+class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends ApplyingNumberNode {
     evaluate(env) {
         let n = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;
@@ -2562,7 +2585,7 @@ class ReducesDamageDuringCombatByPercentageNBySpecialPerAttackNode extends FromN
     }
 }
 
-class UnitRestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
+class RestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
     getDescription(n) {
         return `戦闘後HPを${n}回復`;
     }
@@ -2575,7 +2598,7 @@ class UnitRestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
     }
 }
 
-const RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE = new UnitRestoresHpToUnitAfterCombatNode(7);
+const RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(7);
 
 const WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -2696,6 +2719,24 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
 }
 
 Object.assign(GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode.prototype, GetUnitMixin);
+
+class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode extends FromPositiveNumberNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += n;
+        let result = unit.battleContext.specialCountReductionBeforeFirstAttackByEnemy;
+        env.debug(`${unit.nameWithGroup}は相手の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+    }
+}
+
+Object.assign(GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode.prototype, GetUnitMixin);
+
+class GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNode
+    extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode {
+}
+
+Object.assign(GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNode.prototype, GetUnitDuringCombatMixin);
 
 /**
  * Effective against
@@ -3641,6 +3682,26 @@ const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AFTER_COMBAT_NODE = 
         }
     }
 }();
+
+/**
+ * grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack).
+ */
+class GrantsSpecialCooldownChargePlus1ToTargetPerAttackDuringCombatNode extends SkillEffectNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.increaseCooldownCountForBoth();
+        env.debug(`${unit.nameWithGroup}は戦闘中、自身の奥義発動カウント変動量+1`);
+    }
+}
+
+Object.assign(GrantsSpecialCooldownChargePlus1ToTargetPerAttackDuringCombatNode.prototype, GetUnitMixin);
+
+class GrantsSpecialCooldownChargePlus1ToUnitPerAttackDuringCombatNode extends GrantsSpecialCooldownChargePlus1ToTargetPerAttackDuringCombatNode {
+}
+
+Object.assign(GrantsSpecialCooldownChargePlus1ToUnitPerAttackDuringCombatNode.prototype, GetUnitDuringCombatMixin);
+const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE =
+    new GrantsSpecialCooldownChargePlus1ToUnitPerAttackDuringCombatNode();
 
 // Hooks
 // TODO: phase情報を入れる

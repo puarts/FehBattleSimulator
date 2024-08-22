@@ -1905,6 +1905,9 @@ const Weapon = {
     NewLevinSword: 2982, // 錬磨サンダーソード
     TheInexhaustible: 2985, // 尽きざるもの
     ExaltsTactics: 2979, // 聖王の参謀の術書
+
+    // 2024年8月 武器錬成
+    MercenaryLance: 2976, // 重歩傭兵の槍
 };
 
 const Support = {
