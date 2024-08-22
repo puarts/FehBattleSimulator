@@ -4,12 +4,11 @@
 // 開闢の鼓動
 {
     let skillId = PassiveC.CreationPulse;
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If【Penalty】is active on foe,
         IF_NODE(IF_PENALTY_IS_ACTIVE_ON_FOE_NODE,
             // grants Atk/Spd+3 to unit during combat, and also,
-            new GrantsStatsPlusNToUnitDuringCombatNode(3, [1, 1, 0, 0]),
+            new GrantsStatsPlusToUnitDuringCombatNode(3, 3, 0, 0),
             // if unit's attack can trigger unit's Special,
             IF_NODE(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
                 // grants Special cooldown count-X to unit before unit's first attack during combat
@@ -46,20 +45,24 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of combat, if unit's HP ≥ 25%,
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-            // inflicts Atk/Spd/Res-5 on foe,
-            new InflictsStatsNToFoeDuringCombatNode(5, [1, 1, 0, 1]),
-            // unit deals +X × 5 damage (max 25; excluding area-of-effect Specials), and
-            new UnitDealsDamageExcludingAoeSpecialsNode(
-                new EnsureMaxNode(MULT_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5), 25)
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 0, 0),
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // unit deals +X × 5 damage (max 25; excluding area-of-effect Specials), and
+                    new UnitDealsDamageExcludingAoeSpecialsNode(
+                        new EnsureMaxNode(MULT_NODE(READ_NUM_NODE, 5), 25)
+                    ),
+                    // reduces damage from foe's first attack by X × 3 (max 15) during combat
+                    new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(
+                        new EnsureMaxNode(MULT_NODE(READ_NUM_NODE, 3), 15)
+                    ),
+                ),
+                // (X = number of Bonus effects active on unit,
+                // excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties;
+                NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE,
+                // "first attack" normally means only the first strike;
+                // for effects that grant "unit attacks twice," it means the first and second strikes).
             ),
-            // reduces damage from foe's first attack by X × 3 (max 15) during combat
-            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(
-                new EnsureMaxNode(MULT_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 3), 15)
-            ),
-            // (X = number of Bonus effects active on unit,
-            // excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties;
-            // "first attack" normally means only the first strike;
-            // for effects that grant "unit attacks twice," it means the first and second strikes).
         )
     ));
 }
@@ -117,24 +120,27 @@
     // applies 【Divine Vein (Ice)】to spaces 2 spaces away from unit for 1 turn
     // (excludes spaces occupied by a foe, destructible terrain, and warp spaces in Rival Domains).
     AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
-    AT_START_OF_ENEMY_PHASE_HOOK.addSkill(skillId, () =>
+    AT_START_OF_ENEMY_PHASE_HOOK.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
             nodeFunc(),
         )
-    );
+    ));
 
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of combat,
         // if unit's HP ≥ 25%,
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-            // inflicts penalty on foe's Atk/Spd/Res = 5 + number of allies within 3 rows or 3 columns centered on unit × 3 (max 14),
-            new InflictsStatsNToFoeDuringCombatNode(
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // inflicts penalty on foe's Atk/Spd/Res =
+                    new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, READ_NUM_NODE),
+                ),
+                // 5 + number of allies within 3 rows or 3 columns centered on unit × 3 (max 14),
                 new EnsureMaxNode(
                     ADD_NODE(5, MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)),
                     14
                 ),
-                [1, 1, 0, 1]
             ),
             // neutralizes penalties on unit, and
             new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, true, true),
@@ -504,22 +510,18 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // 自分から攻撃した時、または、自身を中心とした縦3列と横3列に味方がいる時、
         IF_NODE(OR_NODE(IS_COMBAT_INITIATED_BY_UNIT, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
-            // 戦闘中、自身の守備、魔防+、
-            new GrantsStatsPlusNToUnitDuringCombatNode(
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // 戦闘中、自身の守備、魔防+、
+                    new GrantsStatsPlusToUnitDuringCombatNode(0, 0, READ_NUM_NODE, READ_NUM_NODE),
+                    // 敵の守備、魔防一○
+                    new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, READ_NUM_NODE, READ_NUM_NODE),
+                ),
                 // (○は、自身を中心とした縦3列と横3列にいる味方の数×3+5(最大14))、
                 new EnsureMaxNode(
                     ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
                     14
                 ),
-                [0, 0, 1, 1]
-            ),
-            // 敵の守備、魔防一○
-            new InflictsStatsMinusNOnFoeDuringCombatNode(
-                new EnsureMaxNode(
-                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
-                    14
-                ),
-                [0, 0, 1, 1]
             ),
             new AppliesSkillEffectsAfterStatusFixedNode(
                 // 自分は与えるダメージ+守備の10%(範囲奥義を除く)、
@@ -649,11 +651,11 @@
             // 戦闘開始時、敵のHPが50%以上の時、戦闘中、
             new IfNode(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
                 // 自分の攻撃、速さ+7、かつ
-                UNIT_GRANTS_ATK_SPD_PLUS_7_TO_UNIT_DURING_COMBAT_NODE,
+                GRANTS_ATK_SPD_PLUS_7_TO_UNIT_DURING_COMBAT_NODE,
                 // 自身の周囲2マス以内に以下のいずれかのマスがある時、戦闘中、さらに、
                 new IfNode(IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
                     // 自分の攻撃、速さ+4(・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)
-                    UNIT_GRANTS_ATK_SPD_PLUS_4_TO_UNIT_DURING_COMBAT_NODE
+                    GRANTS_ATK_SPD_PLUS_4_TO_UNIT_DURING_COMBAT_NODE
                 )
             )
         )
@@ -712,7 +714,7 @@
             ),
         )
     );
-    WHEN_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () =>
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () =>
         // 自身を中心とした縦3列と横3列の味方は、
         new IfNode(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
             // 攻撃時に発動する奥義を装備している時、戦闘中、
@@ -895,7 +897,73 @@
 
 // アッサルの槍
 {
-    let skillId = Weapon.SpearOfAssal;
+    let skillId = getSpecialRefinementSkillId(Weapon.SpearOfAssal);
+    // pause: 特殊錬成を実装
+    // Spear of Assal can be upgraded with the additional effect Spear of Assal W
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // "If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+4 to unit,
+            GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
+            // unit deals +7 damage (excluding area-of-effect Specials),
+            new UnitDealsDamageExcludingAoeSpecialsNode(7),
+            // and reduces damage from foe's first attack by 7 during combat
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(7),
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        )
+    ));
+
+    // For allies
+    // noinspection GrazieInspection
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // within 3 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // grants Atk/Spd/Def/Res+4 to ally,
+            GRANTS_ALL_STATS_PLUS_4_TO_TARGET_DURING_COMBAT_NODE,
+            // ally deals +7 damage (excluding area-of-effect Specials), and
+            new TargetDealsDamageExcludingAoeSpecialsNode(7),
+            // reduces damage from foe's first attack by 7 during their combat
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(7),
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).".
+        )
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.SpearOfAssal);
+    // When upgraded, the description of Spear of Assal becomes
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Effective against cavalry foes.
+        new EffectiveAgainstNode(EffectiveType.Cavalry),
+        // Grants Spd+3.
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+4 to unit and
+            GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
+            // neutralizes foe's bonuses (from skills like Fortify, Rally, etc.) during combat.
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+        )
+    ));
+
+    // to allies within 3 spaces of unit and
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // Grants Atk/Spd/Def/Res+4
+            GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
+        )
+    ));
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // neutralizes foe's bonuses (from skills like Fortify, Rally, etc.) during their combat
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+        )
+    ));
+}
+{
+    let skillId = getNormalSkillId(Weapon.SpearOfAssal);
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (!calcPotentialDamage && this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
@@ -935,7 +1003,7 @@
     let skillId = getSpecialRefinementSkillId(Weapon.Failnaught);
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(1));
-    WHEN_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => TRUE_NODE);
     WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             new InflictsStatsMinusOnUnitDuringCombatNode(0, 5, 5, 0),
@@ -992,8 +1060,11 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-                UNIT_GRANTS_ATK_SPD_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
-                new GrantsAtkSpdPlusToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
+                GRANTS_ATK_SPD_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+                new NumThatIsNode(
+                    new GrantsStatsPlusToUnitDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                    new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15),
+                ),
                 new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, true, false),
                 REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
             )
@@ -1005,7 +1076,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
-                UNIT_GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
+                GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
                 new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
                 NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
                 UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
@@ -1018,7 +1089,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(IS_COMBAT_INITIATED_BY_UNIT, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
-                UNIT_GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
+                GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
                 new UnitNeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
                 NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
             )
