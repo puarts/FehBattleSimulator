@@ -938,18 +938,60 @@
 
 // 虎の剛斧
 {
-    let skillId = Weapon.TigerRoarAxe;
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (targetUnit.battleContext.initiatesCombat ||
-                this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.addAllSpur(5);
-                if (enemyUnit.battleContext.restHpPercentage === 100) {
-                    targetUnit.battleContext.followupAttackPriorityIncrement++;
-                }
-            }
-        }
-    );
+    let [normalId, refinementId, specialRefinementId] = getRefinementSkillIds(Weapon.TigerRoarAxe);
+    // 通常
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_COMBAT_HOOKS.addSkill(normalId, () => new SkillEffectNode(
+        // If unit initiates combat or if unit is within 2 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants Atk/Spd/Def/Res+5 during combat,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // and also,
+            // at start of combat,
+            // if foe's HP = 100%,
+            IF_NODE(new IsUnitsHpGteNPercentAtStartOfCombatNode(100),
+                // unit makes a guaranteed follow-up attack.
+                UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            ),
+        ),
+    ));
+
+    // 錬成
+    // Tiger-Roar Axe can be upgraded in the Weapon Refinery.
+    // When upgraded,
+    // the description of Tiger-Roar Axe becomes "Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_COMBAT_HOOKS.addSkill(refinementId, () => new SkillEffectNode(
+        // If unit initiates combat or unit is within 2 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // and reduces damage from foe's attacks by 20% of unit's Def during combat (excluding area-of-effect Specials).".
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_DEF_DURING_COMBAT_NODE)),
+            ),
+        ),
+    ));
+
+    // 特殊錬成
+    // Tiger-Roar Axe can be upgraded with the additional effect Tiger-Roar Axe W
+    AT_START_OF_COMBAT_HOOKS.addSkill(specialRefinementId, () => new SkillEffectNode(
+        // "If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            new NumThatIsNode(
+                // grants bonus to unit's Atk/Spd/Def/Res =
+                new GrantsAllStatsPlusNToUnitDuringCombatNode(READ_NUM_NODE),
+                // 4 + number of foes within 3 rows or 3 columns centered on unit × 2 (max 10),
+                new EnsureMaxNode(
+                    ADD_NODE(4, MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 2)), 10),
+            ),
+            // inflicts Special cooldown charge -1 on foe per attack (only highest value applied; does not stack),
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+            // and grants Special cooldown count-1 to unit before unit's first attack during combat.".
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+        ),
+    ));
 }
 
 // アッサルの槍
