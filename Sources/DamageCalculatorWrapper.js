@@ -2304,7 +2304,7 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.damageReductionValue += 10;
                 }
             } else {
-                if (targetUnit.isCombatDone && !targetUnit.isAttackDone) {
+                if (!targetUnit.isCombatDone && !targetUnit.isAttackDone) {
                     targetUnit.battleContext.damageReductionValue += 10;
                 }
             }
