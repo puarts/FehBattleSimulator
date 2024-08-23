@@ -663,10 +663,10 @@ class DamageCalculator {
             this.writeDebugLog(message);
         }
 
-        this.__calcAndSetCooldownCount(atkUnit, defUnit);
-
         this.__applySkillEffectsPerCombat(atkUnit, defUnit, context);
         this.__applySkillEffectsPerCombat(defUnit, atkUnit, context);
+
+        this.__calcAndSetCooldownCount(atkUnit, defUnit);
 
         // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
         this.#applySpecialCountChangesBeforeAttack(atkUnit, defUnit, context);
