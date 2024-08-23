@@ -357,13 +357,15 @@
             ),
             // inflicts Atk/Spd/Def/Res-5 on foe,
             INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
-            // deals damage = 20% of unit's Spd (including when dealing damage with a Special triggered before combat), and
-            new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
-            // reduces damage from foe's attacks by 20% of unit's Spd during combat (including when taking damage from a Special triggered before combat), and also,
-            new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
-            // when foe's attack triggers foe's Special,
-            // reduces damage by 20% of unit's Spd (including when taking damage from a Special triggered before combat).
-            new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // deals damage = 20% of unit's Spd (including when dealing damage with a Special triggered before combat), and
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+                // reduces damage from foe's attacks by 20% of unit's Spd during combat (including when taking damage from a Special triggered before combat), and also,
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+                // when foe's attack triggers foe's Special,
+                // reduces damage by 20% of unit's Spd (including when taking damage from a Special triggered before combat).
+                new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
         )
     ));
 
