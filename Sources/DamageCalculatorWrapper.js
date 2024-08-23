@@ -2387,7 +2387,8 @@ class DamageCalculatorWrapper {
         }
 
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        env.setName('戦闘開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('戦闘開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF)
+            .setDamageType(damageType).setIsStatusFixed(false);
         AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];

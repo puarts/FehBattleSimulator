@@ -3627,6 +3627,15 @@ class Unit extends BattleMapElement {
         ];
     }
 
+    getEvalStatusesInPrecombat() {
+        return [
+            this.getEvalAtkInPrecombat(),
+            this.getEvalSpdInPrecombat(),
+            this.getEvalDefInPrecombat(),
+            this.getEvalResInPrecombat()
+        ];
+    }
+
     // 強化無効の場合0。パニックの場合マイナス。強化無効かつパニックの場合マイナス。
     __getBuffInCombat(getInvalidatesFunc, getBuffFunc, getInvalidateOwnDebuffFunc) {
         let buffMult = this.__getBuffMultiply();
