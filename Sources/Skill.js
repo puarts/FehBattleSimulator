@@ -122,6 +122,18 @@ function getSpecialRefinementSkillId(id) {
     return `sr_${id}`;
 }
 
+/**
+ * @param {number|string} id
+ * @returns {[string, string, string]}
+ */
+function getRefinementSkillIds(id) {
+    return [
+        getNormalSkillId(id),
+        getRefinementSkillId(id),
+        getSpecialRefinementSkillId(id)
+    ];
+}
+
 const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
 
 const PHYSICAL_WEAPON_TYPE_SET = new Set([

@@ -6458,11 +6458,20 @@ class BattleSimulatorBase {
      * @param {Unit[]} targetUnits
      */
     simulateDivineVein(targetUnits) {
-        // スロットの左の方から行動する
-        let unitsSortedBySlot = Array.from(targetUnits).sort((a, b) => a.slotOrder - b.slotOrder);
-        for (let unit of unitsSortedBySlot) {
+        // 移動と同じ順番で天脈を付与する
+        targetUnits.sort(function (a, b) {
+            return a.movementOrder - b.movementOrder;
+        });
+        for (let unit of targetUnits) {
+            let env = new BattleSimulatorBaseEnv(this, unit);
+            env.setName('AIの天脈処理').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            if (HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS.evaluateWithUnit(unit, env) && !unit.isActionDone) {
+                env.debug(`${unit.nameWithGroup}は行動を自ら終了`);
+                unit.endAction();
+                unit.applyEndActionSkills();
+                return true;
+            }
             for (let skillId of unit.enumerateSkills()) {
-                // TODO: 総選挙ルフレに持たせるか検討する
                 // TODO: 天脈実装の際に実装を忘れないようにドキュメント化する
                 let result = getSkillFunc(skillId, hasDivineVeinSkillsWhenActionDoneFuncMap)?.call(this);
                 if (result && !unit.isActionDone) {

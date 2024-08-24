@@ -497,8 +497,11 @@ class DamageCalculatorWrapper {
         self.__applySkillEffectRelatedToEnemyStatusEffects(defUnit, atkUnit, calcPotentialDamage);
         // });
 
+        // 味方ユニットからの戦闘中バフ
+        self.__applySpursFromAllies(atkUnit, defUnit, calcPotentialDamage, damageType);
+        self.__applySpursFromAllies(defUnit, atkUnit, calcPotentialDamage, damageType);
 
-        // 紋章を除く味方ユニットからの戦闘中バフ
+        // 味方ユニットからのスキル効果
         // self.profile.profile("__applySkillEffectFromAllies", () => {
         // self.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
         self.__applySkillEffectFromAllies(atkUnit, defUnit, calcPotentialDamage, damageType);
@@ -2301,7 +2304,7 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.damageReductionValue += 10;
                 }
             } else {
-                if (targetUnit.isCombatDone && !targetUnit.isAttackDone) {
+                if (!targetUnit.isCombatDone && !targetUnit.isAttackDone) {
                     targetUnit.battleContext.damageReductionValue += 10;
                 }
             }
@@ -2384,7 +2387,8 @@ class DamageCalculatorWrapper {
         }
 
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        env.setName('戦闘開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('戦闘開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF)
+            .setDamageType(damageType).setIsStatusFixed(false);
         AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let skillFunc = this._applySkillEffectForUnitFuncDict[skillId];
@@ -10244,6 +10248,32 @@ class DamageCalculatorWrapper {
      * @param  {Boolean} calcPotentialDamage
      * @param  {number} damageType
      */
+    __applySpursFromAllies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
+        if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+            return;
+        }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
+        if (calcPotentialDamage) {
+            return;
+        }
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+            if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
+                continue
+            }
+            let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
+            env.setName('周囲の味方からのバフ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+            FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
+    }
+
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} calcPotentialDamage
+     * @param  {number} damageType
+     */
     __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
             return;
@@ -10260,7 +10290,7 @@ class DamageCalculatorWrapper {
                 }
                 let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
                 env.setName('周囲の味方のスキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
-                WHEN_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
+                FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
                 for (let skillId of allyUnit.enumerateSkills()) {
                     let func = getSkillFunc(skillId, applySkillEffectFromAlliesFuncMap);
                     func?.call(this, targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
@@ -17132,8 +17162,6 @@ class DamageCalculatorWrapper {
                 continue;
             }
             // 距離に関係ないもの
-            let env = new ForAlliesEnv(this, targetUnit, enemyUnit, ally);
-            WHEN_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(ally, env);
             for (let skillId of ally.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromAlliesFuncMap);
                 func?.call(this, targetUnit, ally, enemyUnit, calcPotentialDamage);

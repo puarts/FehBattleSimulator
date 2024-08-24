@@ -18,4 +18,4 @@ const ValueDelimiter = '|';
 const ArrayValueElemDelimiter = '+';
 const DebugModeDefault = false;
 const TabChar = "&emsp;&emsp;";
-const G_SKILL_LOG_LEVEL = 0;
+const G_SKILL_LOG_LEVEL = 1;
