@@ -997,7 +997,7 @@
                     <input type="button" @click="g_app.clearLog()" value="クリア" style="font-size: 8px;" />
                     <input type="button" @click="copyDebugLogToClipboard()" value="コピー" style="font-size: 8px;" />
                     <span style="font-size:12px"><b>スキル効果デバッグログレベル</b></span>
-                    <select v-model="skillLogLevel">
+                    <select v-model="skillLogLevel" @change="saveSkillLogLevel">
                         <option v-for="option in skillLogLevelOption" :key="option.value" :value="option.value">
                             {{ option.text }}
                         </option>
