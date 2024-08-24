@@ -3416,6 +3416,7 @@ const PassiveS = {
     TozokuNoGuzoKusuri: 1400,
     TozokuNoGuzoOugi: 1401,
     TozokuNoGuzoOdori: 1402,
+    Beast: 2922, // 絶対化身
 };
 
 const PassiveX = {

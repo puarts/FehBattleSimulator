@@ -1,6 +1,12 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
-// TODO: 絶対化身を実装
+// 絶対化身
+{
+    let skillId = PassiveS.Beast;
+    // Removes the condition to transform
+    AT_TRANSFORMATION_PHASE_HOOKS.addSkill(skillId, () => new TraceBoolNode(TRUE_NODE));
+}
+
 // 重歩傭兵の槍
 {
     let skillId = getSpecialRefinementSkillId(Weapon.MercenaryLance);

@@ -405,6 +405,22 @@ const FALSE_NODE = new class extends BoolNode {
     }
 }();
 
+class TraceBoolNode extends BoolNode {
+    /**
+     * @param {boolean|BoolNode} b
+     */
+    constructor(b) {
+        super();
+        this._boolNode = BoolNode.makeBoolNodeFrom(b);
+    }
+
+    evaluate(env) {
+        let result = this._boolNode.evaluate(env);
+        env.trace(`value: ${result}`);
+        return result;
+    }
+}
+
 /**
  * @abstract
  */
@@ -4188,3 +4204,8 @@ const AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK = new SkillEffectHooks();
  * AIの天脈処理
  */
 const HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS = new SkillEffectHooks();
+
+/**
+ * ターン開始時の化身のタイミング
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const AT_TRANSFORMATION_PHASE_HOOKS = new SkillEffectHooks();
