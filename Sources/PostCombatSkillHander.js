@@ -152,7 +152,7 @@ class PostCombatSkillHander {
                 if (damage !== 0 || heal !== 0 || reducedHeal !== 0) {
                     this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}, reduced: ${reducedHeal}`);
                 }
-                this.#applyReservedState(unit);
+                unit.applyReservedState(false);
             }
         }
 
@@ -160,13 +160,6 @@ class PostCombatSkillHander {
         // TODO: このタイミングで良いか検証する(アニメーションを見る限り回復・ダメージの後に天脈付与)
         // 切り込みなどの前に天脈が付与(アニメーションではほぼ同時)
         g_appData.map.applyReservedDivineVein();
-    }
-
-    #applyReservedState(unit) {
-        unit.applyReservedBuffs();
-        unit.applyReservedDebuffs();
-        unit.applyReservedStatusEffects();
-        unit.applyReservedSpecialCount();
     }
 
     __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {

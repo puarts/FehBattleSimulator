@@ -116,7 +116,7 @@ class BeginningOfTurnSkillHandler {
             if (unit.isDead) {
                 continue;
             }
-            this.applyReservedState(unit, isBeginningOfTurn);
+            unit.applyReservedState(isBeginningOfTurn);
         }
         this.map.applyReservedDivineVein();
     }
@@ -132,36 +132,6 @@ class BeginningOfTurnSkillHandler {
             let [hp, damage, heal , reducedHeal] = unit.applyReservedHp(leavesOneHp);
             this.writeDebugLog(`予約された回復、ダメージを反映 [ユニット, hp, damage, heal, reducedHeal] : ${unit.nameWithGroup}, ${hp}, ${damage}, ${heal}, ${reducedHeal}`);
         }
-    }
-
-    /**
-     * @param {Unit} unit
-     * @param {boolean} isBeginningOfTurn
-     */
-    applyReservedState(unit, isBeginningOfTurn = true) {
-        // 解除
-        this.#neutralizeReservedState(unit);
-        // 付与
-        this.#grantReservedState(unit, isBeginningOfTurn);
-
-        // 奥義カウント
-        unit.applyReservedSpecialCount();
-    }
-
-    /**
-     * @param {Unit} unit
-     */
-    #neutralizeReservedState(unit) {
-        unit.neutralizeReservedBuffsToNeutralize();
-        unit.neutralizeReservedDebuffsToNeutralize();
-        unit.neutralizeReservedStatusEffectsToNeutralize();
-    }
-
-    #grantReservedState(unit, isBeginningOfTurn) {
-        unit.applyReservedBuffs();
-        unit.applyReservedDebuffs(isBeginningOfTurn);
-        unit.applyReservedStatusEffects(isBeginningOfTurn);
-        unit.applyReservedGreatTalents();
     }
 
     /**

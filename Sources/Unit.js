@@ -2444,6 +2444,12 @@ class Unit extends BattleMapElement {
         this.reservedBuffFlagsToNeutralize = [false, false, false, false];
     }
 
+    neutralizeReservedStateToNeutralize() {
+        this.neutralizeReservedBuffsToNeutralize();
+        this.neutralizeReservedDebuffsToNeutralize();
+        this.neutralizeReservedStatusEffectsToNeutralize();
+    }
+
     forceResetBuffs() {
         this.atkBuff = 0;
         this.spdBuff = 0;
@@ -3575,6 +3581,24 @@ class Unit extends BattleMapElement {
         this.setGreatTalentsFrom(ArrayUtil.max(currentValues, minValues));
         // 値をクリア
         this.clearReservedGreatTalents();
+    }
+
+    applyReservedGranting(isBeginningOfTurn) {
+        this.applyReservedBuffs();
+        this.applyReservedDebuffs(isBeginningOfTurn);
+        this.applyReservedStatusEffects(isBeginningOfTurn);
+        this.applyReservedGreatTalents();
+    }
+
+    applyReservedState(isBeginningOfTurn) {
+        // 解除
+        this.neutralizeReservedStateToNeutralize();
+
+        // 付与
+        this.applyReservedGranting(isBeginningOfTurn);
+
+        // 奥義カウント
+        this.applyReservedSpecialCount();
     }
 
     clearReservedGreatTalents() {
