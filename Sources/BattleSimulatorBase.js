@@ -621,6 +621,10 @@ class BattleSimulatorBase {
             },
             showDetailLogChanged: function () {
             },
+            saveSkillLogLevel: function() {
+                let writer = new CookieWriter();
+                writer.write("skill_log_level", this.skillLogLevel);
+            },
             resetUnitRandom: function () {
                 if (g_app == null) {
                     return;

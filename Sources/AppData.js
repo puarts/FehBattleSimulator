@@ -284,7 +284,8 @@ class AppData extends UnitManager {
         this.isDebugMenuEnabled = DebugModeDefault;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
-        this.skillLogLevel = G_SKILL_LOG_LEVEL;
+        let level = new CookieWriter().read("skill_log_level");
+        this.skillLogLevel = level ? level : G_SKILL_LOG_LEVEL;
         this.skillLogLevelOption = [
             { value: 1, text: "OFF" },
             { value: 2, text: "FATAL" },
