@@ -416,7 +416,10 @@ function dropToUnitImpl(unit, dropTargetId) {
                             canRallyForciblyByPlayer(unit) ||
                             unit.canRallyTo(unitPlacedOnTargetTile, 1) ||
                             unitPlacedOnTargetTile.canRalliedForcibly();
-                        let canApplyAssist = isNotRally || (isRally && canRally);
+                        let hasNotIsolation =
+                            !unit.hasStatusEffect(StatusEffectType.Isolation) &&
+                            !unitPlacedOnTargetTile.hasStatusEffect(StatusEffectType.Isolation);
+                        let canApplyAssist = isNotRally || (isRally && canRally) && hasNotIsolation;
                         if (canApplyAssist) {
                             g_app.__enqueueSupportCommand(unit, bestTile, unitPlacedOnTargetTile);
                             isActioned = true;
