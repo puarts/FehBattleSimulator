@@ -2283,15 +2283,21 @@
         }
 
         function createDialogs() {
-            $('#simpleLogPanel').on('DOMSubtreeModified propertychange', function () {
-                var objDiv = document.getElementById("simpleLogPanel");
-                objDiv.scrollTop = objDiv.scrollHeight;
-            });
-            $('#debugLogPanel').on('DOMSubtreeModified propertychange', function () {
-                var objDiv = document.getElementById("debugLogPanel");
-                objDiv.scrollTop = objDiv.scrollHeight;
-            });
+            function setScroll(id) {
+                let node = document.getElementById(id);
+                let simpleLogPanelObserver = new MutationObserver(function (mutationsList, observer) {
+                    // DOMに変更があった場合にスクロールを一番下に移動する
+                    node.scrollTop = node.scrollHeight;
+                });
+                // オプション（監視する対象を指定）
+                let config = {childList: true, subtree: true};
 
+                // MutationObserverの設定
+                simpleLogPanelObserver.observe(node, config);
+            }
+
+            setScroll("simpleLogPanel");
+            setScroll("debugLogPanel");
 
             // タブ
             $('.jquery .tabs li').click(function () {

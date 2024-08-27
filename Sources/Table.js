@@ -183,7 +183,7 @@ class Table {
                 if (this.onDragEndEvent != null) {
                     cellElem.setAttribute("ondragend", this.onDragEndEvent);
                 }
-                cellElem.setAttribute("onmousedown", 'onItemSelected(event);');
+                cellElem.setAttribute("onmouseup", 'onItemSelected(event);');
 
                 cellElem.innerHTML = cell.innerText;
             }

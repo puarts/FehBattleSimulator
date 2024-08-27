@@ -211,6 +211,12 @@ class KeyboardManager {
                 self.isControlKeyPressing = false;
             }
         }, false);
+
+        document.addEventListener('visibilitychange', function() {
+            // 画面を離れた際にShift, Controlのフラグが残り続けるのでリセットする
+            self.isShiftKeyPressing = false;
+            self.isControlKeyPressing = false;
+        });
     }
 }
 
