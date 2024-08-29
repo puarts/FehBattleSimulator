@@ -2212,6 +2212,14 @@ class Unit extends BattleMapElement {
     }
 
     /**
+     * @returns {number[]}
+     */
+    getNegativeStatusEffectsOrderedByNeutralizationPriority() {
+        let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        return this.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
+    }
+
+    /**
      * @param {number} statusEffectType
      */
     addStatusEffect(statusEffectType) {
@@ -3604,6 +3612,15 @@ class Unit extends BattleMapElement {
     clearReservedGreatTalents() {
         this._reservedGreatTalents = [0, 0, 0 ,0];
         this._reservedMaxGreatTalents = [0, 0, 0, 0];
+    }
+
+    getStatusesWithSkills() {
+        return [
+            this.atkWithSkills,
+            this.spdWithSkills,
+            this.defWithSkills,
+            this.resWithSkills
+        ];
     }
 
     getSpdInPrecombatWithoutDebuff() {

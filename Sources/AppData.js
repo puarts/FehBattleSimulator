@@ -262,6 +262,7 @@ class AppData extends UnitManager {
         // その他
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;
+        this.showDivineVeinImageWithoutBreakable = true;
 
         this.isEnemyActionTriggered = true;
         this.isAutoLoadTurnSettingEnabled = false;
@@ -271,6 +272,8 @@ class AppData extends UnitManager {
         this.currentItemIndex = -1;
         this.attackerUnitIndex = 6;
         this.attackTargetUnitIndex = 0;
+        this.attackerUnitId = null;
+        this.attackTargetUnitId = null;
         this.attackerInfo = "";
         this.attackTargetInfo = "";
         this.damageCalcLog = "";
@@ -767,18 +770,75 @@ class AppData extends UnitManager {
         return this.findSkillInfoByDict(id);
     }
     __showStatusToAttackerInfo() {
-        let unit = this.currentUnit;
-        if (unit == null) { return; }
-        let info = "HP:" + unit.hp + "/" + unit.maxHpWithSkills + "(" + unit.hpPercentage + "%)<br/>"
-            + "攻:" + unit.getAtkInPrecombat()
-            + " 速:" + unit.getSpdInPrecombat()
-            + " 守:" + unit.getDefInPrecombat()
-            + " 魔:" + unit.getResInPrecombat();
-        if (unit.groupId === UnitGroupType.Ally) {
-            // this.attackerInfo = info;
-        } else {
-            // this.attackTargetInfo = info;
+        function getInfo(unit) {
+            if (!unit) {
+                return '';
+            }
+
+            // Divine vein
+            let tag = getSpecialChargedImgTag();
+            tag.classList.add('summary-grid-item');
+            let divineVein = unit.placedTile?.divineVein ?? DivineVeinType.None;
+            let divineVeinGroup = unit.placedTile?.divineVeinGroup ?? null;
+            let group = '';
+            if (divineVeinGroup !== null && unit.placedTile?.hasDivineVein()) {
+                group = divineVeinGroup === UnitGroupType.Ally ? "自" : "敵";
+            }
+
+            // Skill icons
+            let skillIconsDivTag = getSkillIconDivTag(unit);
+            skillIconsDivTag.classList.add('summary-icons');
+
+            // Status effects
+            let maxDisplaySize = 8;
+
+            let positiveStatusEffects = unit.getPositiveStatusEffects();
+            let positiveTags =
+                positiveStatusEffects.slice(0, maxDisplaySize).reduce((acc, val) => acc + getStatsEffectImgTagStr(val), '');
+
+            let negativeStatusEffects = unit.getNegativeStatusEffectsOrderedByNeutralizationPriority();
+            let negativeTags =
+                negativeStatusEffects.slice(0, maxDisplaySize).reduce((acc, val) => acc + getStatsEffectImgTagStr(val), '');
+
+            let info = `<div class="summary-grid-container">
+                <div class="summary-grid-item divine-vein">
+                    ${group}
+                    <a href="${getDivineVeinPath(divineVein)}" title="${getDivineVeinTitle(divineVein)}" target="_blank" class="summary-icon-big">
+                        ${getDivineVeinTag(divineVein).outerHTML}
+                    </a>
+                </div>
+                <div class="summary-grid-item hp">HP ${unit.hp} / ${unit.maxHpWithSkills} (${Math.trunc(unit.restHpPercentageAtBeginningOfTurn)}%)</div>
+                <div class="summary-grid-item atk">攻${statString(unit, STATUS_INDEX.Atk)}</div>
+                <div class="summary-grid-item spd">速${statString(unit, STATUS_INDEX.Spd)}</div>
+                <div class="summary-grid-item def">守${statString(unit, STATUS_INDEX.Def)}</div>
+                <div class="summary-grid-item res">魔${statString(unit, STATUS_INDEX.Res)}</div>
+                <div class="summary-grid-item icons">
+                    ${skillIconsDivTag.outerHTML}
+                </div>
+                <div class="summary-grid-item positive">
+                    ${positiveStatusEffects.length}:${positiveTags}${positiveStatusEffects.length > maxDisplaySize ? '...' : ''}
+                </div>
+                <div class="summary-grid-item negative">
+                    ${negativeStatusEffects.length}:${negativeTags}${negativeStatusEffects.length > maxDisplaySize ? '...' : ''}
+                </div>
+            </div>`;
+            return info;
         }
+
+        function statString(unit, index) {
+            let status = unit.getStatusesInPrecombat()[index];
+            // 表示領域が少ないので非表示
+            // let statusWithSkills = unit.getStatusesWithSkills()[index];
+            let greatTalent = unit.getGreatTalents()[index];
+            let buff = unit.getBuffs(true)[index];
+            let debuff = unit.getDebuffs()[index];
+            // return `<span style="font-weight: bolder">${status}</span>:<span style="color: white">${statusWithSkills}+${greatTalent}</span>${getIncHtml(buff)}${getIncHtml(debuff)}`;
+            return `<span style="font-weight: bolder">${status}</span>:<span style="color: white">+${greatTalent}</span>${getIncHtml(buff)}${getIncHtml(debuff)}`;
+        }
+
+        this.attackerInfo = getInfo(this.attackerUnit);
+        this.attackTargetInfo = getInfo(this.attackTargetUnit);
+        return [this.attackTargetInfo, this.attackTargetInfo];
     }
 
     __updateStatusBySkillsAndMergeForAllHeroes(updatesPureGrowthRate = false) {
@@ -1528,12 +1588,7 @@ class AppData extends UnitManager {
     selectCurrentItem() {
         let currentItem = this.currentItem;
         for (let item of this.enumerateItems()) {
-            if (item == currentItem) {
-                item.isSelected = true;
-            }
-            else {
-                item.isSelected = false;
-            }
+            item.isSelected = item === currentItem;
         }
 
         this.setAttackerAndAttackTargetInfo();
@@ -1546,11 +1601,12 @@ class AppData extends UnitManager {
     setAttackerAndAttackTargetInfo() {
         let currentUnit = this.currentUnit;
         if (currentUnit != null) {
-            if (currentUnit.groupId == UnitGroupType.Ally) {
+            if (currentUnit.groupId === UnitGroupType.Ally) {
                 this.attackerUnitIndex = this.currentItemIndex;
-            }
-            else {
+                this.attackerUnitId = currentUnit.id;
+            } else {
                 this.attackTargetUnitIndex = this.currentItemIndex;
+                this.attackTargetUnitId = currentUnit.id;
             }
         }
     }
@@ -1801,6 +1857,24 @@ class AppData extends UnitManager {
 
         if (this.currentItemIndex < (MaxEnemyUnitCount + this.allyUnits.length)) {
             return this.allyUnits[this.currentItemIndex - MaxEnemyUnitCount];
+        }
+        return null;
+    }
+
+    get attackerUnit() {
+        for (let unit of this.allyUnits) {
+            if (unit.id === this.attackerUnitId) {
+                return unit;
+            }
+        }
+        return null;
+    }
+
+    get attackTargetUnit() {
+        for (let unit of this.enemyUnits) {
+            if (unit.id === this.attackTargetUnitId) {
+                return unit;
+            }
         }
         return null;
     }
