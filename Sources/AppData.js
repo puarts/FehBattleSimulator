@@ -262,6 +262,7 @@ class AppData extends UnitManager {
         // その他
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;
+        this.showDivineVeinImageWithoutBreakable = true;
 
         this.isEnemyActionTriggered = true;
         this.isAutoLoadTurnSettingEnabled = false;

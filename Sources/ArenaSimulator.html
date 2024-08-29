@@ -998,6 +998,11 @@
                         onchange="g_appData.map.switchClosestDistanceToEnemy();updateMap();"><label class="normal"
                         for="showClosestDistanceToEnemy">最も近い敵への距離を表示</label>
                     <br />
+                    <input id="showDivineVeinImage" type="checkbox"
+                           v-model="showDivineVeinImageWithoutBreakable"
+                           @change="onDivineVeinImageVisibilityChanged"><label class="normal"
+                                                                               for="showDivineVeinImage">破壊可能な天脈以外の画像表示</label>
+                    <br />
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
                     <br />
                     <input id="isBgImageEnabled" type="checkbox" v-model="map.isBackgroundImageEnabled"

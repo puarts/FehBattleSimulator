@@ -805,7 +805,10 @@ class BattleSimulatorBase {
                     }
                 }
                 return 'ー';
-            }
+            },
+            onDivineVeinImageVisibilityChanged() {
+                updateMap();
+            },
         };
 
         if (additionalMethods != null) {

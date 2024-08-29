@@ -2863,13 +2863,21 @@ class BattleMap {
 
         // 天脈
         // 味方の天脈、敵の天脈で処理を分ける
-        if (tile.divineVein !== DivineVeinType.None) {
+        if (tile.hasDivineVein()) {
             const alpha = "40";
             cell.borderStyle = "solid";
             if (tile.divineVeinGroup !== null && tile.divineVeinGroup === UnitGroupType.Ally) {
                 cell.bgColor = "#00bbff" + alpha;
             } else {
                 cell.bgColor = "#ff8800" + alpha;
+            }
+
+            if (tile.hasBreakableDivineVein() ||
+                g_appData.showDivineVeinImageWithoutBreakable === true) {
+                let divineVeinTag = getDivineVeinTag(tile.divineVein);
+                divineVeinTag.style.height = '40px';
+                divineVeinTag.style.width = '40px';
+                cell.innerText += divineVeinTag.outerHTML;
             }
         }
     }
