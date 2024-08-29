@@ -1594,6 +1594,15 @@
             敵群の危険度: {{value.getEnemyThreatFor(UnitGroupType.Enemy)}}
             <br/>
             自軍の危険度: {{value.getEnemyThreatFor(UnitGroupType.Ally)}}
+            <div v-if="value.hasDivineVein()">
+                {{value.divineVeinGroup === UnitGroupType.Ally ? "自軍" : "敵軍"}}
+                <a v-bind:href="getDivineVeinPath(value.divineVein)" target="_blank">
+                    <img v-bind:src="getDivineVeinImgPath(value.divineVein)"
+                         v-bind:title="getDivineVeinTitle(value.divineVein)"
+                         v-bind:alt="DIVINE_VEIN_STRINGS[value.divineVein]"
+                         class="tile-info-icon">
+                </a>
+            </div>
         </div>
     </script>
     <script type="text/x-template" id="structure-detail-template">
