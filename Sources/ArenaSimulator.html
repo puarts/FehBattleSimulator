@@ -244,8 +244,8 @@
 
         td.ally {
             background-color: cadetblue;
-            color: gold;
-            font-size: 8px;
+            color: yellow;
+            font-size: 9px;
             border: solid;
             border-color: lightblue;
             border-width: 1px;
@@ -253,8 +253,8 @@
 
         td.enemy {
             background-color: rgb(177, 55, 55);
-            color: gold;
-            font-size: 8px;
+            color: yellow;
+            font-size: 9px;
             border: solid;
             border-color: lightpink;
             border-width: 1px;
@@ -360,6 +360,111 @@
             /*border: 1px solid white; !* 任意のスタイル *!*/
             border-radius: 50%; /* 任意のスタイル */
         }
+
+        .tile-info-icon {
+            height: 30px;
+            width: 30px;
+        }
+
+        .summary-grid-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(6, 14px);
+            place-content: center;
+        }
+
+        .summary-grid-item {
+            font-size: 9px;
+            text-align: left;
+            align-items: center;
+            box-sizing: border-box;
+            display: flex;
+        }
+
+        .summary-grid-container .divine-vein {
+            grid-column: 1 / 3;
+            grid-row: 1;
+        }
+
+        .summary-grid-container .hp {
+            grid-column: 3 / -1;
+            grid-row: 1;
+        }
+
+        .summary-grid-container .atk {
+            grid-column: 1 / 6;
+            grid-row: 2;
+        }
+
+        .summary-grid-container .spd {
+            grid-column: 6 / -1;
+            grid-row: 2;
+        }
+
+        .summary-grid-container .def {
+            grid-column: 1 / 6;
+            grid-row: 3;
+        }
+
+        .summary-grid-container .res {
+            grid-column: 6 / -1;
+            grid-row: 3;
+        }
+
+        /* Rows 4 to 6 with 1 column */
+        .summary-grid-container .icons, .positive, .negative {
+            grid-column: 1 / -1;
+        }
+
+        .summary-grid-container .icons {
+            grid-row: 4;
+        }
+
+        .summary-grid-container .positive {
+            grid-row: 5;
+        }
+
+        .summary-grid-container .negative {
+            grid-row: 6;
+        }
+
+        .summary-grid-item.positive img {
+            height: 12px;
+            width: 12px;
+        }
+
+        .summary-grid-item.negative img {
+            height: 12px;
+            width: 12px;
+        }
+
+        .summary-icons {
+            position: relative;
+            display: inline-flex;
+        }
+
+        .summary-icons img {
+            height: 14px;
+            width: 14px;
+        }
+
+        .summary-icons img.skill-type {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            height: 6px;
+            width: 6px;
+        }
+
+        .summary-icon {
+            height: 9px;
+            width: 9px;
+        }
+
+        .summary-icon-big {
+            height: 12px;
+            width: 12px;
+        }
     </style>
 
     <!-- 重要なところは予め接続 -->
@@ -445,18 +550,13 @@
                                                                                 </td> -->
                                                         <td class="ally" align="center"
                                                             v-bind:style="attackInfoTdStyle">
-                                                            {{attackerUnitIndex < 0 ? "－" :
-                                                                units[attackerUnitIndex].heroInfo==null ?
-                                                                units[attackerUnitIndex].name:
-                                                                units[attackerUnitIndex].heroInfo.pureNames[0]}} </td>
-                                                                <!-- <td style="font-size:10px"></td> -->
+                                                            {{getAttackerName()}}
+                                                        </td>
+                                                        <!-- <td style="font-size:10px"></td> -->
                                                         <td class="enemy" align="center"
                                                             v-bind:style="attackInfoTdStyle">
-                                                            {{attackTargetUnitIndex < 0 ? "－"
-                                                                :units[attackTargetUnitIndex].heroInfo==null
-                                                                ?units[attackTargetUnitIndex].name:
-                                                                units[attackTargetUnitIndex].heroInfo.pureNames[0]}}
-                                                                </td>
+                                                            {{getAttackTargetName()}}
+                                                        </td>
                                                                 <!-- <td class="enemy" rowspan="2" style="width:38px"><img style="width:38px;"
                                                                                         v-bind:src="units[attackTargetUnitIndex].icon"></td> -->
                                                     </tr>

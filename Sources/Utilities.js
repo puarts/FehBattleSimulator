@@ -1097,7 +1097,122 @@ function getIncHtml(number) {
     } else if (number > 0) {
         return `<span style="color: #00eeee">+${number}</span>`
     }
-    return `${number}`;
+    return `+${number}`;
+}
+
+/**
+ * @returns {HTMLImageElement}
+ */
+function getSpecialChargedImgTag() {
+    let imgTag = document.createElement('img');
+    imgTag.src = `${g_imageRootPath}Special.png`;
+    return imgTag;
+}
+
+/**
+ * @param {number} divineVein
+ * @returns {HTMLElement}
+ */
+function getDivineVeinTag(divineVein) {
+    if (divineVein === DivineVeinType.None) {
+        return document.createElement('div');
+    }
+    let imgTag = document.createElement('img');
+    imgTag.src = getDivineVeinImgPath(divineVein);
+    return imgTag;
+}
+
+/**
+ * @param {number} divineVein
+ * @returns {string|null}
+ */
+function getDivineVeinImgPath(divineVein) {
+    if (divineVein === DivineVeinType.None) return null;
+    return [
+        '',
+        'DivineVein_Stone.webp',
+        'DivineVein_Flame.webp',
+        'DivineVein_Green.webp',
+        'DivineVein_Haze.webp',
+        'DivineVein_Water.jpg',
+        'DivineVein_Ice.webp',
+    ].map(img => `${g_imageRootPath}${img}`)[divineVein];
+}
+
+/**
+ * @param {number} divineVein
+ * @returns {string|null}
+ */
+function getDivineVeinPath(divineVein) {
+    if (divineVein === DivineVeinType.None) return null;
+    return [
+        0, // None
+        56, // Stone
+        55, // Flame
+        65, // Green
+        67, // Haze
+        75, // Water
+        80, // Ice
+    ].map(img => `${g_siteRootPath}?fehse=${img}`)[divineVein];
+}
+
+function getDivineVeinTitle(divineVein) {
+    return [
+        // None
+        '',
+        // Stone
+        '付与されたマスに入る者は以下の効果を受ける。\n味方は受けた範囲奥義のダメージを50%軽減(巨影の範囲奥義を除く)。\n味方は戦闘中、守備、魔防+6、敵の奥義による攻撃のダメージ-10(範囲奥義を除く)(付与マスに既に天脈がある場合、それを上書きする)(同じタイミングに異なる複数の天脈の付与が発生した場合、天脈は消滅する)',
+        // Flame
+        '付与されたマスに入る者は以下の効果を受ける。\n射程2の敵は、移動しづらくなる(移動する際、移動をさらに+1消費する。敵の移動タイプの基本移動力を超えて消費しない。「自分が移動可能な地形を平地のように移動可能」の効果はこの影響を受けない)。\n敵は敵軍ターン開始時に7ダメージ(ダメージ後のHPは最低1)。\n敵は戦闘開始後に7ダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)(付与マスに既に天脈がある場合、それを上書きする)(同じタイミングに異なる複数の天脈の付与が発生した場合、天脈は消滅する)',
+        // Green
+        '付与されたマスに入る者は以下の効果を受ける\n敵はこのマスから、および、このマスへのスキル効果によるワープ移動不可(すり抜けを持つ敵には無効)(制圧戦の拠点等の地形効果によるワープ移動は可)\n敵は戦闘中、奥義発動カウント変動量-1 (同系統効果複数時、最大値適用)(付与マスに既に天脈がある場合、それを上書きする) (同じタイミングに異なる複数の天脈の付与が 発生した場合、天脈は消滅する)',
+        // Haze
+        '付与されたマスに入る者は以下の効果を受ける\n敵は戦闘中、攻撃、速さ、守備、魔防-5、強化の+が無効になる(無効になるのは、鼓舞や応援等の効果)(付与マスに既に天脈がある場合、それを上書きする)(同じタイミングに異なる複数の天脈の付与が発生した場合、天脈は消滅する)',
+        // Water
+        '付与されたマスに入る者は以下の効果を受ける 射程2の敵は、移動しづらくなる(移動する際、移動をさらに+1消費する。 敵の移動タイプの基本移動力を超えて消費しない。「自分が移動可能な地形を平地のように移動可能」の効果はこの影響を受けない)\n敵は戦闘中、速さ-5、奥義以外のスキルによる 「ダメージを○○%軽減」を半分無効 (無効にする数値は端数切捨て) (範囲奥義を除く)(付与マスに既に天脈がある場合、それを上書きする) (同じタイミングに異なる複数の天脈の付与が発生した場合、天脈は消滅する)',
+        // Ice
+        '付与されたマスは以下の状態になる\n敵軍は進入不可、破壊可能(HP1)\n自軍は進入、および、待機可能\n【天脈・氷】上に自軍がいる場合は 【天新・氷】の破壊より自軍への攻撃が優先される (付与マスに既に天脈がある場合、それを上書きする) (同じタイミングに異なる複数の天脈の付与が 発生した場合、天顔は消滅する) (ロキの上遊戯では付与されない)',
+    ][divineVein] ?? '';
+}
+
+function getSkillIconDivTag(unit) {
+    let div = document.createElement('div');
+    if (unit == null) {
+        return div;
+    }
+    let html = '';
+    let infos = [
+        unit.passiveAInfo, unit.passiveBInfo, unit.passiveCInfo,
+        unit.passiveSInfo, unit.passiveXInfo,
+    ];
+    let skillTypes = [
+        'A.png', 'B.png', 'C.png',
+        'S.png', 'X.webp',
+    ];
+    infos.forEach((info, index) => {
+        let icon;
+        if (info) {
+            icon = `<img src="${info.iconPath}"/>`
+        } else {
+            icon = `<img src="${g_imageRootPath}None.png"/>`;
+        }
+        let skillType = `<img src="${g_imageRootPath}${skillTypes[index]}" class="skill-type"/>`;
+        html += `<div style="position: relative">${icon}${skillType}</div>`;
+    });
+
+    div.innerHTML = html;
+    return div;
+}
+
+/**
+ * @param statusEffect
+ * @returns {string}
+ */
+function getStatsEffectImgTagStr(statusEffect) {
+    return `<img 
+         src="${statusEffectTypeToIconFilePath(statusEffect)}"
+         title="${getStatusEffectName(statusEffect)}" 
+         alt="${getStatusEffectName(statusEffect)}"/>`;
 }
 
 function getKeyByValue(dict, value) {

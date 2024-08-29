@@ -554,4 +554,7 @@ function dropEventImpl(objId, dropTargetId) {
             updateAllUi();
         }
     }
+
+    // ユニットの状態が変わるので再描画
+    g_app.clearDamageCalcSummary();
 }

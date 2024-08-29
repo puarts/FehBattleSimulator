@@ -790,6 +790,22 @@ class BattleSimulatorBase {
                 self.vm.showOcrImage = true;
                 self._imageProcessor.showOcrSettingSourceImage(files);
             },
+            getAttackerName() {
+                for (let unit of this.units) {
+                    if (unit.id === this.attackerUnitId) {
+                        return unit.name;
+                    }
+                }
+                return 'ー';
+            },
+            getAttackTargetName() {
+                for (let unit of this.units) {
+                    if (unit.id === this.attackTargetUnitId) {
+                        return unit.name;
+                    }
+                }
+                return 'ー';
+            }
         };
 
         if (additionalMethods != null) {
@@ -3002,10 +3018,12 @@ class BattleSimulatorBase {
     }
     __setAttackerUnit(id) {
         this.vm.attackerUnitIndex = this.__findIndexOfUnit(id);
+        this.vm.attackerUnitId = id;
     }
 
     __setAttackTargetUnit(id) {
         this.vm.attackTargetUnitIndex = this.__findIndexOfUnit(id);
+        this.vm.attackTargetUnitId = id;
     }
 
     useItem(itemType) {
@@ -4050,7 +4068,15 @@ class BattleSimulatorBase {
         let html = `${divineHtml}HP: ${unit.hp} → ${restHpHtml}<br/>`;
 
         // 奥義カウント、ダメージ表示
-        let specialHtml = `<span style="color: pink;">${unit.specialCount}</span>`;
+        let special = '';
+        if (unit.specialCount === 0) {
+            let tag = getSpecialChargedImgTag();
+            tag.classList.add('summary-icon');
+            special = tag.outerHTML;
+        } else {
+            special = `奥義${unit.specialCount}`;
+        }
+        let specialHtml = `<span style="color: pink;">${special}</span>`;
         let damageHtml;
         if (attackCount > 0) {
             let precombatHtml = preCombatDamage > 0 ? `${preCombatDamage}+` : "";
@@ -4067,7 +4093,7 @@ class BattleSimulatorBase {
             let afterBeginningOfCombatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
             damageHtml = `${afterBeginningOfCombatHtml}ー`;
         }
-        html += `奥${specialHtml}  攻撃: ${damageHtml}<br/>`;
+        html += `${specialHtml}  攻撃: ${damageHtml}<br/>`;
         return html;
     }
 
