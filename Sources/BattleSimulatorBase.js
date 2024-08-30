@@ -4299,6 +4299,7 @@ class BattleSimulatorBase {
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
         g_appData.isCombatOccuredInCurrentTurn = false;
         g_appData.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[group] = false;
+        g_appData.globalBattleContext.numOfCombatOnCurrentTurn = 0;
 
         if (targetUnits.length === 0) {
             return;

@@ -1695,6 +1695,7 @@ class AppData extends UnitManager {
             + ValueDelimiter + this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy]
             + ValueDelimiter + this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally]
             + ValueDelimiter + this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy]
+            + ValueDelimiter + this.globalBattleContext.numOfCombatOnCurrentTurn
             ;
     }
 
@@ -1738,6 +1739,7 @@ class AppData extends UnitManager {
         if (values[i] !== undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.numOfCombatOnCurrentTurn = Number(values[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {

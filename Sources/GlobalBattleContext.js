@@ -51,6 +51,10 @@ class GlobalBattleContext {
         this.miracleAndHealWithoutSpecialActivationCount = {};
         this.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
         this.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
+
+        // 現在ターンで行われた戦闘の回数
+        // 自軍・敵軍は別カウントなのでこの変数1つで管理する
+        this.numOfCombatOnCurrentTurn = 0;
     }
 
     moveSummonerDuelsPointAreaOffset(groupType) {

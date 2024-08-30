@@ -230,6 +230,7 @@ class DamageCalculatorWrapper {
             defUnit.restoreOriginalTile();
         }
 
+        this.globalBattleContext.numOfCombatOnCurrentTurn++;
         return result;
     }
 
