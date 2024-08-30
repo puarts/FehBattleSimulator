@@ -790,7 +790,7 @@ class AppData extends UnitManager {
             skillIconsDivTag.classList.add('summary-icons');
 
             // Status effects
-            let maxDisplaySize = 8;
+            let maxDisplaySize = 5;
 
             let positiveStatusEffects = unit.getPositiveStatusEffects();
             let positiveTags =
@@ -812,14 +812,17 @@ class AppData extends UnitManager {
                 <div class="summary-grid-item spd">速${statString(unit, STATUS_INDEX.Spd)}</div>
                 <div class="summary-grid-item def">守${statString(unit, STATUS_INDEX.Def)}</div>
                 <div class="summary-grid-item res">魔${statString(unit, STATUS_INDEX.Res)}</div>
+                <div class="summary-grid-item level">
+                    LV.${unit.level}
+                </div>
                 <div class="summary-grid-item icons">
                     ${skillIconsDivTag.outerHTML}
                 </div>
                 <div class="summary-grid-item positive">
-                    ${positiveStatusEffects.length}:${positiveTags}${positiveStatusEffects.length > maxDisplaySize ? '...' : ''}
+                    <span class="status-effect">【有利】${positiveStatusEffects.length}個:&nbsp;</span>${positiveTags}${positiveStatusEffects.length > maxDisplaySize ? '...' : ''}
                 </div>
                 <div class="summary-grid-item negative">
-                    ${negativeStatusEffects.length}:${negativeTags}${negativeStatusEffects.length > maxDisplaySize ? '...' : ''}
+                    <span class="status-effect">【不利】${negativeStatusEffects.length}個:&nbsp;</span>${negativeTags}${negativeStatusEffects.length > maxDisplaySize ? '...' : ''}
                 </div>
             </div>`;
             return info;
@@ -833,7 +836,9 @@ class AppData extends UnitManager {
             let buff = unit.getBuffs(true)[index];
             let debuff = unit.getDebuffs()[index];
             // return `<span style="font-weight: bolder">${status}</span>:<span style="color: white">${statusWithSkills}+${greatTalent}</span>${getIncHtml(buff)}${getIncHtml(debuff)}`;
-            return `<span style="font-weight: bolder">${status}</span>:<span style="color: white">+${greatTalent}</span>${getIncHtml(buff)}${getIncHtml(debuff)}`;
+            return `<span>
+            <span style="font-weight: bolder">${status}</span> <span class="buff-or-debuff">(<span style="color: white">+${greatTalent}</span>${getIncHtml(buff)}${getIncHtml(debuff)})</span>
+            </span>`;
         }
 
         this.attackerInfo = getInfo(this.attackerUnit);
