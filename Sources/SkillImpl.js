@@ -1,5 +1,41 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 修羅の双刃
+{
+    let skillId = Weapon.DualSword;
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit attacks twice (even if foe initiates combat, unit attacks twice).
+    // Effect:【Dagger ７】
+    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts penalty on Atk/Spd/Def/Res
+        // for foes within 3 rows or 3 columns centered on unit during combat
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            new NumThatIsNode(
+                new InflictsStatsMinusOnTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE),
+                // = 4 + number of combat instances on current turn × 4
+                // (max 12; includes combat instances unit does not participate in; battles on player phase and on enemy phase are counted separately; does not include this current combat instance).
+                new EnsureMaxNode(ADD_NODE(4, MULT_NODE(NUM_OF_COMBAT_ON_CURRENT_TURN_NODE, 4)), 12),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + number of foes within 3 rows or 3 columns centered on unit × 3 (max 14),
+            new NumThatIsNode(
+                new GrantsAllStatsPlusNToUnitDuringCombatNode(READ_NUM_NODE),
+                new EnsureMaxNode(ADD_NODE(5, MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)), 14),
+            ),
+            // reduces damage from foe's first attack by 30% ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(30),
+            // and neutralizes effects that grant "Special cooldown charge +X" to foe or inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+}
+
 // 絶対化身
 {
     let skillId = PassiveS.Beast;
@@ -199,7 +235,7 @@
             // neutralizes penalties on unit, and
             NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
             // neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also,
-            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
             // when Special triggers, neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills (excluding area-of-effect Specials).
             WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
         )
@@ -235,7 +271,7 @@
         // At start of combat, if unit's HP ≤ 99%, grants Atk/Spd+5 to unit and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
         IF_NODE(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
             new GrantsStatsPlusToUnitDuringCombatNode(5, 5, 0, 0),
-            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
         )
     ));
 }
@@ -413,7 +449,7 @@
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat,
             new GrantsAllStatsPlusNToUnitDuringCombatNode(MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
             // neutralizes effects that inflict "Special cooldown charge -X" on unit, and
-            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
             // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
         )
@@ -785,7 +821,7 @@
             // 攻撃時に発動する奥義を装備している時、戦闘中、
             new IfNode(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
                 // 奥義発動カウント変動量-を無効、
-                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
                 // 自分の最初の攻撃前に奥義発動カウント-1、
                 UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
                 new UnitAppliesSkillEffectsPerAttack(
@@ -928,7 +964,7 @@
         new SkillEffectNode(
             new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 new GrantsAllStatsPlusNToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
-                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
                 ),
@@ -1191,7 +1227,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
-            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
         )
     ));
@@ -1257,7 +1293,7 @@
             new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
                 new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
-                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
                 UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
             )
         )
@@ -1270,7 +1306,7 @@
             new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
                 new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
-                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
             )
         )
     );

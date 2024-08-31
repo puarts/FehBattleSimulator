@@ -1908,6 +1908,8 @@ const Weapon = {
 
     // 2024年8月 武器錬成
     MercenaryLance: 2976, // 重歩傭兵の槍
+
+    DualSword: 2995, // 修羅の双刃
 };
 
 const Support = {

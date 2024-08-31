@@ -2093,29 +2093,35 @@ const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
     }
 }();
 
-// TODO: リファクタリング
-class InflictsStatsMinusOnUnitDuringCombatNode extends FromPositiveStatsNode {
+class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let spurs = this.evaluateChildren(env);
-        let unit = env.target;
+        let unit = this.getUnit(env);
         let beforeSpurs = unit.getSpurs();
         unit.addSpurs(...spurs.map(v => -v));
         env.debug(`${unit.nameWithGroup}は攻撃/速さ/守備/魔坊-[${spurs}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
     }
 }
 
-class InflictsStatsMinusOnFoeDuringCombatNode extends FromPositiveStatsNode {
-    evaluate(env) {
-        let spurs = this.evaluateChildren(env);
-        let unit = env.foeDuringCombat;
-        let beforeSpurs = unit.getSpurs();
-        unit.addSpurs(...spurs.map(v => -v));
-        env.debug(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防-[${spurs}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+class InflictsStatsMinusOnUnitDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 5);
 
+// TODO: リファクタリング
 class InflictsStatsNToFoeDuringCombatNode extends SkillEffectNode {
     /**
      * @param {number|NumberNode} n
@@ -2495,6 +2501,32 @@ class NeutralizesEffectsThatInflictSpecialCooldownChargeMinusXOnUnit extends Neu
 }
 
 const NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT = new NeutralizesEffectsThatInflictSpecialCooldownChargeMinusXOnUnit();
+
+/**
+ * neutralizes effects that grant "Special cooldown charge +X" to foe
+ * @type {boolean}
+ */
+class NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToTarget extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        env.debug(`${unit.nameWithGroup}は敵の奥義発動カウント変動量+を無効`);
+        foe.battleContext.increaseCooldownCountForAttack = false;
+        foe.battleContext.increaseCooldownCountForDefense = false;
+    }
+}
+
+class NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToFoe extends NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToTarget {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE = new NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToFoe();
 
 // noinspection JSUnusedGlobalSymbols
 /**
@@ -2893,7 +2925,7 @@ class ReducesPercentageOfNonSpecialDamageReductionByNPercentDuringCombatNode ext
 const REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
     = new ReducesPercentageOfNonSpecialDamageReductionByNPercentDuringCombatNode(50);
 
-const NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS = new class extends SkillEffectNode {
+const NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         env.debug(`${unit.nameWithGroup}は奥義発動カウント変動量-を無効`);
@@ -3168,6 +3200,14 @@ class TargetCanAttackDuringCombatNode extends BoolNode {
         return unit.battleContext.canAttackInCombat();
     }
 }
+
+const NUM_OF_COMBAT_ON_CURRENT_TURN_NODE = new class extends PositiveNumberNode {
+    evaluate(env) {
+        let result = g_appData?.globalBattleContext?.numOfCombatOnCurrentTurn ?? 0;
+        env.debug(`現在のターンで行われた戦闘回数: ${result}`);
+        return result;
+    }
+}();
 
 const TARGET_CAN_ATTACK_DURING_COMBAT_NODE = new TargetCanAttackDuringCombatNode();
 

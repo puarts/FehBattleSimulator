@@ -284,8 +284,8 @@ class DamageCalculatorWrapper {
         let self = this;
         let result;
         using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
-            self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
-            self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
+            self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
+            self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
         }), () => {
             this.#initBattleContext(atkUnit, defUnit);
 
@@ -324,7 +324,7 @@ class DamageCalculatorWrapper {
                     preCombatDamage = 0;
                     preCombatDamageWithOverkill = 0;
                     if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
-                    self.__initSaverUnit(saverUnit, defUnit);
+                    self.__initSaverUnit(saverUnit, defUnit, damageType);
                     if (canActivatePrecombatSpecial) {
                         // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
                         for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
@@ -404,8 +404,9 @@ class DamageCalculatorWrapper {
     /**
      * @param  {Unit} saverUnit
      * @param  {Unit} defUnit
+     * @param damageType
      */
-    __initSaverUnit(saverUnit, defUnit) {
+    __initSaverUnit(saverUnit, defUnit, damageType) {
         // 戦闘後効果の適用処理が間に挟まるので、restoreOriginalTile() はこの関数の外で行わなければならない
         saverUnit.saveOriginalTile();
 
@@ -420,7 +421,7 @@ class DamageCalculatorWrapper {
         saverUnit.battleContext.isSaviorActivated = true;
         saverUnit.saveCurrentHpAndSpecialCount();
 
-        this.updateUnitSpur(saverUnit, false);
+        this.updateUnitSpur(saverUnit, false, null, damageType);
     }
 
     calcPrecombatSpecialDamage(atkUnit, defUnit) {
@@ -487,8 +488,8 @@ class DamageCalculatorWrapper {
         this.__applySKillEffectForUnitAtBeginningOfCombat(defUnit, atkUnit, calcPotentialDamage);
 
         // self.profile.profile("__applySkillEffect", () => {
-        this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit);
-        this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit);
+        this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
+        this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
 
         self.__applySkillEffect(atkUnit, defUnit, calcPotentialDamage);
         self.__applySkillEffectForUnit(atkUnit, defUnit, calcPotentialDamage, damageType, gameMode);
@@ -16174,11 +16175,12 @@ class DamageCalculatorWrapper {
      * @param {Unit} targetUnit
      * @param {boolean} calcPotentialDamage=false
      * @param {Unit} enemyUnit
+     * @param {number} damageType
      */
-    updateUnitSpur(targetUnit, calcPotentialDamage = false, enemyUnit = null) {
+    updateUnitSpur(targetUnit, calcPotentialDamage = false, enemyUnit = null, damageType = DamageType.PotentialDamage) {
         let self = this;
         this.profiler.profile("updateUnitSpur", () => {
-            self.__updateUnitSpur(targetUnit, calcPotentialDamage, enemyUnit);
+            self.__updateUnitSpur(targetUnit, calcPotentialDamage, enemyUnit, damageType);
         });
     }
 
@@ -16186,8 +16188,9 @@ class DamageCalculatorWrapper {
      * @param  {Unit} targetUnit
      * @param  {boolean} calcPotentialDamage
      * @param  {Unit} enemyUnit
+     * @param  {number} damageType
      */
-    __updateUnitSpur(targetUnit, calcPotentialDamage, enemyUnit = null) {
+    __updateUnitSpur(targetUnit, calcPotentialDamage, enemyUnit = null, damageType) {
         // 主に暗闘スキルの処理
         // 暗闘は戦闘中の2人が必要
         if (targetUnit && enemyUnit) {
@@ -16201,7 +16204,7 @@ class DamageCalculatorWrapper {
             // 周囲の味方から受ける紋章バフ
             this.__updateUnitSpurFromAllies(targetUnit, calcPotentialDamage, enemyUnit);
             // 周囲の敵から受ける紋章バフ
-            this.__updateUnitSpurFromEnemyAllies(targetUnit, calcPotentialDamage, enemyUnit);
+            this.__updateUnitSpurFromEnemyAllies(targetUnit, calcPotentialDamage, enemyUnit, damageType);
         }
 
         let isAllyAvailableRange1 = false;
@@ -16875,8 +16878,9 @@ class DamageCalculatorWrapper {
      * @param {Unit} targetUnit
      * @param {boolean} calcPotentialDamage
      * @param {Unit} enemyUnit
+     * @param {number} damageType
      */
-    __updateUnitSpurFromEnemyAllies(targetUnit, calcPotentialDamage, enemyUnit) {
+    __updateUnitSpurFromEnemyAllies(targetUnit, calcPotentialDamage, enemyUnit, damageType) {
         let disablesSkillsFromEnemyAlliesInCombat = false;
         if (enemyUnit) {
             if (enemyUnit.hasStatusEffect(StatusEffectType.Feud) ||
@@ -16896,7 +16900,8 @@ class DamageCalculatorWrapper {
             }
 
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
-            env.setName('周囲の敵からのデバフ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('周囲の敵からのデバフ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF)
+                .setDamageType(damageType);
             WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromEnemyAlliesFuncMap);
