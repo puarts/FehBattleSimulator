@@ -1985,6 +1985,11 @@ class BattleMap {
         }
     }
 
+    /**
+     * @param {Unit} unit
+     * @returns {Iterable<Tile>}
+     * @private
+     */
     * __enumerateTeleportTiles(unit) {
         if (unit.hasStatusEffect(StatusEffectType.AirOrders)) {
             yield* this.__enumeratesSpacesWithinSpecificSpacesOfAnyAllyWithinSpecificSpaces(unit, 2, 1);
@@ -2019,6 +2024,10 @@ class BattleMap {
                 }
             }
         }
+
+        let env = new BattleMapEnv(this, unit);
+        env.setName('ワープ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(unit, env).flat(1);
 
         for (let skillId of unit.enumerateSkills()) {
             yield* getSkillFunc(skillId, enumerateTeleportTilesForUnitFuncMap)?.call(this, unit) ?? [];
@@ -2901,9 +2910,13 @@ class BattleMap {
         }
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @returns {Generator<Unit>}
+     */
     * enumerateUnitsInTheSameGroup(targetUnit) {
         for (let unit of this.enumerateUnitsInSpecifiedGroup(targetUnit.groupId)) {
-            if (unit != targetUnit) {
+            if (unit !== targetUnit) {
                 yield unit;
             }
         }

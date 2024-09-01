@@ -1,5 +1,46 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 無間の瞬動
+{
+    let skillId = PassiveB.ShadowSlide;
+    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new ForSpacesNode(
+        // Unit can move to a space within 2 spaces of any ally that has entered combat during the current turn.
+        new ForEachAllyForSpacesNode(new HasTargetEnteredCombatDuringTheCurrentTurnNode,
+            new ForSpacesWithinNSpacesNode(2),
+        ),
+        // Unit can move to a space within 2 spaces of any ally within 2 spaces.
+        new ForEachAllyForSpacesNode(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            new ForSpacesWithinNSpacesNode(2),
+        ),
+    ));
+
+    UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS.addSkill(skillId, () => OR_NODE(
+        // If ally has entered combat during the current turn,
+        // unit can move through foes' spaces.
+        new IsThereUnitOnMapNode(AND_NODE(
+            ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE,
+            HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE)
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // inflicts Atk/Spd/Def-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 0),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            new GrantsOrInflictsStatsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and reduces damage from foe's first attack by 7 during combat
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(7),
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+        ),
+    ));
+}
+
 // 修羅の双刃
 {
     let skillId = Weapon.DualSword;
@@ -518,7 +559,7 @@
     AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit has entered combat during the current turn,
         // after unit acts (if Canto triggers, after Canto),
-        IF_NODE(HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+        IF_NODE(HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
             // applies【Divine Vein (Stone)】to unit's space and spaces within 2 spaces of unit for 1 turn.
             new AppliesDivineVeinNode(
                 DivineVeinType.Stone,
@@ -744,7 +785,7 @@
     let skillId = PassiveA.AtkSpdMastery;
     // 現在のターン中に自分が戦闘を行っている時、【再移動(2)】を発動可能
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () =>
-        HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+        HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
     );
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(2));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>

@@ -2000,12 +2000,31 @@ class IsFoesHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
 const IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(50);
 const IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(75);
 
-const CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE = new class extends BoolNode {
+/**
+ * target's attack can trigger foe's Special
+ */
+class CanTargetsAttackTriggerTargetsSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
-        let unit = env.unitDuringCombat;
+        let unit = this.getUnit(env);
         let result = unit.hasNormalAttackSpecial();
         env.debug(`${unit.nameWithGroup}が攻撃時に発動する奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
         return result;
+    }
+}
+
+const CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE = new class extends CanTargetsAttackTriggerTargetsSpecialNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}();
+
+const CAN_FOES_ATTACK_TRIGGER_SPECIAL_NODE = new class extends CanTargetsAttackTriggerTargetsSpecialNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }();
 
@@ -3168,6 +3187,13 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack 
     }
 }
 
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK = n =>
+    new class extends InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack {
+        static {
+            Object.assign(this.prototype, GetFoeDuringCombatMixin);
+        }
+    }(n);
+
 class GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNode
     extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode {
     static {
@@ -4007,6 +4033,9 @@ class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     }
 }
 
+class InflictsStatsMinusAfterCombatNode extends InflictsStatsMinusAtStartOfTurnNode {
+}
+
 // TODO: rename
 class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
     /**
@@ -4037,6 +4066,29 @@ class GrantsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAtStartOfTur
 }
 
 class InflictsStatusEffectsAtStartOfTurnNode extends GrantsStatusEffectsAtStartOfTurnNode {
+}
+
+class InflictsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAfterCombatNode {
+}
+
+/**
+ * inflicts Special cooldown count+1
+ */
+class InflictsSpecialCooldownCountPlusNOnTargetAtStartOfTurnNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.reserveToIncreaseSpecialCount(n);
+        env.debug(`${unit.nameWithGroup}は奥義発動カウント+${n}を予約`);
+        return super.evaluate(env);
+    }
+}
+
+class InflictsSpecialCooldownCountPlusNOnTargetAfterCombat extends InflictsSpecialCooldownCountPlusNOnTargetAtStartOfTurnNode {
 }
 
 /**

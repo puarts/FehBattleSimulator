@@ -113,6 +113,10 @@ class UnitManager {
         return !this.enumerateUnitsInDifferentGroupInCrossOf(targetUnit, offset).next().done
     }
 
+    isThereUnit(pred) {
+        return !this.enumerateUnitsWithPredicator(pred).next().done
+    }
+
     isThereAllyInCrossOf(targetUnit, offset) {
         return !this.enumerateUnitsInTheSameGroupInCrossOf(targetUnit, offset).next().done
     }
