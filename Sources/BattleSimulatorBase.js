@@ -4078,7 +4078,9 @@ class BattleSimulatorBase {
 
         // 奥義カウント、ダメージ表示
         let special = '';
-        if (unit.specialCount === 0) {
+        if (unit.special === Special.None) {
+            special = '';
+        } else if (unit.specialCount === 0) {
             let tag = getSpecialChargedImgTag();
             tag.classList.add('summary-icon');
             special = tag.outerHTML;
