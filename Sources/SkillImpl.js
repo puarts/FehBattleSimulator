@@ -1,5 +1,36 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 鼓動の暗煙
+{
+    let skillId = PassiveC.PulseSmog;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Spd/Def-3 on foe and
+        new InflictsStatsMinusOnFoeDuringCombatNode(0, 3, 3, 0),
+        // inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
+        INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        // If unit initiates combat and foe's attack can trigger foe's Special,
+        IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_SPECIAL_NODE),
+            // inflicts Special cooldown count+1 on foe before foe's first attack during combat
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+            // (cannot exceed foe's maximum Special cooldown).
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // After combat,
+        // on target and foes within 3 spaces of target through their next actions and
+        new ForEachTargetAndFoeWithinNSpacesOfTargetNode(3, TRUE_NODE,
+            // inflicts Atk-7 and
+            new InflictsStatsMinusAfterCombatNode(7, 0, 0, 0),
+            // 【Guard】
+            new InflictsStatusEffectsAfterCombatNode(StatusEffectType.Guard),
+            // inflicts Special cooldown count+1 on those foes
+            new InflictsSpecialCooldownCountPlusNOnTargetAfterCombat(1),
+            // (cannot exceed the foe's maximum Special cooldown).
+        ),
+    ));
+}
+
 // 無間の瞬動
 {
     let skillId = PassiveB.ShadowSlide;

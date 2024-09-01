@@ -3322,6 +3322,8 @@ const PassiveC = {
 
     CreationPulse: 2981, // 開闢の鼓動
 
+    PulseSmog: 2997, // 鼓動の暗煙
+
     // 専用C
     Paranoia: 2987, // 被害妄想
     DivineNectar: 2959, // 神獣の蜜
