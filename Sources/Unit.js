@@ -341,7 +341,7 @@ class Unit extends BattleMapElement {
     #hpAddAfterEnteringBattle = 0;
     #statusEffects = [];
     constructor(id = "", name = "",
-                unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
+        unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
         // Unitはマップ上で作るので利便性のために初期値0にしておく
         this.setPos(0, 0);
@@ -1805,7 +1805,7 @@ class Unit extends BattleMapElement {
         if (this.countStatusEffects() === 0) {
             return String(StatusEffectType.None);
         }
-        let result =  this.getStatusEffects().reduce((prev, curr) => prev + curr + ArrayValueElemDelimiter, "");
+        let result = this.getStatusEffects().reduce((prev, curr) => prev + curr + ArrayValueElemDelimiter, "");
         return result.substring(0, result.length - 1);
     }
 
@@ -4562,13 +4562,15 @@ class Unit extends BattleMapElement {
         // 限界突破によるステータス上昇
         if (merge > 0 || dragonflower > 0 || emblemHeroMerge) {
             const statusList = [
-                {type: StatusType.Hp, value: hpLv1 + hpLv1IvChange},
-                {type: StatusType.Atk, value: atkLv1 + atkLv1IvChange},
-                {type: StatusType.Spd, value: spdLv1 + spdLv1IvChange},
-                {type: StatusType.Def, value: defLv1 + defLv1IvChange},
-                {type: StatusType.Res, value: resLv1 + resLv1IvChange},
+                { type: StatusType.Hp, value: hpLv1 + hpLv1IvChange },
+                { type: StatusType.Atk, value: atkLv1 + atkLv1IvChange },
+                { type: StatusType.Spd, value: spdLv1 + spdLv1IvChange },
+                { type: StatusType.Def, value: defLv1 + defLv1IvChange },
+                { type: StatusType.Res, value: resLv1 + resLv1IvChange },
             ];
             statusList.sort((a, b) => {
+                // HPは高さに関係なく最優先
+                if (b.type == StatusType.Hp) return 1;
                 return b.value - a.value;
             });
             const updateStatus = (statItr) => {
