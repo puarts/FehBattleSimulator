@@ -1908,6 +1908,8 @@ const Weapon = {
 
     // 2024年8月 武器錬成
     MercenaryLance: 2976, // 重歩傭兵の槍
+
+    DualSword: 2995, // 修羅の双刃
 };
 
 const Support = {
@@ -2869,6 +2871,7 @@ const PassiveB = {
     Reopening: 2991, // 一新
 
     // 専用B
+    ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!
     LoneWolf: 2983, // 一匹狼
     DivineStrength: 2962, // 神獣の肉体
@@ -3318,6 +3321,8 @@ const PassiveC = {
     EndlessTempest: 2984, // 迅雷風烈・無極
 
     CreationPulse: 2981, // 開闢の鼓動
+
+    PulseSmog: 2997, // 鼓動の暗煙
 
     // 専用C
     Paranoia: 2987, // 被害妄想

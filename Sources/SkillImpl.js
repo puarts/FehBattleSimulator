@@ -1,5 +1,113 @@
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
+// 鼓動の暗煙
+{
+    let skillId = PassiveC.PulseSmog;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Spd/Def-3 on foe and
+        new InflictsStatsMinusOnFoeDuringCombatNode(0, 3, 3, 0),
+        // inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
+        INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        // If unit initiates combat and foe's attack can trigger foe's Special,
+        IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_SPECIAL_NODE),
+            // inflicts Special cooldown count+1 on foe before foe's first attack during combat
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+            // (cannot exceed foe's maximum Special cooldown).
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // After combat,
+        // on target and foes within 3 spaces of target through their next actions and
+        new ForEachTargetAndFoeWithinNSpacesOfTargetNode(3, TRUE_NODE,
+            // inflicts Atk-7 and
+            new InflictsStatsMinusAfterCombatNode(7, 0, 0, 0),
+            // 【Guard】
+            new InflictsStatusEffectsAfterCombatNode(StatusEffectType.Guard),
+            // inflicts Special cooldown count+1 on those foes
+            new InflictsSpecialCooldownCountPlusNOnTargetAfterCombat(1),
+            // (cannot exceed the foe's maximum Special cooldown).
+        ),
+    ));
+}
+
+// 無間の瞬動
+{
+    let skillId = PassiveB.ShadowSlide;
+    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new ForSpacesNode(
+        // Unit can move to a space within 2 spaces of any ally that has entered combat during the current turn.
+        new ForEachAllyForSpacesNode(new HasTargetEnteredCombatDuringTheCurrentTurnNode,
+            new ForSpacesWithinNSpacesNode(2),
+        ),
+        // Unit can move to a space within 2 spaces of any ally within 2 spaces.
+        new ForEachAllyForSpacesNode(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            new ForSpacesWithinNSpacesNode(2),
+        ),
+    ));
+
+    UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS.addSkill(skillId, () => OR_NODE(
+        // If ally has entered combat during the current turn,
+        // unit can move through foes' spaces.
+        new IsThereUnitOnMapNode(AND_NODE(
+            ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE,
+            HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE)
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // inflicts Atk/Spd/Def-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 0),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            new GrantsOrInflictsStatsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and reduces damage from foe's first attack by 7 during combat
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(7),
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+        ),
+    ));
+}
+
+// 修羅の双刃
+{
+    let skillId = Weapon.DualSword;
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit attacks twice (even if foe initiates combat, unit attacks twice).
+    // Effect:【Dagger ７】
+    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts penalty on Atk/Spd/Def/Res
+        // for foes within 3 rows or 3 columns centered on unit during combat
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            new NumThatIsNode(
+                new InflictsStatsMinusOnTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE),
+                // = 4 + number of combat instances on current turn × 4
+                // (max 12; includes combat instances unit does not participate in; battles on player phase and on enemy phase are counted separately; does not include this current combat instance).
+                new EnsureMaxNode(ADD_NODE(4, MULT_NODE(NUM_OF_COMBAT_ON_CURRENT_TURN_NODE, 4)), 12),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + number of foes within 3 rows or 3 columns centered on unit × 3 (max 14),
+            new NumThatIsNode(
+                new GrantsAllStatsPlusNToUnitDuringCombatNode(READ_NUM_NODE),
+                new EnsureMaxNode(ADD_NODE(5, MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)), 14),
+            ),
+            // reduces damage from foe's first attack by 30% ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(30),
+            // and neutralizes effects that grant "Special cooldown charge +X" to foe or inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+}
+
 // 絶対化身
 {
     let skillId = PassiveS.Beast;
@@ -199,7 +307,7 @@
             // neutralizes penalties on unit, and
             NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
             // neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also,
-            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
             // when Special triggers, neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills (excluding area-of-effect Specials).
             WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
         )
@@ -235,7 +343,7 @@
         // At start of combat, if unit's HP ≤ 99%, grants Atk/Spd+5 to unit and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
         IF_NODE(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
             new GrantsStatsPlusToUnitDuringCombatNode(5, 5, 0, 0),
-            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
         )
     ));
 }
@@ -413,7 +521,7 @@
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat,
             new GrantsAllStatsPlusNToUnitDuringCombatNode(MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
             // neutralizes effects that inflict "Special cooldown charge -X" on unit, and
-            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
             // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
         )
@@ -482,7 +590,7 @@
     AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit has entered combat during the current turn,
         // after unit acts (if Canto triggers, after Canto),
-        IF_NODE(HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+        IF_NODE(HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
             // applies【Divine Vein (Stone)】to unit's space and spaces within 2 spaces of unit for 1 turn.
             new AppliesDivineVeinNode(
                 DivineVeinType.Stone,
@@ -708,7 +816,7 @@
     let skillId = PassiveA.AtkSpdMastery;
     // 現在のターン中に自分が戦闘を行っている時、【再移動(2)】を発動可能
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () =>
-        HAS_UNIT_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+        HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
     );
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(2));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
@@ -785,7 +893,7 @@
             // 攻撃時に発動する奥義を装備している時、戦闘中、
             new IfNode(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
                 // 奥義発動カウント変動量-を無効、
-                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
                 // 自分の最初の攻撃前に奥義発動カウント-1、
                 UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
                 new UnitAppliesSkillEffectsPerAttack(
@@ -928,7 +1036,7 @@
         new SkillEffectNode(
             new IfNode(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
                 new GrantsAllStatsPlusNToUnitDuringCombatNode(new MultTruncNode(UNITS_SPD_AT_START_OF_COMBAT_NODE, 0.15)),
-                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(new MultNode(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 30)
                 ),
@@ -1191,7 +1299,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
             GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
-            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+            NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
         )
     ));
@@ -1257,7 +1365,7 @@
             new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
                 new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
-                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
                 UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
             )
         )
@@ -1270,7 +1378,7 @@
             new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE,
                 new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
-                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS,
+                NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
             )
         )
     );

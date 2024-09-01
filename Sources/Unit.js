@@ -2293,6 +2293,13 @@ class Unit extends BattleMapElement {
 
     /// すり抜けを発動可能ならtrue、そうでなければfalseを返します。
     canActivatePass() {
+        let env = new NodeEnv().setUnitManager(g_appData).setTarget(this).setSkillOwner(this);
+        // TODO: ログの出し方を考える
+        // env.setName('すり抜け').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('すり抜け');
+        if (UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS.evaluateSomeWithUnit(this, env)) {
+            return true;
+        }
         for (let skillId of this.enumerateSkills()) {
             if (CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.has(skillId)) {
                 return true;

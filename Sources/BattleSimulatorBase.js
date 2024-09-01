@@ -3782,7 +3782,13 @@ class BattleSimulatorBase {
         atkUnit.isActionDone = false;
     }
 
-    /// 戦闘のダメージを計算します。
+    /**
+     * 戦闘のダメージを計算します。
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {Tile|null} tileToAttack
+     * @param {number} damageType
+     */
     calcDamage(
         atkUnit,
         defUnit,
@@ -3791,8 +3797,8 @@ class BattleSimulatorBase {
     ) {
         this.damageCalc.clearLog();
         let result = this.damageCalc.calcDamage(atkUnit, defUnit, tileToAttack, damageType, this.data.gameMode);
-        this.damageCalc.updateUnitSpur(atkUnit, false);
-        this.damageCalc.updateUnitSpur(defUnit, false);
+        this.damageCalc.updateUnitSpur(atkUnit, false, null, damageType);
+        this.damageCalc.updateUnitSpur(defUnit, false, null, damageType);
         return result;
     }
     /**
@@ -4072,7 +4078,9 @@ class BattleSimulatorBase {
 
         // 奥義カウント、ダメージ表示
         let special = '';
-        if (unit.specialCount === 0) {
+        if (unit.special === Special.None) {
+            special = '';
+        } else if (unit.specialCount === 0) {
             let tag = getSpecialChargedImgTag();
             tag.classList.add('summary-icon');
             special = tag.outerHTML;
@@ -4155,6 +4163,7 @@ class BattleSimulatorBase {
         return unitB.isInCrossWithOffset(unitA, offset);
     }
 
+    // TODO: 使用されていない。削除検討
     updateCurrentUnitSpur() {
         this.damageCalc.updateUnitSpur(this.currentUnit);
     }
@@ -4163,6 +4172,7 @@ class BattleSimulatorBase {
         this.damageCalc.updateAllUnitSpur(calcPotentialDamage);
     }
 
+    // TODO: 削除検討。使用されていない。
     updateSpurForSpecifiedGroupUnits(groupId, calcPotentialDamage = false) {
         for (let unit of this.enumerateUnitsInSpecifiedGroup(groupId)) {
             if (!unit.isOnMap) {
@@ -4299,6 +4309,7 @@ class BattleSimulatorBase {
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
         g_appData.isCombatOccuredInCurrentTurn = false;
         g_appData.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[group] = false;
+        g_appData.globalBattleContext.numOfCombatOnCurrentTurn = 0;
 
         if (targetUnits.length === 0) {
             return;

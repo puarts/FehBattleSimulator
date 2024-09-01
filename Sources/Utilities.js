@@ -1322,6 +1322,17 @@ class IterUtil {
     static minElements(iterable, valueFunc) {
         return this.maxElements(iterable, e => -valueFunc(e));
     }
+
+    /**
+     * @template T
+     * @param {...Iterable<T>} iterables
+     * @returns {Iterable<T>}
+     */
+    static* concat(...iterables) {
+        for (const iterable of iterables) {
+            yield* iterable;
+        }
+    }
 }
 
 class GeneratorUtil {
