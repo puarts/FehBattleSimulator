@@ -1,0 +1,120 @@
+
+.summary-grid-container {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(6, 14px);
+    place-content: center;
+}
+
+.summary-grid-item {
+    font-size: 9px;
+    text-align: left;
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+}
+
+.summary-grid-container .divine-vein {
+    grid-column: 1 / 3;
+    grid-row: 1;
+    border-bottom: 1px solid #aaaaaa;
+}
+
+.summary-grid-container .hp {
+    grid-column: 3 / -1;
+    grid-row: 1;
+    border-bottom: 1px solid #aaaaaa;
+}
+
+.summary-grid-container .atk {
+    grid-column: 1 / 6;
+    grid-row: 2;
+}
+
+.summary-grid-container .spd {
+    grid-column: 6 / -1;
+    grid-row: 2;
+}
+
+.summary-grid-container .def {
+    grid-column: 1 / 6;
+    grid-row: 3;
+    border-bottom: 1px solid #aaaaaa;
+}
+
+.summary-grid-container .res {
+    grid-column: 6 / -1;
+    grid-row: 3;
+    border-bottom: 1px solid #aaaaaa;
+}
+
+.summary-grid-container .buff-or-debuff {
+    font-size: 7px
+}
+
+.summary-grid-container .status-effect {
+    font-size: 8px
+}
+
+/* Rows 4 to 6 with 1 column */
+.summary-grid-container .positive, .negative {
+    grid-column: 1 / -1;
+}
+
+.summary-grid-container .level {
+    grid-column: 1 / 3;
+    grid-row: 4;
+    border-bottom: 1px solid #aaaaaa;
+}
+
+.summary-grid-container .icons {
+    grid-column: 3 / -1;
+    grid-row: 4;
+    border-bottom: 1px solid #aaaaaa;
+}
+
+.summary-grid-container .positive {
+    grid-row: 5;
+}
+
+.summary-grid-container .negative {
+    grid-row: 6;
+}
+
+.summary-grid-item.positive img {
+    height: 12px;
+    width: 12px;
+}
+
+.summary-grid-item.negative img {
+    height: 12px;
+    width: 12px;
+}
+
+.summary-icons {
+    position: relative;
+    display: inline-flex;
+}
+
+.summary-icons img {
+    height: 14px;
+    width: 14px;
+}
+
+.summary-icons img.skill-type {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: 6px;
+    width: 6px;
+}
+
+.summary-icon {
+    height: 9px;
+    width: 9px;
+}
+
+.summary-icon-big {
+    height: 12px;
+    width: 12px;
+}

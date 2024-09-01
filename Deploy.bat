@@ -31,6 +31,13 @@ for %%n in (%copyfiles%) do (
     copy %~dp0Sources\%%n.js %destination%\%%n.js
 )
 
+echo css files
+set css_filenames=feb-battle-simulator
+set copyfiles=%css_filenames%
+for %%n in (%copyfiles%) do (
+    copy %~dp0Sources\%%n.css %destination%\%%n.css
+)
+
 rem HTML�t�@�C��
 echo html files
 set trunk_root=%~dp0..\..\trunk
