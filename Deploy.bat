@@ -32,7 +32,7 @@ for %%n in (%copyfiles%) do (
 )
 
 echo css files
-set css_filenames=feb-battle-simulator
+set css_filenames=feh-battle-simulator
 set copyfiles=%css_filenames%
 for %%n in (%copyfiles%) do (
     copy %~dp0Sources\%%n.css %destination%\%%n.css
