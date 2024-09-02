@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="css/main.css" type="text/css" />
     <link rel="stylesheet" href="css/loading.css">
     <link rel="stylesheet" href="AetherRaidTacticsBoard/Release2/feh-battle-simulator.css">
+    <link rel="stylesheet" href="feh-battle-simulator.css">
 </head>
 
 <body>
@@ -456,14 +457,6 @@
             console.log(`isLocal=${isLocal}`);
             let additionalScripts = [];
             if (isLocal) {
-                // linkタグを作成
-                let link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = 'feh-battle-simulator.css'; // 読み込むCSSファイルのパス
-
-                // headに追加してCSSを適用する
-                document.head.appendChild(link);
-
                 additionalScripts = [
                     "GlobalDefinitions_Debug.js",
                     "Utilities.js",

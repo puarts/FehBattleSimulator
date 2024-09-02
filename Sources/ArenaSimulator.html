@@ -3,6 +3,7 @@
     <title> 闘技場シミュレーター</title>
     <link rel="stylesheet" href="css/main.css?20181201" type="text/css" />
     <link rel="stylesheet" href="AetherRaidTacticsBoard/Release2/feh-battle-simulator.css">
+    <link rel="stylesheet" href="feh-battle-simulator.css">
     <script>
         const g_startTime = Date.now();
     </script>
@@ -2529,14 +2530,6 @@
             console.log(`isLocal=${isLocal}`);
             let additionalScripts = [];
             if (isLocal) {
-                // linkタグを作成
-                let link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = 'feh-battle-simulator.css'; // 読み込むCSSファイルのパス
-
-                // headに追加してCSSを適用する
-                document.head.appendChild(link);
-
                 additionalScripts = [
                     "GlobalDefinitions_Debug.js",
                     "Cell.js",
