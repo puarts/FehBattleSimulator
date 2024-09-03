@@ -29,9 +29,6 @@ function tileTypeToString(type) {
 const TileTypeOptions = [];
 for (let key in TileType) {
     let id = TileType[key];
-    if (id === TileType.Wall) {
-        continue;
-    }
     TileTypeOptions.push({
         id: id,
         text: tileTypeToString(id)
