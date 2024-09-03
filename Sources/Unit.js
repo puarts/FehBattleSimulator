@@ -5832,7 +5832,6 @@ class Unit extends BattleMapElement {
                 case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
-                case Weapon.GrimBrokkr:
                 case Weapon.HonorableBlade:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:

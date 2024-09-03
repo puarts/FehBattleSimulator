@@ -1,4 +1,22 @@
 // noinspection JSUnusedLocalSymbols
+// 魔銃ブロック
+{
+    let skillId = getNormalSkillId(Weapon.GrimBrokkr);
+    // Grants Atk+3.
+    // Enables【Canto (２)】during turns 1 through 4.
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => LTE_NODE(CURRENT_TURN_NODE, 4));
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(2));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is not adjacent to an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1), 0)),
+            // inflicts Atk/Res-6 on foe during combat and
+            new InflictsStatsMinusOnFoeDuringCombatNode(6, 0, 0, 6),
+            // unit makes a guaranteed follow-up attack.
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+    ));
+}
+
 // 鼓動の暗煙
 {
     let skillId = PassiveC.PulseSmog;

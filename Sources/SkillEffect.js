@@ -599,13 +599,14 @@ class LtNode extends CompareNode {
     }
 }
 
-// noinspection JSUnusedGlobalSymbols
 class LteNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
         return left <= right;
     }
 }
+
+const LTE_NODE = (...node) => new LteNode(...node);
 
 // noinspection JSUnusedGlobalSymbols
 class EqNode extends CompareNode {
@@ -1479,10 +1480,10 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
     }
 
     evaluate(env) {
-        let unit = env.target;
+        let unit = this._targetNode ? this._targetNode.evaluate(env) : this.getUnit(env);
         let n = this._n.evaluate(env);
         let result = env.unitManager.countAlliesWithinSpecifiedSpaces(unit, n);
-        env.debug(`${env.target.nameWithGroup}の周囲${n}マスの味方の数: ${result}`);
+        env.debug(`${unit.nameWithGroup}の周囲${n}マスの味方の数: ${result}`);
         return result;
     }
 }
@@ -3354,6 +3355,12 @@ class HasTargetEnteredCombatDuringTheCurrentTurnNode extends BoolNode {
         let result = unit.isCombatDone;
         env.debug(`${unit.nameWithGroup}はこのターン戦闘を行ったか : ${result}`);
         return result;
+    }
+}
+
+const CURRENT_TURN_NODE = new class extends NumberNode {
+    evaluate(env) {
+        return g_appData.globalBattleContext.currentTurn;
     }
 }
 
