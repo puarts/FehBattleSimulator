@@ -1,4 +1,33 @@
 // noinspection JSUnusedLocalSymbols
+// 師の授けの書
+{
+    let skillId = getNormalSkillId(Weapon.ProfessorialGuide);
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // neutralizes effects that
+            // grant "Special cooldown charge +X" to foe or
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+            // inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Allies within 2 spaces gain:
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // "Neutralizes effects that
+            // grant 'Special cooldown charge +X' to foe or
+            // inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+            // inflict 'Special cooldown charge -X' on unit during combat."
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+}
+
 // 魔銃ブロック
 {
     let skillId = getNormalSkillId(Weapon.GrimBrokkr);
