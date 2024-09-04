@@ -2737,30 +2737,6 @@ class BattleMap {
             }
         }
 
-        // 各ユニットの処理
-        for (let unit of this._units) {
-            // console.log(unit);
-            let tile = unit.placedTile;
-            let cell = table.getCell(tile.posX + this.cellOffsetX, tile.posY + this.cellOffsetY);
-            switch (unit.groupId) {
-                case UnitGroupType.Enemy:
-                    {
-                        this.__putUnitIconToCell(cell, unit, currentPhaseType);
-                        // 敵への最短距離を表示
-                        if (this.showClosestDistanceToEnemy) {
-                            tile.closestDistanceToEnemy = tile.calculateDistanceToClosestEnemyTile(unit);
-                        }
-                    }
-                    break;
-                case UnitGroupType.Ally:
-                    {
-                        this.__putUnitIconToCell(cell, unit, currentPhaseType);
-                    }
-                    break;
-            }
-        }
-
-
         const shadowCss = this.__getShadowCss();
         for (let y = 0; y < this._height; ++y) {
             for (let x = 0; x < this._width; ++x) {
@@ -2768,6 +2744,17 @@ class BattleMap {
                 let tile = this._tiles[index];
                 let cell = table.getCell(x + this.cellOffsetX, y + this.cellOffsetY);
                 this.setCellStyle(tile, cell);
+
+                let unit = tile.placedUnit;
+                if (unit) {
+                    this.__putUnitIconToCell(cell, unit, currentPhaseType);
+                    if (unit.groupId === UnitGroupType.Enemy) {
+                        // 敵への最短距離を表示
+                        if (this.showClosestDistanceToEnemy) {
+                            tile.closestDistanceToEnemy = tile.calculateDistanceToClosestEnemyTile(unit);
+                        }
+                    }
+                }
 
                 let additionalInnerText = "";
                 let isBorderEnabled = false;
@@ -2884,8 +2871,18 @@ class BattleMap {
             if (tile.hasBreakableDivineVein() ||
                 g_appData.showDivineVeinImageWithoutBreakable === true) {
                 let divineVeinTag = getDivineVeinTag(tile.divineVein);
+                divineVeinTag.style.position = 'absolute';
+                divineVeinTag.style.botttom = '0';
+                divineVeinTag.style.left = '0';
                 divineVeinTag.style.height = '40px';
                 divineVeinTag.style.width = '40px';
+                divineVeinTag.style.pointerEvents = 'none';
+                if (tile.divineVein === DivineVeinType.Ice &&
+                    tile.divineVeinGroup === UnitGroupType.Enemy &&
+                    g_appData.changeEnemyIceColor) {
+                    divineVeinTag.style.filter = 'hue-rotate(180deg)';
+                }
+
                 cell.innerText += divineVeinTag.outerHTML;
             }
         }
@@ -3072,6 +3069,6 @@ class BattleMap {
     }
 
     toImgElem(id, imagePath, additionalStyle) {
-        return "<img style='position:absolute;bottom:0;left:0;" + additionalStyle + "' class='draggable-elem' id='" + id + "' src='" + imagePath + "' width='" + this.cellWidth + "px' draggable='true' ondragstart='f_dragstart(event)' />";
+        return `<img style='position:absolute;bottom:0;left:0;${additionalStyle}' class='draggable-elem' id='${id}' src='${imagePath}' width='${this.cellWidth}px' draggable='true' ondragstart='f_dragstart(event)' />`;
     }
 }

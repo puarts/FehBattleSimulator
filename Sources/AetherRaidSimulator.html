@@ -3,7 +3,7 @@
     <title>飛空城シミュレーター</title>
     <link rel="stylesheet" href="css/main.css?20181201" type="text/css" />
     <link rel="stylesheet" href="css/loading.css">
-    <link rel="stylesheet" href="AetherRaidTacticsBoard/Release2/feh-battle-simulator.css">
+    <link rel="stylesheet" href="feh-battle-simulator.css">
     <script>
         const g_startTime = Date.now();
     </script>
@@ -967,11 +967,16 @@
                            @change="onDivineVeinImageVisibilityChanged"><label class="normal"
                                                                                for="showDivineVeinImage">破壊可能な天脈以外の画像表示</label>
                     <br />
+                    <input id="onChangeEnemyIceColor" type="checkbox"
+                           v-model="changeEnemyIceColor"
+                           @change="onChangeEnemyIceColor"><label class="normal"
+                                                                  for="showDivineVeinImage">敵の天脈・氷の色をかえる</label>
+                    <br/>
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
                     <br />
                     <input id="isBgImageEnabled" type="checkbox" v-model="map.isBackgroundImageEnabled"
                         @change="backgroundImageEnabledChanged"><label class="normal"
-                        for="isBgImageEnabled">マップの背景画像を有効にする</label>
+                        for="isBgImageEnabled"></label>
                     <br />
                 </fieldset>
                 <fieldset>
@@ -2589,14 +2594,6 @@
             console.log(`isLocal=${isLocal}`);
             let additionalScripts = [];
             if (isLocal) {
-                // linkタグを作成
-                let link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = 'feh-battle-simulator.css'; // 読み込むCSSファイルのパス
-
-                // headに追加してCSSを適用する
-                document.head.appendChild(link);
-
                 additionalScripts = [
                     "GlobalDefinitions_Debug.js",
                     "Cell.js",
@@ -2607,6 +2604,7 @@
                     "Skill.js",
                     "SkillEffect.js",
                     "SkillImpl.js",
+                    "SkillImpl202408.js",
                     "BattleMapElement.js",
                     "Tile.js",
                     "Structures.js",
@@ -2640,6 +2638,14 @@
                     "SampleSkillInfos.js",
                     "SampleHeroInfos.js",
                 ];
+            } else {
+                // linkタグを作成
+                let link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = './AetherRaidTacticsBoard/Release2/feh-battle-simulator.css'; // 読み込むCSSファイルのパス
+
+                // headに追加してCSSを適用する
+                document.head.appendChild(link);
             }
             const startTime = Date.now();
             loadScripts(additionalScripts, () => {

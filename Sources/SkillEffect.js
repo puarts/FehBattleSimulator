@@ -599,13 +599,14 @@ class LtNode extends CompareNode {
     }
 }
 
-// noinspection JSUnusedGlobalSymbols
 class LteNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
         return left <= right;
     }
 }
+
+const LTE_NODE = (...node) => new LteNode(...node);
 
 // noinspection JSUnusedGlobalSymbols
 class EqNode extends CompareNode {
@@ -1479,10 +1480,10 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
     }
 
     evaluate(env) {
-        let unit = env.target;
+        let unit = this._targetNode ? this._targetNode.evaluate(env) : this.getUnit(env);
         let n = this._n.evaluate(env);
         let result = env.unitManager.countAlliesWithinSpecifiedSpaces(unit, n);
-        env.debug(`${env.target.nameWithGroup}の周囲${n}マスの味方の数: ${result}`);
+        env.debug(`${unit.nameWithGroup}の周囲${n}マスの味方の数: ${result}`);
         return result;
     }
 }
@@ -3357,6 +3358,12 @@ class HasTargetEnteredCombatDuringTheCurrentTurnNode extends BoolNode {
     }
 }
 
+const CURRENT_TURN_NODE = new class extends NumberNode {
+    evaluate(env) {
+        return g_appData.globalBattleContext.currentTurn;
+    }
+}
+
 class FoesMoveNode extends NumberNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
@@ -4401,7 +4408,7 @@ const WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS = new SkillEffectHoo
 const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
 
 /**
- * 攻撃開始時
+ * 行動後or再移動後
  * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>} */
 const AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS = new SkillEffectHooks();
 

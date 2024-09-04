@@ -2632,9 +2632,6 @@ class Unit extends BattleMapElement {
         let env = new NodeEnv().setTarget(this).setSkillOwner(this);
         env.setName('行動後or再移動後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
-
-        // 同時タイミングに付与された天脈を消滅させる
-        g_appData.map.applyReservedDivineVein();
     }
 
     applyAllBuff(amount) {
@@ -5832,7 +5829,6 @@ class Unit extends BattleMapElement {
                 case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
-                case Weapon.GrimBrokkr:
                 case Weapon.HonorableBlade:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:

@@ -1003,7 +1003,7 @@ function getEvalResAdd(unit) {
     let stats = AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(unit, env);
     value += stats[STATUS_INDEX.Res];
     for (let skillId of unit.enumerateSkills()) {
-        value = EVAL_RES_ADD_MAP.get(skillId);
+        value += EVAL_RES_ADD_MAP.get(skillId) ?? 0;
         value += getSkillFunc(skillId, evalResAddFuncMap)?.call(this, unit) ?? 0;
     }
     return value;
