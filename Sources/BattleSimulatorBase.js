@@ -809,6 +809,11 @@ class BattleSimulatorBase {
             onDivineVeinImageVisibilityChanged() {
                 updateMap();
             },
+            onChangeEnemyIceColor() {
+                let writer = new CookieWriter();
+                writer.write('change_enemy_ice_color', g_appData.changeEnemyIceColor);
+                updateMap();
+            },
         };
 
         if (additionalMethods != null) {

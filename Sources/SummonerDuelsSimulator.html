@@ -1035,6 +1035,11 @@
                            @change="onDivineVeinImageVisibilityChanged"><label class="normal"
                                                                                for="showDivineVeinImage">破壊可能な天脈以外の画像表示</label>
                     <br />
+                    <input id="onChangeEnemyIceColor" type="checkbox"
+                           v-model="changeEnemyIceColor"
+                           @change="onChangeEnemyIceColor"><label class="normal"
+                                                                  for="showDivineVeinImage">敵の天脈・氷の色をかえる</label>
+                    <br/>
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
                     <br />
                     <input id="isBgImageEnabled" type="checkbox" v-model="map.isBackgroundImageEnabled"

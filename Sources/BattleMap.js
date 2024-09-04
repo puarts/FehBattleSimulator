@@ -2877,6 +2877,11 @@ class BattleMap {
                 divineVeinTag.style.height = '40px';
                 divineVeinTag.style.width = '40px';
                 divineVeinTag.style.pointerEvents = 'none';
+                if (tile.divineVein === DivineVeinType.Ice &&
+                    tile.divineVeinGroup === UnitGroupType.Enemy &&
+                    g_appData.changeEnemyIceColor) {
+                    divineVeinTag.style.filter = 'hue-rotate(180deg)';
+                }
 
                 cell.innerText += divineVeinTag.outerHTML;
             }

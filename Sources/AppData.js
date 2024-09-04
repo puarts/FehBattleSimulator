@@ -263,6 +263,7 @@ class AppData extends UnitManager {
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;
         this.showDivineVeinImageWithoutBreakable = true;
+        this.changeEnemyIceColor = new CookieWriter().read('change_enemy_ice_color') ?? false;
 
         this.isEnemyActionTriggered = true;
         this.isAutoLoadTurnSettingEnabled = false;
