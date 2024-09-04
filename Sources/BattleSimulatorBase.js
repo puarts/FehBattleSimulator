@@ -3761,6 +3761,8 @@ class BattleSimulatorBase {
         let cantoActivated = this.__activateCantoIfPossible(atkUnit);
         if (!cantoActivated) {
             atkUnit.applyEndActionSkills();
+            // 同時タイミングに付与された天脈を消滅させる
+            g_appData.map.applyReservedDivineVein();
         }
 
         // 追跡対象の更新
@@ -6513,6 +6515,8 @@ class BattleSimulatorBase {
                 env.debug(`${unit.nameWithGroup}は行動を自ら終了`);
                 unit.endAction();
                 unit.applyEndActionSkills();
+                // 同時タイミングに付与された天脈を消滅させる
+                g_appData.map.applyReservedDivineVein();
                 return true;
             }
             for (let skillId of unit.enumerateSkills()) {
@@ -6521,6 +6525,8 @@ class BattleSimulatorBase {
                 if (result && !unit.isActionDone) {
                     unit.endAction();
                     unit.applyEndActionSkills();
+                    // 同時タイミングに付与された天脈を消滅させる
+                    g_appData.map.applyReservedDivineVein();
                     return true;
                 }
             }
@@ -6724,6 +6730,8 @@ class BattleSimulatorBase {
             self.endUnitActionAndGainPhaseIfPossible(unit);
             unit.deactivateCanto();
             unit.applyEndActionSkills();
+            // 同時タイミングに付与された天脈を消滅させる
+            g_appData.map.applyReservedDivineVein();
         }, serial);
     }
 
@@ -6842,6 +6850,8 @@ class BattleSimulatorBase {
                 // 移動時にトラップ発動した場合は行動終了している
                 // その場合でも天脈は発動する
                 unit.applyEndActionSkills();
+                // 同時タイミングに付与された天脈を消滅させる
+                g_appData.map.applyReservedDivineVein();
                 return;
             }
 
@@ -6901,6 +6911,8 @@ class BattleSimulatorBase {
                 // 移動時にトラップ発動した場合は行動終了している
                 // その場合でも天脈は発動する
                 unit.applyEndActionSkills();
+                // 同時タイミングに付与された天脈を消滅させる
+                g_appData.map.applyReservedDivineVein();
                 return;
             }
 
@@ -7173,6 +7185,8 @@ class BattleSimulatorBase {
                 self.endUnitActionAndGainPhaseIfPossible(unit);
                 unit.deactivateCanto();
                 unit.applyEndActionSkills();
+                // 同時タイミングに付与された天脈を消滅させる
+                g_appData.map.applyReservedDivineVein();
             }
 
             if (unit.isActionDone) {
@@ -9711,6 +9725,8 @@ class BattleSimulatorBase {
                 let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
             }
+            // 同時タイミングに付与された天脈を消滅させる
+            g_appData.map.applyReservedDivineVein();
 
             let env = new BattleSimulatorBaseEnv(this, supporterUnit);
             env.setName('奥義以外の再行動時[補助]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
@@ -9721,6 +9737,9 @@ class BattleSimulatorBase {
             if (!activated) {
                 supporterUnit.applyEndActionSkills();
             }
+
+            // 同時タイミングに付与された天脈を消滅させる
+            g_appData.map.applyReservedDivineVein();
 
             executeTrapIfPossible(supporterUnit, true);
             executeTrapIfPossible(targetUnit, false);
@@ -10109,6 +10128,8 @@ class BattleSimulatorBase {
         let activated = this.__activateCantoIfPossible(unit);
         if (!activated) {
             unit.applyEndActionSkills();
+            // 同時タイミングに付与された天脈を消滅させる
+            g_appData.map.applyReservedDivineVein();
         }
 
         this.__goToNextPhaseIfPossible(unit.groupId);
