@@ -3591,7 +3591,7 @@
                 // 戦闘中、攻撃、速さ、守備、魔防+4、
                 targetUnit.addAllSpur(4);
                 // さらに、攻撃、速さ、守備、魔防が自分を中心とした縦3列と横3列にいる味方の数だけ増加、
-                let amount = this.__countUnit(targetUnit.groupId, u => u.isInCrossWithOffset(targetUnit, 1));
+                let amount = this.__countAllyUnitsInCrossWithOffset(targetUnit, 1);
                 targetUnit.addAllSpur(amount);
                 // 自身の攻撃、速さの弱化を無効、
                 targetUnit.battleContext.invalidateDebuffs(true, true, false, false);
