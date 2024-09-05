@@ -862,14 +862,6 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                 }
                 break;
-            case Weapon.InnerWellspring:
-                if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
-                    if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
-                        skillOwner.reserveToReduceSpecialCount(1);
-                    }
-                }
-                break;
             case PassiveC.OpenedDomain: {
                 // 専用スキルでヒーローズ出典が確定なので不要だが念のため
                 let ownerOrigin = skillOwner.heroInfo.origin.replace("暗黒竜と光の剣", "紋章の謎");

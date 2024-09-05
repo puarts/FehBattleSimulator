@@ -583,13 +583,14 @@ class GtNode extends CompareNode {
 
 const GT_NODE = (a, b) => new GtNode(a, b);
 
-// noinspection JSUnusedGlobalSymbols
 class GteNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
         return left >= right;
     }
 }
+
+const GTE_NODE = (a, b) => new GteNode(a, b);
 
 // noinspection JSUnusedGlobalSymbols
 class LtNode extends CompareNode {
@@ -2411,7 +2412,7 @@ class UnitsEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
 
     getStats(env) {
         let unit = this.getUnit(env);
-        return unit.getStatusesInCombat(env.getFoeDuringCombatOf(unit));
+        return unit.getEvalStatusesInCombat(env.getFoeDuringCombatOf(unit));
     }
 }
 
@@ -2841,21 +2842,44 @@ const NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE = new NeutralizesFoes
 /**
  * number of【Bonus】effects active on unit, excluding stat bonuses + number of【Penalty】effects active on foe, excluding stat penalties
  */
-const NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
+const NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
         return env.unitDuringCombat.getPositiveStatusEffects().length + env.foeDuringCombat.getNegativeStatusEffects().length;
     }
 }();
 
-const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
+const NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
-        return env.unitDuringCombat.getPositiveStatusEffects().length + env.foeDuringCombat.getPositiveStatusEffects().length;
+        let unit = env.unitDuringCombat;
+        let result = unit.getPositiveStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の有利な状態の数: ${result}`);
+        return result;
     }
 }();
 
-const NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
+const NUM_OF_PENALTY_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
-        return env.foeDuringCombat.getNegativeStatusEffects().length;
+        let unit = env.unitDuringCombat;
+        let result = unit.getNegativeStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の不利な状態の数: ${result}`);
+        return result;
+    }
+}();
+
+const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
+    evaluate(env) {
+        let result = env.unitDuringCombat.getPositiveStatusEffects().length + env.foeDuringCombat.getPositiveStatusEffects().length;
+        env.env.debug(`自分有利な状態と相手の有利な状態の数: ${result}`);
+        return result;
+    }
+}();
+
+const NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
+    evaluate(env) {
+        let unit = env.foeDuringCombat;
+        let result = unit.getNegativeStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の不利な状態の数: ${result}`);
+        return result;
     }
 }();
 
@@ -2951,9 +2975,23 @@ class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
 
 /**
  * reduces damage from foe's first attack by X% during combat
- * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)
  */
 class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends ApplyingNumberNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.addDamageReductionRatioOfFirstAttacks(percentage / 100);
+        unit.battleContext.addDamageReductionRatioOfFirstAttack(percentage / 100);
+        let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttack();
+        env.debug(`${unit.nameWithGroup}は最初に受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+    }
+}
+
+/**
+ * reduces damage from foe's first attack by X% during combat
+ * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)
+ */
+class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode extends ApplyingNumberNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let percentage = this.evaluateChildren(env);
@@ -2966,7 +3004,7 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends Applyin
 /**
  * reduces damage from foe's first attack by X during combat
  */
-class ReducesDamageFromFoesFirstAttackByNDuringCombatNode extends ApplyingNumberNode {
+class ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode extends ApplyingNumberNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let n = this.evaluateChildren(env);
@@ -3174,9 +3212,8 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack 
         Object.assign(this.prototype, GetUnitMixin);
     }
 
-    constructor(n, targetNode = null) {
+    constructor(n) {
         super(n);
-        this._targetNode = targetNode;
     }
 
     evaluate(env) {
@@ -3199,6 +3236,27 @@ class GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNod
     extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+class CanTargetActivateNonSpecialMiracleNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.canActivateNonSpecialMiracle = true;
+        let threshold = this.evaluateChildren(env);
+        unit.battleContext.nonSpecialMiracleHpPercentageThreshold = threshold;
+        env.debug(`HP${threshold}%以上の時${unit.nameWithGroup}は奥義以外の祈りを発動可能`);
     }
 }
 
@@ -3361,6 +3419,40 @@ class HasTargetEnteredCombatDuringTheCurrentTurnNode extends BoolNode {
 const CURRENT_TURN_NODE = new class extends NumberNode {
     evaluate(env) {
         return g_appData.globalBattleContext.currentTurn;
+    }
+}
+
+const NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE = new class extends PositiveNumberNode {
+    evaluate(env) {
+        let result = Unit.calcAttackerMoveDistance(env.unitDuringCombat, env.foeDuringCombat);
+        env.debug(`攻撃した側が動いた距離は${result}`);
+        return result;
+    }
+}();
+
+class TargetsSpecialCountAtStartOfTurnNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.statusEvalUnit.specialCount;
+        env.debug(`${unit.nameWithGroup}のターン開始時の奥義発動カウント: ${result}`);
+        return result;
+    }
+}
+
+class TargetsMaxSpecialCountNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.maxSpecialCount;
+        env.debug(`${unit.nameWithGroup}の奥義発動カウントの最大値: ${result}`);
+        return result;
     }
 }
 
@@ -4076,6 +4168,23 @@ class InflictsStatusEffectsAtStartOfTurnNode extends GrantsStatusEffectsAtStartO
 }
 
 class InflictsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAfterCombatNode {
+}
+
+class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.reserveToReduceSpecialCount(n);
+        env.debug(`${unit.nameWithGroup}は奥義発動カウント-${n}を予約`);
+        return super.evaluate(env);
+    }
+}
+
+class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
 /**

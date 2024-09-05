@@ -1,4 +1,143 @@
 // noinspection JSUnusedLocalSymbols
+// 悠遠のブレス
+{
+    let skillId = getNormalSkillId(Weapon.RemoteBreath);
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against dragon foes.
+    // If foe's Range = 2,
+    // calculates damage using the lower of foe's Def or Res.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+5 to unit during combat,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and also,
+            // if unit's attack can trigger their Special,
+            IF_NODE(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                // grants Special cooldown count-1 to unit before unit's first attack during combat,
+                new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+                // and if foe's attack can trigger their Special and unit's Res ≥ foe's Res+5,
+                IF_NODE(CAN_FOES_ATTACK_TRIGGER_SPECIAL_NODE,
+                    new AppliesSkillEffectsAfterStatusFixedNode(
+                        IF_NODE(GTE_NODE(
+                                UNITS_EVAL_RES_DURING_COMBAT_NODE,
+                                ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5)),
+                            // inflicts Special cooldown count+1 on foe before foe's first attack during combat.
+                            // (Cannot exceed the foe's maximum Special cooldown.)
+                            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                        ),
+                    ),
+                ),
+            ),
+        )
+    ));
+}
+
+// 内より溢れる魔力
+{
+    let skillId = getNormalSkillId(Weapon.InnerWellspring);
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants【Null Follow-Up】to unit for 1 turn,
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.NullFollowUp),
+            // and also,
+            // if Special cooldown count is at its maximum value,
+            IF_NODE(EQ_NODE(new TargetsSpecialCountAtStartOfTurnNode(), new TargetsMaxSpecialCountNode()),
+                // grants Special cooldown count-1.
+                new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+            )
+        )
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit during combat and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // if Special triggers before or during combat,
+            IF_NODE(IS_UNITS_SPECIAL_TRIGGERED,
+                // grants Special cooldown count-1 after combat.
+                new GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode(1),
+            ),
+        ),
+    ));
+}
+
+// ゲイルドリヴル
+{
+    let skillId = getNormalSkillId(Weapon.Geirdriful);
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against armored foes.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            new NumThatIsNode(
+                // grants Atk/Spd/Def/Res+X to unit during combat
+                new GrantsAllStatsPlusNToTargetDuringCombatNode(READ_NUM_NODE),
+                // (X = number of【Bonus】and【Penalty】 effects active on unit × 2,
+                // + 5; excludes stat bonuses and stat penalties),
+                ADD_NODE(MULT_NODE(
+                    AND_NODE(NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE,
+                        NUM_OF_PENALTY_ON_UNIT_EXCLUDING_STAT_NODE), 2), 5),
+            ),
+            // reduces damage from foe's first attack during combat by 40%,
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(40),
+            // and also,
+            // if【Bonus】is active on unit,
+            IF_NODE(IS_BONUS_ACTIVE_ON_UNIT_NODE,
+                // grants Special cooldown charge +1 per attack during combat. (Only highest value applied. Does not stack.)
+                GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+            ),
+        ),
+    ));
+}
+
+// 聖日ティルフィング
+{
+    let skillId = getNormalSkillId(Weapon.HolytideTyrfing);
+    // Enables【Canto (２)】.
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(2));
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit or foe initiates combat after moving to a different space,
+        IF_NODE(NOT_NODE(EQ_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 0)),
+            // grants Atk/Spd/Def/Res+5 to unit during combat and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new NumThatIsNode(
+                    // deals damage = X × 10% of foe's Def
+                    new UnitDealsDamageExcludingAoeSpecialsNode(
+                        MULT_TRUNC_NODE(READ_NUM_NODE, MULT_TRUNC_NODE(0.1, FOES_EVAL_DEF_DURING_COMBAT_NODE))
+                    ),
+                    // (X = number of spaces from start position to end position of whoever initiated combat,
+                    // max 4; excluding area-of-effect Specials),
+                    new EnsureMaxNode(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 4),
+                ),
+            ),
+            // and also,
+            // if unit's HP ≥ 25% at start of combat,
+            // unit’s HP > 1,
+            // and foe would reduce unit’s HP to 0,
+            // unit survives with 1 HP.
+            // (Once per combat. Does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0.)
+            IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new CanTargetActivateNonSpecialMiracleNode(0),
+            )
+        ),
+    ));
+}
+
 // 師の授けの書
 {
     let skillId = getNormalSkillId(Weapon.ProfessorialGuide);
@@ -112,7 +251,7 @@
             // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
             // and reduces damage from foe's first attack by 7 during combat
-            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(7),
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
         ),
     ));
@@ -146,7 +285,7 @@
                 new EnsureMaxNode(ADD_NODE(5, MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)), 14),
             ),
             // reduces damage from foe's first attack by 30% ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(30),
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(30),
             // and neutralizes effects that grant "Special cooldown charge +X" to foe or inflict "Special cooldown charge -X" on unit during combat.
             NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
             NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
@@ -261,7 +400,7 @@
                         new EnsureMaxNode(MULT_NODE(READ_NUM_NODE, 5), 25)
                     ),
                     // reduces damage from foe's first attack by X × 3 (max 15) during combat
-                    new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(
+                    new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(
                         new EnsureMaxNode(MULT_NODE(READ_NUM_NODE, 3), 15)
                     ),
                 ),
@@ -774,7 +913,7 @@
                         25
                     ),
                 ),
-                new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(
+                new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(
                     new EnsureMaxNode(
                         new MultNode(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 3),
                         15
@@ -782,7 +921,7 @@
                 ),
             ),
             new IfNode(DOES_UNIT_INITIATE_COMBAT_NODE,
-                new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(80),
+                new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(80),
             )
         )
     );
@@ -1049,7 +1188,7 @@
                     new UnitDealsDamageExcludingAoeSpecialsNode(
                         new EnsureMinMaxNode(new AddNode(UNITS_RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
                     ),
-                    new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(
+                    new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(
                         new EnsureMinMaxNode(new AddNode(UNITS_RES_AT_START_OF_COMBAT_NODE, -30), 0, 10)
                     ),
                     UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
@@ -1168,7 +1307,7 @@
             // unit deals +7 damage (excluding area-of-effect Specials),
             new UnitDealsDamageExcludingAoeSpecialsNode(7),
             // and reduces damage from foe's first attack by 7 during combat
-            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(7),
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
             // and restores 7 HP to unit after combat.
             RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
@@ -1185,7 +1324,7 @@
             // ally deals +7 damage (excluding area-of-effect Specials), and
             new TargetDealsDamageExcludingAoeSpecialsNode(7),
             // reduces damage from foe's first attack by 7 during their combat
-            new ReducesDamageFromFoesFirstAttackByNDuringCombatNode(7),
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).".
         )
     ));
@@ -1262,7 +1401,7 @@
             // If unit initiates combat,
             IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
                 // reduces damage from foe's first attack by 50% during combat
-                new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(50),
+                new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(50),
                 // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
                 // and also,
                 // if foe's attack can trigger foe's Special,

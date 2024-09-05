@@ -432,8 +432,11 @@ class BattleContext {
 
         this.#damagesAfterBeginningOfCombatNotStack = [0]; // 最大値を取る時のために番兵(0)を入れる
 
-        // 奥義以外の祈り無効
+        // 相手の奥義以外の祈り無効
         this.neutralizesNonSpecialMiracle = false;
+
+        // 奥義以外の祈りが無効化されているかどうか
+        this.isNonSpecialMiracleNeutralized = false;
 
         // 神速追撃
         this.potentRatios = [];

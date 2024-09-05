@@ -744,11 +744,6 @@ class PostCombatSkillHander {
                         targetUnit.reserveTakeDamage(5);
                     }
                     break;
-                case Weapon.InnerWellspring:
-                    if (targetUnit.battleContext.isSpecialActivated) {
-                        targetUnit.reserveToReduceSpecialCount(1);
-                    }
-                    break;
                 case PassiveB.DeadlyBalancePlus:
                 case PassiveB.OgiNoRasen3:
                 case PassiveB.SpecialSpiral4:

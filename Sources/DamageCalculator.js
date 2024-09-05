@@ -1282,6 +1282,7 @@ class DamageCalculator {
             }
 
             // 祈り処理
+            // TODO: リファクタリング
             totalDamage = this.#activateMiracle(atkUnit, defUnit, currentDamage, totalDamage);
 
             if (!isDefenderSpecialActivated) {
@@ -1800,6 +1801,11 @@ class DamageCalculator {
      * @return {boolean}
      */
     __canActivateNonSpecialMiracle(unit, atkUnit) {
+        if (unit.battleContext.isNonSpecialMiracleActivated ||
+            unit.battleContext.isNonSpecialMiracleNeutralized ||
+            atkUnit.battleContext.neutralizesNonSpecialMiracle) {
+            return false;
+        }
         if (unit.battleContext.canActivateNonSpecialMiracle) {
             let threshold = unit.battleContext.nonSpecialMiracleHpPercentageThreshold;
             if (threshold !== Number.MAX_SAFE_INTEGER) {

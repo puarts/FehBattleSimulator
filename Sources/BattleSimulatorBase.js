@@ -7071,7 +7071,6 @@ class BattleSimulatorBase {
                 case PassiveB.SoaringWings:
                 case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:
-                case Weapon.HolytideTyrfing:
                 case Weapon.FloridCanePlus:
                 case Weapon.ShadowyQuill:
                 case Weapon.FloridKnifePlus:
