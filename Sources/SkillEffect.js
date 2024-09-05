@@ -4497,6 +4497,11 @@ const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
 const AFTER_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
+ * 戦闘後(死んでも発動)
+ * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
+const AFTER_COMBAT_NEVERTHELESS_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘ステータス決定後のバフ
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffectHooks();

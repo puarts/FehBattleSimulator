@@ -825,7 +825,7 @@
     ));
 
     // After combat,
-    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // if unit's Special triggered,
         // grants Atk/Def/Res【Great Talent】+4 to unit and
         IF_NODE(IS_UNITS_SPECIAL_TRIGGERED,
@@ -833,12 +833,12 @@
                 StatsNode.makeStatsNodeFrom(4, 0, 4, 4),
                 StatsNode.makeStatsNodeFrom(20, 20, 20, 20),
             ),
-        ),
-        // Atk/Def/Res【Great Talent】+2 to allies within 3 rows or 3 columns centered on unit.
-        new ForEachAllyNode(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
-            new GrantsGreatTalentsPlusToTargetNode(
-                StatsNode.makeStatsNodeFrom(2, 0, 2, 2),
-                StatsNode.makeStatsNodeFrom(10, 10, 10, 10),
+            // Atk/Def/Res【Great Talent】+2 to allies within 3 rows or 3 columns centered on unit.
+            new ForEachAllyNode(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+                new GrantsGreatTalentsPlusToTargetNode(
+                    StatsNode.makeStatsNodeFrom(2, 0, 2, 2),
+                    StatsNode.makeStatsNodeFrom(10, 10, 10, 10),
+                ),
             ),
         ),
     ));

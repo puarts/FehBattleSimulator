@@ -1333,6 +1333,9 @@ class PostCombatSkillHander {
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
             attackUnit.reserveHeal(99);
         }
+        let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit);
+        env.setName('戦闘後(死んでも発動)').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        AFTER_COMBAT_NEVERTHELESS_HOOKS.evaluateWithUnit(attackUnit, env);
         for (let skillId of attackUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap);
             func?.call(this, attackUnit, attackTargetUnit, attackCount);
