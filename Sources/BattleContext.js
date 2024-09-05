@@ -256,6 +256,11 @@ class BattleContext {
         // 敵の奥義による攻撃のダメージ-N(範囲奥義を除く)
         this.damageReductionValueOfSpecialAttack = 0;
 
+        // ダメージ軽減の奥義(大盾など。祈りは含まない)
+        this.canDamageReductionSpecialTriggerTwice = false;
+        // 奥義でのダメージ軽減後のダメージ減算
+        this.damageReductionValueAfterSpecialTriggerTwice = 0;
+
         // 攻撃ごとに変化する可能性がある敵の奥義による攻撃のダメージ-N(範囲奥義を除く)
         this.damageReductionValueOfSpecialAttackPerAttack = 0;
 

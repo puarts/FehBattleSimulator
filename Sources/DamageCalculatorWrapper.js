@@ -6212,9 +6212,6 @@ class DamageCalculatorWrapper {
                 }
             }
         }
-        this._applySkillEffectForUnitFuncDict[PassiveB.HardyFighter3] = (targetUnit) => {
-            targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.SpendyScimitar] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 let amount = targetUnit.dragonflower >= 1 ? 6 : 4;

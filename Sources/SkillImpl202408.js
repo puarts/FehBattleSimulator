@@ -1,4 +1,32 @@
 // noinspection JSUnusedLocalSymbols
+// 盾壁隊形3
+{
+    let skillId = PassiveB.HardyFighter3;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At the start of turn 1,
+        IF_NODE(EQ_NODE(CURRENT_TURN_NODE, 1),
+            // if foe's attack can trigger unit's Special,
+            IF_NODE(new CanTargetsFoesAttackTriggerTargetsSpecialNode(),
+                // grants Special cooldown count-2.
+                new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(2),
+            )
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Neutralizes effects that guarantee foe's follow-up attacks during combat.
+        UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+        // If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect,
+        // Special triggers twice,
+        // then reduces damage by 5.
+        new TargetsSpecialTriggersTwiceThenReducesDamageByNNode(5),
+        // (Example: if Special has the "reduces damage by 50%" effect and no other damage reduction effects trigger,
+        // reduces initial damage by 50%,
+        // then reduces remaining damage by 50% for a total damage reduction of 75%. Remaining damage is then reduced further by 5.)
+        // Each Special trigger is calculated as a separate activation.
+    ));
+}
+
 // 悠遠のブレス
 {
     let skillId = getNormalSkillId(Weapon.RemoteBreath);

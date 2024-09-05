@@ -2031,6 +2031,22 @@ const CAN_FOES_ATTACK_TRIGGER_SPECIAL_NODE = new class extends CanTargetsAttackT
 }();
 
 /**
+ * If foe's attack triggers unit's Special
+ */
+class CanTargetsFoesAttackTriggerTargetsSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasDefenseSpecial();
+        env.debug(`${unit.nameWithGroup}が攻撃を受ける際に発動する奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
+        return result;
+    }
+}
+
+/**
  * @abstract
  */
 class ApplyingNumberNode extends SkillEffectNode {
@@ -2659,8 +2675,9 @@ const NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE = new
  */
 const UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
-        // 敵の絶対追撃を無効
-        env.unitDuringCombat.battleContext.invalidatesAbsoluteFollowupAttack = true;
+        let unit = env.unitDuringCombat;
+        unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+        env.debug(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
     }
 }
 
@@ -3278,6 +3295,33 @@ class EffectiveAgainstNode extends BoolNode {
             env.debug(`${unit.nameWithGroup}は相手に対して特攻`);
         } else {
             env.debug(`${foe.nameWithGroup}は特攻無効`);
+        }
+    }
+}
+
+/**
+ * If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect, Special triggers twice, then reduces damage by N.
+ */
+class TargetsSpecialTriggersTwiceThenReducesDamageByNNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.canDamageReductionSpecialTriggerTwice = true;
+        let n = this.evaluateChildren(env)[0];
+        env.debug(`${unit.nameWithGroup}はダメージ軽減奥義を複製発動`);
+        if (n > 0) {
+            unit.battleContext.damageReductionValueAfterSpecialTriggerTwice += n;
+            env.debug(`${unit.nameWithGroup}はその後、受けるダメージ-${n}: => ${unit.battleContext.damageReductionValueAfterSpecialTriggerTwice}`);
         }
     }
 }

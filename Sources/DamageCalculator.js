@@ -1477,7 +1477,7 @@ class DamageCalculator {
         if (activatesDefenderSpecial && !preventedDefenderSpecial) {
             if (defUnit.battleContext.damageReductionRatioBySpecial > 0) {
                 damageReductionRatiosByDefenderSpecial.push(defUnit.battleContext.damageReductionRatioBySpecial);
-                if (defUnit.passiveB === PassiveB.HardyFighter3) {
+                if (defUnit.battleContext.canDamageReductionSpecialTriggerTwice) {
                     damageReductionRatiosByDefenderSpecial.push(defUnit.battleContext.damageReductionRatioBySpecial);
                 }
                 isDefenderSpecialActivated = true;
@@ -1487,9 +1487,9 @@ class DamageCalculator {
             if (isDefenderSpecialActivated) {
                 defUnit.battleContext.isSpecialActivated = true;
                 defUnit.battleContext.specialActivatedCount++;
+                damageReductionValues.push(defUnit.battleContext.damageReductionValueAfterSpecialTriggerTwice);
                 // ダメージ軽減
-                if (defUnit.passiveB === PassiveB.TateNoKodo3 ||
-                    defUnit.passiveB === PassiveB.HardyFighter3) {
+                if (defUnit.passiveB === PassiveB.TateNoKodo3) {
                     damageReductionValues.push(5);
                 } else if (defUnit.weapon === Weapon.MoonlightStone) {
                     if (atkUnit.battleContext.initiatesCombat ||
