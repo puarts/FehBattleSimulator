@@ -1,4 +1,4 @@
-
+/* Summary */
 .summary-grid-container {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -117,4 +117,30 @@
 .summary-icon-big {
     height: 12px;
     width: 12px;
+}
+
+/* Map */
+.map-divine-vein-img {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 40px;
+    width: 40px;
+    pointer-events: none;
+}
+
+.map-divine-vein-turns {
+    position: absolute;
+    display: flex;
+    justify-content: center; /* 水平方向の中央揃え */
+    align-items: center;     /* 垂直方向の中央揃え */
+    bottom: 0;
+    left: 0;
+    height: 40px;
+    width: 40px;
+
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 18px;
+
+    pointer-events: none;
 }

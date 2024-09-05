@@ -118,6 +118,8 @@ class Tile extends BattleMapElement {
         this.reservedDivineVeinSet = new Set();
         this.divineVeinGroup = null;
         this.reservedDivineVeinGroup = null;
+        this.divineVeinTurns = 0;
+        this.reservedDivineVeinTurns = 0;
 
         /** @type {Tile} */
         this.snapshot = null;
@@ -136,10 +138,11 @@ class Tile extends BattleMapElement {
     }
 
     // 天脈の予約を行う
-    reserveDivineVein(divineVein, divineVeinGroup) {
+    reserveDivineVein(divineVein, divineVeinGroup, turns = 1) {
         if (this.cannotApplyDivineVein()) return;
         this.reservedDivineVeinSet.add(divineVein);
         this.reservedDivineVeinGroup = divineVeinGroup;
+        this.reservedDivineVeinTurns = turns;
     }
 
     createSnapshot() {
@@ -902,6 +905,26 @@ class Tile extends BattleMapElement {
     removeDivineVein() {
         this.divineVein = DivineVeinType.None;
         this.divineVeinGroup = null;
+        this.divineVeinTurns = 0;
+    }
+
+    initializePerTurn(group) {
+        if (this.divineVeinGroup === group || group === null) {
+            this.divineVeinTurns--;
+            if (this.divineVeinTurns <= 0) {
+                this.divineVein = DivineVeinType.None;
+                this.divineVeinGroup = null;
+            }
+        }
+    }
+
+    resetDivineVein() {
+        this.divineVein = DivineVeinType.None;
+        this.divineVeinGroup = null;
+        this.divineVeinTurns = 0;
+        this.reservedDivineVeinSet.clear();
+        this.reservedDivineVeinGroup = null;
+        this.reservedDivineVeinTurns = 0;
     }
 }
 

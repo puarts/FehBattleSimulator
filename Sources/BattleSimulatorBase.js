@@ -2940,8 +2940,7 @@ class BattleSimulatorBase {
             loadSettings();
             // タイルの天脈をリセットする
             for (let tile of g_appData.map.enumerateTiles()) {
-                tile.divineVein = DivineVeinType.None;
-                tile.divineVeinGroup = null;
+                tile.resetDivineVein();
             }
         }
         else {
@@ -4434,10 +4433,7 @@ class BattleSimulatorBase {
             for (let x = 0; x < this.map.width; ++x) {
                 let index = y * this.map.width + x;
                 let tile = tiles[index];
-                if (tile.divineVeinGroup === group || group === null) {
-                    tile.divineVein = DivineVeinType.None;
-                    tile.divineVeinGroup = null;
-                }
+                tile.initializePerTurn(group);
             }
         }
     }

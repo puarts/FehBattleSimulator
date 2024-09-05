@@ -2466,14 +2466,17 @@ class BattleMap {
                 let [divineVein] = tile.reservedDivineVeinSet;
                 tile.divineVein = divineVein;
                 tile.divineVeinGroup = tile.reservedDivineVeinGroup;
+                tile.divineVeinTurns = tile.reservedDivineVeinTurns;
             }
             // 重複して天脈が付与されると元々の天脈も消滅する
             if (tile.reservedDivineVeinSet.size >= 2) {
                 tile.divineVein = DivineVeinType.None;
                 tile.divineVeinGroup = null;
+                tile.divineVeinTurns = 0;
             }
             tile.reservedDivineVeinSet.clear();
             tile.reservedDivineVeinGroup = null;
+            tile.reservedDivineVeinTurns = 0;
         }
     }
 
@@ -2858,8 +2861,13 @@ class BattleMap {
         }
 
         // 天脈
+        this._setDivineVeinCellStyle(tile, cell);
+    }
+
+    _setDivineVeinCellStyle(tile, cell) {
         // 味方の天脈、敵の天脈で処理を分ける
         if (tile.hasDivineVein()) {
+            // 背景色
             const alpha = "40";
             cell.borderStyle = "solid";
             if (tile.divineVeinGroup !== null && tile.divineVeinGroup === UnitGroupType.Ally) {
@@ -2868,15 +2876,11 @@ class BattleMap {
                 cell.bgColor = "#ff8800" + alpha;
             }
 
+            // 敵の天脈の色設定
             if (tile.hasBreakableDivineVein() ||
                 g_appData.showDivineVeinImageWithoutBreakable === true) {
                 let divineVeinTag = getDivineVeinTag(tile.divineVein);
-                divineVeinTag.style.position = 'absolute';
-                divineVeinTag.style.botttom = '0';
-                divineVeinTag.style.left = '0';
-                divineVeinTag.style.height = '40px';
-                divineVeinTag.style.width = '40px';
-                divineVeinTag.style.pointerEvents = 'none';
+                divineVeinTag.classList.add('map-divine-vein-img');
                 if (tile.divineVein === DivineVeinType.Ice &&
                     tile.divineVeinGroup === UnitGroupType.Enemy &&
                     g_appData.changeEnemyIceColor) {
@@ -2885,6 +2889,12 @@ class BattleMap {
 
                 cell.innerText += divineVeinTag.outerHTML;
             }
+
+            // ターン数表示
+            let divineVeinTurnsDiv = document.createElement('span');
+            divineVeinTurnsDiv.innerText = tile.divineVeinTurns;
+            divineVeinTurnsDiv.classList.add('map-divine-vein-turns');
+            cell.innerText += divineVeinTurnsDiv.outerHTML;
         }
     }
 
