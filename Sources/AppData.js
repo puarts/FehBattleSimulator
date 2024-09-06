@@ -811,19 +811,19 @@ class AppData extends UnitManager {
                     ${turns}
                 </div>
                 <div class="summary-grid-item summary-label hp">
-                  HP&nbsp;<span class="summary-figure">${unit.hp} / ${unit.maxHpWithSkills} (${Math.trunc(unit.restHpPercentageAtBeginningOfTurn)}%)</span>
+                  ${statsLabel(unit, StatusType.Hp)}&nbsp;&nbsp;<span class="summary-figure">${unit.hp} / ${unit.maxHpWithSkills} (${Math.trunc(unit.restHpPercentageAtBeginningOfTurn)}%)</span>
                 </div>
                 <div class="summary-grid-item summary-label atk">
-                  攻&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Atk)}</span>
+                  ${statsLabel(unit, StatusType.Atk)}&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Atk)}</span>
                 </div>
                 <div class="summary-grid-item summary-label spd">
-                  速&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Spd)}</span>
+                  ${statsLabel(unit, StatusType.Spd)}&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Spd)}</span>
                 </div>
                 <div class="summary-grid-item summary-label def">
-                  守&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Def)}</span>
+                  ${statsLabel(unit, StatusType.Def)}&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Def)}</span>
                 </div>
                 <div class="summary-grid-item summary-label res">
-                  魔&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Res)}</span>
+                  ${statsLabel(unit, StatusType.Res)}&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Res)}</span>
                 </div>
                 <div class="summary-grid-item summary-label level">
                     LV.${unit.level}
@@ -841,6 +841,17 @@ class AppData extends UnitManager {
                 </div>
             </div>`;
             return info;
+        }
+
+        function statsLabel(unit, statusType) {
+            let labels = ['HP', '攻', '速', '守', '魔'];
+            let fontClass = '';
+            if (unit.isAsset(statusType)) {
+                fontClass = 'summary-positive-stats';
+            } else if (unit.isFlaw(statusType)) {
+                fontClass = 'summary-negative-stats';
+            }
+            return `<span class="${fontClass}">${labels[statusType]}</span>`;
         }
 
         function statString(unit, index) {
