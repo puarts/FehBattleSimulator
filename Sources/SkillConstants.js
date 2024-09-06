@@ -1916,6 +1916,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=e32Fq5jJJa4
     // https://www.youtube.com/watch?v=lgvLstETKqI
     IceTribeAxe: 2998, // 氷の部族の雪斧
+    IlianFrostBlade: 3000, // イリアの吹雪の剣
 };
 
 const Support = {

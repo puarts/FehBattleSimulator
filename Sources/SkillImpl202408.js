@@ -1,4 +1,38 @@
 // noinspection JSUnusedLocalSymbols
+// イリアの吹雪の剣
+{
+    let skillId = Weapon.IlianFrostBlade;
+    // Accelerates Special trigger (cooldown count-1).
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants【Triangle Attack】and【Canto (１)】 to unit and allies within 2 spaces of unit for 1 turn.
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.TriangleAttack, StatusEffectType.Canto1),
+            )
+        ),
+    ));
+    
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + number of times Dragonflowers have been used on unit × 2 (max 15),
+            new NumThatIsNode(
+                new GrantsAllStatsPlusNToTargetDuringCombatNode(ADD_NODE(5, READ_NUM_NODE)),
+                new EnsureMaxNode(MULT_NODE(new NumOfTargetsDragonflowersNode(), 2), 15),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+            // and grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack).
+            new GrantsSpecialCooldownChargePlus1ToTargetPerAttackDuringCombatNode(),
+        ),
+    ));
+}
+
 // 氷の部族の雪斧
 {
     let skillId = Weapon.IceTribeAxe;
@@ -27,7 +61,7 @@
 
     FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 3 spaces of unit with "neutralizes 'effective against dragons' bonuses" active,
-        IF_NODE(AND_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE, 
+        IF_NODE(AND_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
                 new HasTargetStatusEffectNode(StatusEffectType.ShieldDragon)),
             // grants Spd/Res+5,
             new GrantsStatsPlusToTargetDuringCombatNode(0, 5, 0, 5),
@@ -36,10 +70,10 @@
 
     FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 3 spaces of unit with "neutralizes 'effective against dragons' bonuses" active,
-        IF_NODE(AND_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE, 
+        IF_NODE(AND_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
                 new HasTargetStatusEffectNode(StatusEffectType.ShieldDragon)),
             // neutralizes penalties to Spd/Res,
-            new NeutralizesPenaltiesToTargetsStatsNode(false,  true,  false,  true),
+            new NeutralizesPenaltiesToTargetsStatsNode(false, true, false, true),
             // and neutralizes effects that prevent those allies' counterattacks during their combat.
             new NeutralizesEffectsThatPreventTargetsCounterattacksDuringCombatNode(),
         ),
@@ -49,7 +83,7 @@
         // If unit initiates combat,
         // or if there is an ally within 3 spaces of unit with "neutralizes 'effective against dragons' bonuses" active,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
-                new IsTargetWithinNSpacesOfTargetsAllyNode(3, 
+                new IsTargetWithinNSpacesOfTargetsAllyNode(3,
                     new HasTargetStatusEffectNode(StatusEffectType.ShieldDragon))),
             // grants bonus to unit's Atk/Spd/Def/Res = 5 + 15% of unit's Spd at start of combat,
             new GrantsAllStatsPlusNToTargetDuringCombatNode(

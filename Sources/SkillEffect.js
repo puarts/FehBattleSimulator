@@ -3548,6 +3548,19 @@ class HasTargetStatusEffectNode extends BoolNode {
     }
 }
 
+class NumOfTargetsDragonflowersNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.dragonflower;
+        env.debug(`${unit.nameWithGroup}の神竜の花の数: ${result}`);
+        return result;
+    }
+}
+
 class FoesMoveNode extends NumberNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
