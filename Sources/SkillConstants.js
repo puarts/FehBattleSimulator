@@ -3331,6 +3331,8 @@ const PassiveC = {
     CreationPulse: 2981, // 開闢の鼓動
 
     PulseSmog: 2997, // 鼓動の暗煙
+    
+    AirOrders4: 3001, // 先導の伝令・天4
 
     // 専用C
     Paranoia: 2987, // 被害妄想

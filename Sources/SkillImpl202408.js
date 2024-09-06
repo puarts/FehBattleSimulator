@@ -1,4 +1,22 @@
 // noinspection JSUnusedLocalSymbols
+// 先導の伝令・天4
+{
+    let skillId = PassiveC.AirOrders4;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(EQ_NODE(new TargetsMoveTypeNode(), MoveType.Flying),
+                // grants Atk/Spd+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Charge】,
+                // and the following status to unit and flying allies within 2 spaces for 1 turn: "unit can move to a space adjacent to any ally within 2 spaces."
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Charge, StatusEffectType.AirOrders),
+            ),
+        ),
+    ));
+}
+
 // イリアの吹雪の剣
 {
     let skillId = Weapon.IlianFrostBlade;
@@ -14,7 +32,7 @@
             )
         ),
     ));
-    
+
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or is within 2 spaces of an ally,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),

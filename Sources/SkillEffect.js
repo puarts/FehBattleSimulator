@@ -3552,11 +3552,24 @@ class NumOfTargetsDragonflowersNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
-    
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.dragonflower;
         env.debug(`${unit.nameWithGroup}の神竜の花の数: ${result}`);
+        return result;
+    }
+}
+
+class TargetsMoveTypeNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.moveType;
+        env.debug(`${unit.nameWithGroup}の移動タイプ: ${result}`);
         return result;
     }
 }
