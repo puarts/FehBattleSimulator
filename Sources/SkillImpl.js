@@ -9142,6 +9142,8 @@
     // 近影
     // 速さ守備の近影4
     setSkill(PassiveB.SDNearTrace4, u => u.addSpdDefSpurs(-4), 2);
+    // 速さ魔防の近影4
+    setSkill(PassiveB.SRNearTrace4, u => u.addSpdResSpurs(-4), 2);
 
     // 遠影
     // 攻撃魔防の遠影4
