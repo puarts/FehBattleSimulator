@@ -851,8 +851,16 @@ class AppData extends UnitManager {
             let buff = unit.getBuffs(true)[index];
             let debuff = unit.getDebuffs()[index];
             // return `<span style="font-weight: bolder">${status}</span>:<span style="color: white">${statusWithSkills}+${greatTalent}</span>${getIncHtml(buff)}${getIncHtml(debuff)}`;
+            let isPositive = buff + debuff > 0;
+            let isNegative = buff + debuff < 0;
+            let figureClass = '';
+            if (isPositive) {
+                figureClass = 'summary-positive-stats';
+            } else if (isNegative) {
+                figureClass = 'summary-negative-stats';
+            }
             return `<span>
-            <span style="font-weight: bolder">${status}</span> <span class="buff-or-debuff">(<span style="color: white">+${greatTalent}</span>${getIncHtml(buff)}${getIncHtml(debuff)})</span>
+            <span class="${figureClass}" style="font-weight: bolder">${status}</span> <span class="buff-or-debuff">(<span style="color: white">+${greatTalent}</span>${getIncHtml(buff)}${getIncHtml(debuff)})</span>
             </span>`;
         }
 

@@ -49,6 +49,14 @@ td.enemy {
     font-size: 9px;
 }
 
+.summary-positive-stats {
+    color: #00eeee;
+}
+
+.summary-negative-stats {
+    color: #ffaaaa;
+}
+
 .summary-grid-container {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
