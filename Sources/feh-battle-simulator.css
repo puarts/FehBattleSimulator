@@ -1,4 +1,54 @@
 /* Summary */
+.summary-text-shadow {
+    text-shadow: #444 1px 1px 0px,
+    #444 -1px 1px 0px,
+    #444 1px -1px 0px,
+    #444 -1px -1px 0px,
+    #444 0px 1px 0px,
+    #444 0px -1px 0px,
+    #444 -1px 0px 0px,
+    #444 1px 0px 0px;
+}
+
+tr.attackInfo {
+    font-size: 9px;
+    border: 10px solid;
+    padding: 0px;
+    margin: 0px;
+}
+
+td.ally {
+    position: relative;
+    background-color: cadetblue;
+    border: 1px solid lightblue;
+}
+
+td.enemy {
+    position: relative;
+    background-color: rgb(177, 55, 55);
+    border: 1px solid lightblue;
+}
+
+.summary-damage-label {
+    color: white;
+    font-size: 10px;
+}
+
+.summary-damage-figure {
+    color: yellow;
+    font-size: 10px;
+}
+
+.summary-label {
+    color: white;
+    font-size: 9px;
+}
+
+.summary-figure {
+    color: yellow;
+    font-size: 9px;
+}
+
 .summary-grid-container {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -18,6 +68,29 @@
     grid-column: 1 / 3;
     grid-row: 1;
     border-bottom: 1px solid #aaaaaa;
+}
+
+.summary-divine-vein-ally-area {
+    position: absolute;
+    left: 0px;
+}
+
+.summary-divine-vein-enemy-area {
+    position: absolute;
+    right: 0px;
+}
+
+.summary-divine-vein-turn {
+    color: #FFFFFF;
+    border-radius: 50%;
+}
+
+.summary-divine-vein-bg-ally {
+    background-color: #00bbff;
+}
+
+.summary-divine-vein-bg-enemy {
+    background-color: #ff8800;
 }
 
 .summary-grid-container .hp {
@@ -119,6 +192,10 @@
     width: 12px;
 }
 
+.summary-icon-grey {
+    filter: grayscale(100%);
+}
+
 /* Map */
 .map-divine-vein-img {
     position: absolute;
@@ -161,6 +238,13 @@
     font-size: 8px;
     right: 0px;
     bottom: -1px;
+}
+
+.map-emblem-hero-area {
+    position: absolute;
+    right: -2px;
+    top: 12px;
+    pointer-events: none;
 }
 
 .map-text-shadow {

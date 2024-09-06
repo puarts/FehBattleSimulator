@@ -5999,6 +5999,10 @@ class Unit extends BattleMapElement {
     grantsAnotherActionOnAssisted() {
         this.isActionDone = false;
     }
+
+    hasEmblemHero() {
+        return this.emblemHeroIndex !== EmblemHero.None;
+    }
 }
 
 

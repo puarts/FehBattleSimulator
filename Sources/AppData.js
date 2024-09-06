@@ -778,12 +778,14 @@ class AppData extends UnitManager {
 
             // Divine vein
             let tag = getSpecialChargedImgTag();
-            tag.classList.add('summary-grid-item');
+            tag.classList.add('summary-grid-item', 'summary-label');
             let divineVein = unit.placedTile?.divineVein ?? DivineVeinType.None;
             let divineVeinGroup = unit.placedTile?.divineVeinGroup ?? null;
-            let group = '';
+            let divineVeinTurns = unit.placedTile?.divineVeinTurns ?? 0;
+            let turns = '';
             if (divineVeinGroup !== null && unit.placedTile?.hasDivineVein()) {
-                group = divineVeinGroup === UnitGroupType.Ally ? "自" : "敵";
+                let bgClass = `summary-divine-vein-bg-${divineVeinGroup === UnitGroupType.Ally ? 'ally' : 'enemy'}`;
+                turns = `<span class="summary-divine-vein-turn ${bgClass}">&nbsp;${divineVeinTurns}&nbsp;</span>`;
             }
 
             // Skill icons
@@ -801,29 +803,41 @@ class AppData extends UnitManager {
             let negativeTags =
                 negativeStatusEffects.slice(0, maxDisplaySize).reduce((acc, val) => acc + getStatsEffectImgTagStr(val), '');
 
-            let info = `<div class="summary-grid-container">
-                <div class="summary-grid-item divine-vein">
-                    ${group}
+            let info = `<div class="summary-grid-container summary-text-shadow">
+                <div class="summary-grid-item summary-label divine-vein">
                     <a href="${getDivineVeinPath(divineVein)}" title="${getDivineVeinTitle(divineVein)}" target="_blank" class="summary-icon-big">
                         ${getDivineVeinTag(divineVein).outerHTML}
                     </a>
+                    ${turns}
                 </div>
-                <div class="summary-grid-item hp">HP ${unit.hp} / ${unit.maxHpWithSkills} (${Math.trunc(unit.restHpPercentageAtBeginningOfTurn)}%)</div>
-                <div class="summary-grid-item atk">攻${statString(unit, STATUS_INDEX.Atk)}</div>
-                <div class="summary-grid-item spd">速${statString(unit, STATUS_INDEX.Spd)}</div>
-                <div class="summary-grid-item def">守${statString(unit, STATUS_INDEX.Def)}</div>
-                <div class="summary-grid-item res">魔${statString(unit, STATUS_INDEX.Res)}</div>
-                <div class="summary-grid-item level">
+                <div class="summary-grid-item summary-label hp">
+                  HP&nbsp;<span class="summary-figure">${unit.hp} / ${unit.maxHpWithSkills} (${Math.trunc(unit.restHpPercentageAtBeginningOfTurn)}%)</span>
+                </div>
+                <div class="summary-grid-item summary-label atk">
+                  攻&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Atk)}</span>
+                </div>
+                <div class="summary-grid-item summary-label spd">
+                  速&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Spd)}</span>
+                </div>
+                <div class="summary-grid-item summary-label def">
+                  守&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Def)}</span>
+                </div>
+                <div class="summary-grid-item summary-label res">
+                  魔&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Res)}</span>
+                </div>
+                <div class="summary-grid-item summary-label level">
                     LV.${unit.level}
                 </div>
                 <div class="summary-grid-item icons">
                     ${skillIconsDivTag.outerHTML}
                 </div>
-                <div class="summary-grid-item positive">
-                    <span class="status-effect">【有利】${positiveStatusEffects.length}個:&nbsp;</span>${positiveTags}${positiveStatusEffects.length > maxDisplaySize ? '...' : ''}
+                <div class="summary-grid-item summary-label positive">
+                    <span class="status-effect">【有利】${positiveStatusEffects.length}個:&nbsp;</span>
+                    ${positiveTags}${positiveStatusEffects.length > maxDisplaySize ? '...' : ''}
                 </div>
-                <div class="summary-grid-item negative">
-                    <span class="status-effect">【不利】${negativeStatusEffects.length}個:&nbsp;</span>${negativeTags}${negativeStatusEffects.length > maxDisplaySize ? '...' : ''}
+                <div class="summary-grid-item summary-label negative">
+                    <span class="status-effect">【不利】${negativeStatusEffects.length}個:&nbsp;</span>
+                    ${negativeTags}${negativeStatusEffects.length > maxDisplaySize ? '...' : ''}
                 </div>
             </div>`;
             return info;

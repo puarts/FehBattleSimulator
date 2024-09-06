@@ -3051,14 +3051,16 @@ class BattleMap {
                     }
                     return `<img src='${statusEffectTypeToIconFilePath(e)}' style='height:11px' alt="">`;
                 };
-                // 付与されているステータスの数が7以上のときは省略表示にする
-                if (unit.countStatusEffects() >= 7) {
+                // 付与されているステータスの数が3以上のときは省略表示にする
+                if (unit.countStatusEffects() >= 3) {
                     let pes = unit.getPositiveStatusEffects();
                     let nes = unit.getNegativeStatusEffects();
                     let getStatusHtml = (imgTag, es) => {
                         switch (es.length) {
-                            case 0: return "";
-                            case 1: return imgTag;
+                            case 0:
+                                return "";
+                            case 1:
+                                return imgTag;
                             default:
                                 return imgTag + es.length;
                         }
@@ -3074,6 +3076,13 @@ class BattleMap {
                     }
                 }
                 cell.innerText += "</span>";
+            }
+
+            // 紋章士
+            if (unit.emblemHeroIndex !== EmblemHero.None) {
+                cell.innerText += '<span class="map-emblem-hero-area">'
+                cell.innerText += `<img src='${EngagedSpecialIcon[unit.emblemHeroIndex]}' style='height:14px' alt="">`;
+                cell.innerText += '</span>';
             }
         }
     }
