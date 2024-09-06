@@ -23,6 +23,7 @@ const g_keyboardManager = new KeyboardManager();
 let g_draggingElemId = "";
 /** @type {Queue<Tile>} */
 let g_dragoverTileHistory = new Queue(10);
+let g_dragoverTargetTileForCalcSummary = null;
 
 let g_doubleClickChecker = new DoubleClickChecker();
 
@@ -280,6 +281,9 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
 }
 
 function dragoverImplForTargetTile(unit, targetTile) {
+    // ターゲットのタイルが変化していなければ再計算しない
+    if (g_dragoverTargetTileForCalcSummary === targetTile) { return; }
+
     g_app.clearDamageCalcSummary();
 
     if (targetTile.isUnitPlacable(unit)) {
@@ -289,7 +293,10 @@ function dragoverImplForTargetTile(unit, targetTile) {
     } else {
         // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
         let unitPlacedOnTargetTile = targetTile.placedUnit;
-        if (unitPlacedOnTargetTile != null && unit.groupId !== unitPlacedOnTargetTile.groupId) {
+        let isThereEnemyOnTile =
+            unitPlacedOnTargetTile != null &&
+            unit.groupId !== unitPlacedOnTargetTile.groupId;
+        if (isThereEnemyOnTile) {
             let attackTile = findBestActionTile(targetTile, unit.attackRange);
             // TODO: 応急処置なのできちんと修正する
             if (attackTile === null) {
@@ -297,9 +304,13 @@ function dragoverImplForTargetTile(unit, targetTile) {
                 unit.fromPosX = attackTile.posX;
                 unit.fromPosY = attackTile.posY;
             }
+            // 再計算のチェックのためサマリーを計算するタイルを保存しておく
+            g_dragoverTargetTileForCalcSummary = targetTile;
             g_app.showDamageCalcSummary(unit, unitPlacedOnTargetTile, attackTile);
+            return;
         }
     }
+    g_dragoverTargetTileForCalcSummary = null;
 }
 
 function getBestActionTile(unit, targetTile, spaces) {
