@@ -133,7 +133,7 @@
     position: absolute;
     display: flex;
     justify-content: center; /* 水平方向の中央揃え */
-    align-items: center;     /* 垂直方向の中央揃え */
+    align-items: center; /* 垂直方向の中央揃え */
     bottom: 0;
     left: 0;
     height: 40px;
@@ -143,4 +143,33 @@
     font-size: 18px;
 
     pointer-events: none;
+}
+
+.map-buff-debuff-area {
+    position: absolute;
+    bottom: 4px;
+    right: 0;
+    pointer-events: none;
+}
+
+.map-buff-debuff-area img {
+    height: 12px;
+}
+
+.map-rest-turns {
+    position: absolute;
+    font-size: 8px;
+    right: 0px;
+    bottom: -1px;
+}
+
+.map-text-shadow {
+    text-shadow: #444 1px 1px 0px,
+    #444 -1px 1px 0px,
+    #444 1px -1px 0px,
+    #444 -1px -1px 0px,
+    #444 0px 1px 0px,
+    #444 0px -1px 0px,
+    #444 -1px 0px 0px,
+    #444 1px 0px 0px;
 }

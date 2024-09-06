@@ -3022,14 +3022,24 @@ class BattleMap {
 
             // バフ、デバフ
             if (unit.isBuffed || unit.isDebuffed) {
-                cell.innerText += "<span style='position:absolute;bottom:0;right:0;" + shadowCss + ";pointer-events: none;'>"
+                let span = document.createElement('span');
+                span.classList.add('map-buff-debuff-area', '.map-text-shadow');
                 if (unit.isBuffed) {
-                    cell.innerText += "<img src='" + g_imageRootPath + "BuffIcon.png" + "' style='height:12px'>";
+                    this.#addBuffDebuffIcon(span, 'BuffIcon.png');
                 }
                 if (unit.isDebuffed) {
-                    cell.innerText += "<img src='" + g_imageRootPath + "DebuffIcon.png" + "' style='height:12px'>";
+                    this.#addBuffDebuffIcon(span, 'DebuffIcon.png');
                 }
-                cell.innerText += "</span>";
+                if (unit.restWeaponSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, `${g_imageRootPath}Weapon.png`, unit.restWeaponSkillAvailableTurn);
+                }
+                if (unit.restSupportSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, `${g_imageRootPath}Support.png`, unit.restSupportSkillAvailableTurn);
+                }
+                if (unit.restPassiveBSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, unit.passiveBInfo.iconPath, unit.restPassiveBSkillAvailableTurn);
+                }
+                cell.innerText += span.outerHTML;
             }
 
             // 状態異常
@@ -3066,6 +3076,27 @@ class BattleMap {
                 cell.innerText += "</span>";
             }
         }
+    }
+
+    #addRestTurnsIcon(span, imagePath, turns) {
+        let restContainer = document.createElement('span');
+
+        let img = document.createElement('img');
+        img.src = imagePath;
+        restContainer.appendChild(img);
+
+        let turnsTag = document.createElement('span');
+        turnsTag.classList.add('map-text-shadow', 'map-rest-turns');
+        turnsTag.innerText = turns;
+        restContainer.appendChild(turnsTag);
+
+        span.appendChild(restContainer);
+    }
+
+    #addBuffDebuffIcon(span, imageName) {
+        let img = document.createElement('img');
+        img.src = `${g_imageRootPath}${imageName}`;
+        span.appendChild(img);
     }
 
     __getShadowCss() {
