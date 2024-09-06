@@ -1,4 +1,71 @@
 // noinspection JSUnusedLocalSymbols
+// 氷の部族の雪斧
+{
+    let skillId = Weapon.IceTribeAxe;
+    // Accelerates Special trigger (cooldown count-1).
+    // Calculates damage using the lower of foe's Def or Res.
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is on a team with unit's support partner,
+        IF_NODE(new IsThereUnitOnMapNode(new AreTargetAndSkillOwnerPartnersNode()),
+            // at start of turn,
+            // grants "neutralizes 'effective against dragons' bonuses" 
+            // to support partners within 3 spaces of unit for 1 turn. 
+            new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, new AreTargetAndSkillOwnerPartnersNode(),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.ShieldDragon),
+            ),
+        ),
+        // If unit is not on a team with unit's support partner,
+        IF_NODE(NOT_NODE(new IsThereUnitOnMapNode(new AreTargetAndSkillOwnerPartnersNode())),
+            // at start of turn,
+            // grants "neutralizes 'effective against dragons' bonuses" to ally with the highest Res among allies within 3 spaces of unit for 1 turn.
+            new ForEachAllyWithHighestValueWithinNSpacesNode(3, TRUE_NODE, new TargetsStatsAtStartOfTurnNode(STATUS_INDEX.Res),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.ShieldDragon),
+            ),
+        ),
+    ));
+
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 spaces of unit with "neutralizes 'effective against dragons' bonuses" active,
+        IF_NODE(AND_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE, 
+                new HasTargetStatusEffectNode(StatusEffectType.ShieldDragon)),
+            // grants Spd/Res+5,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 5, 0, 5),
+        ),
+    ));
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 spaces of unit with "neutralizes 'effective against dragons' bonuses" active,
+        IF_NODE(AND_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE, 
+                new HasTargetStatusEffectNode(StatusEffectType.ShieldDragon)),
+            // neutralizes penalties to Spd/Res,
+            new NeutralizesPenaltiesToTargetsStatsNode(false,  true,  false,  true),
+            // and neutralizes effects that prevent those allies' counterattacks during their combat.
+            new NeutralizesEffectsThatPreventTargetsCounterattacksDuringCombatNode(),
+        ),
+    ))
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat,
+        // or if there is an ally within 3 spaces of unit with "neutralizes 'effective against dragons' bonuses" active,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+                new IsTargetWithinNSpacesOfTargetsAllyNode(3, 
+                    new HasTargetStatusEffectNode(StatusEffectType.ShieldDragon))),
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + 15% of unit's Spd at start of combat,
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                ADD_NODE(5, MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE))),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and reduces damage from foe's first attack by 40% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(40),
+        ),
+    ));
+}
+
 // 盾壁隊形3
 {
     let skillId = PassiveB.HardyFighter3;

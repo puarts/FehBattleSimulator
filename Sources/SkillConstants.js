@@ -1909,7 +1909,13 @@ const Weapon = {
     // 2024年8月 武器錬成
     MercenaryLance: 2976, // 重歩傭兵の槍
 
+    // 2024年8月 伝承
     DualSword: 2995, // 修羅の双刃
+
+    // 超英雄「氷の国への誘い」
+    // https://www.youtube.com/watch?v=e32Fq5jJJa4
+    // https://www.youtube.com/watch?v=lgvLstETKqI
+    IceTribeAxe: 2998, // 氷の部族の雪斧
 };
 
 const Support = {

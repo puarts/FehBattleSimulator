@@ -2317,6 +2317,18 @@ class GetStatNode extends NumberNode {
     }
 }
 
+class TargetsStatsAtStartOfTurnNode extends GetStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    statsDescription = "開始時";
+
+    getStats(env) {
+        return this.getUnit(env).getStatusesInPrecombat();
+    }
+}
+
 class UnitsStatsAtStartOfCombatNode extends GetStatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
@@ -3326,6 +3338,21 @@ class TargetsSpecialTriggersTwiceThenReducesDamageByNNode extends BoolNode {
     }
 }
 
+/**
+ * neutralizes effects that prevent those allies' counterattacks during their combat.
+ */
+class NeutralizesEffectsThatPreventTargetsCounterattacksDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.nullCounterDisrupt = true;
+        env.debug(`${unit.nameWithGroup}は自身の反撃不可を無効`);
+    }
+}
+
 // Unit or BattleContextに値を設定 END
 
 class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
@@ -3496,6 +3523,27 @@ class TargetsMaxSpecialCountNode extends PositiveNumberNode {
         let unit = this.getUnit(env);
         let result = unit.maxSpecialCount;
         env.debug(`${unit.nameWithGroup}の奥義発動カウントの最大値: ${result}`);
+        return result;
+    }
+}
+
+class HasTargetStatusEffectNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let e = this.evaluateChildren(env)[0];
+        let result = unit.hasStatusEffect(e);
+        env.debug(`${unit.nameWithGroup}は${getStatusEffectName(e)}を持っているか: ${result}`);
         return result;
     }
 }
@@ -3775,6 +3823,22 @@ class IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode extends BoolNode {
 const IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
     new IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode(3);
 
+// TODO: リファクタリング
+class ForEachAllyWithHighestValueWithinNSpacesNode extends ForEachUnitOnMapNode {
+    constructor(n, predNode, valueFuncNode, ...children) {
+        super(predNode, ...children);
+        this._numberNode = NumberNode.makeNumberNodeFrom(n);
+        this._valueFuncNode = valueFuncNode;
+    }
+
+    getUnits(env) {
+        let allies = env.unitManager.enumerateUnitsInTheSameGroupOnMap(env.target);
+        let highestUnits = IterUtil.maxElements(allies, u => this._valueFuncNode.evaluate(env.copy().setTarget(u)));
+        env.debug(`最も値が高いユニット: ${highestUnits.map(u => u.nameWithGroup)}`);
+        return highestUnits;
+    }
+}
+
 class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnitOnMapNode {
     constructor(n, predNode, ...children) {
         super(predNode, ...children);
@@ -3865,8 +3929,8 @@ class IsInRangeNNode extends BoolNode {
 class IsTargetWithinNSpacesOfTargetsAllyNode extends IsInRangeNNode {
     evaluate(env) {
         let spaces = this._nNode.evaluate(env);
-        let result = env.unitManager.isThereAllyInSpecifiedSpaces(env.target, spaces);
-        env.debug(`${env.target.nameWithGroup}の周囲${spaces}マスに味方が存在するか: ${result}`);
+        let result = env.unitManager.isThereAllyInSpecifiedSpaces(env.target, spaces, u => this._predNode.evaluate(env.copy().setTarget(u)));
+        env.debug(`${env.target.nameWithGroup}の周囲${spaces}マスに条件を満たす味方が存在するか: ${result}`);
         return result;
     }
 }
@@ -3887,6 +3951,19 @@ class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
 // noinspection JSUnusedGlobalSymbols
 const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
+
+class AreTargetAndSkillOwnerPartnersNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = env.skillOwner.isPartner(unit);
+        env.debug(`${unit.nameWithGroup}は${env.skillOwner.nameWithGroup}と支援を結んでいるか: ${result}`);
+        return result;
+    }
+}
 
 /**
  * TODO: 動作確認する。Mixinを使用する
