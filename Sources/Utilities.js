@@ -1188,6 +1188,8 @@ function getSkillIconDivTag(unit) {
         imgTag.src = `${g_imageRootPath}Support.png`;
         if (!unit.hasSupport) {
             imgTag.classList.add('summary-icon-grey');
+        } else {
+            imgTag.title = unit.supportInfo.name;
         }
         html += `<div style="position: relative">${imgTag.outerHTML}</div>`;
     }
@@ -1202,6 +1204,8 @@ function getSkillIconDivTag(unit) {
         }
         if (!unit.hasSpecial) {
             imgTag.classList.add('summary-icon-grey');
+        } else {
+            imgTag.title = unit.specialInfo.name;
         }
         html += `<div style="position: relative">${imgTag.outerHTML}</div>`;
     }
@@ -1216,14 +1220,16 @@ function getSkillIconDivTag(unit) {
         'S.png', 'X.webp',
     ];
     infos.forEach((info, index) => {
-        let icon;
+        let icon = document.createElement('img');
+        let title = 'スキルなし';
         if (info) {
-            icon = `<img src="${info.iconPath}"/>`
+            icon.src = info.iconPath;
+            title = infos[index].name;
         } else {
-            icon = `<img src="${g_imageRootPath}None.png"/>`;
+            icon.src = `${g_imageRootPath}None.png`;
         }
         let skillType = `<img src="${g_imageRootPath}${skillTypes[index]}" class="skill-type"/>`;
-        html += `<div style="position: relative">${icon}${skillType}</div>`;
+        html += `<div title="${title}" style="position: relative">${icon.outerHTML}${skillType}</div>`;
     });
 
     div.innerHTML = html;
