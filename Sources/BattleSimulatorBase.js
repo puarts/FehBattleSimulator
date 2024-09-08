@@ -8710,11 +8710,11 @@ class BattleSimulatorBase {
             env = new BattleSimulatorBaseEnv(this, unit);
 
             env.setName('移動補助を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
-            AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(unit, env);
+            AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(unit, env);
 
             env = new BattleSimulatorBaseEnv(this, targetUnit);
             env.setName('移動補助を使用された時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
-            AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK.evaluateWithUnit(targetUnit, env);
+            AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
         }
 
         return true;
@@ -8785,6 +8785,7 @@ class BattleSimulatorBase {
                 for (let u of unitSet) {
                     u.heal(10);
                     u.neutralizeNegativeStatusEffects();
+                    u.forceResetDebuffs();
                 }
                 break;
             }
@@ -9352,7 +9353,7 @@ class BattleSimulatorBase {
         // 使用した時
         let env = new BattleSimulatorBaseEnv(this, supporterUnit);
         env.setName('応援を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
-        AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(supporterUnit, env);
+        AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
         console.log("応援後");
 
         for (let skillId of supporterUnit.enumerateSkills()) {
@@ -9749,6 +9750,9 @@ class BattleSimulatorBase {
             for (let skillId of targetUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
+            }
+            for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedState(false);
             }
             // 同時タイミングに付与された天脈を消滅させる
             g_appData.map.applyReservedDivineVein();

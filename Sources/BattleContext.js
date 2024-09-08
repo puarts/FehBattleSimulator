@@ -158,11 +158,14 @@ class BattleContext {
         // 次の自分の攻撃のダメージ加算
         this.additionalDamageOfNextAttack = 0;
 
-        // 奥義発動後、自分の次の攻撃の効果(氷の聖鏡・承など)が発生するか
-        this.nextAttackEffectAfterSpecialActivated = false;
+        this.canAddDamageReductionToNextAttackAfterSpecial = false;
+        this.nextAttackMinAdditionAfterSpecial = Number.MIN_SAFE_INTEGER;
 
-        // 自分の次の攻撃のダメージに軽減をプラスする効果が発動するか
-        this.nextAttackAddReducedDamageActivated = false;
+        // 奥義発動後、自分の次の攻撃の効果(氷の聖鏡・承など)が発生しているか
+        this.isNextAttackEffectAfterSpecialActivating = false;
+
+        // 自分の次の攻撃のダメージに軽減をプラスする効果が発動しているか
+        this.isNextAttackAddReducedDamageActivating = false;
 
         // 自分から攻撃したか
         this.initiatesCombat = false;
@@ -220,6 +223,12 @@ class BattleContext {
 
         // 敵の最初の攻撃前の奥義発動カウント減少値
         this.specialCountReductionBeforeFirstAttackByEnemy = 0;
+        
+        // 敵の最初の追撃前の奥義発動カウント減少値
+        this.specialCountReductionBeforeFirstFollowUpAttackByEnemy = 0;
+
+        // 敵の最初の2回攻撃の2撃目前の奥義発動カウント減少値(Shield Fighterなど)
+        this.specialCountReductionBeforeSecondFirstAttacksByEnemy = 0;
 
         // 攻撃時の追加ダメージ
         // TODO: 戦闘前と戦闘中で変数を分ける
@@ -730,6 +739,12 @@ class BattleContext {
         return increase - reduction;
     }
 
+    getSpecialCountChangeAmountBeforeFirstFollowUpAttackByEnemy() {
+        let increase = 0;
+        let reduction = this.specialCountReductionBeforeFirstFollowUpAttackByEnemy;
+        return increase - reduction;
+    }
+
     getSpecialCountReductionBeforeFollowupAttack() {
         let increase = this.specialCountIncreaseBeforeFollowupAttack;
         let reduction = this.specialCountReductionBeforeFollowupAttack;
@@ -932,14 +947,14 @@ class BattleContext {
         this.addReducedDamageForNextAttackFuncs.push(
             (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
                 if (!context.isFirstAttack(atkUnit)) return;
-                defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
                 defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
             }
         );
         // 攻撃ごとの固定ダメージに軽減した分を加算
         this.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-            if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+            if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
+                atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
                 let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
                 atkUnit.battleContext.reducedDamageForNextAttack = 0;
                 return addDamage;

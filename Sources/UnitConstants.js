@@ -67,6 +67,7 @@ const Hero = {
     DuoGullveig: 1136,
     HarmonizedGoldmary: 1143,
     HarmonizedNephenee: 1157,
+    DuoFjorm: 1169,
 };
 
 const IvStateOptions = [

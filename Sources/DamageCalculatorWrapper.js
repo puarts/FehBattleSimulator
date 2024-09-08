@@ -2616,14 +2616,14 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
                         (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
                             if (!context.isFirstAttack(atkUnit)) return;
-                            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                            defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
                             defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                         }
                     );
                     // 攻撃ごとの固定ダメージに軽減した分を加算
                     targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                        if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                            atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                        if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
+                            atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
                             let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
                             atkUnit.battleContext.reducedDamageForNextAttack = 0;
                             return addDamage;
@@ -2884,14 +2884,14 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
                     (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
                         if (!context.isFirstAttack(atkUnit)) return;
-                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
                         defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                     }
                 );
                 // 攻撃ごとの固定ダメージに軽減した分を加算
                 targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                    if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
+                        atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
                         let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
                         atkUnit.battleContext.reducedDamageForNextAttack = 0;
                         return addDamage;

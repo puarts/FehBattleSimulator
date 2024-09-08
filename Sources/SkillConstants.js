@@ -1918,6 +1918,8 @@ const Weapon = {
     IceTribeAxe: 2998, // 氷の部族の雪斧
     IlianFrostBlade: 3000, // イリアの吹雪の剣
     IceDaggerPlus: 3002, // 氷の暗器+
+    IceCrystalSpear: 3003, // ニフルの氷晶の槍
+    IceDragonstonePlus: 3004, // 氷竜の竜石+
 };
 
 const Support = {
@@ -2144,6 +2146,7 @@ const Special = {
     CurvedShot: 2986, // 曲射
 
     // 専用奥義
+    DualIceMirrors: 3004, // 双氷の聖鏡
     MakingsOfAKing: 2989, // 王器
     WarpRagnarok: 2925, // ワープライナ
     TimeAndLight: 2919, // 時と光
@@ -2405,6 +2408,7 @@ const PassiveA = {
     FirefloodBoost3: 2501, // 生命の業火静水3
     EarthfireBoost3: 2768, // 生命の業火大地3
     EarthwindBoost3: 2789, // 生命の疾風大地3
+    DelugeBoost3: 3005, // 生命の疾風静水3
 
     AtkSpdMastery: 2973, // 攻撃速さの制空
 
@@ -2877,6 +2881,8 @@ const PassiveB = {
     PegasusRift: 2968, // 天馬裂空
 
     Reopening: 2991, // 一新
+    
+    ShieldFighter: 3006, // 連盾隊形
 
     // 専用B
     ShadowSlide: 2996, // 無間の瞬動

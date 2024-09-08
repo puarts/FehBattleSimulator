@@ -3603,6 +3603,7 @@ class Unit extends BattleMapElement {
         this.applyReservedGreatTalents();
     }
 
+    // TODO: 直接付与している箇所を予約に置き換える
     applyReservedState(isBeginningOfTurn) {
         // 解除
         this.neutralizeReservedStateToNeutralize();
@@ -3784,7 +3785,7 @@ class Unit extends BattleMapElement {
             this.getSpdInCombat(enemyUnit),
             this.getDefInCombat(enemyUnit),
             this.getResInCombat(enemyUnit),
-        ];
+        ].map(value => MathUtil.ensureMin(value, 0));
     }
 
     /**

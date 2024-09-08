@@ -1377,6 +1377,12 @@ class SkillInfo {
         this.inheritableMoveTypes = inheritableMoveTypes;
         this.hasSpecialWeaponRefinement = hasSpecialWeaponRefinement;
         this.hasStatusWeaponRefinement = hasStatusWeaponRefinement;
+        if (typeof g_appData !== 'undefined') {
+            if (g_appData.isDebugMenuEnabled) {
+                this.hasSpecialWeaponRefinement = true;
+                this.hasStatusWeaponRefinement = true;
+            }
+        }
 
         this.type = skillType;
         this.weaponRefinementOptions = [];
