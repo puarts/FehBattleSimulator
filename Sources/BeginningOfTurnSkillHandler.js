@@ -862,14 +862,6 @@ class BeginningOfTurnSkillHandler {
                     skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
                 }
                 break;
-            case Weapon.InnerWellspring:
-                if (this.__isThereAllyIn2Spaces(skillOwner)) {
-                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
-                    if (this.__getStatusEvalUnit(skillOwner).isSpecialCountMax) {
-                        skillOwner.reserveToReduceSpecialCount(1);
-                    }
-                }
-                break;
             case PassiveC.OpenedDomain: {
                 // 専用スキルでヒーローズ出典が確定なので不要だが念のため
                 let ownerOrigin = skillOwner.heroInfo.origin.replace("暗黒竜と光の剣", "紋章の謎");
@@ -1803,7 +1795,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.MagoNoTePlus:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     for (let unit of this.__findMaxStatusUnits(skillOwner.groupId, x => this.__getStatusEvalUnit(x).getAtkInPrecombat(), skillOwner)) {
                         unit.reserveToReduceSpecialCount(1);
                     }
@@ -1811,14 +1803,13 @@ class BeginningOfTurnSkillHandler {
                 break;
             case Weapon.NorenPlus:
             case Weapon.KinchakubukuroPlus:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reserveToReduceSpecialCount(2);
                 }
                 break;
             case Weapon.MoonlightStone:
-            case PassiveB.HardyFighter3:
             case PassiveB.TateNoKodo3:
-                if (this.globalBattleContext.currentTurn == 1) {
+                if (this.globalBattleContext.currentTurn === 1) {
                     if (isDefenseSpecial(skillOwner.special)) {
                         skillOwner.reserveToReduceSpecialCount(2);
                     }
@@ -1832,7 +1823,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveB.ToketsuNoHuin:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage >= 50) {
                     for (let unit of this.__findMinStatusUnits(
-                        skillOwner.groupId == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
+                        skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
                         x => this.__getStatusEvalUnit(x).getResInPrecombat())
                     ) {
                         unit.reserveToApplyAtkDebuff(-6);
@@ -1841,7 +1832,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case PassiveB.FreezingSeal2: {
-                let group = skillOwner.groupId == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
+                let group = skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally;
                 let minUnits = this.__findMinStatusUnits(group, x => this.__getStatusEvalUnit(x).getResInPrecombat());
                 for (let unit of minUnits) {
                     for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2, true)) {
@@ -1855,7 +1846,7 @@ class BeginningOfTurnSkillHandler {
             case PassiveB.KoriNoHuin:
                 if (this.__getStatusEvalUnit(skillOwner).hpPercentage >= 50) {
                     for (let unit of this.__findMinStatusUnits(
-                        skillOwner.groupId == UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
+                        skillOwner.groupId === UnitGroupType.Ally ? UnitGroupType.Enemy : UnitGroupType.Ally,
                         x => this.__getStatusEvalUnit(x).getDefInPrecombat())
                     ) {
                         unit.reserveToApplyAtkDebuff(-6);

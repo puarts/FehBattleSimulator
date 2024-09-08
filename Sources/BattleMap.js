@@ -2466,14 +2466,17 @@ class BattleMap {
                 let [divineVein] = tile.reservedDivineVeinSet;
                 tile.divineVein = divineVein;
                 tile.divineVeinGroup = tile.reservedDivineVeinGroup;
+                tile.divineVeinTurns = tile.reservedDivineVeinTurns;
             }
             // 重複して天脈が付与されると元々の天脈も消滅する
             if (tile.reservedDivineVeinSet.size >= 2) {
                 tile.divineVein = DivineVeinType.None;
                 tile.divineVeinGroup = null;
+                tile.divineVeinTurns = 0;
             }
             tile.reservedDivineVeinSet.clear();
             tile.reservedDivineVeinGroup = null;
+            tile.reservedDivineVeinTurns = 0;
         }
     }
 
@@ -2858,8 +2861,13 @@ class BattleMap {
         }
 
         // 天脈
+        this._setDivineVeinCellStyle(tile, cell);
+    }
+
+    _setDivineVeinCellStyle(tile, cell) {
         // 味方の天脈、敵の天脈で処理を分ける
         if (tile.hasDivineVein()) {
+            // 背景色
             const alpha = "40";
             cell.borderStyle = "solid";
             if (tile.divineVeinGroup !== null && tile.divineVeinGroup === UnitGroupType.Ally) {
@@ -2868,15 +2876,11 @@ class BattleMap {
                 cell.bgColor = "#ff8800" + alpha;
             }
 
+            // 敵の天脈の色設定
             if (tile.hasBreakableDivineVein() ||
                 g_appData.showDivineVeinImageWithoutBreakable === true) {
                 let divineVeinTag = getDivineVeinTag(tile.divineVein);
-                divineVeinTag.style.position = 'absolute';
-                divineVeinTag.style.botttom = '0';
-                divineVeinTag.style.left = '0';
-                divineVeinTag.style.height = '40px';
-                divineVeinTag.style.width = '40px';
-                divineVeinTag.style.pointerEvents = 'none';
+                divineVeinTag.classList.add('map-divine-vein-img');
                 if (tile.divineVein === DivineVeinType.Ice &&
                     tile.divineVeinGroup === UnitGroupType.Enemy &&
                     g_appData.changeEnemyIceColor) {
@@ -2885,6 +2889,12 @@ class BattleMap {
 
                 cell.innerText += divineVeinTag.outerHTML;
             }
+
+            // ターン数表示
+            let divineVeinTurnsDiv = document.createElement('span');
+            divineVeinTurnsDiv.innerText = tile.divineVeinTurns;
+            divineVeinTurnsDiv.classList.add('map-divine-vein-turns');
+            cell.innerText += divineVeinTurnsDiv.outerHTML;
         }
     }
 
@@ -3012,14 +3022,24 @@ class BattleMap {
 
             // バフ、デバフ
             if (unit.isBuffed || unit.isDebuffed) {
-                cell.innerText += "<span style='position:absolute;bottom:0;right:0;" + shadowCss + ";pointer-events: none;'>"
+                let span = document.createElement('span');
+                span.classList.add('map-buff-debuff-area', '.map-text-shadow');
                 if (unit.isBuffed) {
-                    cell.innerText += "<img src='" + g_imageRootPath + "BuffIcon.png" + "' style='height:12px'>";
+                    this.#addBuffDebuffIcon(span, 'BuffIcon.png');
                 }
                 if (unit.isDebuffed) {
-                    cell.innerText += "<img src='" + g_imageRootPath + "DebuffIcon.png" + "' style='height:12px'>";
+                    this.#addBuffDebuffIcon(span, 'DebuffIcon.png');
                 }
-                cell.innerText += "</span>";
+                if (unit.restWeaponSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, `${g_imageRootPath}Weapon.png`, unit.restWeaponSkillAvailableTurn);
+                }
+                if (unit.restSupportSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, `${g_imageRootPath}Support.png`, unit.restSupportSkillAvailableTurn);
+                }
+                if (unit.restPassiveBSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, unit.passiveBInfo.iconPath, unit.restPassiveBSkillAvailableTurn);
+                }
+                cell.innerText += span.outerHTML;
             }
 
             // 状態異常
@@ -3031,14 +3051,16 @@ class BattleMap {
                     }
                     return `<img src='${statusEffectTypeToIconFilePath(e)}' style='height:11px' alt="">`;
                 };
-                // 付与されているステータスの数が7以上のときは省略表示にする
-                if (unit.countStatusEffects() >= 7) {
+                // 付与されているステータスの数が3以上のときは省略表示にする
+                if (unit.countStatusEffects() >= 3) {
                     let pes = unit.getPositiveStatusEffects();
                     let nes = unit.getNegativeStatusEffects();
                     let getStatusHtml = (imgTag, es) => {
                         switch (es.length) {
-                            case 0: return "";
-                            case 1: return imgTag;
+                            case 0:
+                                return "";
+                            case 1:
+                                return imgTag;
                             default:
                                 return imgTag + es.length;
                         }
@@ -3055,7 +3077,35 @@ class BattleMap {
                 }
                 cell.innerText += "</span>";
             }
+
+            // 紋章士
+            if (unit.emblemHeroIndex !== EmblemHero.None) {
+                cell.innerText += '<span class="map-emblem-hero-area">'
+                cell.innerText += `<img src='${EngagedSpecialIcon[unit.emblemHeroIndex]}' style='height:14px' alt="">`;
+                cell.innerText += '</span>';
+            }
         }
+    }
+
+    #addRestTurnsIcon(span, imagePath, turns) {
+        let restContainer = document.createElement('span');
+
+        let img = document.createElement('img');
+        img.src = imagePath;
+        restContainer.appendChild(img);
+
+        let turnsTag = document.createElement('span');
+        turnsTag.classList.add('map-text-shadow', 'map-rest-turns');
+        turnsTag.innerText = turns;
+        restContainer.appendChild(turnsTag);
+
+        span.appendChild(restContainer);
+    }
+
+    #addBuffDebuffIcon(span, imageName) {
+        let img = document.createElement('img');
+        img.src = `${g_imageRootPath}${imageName}`;
+        span.appendChild(img);
     }
 
     __getShadowCss() {

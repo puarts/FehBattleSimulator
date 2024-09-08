@@ -2940,8 +2940,7 @@ class BattleSimulatorBase {
             loadSettings();
             // タイルの天脈をリセットする
             for (let tile of g_appData.map.enumerateTiles()) {
-                tile.divineVein = DivineVeinType.None;
-                tile.divineVeinGroup = null;
+                tile.resetDivineVein();
             }
         }
         else {
@@ -4020,7 +4019,8 @@ class BattleSimulatorBase {
                 result.atkUnit_spd,
                 result.atkUnit_def,
                 result.atkUnit_res,
-                result.atkTile),
+                result.atkTile,
+                true),
             this.__createDamageCalcSummaryHtml(
                 result.defUnit,
                 atkUnit,
@@ -4031,7 +4031,8 @@ class BattleSimulatorBase {
                 result.defUnit_spd,
                 result.defUnit_def,
                 result.defUnit_res,
-                result.defTile));
+                result.defTile,
+                false));
     }
 
     clearDamageCalcSummary() {
@@ -4053,29 +4054,25 @@ class BattleSimulatorBase {
      * @param  {Number} spd
      * @param  {Number} def
      * @param  {Number} res
-     * @param tile
+     * @param  {Tile} tile
+     * @param  {boolean} isAlly
      */
     __createDamageCalcSummaryHtml(unit, enemyUnit,
         preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount,
-        atk, spd, def, res, tile) {
+        atk, spd, def, res, tile, isAlly) {
         // ダメージに関するサマリー
-        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile);
+        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile, isAlly);
         // ステータスやバフに関するサマリー
         html += this.__createStatusSummaryHtml(unit, atk, spd, def, res);
 
-        return html;
+        return `<div class="summary-damage-figure summary-text-shadow">${html}</div>`;
     }
 
-    __createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile) {
-        let divineHtml = "";
-        if (tile.divineVein !== DivineVeinType.None) {
-            let divineString = DIVINE_VEIN_STRINGS[tile.divineVein];
-            let color = divineVeinColor(tile.divineVeinGroup);
-            divineHtml += `<span style='color:${color};font-weight: bold'>【</span>`;
-            divineHtml += divineString;
-            // TODO: 1ターンで終了しない天脈が実装されたら正しい数値を入れるようにする
-            divineHtml += `<span style='color: #FFFFFF;background-color:${color};border-radius: 50%;'> ${1} </span> `;
-            divineHtml += `<span style='color:${color};font-weight: bold;'>】</span>`;
+    __createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile, isAllyArea) {
+        let divineHtml = '';
+        // 天脈
+        if (tile.hasDivineVein()) {
+            divineHtml = this.#getDivineVeinSummaryHtml(tile, isAllyArea);
         }
         // HPリザルト
         let restHpHtml = unit.restHp === 0 ?
@@ -4092,9 +4089,9 @@ class BattleSimulatorBase {
             tag.classList.add('summary-icon');
             special = tag.outerHTML;
         } else {
-            special = `奥義${unit.specialCount}`;
+            special = `${unit.specialCount}`;
         }
-        let specialHtml = `<span style="color: pink;">${special}</span>`;
+        let specialHtml = `<span style="color: pink;">${special}&nbsp;&nbsp;&nbsp;</span>`;
         let damageHtml;
         if (attackCount > 0) {
             let precombatHtml = preCombatDamage > 0 ? `${preCombatDamage}+` : "";
@@ -4109,9 +4106,35 @@ class BattleSimulatorBase {
             damageHtml = `${precombatHtml}${afterBeginningOfCombatHtml}${combatHtml}`;
         } else {
             let afterBeginningOfCombatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
-            damageHtml = `${afterBeginningOfCombatHtml}ー`;
+            damageHtml = `${afterBeginningOfCombatHtml}-`;
         }
-        html += `${specialHtml}  攻撃: ${damageHtml}<br/>`;
+        html += `${specialHtml}&nbsp;${damageHtml}<br/>`;
+        return html;
+    }
+
+    #getDivineVeinSummaryHtml(tile, isAllyArea) {
+        let html = '';
+        let isAllyDivineVein = tile.divineVeinGroup === UnitGroupType.Ally;
+        let team = isAllyArea ? 'ally' : 'enemy';
+        html += `<div class="summary-divine-vein-${team}-area">`;
+
+        let divineVein = tile.divineVein;
+
+        let bgClass = isAllyDivineVein ? 'summary-divine-vein-bg-ally' : 'summary-divine-vein-bg-enemy';
+        let turn = `<span class="summary-divine-vein-turn ${bgClass}">&nbsp;${tile.divineVeinTurns}&nbsp;</span> `;
+
+        let divineVeinImgTag = getDivineVeinTag(divineVein);
+        divineVeinImgTag.classList.add('summary-icon-big');
+        let img = divineVeinImgTag.outerHTML;
+
+        if (isAllyArea) {
+            html += img;
+            html += turn;
+        } else {
+            html += turn;
+            html += img;
+        }
+        html += '</div>';
         return html;
     }
 
@@ -4120,13 +4143,14 @@ class BattleSimulatorBase {
         // 増加分、実際の戦闘中ステータス、紋章バフ表示
         let snapshot = unit.snapshot;
         let names = ['攻', '速', '防', '魔'];
+        names = names.map(n => `<span class="summary-damage-label">${n}</span>`);
         let actualStatuses = [atk, spd, def, res];
-        let statusHtml = actualStatuses.map((v, i) => `${names[i]}${v}`).join(", ");
+        let statusHtml = actualStatuses.map((v, i) => `${names[i]}${v}`).join("&nbsp;");
         if (snapshot != null) {
             // 増加分
             let displayStatuses = unit.getStatusesInPrecombat();
             let toIncHtml = (v, i) => `${names[i]}${getIncHtml(v - displayStatuses[i])}`;
-            let incHtml = actualStatuses.map(toIncHtml).join(", ");
+            let incHtml = actualStatuses.map(toIncHtml).join("&nbsp;");
             html += `${incHtml}<br/>`;
 
             if (this.vm.isDebugMenuEnabled) {
@@ -4139,7 +4163,7 @@ class BattleSimulatorBase {
             // 紋章バフ
             let spurs = snapshot.getSpurs();
             let toSpurHtml = (v, i) => `${names[i]}${getIncHtml(v)}`;
-            let spurHtml = spurs.map(toSpurHtml).join(", ");
+            let spurHtml = spurs.map(toSpurHtml).join("&nbsp;");
             if (this.vm.isDebugMenuEnabled) {
                 html += `${spurHtml}`;
             }
@@ -4434,10 +4458,7 @@ class BattleSimulatorBase {
             for (let x = 0; x < this.map.width; ++x) {
                 let index = y * this.map.width + x;
                 let tile = tiles[index];
-                if (tile.divineVeinGroup === group || group === null) {
-                    tile.divineVein = DivineVeinType.None;
-                    tile.divineVeinGroup = null;
-                }
+                tile.initializePerTurn(group);
             }
         }
     }
@@ -7075,7 +7096,6 @@ class BattleSimulatorBase {
                 case PassiveB.SoaringWings:
                 case PassiveB.FlowNTrace3:
                 case PassiveB.BeastNTrace3:
-                case Weapon.HolytideTyrfing:
                 case Weapon.FloridCanePlus:
                 case Weapon.ShadowyQuill:
                 case Weapon.FloridKnifePlus:
@@ -8690,11 +8710,11 @@ class BattleSimulatorBase {
             env = new BattleSimulatorBaseEnv(this, unit);
 
             env.setName('移動補助を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
-            AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(unit, env);
+            AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(unit, env);
 
             env = new BattleSimulatorBaseEnv(this, targetUnit);
             env.setName('移動補助を使用された時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
-            AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK.evaluateWithUnit(targetUnit, env);
+            AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
         }
 
         return true;
@@ -8765,6 +8785,7 @@ class BattleSimulatorBase {
                 for (let u of unitSet) {
                     u.heal(10);
                     u.neutralizeNegativeStatusEffects();
+                    u.forceResetDebuffs();
                 }
                 break;
             }
@@ -9332,7 +9353,7 @@ class BattleSimulatorBase {
         // 使用した時
         let env = new BattleSimulatorBaseEnv(this, supporterUnit);
         env.setName('応援を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
-        AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK.evaluateWithUnit(supporterUnit, env);
+        AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
         console.log("応援後");
 
         for (let skillId of supporterUnit.enumerateSkills()) {
@@ -9729,6 +9750,9 @@ class BattleSimulatorBase {
             for (let skillId of targetUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
+            }
+            for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedState(false);
             }
             // 同時タイミングに付与された天脈を消滅させる
             g_appData.map.applyReservedDivineVein();

@@ -1,712 +1,3 @@
-/**
- * @template K
- * @template V
- * @extends {Map<K, V>}
- */
-class MultiValueMap extends Map {
-    /**
-     * @param {K} key
-     * @param {V} value
-     */
-    addValue(key, value) {
-        if (!this.has(key)) {
-            this.set(key, []); // 新しいキーの場合、空の配列をセット
-        }
-        this.get(key).push(value); // 配列に値を追加
-    }
-
-    /**
-     * @returns {V[]}
-     */
-    getValues(key) {
-        return this.get(key) || [];
-    }
-}
-
-/**
- * @template {SkillEffectNode} N
- * @template {NodeEnv} E
- */
-class SkillEffectHooks {
-    /** @type {MultiValueMap<number|string, () => N>} */
-    #delayedMap = new MultiValueMap();
-    /** @type {MultiValueMap<number|string, N>} */
-    #instantiatedMap = new MultiValueMap();
-
-    /**
-     * @param {number|string} skillId
-     * @param {() => N} nodeFunc
-     */
-    addSkill(skillId, nodeFunc) {
-        if (typeof nodeFunc !== 'function') {
-            throw new Error('Argument nodeFunc must be a function');
-        }
-        this.#delayedMap.addValue(skillId, nodeFunc);
-    }
-
-    /**
-     * @param {number|string} skillId
-     * @return N[]
-     */
-    getSkills(skillId) {
-        this.#delayedMap.getValues(skillId).forEach(nodeFunc => this.#instantiatedMap.addValue(skillId, nodeFunc()));
-        this.#delayedMap.delete(skillId);
-        return this.#instantiatedMap.getValues(skillId);
-    }
-
-    /**
-     * @param {number|string} skillId
-     * @param {E} env
-     * @return {*[]}
-     */
-    evaluate(skillId, env) {
-        let skills = this.getSkills(skillId);
-        if (skills.length > 0) {
-            this.#skillNameLog(skillId, env);
-        }
-        return skills.map(skillNode => skillNode.evaluate(env));
-    }
-
-    #skillNameLog(skillId, env) {
-        const str = `${skillId}`;
-        const underscoreIndex = str.indexOf("_");
-
-        // プレフィックスとサフィックスをそれぞれ抽出
-        const prefix = str.substring(0, underscoreIndex);
-        const suffix = str.substring(underscoreIndex + 1);
-        let type = '';
-        switch (prefix) {
-            case 'n':
-                break;
-            case 'r':
-                type = '錬成'
-                break;
-            case 'sr':
-                type = '特殊錬成'
-                break;
-            case 'e':
-                type = '紋章士'
-                break;
-        }
-        // TODO: 紋章士に対応する
-        let name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
-        env?.info(`${type}${name}を評価`);
-    }
-
-    /**
-     * @param {Unit} unit
-     * @param {E} env
-     * @returns {*[]}
-     */
-    evaluateWithUnit(unit, env) {
-        // TODO: 付与されたステータスも入れるようにする
-        return Array.from(unit.enumerateSkills()).map(skillId => this.evaluate(skillId, env)).flat();
-    }
-
-    /**
-     * @param {Unit} unit
-     * @param {E} env
-     * @returns {boolean}
-     */
-    evaluateSomeWithUnit(unit, env) {
-        return this.evaluateWithUnit(unit, env).some(v => v);
-    }
-
-    /**
-     * @param {Unit} unit
-     * @param {E} env
-     * @returns {number}
-     */
-    evaluateMaxWithUnit(unit, env) {
-        return Math.max(...this.evaluateWithUnit(unit, env));
-    }
-
-    /**
-     * @param {Unit} unit
-     * @param {E} env
-     * @returns {[number, number, number, number]}
-     */
-    evaluateStatsSumWithUnit(unit, env) {
-        return this.evaluateWithUnit(unit, env).reduce((a, b) => ArrayUtil.add(a, b), [0, 0, 0, 0]);
-    }
-}
-
-class SkillEffectNode {
-    /** @type {SkillEffectNode} */
-    _parent = null;
-    /** @type {SkillEffectNode[]} */
-    _children = []
-    /** @type {number | string} */
-    _skillId;
-    /** @type {string} */
-    _skillName;
-
-    constructor(...children) {
-        this.addChildren(...children);
-    }
-
-    // noinspection JSUnusedGlobalSymbols
-    setSkill(skillId, skillName) {
-        this._skillId = skillId;
-        this._skillName = skillName;
-    }
-
-    /**
-     * @param {NodeEnv} env
-     */
-    evaluate(env) {
-        return this.evaluateChildren(env);
-    }
-
-    evaluateChildren(env) {
-        return this._children.map(child => child.evaluate(env));
-    }
-
-    addParent(node) {
-        this._parent = node;
-    }
-
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {SkillEffectNode} node
-     */
-    addChild(node) {
-        this._children.push(node);
-        node.addParent(this);
-    }
-
-    /**
-     * @param {...SkillEffectNode} children
-     */
-    addChildren(...children) {
-        for (const child of children) {
-            this._children.push(child);
-            child.addParent(this);
-        }
-    }
-
-    getChildren() {
-        return this._children;
-    }
-
-    toString() {
-        return `SkillEffectNode(${this._children.length})`;
-    }
-}
-
-/**
- * @abstract
- */
-class NumberNode extends SkillEffectNode {
-    /**
-     * @param {number|NumberNode} numberOrNode
-     * @returns {ConstantNumberNode|NumberNode}
-     */
-    static makeNumberNodeFrom(numberOrNode) {
-        return typeof numberOrNode === 'number' ? new ConstantNumberNode(numberOrNode) : numberOrNode;
-    }
-
-    /**
-     * @abstract
-     * @param {NodeEnv} env
-     * @returns {number}
-     */
-    evaluate(env) {
-        return super.evaluate(env);
-    }
-}
-
-class PositiveNumberNode extends NumberNode {
-    evaluate(env) {
-        let number = super.evaluate(env);
-        if (number < 0) {
-            env.error(`Not a positive number: ${number}`);
-        }
-        return number;
-    }
-}
-
-/**
- * @abstract
- */
-class FromNumberNode extends SkillEffectNode {
-    /**
-     * @param {number|NumberNode} numberOrNode
-     */
-    constructor(numberOrNode) {
-        super(NumberNode.makeNumberNodeFrom(numberOrNode));
-    }
-
-    /**
-     * @returns {number}
-     */
-    evaluateChildren(env) {
-        return super.evaluateChildren(env)[0];
-    }
-
-    /**
-     * @abstract
-     * @param {NodeEnv} env
-     */
-    evaluate(env) {
-    }
-}
-
-/**
- * @abstract
- */
-class FromNumbersNode extends SkillEffectNode {
-    /**
-     * @param {...number|NumberNode} values
-     */
-    constructor(...values) {
-        super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
-    }
-
-    /**
-     * @param env
-     * @returns {number[]}
-     */
-    evaluateChildren(env) {
-        return super.evaluateChildren(env);
-    }
-
-    /**
-     * @param {NodeEnv} env
-     * @abstract
-     */
-    evaluate(env) {
-        return super.evaluateChildren(env);
-    }
-}
-
-class FromPositiveNumberNode extends FromNumberNode {
-    evaluateChildren(env) {
-        let value = super.evaluateChildren(env);
-        if (value < 0) {
-            throw new Error('Children must be a positive number');
-        }
-        return value;
-    }
-}
-
-// TODO: マイナスが許されない場所でこのクラスを使用するようにする
-class FromNumberEnsuredNonNegativeNode extends FromNumberNode {
-    evaluateChildren(env) {
-        let value = super.evaluateChildren(env);
-        if (value < 0) {
-            env.warn(`Negative value detected, adjust to 0. value: ${value}`);
-        }
-        return MathUtil.ensureMin(value, 0);
-    }
-}
-
-class FromPositiveNumbersNode extends FromNumbersNode {
-    evaluateChildren(env) {
-        let evaluatedValues = super.evaluateChildren(env);
-        if (evaluatedValues.some(value => value < 0)) {
-            env.error(`Negative value is not allowed. values: ${evaluatedValues}`);
-        }
-        return evaluatedValues;
-    }
-}
-
-class ConstantNumberNode extends NumberNode {
-    #value;
-
-    /**
-     * @param {number} value
-     */
-    constructor(value) {
-        super();
-        this.#value = value;
-    }
-
-    /**
-     * @returns {number}
-     */
-    evaluate(env) {
-        return this.#value;
-    }
-}
-
-/**
- * @abstract
- */
-class BoolNode extends SkillEffectNode {
-    /**
-     * @param {boolean|BoolNode} boolOrNode
-     * @returns {BoolNode}
-     */
-    static makeBoolNodeFrom(boolOrNode) {
-        if (typeof boolOrNode === 'boolean') {
-            return boolOrNode ? TRUE_NODE : FALSE_NODE;
-        } else {
-            return boolOrNode;
-        }
-    }
-
-    /**
-     * @abstract
-     * @param {NodeEnv} env
-     * @returns {boolean} */
-    evaluate(env) {
-        super.evaluate(env);
-    }
-}
-
-class AndNode extends BoolNode {
-    evaluate(env) {
-        let result = this.getChildren().every(child => child.evaluate(env));
-        env?.trace(`[AndNode] ${result}`);
-        return result;
-    }
-}
-
-// noinspection JSUnusedGlobalSymbols
-const AND_NODE = (...nodes) => new AndNode(...nodes);
-
-class OrNode extends BoolNode {
-    evaluate(env) {
-        let result = this.getChildren().some(child => child.evaluate(env));
-        env?.trace(`[OrNode] ${result}`);
-        return result;
-    }
-}
-
-// noinspection JSUnusedGlobalSymbols
-const OR_NODE = (...nodes) => new OrNode(...nodes);
-
-class NotNode extends BoolNode {
-    /**
-     * @param {boolean|BoolNode} value
-     */
-    constructor(value) {
-        super(BoolNode.makeBoolNodeFrom(value));
-    }
-
-    evaluate(env) {
-        return !this.evaluateChildren(env)[0];
-    }
-}
-
-// noinspection JSUnusedGlobalSymbols
-const NOT_NODE = node => new NotNode(node);
-
-const TRUE_NODE = new class extends BoolNode {
-    evaluate(env) {
-        return true;
-    }
-}();
-
-const FALSE_NODE = new class extends BoolNode {
-    evaluate(env) {
-        return false;
-    }
-}();
-
-class TraceBoolNode extends BoolNode {
-    /**
-     * @param {boolean|BoolNode} b
-     */
-    constructor(b) {
-        super();
-        this._boolNode = BoolNode.makeBoolNodeFrom(b);
-    }
-
-    evaluate(env) {
-        let result = this._boolNode.evaluate(env);
-        env.trace(`value: ${result}`);
-        return result;
-    }
-}
-
-/**
- * @abstract
- */
-class NumberOperationNode extends NumberNode {
-    /**
-     * @param {...(number|NumberNode)} values
-     */
-    constructor(...values) {
-        super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
-    }
-}
-
-class EnsureMaxNode extends NumberOperationNode {
-    #max = Number.MAX_SAFE_INTEGER;
-
-    /**
-     * @param {number|NumberNode} child
-     * @param {number} max
-     */
-    constructor(child, max) {
-        super(child);
-        this.#max = max;
-    }
-
-    evaluateChildren(env) {
-        return super.evaluateChildren(env)[0];
-    }
-
-    evaluate(env) {
-        let value = this.evaluateChildren(env);
-        let result = MathUtil.ensureMax(value, this.#max);
-        env?.trace(`[EnsureMaxNode] (value: ${value}, max: ${this.#max}) => ${result}`);
-        return result;
-    }
-}
-
-class EnsureMinMaxNode extends NumberOperationNode {
-    #min = Number.MIN_SAFE_INTEGER;
-    #max = Number.MAX_SAFE_INTEGER;
-
-    /**
-     * @param {number|NumberNode} child
-     * @param {number} min
-     * @param {number} max
-     */
-    constructor(child, min, max) {
-        super(child);
-        this.#min = min;
-        this.#max = max;
-    }
-
-    evaluateChildren(env) {
-        return super.evaluateChildren(env)[0];
-    }
-
-    evaluate(env) {
-        let value = this.evaluateChildren(env);
-        let result = MathUtil.ensureMinMax(value, this.#min, this.#max);
-        env?.trace(`[EnsureMinMaxNode] (min: ${this.#min}, value: ${value}, max: ${this.#max}) => ${result}`);
-        return result;
-    }
-}
-
-class AddNode extends NumberOperationNode {
-    /**
-     * @override
-     * @returns {number}
-     */
-    evaluate(env) {
-        let evaluated = super.evaluateChildren(env);
-        let result = evaluated.reduce((a, b) => a + b);
-        env?.trace(`[AddNode] add [${[evaluated]}] = ${result}`);
-        return result;
-    }
-}
-
-const ADD_NODE = (...node) => new AddNode(...node);
-
-class SubNode extends NumberOperationNode {
-    /**
-     * @override
-     * @returns {number}
-     */
-    evaluate(env) {
-        let evaluated = super.evaluateChildren(env);
-        let result = evaluated.reduce((a, b) => a - b);
-        env?.trace(`[SubNode] sub [${[evaluated]}] = ${result}`);
-        return result;
-    }
-}
-
-const SUB_NODE = (...node) => new SubNode(...node);
-
-class MultNode extends NumberOperationNode {
-    /**
-     * @override
-     * @returns {number}
-     */
-    evaluate(env) {
-        let evaluated = super.evaluateChildren(env);
-        let result = evaluated.reduce((a, b) => a * b);
-        env?.trace(`[MultNode] mult [${[evaluated]}] = ${result}`);
-        return result;
-    }
-}
-
-const MULT_NODE = (...node) => new MultNode(...node);
-
-class MultTruncNode extends NumberOperationNode {
-    /**
-     * @override
-     * @returns {number}
-     */
-    evaluate(env) {
-        let evaluated = super.evaluateChildren(env);
-        let result = evaluated.reduce((a, b) => Math.trunc(a * b));
-        env?.trace(`[MultTruncNode] mult trunc [${[evaluated]}] = ${result}`);
-        return result;
-    }
-}
-
-const MULT_TRUNC_NODE = (...node) => new MultTruncNode(...node);
-
-class MaxNode extends NumberOperationNode {
-    /**
-     * @override
-     * @returns {number}
-     */
-    evaluate(env) {
-        let evaluated = super.evaluateChildren(env);
-        let result = Math.max(...evaluated);
-        env?.trace(`[MaxNode] max trunc [${[evaluated]}] = ${result}`);
-        return result;
-    }
-}
-
-const MAX_NODE = (...node) => new MaxNode(...node);
-
-/**
- * @abstract
- */
-class CompareNode extends BoolNode {
-    /**
-     * @param {number|NumberNode} left
-     * @param {number|NumberNode} right
-     */
-    constructor(left, right) {
-        super(NumberNode.makeNumberNodeFrom(left), NumberNode.makeNumberNodeFrom(right));
-    }
-}
-
-class GtNode extends CompareNode {
-    evaluate(env) {
-        let [left, right] = this.evaluateChildren(env);
-        let result = left > right;
-        env?.trace(`[GtNode] ${left} > ${right}: ${result}`);
-        return result;
-    }
-}
-
-const GT_NODE = (a, b) => new GtNode(a, b);
-
-// noinspection JSUnusedGlobalSymbols
-class GteNode extends CompareNode {
-    evaluate(env) {
-        let [left, right] = this.evaluateChildren(env);
-        return left >= right;
-    }
-}
-
-// noinspection JSUnusedGlobalSymbols
-class LtNode extends CompareNode {
-    evaluate(env) {
-        let [left, right] = this.evaluateChildren(env);
-        return left < right;
-    }
-}
-
-class LteNode extends CompareNode {
-    evaluate(env) {
-        let [left, right] = this.evaluateChildren(env);
-        return left <= right;
-    }
-}
-
-const LTE_NODE = (...node) => new LteNode(...node);
-
-// noinspection JSUnusedGlobalSymbols
-class EqNode extends CompareNode {
-    evaluate(env) {
-        let [left, right] = this.evaluateChildren(env);
-        return left === right;
-    }
-}
-
-const EQ_NODE = (...node) => new EqNode(...node);
-
-class IfNode extends SkillEffectNode {
-    /** @type {BoolNode} */
-    #condNode;
-
-    constructor(condNode, ...stmtNodes) {
-        super(...stmtNodes);
-        this.#condNode = condNode;
-    }
-
-    evaluate(env) {
-        env?.trace("[IfNode] 条件を評価");
-        if (this.#condNode.evaluate(env)) {
-            env?.trace("[IfNode] 条件は真");
-            return super.evaluate(env);
-        }
-        env?.trace("[IfNode] 条件は偽");
-    }
-}
-
-const IF_NODE = (condNode, ...stmtNodes) => new IfNode(condNode, ...stmtNodes);
-
-class TernaryConditionalNumberNode extends NumberNode {
-    /** @type {BoolNode} */
-    #condNode;
-
-    /**
-     * @param {BoolNode} condNode
-     * @param {number|NumberNode} trueNode
-     * @param {number|NumberNode} falseNode
-     */
-    constructor(condNode, trueNode, falseNode) {
-        super(NumberNode.makeNumberNodeFrom(trueNode), NumberNode.makeNumberNodeFrom(falseNode));
-        this.#condNode = condNode;
-    }
-
-    /**
-     * @returns {NumberNode[]}
-     */
-    getChildren() {
-        return super.getChildren();
-    }
-
-    evaluate(env) {
-        let condResult = this.#condNode.evaluate(env);
-        let index = condResult ? 0 : 1;
-        env?.trace(`[TernaryConditionalNumberNode] 条件を評価: ${condResult}`)
-        let result = this.getChildren()[index].evaluate(env);
-        env?.trace(`[TernaryConditionalNumberNode] 式を評価: ${result}`)
-        return result;
-    }
-}
-
-const COND_OP =
-    (cond, trueNode, falseNode) => new TernaryConditionalNumberNode(cond, trueNode, falseNode);
-
-class StoreNumNode extends FromNumberNode {
-    evaluate(env) {
-        let value = this.evaluateChildren(env);
-        env.trace(`store value: ${value}`);
-        env.storeValue(value);
-    }
-}
-
-class ReadNumNode extends NumberNode {
-    evaluate(env) {
-        let result = env.readValue();
-        env.trace(`read value: ${result}`);
-        return result;
-    }
-}
-
-const READ_NUM_NODE = new ReadNumNode();
-
-class NumThatIsNode extends SkillEffectNode {
-    /**
-     * @param procedureNode
-     * @param {NumberNode} valueNode
-     */
-    constructor(procedureNode, valueNode) {
-        super(procedureNode, valueNode);
-    }
-
-    evaluate(env) {
-        let value = this.getChildren()[1].evaluate(env);
-        env.storeValue(value);
-        this.getChildren()[0].evaluate(env);
-    }
-}
-
 // TODO: 別ファイルに分ける
 
 // TODO: 直接設定されたくない値をプライベートにする(targetUnitOrAlly, targetFoe)
@@ -1318,6 +609,12 @@ const GetUnitDuringCombatMixin = {
 const GetFoeDuringCombatMixin = {
     getUnit(env) {
         return env.foeDuringCombat;
+    },
+};
+
+const GetSkillOwnerDuringCombatMixin = {
+    getUnit(env) {
+        return env.skillOwner;
     },
 };
 
@@ -2030,6 +1327,22 @@ const CAN_FOES_ATTACK_TRIGGER_SPECIAL_NODE = new class extends CanTargetsAttackT
 }();
 
 /**
+ * If foe's attack triggers unit's Special
+ */
+class CanTargetsFoesAttackTriggerTargetsSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasDefenseSpecial();
+        env.debug(`${unit.nameWithGroup}が攻撃を受ける際に発動する奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
+        return result;
+    }
+}
+
+/**
  * @abstract
  */
 class ApplyingNumberNode extends SkillEffectNode {
@@ -2300,6 +1613,18 @@ class GetStatNode extends NumberNode {
     }
 }
 
+class TargetsStatsAtStartOfTurnNode extends GetStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    statsDescription = "開始時";
+
+    getStats(env) {
+        return this.getUnit(env).getStatusesInPrecombat();
+    }
+}
+
 class UnitsStatsAtStartOfCombatNode extends GetStatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
@@ -2411,7 +1736,7 @@ class UnitsEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
 
     getStats(env) {
         let unit = this.getUnit(env);
-        return unit.getStatusesInCombat(env.getFoeDuringCombatOf(unit));
+        return unit.getEvalStatusesInCombat(env.getFoeDuringCombatOf(unit));
     }
 }
 
@@ -2658,8 +1983,9 @@ const NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE = new
  */
 const UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
-        // 敵の絶対追撃を無効
-        env.unitDuringCombat.battleContext.invalidatesAbsoluteFollowupAttack = true;
+        let unit = env.unitDuringCombat;
+        unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+        env.debug(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
     }
 }
 
@@ -2841,21 +2167,44 @@ const NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE = new NeutralizesFoes
 /**
  * number of【Bonus】effects active on unit, excluding stat bonuses + number of【Penalty】effects active on foe, excluding stat penalties
  */
-const NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
+const NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
         return env.unitDuringCombat.getPositiveStatusEffects().length + env.foeDuringCombat.getNegativeStatusEffects().length;
     }
 }();
 
-const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
+const NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
-        return env.unitDuringCombat.getPositiveStatusEffects().length + env.foeDuringCombat.getPositiveStatusEffects().length;
+        let unit = env.unitDuringCombat;
+        let result = unit.getPositiveStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の有利な状態の数: ${result}`);
+        return result;
     }
 }();
 
-const NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends NumberNode {
+const NUM_OF_PENALTY_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
-        return env.foeDuringCombat.getNegativeStatusEffects().length;
+        let unit = env.unitDuringCombat;
+        let result = unit.getNegativeStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の不利な状態の数: ${result}`);
+        return result;
+    }
+}();
+
+const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
+    evaluate(env) {
+        let result = env.unitDuringCombat.getPositiveStatusEffects().length + env.foeDuringCombat.getPositiveStatusEffects().length;
+        env.env.debug(`自分有利な状態と相手の有利な状態の数: ${result}`);
+        return result;
+    }
+}();
+
+const NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
+    evaluate(env) {
+        let unit = env.foeDuringCombat;
+        let result = unit.getNegativeStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の不利な状態の数: ${result}`);
+        return result;
     }
 }();
 
@@ -2951,9 +2300,23 @@ class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
 
 /**
  * reduces damage from foe's first attack by X% during combat
- * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)
  */
 class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends ApplyingNumberNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.addDamageReductionRatioOfFirstAttacks(percentage / 100);
+        unit.battleContext.addDamageReductionRatioOfFirstAttack(percentage / 100);
+        let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttack();
+        env.debug(`${unit.nameWithGroup}は最初に受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+    }
+}
+
+/**
+ * reduces damage from foe's first attack by X% during combat
+ * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)
+ */
+class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode extends ApplyingNumberNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let percentage = this.evaluateChildren(env);
@@ -2966,7 +2329,7 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends Applyin
 /**
  * reduces damage from foe's first attack by X during combat
  */
-class ReducesDamageFromFoesFirstAttackByNDuringCombatNode extends ApplyingNumberNode {
+class ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode extends ApplyingNumberNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let n = this.evaluateChildren(env);
@@ -3124,6 +2487,19 @@ const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE = new class
     }
 }();
 
+class WhenSpecialTriggersReducesDamageFromTargetsFoesAttacksByNPercentNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.damageReductionRatioBySpecial = n / 100;
+        env.debug(`${unit.nameWithGroup}は奥義発動、攻撃のダメージを${n}%軽減`);
+    }
+}
+
 class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -3166,6 +2542,34 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuring
     }
 }
 
+class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountReductionBeforeFirstFollowUpAttackByEnemy += n;
+        let result = unit.battleContext.specialCountReductionBeforeFirstFollowUpAttackByEnemy;
+        env.debug(`${unit.nameWithGroup}は相手の最初の追撃の前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+    }
+}
+
+class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesSecondStrikeDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountReductionBeforeSecondFirstAttacksByEnemy += n;
+        let result = unit.battleContext.specialCountReductionBeforeSecondFirstAttacksByEnemy;
+        env.debug(`${unit.nameWithGroup}は相手の最初の2回攻撃の2回目の前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+    }
+}
+
 /**
  * inflicts Special cooldown count+1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
  */
@@ -3174,9 +2578,8 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack 
         Object.assign(this.prototype, GetUnitMixin);
     }
 
-    constructor(n, targetNode = null) {
+    constructor(n) {
         super(n);
-        this._targetNode = targetNode;
     }
 
     evaluate(env) {
@@ -3202,6 +2605,29 @@ class GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNod
     }
 }
 
+class CanTargetActivateNonSpecialMiracleNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.canActivateNonSpecialMiracle = true;
+        let threshold = this.evaluateChildren(env);
+        unit.battleContext.nonSpecialMiracleHpPercentageThreshold = threshold;
+        env.debug(`HP${threshold}%以上の時${unit.nameWithGroup}は奥義以外の祈りを発動可能`);
+    }
+}
+
+// TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
+
 /**
  * Effective against
  */
@@ -3221,6 +2647,101 @@ class EffectiveAgainstNode extends BoolNode {
         } else {
             env.debug(`${foe.nameWithGroup}は特攻無効`);
         }
+    }
+}
+
+/**
+ * If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect, Special triggers twice, then reduces damage by N.
+ */
+class TargetsSpecialTriggersTwiceThenReducesDamageByNNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.canDamageReductionSpecialTriggerTwice = true;
+        let n = this.evaluateChildren(env)[0];
+        env.debug(`${unit.nameWithGroup}はダメージ軽減奥義を複製発動`);
+        if (n > 0) {
+            unit.battleContext.damageReductionValueAfterSpecialTriggerTwice += n;
+            env.debug(`${unit.nameWithGroup}はその後、受けるダメージ-${n}: => ${unit.battleContext.damageReductionValueAfterSpecialTriggerTwice}`);
+        }
+    }
+}
+
+/**
+ * neutralizes effects that prevent those allies' counterattacks during their combat.
+ */
+class NeutralizesEffectsThatPreventTargetsCounterattacksDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.nullCounterDisrupt = true;
+        env.debug(`${unit.nameWithGroup}は自身の反撃不可を無効`);
+    }
+}
+
+/**
+ * when unit deals damage to foe during combat, restores 7 HP to unit (triggers even if 0 damage is dealt).
+ */
+class WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = this.evaluateChildren(env);
+        unit.battleContext.healedHpByAttack += result;
+        env.debug(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
+    }
+}
+
+class NeutralizeTargetsFoesReducesDamageByXPercentEffectsFromTargetFoesNonSpecialNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
+        env.debug(`${unit.nameWithGroup}は奥義発動後相手の奥義以外のダメージ軽減を無効`);
+    }
+}
+
+class AfterSpecialTriggersTargetsNextAttackDealsDamageEqTotalDamageReducedNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.canAddDamageReductionToNextAttackAfterSpecial = true;
+        env.debug(`${unit.nameWithGroup}は奥義で軽減した値を、自身の次の攻撃のダメージに+`);
+    }
+}
+
+class AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.nextAttackMinAdditionAfterSpecial = n;
+        env.debug(`${unit.nameWithGroup}は奥義で軽減した値を、自身の次の攻撃のダメージに+する効果の最小 : ${n}`);
     }
 }
 
@@ -3254,6 +2775,12 @@ class IfTargetTriggersAttacksTwiceNode extends BoolNode {
 }
 
 const IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE = new IfTargetTriggersAttacksTwiceNode();
+
+class IfTargetsFoeTriggersAttacksTwiceNode extends IfTargetTriggersAttacksTwiceNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
 
 /**
  * If unit has not used or been the target of an Assist skill during the current turn,
@@ -3364,6 +2891,121 @@ const CURRENT_TURN_NODE = new class extends NumberNode {
     }
 }
 
+const NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE = new class extends PositiveNumberNode {
+    evaluate(env) {
+        let result = Unit.calcAttackerMoveDistance(env.unitDuringCombat, env.foeDuringCombat);
+        env.debug(`攻撃した側が動いた距離は${result}`);
+        return result;
+    }
+}();
+
+class TargetsSpecialCountAtStartOfTurnNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.statusEvalUnit.specialCount;
+        env.debug(`${unit.nameWithGroup}のターン開始時の奥義発動カウント: ${result}`);
+        return result;
+    }
+}
+
+class TargetsMaxSpecialCountNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.maxSpecialCount;
+        env.debug(`${unit.nameWithGroup}の奥義発動カウントの最大値: ${result}`);
+        return result;
+    }
+}
+
+class HasTargetStatusEffectNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let e = this.evaluateChildren(env)[0];
+        let result = unit.hasStatusEffect(e);
+        env.debug(`${unit.nameWithGroup}は${getStatusEffectName(e)}を持っているか: ${result}`);
+        return result;
+    }
+}
+
+class NumOfTargetsDragonflowersNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.dragonflower;
+        env.debug(`${unit.nameWithGroup}の神竜の花の数: ${result}`);
+        return result;
+    }
+}
+
+class TargetsMoveTypeNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.moveType;
+        env.debug(`${unit.nameWithGroup}の移動タイプ: ${result}`);
+        return result;
+    }
+}
+
+class TargetsRangeNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.attackRange;
+        env.debug(`${unit.nameWithGroup}の射程: ${result}`);
+        return result;
+    }
+}
+
+class FoesRangeNode extends TargetsRangeNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+class IsTarget2SpacesFromTargetsFoeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let spaces = unit.getActualAttackRange(foe);
+        let result = spaces === 2;
+        env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}の距離は2か: ${result}`);
+        return result;
+    }
+}
+
 class FoesMoveNode extends NumberNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
@@ -3460,6 +3102,12 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
             env.debug(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与`);
             unit.addStatusEffect(e)
         });
+    }
+}
+
+class GrantsStatusEffectToSkillOwnerNode extends GrantsStatusEffectsNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerDuringCombatMixin);
     }
 }
 
@@ -3639,6 +3287,22 @@ class IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode extends BoolNode {
 const IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
     new IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode(3);
 
+// TODO: リファクタリング
+class ForEachAllyWithHighestValueWithinNSpacesNode extends ForEachUnitOnMapNode {
+    constructor(n, predNode, valueFuncNode, ...children) {
+        super(predNode, ...children);
+        this._numberNode = NumberNode.makeNumberNodeFrom(n);
+        this._valueFuncNode = valueFuncNode;
+    }
+
+    getUnits(env) {
+        let allies = env.unitManager.enumerateUnitsInTheSameGroupOnMap(env.target);
+        let highestUnits = IterUtil.maxElements(allies, u => this._valueFuncNode.evaluate(env.copy().setTarget(u)));
+        env.debug(`最も値が高いユニット: ${highestUnits.map(u => u.nameWithGroup)}`);
+        return highestUnits;
+    }
+}
+
 class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnitOnMapNode {
     constructor(n, predNode, ...children) {
         super(predNode, ...children);
@@ -3729,8 +3393,8 @@ class IsInRangeNNode extends BoolNode {
 class IsTargetWithinNSpacesOfTargetsAllyNode extends IsInRangeNNode {
     evaluate(env) {
         let spaces = this._nNode.evaluate(env);
-        let result = env.unitManager.isThereAllyInSpecifiedSpaces(env.target, spaces);
-        env.debug(`${env.target.nameWithGroup}の周囲${spaces}マスに味方が存在するか: ${result}`);
+        let result = env.unitManager.isThereAllyInSpecifiedSpaces(env.target, spaces, u => this._predNode.evaluate(env.copy().setTarget(u)));
+        env.debug(`${env.target.nameWithGroup}の周囲${spaces}マスに条件を満たす味方が存在するか: ${result}`);
         return result;
     }
 }
@@ -3751,6 +3415,19 @@ class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
 // noinspection JSUnusedGlobalSymbols
 const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
+
+class AreTargetAndSkillOwnerPartnersNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = env.skillOwner.isPartner(unit);
+        env.debug(`${unit.nameWithGroup}は${env.skillOwner.nameWithGroup}と支援を結んでいるか: ${result}`);
+        return result;
+    }
+}
 
 /**
  * TODO: 動作確認する。Mixinを使用する
@@ -3825,10 +3502,12 @@ class AppliesDivineVeinNode extends SkillEffectNode {
      * TODO: traceログを追加
      * @param {number} divineVein
      * @param {BoolNode} predNode
+     * @param {number|BoolNode} turns
      */
-    constructor(divineVein, predNode) {
+    constructor(divineVein, predNode, turns = 1) {
         super(predNode);
         this._divineVein = divineVein;
+        this._turns = NumberNode.makeNumberNodeFrom(turns);
     }
 
     getUnit(env) {
@@ -3838,11 +3517,12 @@ class AppliesDivineVeinNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         env.debug(`${unit.nameWithGroup}は天脈(${this._divineVein})を付与`);
+        let turns = this._turns.evaluate(env) ?? 1;
         for (let tile of g_appData.map.enumerateTiles()) {
             let copyEnv = env.copy();
             copyEnv.tile = tile;
             if (this.evaluateChildren(copyEnv)[0]) {
-                tile.reserveDivineVein(this._divineVein, unit.groupId);
+                tile.reserveDivineVein(this._divineVein, unit.groupId, turns);
             }
         }
     }
@@ -3896,6 +3576,20 @@ class IsSpacesNSpacesAwayFromAssistedNode extends BoolNode {
         // TODO: 警告が出ないようにする
         // noinspection JSIncompatibleTypesComparison
         return distance === n;
+    }
+}
+
+class IsSpacesWithinNSpacesOfTargetNode extends BoolNode {
+    constructor(n) {
+        super(NumberNode.makeNumberNodeFrom(n));
+    }
+
+    evaluate(env) {
+        let distance = env.tile.calculateDistance(env.assisted.placedTile);
+        let n = this.evaluateChildren(env)[0];
+        // TODO: 警告が出ないようにする
+        // noinspection JSIncompatibleTypesComparison
+        return distance <= n;
     }
 }
 
@@ -3971,6 +3665,43 @@ class IsTargetIsInSpaceWhereDivineVeinEffectIsAppliedNode extends BoolNode {
 }
 
 const IS_TARGET_IS_IN_SPACE_WHERE_DIVINE_VEIN_EFFECT_IS_APPLIED_NODE = new IsTargetIsInSpaceWhereDivineVeinEffectIsAppliedNode();
+
+/**
+ * TODO: 汎用的にする
+ * Applies【Divine Vein (Ice)】to unit's space and spaces within 2 spaces of unit for 2 turns
+ */
+class AppliesDivineVeinIceToTargetsSpaceAndSpacesWithinNSpacesOfTargetFor2TurnsNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(unit.placedTile, n)) {
+            let obj = tile.obj;
+            if (obj instanceof OffenceStructureBase || obj instanceof DefenceStructureBase) {
+                if (obj.isBreakable) {
+                    continue;
+                }
+            }
+            let placedUnit = tile.placedUnit;
+            if (placedUnit && !placedUnit.isSameGroup(unit)) {
+                continue;
+            }
+            tile.reserveDivineVein(DivineVeinType.Ice, unit.groupId, 2);
+        }
+        g_appData.map.applyReservedDivineVein();
+    }
+}
 
 // Tileへの効果 END
 
@@ -4076,6 +3807,23 @@ class InflictsStatusEffectsAtStartOfTurnNode extends GrantsStatusEffectsAtStartO
 }
 
 class InflictsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAfterCombatNode {
+}
+
+class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.reserveToReduceSpecialCount(n);
+        env.debug(`${unit.nameWithGroup}は奥義発動カウント-${n}を予約`);
+        return super.evaluate(env);
+    }
+}
+
+class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
 /**
@@ -4388,6 +4136,11 @@ const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
 const AFTER_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
+ * 戦闘後(死んでも発動)
+ * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
+const AFTER_COMBAT_NEVERTHELESS_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘ステータス決定後のバフ
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
@@ -4446,22 +4199,22 @@ const AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS = new SkillEffectHooks(
 /**
  * 応援を使用した時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
-const AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOK = new SkillEffectHooks();
+const AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * 応援を使用された時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
-const AFTER_RALLY_SKILL_IS_USED_BY_ALLY_HOOK = new SkillEffectHooks();
+const AFTER_RALLY_SKILL_IS_USED_BY_ALLY_HOOKS = new SkillEffectHooks();
 
 /**
  * 移動補助を使用した時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
-const AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOK = new SkillEffectHooks();
+const AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * 移動補助を使用された時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
-const AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOK = new SkillEffectHooks();
+const AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS = new SkillEffectHooks();
 
 /**
  * TODO: rename

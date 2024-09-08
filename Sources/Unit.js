@@ -783,6 +783,7 @@ class Unit extends BattleMapElement {
                 this.addStatusEffect(StatusEffectType.CantoControl);
                 this.moveCountForCanto = this.calcMoveCountForCanto();
                 if (this.isRangedWeaponType()) {
+                    console.log(`this.nameWithGroup: ${this.nameWithGroup}は再移動制限により行動停止`);
                     this.endAction();
                     this.deactivateCanto();
                 }
@@ -3602,6 +3603,7 @@ class Unit extends BattleMapElement {
         this.applyReservedGreatTalents();
     }
 
+    // TODO: 直接付与している箇所を予約に置き換える
     applyReservedState(isBeginningOfTurn) {
         // 解除
         this.neutralizeReservedStateToNeutralize();
@@ -3783,7 +3785,7 @@ class Unit extends BattleMapElement {
             this.getSpdInCombat(enemyUnit),
             this.getDefInCombat(enemyUnit),
             this.getResInCombat(enemyUnit),
-        ];
+        ].map(value => MathUtil.ensureMin(value, 0));
     }
 
     /**
@@ -5824,7 +5826,6 @@ class Unit extends BattleMapElement {
                     break;
                 case Weapon.AbsoluteAmiti:
                 case PassiveC.FettersOfDromi:
-                case Weapon.HolytideTyrfing:
                 case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
@@ -5998,6 +5999,10 @@ class Unit extends BattleMapElement {
 
     grantsAnotherActionOnAssisted() {
         this.isActionDone = false;
+    }
+
+    hasEmblemHero() {
+        return this.emblemHeroIndex !== EmblemHero.None;
     }
 }
 

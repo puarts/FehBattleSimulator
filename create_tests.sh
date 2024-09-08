@@ -6,6 +6,7 @@ SOURCE_FILE_NAMES=(
     Logger
     SkillConstants
     Skill
+    SkillEffectCore
     SkillEffect
     SkillImpl
     BattleMapElement

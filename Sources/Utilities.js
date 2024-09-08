@@ -1181,6 +1181,32 @@ function getSkillIconDivTag(unit) {
         return div;
     }
     let html = '';
+
+    // 補助
+    {
+        let imgTag = document.createElement('img');
+        imgTag.src = `${g_imageRootPath}Support.png`;
+        if (!unit.hasSupport) {
+            imgTag.classList.add('summary-icon-grey');
+        }
+        html += `<div style="position: relative">${imgTag.outerHTML}</div>`;
+    }
+
+    // 奥義
+    {
+        let imgTag = document.createElement('img');
+        if (unit.hasEmblemHero()) {
+            imgTag.src = EngagedSpecialIcon[unit.emblemHeroIndex];
+        } else {
+            imgTag.src = `${g_imageRootPath}Special.png`;
+        }
+        if (!unit.hasSpecial) {
+            imgTag.classList.add('summary-icon-grey');
+        }
+        html += `<div style="position: relative">${imgTag.outerHTML}</div>`;
+    }
+
+    // パッシブ
     let infos = [
         unit.passiveAInfo, unit.passiveBInfo, unit.passiveCInfo,
         unit.passiveSInfo, unit.passiveXInfo,

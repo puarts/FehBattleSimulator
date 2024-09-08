@@ -17,9 +17,9 @@
     };
 
     // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applySkillAfterSkillsForBeginningOfTurnFuncMap.set(skillId, func);
     // 敵軍ターン開始時
-    applyEnemySkillForBeginningOfTurnFuncMap.set(skillId, func);
+    applySkillAfterEnemySkillsForBeginningOfTurnFuncMap.set(skillId, func);
 
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
@@ -639,7 +639,9 @@
                 targetUnit.battleContext.invalidateAllOwnDebuffs();
                 // 最初に受けた攻撃と2回攻撃のダメージを40%軽減
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
-                // （最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、戦闘後、7回復
+                // （最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
+                // 戦闘後、7回復
+                targetUnit.battleContext.healedHpAfterCombat += 7;
             }
         }
     );
@@ -2441,14 +2443,14 @@
                 targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
                     (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
                         if (!context.isFirstAttack(atkUnit)) return;
-                        defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
                         defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                     }
                 );
                 // [攻撃ごとの固定ダメージに軽減した分を加算]
                 targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                        atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                    if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
+                        atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
                         let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
                         atkUnit.battleContext.reducedDamageForNextAttack = 0;
                         return addDamage;
@@ -2704,8 +2706,17 @@
             // * 魔防の差x（4-現在の奥義発動カウント）％軽減（最大（40-現在の奥義発動カウントx10）％）（巨影の範囲奥義を除く）
             let diff = targetUnit.getEvalResDiffInCombat(enemyUnit);
             let count = targetUnit.tmpSpecialCount;
-            let ratio = MathUtil.ensureMinMax(diff * 0.04 - count, 0, 0.4 - count * 0.1);
+            let ratio = MathUtil.ensureMinMax(diff * (4 - count) / 100.0, 0, 0.4 - count * 0.1);
             targetUnit.battleContext.damageReductionRatiosBySpecialPerAttack.push(ratio);
+            // 戦闘中、奥義発動可能状態の時、
+            // または、戦闘中、奥義を発動済みの時、
+            if (targetUnit.isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                if (!targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat) {
+                    targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat = true;
+                    // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）
+                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+                }
+            }
         }
     );
 
@@ -2726,20 +2737,6 @@
                 let targetTile = enemyUnit.placedTile;
                 for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetTile, 2)) {
                     tile.reserveDivineVein(DivineVeinType.Water, targetUnit.groupId);
-                }
-            }
-        }
-    );
-
-    applySkillEffectsPerAttackFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
-            // 戦闘中、奥義発動可能状態の時、
-            // または、戦闘中、奥義を発動済みの時、
-            if (targetUnit.isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
-                if (!targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat) {
-                    targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat = true;
-                    // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）
-                    targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                 }
             }
         }
@@ -2778,6 +2775,7 @@
                 // * 戦闘中、攻撃、速さ、守備、魔防が周囲3マス以内の味方の数*3+5だけ増加（最大14）、
                 let count = this.__countAlliesWithinSpecifiedSpaces(targetUnit, 3);
                 let amount = MathUtil.ensureMax(count * 3 + 5, 14);
+                targetUnit.addAllSpur(amount);
                 // * 最初に受けた攻撃と2回攻撃のダメージー7（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
                 targetUnit.battleContext.damageReductionValueOfFirstAttacks += 7;
                 // かつ敵が攻撃時に発動する奥義を装備している時、
@@ -5599,7 +5597,7 @@
     // 奥義発動後、自分の次の攻撃のスキル効果を発動
     activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap.set(skillId,
         function (defUnit, atkUnit) {
-            defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
+            defUnit.battleContext.isNextAttackEffectAfterSpecialActivating = true;
         }
     );
 
@@ -5607,8 +5605,8 @@
         function (atkUnit, defUnit) {
             // - 自分の次の攻撃は、
             //     - ダメージ＋守備か魔防の高い方の20％、
-            if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
-                atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
+            if (atkUnit.battleContext.isNextAttackEffectAfterSpecialActivating) {
+                atkUnit.battleContext.isNextAttackEffectAfterSpecialActivating = false;
                 let status = atkUnit.getHighestStatusInCombat(defUnit, [false, false, true, true]);
                 return floorNumberWithFloatError(status * 0.2);
             }
@@ -7604,14 +7602,14 @@
                     targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
                         (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
                             if (!context.isFirstAttack(atkUnit)) return;
-                            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                            defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
                             defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                         }
                     );
                     // 攻撃ごとの固定ダメージに軽減した分を加算
                     targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                        if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                            atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                        if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
+                            atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
                             let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
                             atkUnit.battleContext.reducedDamageForNextAttack = 0;
                             return addDamage;
@@ -8132,6 +8130,8 @@
     setSkill(PassiveA.EarthfireBoost3, u => u.addAtkDefSpurs(7));
     // 生命の疾風大地3
     setSkill(PassiveA.EarthwindBoost3, u => u.addSpdDefSpurs(7));
+    // 生命の疾風静水3
+    setSkill(PassiveA.DelugeBoost3, u => u.addSpdResSpurs(7));
 }
 
 // 強く気高き魂の槍
@@ -9142,6 +9142,8 @@
     // 近影
     // 速さ守備の近影4
     setSkill(PassiveB.SDNearTrace4, u => u.addSpdDefSpurs(-4), 2);
+    // 速さ魔防の近影4
+    setSkill(PassiveB.SRNearTrace4, u => u.addSpdResSpurs(-4), 2);
 
     // 遠影
     // 攻撃魔防の遠影4
@@ -9523,7 +9525,7 @@
     // 奥義発動後、自分の次の攻撃のスキル効果を発動
     activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap.set(skillId,
         function (defUnit, atkUnit) {
-            defUnit.battleContext.nextAttackEffectAfterSpecialActivated = true;
+            defUnit.battleContext.isNextAttackEffectAfterSpecialActivating = true;
         }
     );
 
@@ -9547,8 +9549,8 @@
     addSpecialDamageAfterDefenderSpecialActivatedFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             // 自分の攻撃の40%
-            if (atkUnit.battleContext.nextAttackEffectAfterSpecialActivated) {
-                atkUnit.battleContext.nextAttackEffectAfterSpecialActivated = false;
+            if (atkUnit.battleContext.isNextAttackEffectAfterSpecialActivating) {
+                atkUnit.battleContext.isNextAttackEffectAfterSpecialActivating = false;
                 return floorNumberWithFloatError(atkUnit.getAtkInCombat(defUnit) * 0.4);
             }
             return 0;
@@ -11612,14 +11614,14 @@
                         targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
                             (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
                                 if (!context.isFirstAttack(atkUnit)) return;
-                                defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+                                defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
                                 defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
                             }
                         );
                         // 攻撃ごとの固定ダメージに軽減した分を加算
                         targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                            if (atkUnit.battleContext.nextAttackAddReducedDamageActivated) {
-                                atkUnit.battleContext.nextAttackAddReducedDamageActivated = false;
+                            if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
+                                atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
                                 let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
                                 atkUnit.battleContext.reducedDamageForNextAttack = 0;
                                 return addDamage;

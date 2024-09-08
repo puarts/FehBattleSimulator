@@ -238,31 +238,6 @@
             font-size: 11px;
         }
 
-        tr.attackInfo {
-            border: solid;
-            border-width: 10px;
-            padding: 0px;
-            margin: 0px;
-        }
-
-        td.ally {
-            background-color: cadetblue;
-            color: yellow;
-            font-size: 9px;
-            border: solid;
-            border-color: lightblue;
-            border-width: 1px;
-        }
-
-        td.enemy {
-            background-color: rgb(177, 55, 55);
-            color: yellow;
-            font-size: 9px;
-            border: solid;
-            border-color: lightpink;
-            border-width: 1px;
-        }
-
         select.hero {
             width: 160px;
         }
@@ -453,12 +428,12 @@
                                                         <!-- <td class="ally" rowspan="2" style="width:38px"><img style="width:38px;"
                                                                                         v-bind:src="units[attackerUnitIndex].icon">
                                                                                 </td> -->
-                                                        <td class="ally" align="center"
+                                                        <td class="ally summary-text-shadow" align="center"
                                                             v-bind:style="attackInfoTdStyle">
                                                             {{getAttackerName()}}
                                                         </td>
                                                         <!-- <td style="font-size:10px"></td> -->
-                                                        <td class="enemy" align="center"
+                                                        <td class="enemy summary-text-shadow" align="center"
                                                             v-bind:style="attackInfoTdStyle">
                                                             {{getAttackTargetName()}}
                                                         </td>
@@ -2543,6 +2518,7 @@
                     "Logger.js",
                     "SkillConstants.js",
                     "Skill.js",
+                    "SkillEffectCore.js",
                     "SkillEffect.js",
                     "SkillImpl.js",
                     "SkillImpl202408.js",
