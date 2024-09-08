@@ -27,9 +27,11 @@ call %~dp0MergeSourcesAndCompress.bat FehHeroIconLister GlobalDefinitions,Utilit
 rem その他ツールで使うファイル
 echo other files
 set copyfiles=%battle_simulator_filenames% StatusCalcMain SampleSkillInfos SampleHeroInfos KeyRepeatHandler DamageCalculatorMain HeroStatusClustererMain
-for %%n in (%copyfiles%) do (
-    copy %~dp0Sources\%%n.js %destination%\%%n.js
-)
+
+rem 多分今はコピー不要なので、一旦コピーしないでおく
+REM for %%n in (%copyfiles%) do (
+    REM copy %~dp0Sources\%%n.js %destination%\%%n.js
+REM )
 
 echo css files
 set css_filenames=feh-battle-simulator
