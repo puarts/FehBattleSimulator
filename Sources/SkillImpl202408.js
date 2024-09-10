@@ -449,12 +449,16 @@
 
 // 聖日ティルフィング
 {
-    let skillId = getNormalSkillId(Weapon.HolytideTyrfing);
+    let weapon = Weapon.HolytideTyrfing;
+    let skillIds = [
+        getNormalSkillId(weapon),
+        getRefinementSkillId(weapon),
+    ];
     // Enables【Canto (２)】.
-    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(2));
+    CAN_TRIGGER_CANTO_HOOKS.addSkills(skillIds, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkills(skillIds, () => new ConstantNumberNode(2));
     // Accelerates Special trigger (cooldown count-1).
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AT_START_OF_COMBAT_HOOKS.addSkills(skillIds, () => new SkillEffectNode(
         // If unit or foe initiates combat after moving to a different space,
         IF_NODE(NOT_NODE(EQ_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 0)),
             // grants Atk/Spd/Def/Res+5 to unit during combat and
@@ -472,13 +476,43 @@
             ),
             // and also,
             // if unit's HP ≥ 25% at start of combat,
-            // unit’s HP > 1,
-            // and foe would reduce unit’s HP to 0,
-            // unit survives with 1 HP.
-            // (Once per combat. Does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0.)
             IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                // unit’s HP > 1,
+                // and foe would reduce unit’s HP to 0,
+                // unit survives with 1 HP.
+                // (Once per combat. Does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0.)
                 new CanTargetActivateNonSpecialMiracleNode(0),
             )
+        ),
+    ));
+
+    let skillId = getSpecialRefinementSkillId(weapon);
+    // "At start of combat,
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + number of foes within 3 rows or 3 columns centered on unit × 2 (max 11),
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(5, MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 2)),
+                    11,
+                ),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // and reduces damage from foe's first attack by X during combat
+                    // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                    new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(READ_NUM_NODE),
+                    // and reduces damage by X when foe's attack triggers foe Special
+                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(READ_NUM_NODE),
+                ),
+                // (X = number of spaces from start position to end position of whoever initiated combat × 3; max 12; excluding area-of-effect Specials),
+                new EnsureMaxNode(MULT_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 3), 12),
+            ),
+            // and restores 7 HP to unit after combat.".
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE
         ),
     ));
 }
