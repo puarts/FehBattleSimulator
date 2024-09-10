@@ -563,6 +563,69 @@
         ),
     ));
 }
+{
+    let skillId = getRefinementSkillId(Weapon.GrimBrokkr);
+    // Grim Brokkr can be upgraded in the Weapon Refinery.
+    // When upgraded, the description of Grim Brokkr becomes "Grants Atk+3.
+    // Enables Canto (2) during turns 1 through 4.
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => LTE_NODE(CURRENT_TURN_NODE, 4));
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(2));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or if the number of allies adjacent to unit ≤ 1,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUMBER_OF_TARGET_ALLIES_ADJACENT_TO_TARGET, 1)),
+            // inflicts Atk/Res-6 and Spd-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(6, 5, 0, 6),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and deals damage = 15% of unit's Atk during combat (excluding area-of-effect Specials),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.15, UNITS_ATK_DURING_COMBAT_NODE)),
+            ),
+            // and restores 7 HP to unit after combat.".
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.GrimBrokkr);
+    // Grim Brokkr can be upgraded with the additional effect Grim Brokkr W
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // "At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // inflicts Atk/Res-7,【Sabotage】,and【Schism】
+            // on closest foes and any foes within 2 spaces of those foes through their next actions.
+            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+                new InflictsStatsMinusAtStartOfTurnNode(7, 0, 0, 7),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Sabotage, StatusEffectType.Schism),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            new NumThatIsNode(
+                // inflicts penalty on foe's Atk/Spd/Res during combat = 5 + number of foes within 3 spaces of target (including target),
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, READ_NUM_NODE),
+                ADD_NODE(5, new NumOfTargetsFoesWithinNSpacesOfTargetNode(3)),
+            ),
+            // reduces damage from foe's attacks by X during combat,
+            new NumThatIsNode(
+                // and also,
+                // when foe's attack triggers foe's Special,
+                // reduces damage by X
+                new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(READ_NUM_NODE),
+                // (X = 3 × the total of the number of Bonus effects active on unit and the number of Penalty effects active on foe,
+                // excluding stat bonuses and stat penalties; max 12; excluding area-of-effect Specials).
+                new EnsureMaxNode(
+                    MULT_NODE(3, NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE),
+                    12,
+                ),
+            ),
+        ),
+    ));
+}
 
 // 鼓動の暗煙
 {

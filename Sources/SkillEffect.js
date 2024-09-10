@@ -198,6 +198,31 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
     }
 }
 
+// TODO: リファクタリング
+class NumOfTargetsFoesWithinNSpacesOfTargetNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {UnitNode} targetNode
+     */
+    constructor(n, targetNode = null) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+        this._targetNode = targetNode;
+    }
+
+    evaluate(env) {
+        let unit = this._targetNode ? this._targetNode.evaluate(env) : this.getUnit(env);
+        let n = this._n.evaluate(env);
+        let result = env.unitManager.countEnemiesWithinSpecifiedSpaces(unit, n);
+        env.debug(`${unit.nameWithGroup}の周囲${n}マスの敵の数: ${result}`);
+        return result;
+    }
+}
+
 class NumOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode extends NumberNode {
     #n;
 
@@ -2717,6 +2742,11 @@ class ForEachAllyWithHighestValueWithinNSpacesNode extends ForEachUnitOnMapNode 
 }
 
 class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnitOnMapNode {
+    /**
+     * @param {number|NumberNode} n
+     * @param {BoolNode} predNode
+     * @param {...SkillEffectNode} children
+     */
     constructor(n, predNode, ...children) {
         super(predNode, ...children);
         this._numberNode = NumberNode.makeNumberNodeFrom(n);
@@ -2740,6 +2770,10 @@ class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnit
 }
 
 class ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode {
+    /**
+     * @param {BoolNode} predNode
+     * @param {...SkillEffectNode} children
+     */
     constructor(predNode, ...children) {
         super(2, predNode, ...children);
     }
