@@ -342,6 +342,7 @@ class BattleSimulatorBase {
                 }
                 appData.__updateUnitSkillInfo(unit);
                 appData.updateArenaScore(unit);
+                appData.__showStatusToAttackerInfo();
             },
             specialChanged: function () {
                 if (g_app == null) {
@@ -355,6 +356,7 @@ class BattleSimulatorBase {
                 unit.resetMaxSpecialCount();
                 appData.updateArenaScore(unit);
                 updateAllUi();
+                appData.__showStatusToAttackerInfo();
             },
             specialCountChanged: function () {
                 if (g_app == null) {
@@ -493,6 +495,7 @@ class BattleSimulatorBase {
                 let currentUnit = self.__getCurrentUnit();
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
+                appData.__showStatusToAttackerInfo();
             },
             summonerLevelChanged: function () {
                 if (g_app == null) {
