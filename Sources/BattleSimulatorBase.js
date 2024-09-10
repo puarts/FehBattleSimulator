@@ -4360,7 +4360,7 @@ class BattleSimulatorBase {
         let enemyUnitsAgainstTarget = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
 
         this.__initializeUnitsPerTurn(targetUnits);
-        this.__initializeAllUnitsOnMapPerTurn(this.enumerateAllyUnitsOnMap());
+        this.__initializeAllUnitsOnMapPerTurn(targetUnits);
         this.__initializeTilesPerTurn(this.map._tiles, group);
 
         if (this.data.gameMode !== GameMode.SummonerDuels) {
