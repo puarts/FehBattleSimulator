@@ -7,8 +7,10 @@ SOURCE_FILE_NAMES=(
     SkillConstants
     Skill
     SkillEffectCore
+    SkillEffectEnv
     SkillEffect
-    SkillImpl
+    SkillEffectHooks
+    SkillEffectAliases
     BattleMapElement
     Tile
     Structures
@@ -31,6 +33,8 @@ SOURCE_FILE_NAMES=(
     HeroDatabase
     SampleSkillInfos
     SampleHeroInfos
+    SkillImpl
+    SkillImpl202408
     TestUtilities
     )
 TEST_UTIL_FILE_NAMES=(
