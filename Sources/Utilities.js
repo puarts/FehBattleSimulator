@@ -1118,7 +1118,10 @@ function getDivineVeinTag(divineVein) {
         return document.createElement('div');
     }
     let imgTag = document.createElement('img');
-    imgTag.src = getDivineVeinImgPath(divineVein);
+    let path = getDivineVeinImgPath(divineVein);
+    if (path) {
+        imgTag.src = path;
+    }
     return imgTag;
 }
 
@@ -1136,7 +1139,7 @@ function getDivineVeinImgPath(divineVein) {
         'DivineVein_Haze.webp',
         'DivineVein_Water.jpg',
         'DivineVein_Ice.webp',
-    ].map(img => `${g_imageRootPath}${img}`)[divineVein];
+    ].map(img => `${g_imageRootPath}${img}`)[divineVein] ?? null;
 }
 
 /**

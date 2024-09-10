@@ -2300,7 +2300,7 @@ class HasTargetEnteredCombatDuringTheCurrentTurnNode extends BoolNode {
 
 const CURRENT_TURN_NODE = new class extends NumberNode {
     evaluate(env) {
-        return g_appData.globalBattleContext.currentTurn;
+        return g_appData.globalBattleContext?.currentTurn ?? 0;
     }
 }
 
