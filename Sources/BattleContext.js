@@ -158,6 +158,7 @@ class BattleContext {
         // 次の自分の攻撃のダメージ加算
         this.additionalDamageOfNextAttack = 0;
 
+        this.canAddDamageReductionToNextAttackFromEnemiesFirstAttack = false;
         this.canAddDamageReductionToNextAttackAfterSpecial = false;
         this.nextAttackMinAdditionAfterSpecial = Number.MIN_SAFE_INTEGER;
 

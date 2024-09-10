@@ -1,4 +1,23 @@
 // noinspection JSUnusedLocalSymbols
+// それは興味深…・承
+{
+    let skillId = PassiveB.DivineRecreation2;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or foe's HP ≥ 50% at start of combat,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, new IsFoesHpGteNPercentAtStartOfCombatNode(50)),
+            // inflicts Atk/Spd/Def/Res-4 on foe,
+            INFLICTS_ALL_STATS_MINUS_4_ON_FOE_DURING_COMBAT_NODE,
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 50% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(50),
+            // and unit's next attack deals damage = total damage reduced from foe's first attack (by any source,
+            // including other skills; resets at end of combat).
+            new TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode(),
+        ),
+    ));
+}
+
 // 氷竜の竜石+
 {
     let skillId = Weapon.IceDragonstonePlus;

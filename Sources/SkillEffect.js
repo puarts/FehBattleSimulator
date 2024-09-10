@@ -994,6 +994,7 @@ class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTarget
     }
 }
 
+const INFLICTS_ALL_STATS_MINUS_4_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 4, 4);
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 5);
 
 // TODO: リファクタリング
@@ -1929,7 +1930,7 @@ class WhenSpecialTriggersReducesDamageFromTargetsFoesAttacksByNPercentNode exten
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
-    
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
@@ -2150,7 +2151,7 @@ class NeutralizeTargetsFoesReducesDamageByXPercentEffectsFromTargetFoesNonSpecia
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
-    
+
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
@@ -2167,6 +2168,22 @@ class AfterSpecialTriggersTargetsNextAttackDealsDamageEqTotalDamageReducedNode e
         let unit = this.getUnit(env);
         unit.battleContext.canAddDamageReductionToNextAttackAfterSpecial = true;
         env.debug(`${unit.nameWithGroup}は奥義で軽減した値を、自身の次の攻撃のダメージに+`);
+    }
+}
+
+
+/**
+ * unit's next attack deals damage = total damage reduced from foe's first attack (by any source, including other skills; resets at end of combat).
+ */
+class TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.canAddDamageReductionToNextAttackFromEnemiesFirstAttack = true;
+        env.debug(`${unit.nameWithGroup}は敵の最初の攻撃で軽減した値を、自身の次の攻撃のダメージに+`);
     }
 }
 

@@ -2008,6 +2008,13 @@ class DamageCalculator {
         for (let func of defUnit.battleContext.addReducedDamageForNextAttackFuncs) {
             func(defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context);
         }
+        // ダメージ反射
+        if (context.isFirstAttack(atkUnit)) {
+            if (defUnit.battleContext.canAddDamageReductionToNextAttackFromEnemiesFirstAttack) {
+                defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
+                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+            }
+        }
         if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
             if (defUnit.battleContext.canAddDamageReductionToNextAttackAfterSpecial) {
                 defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
