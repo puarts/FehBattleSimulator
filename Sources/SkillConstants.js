@@ -3402,6 +3402,7 @@ const PassiveC = {
     Worldbreaker: 1913, // 神槌大地を穿つ
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者
+    GoddessBearer2: 3009, // 女神を宿せし者・承
     HolyGround: 1977, // 地上の最後の女神
     FaithInHumanity: 2089, // 人の可能性を信じる
     DarklingGuardian: 2097, // 闇の樹海の守護竜

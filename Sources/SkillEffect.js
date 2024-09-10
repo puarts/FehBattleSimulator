@@ -758,7 +758,7 @@ const CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE = new class extends CanTargetsAttack
     }
 }();
 
-const CAN_FOES_ATTACK_TRIGGER_SPECIAL_NODE = new class extends CanTargetsAttackTriggerTargetsSpecialNode {
+const CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE = new class extends CanTargetsAttackTriggerTargetsSpecialNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
