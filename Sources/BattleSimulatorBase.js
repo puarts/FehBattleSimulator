@@ -790,6 +790,14 @@ class BattleSimulatorBase {
                 self.vm.showOcrImage = true;
                 self._imageProcessor.showOcrSettingSourceImage(files);
             },
+            getAttacker() {
+                for (let unit of this.units) {
+                    if (unit.id === this.attackerUnitId) {
+                        return unit;
+                    }
+                }
+                return null;
+            },
             getAttackerName() {
                 for (let unit of this.units) {
                     if (unit.id === this.attackerUnitId) {
@@ -1079,6 +1087,9 @@ class BattleSimulatorBase {
     }
 
     canActivateDuoSkillOrHarmonizedSkill(duoUnit) {
+        if (!duoUnit) {
+            return false;
+        }
         if (!duoUnit.isDuoHero && !duoUnit.isHarmonicHero) {
             return false;
         }

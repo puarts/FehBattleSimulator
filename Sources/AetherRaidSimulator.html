@@ -717,6 +717,18 @@
                                                     v-model="audioManager.isBgmEnabled" @change="bgmEnabledChanged">
                                                 <label for="enableSound" class="fehButton"
                                                     style="background-image: url('/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
+                                                <span>
+                                                <span v-if="(getAttacker()?.isDuoHero) && getAttacker()?.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
+                                                    <input type="button"
+                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
+                                                           class="fehButton"
+                                                           @click="g_app.activateDuoOrHarmonizedSkill(getAttacker());">
+                                                </span>
+                                                <span v-if="(getAttacker()?.isDuoHero) && getAttacker()?.groupId == UnitGroupType.Ally && !g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
+                                                    <input type="button" v-if="getAttacker()?.isDuoHero " disabled
+                                                           style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
+                                                           class="fehButtonDisabled">
+                                                </span>
                                             </td>
                                         </tr>
                                     </table>
