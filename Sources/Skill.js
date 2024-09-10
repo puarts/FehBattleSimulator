@@ -1616,8 +1616,6 @@ const updateUnitSpurFromEnemyAlliesFuncMap = new Map();
 const applyRefreshFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySkillEffectsPerCombatFuncMap = new Map();
-/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
-const initApplySpecialSkillEffectFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculator, atkUnit: Unit, defUnit: Unit) => void>} */
 const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
 // 応援後のスキル
@@ -1742,3 +1740,5 @@ applySkillEffectsAfterAfterBeginningOfCombatFuncMap = new Map();
 applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap = new Map();
 /** @type {Map<number|string, (this: BattleSimulatorBase) => boolean>} */
 const hasDivineVeinSkillsWhenActionDoneFuncMap = new Map();
+/** @type {Map<number|string, (this: DamageCalculatorWrapper, target: Unit, enemy: Unit) => void>} */
+const applySkillEffectForUnitAfterCombatStatusFixedFuncMap = new Map();

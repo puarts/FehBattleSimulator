@@ -11942,6 +11942,8 @@ class DamageCalculatorWrapper {
 
         {
             for (let skillId of targetUnit.enumerateSkills()) {
+                let func = getSkillFunc(skillId, applySkillEffectForUnitAfterCombatStatusFixedFuncMap);
+                func?.call(this, targetUnit, enemyUnit);
                 switch (skillId) {
                     // リーダースキル
                     case Captain.SecretManeuver:
@@ -15074,9 +15076,6 @@ class DamageCalculatorWrapper {
     }
 
     __init__applySpecialSkillEffect() {
-        for (let [key, value] of initApplySpecialSkillEffectFuncMap) {
-            this._applySpecialSkillEffectFuncDict[key] = value;
-        }
         this._applySpecialSkillEffectFuncDict[Special.Taiyo] = (targetUnit) => {
             targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
         };

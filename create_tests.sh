@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# add files
 SOURCE_FILE_NAMES=(
     GlobalDefinitions
     Utilities

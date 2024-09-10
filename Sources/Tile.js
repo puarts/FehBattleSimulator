@@ -163,7 +163,8 @@ class Tile extends BattleMapElement {
 
     perTurnStatusToString() {
         return this.divineVein + ValueDelimiter +
-            this.divineVeinGroup + ValueDelimiter
+            this.divineVeinGroup + ValueDelimiter +
+            this.divineVeinTurns + ValueDelimiter
             ;
     }
 
@@ -179,6 +180,7 @@ class Tile extends BattleMapElement {
         let i = 0;
         if (Number.isInteger(Number(values[i]))) { this.divineVein = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.divineVeinGroup = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.divineVeinTurns = Number(values[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {
