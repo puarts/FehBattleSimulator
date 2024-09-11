@@ -5,7 +5,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // if there is an ally within 3 rows or 3 columns centered on unit,
-        IF_NODE(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+        IF_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
             // grants Atk/Spd+7,
             new GrantsStatsPlusAtStartOfTurnNode(7, 7, 0, 0),
             // 【Null Follow-Up】,
@@ -16,7 +16,7 @@
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If there is an ally within 3 rows or 3 columns centered on unit,
-        IF_NODE(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+        IF_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
             // grants Atk/Spd/Def/Res+4 to unit and grants Special cooldown count-1 to unit before unit's first attack during combat,
             GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
             new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
