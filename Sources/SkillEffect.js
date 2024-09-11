@@ -3281,6 +3281,7 @@ class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPosit
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
+        // TODO: battleContextに設定するように修正するか検討する
         unit.reserveToReduceSpecialCount(n);
         env.debug(`${unit.nameWithGroup}は奥義発動カウント-${n}を予約`);
         return super.evaluate(env);

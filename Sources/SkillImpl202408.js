@@ -415,6 +415,68 @@
         ),
     ));
 }
+{
+    let skillId = getRefinementSkillId(Weapon.InnerWellspring);
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants【Null Follow-Up】to unit for 1 turn,
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.NullFollowUp),
+            // and also,
+            // if unit's Special cooldown count is at its maximum value,
+            // grants Special cooldown count-1 to unit.
+            IF_NODE(EQ_NODE(new TargetsSpecialCountAtStartOfTurnNode(), new TargetsMaxSpecialCountNode()),
+                // grants Special cooldown count-1.
+                new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+            )
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 20% of unit's Spd during combat
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(20),
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // and also,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // if Special triggers before or during combat,
+            IF_NODE(IS_UNITS_SPECIAL_TRIGGERED,
+                // grants Special cooldown count-1 after combat.
+                new GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode(1),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.InnerWellspring);
+    // Enables【Canto (１)】.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + 10% of unit's Spd at start of combat,
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(
+                ADD_NODE(5, MULT_TRUNC_NODE(0.1, UNITS_SPD_AT_START_OF_COMBAT_NODE))
+            ),
+            // unit deals +7 damage (excluding area-of-effect Specials),
+            new UnitDealsDamageExcludingAoeSpecialsNode(7),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and also,
+            // when unit's Special triggers,
+            // neutralizes "reduces damage by X%" effects from foe's non-Special skills (excluding area-of-effect Specials).
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        ),
+    ));
+}
 
 // ゲイルドリヴル
 {
