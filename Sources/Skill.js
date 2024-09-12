@@ -1025,7 +1025,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.SparklingFang,
     Weapon.EbonPirateClaw,
     Weapon.CrossbonesClaw,
-    Weapon.ResolvedFang,
     Weapon.RefreshedFang,
     Weapon.RenewedFang,
     Weapon.RaydreamHorn,

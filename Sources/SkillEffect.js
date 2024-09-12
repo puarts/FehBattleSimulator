@@ -1018,6 +1018,19 @@ class InflictsStatsNToFoeDuringCombatNode extends SkillEffectNode {
     }
 }
 
+class TargetsMaxHpNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.maxHpWithSkills;
+        env.debug(`${unit.nameWithGroup}の最大HP: ${result}`);
+        return result;
+    }
+}
+
 /**
  * @abstract
  */
@@ -1165,6 +1178,15 @@ const UNITS_SPD_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Spd
 const UNITS_DEF_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Def);
 // noinspection JSUnusedGlobalSymbols
 const UNITS_RES_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Res);
+
+class FoesStatsDuringCombatNode extends UnitsStatsDuringCombat {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOES_ATK_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Atk);
+const FOES_DEF_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Def);
 
 class UnitsEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
     static {
@@ -2187,6 +2209,38 @@ class TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttack
     }
 }
 
+/**
+ * restores X HP to unit as unit's combat begins
+ */
+class RestoresXHPToTargetAsTargetsCombatBeginsNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(n);
+        env.debug(`${unit.nameWithGroup}は戦闘開始後${n}回復`);
+    }
+}
+
+/**
+ * reduces the effect of【Deep Wounds】on unit by 50% during combat.
+ */
+class ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let x = this.evaluateChildren(env);
+        unit.battleContext.addNullInvalidatesHealRatios(x / 100);
+        env.debug(`${unit.nameWithGroup}は自身の【回復不可】を${x}%無効`);
+    }
+}
+
 class AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2457,6 +2511,22 @@ class IsTarget2SpacesFromTargetsFoeNode extends BoolNode {
         let spaces = unit.getActualAttackRange(foe);
         let result = spaces === 2;
         env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}の距離は2か: ${result}`);
+        return result;
+    }
+}
+
+/**
+ * damage dealt to unit as combat begins
+ */
+class DamageDealtToTargetAsCombatBeginsNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.getMaxDamageAfterBeginningOfCombat();
+        env.debug(`${unit.nameWithGroup}は戦闘開始後${result}のダメージを受けた`);
         return result;
     }
 }

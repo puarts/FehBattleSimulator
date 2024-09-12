@@ -1,4 +1,122 @@
 // noinspection JSUnusedLocalSymbols
+// 賀正の人狼王の爪牙
+{
+    let skillId = getNormalSkillId(Weapon.ResolvedFang);
+    // Grants Def+3.
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // grants Atk+2 and deals +10 damage when Special triggers.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if foe's HP ≥ 75%,
+        IF_NODE(IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE,
+            // grants Def+5 to unit,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 5, 0),
+            // inflicts Def-5 on foe during combat,
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 5, 0),
+            // and then,
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // if unit's Def > foe's Def,
+                IF_NODE(GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE),
+                    // deals damage = 70% of difference between stats. (Maximum bonus of +7 damage.)
+                    new UnitDealsDamageExcludingAoeSpecialsNode(
+                        new EnsureMaxNode(
+                            MULT_TRUNC_NODE(0.7,
+                                SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE)),
+                            7),
+                    ),
+                ),
+            ),
+        ),
+    ));
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // if unit's Def > foe's Def,
+        IF_NODE(GT_NODE(UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE, FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE),
+            // deals damage = 70% of difference between stats. (Maximum bonus of +7 damage.)
+            new UnitDealsDamageBeforeCombatNode(
+                new EnsureMaxNode(
+                    MULT_TRUNC_NODE(0.7,
+                        SUB_NODE(UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE, FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE)),
+                    7),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.ResolvedFang);
+    // Grants Def+3.
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // grants Atk+2,
+    // deals +7 damage when Special triggers,
+    // and neutralizes effects that grant "Special cooldown charge +X" to foe or inflict "Special cooldown charge -X" on unit.
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry2);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants Spd/Def/Res+5 to unit,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 5, 5, 5),
+            // inflicts Def-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 5, 0),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // deals damage = 20% of unit's Def (including when dealing damage with a Special triggered before combat),
+                new UnitDealsDamageExcludingAoeSpecialsNode(
+                    MULT_TRUNC_NODE(0.2, UNITS_EVAL_DEF_DURING_COMBAT_NODE),
+                ),
+            ),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and neutralizes unit's penalties to Atk/Def during combat.
+            new NeutralizesPenaltiesToTargetsStatsNode(true, false, true, false),
+        ),
+    ));
+    // deals damage = 20% of unit's Def (including when dealing damage with a Special triggered before combat),
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                // deals damage = 20% of unit's Def (including when dealing damage with a Special triggered before combat),
+                MULT_TRUNC_NODE(0.2, UNITS_EVAL_DEF_DURING_COMBAT_NODE),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.ResolvedFang);
+    // If unit is within 3 spaces of an ally,
+    // restores X HP to unit as unit's combat begins (triggers after effects that deal damage as combat begins; if unit's Def > foe's Def,
+    // X = 20% of unit's max HP + difference between stats × 4; otherwise,
+    // X = 20% of unit's max HP; max 40% of unit's max HP + damage dealt to unit as combat begins; only highest value applied; does not stack).
+    AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE(),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Spd/Def/Res+5 to unit,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 5, 5, 5),
+            // inflicts Def-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 5, 0),
+            // reduces damage from foe's attacks by 15% of unit's Def (excluding area-of-effect Specials),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new ReducesDamageExcludingAoeSpecialsNode(
+                    MULT_TRUNC_NODE(FOES_ATK_DURING_COMBAT_NODE, 0.15),
+                ),
+            ),
+            // and reduces the effect of【Deep Wounds】on unit by 50% during combat.
+            new ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode(50),
+        ),
+    ));
+}
+
 // 女神を宿せし者・承
 {
     let skillId = PassiveC.GoddessBearer2;

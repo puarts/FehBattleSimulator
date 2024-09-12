@@ -181,3 +181,8 @@ const UNIT_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
  * unit can move through foes' spaces.
  * @type {SkillEffectHooks<ForSpacesNode, NodeEnv>} */
 const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
+
+/**
+ * unit can move through foes' spaces.
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS = new SkillEffectHooks();
