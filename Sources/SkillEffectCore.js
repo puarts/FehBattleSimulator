@@ -442,15 +442,15 @@ class NumberOperationNode extends NumberNode {
 }
 
 class EnsureMaxNode extends NumberOperationNode {
-    #max = Number.MAX_SAFE_INTEGER;
+    #maxNode;
 
     /**
      * @param {number|NumberNode} child
-     * @param {number} max
+     * @param {number|NumberNode} max
      */
     constructor(child, max) {
         super(child);
-        this.#max = max;
+        this.#maxNode = NumberNode.makeNumberNodeFrom(max);
     }
 
     evaluateChildren(env) {
@@ -459,8 +459,9 @@ class EnsureMaxNode extends NumberOperationNode {
 
     evaluate(env) {
         let value = this.evaluateChildren(env);
-        let result = MathUtil.ensureMax(value, this.#max);
-        env?.trace(`[EnsureMaxNode] (value: ${value}, max: ${this.#max}) => ${result}`);
+        let max = this.#maxNode.evaluate(env);
+        let result = MathUtil.ensureMax(value, max);
+        env?.trace(`[EnsureMaxNode] (value: ${value}, max: ${max}) => ${result}`);
         return result;
     }
 }

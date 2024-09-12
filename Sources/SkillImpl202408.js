@@ -344,12 +344,16 @@
 
 // 悠遠のブレス
 {
-    let skillId = getNormalSkillId(Weapon.RemoteBreath);
+    let weapon = Weapon.RemoteBreath;
+    let skillIds = [
+        getNormalSkillId(weapon),
+        getRefinementSkillId(weapon),
+    ]
     // Accelerates Special trigger (cooldown count-1).
     // Effective against dragon foes.
     // If foe's Range = 2,
     // calculates damage using the lower of foe's Def or Res.
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AT_START_OF_COMBAT_HOOKS.addSkills(skillIds, () => new SkillEffectNode(
         // If unit is within 3 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
             // grants Atk/Spd/Def/Res+5 to unit during combat,
@@ -375,6 +379,27 @@
                 ),
             ),
         )
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.RemoteBreath);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Unit can counterattack regardless of foe's range.
+        TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + 10% of unit's Res at start of combat,
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(
+                ADD_NODE(5, MULT_TRUNC_NODE(0.1, UNITS_RES_AT_START_OF_COMBAT_NODE)),
+            ),
+            // reduces damage from foe's attacks by 20% of unit's Res (excluding area-of-effect Specials),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_RES_DURING_COMBAT_NODE)),
+            ),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
     ));
 }
 
@@ -2168,4 +2193,3 @@
         )
     );
 }
-
