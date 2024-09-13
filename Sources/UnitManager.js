@@ -290,11 +290,11 @@ class UnitManager {
         return count;
     }
 
-    countEnemiesWithinSpecifiedSpaces(targetUnit, spaces, predicator) {
+    countEnemiesWithinSpecifiedSpaces(targetUnit, spaces, predicator = null) {
         let count = 0;
         for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(targetUnit, spaces)) {
-            if (predicator(unit)) {
-                ++count;
+            if (predicator === null || predicator(unit)) {
+                count++;
             }
         }
         return count;

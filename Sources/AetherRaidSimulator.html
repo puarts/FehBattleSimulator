@@ -7,6 +7,7 @@
     <script>
         const g_startTime = Date.now();
     </script>
+    <script src="Local.js"></script>
     <script>
         // 画像の遅延ロード用の処理。以下の要素を作ると遅延ロードされる
         // <img src="dummy.png" data-src="actual.png" class="lazy" />
@@ -716,6 +717,18 @@
                                                     v-model="audioManager.isBgmEnabled" @change="bgmEnabledChanged">
                                                 <label for="enableSound" class="fehButton"
                                                     style="background-image: url('/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
+                                                <span>
+                                                <span v-if="(getAttacker()?.isDuoHero) && getAttacker()?.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
+                                                    <input type="button"
+                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
+                                                           class="fehButton"
+                                                           @click="g_app.activateDuoOrHarmonizedSkill(getAttacker());">
+                                                </span>
+                                                <span v-if="(getAttacker()?.isDuoHero) && getAttacker()?.groupId == UnitGroupType.Ally && !g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
+                                                    <input type="button" v-if="getAttacker()?.isDuoHero " disabled
+                                                           style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
+                                                           class="fehButtonDisabled">
+                                                </span>
                                             </td>
                                         </tr>
                                     </table>
@@ -1665,7 +1678,7 @@
                                 <label class="normal">紋章士: </label>
                                 <select2 :options="g_app.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
                                          class="hero"
-                                         @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur()">
+                                         @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur();g_app.vm.emblemHeroMergeChanged()">
                                 </select2>
                                 <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.emblemHeroIndex}})</span>
 
@@ -2577,10 +2590,7 @@
                     "Logger.js",
                     "SkillConstants.js",
                     "Skill.js",
-                    "SkillEffectCore.js",
-                    "SkillEffect.js",
-                    "SkillImpl.js",
-                    "SkillImpl202408.js",
+                    ...SKILL_EFFECT_FILES,
                     "BattleMapElement.js",
                     "Tile.js",
                     "Structures.js",
@@ -2613,6 +2623,7 @@
                     "VueComponents.js",
                     "SampleSkillInfos.js",
                     "SampleHeroInfos.js",
+                    ...SKILL_IMPL_FILES,
                 ];
             } else {
                 // linkタグを作成

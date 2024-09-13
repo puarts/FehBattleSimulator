@@ -1332,7 +1332,7 @@ __init__applySkillEffectForUnitFuncDict() {
     targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
         (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
             if (!context.isFirstAttack(atkUnit)) return;
-            defUnit.battleContext.nextAttackAddReducedDamageActivated = true;
+            defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
             defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
         }
     );

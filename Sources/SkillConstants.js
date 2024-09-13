@@ -2921,6 +2921,7 @@ const PassiveB = {
     MoonlitBangleF: 2127, // 華月の腕輪・遠
     Prescience: 1822, // 未来を知る力
     DivineRecreation: 1910, // それは興味深いね
+    DivineRecreation2: 3008, // それは興味深…・承
     HodrsZeal: 2043, // ヘズルの聖騎士
     AssuredRebirth: 2066, // 我が復活は成った
     SoaringWings: 2390, // 天かける翼
@@ -3401,6 +3402,7 @@ const PassiveC = {
     Worldbreaker: 1913, // 神槌大地を穿つ
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者
+    GoddessBearer2: 3009, // 女神を宿せし者・承
     HolyGround: 1977, // 地上の最後の女神
     FaithInHumanity: 2089, // 人の可能性を信じる
     DarklingGuardian: 2097, // 闇の樹海の守護竜

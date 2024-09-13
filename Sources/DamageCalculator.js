@@ -1665,13 +1665,13 @@ class DamageCalculator {
         let neutralizeOne = (accum, current) => accum - MathUtil.truncByPercentage(accum * current);
         let neutralizeAll = r => neutralizationRatiosOfDamageReduction.reduce(neutralizeOne, r);
         damageReductionRatiosAfterNeutralization.push(...damageReductionRatios.map(neutralizeAll));
-        this.writeDebugLog(`ダメージ軽減: [${damageReductionRatios}]`);
-        this.writeDebugLog(`軽減無効後のダメージ軽減: [${damageReductionRatiosAfterNeutralization}]`);
         // ダメージ軽減を無効
         if (invalidatesDamageReduction) {
             if (this.isLogEnabled) this.writeDebugLog("奥義以外のダメージ軽減を無効化");
             damageReductionRatiosAfterNeutralization.fill(0);
         }
+        this.writeDebugLog(`ダメージ軽減: [${damageReductionRatios}]`);
+        this.writeDebugLog(`軽減無効後のダメージ軽減: [${damageReductionRatiosAfterNeutralization}]`);
         return damageReductionRatiosAfterNeutralization;
     }
 
@@ -2007,6 +2007,13 @@ class DamageCalculator {
 
         for (let func of defUnit.battleContext.addReducedDamageForNextAttackFuncs) {
             func(defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context);
+        }
+        // ダメージ反射
+        if (context.isFirstAttack(atkUnit)) {
+            if (defUnit.battleContext.canAddDamageReductionToNextAttackFromEnemiesFirstAttack) {
+                defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
+                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+            }
         }
         if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
             if (defUnit.battleContext.canAddDamageReductionToNextAttackAfterSpecial) {

@@ -7,6 +7,7 @@
     <script>
         const g_startTime = Date.now();
     </script>
+    <script src="Local.js"></script>
     <script>
         // 画像の遅延ロード用の処理。以下の要素を作ると遅延ロードされる
         // <img src="dummy.png" data-src="actual.png" class="lazy" />
@@ -1721,7 +1722,7 @@
                                 <label class="normal">紋章士: </label>
                                 <select2 :options="g_app.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
                                          class="hero"
-                                         @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur()">
+                                         @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur();g_app.vm.emblemHeroMergeChanged()">
                                 </select2>
                                 <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.emblemHeroIndex}})</span>
 
@@ -2577,10 +2578,7 @@
                     "Logger.js",
                     "SkillConstants.js",
                     "Skill.js",
-                    "SkillEffectCore.js",
-                    "SkillEffect.js",
-                    "SkillImpl.js",
-                    "SkillImpl202408.js",
+                    ...SKILL_EFFECT_FILES,
                     "BattleMapElement.js",
                     "Tile.js",
                     "Structures.js",
@@ -2613,6 +2611,7 @@
                     "VueComponents.js",
                     "SampleSkillInfos.js",
                     "SampleHeroInfos.js",
+                    ...SKILL_IMPL_FILES,
                 ];
             }
 

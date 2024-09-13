@@ -53,7 +53,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 攻撃の〇%を奥義ダメージに加算（〇は、化身時は25、そうでない時は20）
             let status = targetUnit.getAtkInCombat(enemyUnit);
@@ -379,7 +379,7 @@
     COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 速さの50%を奥義ダメージに加算
             let status = targetUnit.getSpdInCombat(enemyUnit);
@@ -1382,7 +1382,7 @@
     COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 速さの50%を奥義ダメージに加算
             let status = targetUnit.getSpdInCombat(enemyUnit);
@@ -1608,7 +1608,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 攻撃の25%を奥義ダメージに加算
             let status = targetUnit.getAtkInCombat(enemyUnit);
@@ -1707,7 +1707,7 @@
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getSpdInCombat(enemyUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.3));
@@ -2314,7 +2314,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 敵の守備、魔防-40%扱いで攻撃奥義発動時、
             targetUnit.battleContext.specialSufferPercentage = 40;
@@ -2691,7 +2691,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 魔防の40%を奥義ダメージに加算
             let status = targetUnit.getResInCombat(enemyUnit);
@@ -4120,7 +4120,7 @@
         }
     );
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 攻撃の30%を奥義ダメージに加算
             let status = targetUnit.getAtkInCombat(enemyUnit);
@@ -4158,7 +4158,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let isDragonOrBeast = isWeaponTypeBreath(enemyUnit.weaponType) || isWeaponTypeBeast(enemyUnit.weaponType);
             let ratio = isDragonOrBeast ? 0.6 : 0.3;
@@ -5841,7 +5841,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 速さの40%を奥義ダメージに加算
             let status = targetUnit.getSpdInCombat(enemyUnit);
@@ -7019,7 +7019,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let totalRes = enemyUnit.getResInCombat(targetUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.25));
@@ -7051,7 +7051,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let totalRes = enemyUnit.getResInCombat(targetUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.25));
@@ -7083,7 +7083,7 @@
     COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let totalRes = enemyUnit.getResInCombat(targetUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.45));
@@ -7138,7 +7138,7 @@
     COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getResInCombat(enemyUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.4));
@@ -7397,7 +7397,7 @@
     COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let totalRes = enemyUnit.getResInCombat(targetUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.45));
@@ -7851,7 +7851,7 @@
         }
     );
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             targetUnit.battleContext.addSpecialAddDamage(20);
         }
@@ -8296,7 +8296,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getSpdInCombat(enemyUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.4));
@@ -8679,7 +8679,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getResInCombat(enemyUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.4));
@@ -10063,7 +10063,7 @@
     COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getAtkInCombat(enemyUnit);
             let ratio = isWeaponTypeBreath(enemyUnit.weaponType) ? 0.5 : 0.25;
@@ -10164,7 +10164,7 @@
     COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getAtkInCombat(enemyUnit);
             let ratio = enemyUnit.moveType === MoveType.Armor ? 0.4 : 0.3;
@@ -10285,7 +10285,7 @@
     COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getDefInCombat(enemyUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.4));
@@ -11057,7 +11057,7 @@
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT3_SPECIALS.push(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = targetUnit.getSpdInCombat(enemyUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.45));
@@ -11183,7 +11183,7 @@
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             let status = enemyUnit.getAtkInCombat(targetUnit);
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.6));
@@ -12134,7 +12134,7 @@
 {
     let skillId = Special.LightlessLuna;
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
-    initApplySpecialSkillEffectFuncMap.set(skillId,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             targetUnit.battleContext.specialSufferPercentage = 80;
         }

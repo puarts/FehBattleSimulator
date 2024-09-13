@@ -9,6 +9,7 @@
     <script>
         const g_startTime = Date.now();
     </script>
+    <script src="Local.js"></script>
 </head>
 
 <body>
@@ -260,10 +261,7 @@
                     "Utilities.js",
                     "SkillConstants.js",
                     "Skill.js",
-                    "SkillEffectCore.js",
-                    "SkillEffect.js",
-                    "SkillImpl.js",
-                    "SkillImpl202408.js",
+                    ...SKILL_EFFECT_FILES,
                     "BattleMapElement.js",
                     "HeroInfoConstants.js",
                     "HeroInfo.js",
@@ -271,6 +269,7 @@
                     "BattleContext.js",
                     "Unit.js",
                     "StatusCalcMain.js",
+                    ...SKILL_IMPL_FILES,
                 ];
             }
             const startTime = Date.now();

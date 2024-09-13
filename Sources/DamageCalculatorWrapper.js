@@ -611,8 +611,8 @@ class DamageCalculatorWrapper {
 
         // 戦闘開始後ダメージ決定後に評価されるスキル効果
         {
-            this.applySkillEffectsAfterAfterBeginningOfCombat(atkUnit, defUnit);
-            this.applySkillEffectsAfterAfterBeginningOfCombat(defUnit, atkUnit);
+            this.applySkillEffectsAfterAfterBeginningOfCombat(atkUnit, defUnit, calcPotentialDamage, damageType);
+            this.applySkillEffectsAfterAfterBeginningOfCombat(defUnit, atkUnit, calcPotentialDamage, damageType);
 
             // 周囲の敵からのスキル効果
             this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(atkUnit, defUnit, calcPotentialDamage);
@@ -7486,12 +7486,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.ResolvedFang] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.defSpur += 5;
-                enemyUnit.defSpur -= 5;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.RefreshedFang] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.spdSpur += 5;
@@ -11942,6 +11936,8 @@ class DamageCalculatorWrapper {
 
         {
             for (let skillId of targetUnit.enumerateSkills()) {
+                let func = getSkillFunc(skillId, applySkillEffectForUnitAfterCombatStatusFixedFuncMap);
+                func?.call(this, targetUnit, enemyUnit);
                 switch (skillId) {
                     // リーダースキル
                     case Captain.SecretManeuver:
@@ -13916,16 +13912,6 @@ class DamageCalculatorWrapper {
                     atkUnit.battleContext.additionalDamage += additionalDamage;
                 }
                 break;
-            case Weapon.ResolvedFang:
-                if (defUnit.battleContext.restHpPercentage >= 75) {
-                    let additionalDamage = DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
-                        atkUnit, defUnit, isPrecombat,
-                        x => x.getEvalDefInPrecombat(),
-                        (x, y) => x.getEvalDefInCombat(y),
-                        0.7, 7);
-                    atkUnit.battleContext.additionalDamage += additionalDamage;
-                }
-                break;
             default:
                 break;
         }
@@ -15074,9 +15060,6 @@ class DamageCalculatorWrapper {
     }
 
     __init__applySpecialSkillEffect() {
-        for (let [key, value] of initApplySpecialSkillEffectFuncMap) {
-            this._applySpecialSkillEffectFuncDict[key] = value;
-        }
         this._applySpecialSkillEffectFuncDict[Special.Taiyo] = (targetUnit) => {
             targetUnit.battleContext.specialDamageRatioToHeal = 0.5;
         };
@@ -17319,13 +17302,16 @@ class DamageCalculatorWrapper {
         }
     }
 
-    applySkillEffectsAfterAfterBeginningOfCombat(targetUnit, enemyUnit) {
+    applySkillEffectsAfterAfterBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         // 神獣の蜜
         if (targetUnit.hasStatusEffect(StatusEffectType.DivineNectar)) {
             // 戦闘開始後（戦闘開始後にダメージを受ける効果の後）、
             // 20回復（同系統効果複数時、最大値適用）
             targetUnit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(20);
         }
+        let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+        env.setName('戦闘開始後ダメージ後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillEffectsAfterAfterBeginningOfCombatFuncMap)?.call(this, targetUnit, enemyUnit);
         }

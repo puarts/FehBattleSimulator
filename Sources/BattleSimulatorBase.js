@@ -342,6 +342,7 @@ class BattleSimulatorBase {
                 }
                 appData.__updateUnitSkillInfo(unit);
                 appData.updateArenaScore(unit);
+                appData.__showStatusToAttackerInfo();
             },
             specialChanged: function () {
                 if (g_app == null) {
@@ -355,6 +356,7 @@ class BattleSimulatorBase {
                 unit.resetMaxSpecialCount();
                 appData.updateArenaScore(unit);
                 updateAllUi();
+                appData.__showStatusToAttackerInfo();
             },
             specialCountChanged: function () {
                 if (g_app == null) {
@@ -493,6 +495,7 @@ class BattleSimulatorBase {
                 let currentUnit = self.__getCurrentUnit();
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
+                appData.__showStatusToAttackerInfo();
             },
             summonerLevelChanged: function () {
                 if (g_app == null) {
@@ -790,6 +793,14 @@ class BattleSimulatorBase {
                 self.vm.showOcrImage = true;
                 self._imageProcessor.showOcrSettingSourceImage(files);
             },
+            getAttacker() {
+                for (let unit of this.units) {
+                    if (unit.id === this.attackerUnitId) {
+                        return unit;
+                    }
+                }
+                return null;
+            },
             getAttackerName() {
                 for (let unit of this.units) {
                     if (unit.id === this.attackerUnitId) {
@@ -1079,6 +1090,9 @@ class BattleSimulatorBase {
     }
 
     canActivateDuoSkillOrHarmonizedSkill(duoUnit) {
+        if (!duoUnit) {
+            return false;
+        }
         if (!duoUnit.isDuoHero && !duoUnit.isHarmonicHero) {
             return false;
         }
@@ -2933,17 +2947,19 @@ class BattleSimulatorBase {
     backToZeroTurn() {
         this.clearLog();
         this.commandQueuePerAction.undoAll();
+        // タイルの天脈をリセットする
+        for (let tile of g_appData.map.enumerateTiles()) {
+            tile.resetDivineVein();
+        }
+        for (let unit of g_appData.enumerateUnits()) {
+            unit.resetAllState();
+        }
         if (g_appData.currentTurn > 0) {
             g_appData.globalBattleContext.currentTurn = 0;
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
             loadSettings();
-            // タイルの天脈をリセットする
-            for (let tile of g_appData.map.enumerateTiles()) {
-                tile.resetDivineVein();
-            }
-        }
-        else {
+        } else {
             updateAllUi();
         }
         this.__turnChanged();
@@ -4349,7 +4365,7 @@ class BattleSimulatorBase {
         let enemyUnitsAgainstTarget = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
 
         this.__initializeUnitsPerTurn(targetUnits);
-        this.__initializeAllUnitsOnMapPerTurn(this.enumerateAllyUnitsOnMap());
+        this.__initializeAllUnitsOnMapPerTurn(targetUnits);
         this.__initializeTilesPerTurn(this.map._tiles, group);
 
         if (this.data.gameMode !== GameMode.SummonerDuels) {

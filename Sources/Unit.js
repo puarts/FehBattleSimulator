@@ -517,7 +517,7 @@ class Unit extends BattleMapElement {
         this.isCombatDone = false;
         // このターン補助を行ったか
         this.isSupportDone = false;
-        // このターン補助を行ったか
+        // このターン補助を行われたか
         this.isSupportedDone = false;
 
         this.isBonusChar = false;
