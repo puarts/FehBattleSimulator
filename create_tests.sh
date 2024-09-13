@@ -9,6 +9,7 @@ SOURCE_FILE_NAMES=(
     SkillEffectCore
     SkillEffectEnv
     SkillEffect
+    SkillEffectBattleContext
     SkillEffectHooks
     SkillEffectAliases
     BattleMapElement

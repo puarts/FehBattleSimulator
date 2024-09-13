@@ -4,6 +4,7 @@ const SKILL_EFFECT_FILES = [
     "SkillEffectCore.js",
     "SkillEffectEnv.js",
     "SkillEffect.js",
+    "SkillEffectBattleContext.js",
     "SkillEffectHooks.js",
     "SkillEffectAliases.js",
 ];
