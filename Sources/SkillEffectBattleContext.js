@@ -429,7 +429,7 @@ class NeutralizesPenaltiesToTargetsStatsNode extends SetBoolToEachStatusNode {
     }
 }
 
-class NeutralizesPenaltiesToUnitsStatsNode extends SetBoolToEachStatusNode {
+class NeutralizesPenaltiesToUnitsStatsNode extends NeutralizesPenaltiesToTargetsStatsNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
     }
