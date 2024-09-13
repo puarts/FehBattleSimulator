@@ -150,14 +150,14 @@ class CookieWriter {
             $.removeCookie(name);
         }
         else {
-            document.cookie = name + "=; max-age=0;";
+            document.cookie = `${name}=; max-age=0;`;
         }
     }
     write(name, value) {
         if (this.useCookieJs) {
             $.cookie(name, value);
         } else {
-            document.cookie = name + "=" + value;
+            document.cookie = `${name}=${value}`;
         }
         // console.log("write:" + document.cookie);
     }

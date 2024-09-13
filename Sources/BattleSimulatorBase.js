@@ -2947,17 +2947,19 @@ class BattleSimulatorBase {
     backToZeroTurn() {
         this.clearLog();
         this.commandQueuePerAction.undoAll();
+        // タイルの天脈をリセットする
+        for (let tile of g_appData.map.enumerateTiles()) {
+            tile.resetDivineVein();
+        }
+        for (let unit of g_appData.enumerateUnits()) {
+            unit.resetAllState();
+        }
         if (g_appData.currentTurn > 0) {
             g_appData.globalBattleContext.currentTurn = 0;
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
             loadSettings();
-            // タイルの天脈をリセットする
-            for (let tile of g_appData.map.enumerateTiles()) {
-                tile.resetDivineVein();
-            }
-        }
-        else {
+        } else {
             updateAllUi();
         }
         this.__turnChanged();
