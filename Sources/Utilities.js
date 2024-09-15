@@ -707,6 +707,11 @@ function cropCanvas(
     );
 }
 
+/**
+ * @param {HTMLElement} srcCanvas
+ * @param {HTMLElement} destCanvas
+ * @param {function(*, *, *): *} zeroValuePixelPredicator
+ */
 function manipurateHsv(
     srcCanvas, destCanvas,
     zeroValuePixelPredicator, binarize = true
@@ -721,8 +726,7 @@ function manipurateHsv(
             let brightness = hsvMat.ucharPtr(y, x)[2];
             if (zeroValuePixelPredicator(hue, saturation, brightness)) {
                 hsvMat.ucharPtr(y, x)[2] = 0;
-            }
-            else if (binarize) {
+            } else if (binarize) {
                 hsvMat.ucharPtr(y, x)[1] = 0;
                 hsvMat.ucharPtr(y, x)[2] = 255;
             }
@@ -1192,7 +1196,7 @@ function getSkillIconDivTag(unit) {
         if (!unit.hasSupport) {
             imgTag.classList.add('summary-icon-grey');
         } else {
-            imgTag.title = unit.supportInfo.name;
+            imgTag.title = unit.supportInfo?.name;
         }
         html += `<div style="position: relative">${imgTag.outerHTML}</div>`;
     }
@@ -1208,7 +1212,7 @@ function getSkillIconDivTag(unit) {
         if (!unit.hasSpecial) {
             imgTag.classList.add('summary-icon-grey');
         } else {
-            imgTag.title = unit.specialInfo.name;
+            imgTag.title = unit.specialInfo?.name;
         }
         html += `<div style="position: relative">${imgTag.outerHTML}</div>`;
     }
@@ -1227,7 +1231,7 @@ function getSkillIconDivTag(unit) {
         let title = 'スキルなし';
         if (info) {
             icon.src = info.iconPath;
-            title = infos[index].name;
+            title = infos[index]?.name;
         } else {
             icon.src = `${g_imageRootPath}None.png`;
         }

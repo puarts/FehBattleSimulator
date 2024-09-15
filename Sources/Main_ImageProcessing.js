@@ -658,9 +658,9 @@ class ImageProcessor {
     /**
      * @param  {Unit} unit
      * @param  {Blob} file
-     * @param  {Canvas} sourceCanvas
-     * @param  {Canvas} binarizedCanvas
-     * @param  {Canvas[]} ocrCanvases
+     * @param  {HTMLElement} sourceCanvas
+     * @param  {HTMLElement} binarizedCanvas
+     * @param  {HTMLElement[]} ocrCanvases
      */
     setUnitByImage(unit, file, sourceCanvas, binarizedCanvas, ocrCanvases) {
         unit.resetSkillsForSettingByImage();
@@ -873,9 +873,12 @@ class ImageProcessor {
                                                 app.vm.useWhitelistForOcr ? app.weaponSkillCharWhiteList : ""
                                             ).then(() => {
                                                 // 武器、S以外のスキル名抽出
+                                                // TODO: 二値化処理を修正する
+                                                // 奥義のエンゲージにより二値化で文字が消えてしまうようになったのでとりあえずカラーのまま認識させる
                                                 cropAndBinarizeImageAndOcr(
-                                                    ocrInputCanvas9, binarizedCanvas,
-                                                    0.575, 0.646, 0.32, 0.20,
+                                                    // ocrInputCanvas9, binarizedCanvas,
+                                                    ocrInputCanvas9, sourceCanvas,
+                                                    0.575, 0.646, 0.32, 0.19,
                                                     -1,
                                                     p => g_app.ocrProgress(p, `スキル抽出(${unit.id})`),
                                                     ocrResult => {
@@ -1031,7 +1034,7 @@ class ImageProcessor {
         let app = g_app;
         app.clearOcrProgress();
         console.log(ocrResult);
-        g_appData.ocrResult += "スキル名: " + ocrResult.text + "\n";
+        g_appData.ocrResult += `スキル名: ${ocrResult.text}\n`;
         let filtered = convertOcrResultToArray(ocrResult.text);
         console.log(filtered);
 

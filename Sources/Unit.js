@@ -5338,7 +5338,7 @@ class Unit extends BattleMapElement {
         }
 
         if (this.specialInfo == null) {
-            console.error("special ID " + this.special + " was not found.");
+            console.warn(`special ID ${this.special} was not found.`);
             return;
         }
 
