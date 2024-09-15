@@ -783,8 +783,8 @@ class Unit extends BattleMapElement {
                 this.addStatusEffect(StatusEffectType.CantoControl);
                 this.moveCountForCanto = this.calcMoveCountForCanto();
                 if (this.isRangedWeaponType()) {
-                    console.log(`this.nameWithGroup: ${this.nameWithGroup}は再移動制限により行動停止`);
                     this.endAction();
+                    this.applyEndActionSkills();
                     this.deactivateCanto();
                 }
             }
