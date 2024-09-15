@@ -169,10 +169,18 @@ class NodeEnv {
         return this;
     }
 
+    /**
+     *
+     * @returns {Unit}
+     */
     get skillOwner() {
         return this.#skillOwner;
     }
 
+    /**
+     *
+     * @returns {Unit}
+     */
     get target() {
         return this.#target;
     }

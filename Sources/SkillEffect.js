@@ -803,27 +803,6 @@ class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTarget
 const INFLICTS_ALL_STATS_MINUS_4_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 4, 4);
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 5);
 
-// TODO: リファクタリング
-class InflictsStatsNToFoeDuringCombatNode extends SkillEffectNode {
-    /**
-     * @param {number|NumberNode} n
-     * @param {[number, number, number, number]} ratios
-     */
-    constructor(n, ratios) {
-        super(NumberNode.makeNumberNodeFrom(n));
-        this.ratios = [...ratios];
-    }
-
-    evaluate(env) {
-        let amount = this.evaluateChildren(env);
-        let unit = env.foeDuringCombat;
-        let beforeSpurs = unit.getSpurs();
-        let amounts = this.ratios.map(r => amount * r);
-        unit.addSpurs(...amounts.map(v => -v));
-        env.debug(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防-[${amounts}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
-    }
-}
-
 class TargetsMaxHpNode extends NumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

@@ -4,7 +4,7 @@
  */
 
 module.exports = {
-  testEnvironment: "node",
+  testEnvironment: "jsdom",  // jsdom環境を指定
   testMatch: ["**/All.test.js"],
   // All imported modules in your tests should be mocked automatically
   // automock: false,
