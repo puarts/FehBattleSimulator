@@ -25,6 +25,18 @@ class DamageLog {
         this.attackedUnit = attackedUnit;
         this.damageDealt = damageDealt;
     }
+
+    /**
+     *
+     * @param {DamageCalcContext} context
+     * @returns {DamageLog}
+     */
+    setAttackType(context) {
+        this.isCounterattack = context.isCounterattack;
+        this.isFollowupAttack = context.isFollowupAttack;
+        this.isPotentFollowupAttack = context.isPotentFollowupAttack;
+        return this;
+    }
 }
 
 /// ダメージ計算時に一時的に使用するコンテキストです。
@@ -67,8 +79,10 @@ class DamageCalcContext {
         return this.isFollowupAttack || this.isPotentFollowupAttack;
     }
 
-    isFirstFollowupAttack() {
-        return this.isFollowupAttack && !this.isPotentFollowupAttack;
+    isFirstFollowupAttack(atkUnit) {
+        let isFollowupAttacked =
+            this.damageHistory.some(log => log.attackUnit === atkUnit && log.isFollowupAttack);
+        return this.isFollowupAttack && !isFollowupAttacked;
     }
 
     getAttackTypeString() {
@@ -632,7 +646,7 @@ class DamageCalculator {
         if (!context.isCounterattack) {
             if (!context.isFollowupOrPotentFollowupAttack()) {
                 this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}を攻撃`);
-            } else if (context.isFirstFollowupAttack()) {
+            } else if (context.isFirstFollowupAttack(atkUnit)) {
                 this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に追撃`);
             } else {
                 this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に神速追撃`);
@@ -640,7 +654,7 @@ class DamageCalculator {
         } else {
             if (!context.isFollowupOrPotentFollowupAttack()) {
                 this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に反撃`);
-            } else if (context.isFirstFollowupAttack()) {
+            } else if (context.isFirstFollowupAttack(atkUnit)) {
                 this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に反撃追撃`);
             } else {
                 this.writeLog(`${atkUnit.getNameWithGroup()}が${defUnit.getNameWithGroup()}に反撃神速追撃`);
@@ -960,7 +974,7 @@ class DamageCalculator {
             defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
         }
         // 最初の追撃前の効果
-        if (context.isFirstFollowupAttack()) {
+        if (context.isFirstFollowupAttack(atkUnit)) {
             // atkUnitの奥義カウント変動
             let totalCount = atkUnit.tmpSpecialCount
                 + atkUnit.battleContext.getSpecialCountReductionBeforeFollowupAttack();
@@ -1316,7 +1330,7 @@ class DamageCalculator {
             if (!isDefenderSpecialActivated) {
                 this.__reduceSpecialCount(defUnit, defReduceSpCount);
             }
-            context.damageHistory.push(new DamageLog(atkUnit, defUnit, currentDamage));
+            context.damageHistory.push(new DamageLog(atkUnit, defUnit, currentDamage).setAttackType(context));
 
             if (this.isLogEnabled) {
                 this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + Math.max(0, defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
