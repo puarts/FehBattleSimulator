@@ -1654,6 +1654,8 @@
                                 </select>
                                 <input v-bind:id='"isBonusChar"+value.id' type="checkbox" v-model="value.isBonusChar" @change="g_app.vm.isBonusCharChanged" />
                                 <label class="normal" v-bind:for='"isBonusChar"+value.id'>ボナ補正</label>
+                                <input v-bind:id='"isAidesEssenceUsed"+value.id' type="checkbox" v-model="value.isAidesEssenceUsed" @change="g_app.vm.isAidesEssenceUsedChanged" />
+                                <label class="normal" v-bind:for='"isAidesEssenceUsed"+value.id'>お供</label>
                                 <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
                                 <input v-bind:id='"isResplendent"+value.id' type="checkbox" v-model="value.isResplendent" @change="g_app.vm.isBonusCharChanged" />
                                 <label class="normal" v-bind:for='"isResplendent"+value.id'>神装</label>

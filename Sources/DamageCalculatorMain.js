@@ -247,6 +247,7 @@ class RoundRobinParam {
         this.merge = 10;
         this.dragonflower = MaxDragonFlower;
         this.emblemHeroMerge = 10;
+        this.isAidesEssenceUsed = true;
         this.special = Special.None;
         this.passiveA = PassiveA.None;
         this.passiveB = PassiveB.None;
@@ -638,6 +639,7 @@ class DamageCalcData {
                 heroInfo.maxDragonflower : this.roundRobinParam.dragonflower;
             unit.emblemHeroMerge = this.roundRobinParam.emblemHeroMerge;
             unit.isBonusChar = false;
+            unit.isAidesEssenceUsed = this.roundRobinParam.isAidesEssenceUsed;
             unit.isResplendent = heroInfo.isResplendent;
             if (!unit.isMythicHero) {
                 unit.blessingEffects.push(BlessingType.Hp5_Atk3);
@@ -701,6 +703,7 @@ class DamageCalcData {
                 heroInfo.maxDragonflower : this.roundRobinParam.dragonflower;
             unit.emblemHeroMerge = this.roundRobinParam.emblemHeroMerge;
             unit.isBonusChar = false;
+            unit.isAidesEssenceUsed = this.roundRobinParam.isAidesEssenceUsed;
             unit.isResplendent = heroInfo.isResplendent;
             if (!unit.isMythicHero) {
                 unit.blessingEffects.push(BlessingType.Hp5_Atk3);

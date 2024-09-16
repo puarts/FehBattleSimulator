@@ -57,7 +57,7 @@ class BeginningOfTurnSkillHandler {
         this.applyTransformSkillForBeginningOfTurn(unit);
 
         let env = new AtStartOfTurnEnv(this, unit);
-        env.setName('ターン開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('ターン開始時').setLogLevel(getSkillLogLevel());
         AT_START_OF_TURN_HOOKS.evaluateWithUnit(unit, env);
         for (let skillId of unit.enumerateSkills()) {
             this.applySkillForBeginningOfTurn(skillId, unit);
@@ -70,7 +70,7 @@ class BeginningOfTurnSkillHandler {
      */
     applyEnemySkillsForBeginningOfTurn(unit) {
         let env = new AtStartOfTurnEnv(this, unit);
-        env.setName('敵軍ターン開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('敵軍ターン開始時').setLogLevel(getSkillLogLevel());
         AT_START_OF_ENEMY_PHASE_HOOK.evaluateWithUnit(unit, env);
 
         for (let skillId of unit.enumerateSkills()) {
@@ -141,7 +141,7 @@ class BeginningOfTurnSkillHandler {
     applyTransformSkillForBeginningOfTurn(skillOwner) {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             let env = new AtStartOfTurnEnv(this, skillOwner);
-            env.setName('化身スキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('化身スキル').setLogLevel(getSkillLogLevel());
             let hasTransformSkills = AT_TRANSFORMATION_PHASE_HOOKS.evaluateSomeWithUnit(skillOwner, env);
             for (let skillId of skillOwner.enumerateSkills()) {
                 let func = getSkillFunc(skillId, hasTransformSkillsFuncMap);

@@ -686,6 +686,23 @@ class BattleSimulatorBase {
                 }
                 appData.__updateStatusBySkillsAndMergeForAllHeroes();
             },
+            isAidesEssenceUsedChanged: function () {
+                if (g_app == null) {
+                    return;
+                }
+                let currentUnit = g_app.__getEditingTargetUnit();
+                if (currentUnit == null) {
+                    return;
+                }
+                let value = currentUnit.isAidesEssenceUsed;
+                for (let unit of appData.enumerateSelectedItems(x => x instanceof Unit)) {
+                    if (unit.isAidesEssenceUsed === value) {
+                        continue;
+                    }
+                    unit.isAidesEssenceUsed = value;
+                }
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
+            },
             resetUnitForTesting: function () {
                 if (g_app == null) {
                     return;
@@ -1224,7 +1241,7 @@ class BattleSimulatorBase {
             return;
         }
         let env = new EnumerationEnv(g_appData, duoUnit);
-        env.setName('比翼双界スキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('比翼双界スキル').setLogLevel(getSkillLogLevel());
         WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
             case Hero.HarmonizedGoldmary:
@@ -3646,7 +3663,7 @@ class BattleSimulatorBase {
 
         // 優先度が高いスキルの後かつ奥義の再行動の前
         let env = new BattleSimulatorBaseEnv(this, atkUnit);
-        env.setName('奥義以外の再行動時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
@@ -6552,7 +6569,7 @@ class BattleSimulatorBase {
         });
         for (let unit of targetUnits) {
             let env = new BattleSimulatorBaseEnv(this, unit);
-            env.setName('AIの天脈処理').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('AIの天脈処理').setLogLevel(getSkillLogLevel());
             if (HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS.evaluateWithUnit(unit, env) && !unit.isActionDone) {
                 env.debug(`${unit.nameWithGroup}は行動を自ら終了`);
                 unit.endAction();
@@ -6824,7 +6841,7 @@ class BattleSimulatorBase {
             if (unit.isActionDone) {
                 // TODO: 動作確認をする
                 let env = new BattleSimulatorBaseEnv(this, unit);
-                env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+                env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(getSkillLogLevel());
                 AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
@@ -6996,7 +7013,7 @@ class BattleSimulatorBase {
             let isThereAnyUnitThatInflictCantoControlWithinRange = false;
             for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
                 let env = new CantoControlEnv(unit, u);
-                env.setName('再移動制限時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+                env.setName('再移動制限時').setLogLevel(getSkillLogLevel());
                 isThereAnyUnitThatInflictCantoControlWithinRange |=
                     CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
                 for (let skillId of u.enumerateSkills()) {
@@ -7041,7 +7058,7 @@ class BattleSimulatorBase {
 
         // スキル毎の追加条件
         let env = new BattleSimulatorBaseEnv(this, unit);
-        env.setName('再移動判定時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('再移動判定時').setLogLevel(getSkillLogLevel());
         if (CAN_TRIGGER_CANTO_HOOKS.evaluateSomeWithUnit(unit, env)) {
             return true;
         }
@@ -7236,7 +7253,7 @@ class BattleSimulatorBase {
             self.__updateDistanceFromClosestEnemy(unit);
 
             let env = new BattleSimulatorBaseEnv(this, unit);
-            env.setName('奥義以外の再行動時[移動]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('奥義以外の再行動時[移動]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
         };
         return this.__createCommand(
@@ -8725,11 +8742,11 @@ class BattleSimulatorBase {
             let env;
             env = new BattleSimulatorBaseEnv(this, unit);
 
-            env.setName('移動補助を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
+            env.setName('移動補助を使用した時').setLogLevel(getSkillLogLevel()).setAssisted(targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(unit, env);
 
             env = new BattleSimulatorBaseEnv(this, targetUnit);
-            env.setName('移動補助を使用された時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('移動補助を使用された時').setLogLevel(getSkillLogLevel());
             AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
         }
 
@@ -9368,7 +9385,7 @@ class BattleSimulatorBase {
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
         let env = new BattleSimulatorBaseEnv(this, supporterUnit);
-        env.setName('応援を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
+        env.setName('応援を使用した時').setLogLevel(getSkillLogLevel()).setAssisted(targetUnit);
         AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
         console.log("応援後");
 
@@ -9774,7 +9791,7 @@ class BattleSimulatorBase {
             g_appData.map.applyReservedDivineVein();
 
             let env = new BattleSimulatorBaseEnv(this, supporterUnit);
-            env.setName('奥義以外の再行動時[補助]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('奥義以外の再行動時[補助]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(supporterUnit, env);
 
             // 再移動の評価
@@ -10182,7 +10199,7 @@ class BattleSimulatorBase {
 
     __grantsAnotherActionIfPossibleWithoutAfterCombat(unit) {
         let env = new BattleSimulatorBaseEnv(this, unit);
-        env.setName('奥義以外の再行動時[破壊]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('奥義以外の再行動時[破壊]').setLogLevel(getSkillLogLevel());
         AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
     }
 

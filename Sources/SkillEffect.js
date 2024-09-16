@@ -2364,3 +2364,10 @@ const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AFTER_COMBAT_NODE = 
         }
     }
 }();
+
+function getSkillLogLevel() {
+    if (typeof g_appData === 'undefined') {
+        return NodeEnv.LOG_LEVEL.OFF;
+    }
+    return g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF;
+}

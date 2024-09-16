@@ -854,6 +854,14 @@
                         </tr>
                         <tr>
                             <td class='paramHeader'>
+                                <label v-bind:for='"isAidesEssenceUsed"+value.id'>お供</label>
+                            </td>
+                            <td class='param'>
+                                <input v-bind:id='"isAidesEssenceUsed"+value.id' type="checkbox" v-model="value.isAidesEssenceUsed" @change="g_app.vm.isAidesEssenceUsedChanged(); updateUrl();" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class='paramHeader'>
                                 <span v-if="isWeaponTypeBeast(value.weaponType)">
                                     <label class="paramHeader" v-bind:for='"isTransformed"+value.id'>化身</label>
                                 </span>

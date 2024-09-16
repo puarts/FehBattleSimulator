@@ -2027,7 +2027,7 @@ class BattleMap {
         }
 
         let env = new BattleMapEnv(this, unit);
-        env.setName('ワープ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('ワープ').setLogLevel(getSkillLogLevel());
         yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(unit, env).flat(1);
 
         for (let skillId of unit.enumerateSkills()) {

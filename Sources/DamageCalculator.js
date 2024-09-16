@@ -1569,7 +1569,7 @@ class DamageCalculator {
     #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context) {
         if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
             let env = new DamageCalculatorEnv(this, defUnit, atkUnit);
-            env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(context.damageType);
+            env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
             AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
             for (let skillId of defUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applyDamageReductionRatiosWhenCondSatisfiedFuncMap);
@@ -1733,7 +1733,7 @@ class DamageCalculator {
      */
     __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
         let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit);
-        env.setName('攻撃開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(context.damageType);
+        env.setName('攻撃開始時').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
         AT_START_OF_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {

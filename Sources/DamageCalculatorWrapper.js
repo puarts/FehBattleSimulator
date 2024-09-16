@@ -384,7 +384,7 @@ class DamageCalculatorWrapper {
     __applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageType, isTargetFoe) {
         let env = new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null);
         let target = isTargetFoe ? "敵" : "周囲";
-        env.setName(`範囲奥義前(${target})`).setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName(`範囲奥義前(${target})`).setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         PRE_COMBAT_HOOKS.evaluateWithUnit(atkUnit, env);
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
@@ -458,7 +458,7 @@ class DamageCalculatorWrapper {
 
     #applySkillEffectsBeforePrecombatSpecial(targetUnit, enemyUnit, damageType) {
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, false);
-        env.setName('範囲奥義前').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('範囲奥義前').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         BEFORE_AOE_SPECIAL_HOOKS.evaluateWithUnit(targetUnit, env);
     }
 
@@ -2389,7 +2389,7 @@ class DamageCalculatorWrapper {
         }
 
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        env.setName('戦闘開始時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF)
+        env.setName('戦闘開始時').setLogLevel(getSkillLogLevel())
             .setDamageType(damageType).setIsStatusFixed(false);
         AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
@@ -10208,7 +10208,7 @@ class DamageCalculatorWrapper {
                 continue
             }
             let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
-            env.setName('周囲の味方からのバフ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+            env.setName('周囲の味方からのバフ').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
             FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
         }
     }
@@ -10234,7 +10234,7 @@ class DamageCalculatorWrapper {
                     continue
                 }
                 let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
-                env.setName('周囲の味方のスキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+                env.setName('周囲の味方のスキル').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
                 FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
                 for (let skillId of allyUnit.enumerateSkills()) {
                     let func = getSkillFunc(skillId, applySkillEffectFromAlliesFuncMap);
@@ -10913,7 +10913,7 @@ class DamageCalculatorWrapper {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        env.setName('ステータス決定後バフ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('ステータス決定後バフ').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
         WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.evaluateWithUnit(targetUnit, env);
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
@@ -11918,7 +11918,7 @@ class DamageCalculatorWrapper {
             func(targetUnit, enemyUnit, calcPotentialDamage);
         }
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        env.setName('ステータス決定後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('ステータス決定後').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
         WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.evaluateWithUnit(targetUnit, env);
 
@@ -14771,7 +14771,7 @@ class DamageCalculatorWrapper {
      */
     __applyPotentSkillEffect(targetUnit, enemyUnit, damageType) {
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, null);
-        env.setName('神速判定時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('神速判定時').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         WHEN_APPLIES_POTENT_EFFECTS_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applyPotentSkillEffectFuncMap)?.call(this, targetUnit, enemyUnit);
@@ -14788,7 +14788,7 @@ class DamageCalculatorWrapper {
      */
     __applySkillEffectRelatedToFollowupAttackPossibility(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        env.setName('追撃判定後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('追撃判定後').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         AFTER_FOLLOW_UP_CONFIGURED_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectRelatedToFollowupAttackPossibilityFuncMap);
@@ -15380,7 +15380,7 @@ class DamageCalculatorWrapper {
      */
     __applySpecialSkillEffect(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, false);
-        env.setName('戦闘開始時奥義効果').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('戦闘開始時奥義効果').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         let func = this._applySpecialSkillEffectFuncDict[targetUnit.special];
         if (func) {
@@ -16797,7 +16797,7 @@ class DamageCalculatorWrapper {
             }
 
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
-            env.setName('周囲の敵からのデバフ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF)
+            env.setName('周囲の敵からのデバフ').setLogLevel(getSkillLogLevel())
                 .setDamageType(damageType);
             WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
             for (let skillId of enemyAlly.enumerateSkills()) {
@@ -17310,7 +17310,7 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(20);
         }
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
-        env.setName('戦闘開始後ダメージ後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setDamageType(damageType);
+        env.setName('戦闘開始後ダメージ後').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillEffectsAfterAfterBeginningOfCombatFuncMap)?.call(this, targetUnit, enemyUnit);

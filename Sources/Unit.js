@@ -522,6 +522,8 @@ class Unit extends BattleMapElement {
 
         this.isBonusChar = false;
 
+        this.isAidesEssenceUsed = false;
+
         this.#statusEffects = [];
         // TODO: 何に使用しているか調べる
         // noinspection JSUnusedGlobalSymbols
@@ -1220,6 +1222,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.ascendedAsset
             + ValueDelimiter + this.captain
             + ValueDelimiter + this.passiveX
+            + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
             + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
@@ -1339,6 +1342,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.ascendedAsset = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.captain = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = intToBool(Number(values[i])); ++i; }
         if (i < elemCount) {
             this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
@@ -1469,6 +1473,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
+            + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
             ;
     }
 
@@ -1530,6 +1535,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = toBoolean(values[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -2227,7 +2233,7 @@ class Unit extends BattleMapElement {
         let units = g_appData.enumerateAllUnitsOnMap();
         for (let unit of units) {
             let env = new PreventingStatusEffectEnv(unit, this, statusEffectType);
-            env.setName('ステータス付与時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('ステータス付与時').setLogLevel(getSkillLogLevel());
             if (CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
@@ -2296,7 +2302,7 @@ class Unit extends BattleMapElement {
     canActivatePass() {
         let env = new NodeEnv().setUnitManager(g_appData).setTarget(this).setSkillOwner(this);
         // TODO: ログの出し方を考える
-        // env.setName('すり抜け').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        // env.setName('すり抜け').setLogLevel(getSkillLogLevel());
         env.setName('すり抜け');
         if (UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS.evaluateSomeWithUnit(this, env)) {
             return true;
@@ -2596,7 +2602,7 @@ class Unit extends BattleMapElement {
         let units = g_appData.enumerateAllUnitsOnMap();
         for (let unit of units) {
             let env = new NeutralizingEndActionEnv(unit, this);
-            env.setName('スキルによる行動終了時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('スキルによる行動終了時').setLogLevel(getSkillLogLevel());
             if (CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
@@ -2608,7 +2614,7 @@ class Unit extends BattleMapElement {
         let units = g_appData.enumerateAllUnitsOnMap();
         for (let unit of units) {
             let env = new NeutralizingEndActionEnv(unit, this);
-            env.setName('ステータスによる行動終了時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('ステータスによる行動終了時').setLogLevel(getSkillLogLevel());
             if (CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
@@ -2631,7 +2637,7 @@ class Unit extends BattleMapElement {
         }
 
         let env = new NodeEnv().setTarget(this).setSkillOwner(this);
-        env.setName('行動後or再移動後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('行動後or再移動後').setLogLevel(getSkillLogLevel());
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
     }
 
@@ -5285,6 +5291,15 @@ class Unit extends BattleMapElement {
             this.defWithSkills += Math.max(0, Math.trunc((this.pairUpUnit.defWithSkills - 10) / 10));
             this.resWithSkills += Math.max(0, Math.trunc((this.pairUpUnit.resWithSkills - 10) / 10));
         }
+
+        // お供補正
+        if (this.isAidesEssenceUsed) {
+            this.maxHpWithSkillsWithoutAdd += 1;
+            this.atkWithSkills += 1;
+            this.spdWithSkills += 1;
+            this.defWithSkills += 1;
+            this.resWithSkills += 1;
+        }
     }
 
     get hasPairUpUnit() {
@@ -5794,7 +5809,7 @@ class Unit extends BattleMapElement {
             moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         let env = new CantoEnv(this);
-        env.setName('再移動距離計算時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('再移動距離計算時').setLogLevel(getSkillLogLevel());
         moveCountForCanto = Math.max(moveCountForCanto, CALCULATES_DISTANCE_OF_CANTO_HOOKS.evaluateMaxWithUnit(this, env));
         for (let skillId of this.enumerateSkills()) {
             let moveCount = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
