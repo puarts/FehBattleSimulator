@@ -1919,7 +1919,7 @@ const Weapon = {
     IlianFrostBlade: 3000, // イリアの吹雪の剣
     IceDaggerPlus: 3002, // 氷の暗器+
     IceCrystalSpear: 3003, // ニフルの氷晶の槍
-    IceDragonstonePlus: 3004, // 氷竜の竜石+
+    IceDragonstonePlus: 3007, // 氷竜の竜石+
 };
 
 const Support = {
