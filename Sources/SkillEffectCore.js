@@ -71,6 +71,9 @@ class SkillEffectHooks {
         let skills = this.getSkills(skillId);
         if (skills.length > 0) {
             this.#skillNameLog(skillId, env);
+            if (skills.length >= 2) {
+                env?.info(`登録スキル数: ${skills.length}`);
+            }
         }
         return skills.map(skillNode => skillNode.evaluate(env));
     }
