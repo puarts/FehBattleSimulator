@@ -110,6 +110,19 @@ class PercentageCondNode extends BoolNode {
     }
 }
 
+class IsTargetsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hpPercentage = unit.restHpPercentageAtBeginningOfCombat;
+        env.debug(`${unit.nameWithGroup}のHPが${this._percentage}%以上であるか: ${hpPercentage}%(HP:${unit.battleContext.restHp}) >= ${this._percentage}%`);
+        return hpPercentage >= this._percentage;
+    }
+}
+
 class IsUnitsHpGteNPercentAtStartOfTurnNode extends PercentageCondNode {
     evaluate(env) {
         let unit = env.targetUnit;

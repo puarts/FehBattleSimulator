@@ -8105,35 +8105,6 @@
     );
 }
 
-// 生命の業火
-{
-    let setSkill = (skillId, spurFunc) => {
-        applySkillEffectForUnitFuncMap.set(skillId,
-            function (targetUnit, enemyUnit, calcPotentialDamage) {
-                this._applySkillEffectForUnitFuncDict[PassiveA.FirefloodBoost3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-                    if (targetUnit.battleContext.restHpPercentage >= 50) {
-                        spurFunc(targetUnit);
-                        let func = unit => unit.battleContext.restHpPercentage >= 50;
-                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, func)) {
-                            targetUnit.battleContext.reducesCooldownCount = true;
-                        }
-                    }
-                }
-            }
-        );
-    }
-    // 生命の業火疾風3
-    setSkill(PassiveA.FirestormBoost3, u => u.addAtkSpdSpurs(7));
-    // 生命の業火静水3
-    setSkill(PassiveA.FirefloodBoost3, u => u.addAtkResSpurs(7));
-    // 生命の業火大地3
-    setSkill(PassiveA.EarthfireBoost3, u => u.addAtkDefSpurs(7));
-    // 生命の疾風大地3
-    setSkill(PassiveA.EarthwindBoost3, u => u.addSpdDefSpurs(7));
-    // 生命の疾風静水3
-    setSkill(PassiveA.DelugeBoost3, u => u.addSpdResSpurs(7));
-}
-
 // 強く気高き魂の槍
 {
     let skillId = Weapon.RighteousLance;

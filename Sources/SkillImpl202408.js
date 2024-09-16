@@ -1,4 +1,22 @@
 // noinspection JSUnusedLocalSymbols
+// 生命の業火
+{
+    let setSkill = (skillId, grantsNode) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => BOOST_3_NODE(grantsNode));
+    };
+
+    // 生命の業火疾風3
+    setSkill(PassiveA.FirestormBoost3, new GrantsStatsPlusToTargetDuringCombatNode(7, 7, 0, 0));
+    // 生命の業火静水3
+    setSkill(PassiveA.FirefloodBoost3, new GrantsStatsPlusToTargetDuringCombatNode(7, 0, 0, 7));
+    // 生命の業火大地3
+    setSkill(PassiveA.EarthfireBoost3, new GrantsStatsPlusToTargetDuringCombatNode(7, 0, 7, 0));
+    // 生命の疾風大地3
+    setSkill(PassiveA.EarthwindBoost3, new GrantsStatsPlusToTargetDuringCombatNode(0, 7, 7, 0));
+    // 生命の疾風静水3
+    setSkill(PassiveA.DelugeBoost3, new GrantsStatsPlusToTargetDuringCombatNode(0, 7, 0, 7));
+}
+
 // 賀正の人狼王の爪牙
 {
     let skillId = getNormalSkillId(Weapon.ResolvedFang);

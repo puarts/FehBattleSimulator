@@ -106,6 +106,9 @@ class NodeEnv {
         return this;
     }
 
+    /**
+     * @returns {UnitManager}
+     */
     get unitManager() {
         return this.#unitManager;
     }

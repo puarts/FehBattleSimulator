@@ -3151,6 +3151,13 @@ class Unit extends BattleMapElement {
         return 100 * this.hp / this.maxHpWithSkills;
     }
 
+    /**
+     * 戦闘開始時のHP割合
+     */
+    get restHpPercentageAtBeginningOfCombat() {
+        return this.restHpPercentageAtBeginningOfTurn;
+    }
+
     get isRestHpFull() {
         return this.restHp >= this.maxHpWithSkills;
     }

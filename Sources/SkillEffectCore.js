@@ -98,7 +98,7 @@ class SkillEffectHooks {
         }
         // TODO: 紋章士に対応する
         let name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
-        env?.info(`${type}${name}を評価`);
+        env?.info(`${env.skillOwner.nameWithGroup}の${type}${name}を評価`);
     }
 
     /**

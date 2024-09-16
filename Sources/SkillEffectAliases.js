@@ -30,3 +30,20 @@ const RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE =
             ),
         ),
     );
+
+const BOOST_3_NODE =
+    (grantsNode) => new SkillEffectNode(
+        // Grants HP+5.
+        // At start of combat,
+        // if unit's HP ≥ 50%,
+        IF_NODE(new IsUnitsHpGteNPercentAtStartOfCombatNode(50),
+            // grants Spd/Res+7 to unit during combat,
+            grantsNode,
+            // and also,
+            // if unit is within 2 spaces of an ally with HP ≥ 50%,
+            IF_NODE(new IsTargetWithinNSpacesOfTargetsAllyNode(2, new IsTargetsHpGteNPercentAtStartOfCombatNode(50)),
+                // inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
+                INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+            ),
+        ),
+    );
