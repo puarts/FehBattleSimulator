@@ -1156,7 +1156,7 @@ class DamageCalculator {
             defUnit.battleContext.initContextPerAttack();
 
             // TODO: リファクタリング
-            let isSecondStrike = i === 1;
+            let isSecondStrike = i === 1; // FirstStrike: i === 0
             if (isFirstAttack && isSecondStrike) {
                 // defUnitの奥義カウント変動
                 let defCount = defUnit.tmpSpecialCount -

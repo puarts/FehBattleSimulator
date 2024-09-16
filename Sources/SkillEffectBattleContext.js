@@ -425,7 +425,7 @@ class NeutralizesPenaltiesToTargetsStatsNode extends SetBoolToEachStatusNode {
         let values = this.getValues();
         let unit = this.getUnit(env);
         env.debug(`${unit.nameWithGroup}は自身の弱化を無効: [${values}]`);
-        unit.battleContext.invalidateOwnDebuffs(...this.getValues());
+        unit.battleContext.invalidateOwnDebuffs(...values);
     }
 }
 

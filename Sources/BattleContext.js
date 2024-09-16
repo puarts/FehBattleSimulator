@@ -611,6 +611,12 @@ class BattleContext {
         ];
     }
 
+    /**
+     * @param {boolean} atk
+     * @param {boolean} spd
+     * @param {boolean} def
+     * @param {boolean} res
+     */
     invalidateOwnDebuffs(atk, spd, def, res) {
         this.invalidatesOwnAtkDebuff |= atk;
         this.invalidatesOwnSpdDebuff |= spd;
@@ -623,19 +629,6 @@ class BattleContext {
         this.invalidatesOwnSpdDebuff = true;
         this.invalidatesOwnDefDebuff = true;
         this.invalidatesOwnResDebuff = true;
-    }
-
-    /**
-     * @param {boolean} atk
-     * @param {boolean} spd
-     * @param {boolean} def
-     * @param {boolean} res
-     */
-    invalidateDebuffs(atk, spd, def, res) {
-        this.invalidatesOwnAtkDebuff = atk;
-        this.invalidatesOwnSpdDebuff = spd;
-        this.invalidatesOwnDefDebuff = def;
-        this.invalidatesOwnResDebuff = res;
     }
 
     /**

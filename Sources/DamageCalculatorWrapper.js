@@ -4948,7 +4948,7 @@ class DamageCalculatorWrapper {
                         spurFunc.call(targetUnit, amount);
                         spurFunc.call(targetUnit, Math.min(dist, distLimit));
                         if (skillLevel === 4 && dist >= 2) {
-                            targetUnit.battleContext.invalidateDebuffs(...debuffFlags);
+                            targetUnit.battleContext.invalidateOwnDebuffs(...debuffFlags);
                         }
                     }
                 }
