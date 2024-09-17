@@ -34,14 +34,14 @@ class SkillEffectHooks {
     #instantiatedMap = new MultiValueMap();
 
     /**
-     * @param {number|string|(number|string)[]} skillIds
+     * @param {number|string} skillId
      * @param {() => N} nodeFunc
      */
-    addSkill(skillIds, nodeFunc) {
+    addSkill(skillId, nodeFunc) {
         if (typeof nodeFunc !== 'function') {
             throw new Error('Argument nodeFunc must be a function');
         }
-        this.#delayedMap.addValue(skillIds, nodeFunc);
+        this.#delayedMap.addValue(skillId, nodeFunc);
     }
 
     /**
