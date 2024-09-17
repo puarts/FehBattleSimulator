@@ -1,4 +1,40 @@
 // noinspection JSUnusedLocalSymbols
+// 闘いの熱砂の槍
+{
+    let skillId = Weapon.DesertSpear;
+    // Accelerates Special trigger (cooldown count-1). Unit can counterattack regardless of foe's range.
+    // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
+    FOES_WITH_RANGE_IS_1_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE)
+    // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
+    FOES_WITH_RANGE_IS_2_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE)
+    // For allies within 3 spaces of unit,
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // grants Spd/Def+4 during combat,
+        new GrantsStatsPlusToTargetDuringCombatNode(0, 4, 4, 0),
+    ));
+    // and also,
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // when foe's attack triggers foe's Special,
+        // reduces damage from foe's attacks by 10 during that ally's combat (excluding area-of-effect Specials).
+        new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(10),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + 15% of unit's Def at start of combat,
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(
+                ADD_NODE(5, MULT_TRUNC_NODE(0.15, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+            ),
+            // and neutralizes foe's bonuses (from skills like Fortify, Rally, etc.) during combat,
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+            // and also,
+            // when foe's attack triggers foe's Special,
+            // reduces damage from foe's attacks by 10 during combat (excluding area-of-effect Specials).
+            new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(10),
+        ),
+    ));
+}
+
 // 生命の業火
 {
     let setSkill = (skillId, grantsNode) => {

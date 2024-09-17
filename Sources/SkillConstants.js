@@ -1920,6 +1920,11 @@ const Weapon = {
     IceDaggerPlus: 3002, // 氷の暗器+
     IceCrystalSpear: 3003, // ニフルの氷晶の槍
     IceDragonstonePlus: 3007, // 氷竜の竜石+
+
+    // 新英雄「お供レギン＆響心ミスティラ」
+    // https://www.youtube.com/watch?v=oJjBKFzt8wU&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=w-t_btdtf28&ab_channel=NintendoMobile
+    DesertSpear: 3010, // 闘いの熱砂の槍
 };
 
 const Support = {
