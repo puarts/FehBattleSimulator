@@ -385,7 +385,7 @@ class DamageCalculatorWrapper {
         let env = new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null);
         let target = isTargetFoe ? "敵" : "周囲";
         env.setName(`範囲奥義前(${target})`).setLogLevel(getSkillLogLevel()).setDamageType(damageType);
-        PRE_COMBAT_HOOKS.evaluateWithUnit(atkUnit, env);
+        BEFORE_COMBAT_HOOKS.evaluateWithUnit(atkUnit, env);
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Queensblade:

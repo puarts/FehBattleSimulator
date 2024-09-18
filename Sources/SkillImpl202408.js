@@ -1,4 +1,39 @@
 // noinspection JSUnusedLocalSymbols
+// 自警団長の弓
+{
+    let skillId = Weapon.SentinelBow;
+    // Accelerates Special trigger (cooldown count-1). Effective against flying foes.
+    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or foe's Range = 2,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, FOES_RANGE_IS_2_NODE),
+            // foe cannot trigger Specials during combat or area-of-effect Specials (excluding Røkkr area-of-effect Specials).
+            FOE_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+        )
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or foe's Range = 2,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, FOES_RANGE_IS_2_NODE),
+            // foe cannot trigger Specials during combat or area-of-effect Specials (excluding Røkkr area-of-effect Specials).
+            FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + 15% of unit's Spd at start of combat,
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                ADD_NODE(5, MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and reduces damage from foe's first attack by 70% during combat
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(70),
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            // and unit's next attack deals damage = total damage reduced from foe's first attack (by any source,
+            new TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode(),
+            // including other skills). Resets at end of combat.
+        ),
+    ));
+}
+
 // 響・始まりの鼓動
 {
     let skillId = PassiveX.TimePulseEcho;
@@ -2006,7 +2041,7 @@
 // 清風明月の夏祭の槍
 {
     let skillId = Weapon.BreezySpear;
-    PRE_COMBAT_HOOKS.addSkill(skillId, () =>
+    BEFORE_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // 範囲奥義無効
             UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,

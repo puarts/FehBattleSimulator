@@ -763,7 +763,7 @@ const FOE_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = 
 class TargetCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は距離に関係なく反撃する)`);
+        env.debug(`${unit.nameWithGroup}は距離に関係なく反撃する`);
         unit.battleContext.canCounterattackToAllDistance = true;
     }
 }

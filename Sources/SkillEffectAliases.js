@@ -69,3 +69,10 @@ const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_C
     IF_NODE(new IsTargetsSpecialCooldownCountIsAtItsMaximumNode(),
         new GrantsSpecialCooldownCountMinusOnTargetNode(1),
     );
+
+const FOES_RANGE_IS_2_NODE = EQ_NODE(new FoesRangeNode(), 2);
+
+const FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE = new SkillEffectNode(
+    FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+    FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+);
