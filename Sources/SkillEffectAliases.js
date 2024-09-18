@@ -54,3 +54,18 @@ const UNITS_DEF_GT_FOES_DEF_NODE = GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FO
 // During combat, difference between Def stats
 const DIFFERENCE_BETWEEN_DEF_STATS_NODE =
     SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
+
+// TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
+// if Special cooldown count is at its maximum value grants Special cooldown count-1.
+const IS_TARGETS_SPECIAL_COOLDOWN_COUNT_AT_ITS_MAX_AT_START_OF_TURN_NODE =
+    EQ_NODE(new TargetsSpecialCountAtStartOfTurnNode(), new TargetsMaxSpecialCountNode());
+
+const AT_START_OF_TURN_IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE = n =>
+    IF_NODE(IS_TARGETS_SPECIAL_COOLDOWN_COUNT_AT_ITS_MAX_AT_START_OF_TURN_NODE,
+        new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(n),
+    );
+
+const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE = n =>
+    IF_NODE(new IsTargetsSpecialCooldownCountIsAtItsMaximumNode(),
+        new GrantsSpecialCooldownCountMinusOnTargetNode(1),
+    );

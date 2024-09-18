@@ -2164,6 +2164,11 @@ class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPosit
 class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
+// TODO: rename
+// skill text: grants Special cooldown count-1
+class GrantsSpecialCooldownCountMinusOnTargetNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
+}
+
 /**
  * inflicts Special cooldown count+1
  */
@@ -2364,6 +2369,22 @@ const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AFTER_COMBAT_NODE = 
         }
     }
 }();
+
+/**
+ * if Special cooldown count is at its maximum value
+ */
+class IsTargetsSpecialCooldownCountIsAtItsMaximumNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let isMax = unit.isSpecialCountMax;
+        env.debug(`${unit.nameWithGroup}の奥義発動カウントが最大かどうか: ${isMax}, count: ${unit.specialCount}/${unit.maxSpecialCount}`);
+        return isMax;
+    }
+}
 
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {

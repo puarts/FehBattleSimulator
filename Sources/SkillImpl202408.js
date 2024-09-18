@@ -1,4 +1,21 @@
 // noinspection JSUnusedLocalSymbols
+// 響・始まりの鼓動
+{
+    let skillId = PassiveX.TimePulseEcho;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // TODO: おそらくIF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODEでも良いので確認する
+        // At start of turn,
+        // if Special cooldown count is at its maximum value, grants Special cooldown count-1.
+        AT_START_OF_TURN_IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // After combat,
+        // if Special cooldown count is at its maximum value, grants Special cooldown count-1.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+    ))
+}
+
 // 砂陣
 {
     let skillId = Special.Sandstorm;
