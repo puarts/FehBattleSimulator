@@ -9120,6 +9120,8 @@
     // 遠影
     // 攻撃魔防の遠影4
     setSkill(PassiveB.AtkResFarTrace4, u => u.addAtkResSpurs(-4), 1);
+    // 速さ守備の遠影4
+    setSkill(PassiveB.SpdDefFarTrace4, u => u.addSpdDefSpurs(-4), 1);
     // 速さ魔防の遠影4
     setSkill(PassiveB.SpdResFarTrace4, u => u.addSpdResSpurs(-4), 1);
 }
