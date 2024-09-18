@@ -1,4 +1,51 @@
 // noinspection JSUnusedLocalSymbols
+// 砂陣
+{
+    let skillId = Special.Sandstorm;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT4_SPECIALS.push(skillId);
+    INHERITABLE_COUNT4_SPECIALS.push(skillId);
+
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Boosts damage by 80% of unit's Def and
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(0.8, UNITS_DEF_DURING_COMBAT_NODE),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
+        new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkNode(150),
+    ));
+
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Reduces damage from attacks by percentage = 40 - current Special cooldown count value × 10 during combat.
+        new ReducesDamageFromAttacksDuringCombatByXPercentConsideredSpecialPerAttackNode(
+            SUB_NODE(40, MULT_NODE(10, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT))
+        ),
+    ));
+
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's Def > foe's Def,
+        IF_NODE(UNITS_DEF_GT_FOES_DEF_NODE,
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // decreases Spd difference necessary for unit to make a follow-up attack by X and
+                    new DecreasesSpdDiffNecessaryForUnitFollowUpNode(READ_NUM_NODE),
+                    // increases Spd difference necessary for foe to make a follow-up attack by X during combat
+                    new IncreasesSpdDiffNecessaryForFoesFollowUpNode(READ_NUM_NODE),
+                ),
+                // (X = difference between Def stats; max 10;
+                new EnsureMaxNode(DIFFERENCE_BETWEEN_DEF_STATS_NODE, 10),
+                // for example, if Spd difference necessary increases by 10, Spd must be ≥ 15 more than foe's Spd to make a follow-up attack; stacks with similar skills).
+            ),
+        ),
+    ));
+}
+
 // 闘いの熱砂の槍
 {
     let skillId = Weapon.DesertSpear;
@@ -1602,7 +1649,7 @@
 
     // Reduces damage from attacks during combat by percentage = 40, - 10 × current Special cooldown count value.
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        new ReducesDamageDuringCombatByPercentageNBySpecialPerAttackNode(
+        new ReducesDamageFromAttacksDuringCombatByXPercentConsideredSpecialPerAttackNode(
             SUB_NODE(40, MULT_NODE(10, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT))
         ),
     ));

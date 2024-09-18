@@ -417,12 +417,24 @@ const FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillE
 /**
  * increases the Spd difference necessary for foe to make a follow-up attack by N during combat
  */
-class IncreasesSpdDiffNecessaryForFoesFollowUpNode extends FromNumberNode {
+class IncreasesSpdDiffNecessaryForFoesFollowUpNode extends FromPositiveNumberNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
         let n = this.evaluateChildren(env);
         unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
         env.debug(`${unit.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+    }
+}
+
+/**
+ * decreases Spd difference necessary for unit to make a follow-up attack by X during combat
+ */
+class DecreasesSpdDiffNecessaryForUnitFollowUpNode extends FromPositiveNumberNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let n = this.evaluateChildren(env);
+        unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack -= n;
+        env.debug(`${unit.nameWithGroup}の追撃の速さ条件-${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
@@ -665,9 +677,10 @@ class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends Applying
 }
 
 /**
+ * [Special]
  * Reduces damage from attacks during combat by percentage = N
  */
-class ReducesDamageDuringCombatByPercentageNBySpecialPerAttackNode extends FromNumberEnsuredNonNegativeNode {
+class ReducesDamageFromAttacksDuringCombatByXPercentConsideredSpecialPerAttackNode extends FromNumberEnsuredNonNegativeNode {
     evaluate(env) {
         let n = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;
@@ -1211,3 +1224,20 @@ class GrantsSpecialCooldownChargePlus1ToUnitPerAttackDuringCombatNode
 
 const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE =
     new GrantsSpecialCooldownChargePlus1ToUnitPerAttackDuringCombatNode();
+
+/**
+ * calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
+ */
+class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.usesDefInsteadOfAtkWhenSpecial = true;
+        unit.battleContext.ratioForUsingAnotherStatWhenSpecial = percentage / 100.0;
+        env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに守備の値を使用(${percentage}%)`);
+    }
+}

@@ -686,6 +686,12 @@ class DamageCalculator {
         this.#applySpecialCountChangesBeforeAttack(atkUnit, defUnit, context);
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
+        let specialTotalAtk = atkUnit.getAtkInCombat(defUnit);
+        if (atkUnit.battleContext.usesDefInsteadOfAtkWhenSpecial) {
+            // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
+            let ratio = atkUnit.battleContext.ratioForUsingAnotherStatWhenSpecial;
+            specialTotalAtk = Math.trunc(atkUnit.getDefInCombat(defUnit) * ratio);
+        }
 
         let atkCountPerCombat = atkUnit.battleContext.getAttackCount(context.isCounterattack);
         // 神速追撃の場合は2回攻撃は発動しない
@@ -742,14 +748,18 @@ class DamageCalculator {
         }
 
         let finalAtk = totalAtk;
+        let specialFinalAtk = specialTotalAtk;
         if (atkUnit.battleContext.isEffectiveToOpponent) {
             // 特効
             finalAtk = floorNumberWithFloatError(finalAtk * 1.5);
+            specialFinalAtk = floorNumberWithFloatError(specialFinalAtk * 1.5);
         }
 
         let attackAdvRatio = this.#getAttackAdvRatio(atkUnit, defUnit);
         let addAdjustAtk = truncNumberWithFloatError(finalAtk * attackAdvRatio);
-        finalAtk = finalAtk + addAdjustAtk;
+        let addAdjustAtkBySpecial = truncNumberWithFloatError(specialFinalAtk * attackAdvRatio);
+        finalAtk += addAdjustAtk;
+        specialFinalAtk += addAdjustAtkBySpecial;
 
         let finalMit = floorNumberWithFloatError(totalMit + totalMit * mitAdvRatio);
         let damage = truncNumberWithFloatError((finalAtk - finalMit));
@@ -764,7 +774,7 @@ class DamageCalculator {
         let specialSuffer = atkUnit.battleContext.specialSufferPercentage;
         let specialSufferRatio = (specialSuffer / 100.0);
         let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * specialSufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
-        let specialDamage = truncNumberWithFloatError((finalAtk - specialFinalMit) * specialMultDamage) + specialAddDamage;
+        let specialDamage = truncNumberWithFloatError((specialFinalAtk - specialFinalMit) * specialMultDamage) + specialAddDamage;
         if (specialDamage < 0) {
             specialDamage = 0;
         }
@@ -805,27 +815,28 @@ class DamageCalculator {
             }
 
             this.writeDebugLog(`[相性判定] 攻撃属性:${this.getUnitColorLog(atkUnit)}、防御属性:${this.getUnitColorLog(defUnit)}`);
-            this.writeDebugLog("相性による攻撃補正値: " + attackAdvRatio.toFixed(2));
+            this.writeDebugLog(`相性による攻撃補正値: ${attackAdvRatio.toFixed(2)}`);
             if (defUnit.battleContext.isOnDefensiveTile) {
-                this.writeDebugLog(defUnit.getNameWithGroup() + "は防御地形補正 1.3");
+                this.writeDebugLog(`${defUnit.getNameWithGroup()}は防御地形補正 1.3`);
             }
-            this.writeDebugLog("補正前の攻撃:" + totalAtk + `(${this.__getAtkInCombatDetail(atkUnit, defUnit)})`);
+            this.writeDebugLog(`補正前の攻撃:${totalAtk}(${this.__getAtkInCombatDetail(atkUnit, defUnit)})`);
             if (atkUnit.battleContext.isEffectiveToOpponent) {
                 this.writeDebugLog("特効補正値: 1.5");
             }
             this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
-            this.writeDebugLog("補正前の耐久:" + totalMit + `(${totalMitDetailLog})`);
+            this.writeDebugLog(`相性による攻撃加算(奥義): ${addAdjustAtkBySpecial}(${(specialFinalAtk * attackAdvRatio).toFixed(2)})`);
+            this.writeDebugLog(`補正前の耐久:${totalMit}(${totalMitDetailLog})`);
             if (totalMit !== specialTotalMit) {
-                this.writeDebugLog("奥義発動時の補正前の耐久:" + specialTotalMit + `(${specialTotalMitDetailLog})`);
+                this.writeDebugLog(`奥義発動時の補正前の耐久:${specialTotalMit}(${specialTotalMitDetailLog})`);
             }
-            this.writeDebugLog("補正後の攻撃:" + finalAtk + "、耐久:" + finalMit);
-            this.writeDebugLog("加算ダメージ:" + fixedAddDamage);
+            this.writeDebugLog(`補正後の攻撃:${finalAtk}、耐久:${finalMit}`);
+            this.writeDebugLog(`補正後の攻撃(奥義):${specialFinalAtk}、耐久:${specialFinalMit}`);
+            this.writeDebugLog(`加算ダメージ:${fixedAddDamage}`);
             if (specialSufferRatio > 0) {
                 this.writeDebugLog(`奥義発動時、守備、魔防－${floorNumberWithFloatError(specialSufferRatio * 100)}%扱い`);
             }
-            this.writeDebugLog("奥義加算ダメージ:" + fixedSpecialAddDamage);
-            this.writeDebugLog(
-                `通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerCombat}`);
+            this.writeDebugLog(`奥義加算ダメージ:${fixedSpecialAddDamage}`);
+            this.writeDebugLog(`通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerCombat}`);
             this.writeDebugLog(`合計ダメージ:${totalDamage}`);
         }
 
@@ -833,10 +844,10 @@ class DamageCalculator {
             // 攻撃側が倒されていたらダメージを反映しない(潜在ダメージ計算のためにダメージ計算は必要)
             defUnit.restHp = Math.max(0, mitHp - totalDamage);
             if (this.isLogEnabled) {
-                this.writeLog(defUnit.getNameWithGroup() + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
-                this.writeLog(atkUnit.getNameWithGroup() + "の残りHP " + atkUnit.restHp + "/" + atkUnit.maxHpWithSkills);
+                this.writeLog(`${defUnit.getNameWithGroup()}の残りHP ${defUnit.restHp}/${defUnit.maxHpWithSkills}`);
+                this.writeLog(`${atkUnit.getNameWithGroup()}の残りHP ${atkUnit.restHp}/${atkUnit.maxHpWithSkills}`);
                 if (this.__isDead(defUnit)) {
-                    this.writeLog(defUnit.getNameWithGroup() + "は戦闘不能");
+                    this.writeLog(`${defUnit.getNameWithGroup()}は戦闘不能`);
                 }
             }
         }

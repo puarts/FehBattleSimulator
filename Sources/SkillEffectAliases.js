@@ -47,3 +47,10 @@ const BOOST_3_NODE =
             ),
         ),
     );
+
+// During combat
+const UNITS_DEF_GT_FOES_DEF_NODE = GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
+
+// During combat, difference between Def stats
+const DIFFERENCE_BETWEEN_DEF_STATS_NODE =
+    SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);

@@ -2151,6 +2151,7 @@ const Special = {
     CurvedShot: 2986, // 曲射
 
     // 専用奥義
+    Sandstorm: 3011, // 砂陣
     DualIceMirrors: 3004, // 双氷の聖鏡
     MakingsOfAKing: 2989, // 王器
     WarpRagnarok: 2925, // ワープライナ

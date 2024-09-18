@@ -13951,6 +13951,10 @@ class DamageCalculatorWrapper {
         if (this.isLogEnabled) this.__writeDamageCalcDebugLog(`${atkUnit.getNameWithGroup()}の速さによる追撃評価:`);
         this.__logSpdInCombat(atkUnit, defUnit, TabChar);
         this.__logSpdInCombat(defUnit, atkUnit, TabChar);
+        if (this.isLogEnabled) {
+            this.__writeDamageCalcDebugLog(`${TabChar}${atkUnit.nameWithGroup}の速さの追撃条件: ${atkUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+            this.__writeDamageCalcDebugLog(`${TabChar}${defUnit.nameWithGroup}の速さの追撃条件: ${defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+        }
         let result = DamageCalculationUtility.examinesCanFollowupAttack(atkUnit, defUnit);
         if (result) {
             if (this.isLogEnabled) this.__writeDamageCalcDebugLog(TabChar + atkUnit.getNameWithGroup() + "は速さが5以上高いので追撃可能");

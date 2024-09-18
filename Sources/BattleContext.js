@@ -468,6 +468,10 @@ class BattleContext {
         // 自分の戦闘順序入れ替えスキル(待ち伏せ、攻め立てなど)を無効
         this.canUnitDisableSkillsThatChangeAttackPriority = false;
 
+        // 奥義の際に攻撃の代わりに他のステータスを利用
+        this.usesDefInsteadOfAtkWhenSpecial = false;
+        this.ratioForUsingAnotherStatWhenSpecial = 0;
+
         //
         // フック関数
         // 固定ダメージ

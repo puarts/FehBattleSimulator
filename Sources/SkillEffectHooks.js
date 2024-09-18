@@ -101,7 +101,7 @@ const WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffect
 const WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
- * 攻撃開始時
+ * 攻撃開始時(攻撃ごとのスキル効果)
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorEnv>} */
 const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
 
