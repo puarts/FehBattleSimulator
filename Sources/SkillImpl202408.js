@@ -71,16 +71,21 @@
     FOES_WITH_RANGE_IS_1_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE)
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     FOES_WITH_RANGE_IS_2_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE)
-    // For allies within 3 spaces of unit,
     FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // grants Spd/Def+4 during combat,
-        new GrantsStatsPlusToTargetDuringCombatNode(0, 4, 4, 0),
+        // For allies within 3 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // grants Spd/Def+4 during combat,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 4, 4, 0),
+        ),
     ));
     // and also,
     FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // when foe's attack triggers foe's Special,
-        // reduces damage from foe's attacks by 10 during that ally's combat (excluding area-of-effect Specials).
-        new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(10),
+        // For allies within 3 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // when foe's attack triggers foe's Special,
+            // reduces damage from foe's attacks by 10 during that ally's combat (excluding area-of-effect Specials).
+            new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(10),
+        ),
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is within 3 spaces of an ally,
