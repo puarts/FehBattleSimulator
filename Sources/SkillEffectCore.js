@@ -707,10 +707,10 @@ const READ_NUM_NODE = new ReadNumNode();
 class NumThatIsNode extends SkillEffectNode {
     /**
      * @param procedureNode
-     * @param {NumberNode} valueNode
+     * @param {number|NumberNode} value
      */
-    constructor(procedureNode, valueNode) {
-        super(procedureNode, valueNode);
+    constructor(procedureNode, value) {
+        super(procedureNode, NumberNode.makeNumberNodeFrom(value));
     }
 
     evaluate(env) {
