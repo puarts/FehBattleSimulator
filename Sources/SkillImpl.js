@@ -4817,6 +4817,7 @@
     setSkill(PassiveA.AtkSpdFinish4, [7, 7, 0, 0], true);
     setSkill(PassiveA.AtkDefFinish4, [7, 0, 7, 0], true);
     setSkill(PassiveA.AtkResFinish4, [7, 0, 0, 7], true);
+    setSkill(PassiveA.SpdDefFinish4, [0, 7, 7, 0], true);
     setSkill(PassiveA.SpdResFinish4, [0, 7, 0, 7], true);
     setSkill(PassiveA.DefResFinish4, [0, 0, 7, 7], true);
 }
