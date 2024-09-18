@@ -190,9 +190,9 @@ const AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS = new SkillEffectHoo
 /**
  * Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
-const FOES_WITH_RANGE_IS_1_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHooks();
+const CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * Foes with Range = 2 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
-const FOES_WITH_RANGE_IS_2_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHooks();
+const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();

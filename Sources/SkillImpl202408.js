@@ -68,9 +68,13 @@
     let skillId = Weapon.DesertSpear;
     // Accelerates Special trigger (cooldown count-1). Unit can counterattack regardless of foe's range.
     // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
-    FOES_WITH_RANGE_IS_1_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE)
+    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () =>
+        TRUE_NODE,
+    )
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
-    FOES_WITH_RANGE_IS_2_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE)
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
+        EQ_NODE(new TargetsRangeNode(), 2),
+    )
     FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 3 spaces of unit,
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
