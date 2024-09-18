@@ -2320,7 +2320,8 @@ class Unit extends BattleMapElement {
     canActivateObstructToTilesIn2Spaces(moveUnit) {
         let hasSkills = false;
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
-        env.setName('移動時(2距離)').setLogLevel(getSkillLogLevel());
+        // env.setName('移動時(2距離)').setLogLevel(getSkillLogLevel());
+        env.setName('移動時(2距離)').setLogLevel(NodeEnv.LOG_LEVEL.WARN);
         hasSkills |=
             FOES_WITH_RANGE_IS_2_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.evaluateSomeWithUnit(moveUnit, env);
         for (let skillId of this.enumerateSkills()) {
@@ -2344,7 +2345,8 @@ class Unit extends BattleMapElement {
     canActivateObstructToAdjacentTiles(moveUnit) {
         let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwalk);
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
-        env.setName('移動時(1距離)').setLogLevel(getSkillLogLevel());
+        // env.setName('移動時(1距離)').setLogLevel(getSkillLogLevel());
+        env.setName('移動時(1距離)').setLogLevel(NodeEnv.LOG_LEVEL.WARN);
         hasSkills |=
             FOES_WITH_RANGE_IS_1_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.evaluateSomeWithUnit(moveUnit, env);
         for (let skillId of this.enumerateSkills()) {
