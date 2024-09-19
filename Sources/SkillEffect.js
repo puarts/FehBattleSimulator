@@ -31,6 +31,12 @@ const GetSkillOwnerDuringCombatMixin = {
     },
 };
 
+const GetAssistTargetsAllyMixin = {
+    getUnit(env) {
+        return env.getAssistAlly(env.target);
+    },
+}
+
 const GetValueMixin = Object.assign({}, GetUnitMixin, {
     evaluate(env) {
         let unit = this.getUnit(env);
@@ -1740,6 +1746,12 @@ class IsTargetWithinNSpacesOfTargetsAllyNode extends IsInRangeNNode {
 const IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(3, TRUE_NODE);
 
+class IsUnitWithinNSpacesOfUnitsAllyNode extends IsTargetWithinNSpacesOfTargetsAllyNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
 class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
     evaluate(env) {
         let spaces = this._nNode.evaluate(env);
@@ -1908,7 +1920,7 @@ class IsSpacesNSpacesAwayFromAssistedNode extends BoolNode {
     }
 
     evaluate(env) {
-        let distance = env.tile.calculateDistance(env.assisted.placedTile);
+        let distance = env.tile.calculateDistance(env.assistTarget.placedTile);
         let n = this.evaluateChildren(env)[0];
         // TODO: 警告が出ないようにする
         // noinspection JSIncompatibleTypesComparison
@@ -1922,7 +1934,7 @@ class IsSpacesWithinNSpacesOfTargetNode extends BoolNode {
     }
 
     evaluate(env) {
-        let distance = env.tile.calculateDistance(env.assisted.placedTile);
+        let distance = env.tile.calculateDistance(env.assistTarget.placedTile);
         let n = this.evaluateChildren(env)[0];
         // TODO: 警告が出ないようにする
         // noinspection JSIncompatibleTypesComparison
@@ -2146,6 +2158,34 @@ class InflictsStatusEffectsAtStartOfTurnNode extends GrantsStatusEffectsAtStartO
 class InflictsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAfterCombatNode {
 }
 
+// TODO: rename
+class ReservesToGrantStatusEffectsToTargetNode extends FromNumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {...number} values
+     */
+    constructor(...values) {
+        super(...values);
+    }
+
+    evaluate(env) {
+        this.evaluateChildren(env).forEach(e => {
+            let unit = this.getUnit(env);
+            env.debug(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与予約`);
+            unit.reserveToAddStatusEffect(e);
+        });
+    }
+}
+
+class ReservesToGrantStatusEffectsToAssistAllyNode extends ReservesToGrantStatusEffectsToTargetNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetsAllyMixin);
+    }
+}
+
 class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2202,6 +2242,22 @@ class DealsDamageToTargetAtStartOfTurnNode extends FromPositiveNumberNode {
 }
 
 // 再行動・再移動
+class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let success = unit.grantAnotherActionOnAssistIfPossible();
+        if (success) {
+            env.debug(`${unit.nameWithGroup}は再行動`);
+        } else {
+            env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
+        }
+    }
+}
+
 class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);

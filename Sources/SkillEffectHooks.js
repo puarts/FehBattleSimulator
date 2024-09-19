@@ -162,6 +162,26 @@ const AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS = new SkillEffectHooks();
 const AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS = new SkillEffectHooks();
 
 /**
+ * 応援を使用して行動を終えた後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_RALLY_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * 応援を使用されて行動を終えた後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_RALLY_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
+
+/**
+ * 移動補助を使用して行動を終えた後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * 移動補助を使用されて行動を終えた後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_MOVEMENT_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
+
+/**
  * TODO: rename
  * AIの天脈処理
  */

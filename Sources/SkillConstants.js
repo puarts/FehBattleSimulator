@@ -1926,6 +1926,7 @@ const Weapon = {
     // https://www.youtube.com/watch?v=w-t_btdtf28&ab_channel=NintendoMobile
     DesertSpear: 3010, // 闘いの熱砂の槍
     SentinelBow: 3014, // 自警団長の弓
+    SuaveBlade: 3016, // 珍獣騎士の剣
 };
 
 const Support = {

@@ -2885,6 +2885,13 @@ class Unit extends BattleMapElement {
         return this.maxHpWithSkills - this.hp;
     }
 
+    // TODO: これで全てか確認する
+    initReservedState() {
+        this.initReservedHp();
+        this.initReservedStatusEffects();
+        this.initReservedDebuffs();
+    }
+
     initReservedHp() {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
@@ -6031,6 +6038,15 @@ class Unit extends BattleMapElement {
 
     grantsAnotherActionOnAssisted() {
         this.isActionDone = false;
+    }
+
+    grantAnotherActionOnAssistIfPossible() {
+        if (!this.isOneTimeActionActivatedForSupport) {
+            this.isOneTimeActionActivatedForSupport = true;
+            this.grantsAnotherActionOnAssist();
+            return true;
+        }
+        return false;
     }
 
     hasEmblemHero() {

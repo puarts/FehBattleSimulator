@@ -111,3 +111,12 @@ const FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE = new SkillEffectNode(
     FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL,
     FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
 );
+
+/**
+ * If unit initiates combat or is within 2 spaces of an ally,
+ * @param nodes
+ * @returns {IfNode}
+ * @constructor
+ */
+const IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY = (...nodes) =>
+    IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, new IsUnitWithinNSpacesOfUnitsAllyNode(2)), ...nodes);

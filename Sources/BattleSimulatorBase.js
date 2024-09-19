@@ -3227,7 +3227,8 @@ class BattleSimulatorBase {
         return g_appData.enumerateUnitsWithPredicator(predicator);
     }
     enumerateUnitsOnMap(predicator = null) {
-        return g_appData.enumerateUnitsWithPredicator(x => x.isOnMap && predicator?.(x));
+        let pred = predicator ? x => predicator?.(x) ?? false : _ => true;
+        return g_appData.enumerateUnitsWithPredicator(x => x.isOnMap && pred(x));
     }
 
     __findIndexOfUnit(id) {
@@ -8742,11 +8743,11 @@ class BattleSimulatorBase {
             let env;
             env = new BattleSimulatorBaseEnv(this, unit);
 
-            env.setName('移動補助を使用した時').setLogLevel(getSkillLogLevel()).setAssisted(targetUnit);
+            env.setName('移動補助を使用した時').setLogLevel(getSkillLogLevel()).setAssistUnits(unit, targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(unit, env);
 
             env = new BattleSimulatorBaseEnv(this, targetUnit);
-            env.setName('移動補助を使用された時').setLogLevel(getSkillLogLevel());
+            env.setName('移動補助を使用された時').setLogLevel(getSkillLogLevel()).setAssistUnits(unit, targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
         }
 
@@ -9384,10 +9385,11 @@ class BattleSimulatorBase {
 
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
-        let env = new BattleSimulatorBaseEnv(this, supporterUnit);
-        env.setName('応援を使用した時').setLogLevel(getSkillLogLevel()).setAssisted(targetUnit);
-        AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
-        console.log("応援後");
+        {
+            let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+            env.setName('応援を使用した時').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+            AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+        }
 
         for (let skillId of supporterUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillsAfterRallyForSupporterFuncMap)?.call(this, supporterUnit, targetUnit);
@@ -9395,6 +9397,12 @@ class BattleSimulatorBase {
         }
 
         // 自分に使用された時
+        {
+            let env = new BattleSimulatorBaseEnv(this, targetUnit);
+            env.setName('応援を使用された時').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+            AFTER_RALLY_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+        }
+
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillsAfterRallyForTargetUnitFuncMap)?.call(this, supporterUnit, targetUnit);
             this.#applySkillsAfterRallyForTargetUnit(skillId, targetUnit, supporterUnit);
@@ -9761,6 +9769,9 @@ class BattleSimulatorBase {
             return false;
         }
 
+        for (let unit of this.enumerateUnitsOnMap()) {
+            unit.initReservedState();
+        }
         if (this.__applySupportSkill(supporterUnit, targetUnit)) {
             if (supporterUnit.supportInfo.assistType === AssistType.Refresh) {
                 supporterUnit.battleContext.isRefreshActivated = true;
@@ -9773,6 +9784,16 @@ class BattleSimulatorBase {
             }
 
             // サポートを行う側
+            if (supporterUnit.hasRallyAssist) {
+                let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+                env.setName('応援を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                AFTER_RALLY_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+            }
+            if (supporterUnit.hasMoveAssist) {
+                let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+                env.setName('移動補助を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+            }
             for (let skillId of supporterUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForSupporterFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
@@ -9780,10 +9801,22 @@ class BattleSimulatorBase {
             }
 
             // サポートを受ける側
+            if (targetUnit.hasRallyAssist) {
+                let env = new BattleSimulatorBaseEnv(this, targetUnit);
+                env.setName('応援を使用された後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                AFTER_RALLY_ENDED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+            }
+            if (targetUnit.hasMoveAssist) {
+                let env = new BattleSimulatorBaseEnv(this, targetUnit);
+                env.setName('移動補助を使用された後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                AFTER_MOVEMENT_ENDED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+            }
             for (let skillId of targetUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
             }
+
+            // 予約反映
             for (let unit of this.enumerateUnitsOnMap()) {
                 unit.applyReservedState(false);
             }

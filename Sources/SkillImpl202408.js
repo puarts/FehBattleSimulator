@@ -1,4 +1,58 @@
 // noinspection JSUnusedLocalSymbols
+// 珍獣騎士の剣
+{
+    let skillId = Weapon.SuaveBlade;
+    // Accelerates Special trigger (cooldown count-1).
+    // If a Rally or movement Assist skill (like Reposition, Shove, Pivot, etc.) is used by unit or targets unit,
+    let node = new SkillEffectNode(
+        new ReservesToGrantStatusEffectsToTargetNode(
+            // grants "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% during combat (excluding area-of-effect Specials)" and
+            StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
+            // 【Bonus Doubler】to unit and target ally or unit and targeting ally for 1 turn.
+            StatusEffectType.BonusDoubler
+        ),
+        new ReservesToGrantStatusEffectsToAssistAllyNode(
+            // grants "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% during combat (excluding area-of-effect Specials)" and
+            StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
+            // 【Bonus Doubler】to unit and target ally or unit and targeting ally for 1 turn.
+            StatusEffectType.BonusDoubler
+        ),
+    );
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => node);
+    AFTER_RALLY_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, () => node);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => node);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, () => node);
+
+    // If a Rally or movement Assist skill is used by unit, grants another action to unit (once per turn).
+    let anotherActionNode = new GrantsAnotherActionOnAssistNode();
+    AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
+    AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + number of allies within 3 rows or 3 columns centered on unit × 3 (max 14),
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(5, MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)),
+                    14,
+                )
+            ),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and reduces damage from foe's first attack by
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(
+                new EnsureMaxNode(
+                    // number of 【Bonus】effects active on unit, excluding stat bonuses, × 3 during combat
+                    MULT_NODE(NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE, 3),
+                    // (max 15; excluding area-of-effect Specials; "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+                    15,
+                )
+            ),
+        )
+    ));
+}
+
 // 自警団長の弓
 {
     let skillId = Weapon.SentinelBow;
