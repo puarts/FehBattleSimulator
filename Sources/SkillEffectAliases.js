@@ -31,6 +31,12 @@ const RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE =
         ),
     );
 
+/**
+ * 生命
+ * @param grantsNode
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
 const BOOST_3_NODE =
     (grantsNode) => new SkillEffectNode(
         // Grants HP+5.
@@ -48,30 +54,59 @@ const BOOST_3_NODE =
         ),
     );
 
-// During combat
+/**
+ * 戦闘中守備が高い
+ * @type {GtNode}
+ */
 const UNITS_DEF_GT_FOES_DEF_NODE = GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
 
-// During combat, difference between Def stats
+/**
+ * 戦闘中の守備の差
+ * @type {SubNode}
+ */
 const DIFFERENCE_BETWEEN_DEF_STATS_NODE =
     SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
 
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
-// if Special cooldown count is at its maximum value grants Special cooldown count-1.
+/**
+ * 奥義カウント最大判定
+ * if Special cooldown count is at its maximum value grants Special cooldown count-1.
+ */
 const IS_TARGETS_SPECIAL_COOLDOWN_COUNT_AT_ITS_MAX_AT_START_OF_TURN_NODE =
     EQ_NODE(new TargetsSpecialCountAtStartOfTurnNode(), new TargetsMaxSpecialCountNode());
 
+/**
+ * ターン開始時奥義カウントが最大の時にマイナス
+ * @param {number|NumberNode} n
+ * @returns {IfNode}
+ * @constructor
+ */
 const AT_START_OF_TURN_IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE = n =>
     IF_NODE(IS_TARGETS_SPECIAL_COOLDOWN_COUNT_AT_ITS_MAX_AT_START_OF_TURN_NODE,
         new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(n),
     );
 
+/**
+ * マップ中奥義カウントが最大の時にマイナス
+ * @param {number|NumberNode} n
+ * @returns {IfNode}
+ * @constructor
+ */
 const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE = n =>
     IF_NODE(new IsTargetsSpecialCooldownCountIsAtItsMaximumNode(),
-        new GrantsSpecialCooldownCountMinusOnTargetNode(1),
+        new GrantsSpecialCooldownCountMinusOnTargetNode(n),
     );
 
+/**
+ * 敵の射程が2であるか
+ * @type {EqNode}
+ */
 const FOES_RANGE_IS_2_NODE = EQ_NODE(new FoesRangeNode(), 2);
 
+/**
+ * 戦闘中に奥義が発動できない
+ * @type {SkillEffectNode}
+ */
 const FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE = new SkillEffectNode(
     FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL,
     FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
