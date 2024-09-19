@@ -2154,6 +2154,7 @@ const Special = {
     CurvedShot: 2986, // 曲射
 
     // 専用奥義
+    SeidrBurst: 3019, // 連魔弾
     Sandstorm: 3011, // 砂陣
     DualIceMirrors: 3004, // 双氷の聖鏡
     MakingsOfAKing: 2989, // 王器

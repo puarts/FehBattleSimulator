@@ -146,6 +146,9 @@ class BattleContext {
         // true なら奥義発動時に守備、falseなら魔防を参照します。
         this.refersResForSpecial = false;
 
+        // 奥義発動時守備魔防の低い方を参照
+        this.refersLowerDefOrResWhenSpecial = false;
+
         // 氷の聖鏡発動時などの軽減ダメージ保持用
         this.reducedDamageForNextAttack = 0;
 

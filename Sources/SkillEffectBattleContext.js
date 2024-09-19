@@ -183,20 +183,6 @@ class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode extends Fr
 const UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE =
     new UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode(1);
 
-// 自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
-class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode extends FromPositiveNumberNode {
-    evaluate(env) {
-        let n = this.evaluateChildren(env);
-        let unit = env.targetUnit;
-        unit.battleContext.specialCountReductionBeforeFollowupAttack += n;
-        let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
-        env.debug(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} => ${reduction}`);
-    }
-}
-
-const UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE =
-    new UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode(1);
-
 const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
@@ -841,6 +827,30 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
     }
 }
 
+class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountReductionBeforeFollowupAttack += n;
+        let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
+        env.debug(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} => ${reduction}`);
+    }
+}
+
+// 自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
+class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE =
+    new UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode(1);
+
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1103,6 +1113,18 @@ class AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode extends FromPositi
         let n = this.evaluateChildren(env);
         unit.battleContext.nextAttackMinAdditionAfterSpecial = n;
         env.debug(`${unit.nameWithGroup}は奥義で軽減した値を、自身の次の攻撃のダメージに+する効果の最小 : ${n}`);
+    }
+}
+
+class CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.refersLowerDefOrResWhenSpecial = true;
+        env.debug(`${unit.nameWithGroup}は奥義発動時、敵の守備か魔防の低い方でダメージ計算`);
     }
 }
 

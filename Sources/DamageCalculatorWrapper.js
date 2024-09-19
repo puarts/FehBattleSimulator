@@ -706,6 +706,12 @@ class DamageCalculatorWrapper {
 
         atkUnit.battleContext.refersResForSpecial = atkUnit.battleContext.refersRes;
         if (!defUnit.battleContext.invalidatesReferenceLowerMit) {
+            if (atkUnit.battleContext.refersLowerDefOrResWhenSpecial) {
+                if (this.isLogEnabled) this.writeDebugLog("奥義発動時守備魔防の低い方でダメージ計算");
+                let defInCombat = defUnit.getDefInCombat(atkUnit);
+                let resInCombat = defUnit.getResInCombat(atkUnit);
+                atkUnit.battleContext.refersResForSpecial |= resInCombat < defInCombat;
+            }
             for (let skillId of atkUnit.enumerateSkills()) {
                 getSkillFunc(skillId, selectReferencingResOrDefFuncMap)?.call(this, atkUnit, defUnit);
                 switch (skillId) {
