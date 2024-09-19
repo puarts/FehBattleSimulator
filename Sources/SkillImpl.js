@@ -4665,6 +4665,8 @@
     }
     // 攻撃速さの連携4
     setSkill(PassiveB.AtkSpdLink4, [true, true, false, false], u => u.addSpurs(0, -4, -2, -2));
+    // 速さ守備の連携4
+    setSkill(PassiveB.SpdDefLink4, [false, true, true, false], u => u.addSpurs(-4, -4, 0, 0));
 }
 
 // 邪竜の暗鱗
