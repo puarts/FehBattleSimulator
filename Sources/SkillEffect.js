@@ -416,6 +416,7 @@ class CantoEnv extends NodeEnv {
      */
     constructor(targetUnit) {
         super();
+        this.setSkillOwner(targetUnit);
         this.setTarget(targetUnit);
     }
 }
