@@ -1927,6 +1927,7 @@ const Weapon = {
     DesertSpear: 3010, // 闘いの熱砂の槍
     SentinelBow: 3014, // 自警団長の弓
     SuaveBlade: 3016, // 珍獣騎士の剣
+    DvergrWayfinder: 3018, // ニザヴェリルの理槍
 };
 
 const Support = {
