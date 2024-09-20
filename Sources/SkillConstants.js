@@ -1928,6 +1928,7 @@ const Weapon = {
     SentinelBow: 3014, // 自警団長の弓
     SuaveBlade: 3016, // 珍獣騎士の剣
     DvergrWayfinder: 3018, // ニザヴェリルの理槍
+    PraisePinerAxe: 3021, // 称賛の希求の大斧
 };
 
 const Support = {

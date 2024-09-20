@@ -1,4 +1,46 @@
 // noinspection JSUnusedLocalSymbols
+// 称賛の希求の大斧
+{
+    let skillId = Weapon.PraisePinerAxe;
+    // Effective against flying foes. Grants Def+3. Calculates damage using the lower of foe's Def or Res.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Def/Res+6 and
+                new GrantsStatsPlusAtStartOfTurnNode(0, 0, 6, 6),
+                // "neutralizes foe's bonuses during combat"
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            new NumThatIsNode(
+                // inflicts penalty on foe's Atk/Def/Res = 5 + 15% of unit's Def at start of combat and
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                ADD_NODE(5, MULT_TRUNC_NODE(0.15, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+            ),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // reduces damage from foe's attacks by 15% of unit's Def during combat (excluding area-of-effect Specials),
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.15, UNITS_DEF_DURING_COMBAT_NODE)),
+            ),
+            // and also,
+            // if unit's HP > 1 and foe would reduce unit's HP to 0,
+            // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
+            new CanTargetActivateNonSpecialMiracleNode(0),
+            // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+            IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+                // restores 7 HP to unit after combat.
+                RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+            )
+        ),
+    ));
+}
+
 // 影助・引き戻し4
 {
     let skillId = PassiveC.ShadowShift4;
