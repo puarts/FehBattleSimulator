@@ -1,4 +1,20 @@
 // noinspection JSUnusedLocalSymbols
+// 攻撃守備の備え3
+{
+    let skillId = PassiveA.AtkDefPrime3;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If【Bonus】is active on unit,
+        IF_NODE(IS_BONUS_ACTIVE_ON_UNIT_NODE,
+            new NumThatIsNode(
+                // grants Atk/Def+X to unit during combat
+                new GrantsStatsPlusToUnitDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                // (X = number of【Bonus】effects active on unit, excluding stat bonuses, × 2, + 3; max 7).
+                new EnsureMaxNode(ADD_NODE(MULT_NODE(NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE, 2), 3), 7),
+            )
+        )
+    ));
+}
+
 // 称賛の希求の大斧
 {
     let skillId = Weapon.PraisePinerAxe;

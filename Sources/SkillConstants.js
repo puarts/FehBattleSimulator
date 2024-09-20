@@ -2561,6 +2561,7 @@ const PassiveA = {
 
     // 備え
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
+    AtkDefPrime3: 2978, // 攻撃守備の備え3
     AtkDefPrime4: 2699, // 攻撃守備の備え4
     SpdDefPrime4: 2967, // 速さ守備の備え4
 
