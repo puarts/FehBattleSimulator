@@ -3357,6 +3357,8 @@ const PassiveC = {
     
     AirOrders4: 3001, // 先導の伝令・天4
 
+    ShadowShift4: 3020, // 影助・引き戻し4
+
     // 専用C
     Paranoia: 2987, // 被害妄想
     DivineNectar: 2959, // 神獣の蜜
@@ -3496,6 +3498,16 @@ const AssistType = {
     Restore: 4,
     Rally: 5,
     Move: 6,
+};
+
+const CantoSupport = {
+    None: 0,
+    Reposition: 1,
+    Shove: 2,
+    Smite: 3,
+    Drawback: 4,
+    Swap: 5,
+    Pivot: 6,
 };
 
 // 紋章士

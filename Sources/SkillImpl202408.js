@@ -1,4 +1,28 @@
 // noinspection JSUnusedLocalSymbols
+// 影助・引き戻し4
+{
+    let skillId = PassiveC.ShadowShift4;
+    // When Canto triggers,
+    WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // enables unit to use 【Reposition】on ally
+        new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Reposition, 1),
+        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Reposition, 1),
+        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Swap, 3),
+        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Shove, 1),
+        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Smite, 1),
+        // (this effect is not treated as an Assist skill; if similar effects are active, this effect does not trigger).
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+3 to unit during combat
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(3),
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        )
+    ));
+}
+
 // 連魔弾
 {
     let skillId = Special.SeidrBurst;

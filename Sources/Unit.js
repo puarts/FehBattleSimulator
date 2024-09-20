@@ -142,12 +142,17 @@ class AssistableUnitInfo {
         this.hasStatAndNonStatDebuff = 0;
     }
 
-    calcAssistTargetPriority(assistUnit, isPrecombat = true) {
-        let assistType = assistUnit.supportInfo.assistType;
-        // TODO: 検証する。とりあえずHPが減っていた場合は回復スキルとして扱う
-        let skillId = assistUnit.support;
-        if (isRallyHealSkill(skillId)) {
-            assistType = this.targetUnit.isFullHp ? AssistType.Rally : AssistType.Heal;
+    calcAssistTargetPriority(assistUnit, isPrecombat = true, isCantoAssist = false) {
+        let assistType;
+        if (isCantoAssist) {
+            assistType = assistUnit.cantoAssistType;
+        } else {
+            assistType = assistUnit.supportInfo.assistType;
+            // TODO: 検証する。とりあえずHPが減っていた場合は回復スキルとして扱う
+            let skillId = assistUnit.support;
+            if (isRallyHealSkill(skillId)) {
+                assistType = this.targetUnit.isFullHp ? AssistType.Rally : AssistType.Heal;
+            }
         }
         switch (assistType) {
             case AssistType.Refresh:
@@ -166,11 +171,14 @@ class AssistableUnitInfo {
                 this.assistTargetPriority = this.__calcRestoreTargetPriority(assistUnit);
                 break;
         }
-        if (isRallyHealSkill(skillId)) {
-            // 応援より回復優先
-            if (assistType === AssistType.Heal) {
-                // TODO: 適切な数値に修正する
-                this.assistTargetPriority *= 10000000;
+        if (!isCantoAssist) {
+            let skillId = assistUnit.support;
+            if (isRallyHealSkill(skillId)) {
+                // 応援より回復優先
+                if (assistType === AssistType.Heal) {
+                    // TODO: 適切な数値に修正する
+                    this.assistTargetPriority *= 10000000;
+                }
             }
         }
     }
@@ -663,9 +671,13 @@ class Unit extends BattleMapElement {
 
         this.chaseTargetTile = null;
 
+        // Canto
         this.moveCountForCanto = 0; // 再移動の移動マス数
         this.isCantoActivatedInCurrentTurn = false; // 現在ターンで再移動が1度でも発動したかどうか
         this.isCantoActivating = false; // 再移動中かどうか
+        this.cantoAssistType = AssistType.None;
+        this.cantoAssistRange = 0;
+        this.cantoSupport = CantoSupport.None;
 
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
         // noinspection JSUnusedGlobalSymbols
@@ -781,6 +793,9 @@ class Unit extends BattleMapElement {
         if (this.isCantoActivated()) {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
+            let env = new CantoEnv(this);
+            env.setName('再移動開始時').setLogLevel(getSkillLogLevel());
+            WHEN_CANTO_TRIGGERS_HOOKS.evaluateWithUnit(this, env);
             if (cantoControlledIfCantoActivated) {
                 this.addStatusEffect(StatusEffectType.CantoControl);
                 this.moveCountForCanto = this.calcMoveCountForCanto();
@@ -806,6 +821,7 @@ class Unit extends BattleMapElement {
     deactivateCanto() {
         this.moveCountForCanto = 0;
         this.isCantoActivating = false;
+        this.clearCantoAssist();
     }
 
     /**
@@ -813,6 +829,29 @@ class Unit extends BattleMapElement {
      */
     isCantoActivated() {
         return this.isCantoActivating;
+    }
+
+    canActivateCantoAssist() {
+        return this.cantoSupport !== CantoSupport.None;
+    }
+
+    clearCantoAssist() {
+        this.cantoAssistType = AssistType.None;
+        this.cantoAssistRange = 0;
+        this.cantoSupport = CantoSupport.None;
+    }
+
+    trySetCantoAssist(assistType, assistRange, support) {
+        // 異なる補助を設定しようとする場合再移動補助自体を無効にする
+        if (this.cantoSupport !== CantoSupport.None &&
+            this.cantoSupport !== support) {
+            this.clearCantoAssist();
+            return false;
+        }
+        this.cantoAssistType = assistType;
+        this.cantoAssistRange = assistRange;
+        this.cantoSupport = support;
+        return true;
     }
 
     chaseTargetTileToString() {
@@ -1281,6 +1320,9 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isSupportedDone)
             + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterCombatInitiation)
             + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterActionWithoutCombat)
+            + ValueDelimiter + this.cantoAssistType
+            + ValueDelimiter + this.cantoAssistRange
+            + ValueDelimiter + this.cantoSupport
             ;
     }
 
@@ -1418,6 +1460,9 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isSupportedDone = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterCombatInitiation = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterActionWithoutCombat = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.cantoAssistType = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.cantoAssistRange = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.cantoSupport = Number(values[i]); ++i; }
     }
 
 
@@ -5499,12 +5544,16 @@ class Unit extends BattleMapElement {
         }
     }
 
-    /// 実際に補助可能なユニットとタイルを列挙します。
-    * enumerateActuallyAssistableUnitAndTiles() {
+    /**
+     * 実際に補助可能なユニットとタイルを列挙します。
+     * @param {boolean} isCantoAssist
+     */
+    * enumerateActuallyAssistableUnitAndTiles(isCantoAssist = false) {
         for (let unit of this.enumerateAssistableUnits()) {
             for (let tile of this.enumerateMovableTiles(false)) {
                 let dist = tile.calculateDistanceToUnit(unit);
-                if (dist === this.assistRange) {
+                let range = isCantoAssist ? this.cantoAssistRange : this.assistRange;
+                if (dist === range) {
                     yield [unit, tile];
                 }
             }

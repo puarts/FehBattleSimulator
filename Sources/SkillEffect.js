@@ -540,6 +540,39 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
 const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
 
+class EnablesTargetToUseCantoAssistOnTargetsAllyNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} cantoAssist
+     * @param {number|NumberNode} cantoSupport
+     * @param {number|NumberNode} range
+     */
+    constructor(cantoAssist, cantoSupport, range) {
+        super();
+        this.cantoAssistNode = NumberNode.makeNumberNodeFrom(cantoAssist);
+        this.cantoSupport = NumberNode.makeNumberNodeFrom(cantoSupport);
+        this.rangeNode = NumberNode.makeNumberNodeFrom(range);
+    }
+
+    evaluate(env) {
+        let unit = env.target;
+        let oldSupport = unit.cantoSupport;
+
+        let assistType = this.cantoAssistNode.evaluate(env);
+        let assistRange = this.rangeNode.evaluate(env);
+        let support = this.cantoSupport.evaluate(env);
+        let success = unit.trySetCantoAssist(assistType, assistRange, support);
+        if (success) {
+            env.debug(`${unit.nameWithGroup}は再移動補助を発動: type: ${assistType}, support: ${support}, range: ${assistRange}`);
+        } else {
+            env.debug(`${unit.nameWithGroup}は同系統効果複数発動、この効果は発動しない: old: ${oldSupport}, new: ${support}`);
+        }
+    }
+}
+
 /**
  * 【Bonus】is active on unit
  */

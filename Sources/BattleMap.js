@@ -2487,7 +2487,6 @@ class BattleMap {
         includesUnitPlacedTile = true
     ) {
         let doneTiles = [];
-        console.log("movable tiles:");
         for (let neighborTile of this.enumerateMovableTiles(attackerUnit, false, includesUnitPlacedTile, ignoresTeleportTile, moveTile)) {
             if (ignoreTileFunc != null && ignoreTileFunc(neighborTile)) {
                 continue;
@@ -2564,6 +2563,13 @@ class BattleMap {
             }
             if (unit.hasSupport) {
                 for (let assistableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.assistRange)) {
+                    if (!unit.assistableTiles.includes(assistableTile)) {
+                        unit.assistableTiles.push(assistableTile);
+                    }
+                }
+            }
+            if (unit.isCantoActivating && unit.canActivateCantoAssist()) {
+                for (let assistableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.cantoAssistRange)) {
                     if (!unit.assistableTiles.includes(assistableTile)) {
                         unit.assistableTiles.push(assistableTile);
                     }

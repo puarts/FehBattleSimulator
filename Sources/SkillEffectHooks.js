@@ -15,6 +15,11 @@ const CAN_TRIGGER_CANTO_HOOKS = new SkillEffectHooks();
 const CALCULATES_DISTANCE_OF_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
+ * 再移動発動開始時
+ * @type {SkillEffectHooks<SkillEffectNode, CantoEnv>} */
+const WHEN_CANTO_TRIGGERS_HOOKS = new SkillEffectHooks();
+
+/**
  * ターン開始時
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
 const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();

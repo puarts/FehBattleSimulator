@@ -400,10 +400,11 @@ function dropToUnitImpl(unit, dropTargetId) {
         let isDifferentGroup = unitPlacedOnTargetTile != null && unit.groupId !== unitPlacedOnTargetTile.groupId;
         let isSupportEnabled = !g_appData.isSupportActivationDisabled;
         if (isSupportEnabled && isDifferentGroup) {
-            g_app.writeSimpleLogLine("attack!");
             // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
             let bestTile = getBestActionTile(unit, targetTile, unit.attackRange);
-            if (bestTile != null) {
+            if (bestTile != null && !unit.isCantoActivating) {
+            // if (bestTile != null) {
+                g_app.writeSimpleLogLine("attack!");
                 g_app.__enqueueAttackCommand(unit, unitPlacedOnTargetTile, bestTile);
                 g_appData.isEnemyActionTriggered = true;
                 unit.isEnemyActionTriggered = true;
@@ -416,40 +417,57 @@ function dropToUnitImpl(unit, dropTargetId) {
                 g_appData.map.moveUnit(unit, x, y);
                 isActioned = true;
             } else {
-                let supportRange = getAssistRange(unit.support);
-                let bestTile = getBestActionTile(unit, targetTile, supportRange);
-                if (bestTile != null) {
-                    if (unit.supportInfo != null) {
-                        let assistType = unit.supportInfo.assistType;
-                        // TODO: 検証する。とりあえず応援として実装。
-                        if (isRallyHealSkill(unit.support)) {
-                            assistType = AssistType.Rally;
+                if (!unit.isCantoActivating) {
+                    let supportRange = getAssistRange(unit.support);
+                    let bestTile = getBestActionTile(unit, targetTile, supportRange);
+                    if (bestTile != null) {
+                        if (unit.supportInfo != null) {
+                            let assistType = unit.supportInfo.assistType;
+                            // TODO: 検証する。とりあえず応援として実装。
+                            if (isRallyHealSkill(unit.support)) {
+                                assistType = AssistType.Rally;
+                            }
+                            // TODO: 補助が可能かどうか厳密にチェックする
+                            let isNotRally = assistType !== AssistType.Rally;
+                            let isRally = assistType === AssistType.Rally;
+                            let canRally =
+                                unit.canRallyForcibly() ||
+                                canRallyForciblyByPlayer(unit) ||
+                                unit.canRallyTo(unitPlacedOnTargetTile, 1) ||
+                                unitPlacedOnTargetTile.canRalliedForcibly();
+                            let hasIsolation =
+                                unit.hasStatusEffect(StatusEffectType.Isolation) ||
+                                unitPlacedOnTargetTile.hasStatusEffect(StatusEffectType.Isolation);
+                            let canApplyAssist = !hasIsolation && isNotRally || (isRally && canRally);
+                            if (canApplyAssist) {
+                                g_app.__enqueueSupportCommand(unit, bestTile, unitPlacedOnTargetTile);
+                                isActioned = true;
+                            }
                         }
-                        let isNotRally = assistType !== AssistType.Rally;
-                        let isRally = assistType === AssistType.Rally;
-                        let canRally =
-                            unit.canRallyForcibly() ||
-                            canRallyForciblyByPlayer(unit) ||
-                            unit.canRallyTo(unitPlacedOnTargetTile, 1) ||
-                            unitPlacedOnTargetTile.canRalliedForcibly();
-                        let hasNotIsolation =
-                            !unit.hasStatusEffect(StatusEffectType.Isolation) &&
-                            !unitPlacedOnTargetTile.hasStatusEffect(StatusEffectType.Isolation);
-                        let canApplyAssist = isNotRally || (isRally && canRally) && hasNotIsolation;
-                        if (canApplyAssist) {
-                            g_app.__enqueueSupportCommand(unit, bestTile, unitPlacedOnTargetTile);
+                    }
+                } else {
+                    // TODO: remove
+                    console.log("canto is activating");
+                    let supportRange = unit.cantoAssistRange;
+                    // TODO: remove
+                    // let supportRange = 1;
+                    if (unit.canActivateCantoAssist()) {
+                        let bestTile = getBestActionTile(unit, targetTile, supportRange);
+                        if (bestTile != null) {
+                            g_app.__enqueueCantoAssistCommand(unit, bestTile, unitPlacedOnTargetTile);
                             isActioned = true;
                         }
                     }
                 }
             }
         } else {
-            if (targetTile.obj != null || targetTile.hasEnemyBreakableDivineVein(unit.groupId)) {
+            let isTargetBreakable = targetTile.obj != null || targetTile.hasEnemyBreakableDivineVein(unit.groupId);
+            if (isTargetBreakable) {
                 let obj = targetTile.obj;
                 if (examinesCanBreak(unit, obj, targetTile)) {
                     // 壊せる壁や施設を破壊
                     let tile = getBestActionTile(unit, targetTile, unit.attackRange);
-                    if (tile != null) {
+                    if (tile != null && !unit.isCantoActivating) {
                         // 破壊対象が施設か天脈かでコマンドを分ける
                         if (targetTile.hasEnemyBreakableDivineVein(unit.groupId)) {
                             g_app.__enqueueBreakDivineVeinCommand(unit, tile, targetTile);
