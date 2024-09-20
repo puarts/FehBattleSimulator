@@ -353,7 +353,7 @@ class PostCombatSkillHander {
             }
         }
         let env = new AfterCombatEnv(this, targetUnit, enemyUnit);
-        env.setName('戦闘後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('戦闘後').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillEffectAfterCombatForUnitFuncMap)?.call(this, targetUnit, enemyUnit);
@@ -1334,7 +1334,7 @@ class PostCombatSkillHander {
             attackUnit.reserveHeal(99);
         }
         let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit);
-        env.setName('戦闘後(死んでも発動)').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('戦闘後(死んでも発動)').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_NEVERTHELESS_HOOKS.evaluateWithUnit(attackUnit, env);
         for (let skillId of attackUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap);

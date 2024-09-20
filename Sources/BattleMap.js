@@ -2027,7 +2027,7 @@ class BattleMap {
         }
 
         let env = new BattleMapEnv(this, unit);
-        env.setName('ワープ').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('ワープ').setLogLevel(getSkillLogLevel());
         yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(unit, env).flat(1);
 
         for (let skillId of unit.enumerateSkills()) {
@@ -2487,7 +2487,6 @@ class BattleMap {
         includesUnitPlacedTile = true
     ) {
         let doneTiles = [];
-        console.log("movable tiles:");
         for (let neighborTile of this.enumerateMovableTiles(attackerUnit, false, includesUnitPlacedTile, ignoresTeleportTile, moveTile)) {
             if (ignoreTileFunc != null && ignoreTileFunc(neighborTile)) {
                 continue;
@@ -2564,6 +2563,13 @@ class BattleMap {
             }
             if (unit.hasSupport) {
                 for (let assistableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.assistRange)) {
+                    if (!unit.assistableTiles.includes(assistableTile)) {
+                        unit.assistableTiles.push(assistableTile);
+                    }
+                }
+            }
+            if (unit.isCantoActivating && unit.canActivateCantoAssist()) {
+                for (let assistableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.cantoAssistRange)) {
                     if (!unit.assistableTiles.includes(assistableTile)) {
                         unit.assistableTiles.push(assistableTile);
                     }

@@ -110,6 +110,19 @@ class PercentageCondNode extends BoolNode {
     }
 }
 
+class IsTargetsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hpPercentage = unit.restHpPercentageAtBeginningOfCombat;
+        env.debug(`${unit.nameWithGroup}のHPが${this._percentage}%以上であるか: ${hpPercentage}%(HP:${unit.battleContext.restHp}) >= ${this._percentage}%`);
+        return hpPercentage >= this._percentage;
+    }
+}
+
 class IsUnitsHpGteNPercentAtStartOfTurnNode extends PercentageCondNode {
     evaluate(env) {
         let unit = env.targetUnit;
@@ -169,20 +182,6 @@ class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode extends Fr
 
 const UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE =
     new UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode(1);
-
-// 自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
-class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode extends FromPositiveNumberNode {
-    evaluate(env) {
-        let n = this.evaluateChildren(env);
-        let unit = env.targetUnit;
-        unit.battleContext.specialCountReductionBeforeFollowupAttack += n;
-        let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
-        env.debug(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} => ${reduction}`);
-    }
-}
-
-const UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE =
-    new UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode(1);
 
 const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -404,12 +403,24 @@ const FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillE
 /**
  * increases the Spd difference necessary for foe to make a follow-up attack by N during combat
  */
-class IncreasesSpdDiffNecessaryForFoesFollowUpNode extends FromNumberNode {
+class IncreasesSpdDiffNecessaryForFoesFollowUpNode extends FromPositiveNumberNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
         let n = this.evaluateChildren(env);
         unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
         env.debug(`${unit.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+    }
+}
+
+/**
+ * decreases Spd difference necessary for unit to make a follow-up attack by X during combat
+ */
+class DecreasesSpdDiffNecessaryForUnitFollowUpNode extends FromPositiveNumberNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let n = this.evaluateChildren(env);
+        unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack -= n;
+        env.debug(`${unit.nameWithGroup}の追撃の速さ条件-${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
@@ -425,7 +436,7 @@ class NeutralizesPenaltiesToTargetsStatsNode extends SetBoolToEachStatusNode {
         let values = this.getValues();
         let unit = this.getUnit(env);
         env.debug(`${unit.nameWithGroup}は自身の弱化を無効: [${values}]`);
-        unit.battleContext.invalidateOwnDebuffs(...this.getValues());
+        unit.battleContext.invalidateOwnDebuffs(...values);
     }
 }
 
@@ -652,9 +663,10 @@ class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends Applying
 }
 
 /**
+ * [Special]
  * Reduces damage from attacks during combat by percentage = N
  */
-class ReducesDamageDuringCombatByPercentageNBySpecialPerAttackNode extends FromNumberEnsuredNonNegativeNode {
+class ReducesDamageFromAttacksDuringCombatByXPercentConsideredSpecialPerAttackNode extends FromNumberEnsuredNonNegativeNode {
     evaluate(env) {
         let n = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;
@@ -737,7 +749,7 @@ const FOE_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = 
 class TargetCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は距離に関係なく反撃する)`);
+        env.debug(`${unit.nameWithGroup}は距離に関係なく反撃する`);
         unit.battleContext.canCounterattackToAllDistance = true;
     }
 }
@@ -814,6 +826,30 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
         env.debug(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
     }
 }
+
+class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountReductionBeforeFollowupAttack += n;
+        let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
+        env.debug(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} => ${reduction}`);
+    }
+}
+
+// 自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
+class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE =
+    new UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode(1);
 
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
@@ -1080,6 +1116,18 @@ class AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode extends FromPositi
     }
 }
 
+class CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.refersLowerDefOrResWhenSpecial = true;
+        env.debug(`${unit.nameWithGroup}は奥義発動時、敵の守備か魔防の低い方でダメージ計算`);
+    }
+}
+
 // Unit or BattleContextに値を設定 END
 
 class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
@@ -1198,3 +1246,20 @@ class GrantsSpecialCooldownChargePlus1ToUnitPerAttackDuringCombatNode
 
 const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE =
     new GrantsSpecialCooldownChargePlus1ToUnitPerAttackDuringCombatNode();
+
+/**
+ * calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
+ */
+class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.usesDefInsteadOfAtkWhenSpecial = true;
+        unit.battleContext.ratioForUsingAnotherStatWhenSpecial = percentage / 100.0;
+        env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに守備の値を使用(${percentage}%)`);
+    }
+}

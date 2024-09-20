@@ -15,6 +15,11 @@ const CAN_TRIGGER_CANTO_HOOKS = new SkillEffectHooks();
 const CALCULATES_DISTANCE_OF_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
+ * 再移動発動開始時
+ * @type {SkillEffectHooks<SkillEffectNode, CantoEnv>} */
+const WHEN_CANTO_TRIGGERS_HOOKS = new SkillEffectHooks();
+
+/**
  * ターン開始時
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
 const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
@@ -25,9 +30,9 @@ const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 const AT_START_OF_ENEMY_PHASE_HOOK = new SkillEffectHooks();
 
 /**
- * 戦闘前
+ * 戦闘前(主に範囲奥義を発動するかどうかの判定など)
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
-const PRE_COMBAT_HOOKS = new SkillEffectHooks();
+const BEFORE_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動制限評価時
@@ -101,7 +106,7 @@ const WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffect
 const WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
- * 攻撃開始時
+ * 攻撃開始時(攻撃ごとのスキル効果)
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorEnv>} */
 const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
 
@@ -131,7 +136,7 @@ const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
- * 戦闘以外の行動後の再行動評価時
+ * 範囲奥義前
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_AOE_SPECIAL_HOOKS = new SkillEffectHooks();
 
@@ -162,6 +167,26 @@ const AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS = new SkillEffectHooks();
 const AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS = new SkillEffectHooks();
 
 /**
+ * 応援を使用して行動を終えた後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_RALLY_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * 応援を使用されて行動を終えた後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_RALLY_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
+
+/**
+ * 移動補助を使用して行動を終えた後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * 移動補助を使用されて行動を終えた後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_MOVEMENT_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
+
+/**
  * TODO: rename
  * AIの天脈処理
  */
@@ -186,3 +211,13 @@ const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
  * unit can move through foes' spaces.
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS = new SkillEffectHooks();
+
+/**
+ * Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
+const CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * Foes with Range = 2 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
+const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();

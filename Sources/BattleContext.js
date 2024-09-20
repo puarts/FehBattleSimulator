@@ -146,6 +146,9 @@ class BattleContext {
         // true なら奥義発動時に守備、falseなら魔防を参照します。
         this.refersResForSpecial = false;
 
+        // 奥義発動時守備魔防の低い方を参照
+        this.refersLowerDefOrResWhenSpecial = false;
+
         // 氷の聖鏡発動時などの軽減ダメージ保持用
         this.reducedDamageForNextAttack = 0;
 
@@ -468,6 +471,10 @@ class BattleContext {
         // 自分の戦闘順序入れ替えスキル(待ち伏せ、攻め立てなど)を無効
         this.canUnitDisableSkillsThatChangeAttackPriority = false;
 
+        // 奥義の際に攻撃の代わりに他のステータスを利用
+        this.usesDefInsteadOfAtkWhenSpecial = false;
+        this.ratioForUsingAnotherStatWhenSpecial = 0;
+
         //
         // フック関数
         // 固定ダメージ
@@ -611,6 +618,12 @@ class BattleContext {
         ];
     }
 
+    /**
+     * @param {boolean} atk
+     * @param {boolean} spd
+     * @param {boolean} def
+     * @param {boolean} res
+     */
     invalidateOwnDebuffs(atk, spd, def, res) {
         this.invalidatesOwnAtkDebuff |= atk;
         this.invalidatesOwnSpdDebuff |= spd;
@@ -623,19 +636,6 @@ class BattleContext {
         this.invalidatesOwnSpdDebuff = true;
         this.invalidatesOwnDefDebuff = true;
         this.invalidatesOwnResDebuff = true;
-    }
-
-    /**
-     * @param {boolean} atk
-     * @param {boolean} spd
-     * @param {boolean} def
-     * @param {boolean} res
-     */
-    invalidateDebuffs(atk, spd, def, res) {
-        this.invalidatesOwnAtkDebuff = atk;
-        this.invalidatesOwnSpdDebuff = spd;
-        this.invalidatesOwnDefDebuff = def;
-        this.invalidatesOwnResDebuff = res;
     }
 
     /**

@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="css/loading.css">
     <link rel="stylesheet" href="AetherRaidTacticsBoard/Release2/feh-battle-simulator.css">
     <link rel="stylesheet" href="feh-battle-simulator.css">
+    <script src="Local.js"></script>
 </head>
 
 <body>
@@ -306,6 +307,10 @@
                     <dd>
                         <input type="number" v-model="roundRobinParam.emblemHeroMerge">
                     </dd>
+                    <dt>お供:</dt>
+                    <dd>
+                        <input type="checkbox" v-model="roundRobinParam.isAidesEssenceUsed">
+                    </dd>
                     <dt>奥義:</dt>
                     <dd>
                         <select2 :options="specialOptions" v-model="roundRobinParam.special" class="skill">
@@ -463,8 +468,7 @@
                     "Logger.js",
                     "SkillConstants.js",
                     "Skill.js",
-                    "SkillImpl.js",
-                    "SkillImpl202408.js",
+                    ...SKILL_EFFECT_FILES,
                     "BattleMapElement.js",
                     "Tile.js",
                     "BattleMap.js",
@@ -489,6 +493,7 @@
                     "VueComponents.js",
                     "KeyRepeatHandler.js",
                     "DamageCalculatorMain.js",
+                    ...SKILL_IMPL_FILES,
                 ];
             }
             const startTime = Date.now();

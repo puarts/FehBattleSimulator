@@ -686,6 +686,23 @@ class BattleSimulatorBase {
                 }
                 appData.__updateStatusBySkillsAndMergeForAllHeroes();
             },
+            isAidesEssenceUsedChanged: function () {
+                if (g_app == null) {
+                    return;
+                }
+                let currentUnit = g_app.__getEditingTargetUnit();
+                if (currentUnit == null) {
+                    return;
+                }
+                let value = currentUnit.isAidesEssenceUsed;
+                for (let unit of appData.enumerateSelectedItems(x => x instanceof Unit)) {
+                    if (unit.isAidesEssenceUsed === value) {
+                        continue;
+                    }
+                    unit.isAidesEssenceUsed = value;
+                }
+                appData.__updateStatusBySkillsAndMergeForAllHeroes();
+            },
             resetUnitForTesting: function () {
                 if (g_app == null) {
                     return;
@@ -1224,7 +1241,7 @@ class BattleSimulatorBase {
             return;
         }
         let env = new EnumerationEnv(g_appData, duoUnit);
-        env.setName('比翼双界スキル').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('比翼双界スキル').setLogLevel(getSkillLogLevel());
         WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
             case Hero.HarmonizedGoldmary:
@@ -3210,7 +3227,8 @@ class BattleSimulatorBase {
         return g_appData.enumerateUnitsWithPredicator(predicator);
     }
     enumerateUnitsOnMap(predicator = null) {
-        return g_appData.enumerateUnitsWithPredicator(x => x.isOnMap && predicator?.(x));
+        let pred = predicator ? x => predicator?.(x) ?? false : _ => true;
+        return g_appData.enumerateUnitsWithPredicator(x => x.isOnMap && pred(x));
     }
 
     __findIndexOfUnit(id) {
@@ -3646,7 +3664,7 @@ class BattleSimulatorBase {
 
         // 優先度が高いスキルの後かつ奥義の再行動の前
         let env = new BattleSimulatorBaseEnv(this, atkUnit);
-        env.setName('奥義以外の再行動時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
@@ -5482,7 +5500,7 @@ class BattleSimulatorBase {
         );
 
         this.writeLogLine("■再移動の計算----------");
-        if (this.simulateCanto(actionableUnits)) {
+        if (this.simulateCanto(actionableUnits, assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
         }
 
@@ -5540,7 +5558,7 @@ class BattleSimulatorBase {
         );
 
         this.writeLogLine("■再移動の計算----------");
-        if (this.simulateCanto(actionableUnits)) {
+        if (this.simulateCanto(actionableUnits, assistableUnits, assistTargetableUnits, enemyUnits)) {
             return false;
         }
 
@@ -5678,6 +5696,38 @@ class BattleSimulatorBase {
 
         return isActionActivated;
     }
+    
+    simulatePostCombatCantoAssist(cantoUnit, assistEnemyUnits, enemyUnits, allyUnits) {
+        // コンテキスト初期化
+        this.__prepareActionContextForAssist(enemyUnits, allyUnits, false);
+        for (let unit of assistEnemyUnits) {
+            if (unit.hasWeapon && unit.isMeleeWeaponType()) {
+                unit.actionContext.isBlocker = true;
+            }
+        }
+
+        let assistUnit = cantoUnit;
+        this.writeLogLine(`${assistUnit.getNameWithGroup()}の補助資格を評価-----`);
+        if (!this.__canActivatePostCombatCantoAssist(assistUnit, allyUnits)) {
+            this.writeLogLine(`${assistUnit.getNameWithGroup()}は補助資格なし`);
+            return false;
+        }
+
+        // 補助を実行可能な味方を取得
+        let isAssistableUnitFunc = (targetUnit, tile) =>
+            this.__canBeActivatedPostCombatCantoAssist(assistUnit, targetUnit, tile);
+        this.__setBestTargetAndTilesForCantoAssist(assistUnit, false, isAssistableUnitFunc);
+        if (assistUnit.actionContext.bestTargetToAssist == null) {
+            this.writeLogLine(`${assistUnit.getNameWithGroup()}の補助可能な味方がいない`);
+            return false;
+        }
+
+        let bestTargetToAssist = assistUnit.actionContext.bestTargetToAssist;
+
+        let bestTileToAssist = assistUnit.actionContext.bestTileToAssist;
+        this.__enqueueCantoAssistCommand(assistUnit, bestTileToAssist, bestTargetToAssist);
+        return true;
+    }
 
     __getSlotOrderDependentIndices(infos, getPriorityFunc, slotOrderPriorityDiff = 10) {
         let result = [];
@@ -5728,7 +5778,7 @@ class BattleSimulatorBase {
      * @param {boolean} triggersAction
      */
     __prepareActionContextForAssist(allyUnits, enemyUnits, triggersAction = true) {
-        using_(new ScopedStopwatch(time => this.writeDebugLogLine("行動計算コンテキストの初期化: " + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => this.writeDebugLogLine(`行動計算コンテキストの初期化: ${time} ms`)), () => {
             for (let unit of allyUnits) {
                 unit.actionContext.clear();
             }
@@ -5739,13 +5789,11 @@ class BattleSimulatorBase {
             for (let unit of allyUnits) {
                 this.writeDebugLogLine(`${unit.getNameWithGroup()}のターン開始時移動数:${unit.moveCountAtBeginningOfTurn}`);
 
-                this.writeDebugLogLine("敵の攻撃範囲に" + unit.getNameWithGroup() + "が含まれているか評価 --------");
+                this.writeDebugLogLine(`敵の攻撃範囲に${unit.getNameWithGroup()}が含まれているか評価 --------`);
                 unit.actionContext.hasThreatenedByEnemyStatus = this.__examinesIsUnitThreatenedByEnemy(unit, enemyUnits);
-                this.writeDebugLogLine(unit.getNameWithGroup() + "の攻撃範囲に敵が含まれているか評価 --------");
+                this.writeDebugLogLine(`${unit.getNameWithGroup()}の攻撃範囲に敵が含まれているか評価 --------`);
                 unit.actionContext.hasThreatensEnemyStatus = this.__examinesUnitThreatensEnemy(unit, enemyUnits);
-                this.writeDebugLogLine(unit.getNameWithGroup() + ": "
-                    + "hasThreatensEnemyStatus=" + unit.actionContext.hasThreatensEnemyStatus
-                    + ", hasThreatenedByEnemyStatus=" + unit.actionContext.hasThreatenedByEnemyStatus
+                this.writeDebugLogLine(`${unit.getNameWithGroup()}: hasThreatensEnemyStatus=${unit.actionContext.hasThreatensEnemyStatus}, hasThreatenedByEnemyStatus=${unit.actionContext.hasThreatenedByEnemyStatus}`
                 );
 
                 if (triggersAction && unit.groupId === UnitGroupType.Enemy) {
@@ -5822,6 +5870,34 @@ class BattleSimulatorBase {
         }
 
         return isActionActivated;
+    }
+    
+    simulatePrecombatCantoAssist(cantoUnit, assistableUnits, enemyUnits, allyUnits) {
+        // TODO: 移動以外が実装された場合は以下を修正して実装
+        return false;
+        // // コンテキスト初期化
+        // this.__prepareActionContextForAssist(enemyUnits, allyUnits, true);
+        //
+        // let assistableUnit = cantoUnit;
+        // this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "の補助資格を評価");
+        // if (!this.__canActivatePrecombatCantoAssist(assistableUnit, allyUnits)) {
+        //     this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "は補助資格なし");
+        //     return false;
+        // }
+
+        // let isAssistableUnitFunc = (targetUnit, tile) =>
+        //     this.__canBeActivatedPrecombatAssist(assistableUnit, targetUnit, tile);
+        // this.__setBestTargetAndTiles(assistableUnit, true, isAssistableUnitFunc);
+        // if (assistableUnit.actionContext.bestTargetToAssist == null) {
+        //     this.writeDebugLogLine(assistableUnit.getNameWithGroup() + "の補助可能な味方がいない");
+        //     return false;
+        // }
+        //
+        // let bestTargetToAssist = assistableUnit.actionContext.bestTargetToAssist;
+        // let bestTileToAssist = assistableUnit.actionContext.bestTileToAssist;
+        //
+        // this.__enqueueSupportCommand(assistableUnit, bestTileToAssist, bestTargetToAssist);
+        // return true;
     }
 
     __examinesIsUnitThreatenedByEnemy(unit, enemyUnits) {
@@ -5967,13 +6043,13 @@ class BattleSimulatorBase {
         }
     }
 
-    __canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile) {
+    __canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile, isCantoAssist = false) {
         // 双界だと行動制限が解除されていないと使用しないっぽい
         if (!g_appData.examinesEnemyActionTriggered(unit)) {
             return false;
         }
 
-        let canBeMovedIntoLessEnemyThreat = this.__canBeMovedIntoLessEnemyThreat(unit, targetUnit, tile);
+        let canBeMovedIntoLessEnemyThreat = this.__canBeMovedIntoLessEnemyThreat(unit, targetUnit, tile, isCantoAssist);
         this.writeDebugLogLine(
             "対象=" + targetUnit.getNameWithGroup() + " " + tile.positionToString() + ": "
             + "targetUnit.isActionDone=" + targetUnit.isActionDone + ", "
@@ -6046,6 +6122,67 @@ class BattleSimulatorBase {
         }
     }
 
+    __canBeActivatedPostCombatCantoAssist(unit, targetUnit, tile) {
+        // let assistType = determineAssistType(unit, targetUnit);
+        let assistType = unit.cantoAssistType;
+        switch (assistType) {
+            // case AssistType.Refresh:
+            //     return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
+            // case AssistType.Heal:
+            //     if (targetUnit.canHeal()) {
+            //         return true;
+            //     }
+            //     if (unit.support === Support.RescuePlus
+            //         || unit.support === Support.Rescue
+            //         || unit.support === Support.ReturnPlus
+            //         || unit.support === Support.Return
+            //         || unit.support === Support.NudgePlus
+            //         || unit.support === Support.Nudge
+            //     ) {
+            //         return this.__canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile);
+            //     }
+            //     return false;
+            // case AssistType.Restore:
+            //     return (targetUnit.isDebuffed || targetUnit.hasNegativeStatusEffect()) || targetUnit.canHeal();
+            // case AssistType.Rally:
+            // {
+            //     if (!targetUnit.actionContext.hasThreatensEnemyStatus
+            //         && !g_appData.examinesEnemyActionTriggered(unit)
+            //     ) {
+            //         return false;
+            //     }
+            //     // todo: ちゃんと実装する
+            //     let canBeBuffedAtLeast2 = unit.canRallyTo(targetUnit, 2);
+            //     this.writeDebugLogLine(targetUnit.getNameWithGroup() + ": "
+            //         + "hasThreatensEnemyStatus=" + targetUnit.actionContext.hasThreatensEnemyStatus
+            //         + ", hasThreatenedByEnemyStatus=" + targetUnit.actionContext.hasThreatenedByEnemyStatus
+            //         + ", canBeBuffedAtLeast2=" + canBeBuffedAtLeast2
+            //     );
+            //     return (targetUnit.actionContext.hasThreatensEnemyStatus || targetUnit.actionContext.hasThreatenedByEnemyStatus)
+            //         && canBeBuffedAtLeast2;
+            // }
+            case AssistType.Move:
+                return this.__canBeActivatedPostCombatMovementAssist(unit, targetUnit, tile, true);
+            // case AssistType.DonorHeal:
+            // {
+            //     // 双界だと行動制限が解除されていないと使用しないっぽい
+            //     if (!g_appData.examinesEnemyActionTriggered(unit)) {
+            //         return false;
+            //     }
+            //
+            //     if (targetUnit.hasStatusEffect(StatusEffectType.DeepWounds)) {
+            //         return false;
+            //     }
+            //
+            //     let result = this.__getUserLossHpAndTargetHealHpForDonorHeal(unit, targetUnit);
+            //     return result.success && result.targetHealHp >= result.userLossHp;
+            // }
+            default:
+                this.writeErrorLine(`戦闘後再移動補助が未実装のスキル: ${unit.supportInfo.name}`);
+                return false;
+        }
+    }
+
     __getUserLossHpAndTargetHealHpForDonorHeal(unit, targetUnit) {
         let userLossHp = 0;
         let targetHealHp = 0;
@@ -6109,7 +6246,9 @@ class BattleSimulatorBase {
         }
     }
 
-
+    __canActivatePostCombatCantoAssist(unit, allyUnits) {
+        return true;
+    }
 
     __canActivatePrecombatAssist(unit, enemyUnits) {
         if (unit.supportInfo == null) {
@@ -6155,6 +6294,45 @@ class BattleSimulatorBase {
             default:
                 return false;
         }
+    }
+
+    __canActivatePrecombatCantoAssist(unit, enemyUnits) {
+        let assistType = unit.cantoAssistType;
+        // TODO: 移動以外の再移動補助が出た場合は以下を実装する
+        // switch (assistType) {
+        //     case AssistType.Refresh:
+        //         return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits);
+        //     case AssistType.Rally:
+        //         return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, false, true);
+        //     case AssistType.Heal:
+        //     {
+        //         if (unit.support === Support.Sacrifice ||
+        //             unit.support === Support.MaidensSolace) {
+        //             if (unit.hp === 1) {
+        //                 return false;
+        //             }
+        //         }
+        //         let ignores5DamageDealt = unit.support !== (Support.Sacrifice || Support.MaidensSolace);
+        //         return !this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, ignores5DamageDealt);
+        //     }
+        //     case AssistType.Restore:
+        //     {
+        //         if (this.__evaluateIs5DamageDealtOrWin(unit, enemyUnits, true)) {
+        //             return false;
+        //         }
+        //         return this.__isThereAllyThreatensEnemyStatus(unit);
+        //     }
+        //     case AssistType.DonorHeal:
+        //     {
+        //         if (!g_appData.examinesEnemyActionTriggered(unit)) {
+        //             return false;
+        //         }
+        //         return unit.weapon === Weapon.None;
+        //     }
+        //     default:
+        //         return false;
+        // }
+        return false;
     }
 
     __isThereAllyThreatensEnemyStatus(unit) {
@@ -6552,7 +6730,7 @@ class BattleSimulatorBase {
         });
         for (let unit of targetUnits) {
             let env = new BattleSimulatorBaseEnv(this, unit);
-            env.setName('AIの天脈処理').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('AIの天脈処理').setLogLevel(getSkillLogLevel());
             if (HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS.evaluateWithUnit(unit, env) && !unit.isActionDone) {
                 env.debug(`${unit.nameWithGroup}は行動を自ら終了`);
                 unit.endAction();
@@ -6585,11 +6763,30 @@ class BattleSimulatorBase {
         return null;
     }
 
-    simulateCanto(targetUnits) {
+    /**
+     * @param {Unit[]} targetUnits
+     * @param {Unit[]} assistableUnits
+     * @param {Unit[]} assistTargetableUnits
+     * @param {Unit[]} enemyUnits
+     * @returns {boolean}
+     */
+    simulateCanto(targetUnits, assistableUnits, assistTargetableUnits, enemyUnits) {
         let targetUnit = this.__getCantoActivatedUnit(targetUnits);
         if (targetUnit == null) {
             this.writeDebugLogLine("再移動が発動しているユニットなし");
             return false;
+        }
+
+        if (targetUnit.canActivateCantoAssist()) {
+            // TODO: 戦闘前、戦闘後の判定をする
+            this.writeLogLine("■再移動時の戦闘前補助の計算------------");
+            if (this.simulatePrecombatCantoAssist(targetUnit, assistableUnits, assistTargetableUnits, enemyUnits)) {
+                return true;
+            }
+            this.writeLogLine("■再移動時の戦闘後補助の計算------------");
+            if (this.simulatePostCombatCantoAssist(targetUnit, assistableUnits, assistTargetableUnits, enemyUnits)) {
+                return true;
+            }
         }
 
         this.writeDebugLogLine(`${targetUnit.name}の再移動を評価`);
@@ -6824,7 +7021,7 @@ class BattleSimulatorBase {
             if (unit.isActionDone) {
                 // TODO: 動作確認をする
                 let env = new BattleSimulatorBaseEnv(this, unit);
-                env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+                env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(getSkillLogLevel());
                 AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
@@ -6855,6 +7052,51 @@ class BattleSimulatorBase {
                 self.writeLogLine( `${unit.getNameWithGroup()}は${assistTargetUnit.getNameWithGroup()}に${skillName}を実行`);
             }
             self.applySupportSkill(unit, assistTargetUnit);
+        };
+        return this.__createCommand(
+            `${unit.id}-s-${assistTargetUnit.id}-${tile.id}`,
+            `${skillName}(${unit.getNameWithGroup()}→${assistTargetUnit.getNameWithGroup()}[${tile.posX},${tile.posY}])`,
+            func,
+            serial,
+            commandType
+        );
+    }
+
+    __enqueueCantoAssistCommand(unit, tile, assistTargetUnit) {
+        let commands = this.__createCantoAssistCommands(unit, tile, assistTargetUnit);
+        this.__enqueueCommandsImpl(commands);
+    }
+
+    __createCantoAssistCommands(unit, tile, assistTargetUnit) {
+        let commands = [];
+        commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
+        commands.push(this.__createCantoAssistCommand(unit, tile, assistTargetUnit, CommandType.End));
+        return commands;
+    }
+
+    __createCantoAssistCommand(unit, tile, assistTargetUnit, commandType = CommandType.Normal) {
+        let serial = null;
+        if (this.vm.isCommandUndoable) {
+            serial = this.__convertPerTurnStatusToSerialForAllUnitsAndTrapsOnMap();
+        }
+        let self = this;
+        let skillName = '再移動補助';
+        let func = function () {
+            if (unit.isActionDone) {
+                // 移動時に罠を踏んで動けなくなるケース
+                return;
+            }
+
+            if (unit.isActionDoneDuringMoveCommand) {
+                return;
+            }
+
+            // TODO: サウンド
+
+            if (self.isCommandLogEnabled) {
+                self.writeLogLine( `${unit.getNameWithGroup()}は${assistTargetUnit.getNameWithGroup()}に${skillName}を実行`);
+            }
+            self.applyCantoAssistSkill(unit, assistTargetUnit);
         };
         return this.__createCommand(
             `${unit.id}-s-${assistTargetUnit.id}-${tile.id}`,
@@ -6996,7 +7238,7 @@ class BattleSimulatorBase {
             let isThereAnyUnitThatInflictCantoControlWithinRange = false;
             for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
                 let env = new CantoControlEnv(unit, u);
-                env.setName('再移動制限時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+                env.setName('再移動制限時').setLogLevel(getSkillLogLevel());
                 isThereAnyUnitThatInflictCantoControlWithinRange |=
                     CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
                 for (let skillId of u.enumerateSkills()) {
@@ -7041,7 +7283,7 @@ class BattleSimulatorBase {
 
         // スキル毎の追加条件
         let env = new BattleSimulatorBaseEnv(this, unit);
-        env.setName('再移動判定時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('再移動判定時').setLogLevel(getSkillLogLevel());
         if (CAN_TRIGGER_CANTO_HOOKS.evaluateSomeWithUnit(unit, env)) {
             return true;
         }
@@ -7236,7 +7478,7 @@ class BattleSimulatorBase {
             self.__updateDistanceFromClosestEnemy(unit);
 
             let env = new BattleSimulatorBaseEnv(this, unit);
-            env.setName('奥義以外の再行動時[移動]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('奥義以外の再行動時[移動]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
         };
         return this.__createCommand(
@@ -7535,6 +7777,11 @@ class BattleSimulatorBase {
         return Array.from(g_appData.enumeratePartnersInSpecifiedRange(targetUnit, spaces));
     }
 
+    /**
+     * @param predicatorFunc
+     * @returns {Unit[]}
+     * @private
+     */
     __getUnits(predicatorFunc) {
         let units = [];
         for (let unit of this.enumerateAllUnits()) {
@@ -7545,6 +7792,11 @@ class BattleSimulatorBase {
         return units;
     }
 
+    /**
+     * @param unitGroup
+     * @returns {Unit[]}
+     * @private
+     */
     __getActionableUnits(unitGroup) {
         let units = [];
         for (let unit of this.enumerateUnitsInSpecifiedGroup(unitGroup)) {
@@ -7913,6 +8165,30 @@ class BattleSimulatorBase {
         }
     }
 
+    __createCantoAssistableUnitInfos(assistUnit, isAssistableUnitFunc, acceptTileFunc = null) {
+        for (let unitAndTile of assistUnit.enumerateActuallyAssistableUnitAndTiles(true)) {
+            let unit = unitAndTile[0];
+            let tile = unitAndTile[1];
+            if (acceptTileFunc != null && !acceptTileFunc?.(tile)) {
+                continue;
+            }
+            // this.writeDebugLogLine(tile.positionToString() + "から補助可能な敵がいるか評価");
+
+            if (!isAssistableUnitFunc(unit, tile)) {
+                // this.writeDebugLogLine(tile.positionToString() + "から" + unit.getNameWithGroup() + "に補助不可");
+                continue;
+            }
+
+            // this.writeDebugLogLine(tile.positionToString() + "から" + unit.getNameWithGroup() + "に補助可能");
+            let info = assistUnit.actionContext.findAssistableUnitInfo(unit);
+            if (info == null) {
+                info = new AssistableUnitInfo(unit);
+                assistUnit.actionContext.assistableUnitInfos.push(info);
+            }
+            info.assistableTiles.push(tile);
+        }
+    }
+
     __setBestAssistTiles(assistUnit, isAssistableUnitFunc, acceptTileFunc = null) {
         this.__createAssistableUnitInfos(assistUnit, isAssistableUnitFunc, acceptTileFunc);
         if (assistUnit.actionContext.assistableUnitInfos.length === 0) {
@@ -7923,6 +8199,20 @@ class BattleSimulatorBase {
         this.writeDebugLogLine("最適なタイルを選択");
         for (let info of assistUnit.actionContext.assistableUnitInfos) {
             this.__selectBestTileToAssist(assistUnit, info);
+        }
+    }
+
+    __setBestCantoAssistTiles(assistUnit, isAssistableUnitFunc, acceptTileFunc = null) {
+        this.__createCantoAssistableUnitInfos(assistUnit, isAssistableUnitFunc, acceptTileFunc);
+        if (assistUnit.actionContext.assistableUnitInfos.length === 0) {
+            this.writeDebugLogLine("アシスト可能なユニットなし");
+            return;
+        }
+
+        // 最適なタイルを選択
+        this.writeDebugLogLine("最適なタイルを選択");
+        for (let info of assistUnit.actionContext.assistableUnitInfos) {
+            this.__selectBestTileToAssist(assistUnit, info, true);
         }
     }
 
@@ -7956,13 +8246,16 @@ class BattleSimulatorBase {
         return tileEvalContexts[0].tile;
     }
 
-    __selectBestTileToAssist(assistUnit, assistableUnitInfo) {
+    __selectBestTileToAssist(assistUnit, assistableUnitInfo, isCantoAssist = false) {
         assistableUnitInfo.bestTileToAssist = this.__selectBestTileToAssistFromTiles(assistableUnitInfo.assistableTiles, assistUnit);
         assistableUnitInfo.isTeleportationRequired = assistableUnitInfo.bestTileToAssist.examinesIsTeleportationRequiredForThisTile(assistUnit);
-        this.writeDebugLogLine(
-            assistUnit.getNameWithGroup() + "が" +
-            assistableUnitInfo.targetUnit.getNameWithGroup() + "に" +
-            assistUnit.supportInfo.name + "を実行するのに最適なマス: (" + assistableUnitInfo.bestTileToAssist.posX + ", " + assistableUnitInfo.bestTileToAssist.posY + ")");
+
+        let name = assistUnit.getNameWithGroup();
+        let support = isCantoAssist ? assistUnit.cantoSupport : assistUnit.supportInfo.name;
+        let targetName = assistableUnitInfo.targetUnit.getNameWithGroup();
+        let x = assistableUnitInfo.bestTileToAssist.posX;
+        let y = assistableUnitInfo.bestTileToAssist.posY;
+        this.writeDebugLogLine(`${name}が${targetName}に${support}を実行するのに最適なマス: (${x}, ${y})`);
     }
 
     __isTargetUnitInfoAlreadyAdded(infos, targetUnit) {
@@ -8134,16 +8427,33 @@ class BattleSimulatorBase {
         }
     }
 
+    __setBestTargetAndTilesForCantoAssist(assistUnit, isPrecombat, isAssistableUnitFunc, acceptTileFunc = null) {
+        this.__setBestCantoAssistTiles(assistUnit, isAssistableUnitFunc, acceptTileFunc);
+        // TODO: 検証する
+        /** @type {AssistableUnitInfo[]} */
+        let infos = [];
+        for (let info of assistUnit.actionContext.assistableUnitInfos) {
+            infos.push(info);
+        }
+        if (infos.length === 0) {
+            return;
+        }
+
+        let bestTargetUnitInfo = this.__selectBestAssistTarget(assistUnit, infos, isPrecombat, true);
+        assistUnit.actionContext.bestTargetToAssist = bestTargetUnitInfo.targetUnit;
+        assistUnit.actionContext.bestTileToAssist = bestTargetUnitInfo.bestTileToAssist;
+    }
+
     /**
      * @param {Unit} assistUnit
      * @param {AssistableUnitInfo[]|Generator<AssistableUnitInfo>} assistableUnitInfos
      * @param {boolean} isPrecombat
      */
-    __selectBestAssistTarget(assistUnit, assistableUnitInfos, isPrecombat) {
+    __selectBestAssistTarget(assistUnit, assistableUnitInfos, isPrecombat, isCantoAssist) {
         // 補助対象を選択
         this.writeDebugLogLine("最適な補助対象を選択");
         for (let info of assistableUnitInfos) {
-            info.calcAssistTargetPriority(assistUnit, isPrecombat);
+            info.calcAssistTargetPriority(assistUnit, isPrecombat, isCantoAssist);
         }
 
         assistableUnitInfos.sort(function (a, b) {
@@ -8654,6 +8964,7 @@ class BattleSimulatorBase {
 
         return new MovementAssistResult(true, assistTile, moveTile);
     }
+
     /**
      * @param  {Unit} unit
      * @param  {Unit} targetUnit
@@ -8725,11 +9036,11 @@ class BattleSimulatorBase {
             let env;
             env = new BattleSimulatorBaseEnv(this, unit);
 
-            env.setName('移動補助を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
+            env.setName('移動補助を使用した時').setLogLevel(getSkillLogLevel()).setAssistUnits(unit, targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(unit, env);
 
             env = new BattleSimulatorBaseEnv(this, targetUnit);
-            env.setName('移動補助を使用された時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('移動補助を使用された時').setLogLevel(getSkillLogLevel()).setAssistUnits(unit, targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
         }
 
@@ -9260,10 +9571,16 @@ class BattleSimulatorBase {
      * @param  {Unit} unit
      * @param  {Unit} targetUnit
      * @param  {Tile} assistTile
+     * @param  {boolean} isCantoAssist
      */
-    __canBeMovedIntoLessEnemyThreat(unit, targetUnit, assistTile) {
+    __canBeMovedIntoLessEnemyThreat(unit, targetUnit, assistTile, isCantoAssist = false) {
         let beforeTileThreat = targetUnit.placedTile.getEnemyThreatFor(unit.groupId);
-        let result = this.__getTargetUnitTileAfterMoveAssist(unit, targetUnit, assistTile);
+        let result;
+        if (isCantoAssist) {
+            result = this.__getTargetUnitTileAfterCantoMoveAssist(unit, targetUnit, assistTile);
+        } else {
+            result = this.__getTargetUnitTileAfterMoveAssist(unit, targetUnit, assistTile);
+        }
         if (!result.success) {
             return false;
         }
@@ -9275,14 +9592,13 @@ class BattleSimulatorBase {
         }
 
         let afterTileThreat = result.targetUnitTileAfterAssist.getEnemyThreatFor(unit.groupId);
-        this.writeDebugLogLine(targetUnit.getNameWithGroup() + " "
-            + "現在の脅威数=" + beforeTileThreat + `(${targetUnit.placedTile.positionToString()}), `
-            + "移動後の脅威数=" + afterTileThreat + `(${result.targetUnitTileAfterAssist.positionToString()})`);
+        this.writeDebugLogLine(`${targetUnit.getNameWithGroup()} 現在の脅威数=${beforeTileThreat}(${targetUnit.placedTile.positionToString()}), 移動後の脅威数=${afterTileThreat}(${result.targetUnitTileAfterAssist.positionToString()})`);
         if (afterTileThreat < 0) {
             return false;
         }
         return afterTileThreat < beforeTileThreat;
     }
+
     /**
      * @param  {Unit} unit
      * @param  {Unit} targetUnit
@@ -9334,6 +9650,40 @@ class BattleSimulatorBase {
     }
 
     /**
+     * @param  {Unit} unit
+     * @param  {Unit} targetUnit
+     * @param  {Tile} assistTile
+     * @returns {MovementAssistResult}
+     */
+    __getTargetUnitTileAfterCantoMoveAssist(unit, targetUnit, assistTile) {
+        let result;
+        switch (unit.cantoSupport) {
+            case CantoSupport.Drawback:
+                result = this.__findTileAfterDrawback(unit, targetUnit, assistTile);
+                break;
+            case CantoSupport.Reposition:
+                result = this.__findTileAfterReposition(unit, targetUnit, assistTile);
+                break;
+            case CantoSupport.Swap:
+                result = this.__findTileAfterSwap(unit, targetUnit, assistTile);
+                break;
+            case CantoSupport.Smite:
+                result = this.__findTileAfterSmite(unit, targetUnit, assistTile);
+                break;
+            case CantoSupport.Shove:
+                result = this.__findTileAfterShove(unit, targetUnit, assistTile);
+                break;
+            case CantoSupport.Pivot:
+                result = this.__findTileAfterPivot(unit, targetUnit, assistTile);
+                break;
+            default:
+                this.writeErrorLine(`未実装の補助: ${unit.cantoSupport}`);
+                return null;
+        }
+        return result;
+    }
+
+    /**
      * @param {Unit} supporterUnit
      * @param {Unit} targetUnit
      */
@@ -9367,10 +9717,11 @@ class BattleSimulatorBase {
 
     __applySkillsAfterRally(supporterUnit, targetUnit) {
         // 使用した時
-        let env = new BattleSimulatorBaseEnv(this, supporterUnit);
-        env.setName('応援を使用した時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF).setAssisted(targetUnit);
-        AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
-        console.log("応援後");
+        {
+            let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+            env.setName('応援を使用した時').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+            AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+        }
 
         for (let skillId of supporterUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillsAfterRallyForSupporterFuncMap)?.call(this, supporterUnit, targetUnit);
@@ -9378,6 +9729,12 @@ class BattleSimulatorBase {
         }
 
         // 自分に使用された時
+        {
+            let env = new BattleSimulatorBaseEnv(this, targetUnit);
+            env.setName('応援を使用された時').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+            AFTER_RALLY_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+        }
+
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillsAfterRallyForTargetUnitFuncMap)?.call(this, supporterUnit, targetUnit);
             this.#applySkillsAfterRallyForTargetUnit(skillId, targetUnit, supporterUnit);
@@ -9744,6 +10101,9 @@ class BattleSimulatorBase {
             return false;
         }
 
+        for (let unit of this.enumerateUnitsOnMap()) {
+            unit.initReservedState();
+        }
         if (this.__applySupportSkill(supporterUnit, targetUnit)) {
             if (supporterUnit.supportInfo.assistType === AssistType.Refresh) {
                 supporterUnit.battleContext.isRefreshActivated = true;
@@ -9756,6 +10116,16 @@ class BattleSimulatorBase {
             }
 
             // サポートを行う側
+            if (supporterUnit.hasRallyAssist) {
+                let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+                env.setName('応援を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                AFTER_RALLY_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+            }
+            if (supporterUnit.hasMoveAssist) {
+                let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+                env.setName('移動補助を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+            }
             for (let skillId of supporterUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForSupporterFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
@@ -9763,10 +10133,22 @@ class BattleSimulatorBase {
             }
 
             // サポートを受ける側
+            if (targetUnit.hasRallyAssist) {
+                let env = new BattleSimulatorBaseEnv(this, targetUnit);
+                env.setName('応援を使用された後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                AFTER_RALLY_ENDED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+            }
+            if (targetUnit.hasMoveAssist) {
+                let env = new BattleSimulatorBaseEnv(this, targetUnit);
+                env.setName('移動補助を使用された後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                AFTER_MOVEMENT_ENDED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+            }
             for (let skillId of targetUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);
                 func?.call(this, supporterUnit, targetUnit, supportTile);
             }
+
+            // 予約反映
             for (let unit of this.enumerateUnitsOnMap()) {
                 unit.applyReservedState(false);
             }
@@ -9774,7 +10156,7 @@ class BattleSimulatorBase {
             g_appData.map.applyReservedDivineVein();
 
             let env = new BattleSimulatorBaseEnv(this, supporterUnit);
-            env.setName('奥義以外の再行動時[補助]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('奥義以外の再行動時[補助]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(supporterUnit, env);
 
             // 再移動の評価
@@ -9786,7 +10168,7 @@ class BattleSimulatorBase {
             // 同時タイミングに付与された天脈を消滅させる
             g_appData.map.applyReservedDivineVein();
 
-            executeTrapIfPossible(supporterUnit, true);
+            executeTrapIfPossible(supporterUnit, false);
             executeTrapIfPossible(targetUnit, false);
 
             g_appData.globalBattleContext.applyReservedStateForSupportSkills(supporterUnit.groupId);
@@ -9914,6 +10296,35 @@ class BattleSimulatorBase {
     }
 
     /**
+     * @param  {Unit} supporterUnit
+     * @param  {Unit} targetUnit
+     * @param  {Tile} supportTile=null
+     */
+    applyCantoAssistSkill(supporterUnit, targetUnit, supportTile = null) {
+        if (this.__applyCantoAssistSkill(supporterUnit, targetUnit)) {
+            // TODO: 再移動補助の発動済みフラグを作成するか検討する
+
+            if (!supporterUnit.isActionDone) {
+                // endUnitActionAndGainPhaseIfPossible()を呼んでしまうと未来を映す瞳が実行される前にターン終了してしまう
+                supporterUnit.endAction();
+            }
+
+            // TODO: canto assist発動時専用のスキル効果
+            // サポートを行う側
+            // サポートを受ける側
+            // 同時タイミングに付与された天脈を消滅させる
+            // g_appData.map.applyReservedDivineVein();
+
+            executeTrapIfPossible(supporterUnit, false);
+            executeTrapIfPossible(targetUnit, false);
+
+            this.__goToNextPhaseIfPossible(supporterUnit.groupId);
+        }
+
+        return false;
+    }
+
+    /**
      * 一喝、一喝+でのデバフ解除を行う
      * @param targetUnit
      * @returns {boolean} 実際にデバフを解除した場合にtrueを返す
@@ -10022,6 +10433,26 @@ class BattleSimulatorBase {
         }
     }
 
+    __findTileAfterCantoMovementAssist(assistUnit, assistTargetUnit, tile) {
+        if (assistUnit.cantoSupport === CantoSupport.None) {
+            return new MovementAssistResult(false, null, null);
+        }
+        let findTileFuncs = new Map([
+            [CantoSupport.Reposition, this.__findTileAfterReposition],
+            [CantoSupport.Shove, this.__findTileAfterShove],
+            [CantoSupport.Smite, this.__findTileAfterSmite],
+            [CantoSupport.Drawback, this.__findTileAfterDrawback],
+            [CantoSupport.Swap, this.__findTileAfterSwap],
+            [CantoSupport.Pivot, this.__findTileAfterPivot],
+        ]);
+        if (!findTileFuncs.has(assistUnit.cantoSupport)) {
+            console.warn(`未知の再移動補助です。補助ID: ${assistUnit.cantoSupport}`);
+            return new MovementAssistResult(false, null, null);
+        }
+        let func = findTileFuncs.get(assistUnit.cantoSupport).bind(this);
+        return func(assistUnit, assistTargetUnit, tile);
+    }
+
     __applySupportSkill(supporterUnit, targetUnit) {
         let assistType = supporterUnit.supportInfo.assistType;
         if (isRallyHealSkill(supporterUnit.support)) {
@@ -10122,6 +10553,22 @@ class BattleSimulatorBase {
         }
     }
 
+    __applyCantoAssistSkill(supporterUnit, targetUnit) {
+        let assistType = supporterUnit.cantoAssistType;
+        // let assistType = AssistType.Move;
+        let result = false;
+        switch (assistType) {
+            case AssistType.Move:
+                return this.__applyMovementAssist(
+                    supporterUnit,
+                    targetUnit,
+                    (unit, target, tile) => this.__findTileAfterCantoMovementAssist(unit, target, tile),
+                    false
+                );
+        }
+        return result;
+    }
+
     __canApplyReciprocalAid(supporterUnit, targetUnit) {
         if (targetUnit.restHpPercentage === 100) {
             return false;
@@ -10182,7 +10629,7 @@ class BattleSimulatorBase {
 
     __grantsAnotherActionIfPossibleWithoutAfterCombat(unit) {
         let env = new BattleSimulatorBaseEnv(this, unit);
-        env.setName('奥義以外の再行動時[破壊]').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('奥義以外の再行動時[破壊]').setLogLevel(getSkillLogLevel());
         AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
     }
 

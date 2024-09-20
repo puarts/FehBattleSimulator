@@ -142,12 +142,17 @@ class AssistableUnitInfo {
         this.hasStatAndNonStatDebuff = 0;
     }
 
-    calcAssistTargetPriority(assistUnit, isPrecombat = true) {
-        let assistType = assistUnit.supportInfo.assistType;
-        // TODO: 検証する。とりあえずHPが減っていた場合は回復スキルとして扱う
-        let skillId = assistUnit.support;
-        if (isRallyHealSkill(skillId)) {
-            assistType = this.targetUnit.isFullHp ? AssistType.Rally : AssistType.Heal;
+    calcAssistTargetPriority(assistUnit, isPrecombat = true, isCantoAssist = false) {
+        let assistType;
+        if (isCantoAssist) {
+            assistType = assistUnit.cantoAssistType;
+        } else {
+            assistType = assistUnit.supportInfo.assistType;
+            // TODO: 検証する。とりあえずHPが減っていた場合は回復スキルとして扱う
+            let skillId = assistUnit.support;
+            if (isRallyHealSkill(skillId)) {
+                assistType = this.targetUnit.isFullHp ? AssistType.Rally : AssistType.Heal;
+            }
         }
         switch (assistType) {
             case AssistType.Refresh:
@@ -166,11 +171,14 @@ class AssistableUnitInfo {
                 this.assistTargetPriority = this.__calcRestoreTargetPriority(assistUnit);
                 break;
         }
-        if (isRallyHealSkill(skillId)) {
-            // 応援より回復優先
-            if (assistType === AssistType.Heal) {
-                // TODO: 適切な数値に修正する
-                this.assistTargetPriority *= 10000000;
+        if (!isCantoAssist) {
+            let skillId = assistUnit.support;
+            if (isRallyHealSkill(skillId)) {
+                // 応援より回復優先
+                if (assistType === AssistType.Heal) {
+                    // TODO: 適切な数値に修正する
+                    this.assistTargetPriority *= 10000000;
+                }
             }
         }
     }
@@ -522,6 +530,8 @@ class Unit extends BattleMapElement {
 
         this.isBonusChar = false;
 
+        this.isAidesEssenceUsed = false;
+
         this.#statusEffects = [];
         // TODO: 何に使用しているか調べる
         // noinspection JSUnusedGlobalSymbols
@@ -661,9 +671,13 @@ class Unit extends BattleMapElement {
 
         this.chaseTargetTile = null;
 
+        // Canto
         this.moveCountForCanto = 0; // 再移動の移動マス数
         this.isCantoActivatedInCurrentTurn = false; // 現在ターンで再移動が1度でも発動したかどうか
         this.isCantoActivating = false; // 再移動中かどうか
+        this.cantoAssistType = AssistType.None;
+        this.cantoAssistRange = 0;
+        this.cantoSupport = CantoSupport.None;
 
         // ロキの盤上遊戯で一時的に限界突破を変える必要があるので、元の限界突破数を記録する用
         // noinspection JSUnusedGlobalSymbols
@@ -779,6 +793,9 @@ class Unit extends BattleMapElement {
         if (this.isCantoActivated()) {
             this.isActionDone = false;
             this.isCantoActivatedInCurrentTurn = true;
+            let env = new CantoEnv(this);
+            env.setName('再移動開始時').setLogLevel(getSkillLogLevel());
+            WHEN_CANTO_TRIGGERS_HOOKS.evaluateWithUnit(this, env);
             if (cantoControlledIfCantoActivated) {
                 this.addStatusEffect(StatusEffectType.CantoControl);
                 this.moveCountForCanto = this.calcMoveCountForCanto();
@@ -804,6 +821,7 @@ class Unit extends BattleMapElement {
     deactivateCanto() {
         this.moveCountForCanto = 0;
         this.isCantoActivating = false;
+        this.clearCantoAssist();
     }
 
     /**
@@ -811,6 +829,29 @@ class Unit extends BattleMapElement {
      */
     isCantoActivated() {
         return this.isCantoActivating;
+    }
+
+    canActivateCantoAssist() {
+        return this.cantoSupport !== CantoSupport.None;
+    }
+
+    clearCantoAssist() {
+        this.cantoAssistType = AssistType.None;
+        this.cantoAssistRange = 0;
+        this.cantoSupport = CantoSupport.None;
+    }
+
+    trySetCantoAssist(assistType, assistRange, support) {
+        // 異なる補助を設定しようとする場合再移動補助自体を無効にする
+        if (this.cantoSupport !== CantoSupport.None &&
+            this.cantoSupport !== support) {
+            this.clearCantoAssist();
+            return false;
+        }
+        this.cantoAssistType = assistType;
+        this.cantoAssistRange = assistRange;
+        this.cantoSupport = support;
+        return true;
     }
 
     chaseTargetTileToString() {
@@ -1220,6 +1261,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.ascendedAsset
             + ValueDelimiter + this.captain
             + ValueDelimiter + this.passiveX
+            + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
             + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
@@ -1278,6 +1320,9 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isSupportedDone)
             + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterCombatInitiation)
             + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterActionWithoutCombat)
+            + ValueDelimiter + this.cantoAssistType
+            + ValueDelimiter + this.cantoAssistRange
+            + ValueDelimiter + this.cantoSupport
             ;
     }
 
@@ -1339,6 +1384,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.ascendedAsset = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.captain = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = intToBool(Number(values[i])); ++i; }
         if (i < elemCount) {
             this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
@@ -1414,6 +1460,9 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isSupportedDone = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterCombatInitiation = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterActionWithoutCombat = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.cantoAssistType = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.cantoAssistRange = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.cantoSupport = Number(values[i]); ++i; }
     }
 
 
@@ -1469,6 +1518,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
+            + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
             ;
     }
 
@@ -1530,6 +1580,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = toBoolean(values[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -2227,7 +2278,7 @@ class Unit extends BattleMapElement {
         let units = g_appData.enumerateAllUnitsOnMap();
         for (let unit of units) {
             let env = new PreventingStatusEffectEnv(unit, this, statusEffectType);
-            env.setName('ステータス付与時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('ステータス付与時').setLogLevel(getSkillLogLevel());
             if (CAN_NEUTRALIZE_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
@@ -2296,7 +2347,7 @@ class Unit extends BattleMapElement {
     canActivatePass() {
         let env = new NodeEnv().setUnitManager(g_appData).setTarget(this).setSkillOwner(this);
         // TODO: ログの出し方を考える
-        // env.setName('すり抜け').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        // env.setName('すり抜け').setLogLevel(getSkillLogLevel());
         env.setName('すり抜け');
         if (UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS.evaluateSomeWithUnit(this, env)) {
             return true;
@@ -2313,6 +2364,11 @@ class Unit extends BattleMapElement {
     /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstructToTilesIn2Spaces(moveUnit) {
         let hasSkills = false;
+        let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
+        // env.setName('移動時(2マス以内)').setLogLevel(getSkillLogLevel());
+        env.setName('移動時(2マス以内)').setLogLevel(NodeEnv.LOG_LEVEL.WARN);
+        hasSkills |=
+            CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
         for (let skillId of this.enumerateSkills()) {
             let func = getSkillFunc(skillId, canActivateObstructToTilesIn2SpacesFuncMap);
             if (func?.call(this, moveUnit) ?? false) {
@@ -2333,6 +2389,11 @@ class Unit extends BattleMapElement {
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstructToAdjacentTiles(moveUnit) {
         let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwalk);
+        let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
+        // env.setName('移動時(1マス以内)').setLogLevel(getSkillLogLevel());
+        env.setName('移動時(1マス以内)').setLogLevel(NodeEnv.LOG_LEVEL.WARN);
+        hasSkills |=
+            CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
         for (let skillId of this.enumerateSkills()) {
             let func = getSkillFunc(skillId, canActivateObstructToAdjacentTilesFuncMap);
             if (func?.call(this, moveUnit) ?? false) {
@@ -2596,7 +2657,7 @@ class Unit extends BattleMapElement {
         let units = g_appData.enumerateAllUnitsOnMap();
         for (let unit of units) {
             let env = new NeutralizingEndActionEnv(unit, this);
-            env.setName('スキルによる行動終了時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('スキルによる行動終了時').setLogLevel(getSkillLogLevel());
             if (CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
@@ -2608,7 +2669,7 @@ class Unit extends BattleMapElement {
         let units = g_appData.enumerateAllUnitsOnMap();
         for (let unit of units) {
             let env = new NeutralizingEndActionEnv(unit, this);
-            env.setName('ステータスによる行動終了時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+            env.setName('ステータスによる行動終了時').setLogLevel(getSkillLogLevel());
             if (CAN_NEUTRALIZE_END_ACTION_BY_STATUS_EFFECTS_HOOKS.evaluateSomeWithUnit(unit, env)) {
                 return;
             }
@@ -2631,7 +2692,7 @@ class Unit extends BattleMapElement {
         }
 
         let env = new NodeEnv().setTarget(this).setSkillOwner(this);
-        env.setName('行動後or再移動後').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('行動後or再移動後').setLogLevel(getSkillLogLevel());
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
     }
 
@@ -2867,6 +2928,13 @@ class Unit extends BattleMapElement {
 
     get currentDamage() {
         return this.maxHpWithSkills - this.hp;
+    }
+
+    // TODO: これで全てか確認する
+    initReservedState() {
+        this.initReservedHp();
+        this.initReservedStatusEffects();
+        this.initReservedDebuffs();
     }
 
     initReservedHp() {
@@ -3149,6 +3217,13 @@ class Unit extends BattleMapElement {
             return 100;
         }
         return 100 * this.hp / this.maxHpWithSkills;
+    }
+
+    /**
+     * 戦闘開始時のHP割合
+     */
+    get restHpPercentageAtBeginningOfCombat() {
+        return this.restHpPercentageAtBeginningOfTurn;
     }
 
     get isRestHpFull() {
@@ -5278,6 +5353,15 @@ class Unit extends BattleMapElement {
             this.defWithSkills += Math.max(0, Math.trunc((this.pairUpUnit.defWithSkills - 10) / 10));
             this.resWithSkills += Math.max(0, Math.trunc((this.pairUpUnit.resWithSkills - 10) / 10));
         }
+
+        // お供補正
+        if (this.isAidesEssenceUsed) {
+            this.maxHpWithSkillsWithoutAdd += 1;
+            this.atkWithSkills += 1;
+            this.spdWithSkills += 1;
+            this.defWithSkills += 1;
+            this.resWithSkills += 1;
+        }
     }
 
     get hasPairUpUnit() {
@@ -5460,12 +5544,16 @@ class Unit extends BattleMapElement {
         }
     }
 
-    /// 実際に補助可能なユニットとタイルを列挙します。
-    * enumerateActuallyAssistableUnitAndTiles() {
+    /**
+     * 実際に補助可能なユニットとタイルを列挙します。
+     * @param {boolean} isCantoAssist
+     */
+    * enumerateActuallyAssistableUnitAndTiles(isCantoAssist = false) {
         for (let unit of this.enumerateAssistableUnits()) {
             for (let tile of this.enumerateMovableTiles(false)) {
                 let dist = tile.calculateDistanceToUnit(unit);
-                if (dist === this.assistRange) {
+                let range = isCantoAssist ? this.cantoAssistRange : this.assistRange;
+                if (dist === range) {
                     yield [unit, tile];
                 }
             }
@@ -5787,7 +5875,7 @@ class Unit extends BattleMapElement {
             moveCountForCanto = Math.max(moveCountForCanto, 1);
         }
         let env = new CantoEnv(this);
-        env.setName('再移動距離計算時').setLogLevel(g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF);
+        env.setName('再移動距離計算時').setLogLevel(getSkillLogLevel());
         moveCountForCanto = Math.max(moveCountForCanto, CALCULATES_DISTANCE_OF_CANTO_HOOKS.evaluateMaxWithUnit(this, env));
         for (let skillId of this.enumerateSkills()) {
             let moveCount = getSkillFunc(skillId, calcMoveCountForCantoFuncMap)?.call(this, moveCountForCanto) ?? 0;
@@ -5999,6 +6087,15 @@ class Unit extends BattleMapElement {
 
     grantsAnotherActionOnAssisted() {
         this.isActionDone = false;
+    }
+
+    grantAnotherActionOnAssistIfPossible() {
+        if (!this.isOneTimeActionActivatedForSupport) {
+            this.isOneTimeActionActivatedForSupport = true;
+            this.grantsAnotherActionOnAssist();
+            return true;
+        }
+        return false;
     }
 
     hasEmblemHero() {

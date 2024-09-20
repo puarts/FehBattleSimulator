@@ -34,14 +34,14 @@ class SkillEffectHooks {
     #instantiatedMap = new MultiValueMap();
 
     /**
-     * @param {number|string|(number|string)[]} skillIds
+     * @param {number|string} skillId
      * @param {() => N} nodeFunc
      */
-    addSkill(skillIds, nodeFunc) {
+    addSkill(skillId, nodeFunc) {
         if (typeof nodeFunc !== 'function') {
             throw new Error('Argument nodeFunc must be a function');
         }
-        this.#delayedMap.addValue(skillIds, nodeFunc);
+        this.#delayedMap.addValue(skillId, nodeFunc);
     }
 
     /**
@@ -71,6 +71,9 @@ class SkillEffectHooks {
         let skills = this.getSkills(skillId);
         if (skills.length > 0) {
             this.#skillNameLog(skillId, env);
+            if (skills.length >= 2) {
+                env?.info(`登録スキル数: ${skills.length}`);
+            }
         }
         return skills.map(skillNode => skillNode.evaluate(env));
     }
@@ -98,7 +101,7 @@ class SkillEffectHooks {
         }
         // TODO: 紋章士に対応する
         let name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
-        env?.info(`${type}${name}を評価`);
+        env?.info(`${env.skillOwner.nameWithGroup}の${type}${name}を評価`);
     }
 
     /**
@@ -704,10 +707,10 @@ const READ_NUM_NODE = new ReadNumNode();
 class NumThatIsNode extends SkillEffectNode {
     /**
      * @param procedureNode
-     * @param {NumberNode} valueNode
+     * @param {number|NumberNode} value
      */
-    constructor(procedureNode, valueNode) {
-        super(procedureNode, valueNode);
+    constructor(procedureNode, value) {
+        super(procedureNode, NumberNode.makeNumberNodeFrom(value));
     }
 
     evaluate(env) {

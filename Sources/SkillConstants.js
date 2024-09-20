@@ -1919,7 +1919,16 @@ const Weapon = {
     IlianFrostBlade: 3000, // イリアの吹雪の剣
     IceDaggerPlus: 3002, // 氷の暗器+
     IceCrystalSpear: 3003, // ニフルの氷晶の槍
-    IceDragonstonePlus: 3004, // 氷竜の竜石+
+    IceDragonstonePlus: 3007, // 氷竜の竜石+
+
+    // 新英雄「お供レギン＆響心ミスティラ」
+    // https://www.youtube.com/watch?v=oJjBKFzt8wU&ab_channel=NintendoMobile
+    // https://www.youtube.com/watch?v=w-t_btdtf28&ab_channel=NintendoMobile
+    DesertSpear: 3010, // 闘いの熱砂の槍
+    SentinelBow: 3014, // 自警団長の弓
+    SuaveBlade: 3016, // 珍獣騎士の剣
+    DvergrWayfinder: 3018, // ニザヴェリルの理槍
+    PraisePinerAxe: 3021, // 称賛の希求の大斧
 };
 
 const Support = {
@@ -2146,6 +2155,8 @@ const Special = {
     CurvedShot: 2986, // 曲射
 
     // 専用奥義
+    SeidrBurst: 3019, // 連魔弾
+    Sandstorm: 3011, // 砂陣
     DualIceMirrors: 3004, // 双氷の聖鏡
     MakingsOfAKing: 2989, // 王器
     WarpRagnarok: 2925, // ワープライナ
@@ -2515,6 +2526,9 @@ const PassiveA = {
     AtkResFinish3: 2599, // 攻撃魔防の秘奥3
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
 
+    // SpdDefFinish3: 9999, // 速さ守備の秘奥3
+    SpdDefFinish4: 3012, // 速さ守備の秘奥4
+
     SpdResFinish3: 2318, // 速さ魔防の秘奥3
     SpdResFinish4: 2259, // 速さ魔防の秘奥4
 
@@ -2547,6 +2561,7 @@ const PassiveA = {
 
     // 備え
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
+    AtkDefPrime3: 2978, // 攻撃守備の備え3
     AtkDefPrime4: 2699, // 攻撃守備の備え4
     SpdDefPrime4: 2967, // 速さ守備の備え4
 
@@ -2689,6 +2704,7 @@ const PassiveB = {
     SpdResLink3: 650, // 速さ魔防の連携3
     DefResLink3: 651, // 守備魔防の連携3
     AtkSpdLink4: 2843, // 攻撃速さの連携4
+    SpdDefLink4: 3017, // 速さ守備の連携4
 
     Swordbreaker3: 618, // 剣殺し3
     Lancebreaker3: 619,
@@ -2947,6 +2963,7 @@ const PassiveB = {
     SRNearTrace4: 2999, // 速さ魔防の近影4
     // 遠影4
     AtkResFarTrace4: 2786, // 攻撃魔防の遠影4
+    SpdDefFarTrace4: 3015, // 速さ守備の遠影4
     SpdResFarTrace4: 2733, // 速さ魔防の遠影4
 
     // 怒涛
@@ -3342,6 +3359,8 @@ const PassiveC = {
     
     AirOrders4: 3001, // 先導の伝令・天4
 
+    ShadowShift4: 3020, // 影助・引き戻し4
+
     // 専用C
     Paranoia: 2987, // 被害妄想
     DivineNectar: 2959, // 神獣の蜜
@@ -3453,6 +3472,7 @@ const PassiveX = {
     MercyWingEcho: 2859, // 響・救援の行路
     FarTraceEcho: 2908, // 響・遠影
     NullCDisruptE: 2953, // 響・見切り反撃不可
+    TimePulseEcho: 3013, // 響・始まりの鼓動
 };
 
 const Captain = {
@@ -3480,6 +3500,16 @@ const AssistType = {
     Restore: 4,
     Rally: 5,
     Move: 6,
+};
+
+const CantoSupport = {
+    None: 0,
+    Reposition: 1,
+    Shove: 2,
+    Smite: 3,
+    Drawback: 4,
+    Swap: 5,
+    Pivot: 6,
 };
 
 // 紋章士

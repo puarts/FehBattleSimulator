@@ -36,7 +36,9 @@ class NodeEnv {
     /** @type {Unit} */
     #targetFoe = null;
     /** @type {Unit} */
-    assisted = null;
+    assistTarget = null;
+    /** @type {Unit} */
+    assistTargeting = null;
     /** @type {Unit} */
     #referenceUnit = null;
     /** @type {UnitManager} */
@@ -106,6 +108,9 @@ class NodeEnv {
         return this;
     }
 
+    /**
+     * @returns {UnitManager}
+     */
     get unitManager() {
         return this.#unitManager;
     }
@@ -269,9 +274,28 @@ class NodeEnv {
         return this;
     }
 
-    setAssisted(unit) {
-        this.assisted = unit;
+    setAssistUnits(targeting, target) {
+        return this.setAssistTargeting(targeting).setAssistTarget(target);
+    }
+
+    setAssistTarget(unit) {
+        this.assistTarget = unit;
         return this;
+    }
+
+    setAssistTargeting(unit) {
+        this.assistTargeting = unit;
+        return this;
+    }
+
+    getAssistAlly(unit) {
+        if (unit === this.assistTargeting) {
+            return this.assistTarget;
+        } else if (unit === this.assistTarget) {
+            return this.assistTargeting;
+        } else {
+            return null;
+        }
     }
 
     getDamageType() {

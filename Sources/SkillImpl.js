@@ -815,7 +815,7 @@
                 // 自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)、
                 targetUnit.battleContext.increaseCooldownCountForBoth();
                 // 自身の攻撃、守備の弱化を無効
-                targetUnit.battleContext.invalidateDebuffs(true, false, true, false);
+                targetUnit.battleContext.invalidateOwnDebuffs(true, false, true, false);
             }
         }
     );
@@ -3592,7 +3592,7 @@
                 let amount = this.__countAllyUnitsInCrossWithOffset(targetUnit, 1);
                 targetUnit.addAllSpur(amount);
                 // 自身の攻撃、速さの弱化を無効、
-                targetUnit.battleContext.invalidateDebuffs(true, true, false, false);
+                targetUnit.battleContext.invalidateOwnDebuffs(true, true, false, false);
                 // 敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効、
                 targetUnit.battleContext.setTempo();
                 // 最初に受けた攻撃と2回攻撃のダメージを30%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)
@@ -3604,7 +3604,7 @@
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
             // 自分を中心とした縦3列と横3列の味方は、戦闘中、攻撃、速さの弱化を無効
             if (targetUnit.isInCrossWithOffset(allyUnit, 1)) {
-                targetUnit.battleContext.invalidateDebuffs(true, true, false, false);
+                targetUnit.battleContext.invalidateOwnDebuffs(true, true, false, false);
             }
         }
     );
@@ -3688,7 +3688,7 @@
                 // ダメージ+攻撃の15%(範囲奥義を除く)、
                 targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
                 // 敵の攻撃、守備の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)
-                targetUnit.battleContext.invalidateDebuffs(true, false, true, false);
+                targetUnit.battleContext.invalidateOwnDebuffs(true, false, true, false);
             }
         }
     );
@@ -4665,6 +4665,8 @@
     }
     // 攻撃速さの連携4
     setSkill(PassiveB.AtkSpdLink4, [true, true, false, false], u => u.addSpurs(0, -4, -2, -2));
+    // 速さ守備の連携4
+    setSkill(PassiveB.SpdDefLink4, [false, true, true, false], u => u.addSpurs(-4, -4, 0, 0));
 }
 
 // 邪竜の暗鱗
@@ -4817,6 +4819,7 @@
     setSkill(PassiveA.AtkSpdFinish4, [7, 7, 0, 0], true);
     setSkill(PassiveA.AtkDefFinish4, [7, 0, 7, 0], true);
     setSkill(PassiveA.AtkResFinish4, [7, 0, 0, 7], true);
+    setSkill(PassiveA.SpdDefFinish4, [0, 7, 7, 0], true);
     setSkill(PassiveA.SpdResFinish4, [0, 7, 0, 7], true);
     setSkill(PassiveA.DefResFinish4, [0, 0, 7, 7], true);
 }
@@ -8105,35 +8108,6 @@
     );
 }
 
-// 生命の業火
-{
-    let setSkill = (skillId, spurFunc) => {
-        applySkillEffectForUnitFuncMap.set(skillId,
-            function (targetUnit, enemyUnit, calcPotentialDamage) {
-                this._applySkillEffectForUnitFuncDict[PassiveA.FirefloodBoost3] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-                    if (targetUnit.battleContext.restHpPercentage >= 50) {
-                        spurFunc(targetUnit);
-                        let func = unit => unit.battleContext.restHpPercentage >= 50;
-                        if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 2, func)) {
-                            targetUnit.battleContext.reducesCooldownCount = true;
-                        }
-                    }
-                }
-            }
-        );
-    }
-    // 生命の業火疾風3
-    setSkill(PassiveA.FirestormBoost3, u => u.addAtkSpdSpurs(7));
-    // 生命の業火静水3
-    setSkill(PassiveA.FirefloodBoost3, u => u.addAtkResSpurs(7));
-    // 生命の業火大地3
-    setSkill(PassiveA.EarthfireBoost3, u => u.addAtkDefSpurs(7));
-    // 生命の疾風大地3
-    setSkill(PassiveA.EarthwindBoost3, u => u.addSpdDefSpurs(7));
-    // 生命の疾風静水3
-    setSkill(PassiveA.DelugeBoost3, u => u.addSpdResSpurs(7));
-}
-
 // 強く気高き魂の槍
 {
     let skillId = Weapon.RighteousLance;
@@ -9148,6 +9122,8 @@
     // 遠影
     // 攻撃魔防の遠影4
     setSkill(PassiveB.AtkResFarTrace4, u => u.addAtkResSpurs(-4), 1);
+    // 速さ守備の遠影4
+    setSkill(PassiveB.SpdDefFarTrace4, u => u.addSpdDefSpurs(-4), 1);
     // 速さ魔防の遠影4
     setSkill(PassiveB.SpdResFarTrace4, u => u.addSpdResSpurs(-4), 1);
 }

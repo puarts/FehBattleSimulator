@@ -31,6 +31,12 @@ const GetSkillOwnerDuringCombatMixin = {
     },
 };
 
+const GetAssistTargetsAllyMixin = {
+    getUnit(env) {
+        return env.getAssistAlly(env.target);
+    },
+}
+
 const GetValueMixin = Object.assign({}, GetUnitMixin, {
     evaluate(env) {
         let unit = this.getUnit(env);
@@ -410,6 +416,7 @@ class CantoEnv extends NodeEnv {
      */
     constructor(targetUnit) {
         super();
+        this.setSkillOwner(targetUnit);
         this.setTarget(targetUnit);
     }
 }
@@ -532,6 +539,39 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
 
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
 const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
+
+class EnablesTargetToUseCantoAssistOnTargetsAllyNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} cantoAssist
+     * @param {number|NumberNode} cantoSupport
+     * @param {number|NumberNode} range
+     */
+    constructor(cantoAssist, cantoSupport, range) {
+        super();
+        this.cantoAssistNode = NumberNode.makeNumberNodeFrom(cantoAssist);
+        this.cantoSupport = NumberNode.makeNumberNodeFrom(cantoSupport);
+        this.rangeNode = NumberNode.makeNumberNodeFrom(range);
+    }
+
+    evaluate(env) {
+        let unit = env.target;
+        let oldSupport = unit.cantoSupport;
+
+        let assistType = this.cantoAssistNode.evaluate(env);
+        let assistRange = this.rangeNode.evaluate(env);
+        let support = this.cantoSupport.evaluate(env);
+        let success = unit.trySetCantoAssist(assistType, assistRange, support);
+        if (success) {
+            env.debug(`${unit.nameWithGroup}は再移動補助を発動: type: ${assistType}, support: ${support}, range: ${assistRange}`);
+        } else {
+            env.debug(`${unit.nameWithGroup}は同系統効果複数発動、この効果は発動しない: old: ${oldSupport}, new: ${support}`);
+        }
+    }
+}
 
 /**
  * 【Bonus】is active on unit
@@ -1740,6 +1780,12 @@ class IsTargetWithinNSpacesOfTargetsAllyNode extends IsInRangeNNode {
 const IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(3, TRUE_NODE);
 
+class IsUnitWithinNSpacesOfUnitsAllyNode extends IsTargetWithinNSpacesOfTargetsAllyNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
 class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
     evaluate(env) {
         let spaces = this._nNode.evaluate(env);
@@ -1908,7 +1954,7 @@ class IsSpacesNSpacesAwayFromAssistedNode extends BoolNode {
     }
 
     evaluate(env) {
-        let distance = env.tile.calculateDistance(env.assisted.placedTile);
+        let distance = env.tile.calculateDistance(env.assistTarget.placedTile);
         let n = this.evaluateChildren(env)[0];
         // TODO: 警告が出ないようにする
         // noinspection JSIncompatibleTypesComparison
@@ -1922,7 +1968,7 @@ class IsSpacesWithinNSpacesOfTargetNode extends BoolNode {
     }
 
     evaluate(env) {
-        let distance = env.tile.calculateDistance(env.assisted.placedTile);
+        let distance = env.tile.calculateDistance(env.assistTarget.placedTile);
         let n = this.evaluateChildren(env)[0];
         // TODO: 警告が出ないようにする
         // noinspection JSIncompatibleTypesComparison
@@ -2146,6 +2192,34 @@ class InflictsStatusEffectsAtStartOfTurnNode extends GrantsStatusEffectsAtStartO
 class InflictsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAfterCombatNode {
 }
 
+// TODO: rename
+class ReservesToGrantStatusEffectsToTargetNode extends FromNumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {...number} values
+     */
+    constructor(...values) {
+        super(...values);
+    }
+
+    evaluate(env) {
+        this.evaluateChildren(env).forEach(e => {
+            let unit = this.getUnit(env);
+            env.debug(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与予約`);
+            unit.reserveToAddStatusEffect(e);
+        });
+    }
+}
+
+class ReservesToGrantStatusEffectsToAssistAllyNode extends ReservesToGrantStatusEffectsToTargetNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetsAllyMixin);
+    }
+}
+
 class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2162,6 +2236,11 @@ class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPosit
 }
 
 class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
+}
+
+// TODO: rename
+// skill text: grants Special cooldown count-1
+class GrantsSpecialCooldownCountMinusOnTargetNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
 /**
@@ -2197,6 +2276,22 @@ class DealsDamageToTargetAtStartOfTurnNode extends FromPositiveNumberNode {
 }
 
 // 再行動・再移動
+class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let success = unit.grantAnotherActionOnAssistIfPossible();
+        if (success) {
+            env.debug(`${unit.nameWithGroup}は再行動`);
+        } else {
+            env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
+        }
+    }
+}
+
 class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
@@ -2364,3 +2459,26 @@ const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AFTER_COMBAT_NODE = 
         }
     }
 }();
+
+/**
+ * if Special cooldown count is at its maximum value
+ */
+class IsTargetsSpecialCooldownCountIsAtItsMaximumNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let isMax = unit.isSpecialCountMax;
+        env.debug(`${unit.nameWithGroup}の奥義発動カウントが最大かどうか: ${isMax}, count: ${unit.specialCount}/${unit.maxSpecialCount}`);
+        return isMax;
+    }
+}
+
+function getSkillLogLevel() {
+    if (typeof g_appData === 'undefined') {
+        return NodeEnv.LOG_LEVEL.OFF;
+    }
+    return g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF;
+}
