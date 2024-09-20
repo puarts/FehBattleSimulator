@@ -57,6 +57,10 @@
             )
         ),
     ));
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Calculates damage using the lower of foe's Def or Res.
+        CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
+    ));
 }
 
 // 影助・引き戻し4
