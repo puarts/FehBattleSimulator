@@ -676,6 +676,7 @@ class Unit extends BattleMapElement {
         this.attackableTiles = [];
         this.assistableTiles = [];
         this.teleportOnlyTiles = [];
+        this.precombatSpecialTiles = [];
 
         // シリアライズする時に一時的に使用
         this.ownerType = 0;

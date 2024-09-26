@@ -246,7 +246,7 @@ class DamageCalculatorWrapper {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
-     * @param  {boolean} calcPotentialDamage=false
+     * @param damageType
      * @param  {Number} gameMode=GameMode.Arena
      * @returns {DamageCalcResult}
      */
@@ -258,7 +258,7 @@ class DamageCalculatorWrapper {
         gameMode = GameMode.Arena
     ) {
         let result = this.calcDamage(atkUnit, defUnit, tileToAttack, damageType, gameMode);
-        if (defUnit != result.defUnit) {
+        if (defUnit !== result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
             let saverUnit = result.defUnit;
             let tile = saverUnit.placedTile;
@@ -313,6 +313,10 @@ class DamageCalculatorWrapper {
             let canTriggerPrecombatSpecial = !atkUnit.battleContext.cannotTriggerPrecombatSpecial;
             let canActivatePrecombatSpecial = atkUnit.canActivatePrecombatSpecial() && canTriggerPrecombatSpecial;
             if (canActivatePrecombatSpecial && !calcPotentialDamage) {
+                if (damageType === DamageType.EstimatedDamage) {
+                    atkUnit.precombatSpecialTiles =
+                        Array.from(this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit));
+                }
                 [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit, damageType);
                 // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
                 defUnit.battleContext.clearPrecombatState();

@@ -2817,6 +2817,19 @@ class BattleMap {
                     thisCellHeight += 2;
                 }
 
+                // 範囲奥義
+                let specialImg = getSpecialChargedImgTag();
+                specialImg.classList.add("precombat-special-on-map");
+                specialImg.hidden = true;
+                specialImg.style.position = "absolute";
+                let marginPercentage = 20;
+                specialImg.style.top = `${marginPercentage}%`;
+                specialImg.style.left = `${marginPercentage}%`;
+                let percentage = 100 - marginPercentage * 2;
+                specialImg.style.width = `${percentage}%`;
+                specialImg.style.height = `${percentage}%`;
+                cell.innerText += specialImg.outerHTML;
+
                 // セルの中身を div で囲む
                 cell.innerText = "<div class='cell-root' style='position:relative;width:" + thisCellWidth + "px;height:" + thisCellHeight + "px;'>" + cell.innerText + "</div>";
             }

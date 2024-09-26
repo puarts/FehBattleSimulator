@@ -290,6 +290,15 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                 }
+                // 範囲奥義表示
+                for (let tile of unit.precombatSpecialTiles) {
+                    let cellId = getCellId(tile.posX, tile.posY);
+                    let cell = document.getElementById(cellId);
+                    Array.from(cell.querySelectorAll('.precombat-special-on-map')).forEach(node => {
+                            node.hidden = false;
+                        }
+                    );
+                }
             }
         }
     } catch (e) {
@@ -302,6 +311,16 @@ function dragoverImplForTargetTile(unit, targetTile) {
     if (g_dragoverTargetTileForCalcSummary === targetTile) { return; }
     g_attackTile = null;
     g_currentTile = targetTile;
+    unit.precombatSpecialTiles = [];
+    // 範囲奥義を非表示に
+    for (let tile of g_appData.map.enumerateTiles()) {
+        let cellId = getCellId(tile.posX, tile.posY);
+        let cell = document.getElementById(cellId);
+        Array.from(cell.querySelectorAll('.precombat-special-on-map')).forEach(node => {
+                node.hidden = true;
+            }
+        );
+    }
 
     g_app.clearDamageCalcSummary();
 
