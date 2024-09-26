@@ -167,6 +167,9 @@ class DamageCalculatorWrapper {
      * @returns {DamageCalcResult}
      */
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
+        this.#initBattleContext(atkUnit, defUnit);
+        atkUnit.precombatContext.initContext();
+        defUnit.precombatContext.initContext();
         // 攻撃対象以外の戦闘前の範囲奥義ダメージ
         let precombatDamages = new Map();
         this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, DamageType.ActualDamage, false);
@@ -186,6 +189,7 @@ class DamageCalculatorWrapper {
                     this.writeLog(`atkUnit.battleContext.additionalDamageOfSpecial: ${atkUnit.battleContext.additionalDamageOfSpecial}`);
                     precombatDamages.set(targetUnit, damage);
                     this.writeLog(`${atkUnit.specialInfo.name}により${targetUnit.getNameWithGroup()}に${damage}ダメージ`);
+                    atkUnit.precombatContext.damageCountOfSpecialAtTheSameTime++;
                     targetUnit.takeDamage(damage, true);
                 }
             }
@@ -344,6 +348,8 @@ class DamageCalculatorWrapper {
                 atkUnit.battleContext.clearPrecombatState();
             }
 
+            atkUnit.precombatContext.copyTo(atkUnit.battleContext);
+            defUnit.precombatContext.copyTo(defUnit.battleContext);
 
             result = self.calcCombatResult(atkUnit, actualDefUnit, damageType, gameMode);
             result.preCombatDamage = preCombatDamage;
@@ -365,12 +371,7 @@ class DamageCalculatorWrapper {
         atkUnit.initBattleContext(true);
         defUnit.initBattleContext(false);
         // 戦闘参加ユニット以外の戦闘コンテキストを初期化する
-        // TODO: リファクタリング
-        let allUnitsOnMap = GeneratorUtil.combine(
-            this.enumerateUnitsInTheSameGroupOnMap(atkUnit),
-            this.enumerateUnitsInTheSameGroupOnMap(defUnit)
-        );
-        for (let unit of allUnitsOnMap) {
+        for (let unit of this.unitManager.enumerateAllUnitsOnMap()) {
             unit.initBattleContext(false);
         }
     }

@@ -344,6 +344,27 @@ class ActionContext {
     }
 }
 
+/**
+ * TODO: リファクタリング
+ * BattleContextについて範囲奥義で設定したコンテキストを戦闘開始時に消してしまうので両方で使用可能な値の扱いが非常に複雑になってしまっているので修正する
+ */
+class PrecombatContext {
+    constructor() {
+        this.initContext();
+    }
+
+    initContext() {
+        this.damageCountOfSpecialAtTheSameTime = 0;
+    }
+
+    /**
+     * @param {BattleContext} context
+     */
+    copyTo(context) {
+        context.damageCountOfSpecialAtTheSameTime = this.damageCountOfSpecialAtTheSameTime;
+    }
+}
+
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
     #hpAddAfterEnteringBattle = 0;
@@ -376,6 +397,7 @@ class Unit extends BattleMapElement {
 
         this.battleContext = new BattleContext();
         this.actionContext = new ActionContext();
+        this.precombatContext = new PrecombatContext();
 
         /** @type {number} */
         this.slotOrder = 0;
