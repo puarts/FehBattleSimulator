@@ -484,7 +484,7 @@ class CalcMoveCountForCantoNode extends NumberNode {
     }
 }
 
-class CantoRem extends CalcMoveCountForCantoNode {
+class CantoRemNode extends CalcMoveCountForCantoNode {
     /** @type {number} */
     #n;
 
@@ -507,7 +507,7 @@ class CantoRem extends CalcMoveCountForCantoNode {
     }
 }
 
-const CANTO_REM_PLUS_ONE_NODE = new CantoRem(1);
+const CANTO_REM_PLUS_ONE_NODE = new CantoRemNode(1);
 
 class CantoDistNode extends CalcMoveCountForCantoNode {
     /** @type {number} */
@@ -539,6 +539,22 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
 
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
 const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
+
+/**
+ * TODO: 他のCanto (X)が出てきたらリネームする
+ * Enables [Canto (X)] . If unit's Range = 1, X = 3; otherwise, X = 2.
+ */
+class CantoXNode extends CalcMoveCountForCantoNode {
+    /**
+     * @returns {number}
+     */
+    evaluate(env) {
+        let unit = env.target;
+        let result = unit.attackRange === 1 ? 3 : 2;
+        env.debug(`${unit.nameWithGroup}の再移動距離: ${result}`);
+        return result;
+    }
+}
 
 class EnablesTargetToUseCantoAssistOnTargetsAllyNode extends SkillEffectNode {
     static {
@@ -2129,6 +2145,42 @@ class ForSpacesWithinNSpacesNode extends ForSpacesNode {
         let n = this._nNode.evaluate(env);
         env.debug(`${env.skillOwner.nameWithGroup}は${unit.nameWithGroup}の周囲${n}マスに移動可能`);
         return env.battleMap.__enumeratePlacableTilesWithinSpecifiedSpaces(unit.placedTile, env.skillOwner, n);
+    }
+}
+
+class OverrideAoeSpacesNode extends ForSpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let targetTile = env.tile;
+        let xt = targetTile.posX;
+        let yt = targetTile.posY;
+        let xu = unit.placedTile.posX;
+        let yu = unit.placedTile.posY;
+        // 爆風範囲(3x3)の中心
+        let xc = xt;
+        let yc = yt;
+
+        // 位置関係によって中心を計算する
+        if (xt > xu) {
+            xc++;
+        }
+        if (xt < xu) {
+            xc--;
+        }
+        if (yt > yu) {
+            yc++;
+        }
+        if (yt < yu) {
+            yc--;
+        }
+
+        // 爆風範囲内か判定
+        let isInRange = tile => tile.isInRange(xc - 1, xc + 1, yc - 1, yc + 1);
+        return env.battleMap.enumerateTiles(isInRange);
     }
 }
 
