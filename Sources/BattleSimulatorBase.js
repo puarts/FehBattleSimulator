@@ -7460,26 +7460,27 @@ class BattleSimulatorBase {
                     }
                     moveUnit(unit, tileToMove, unit.groupId === UnitGroupType.Ally);
                 }
-
                 self.updateAllUnitSpur();
-            }
-
-            if (!unit.isActionDone && endAction) {
-                self.endUnitActionAndGainPhaseIfPossible(unit);
-                unit.deactivateCanto();
-                unit.applyEndActionSkills();
-                // 同時タイミングに付与された天脈を消滅させる
-                g_appData.map.applyReservedDivineVein();
             }
 
             if (unit.isActionDone) {
                 unit.isActionDoneDuringMoveCommand = true;
             }
+
+            if (!unit.isActionDone && endAction) {
+                unit.endAction();
+                unit.deactivateCanto();
+            }
+            unit.applyEndActionSkills();
+            // 同時タイミングに付与された天脈を消滅させる
+            g_appData.map.applyReservedDivineVein();
+
             self.__updateDistanceFromClosestEnemy(unit);
 
             let env = new BattleSimulatorBaseEnv(this, unit);
             env.setName('奥義以外の再行動時[移動]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
+            self.__goToNextPhaseIfPossible(unit.groupId);
         };
         return this.__createCommand(
             `${unit.id}-m-${tileToMove.id}`,
@@ -10910,10 +10911,10 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
             }
             if (trapCondSatisfied) {
                 if (endsActionIfActivateTrap) {
-                    g_app.endUnitActionAndGainPhaseIfPossible(unit);
+                    unit.endAction();
                 } else {
                     if (obj instanceof HexTrap) {
-                        g_app.endUnitActionAndGainPhaseIfPossible(unit);
+                        unit.endAction();
                     }
                 }
 
