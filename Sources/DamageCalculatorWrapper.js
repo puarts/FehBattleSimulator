@@ -374,12 +374,12 @@ class DamageCalculatorWrapper {
      * @param {Unit} defUnit
      */
     #initBattleContext(atkUnit, defUnit) {
-        atkUnit.initBattleContext(true);
-        defUnit.initBattleContext(false);
         // 戦闘参加ユニット以外の戦闘コンテキストを初期化する
         for (let unit of this.unitManager.enumerateAllUnitsOnMap()) {
             unit.initBattleContext(false);
         }
+        atkUnit.initBattleContext(true);
+        defUnit.initBattleContext(false);
     }
 
     /**
