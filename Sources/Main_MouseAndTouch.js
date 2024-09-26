@@ -265,11 +265,24 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                     color = "#ff8888" + alpha;
                     updateCellBgColor(tile.posX, tile.posY, color);
                 }
-                for (let tile of unit.movableTiles) {
-                    let color = "#cbd6ee";
-                    // color = "#88aaff" + alpha;
-                    color = "#0066ff" + alpha;
-                    updateCellBgColor(tile.posX, tile.posY, color);
+                for (let tile of unit.movableTilesIgnoringWarpBubble) {
+                    if (unit.movableTiles.includes(tile)) {
+                        let color = "#cbd6ee";
+                        color = "#0066ff" + alpha;
+                        if (tile.getMoveWeight(unit, false) === ObstructTile) {
+                            color = "#cccc00" + alpha;
+                        }
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    } else {
+                        let cellId = getCellId(tile.posX, tile.posY);
+                        let cell = document.getElementById(cellId);
+                        if (tile.isUnitPlacable(unit)) {
+                            Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
+                                    node.classList.remove('map-hidden');
+                                }
+                            );
+                        }
+                    }
                 }
                 for (let tile of unit.teleportOnlyTiles) {
                     let color = "#cbd6ee";
@@ -550,6 +563,14 @@ function dropEventImpl(objId, dropTargetId) {
 
     g_app.clearDamageCalcSummary();
     g_app.showItemInfo(objId);
+    for (let tile of g_appData.map.enumerateTiles()) {
+        let cellId = getCellId(tile.posX, tile.posY);
+        let cell = document.getElementById(cellId);
+        Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
+                node.classList.add('map-hidden');
+            }
+        );
+    }
 
     // ユニットのドロップ処理
     {

@@ -673,6 +673,7 @@ class Unit extends BattleMapElement {
 
         // 攻撃可能なタイル
         this.movableTiles = [];
+        this.movableTilesIgnoringWarpBubble = [];
         this.attackableTiles = [];
         this.assistableTiles = [];
         this.teleportOnlyTiles = [];
@@ -723,6 +724,8 @@ class Unit extends BattleMapElement {
 
         // TODO: リファクタリングする
         this.isActionDoneDuringMoveCommand = false;
+
+        this.canWarpForcibly = false;
     }
 
     /**

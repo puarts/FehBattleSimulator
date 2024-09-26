@@ -2327,6 +2327,9 @@ class BattleMap {
     }
 
     __canWarp(targetTile, warpUnit) {
+        if (warpUnit.canWarpForcibly) {
+            return true;
+        }
         if (warpUnit.canActivatePass()) return true;
         if (targetTile.divineVein === DivineVeinType.Green &&
             targetTile.divineVeinGroup !== warpUnit.groupId) {
@@ -2548,11 +2551,15 @@ class BattleMap {
 
     updateMovableAndAttackableTilesForUnit(unit) {
         unit.movableTiles = [];
+        unit.movableTilesIgnoringWarpBubble = [];
         unit.attackableTiles = [];
         unit.assistableTiles = [];
         unit.teleportOnlyTiles = [];
 
         let tilesWithoutTeleport = new Set(this.enumerateMovableTiles(unit, false, true, true));
+        unit.canWarpForcibly = true;
+        unit.movableTilesIgnoringWarpBubble = Array.from(this.enumerateMovableTiles(unit, false));
+        unit.canWarpForcibly = false;
         // ユニットの移動可能範囲、攻撃可能範囲を更新
         for (let tile of this.enumerateMovableTiles(unit, false)) {
             if (unit.movableTiles.includes(tile)) {
@@ -2831,6 +2838,12 @@ class BattleMap {
                 specialImg.style.width = `${percentage}%`;
                 specialImg.style.height = `${percentage}%`;
                 cell.innerText += specialImg.outerHTML;
+
+                // ワープ不可
+                let img = document.createElement("img");
+                img.src = statusEffectTypeToIconFilePath(StatusEffectType.WarpBubble);
+                img.classList.add('map-warp-bubble-icon', 'map-hidden');
+                cell.innerText += img.outerHTML;
 
                 // セルの中身を div で囲む
                 cell.innerText = "<div class='cell-root' style='position:relative;width:" + thisCellWidth + "px;height:" + thisCellHeight + "px;'>" + cell.innerText + "</div>";

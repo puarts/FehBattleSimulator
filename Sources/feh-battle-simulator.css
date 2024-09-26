@@ -265,3 +265,16 @@ td.enemy {
     #444 -1px 0px 0px,
     #444 1px 0px 0px;
 }
+
+.map-hidden {
+    display: none;
+}
+
+.map-warp-bubble-icon {
+    position: relative;
+    pointer-events: none;
+    top: 20%;
+    left: 20%;
+    width: 60%;
+    height: 60%;
+}
