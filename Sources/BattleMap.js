@@ -1880,8 +1880,15 @@ class BattleMap {
         });
     }
 
-    * enumerateRangedSpecialTiles(targetTile, special) {
-        for (let tile of this.__enumerateRangedSpecialTiles(targetTile, special)) {
+    /**
+     * @param {Tile} targetTile
+     * @param {Unit} atkUnit
+     */
+    * enumerateRangedSpecialTiles(targetTile, atkUnit) {
+        let env = new BattleMapEnv(this, atkUnit).setTile(targetTile);
+        env.setName('範囲奥義の範囲取得時').setLogLevel(getSkillLogLevel());
+        yield* AOE_SPECIAL_SPACES_HOOKS.evaluateWithUnit(atkUnit, env);
+        for (let tile of this.__enumerateRangedSpecialTiles(targetTile, atkUnit.special)) {
             if (tile != null) {
                 yield tile;
             }

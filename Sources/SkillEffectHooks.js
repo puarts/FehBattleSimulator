@@ -221,3 +221,7 @@ const CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHoo
  * Foes with Range = 2 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
 const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
+const AOE_SPECIAL_SPACES_HOOKS = new SkillEffectHooks();

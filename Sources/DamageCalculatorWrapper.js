@@ -177,7 +177,8 @@ class DamageCalculatorWrapper {
         if (atkUnit.canActivatePrecombatSpecial() &&
             !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
             // 範囲攻撃ダメージを周囲の敵に反映
-            for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
+            let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
+            for (let tile of tiles) {
                 let isNotDefUnit = tile.placedUnit !== defUnit;
                 let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit);
                 if (tile.placedUnit != null &&
@@ -331,7 +332,8 @@ class DamageCalculatorWrapper {
                     self.__initSaverUnit(saverUnit, defUnit, damageType);
                     if (canActivatePrecombatSpecial) {
                         // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
-                        for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
+                        let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
+                        for (let tile of tiles) {
                             if (tile.placedUnit === saverUnit) {
                                 [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit, damageType);
                                 saverUnit.battleContext.clearPrecombatState();
