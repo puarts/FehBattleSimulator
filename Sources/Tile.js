@@ -125,6 +125,10 @@ class Tile extends BattleMapElement {
         this.snapshot = null;
     }
 
+    toString() {
+        return `Tile(${this.posX}, ${this.posY})`;
+    }
+
     isInXRange(fromX, toX) {
         return fromX <= this.posX && this.posX <= toX;
     }
