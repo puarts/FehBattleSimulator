@@ -3319,6 +3319,9 @@ class Unit extends BattleMapElement {
             }
             return this.getNormalMoveCount() + 1;
         }
+        if (this.hasStatusEffect(StatusEffectType.Gallop)) {
+            return this.getNormalMoveCount() + 2;
+        }
         return this._moveCount;
     }
 

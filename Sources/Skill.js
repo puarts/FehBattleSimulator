@@ -1254,6 +1254,7 @@ const StatusEffectType = {
     Bulwalk: 67, // 防壁
     DivineNectar: 68, // 神獣の蜜
     Paranoia: 69, // 被害妄想
+    Gallop: 70, // 迅走
 };
 
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
