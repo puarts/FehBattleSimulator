@@ -19,6 +19,8 @@
 {
     let skillId = Weapon.PraisePinerAxe;
     // Effective against flying foes. Grants Def+3.
+    // Calculates damage using the lower of foe's Def or Res.
+    CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL(skillId);
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // if unit's HP ≥ 25%,
@@ -33,8 +35,6 @@
         ),
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // Calculates damage using the lower of foe's Def or Res.
-        CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
         // If foe initiates combat or foe's HP ≥ 75% at start of combat,
         IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
             new NumThatIsNode(
@@ -56,10 +56,6 @@
                 RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
             )
         ),
-    ));
-    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // Calculates damage using the lower of foe's Def or Res.
-        CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
     ));
 }
 
