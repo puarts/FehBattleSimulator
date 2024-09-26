@@ -2828,15 +2828,7 @@ class BattleMap {
 
                 // 範囲奥義
                 let specialImg = getSpecialChargedImgTag();
-                specialImg.classList.add("precombat-special-on-map");
-                specialImg.hidden = true;
-                specialImg.style.position = "absolute";
-                let marginPercentage = 20;
-                specialImg.style.top = `${marginPercentage}%`;
-                specialImg.style.left = `${marginPercentage}%`;
-                let percentage = 100 - marginPercentage * 2;
-                specialImg.style.width = `${percentage}%`;
-                specialImg.style.height = `${percentage}%`;
+                specialImg.classList.add('map-aoe-special-icon', 'map-hidden');
                 cell.innerText += specialImg.outerHTML;
 
                 // ワープ不可

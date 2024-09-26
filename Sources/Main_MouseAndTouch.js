@@ -307,8 +307,8 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                 for (let tile of unit.precombatSpecialTiles) {
                     let cellId = getCellId(tile.posX, tile.posY);
                     let cell = document.getElementById(cellId);
-                    Array.from(cell.querySelectorAll('.precombat-special-on-map')).forEach(node => {
-                            node.hidden = false;
+                    Array.from(cell.querySelectorAll('.map-aoe-special-icon')).forEach(node => {
+                            node.classList.remove('map-hidden');
                         }
                     );
                 }
@@ -329,8 +329,8 @@ function dragoverImplForTargetTile(unit, targetTile) {
     for (let tile of g_appData.map.enumerateTiles()) {
         let cellId = getCellId(tile.posX, tile.posY);
         let cell = document.getElementById(cellId);
-        Array.from(cell.querySelectorAll('.precombat-special-on-map')).forEach(node => {
-                node.hidden = true;
+        Array.from(cell.querySelectorAll('.map-aoe-special-icon')).forEach(node => {
+                node.classList.add('map-hidden');
             }
         );
     }
