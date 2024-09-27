@@ -408,6 +408,22 @@ const NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_
     }
 }();
 
+/**
+ * moving to a different space
+ */
+class NumOfTargetsMovingSpacesNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = Unit.calcMoveDistance(unit);
+        env.debug(`${unit.nameWithGroup}の移動距離: ${result}`);
+        return result;
+    }
+}
+
 // 周囲のユニット
 
 class CantoEnv extends NodeEnv {
@@ -484,7 +500,7 @@ class CalcMoveCountForCantoNode extends NumberNode {
     }
 }
 
-class CantoRem extends CalcMoveCountForCantoNode {
+class CantoRemNode extends CalcMoveCountForCantoNode {
     /** @type {number} */
     #n;
 
@@ -507,7 +523,7 @@ class CantoRem extends CalcMoveCountForCantoNode {
     }
 }
 
-const CANTO_REM_PLUS_ONE_NODE = new CantoRem(1);
+const CANTO_REM_PLUS_ONE_NODE = new CantoRemNode(1);
 
 class CantoDistNode extends CalcMoveCountForCantoNode {
     /** @type {number} */
@@ -539,6 +555,22 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
 
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
 const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
+
+/**
+ * TODO: 他のCanto (X)が出てきたらリネームする
+ * Enables [Canto (X)] . If unit's Range = 1, X = 3; otherwise, X = 2.
+ */
+class CantoXNode extends CalcMoveCountForCantoNode {
+    /**
+     * @returns {number}
+     */
+    evaluate(env) {
+        let unit = env.target;
+        let result = unit.attackRange === 1 ? 3 : 2;
+        env.debug(`${unit.nameWithGroup}の再移動距離: ${result}`);
+        return result;
+    }
+}
 
 class EnablesTargetToUseCantoAssistOnTargetsAllyNode extends SkillEffectNode {
     static {
@@ -630,6 +662,22 @@ class CanTargetsAttackTriggerTargetsSpecialNode extends BoolNode {
         let unit = this.getUnit(env);
         let result = unit.hasNormalAttackSpecial();
         env.debug(`${unit.nameWithGroup}が攻撃時に発動する奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
+        return result;
+    }
+}
+
+/**
+ * if unit has an area-of-effect Special equipped,
+ */
+class HasTargetAoeSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasPrecombatSpecial();
+        env.debug(`${unit.nameWithGroup}は範囲奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
         return result;
     }
 }
@@ -1410,6 +1458,22 @@ class FoesMoveNode extends NumberNode {
 
 const FOE_MOVE_NODE = new FoesMoveNode();
 
+/**
+ * When unit deals damage to 2 or more foes at the same time using a Special (including target; including foes dealt 0 damage),
+ */
+class DoesTargetDealDamageTo2OrMoreTargetsFoesAtTheSameTimeUsingSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.damageCountOfSpecialAtTheSameTime;
+        env.debug(`${unit.nameWithGroup}は範囲奥義で2人以上に攻撃したか: ${result}人`);
+        return result >= 2;
+    }
+}
+
 // Unit or BattleContextの値を参照 END
 
 class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
@@ -2132,6 +2196,42 @@ class ForSpacesWithinNSpacesNode extends ForSpacesNode {
     }
 }
 
+class OverrideAoeSpacesNode extends ForSpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let targetTile = env.tile;
+        let xt = targetTile.posX;
+        let yt = targetTile.posY;
+        let xu = unit.placedTile.posX;
+        let yu = unit.placedTile.posY;
+        // 爆風範囲(3x3)の中心
+        let xc = xt;
+        let yc = yt;
+
+        // 位置関係によって中心を計算する
+        if (xt > xu) {
+            xc++;
+        }
+        if (xt < xu) {
+            xc--;
+        }
+        if (yt > yu) {
+            yc++;
+        }
+        if (yt < yu) {
+            yc--;
+        }
+
+        // 爆風範囲内か判定
+        let isInRange = tile => tile.isInRange(xc - 1, xc + 1, yc - 1, yc + 1);
+        return env.battleMap.enumerateTiles(isInRange);
+    }
+}
+
 // Tileを返す END
 
 // ターン開始時
@@ -2276,6 +2376,22 @@ class DealsDamageToTargetAtStartOfTurnNode extends FromPositiveNumberNode {
 }
 
 // 再行動・再移動
+class GrantsAnotherActionNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let success = unit.grantAnotherActionOnAssistIfPossible();
+        if (success) {
+            env.debug(`${unit.nameWithGroup}は再行動`);
+        } else {
+            env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
+        }
+    }
+}
+
 class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

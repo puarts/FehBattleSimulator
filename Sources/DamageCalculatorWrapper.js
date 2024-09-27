@@ -167,14 +167,26 @@ class DamageCalculatorWrapper {
      * @returns {DamageCalcResult}
      */
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
+        this.#initBattleContext(atkUnit, defUnit);
+        atkUnit.precombatContext.initContext();
+        defUnit.precombatContext.initContext();
+
+        this.__applySkillEffectsBeforeCombat(atkUnit, defUnit, DamageType.ActualDamage, false);
+        this.__applySkillEffectsBeforeCombat(defUnit, atkUnit, DamageType.ActualDamage, false);
+        atkUnit.applyReservedState();
+        defUnit.applyReservedState();
+
         // 攻撃対象以外の戦闘前の範囲奥義ダメージ
         let precombatDamages = new Map();
         this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, DamageType.ActualDamage, false);
         this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit, DamageType.ActualDamage, false);
+        atkUnit.applyReservedState();
+        defUnit.applyReservedState();
         if (atkUnit.canActivatePrecombatSpecial() &&
             !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
             // 範囲攻撃ダメージを周囲の敵に反映
-            for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
+            let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
+            for (let tile of tiles) {
                 let isNotDefUnit = tile.placedUnit !== defUnit;
                 let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit);
                 if (tile.placedUnit != null &&
@@ -186,6 +198,7 @@ class DamageCalculatorWrapper {
                     this.writeLog(`atkUnit.battleContext.additionalDamageOfSpecial: ${atkUnit.battleContext.additionalDamageOfSpecial}`);
                     precombatDamages.set(targetUnit, damage);
                     this.writeLog(`${atkUnit.specialInfo.name}により${targetUnit.getNameWithGroup()}に${damage}ダメージ`);
+                    atkUnit.precombatContext.damageCountOfSpecialAtTheSameTime++;
                     targetUnit.takeDamage(damage, true);
                 }
             }
@@ -241,7 +254,7 @@ class DamageCalculatorWrapper {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
-     * @param  {boolean} calcPotentialDamage=false
+     * @param damageType
      * @param  {Number} gameMode=GameMode.Arena
      * @returns {DamageCalcResult}
      */
@@ -252,8 +265,18 @@ class DamageCalculatorWrapper {
         damageType = DamageType.EstimatedDamage,
         gameMode = GameMode.Arena
     ) {
+        // TODO: tmpSpecialCountを使用するようにする
+        let atkSpecialCount = atkUnit.specialCount;
+        this.#initBattleContext(atkUnit, defUnit);
+        if (damageType === DamageType.EstimatedDamage) {
+            this.__applySkillEffectsBeforeCombat(atkUnit, defUnit, DamageType.ActualDamage, false);
+            this.__applySkillEffectsBeforeCombat(defUnit, atkUnit, DamageType.ActualDamage, false);
+            atkUnit.applyReservedState();
+            defUnit.applyReservedState();
+        }
+
         let result = this.calcDamage(atkUnit, defUnit, tileToAttack, damageType, gameMode);
-        if (defUnit != result.defUnit) {
+        if (defUnit !== result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
             let saverUnit = result.defUnit;
             let tile = saverUnit.placedTile;
@@ -261,6 +284,7 @@ class DamageCalculatorWrapper {
             tile.setUnit(defUnit);
         }
 
+        atkUnit.specialCount = atkSpecialCount;
         return result;
     }
 
@@ -291,6 +315,8 @@ class DamageCalculatorWrapper {
 
             this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageType, true);
             this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit, damageType, true);
+            atkUnit.applyReservedState();
+            defUnit.applyReservedState();
 
             // 戦闘前奥義の計算に影響するマップ関連の設定
             {
@@ -308,6 +334,10 @@ class DamageCalculatorWrapper {
             let canTriggerPrecombatSpecial = !atkUnit.battleContext.cannotTriggerPrecombatSpecial;
             let canActivatePrecombatSpecial = atkUnit.canActivatePrecombatSpecial() && canTriggerPrecombatSpecial;
             if (canActivatePrecombatSpecial && !calcPotentialDamage) {
+                if (damageType === DamageType.EstimatedDamage) {
+                    atkUnit.precombatSpecialTiles =
+                        Array.from(this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit));
+                }
                 [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit, damageType);
                 // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
                 defUnit.battleContext.clearPrecombatState();
@@ -327,7 +357,8 @@ class DamageCalculatorWrapper {
                     self.__initSaverUnit(saverUnit, defUnit, damageType);
                     if (canActivatePrecombatSpecial) {
                         // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
-                        for (let tile of this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit.special)) {
+                        let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
+                        for (let tile of tiles) {
                             if (tile.placedUnit === saverUnit) {
                                 [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit, damageType);
                                 saverUnit.battleContext.clearPrecombatState();
@@ -344,6 +375,8 @@ class DamageCalculatorWrapper {
                 atkUnit.battleContext.clearPrecombatState();
             }
 
+            atkUnit.precombatContext.copyTo(atkUnit.battleContext);
+            defUnit.precombatContext.copyTo(defUnit.battleContext);
 
             result = self.calcCombatResult(atkUnit, actualDefUnit, damageType, gameMode);
             result.preCombatDamage = preCombatDamage;
@@ -362,17 +395,24 @@ class DamageCalculatorWrapper {
      * @param {Unit} defUnit
      */
     #initBattleContext(atkUnit, defUnit) {
-        atkUnit.initBattleContext(true);
-        defUnit.initBattleContext(false);
         // 戦闘参加ユニット以外の戦闘コンテキストを初期化する
-        // TODO: リファクタリング
-        let allUnitsOnMap = GeneratorUtil.combine(
-            this.enumerateUnitsInTheSameGroupOnMap(atkUnit),
-            this.enumerateUnitsInTheSameGroupOnMap(defUnit)
-        );
-        for (let unit of allUnitsOnMap) {
+        for (let unit of this.unitManager.enumerateAllUnitsOnMap()) {
             unit.initBattleContext(false);
         }
+        atkUnit.initBattleContext(true);
+        defUnit.initBattleContext(false);
+    }
+
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {number} damageType
+     * @param {boolean} isTargetFoe
+     */
+    __applySkillEffectsBeforeCombat(atkUnit, defUnit, damageType, isTargetFoe) {
+        let env = new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null);
+        env.setName(`戦闘前`).setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+        BEFORE_COMBAT_HOOKS.evaluateWithUnit(atkUnit, env);
     }
 
     /**
@@ -385,7 +425,7 @@ class DamageCalculatorWrapper {
         let env = new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, null);
         let target = isTargetFoe ? "敵" : "周囲";
         env.setName(`範囲奥義前(${target})`).setLogLevel(getSkillLogLevel()).setDamageType(damageType);
-        BEFORE_COMBAT_HOOKS.evaluateWithUnit(atkUnit, env);
+        BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.evaluateWithUnit(atkUnit, env);
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Queensblade:

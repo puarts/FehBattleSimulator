@@ -1880,8 +1880,17 @@ class BattleMap {
         });
     }
 
-    * enumerateRangedSpecialTiles(targetTile, special) {
-        for (let tile of this.__enumerateRangedSpecialTiles(targetTile, special)) {
+    /**
+     * @param {Tile} targetTile
+     * @param {Unit} atkUnit
+     * @returns {Generator<Tile>}
+     */
+    * enumerateRangedSpecialTiles(targetTile, atkUnit) {
+        let env = new BattleMapEnv(this, atkUnit).setTile(targetTile);
+        env.setName('範囲奥義の範囲取得時').setLogLevel(getSkillLogLevel());
+        let tileGenerators = AOE_SPECIAL_SPACES_HOOKS.evaluateWithUnit(atkUnit, env);
+        yield* IterUtil.concat(...tileGenerators);
+        for (let tile of this.__enumerateRangedSpecialTiles(targetTile, atkUnit.special)) {
             if (tile != null) {
                 yield tile;
             }
@@ -2318,6 +2327,9 @@ class BattleMap {
     }
 
     __canWarp(targetTile, warpUnit) {
+        if (warpUnit.canWarpForcibly) {
+            return true;
+        }
         if (warpUnit.canActivatePass()) return true;
         if (targetTile.divineVein === DivineVeinType.Green &&
             targetTile.divineVeinGroup !== warpUnit.groupId) {
@@ -2539,11 +2551,15 @@ class BattleMap {
 
     updateMovableAndAttackableTilesForUnit(unit) {
         unit.movableTiles = [];
+        unit.movableTilesIgnoringWarpBubble = [];
         unit.attackableTiles = [];
         unit.assistableTiles = [];
         unit.teleportOnlyTiles = [];
 
         let tilesWithoutTeleport = new Set(this.enumerateMovableTiles(unit, false, true, true));
+        unit.canWarpForcibly = true;
+        unit.movableTilesIgnoringWarpBubble = Array.from(this.enumerateMovableTiles(unit, false));
+        unit.canWarpForcibly = false;
         // ユニットの移動可能範囲、攻撃可能範囲を更新
         for (let tile of this.enumerateMovableTiles(unit, false)) {
             if (unit.movableTiles.includes(tile)) {
@@ -2809,6 +2825,17 @@ class BattleMap {
                     thisCellWidth += 2;
                     thisCellHeight += 2;
                 }
+
+                // 範囲奥義
+                let specialImg = getSpecialChargedImgTag();
+                specialImg.classList.add('map-aoe-special-icon', 'map-hidden');
+                cell.innerText += specialImg.outerHTML;
+
+                // ワープ不可
+                let img = document.createElement("img");
+                img.src = statusEffectTypeToIconFilePath(StatusEffectType.WarpBubble);
+                img.classList.add('map-warp-bubble-icon', 'map-hidden');
+                cell.innerText += img.outerHTML;
 
                 // セルの中身を div で囲む
                 cell.innerText = "<div class='cell-root' style='position:relative;width:" + thisCellWidth + "px;height:" + thisCellHeight + "px;'>" + cell.innerText + "</div>";

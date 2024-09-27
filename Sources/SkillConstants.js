@@ -1929,6 +1929,9 @@ const Weapon = {
     SuaveBlade: 3016, // 珍獣騎士の剣
     DvergrWayfinder: 3018, // ニザヴェリルの理槍
     PraisePinerAxe: 3021, // 称賛の希求の大斧
+
+    // 紋章士シグルド
+    HolyWarSpear: 3023, // 聖騎士の槍
 };
 
 const Support = {
@@ -2155,6 +2158,7 @@ const Special = {
     CurvedShot: 2986, // 曲射
 
     // 専用奥義
+    Override: 3024, // オーバードライヴ
     SeidrBurst: 3019, // 連魔弾
     Sandstorm: 3011, // 砂陣
     DualIceMirrors: 3004, // 双氷の聖鏡
@@ -2900,6 +2904,8 @@ const PassiveB = {
     
     ShieldFighter: 3006, // 連盾隊形
 
+    Momentum4: 3025, // 助走4
+
     // 専用B
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!
@@ -3518,15 +3524,18 @@ const EmblemHero = {
     Marth: 1082,
     Ike: 1105,
     Celica: 1139,
+    Sigurd: 1177,
 };
 
 // エンゲージしたときの奥義アイコン
 const EngagedSpecialIcon = {};
-EngagedSpecialIcon[EmblemHero.None] = g_imageRootPath + "Special.png";
-const g_engagedSpecialIconRoot = g_skillIconRootPath + "EngagedSpecial/";
-EngagedSpecialIcon[EmblemHero.Marth] = g_engagedSpecialIconRoot + "Marth_Of_Beginnings_ES.webp";
-EngagedSpecialIcon[EmblemHero.Ike] = g_engagedSpecialIconRoot + "Ike_Of_Radiance_ES.webp";
-EngagedSpecialIcon[EmblemHero.Celica] = g_engagedSpecialIconRoot + "Celica_Of_Echoes_ES.webp";
+EngagedSpecialIcon[EmblemHero.None] = `${g_imageRootPath}Special.png`;
+const g_engagedSpecialIconRoot = `${g_skillIconRootPath}EngagedSpecial/`;
+EngagedSpecialIcon[EmblemHero.Marth] = `${g_engagedSpecialIconRoot}Marth_Of_Beginnings_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_imageRootPath}Special.png`;
+// EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 
 const EffectiveType = {
     None: -1,

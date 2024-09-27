@@ -12,14 +12,14 @@ function getPositionFromCellId(cellId) {
     return [x, y];
 }
 
-function updateCellBgColor(posX, posY, bgColor, boderColor = null) {
+function updateCellBgColor(posX, posY, bgColor, borderColor = null) {
     let cellId = getCellId(posX, posY);
     let cell = document.getElementById(cellId);
     if (cell != null) {
-        if (cell.style.backgroundColor != bgColor) {
+        if (cell.style.backgroundColor !== bgColor) {
             cell.style.backgroundColor = bgColor;
-            if (boderColor != null) {
-                cell.style.boderColor = boderColor;
+            if (borderColor != null) {
+                cell.style.boderColor = borderColor;
             }
         }
     }

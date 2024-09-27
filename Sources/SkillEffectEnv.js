@@ -311,6 +311,11 @@ class NodeEnv {
         return this;
     }
 
+    setTile(tile) {
+        this.tile = tile;
+        return this;
+    }
+
     setBattleMap(battleMap) {
         this.battleMap = battleMap;
         return this;

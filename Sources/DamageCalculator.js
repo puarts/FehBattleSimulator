@@ -1045,6 +1045,7 @@ class DamageCalculator {
             this.writeSimpleLog(`範囲奥義によるダメージ<span style="color: #ff0000">${totalDamageWithOverkill}</span>(HP: → ${defUnit.restHp})`);
             this.writeLog(defUnit.name + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
         }
+        atkUnit.precombatContext.damageCountOfSpecialAtTheSameTime++;
         return [totalDamage, totalDamageWithOverkill];
     }
 

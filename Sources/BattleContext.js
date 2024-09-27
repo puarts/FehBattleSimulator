@@ -475,6 +475,9 @@ class BattleContext {
         this.usesDefInsteadOfAtkWhenSpecial = false;
         this.ratioForUsingAnotherStatWhenSpecial = 0;
 
+        // 奥義によるダメージを与えた敵の数
+        this.damageCountOfSpecialAtTheSameTime = 0;
+
         //
         // フック関数
         // 固定ダメージ

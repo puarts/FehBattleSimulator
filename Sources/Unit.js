@@ -344,6 +344,27 @@ class ActionContext {
     }
 }
 
+/**
+ * TODO: リファクタリング
+ * BattleContextについて範囲奥義で設定したコンテキストを戦闘開始時に消してしまうので両方で使用可能な値の扱いが非常に複雑になってしまっているので修正する
+ */
+class PrecombatContext {
+    constructor() {
+        this.initContext();
+    }
+
+    initContext() {
+        this.damageCountOfSpecialAtTheSameTime = 0;
+    }
+
+    /**
+     * @param {BattleContext} context
+     */
+    copyTo(context) {
+        context.damageCountOfSpecialAtTheSameTime = this.damageCountOfSpecialAtTheSameTime;
+    }
+}
+
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
     #hpAddAfterEnteringBattle = 0;
@@ -376,6 +397,7 @@ class Unit extends BattleMapElement {
 
         this.battleContext = new BattleContext();
         this.actionContext = new ActionContext();
+        this.precombatContext = new PrecombatContext();
 
         /** @type {number} */
         this.slotOrder = 0;
@@ -577,6 +599,7 @@ class Unit extends BattleMapElement {
         this.initPosY = 0;
 
         // 元の場所に再移動の際に使用
+        // TODO: rename
         this.fromPosX = 0;
         this.fromPosY = 0;
 
@@ -651,9 +674,11 @@ class Unit extends BattleMapElement {
 
         // 攻撃可能なタイル
         this.movableTiles = [];
+        this.movableTilesIgnoringWarpBubble = [];
         this.attackableTiles = [];
         this.assistableTiles = [];
         this.teleportOnlyTiles = [];
+        this.precombatSpecialTiles = [];
 
         // シリアライズする時に一時的に使用
         this.ownerType = 0;
@@ -700,6 +725,8 @@ class Unit extends BattleMapElement {
 
         // TODO: リファクタリングする
         this.isActionDoneDuringMoveCommand = false;
+
+        this.canWarpForcibly = false;
     }
 
     /**
@@ -3319,6 +3346,9 @@ class Unit extends BattleMapElement {
             }
             return this.getNormalMoveCount() + 1;
         }
+        if (this.hasStatusEffect(StatusEffectType.Gallop)) {
+            return this.getNormalMoveCount() + 2;
+        }
         return this._moveCount;
     }
 
@@ -5853,7 +5883,11 @@ class Unit extends BattleMapElement {
     }
 
     canActivatePrecombatSpecial() {
-        return isPrecombatSpecial(this.special) && Number(this.specialCount) === 0;
+        return this.hasPrecombatSpecial() && Number(this.specialCount) === 0;
+    }
+
+    hasPrecombatSpecial() {
+        return isPrecombatSpecial(this.special);
     }
 
     /**

@@ -1,4 +1,160 @@
 // noinspection JSUnusedLocalSymbols
+// 紋章士シグルド
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Sigurd);
+    // Enables [Canto (X)] . If unit's Range = 1, X = 3; otherwise, X = 2.
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoXNode());
+
+    // Canto (X)]
+    // After an attack, Assist skill, or structure destruction, unit can move X spaces (once per turn; only highest value applied; does not stack).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // 1 turn (does not stack; excludes cavalry with Range = 2).
+        IF_NODE(NOT_NODE(AND_NODE(
+                EQ_NODE(new TargetsMoveTypeNode(), MoveType.Cavalry),
+                EQ_NODE(new TargetsRangeNode(), 2))),
+            // grants "unit can move 1 extra space" to unit for
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Boosts Special damage by
+        new BoostsDamageWhenSpecialTriggersNode(
+            // number of spaces from start position to end position of whoever initiated combat (max 4) × 2.
+            MULT_NODE(
+                new EnsureMaxNode(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT,
+                    4),
+                2),
+        ),
+    ));
+}
+
+// 助走4
+{
+    let skillId = PassiveB.Momentum4;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit or foe initiates combat after moving to a different space,
+        IF_NODE(new IfUnitOrFoeInitiatesCombatAfterMovingToADifferentSpaceNode(),
+            // inflicts Atk/Def-4 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(4, 0, 4, 0),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and deals damage during combat =
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                // number of spaces from start position to end position of whoever initiated combat × 4
+                // (max 20; including when dealing damage with a Special triggered before combat).
+                new EnsureMaxNode(MULT_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 4), 20),
+            ),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(new IfUnitOrFoeInitiatesCombatAfterMovingToADifferentSpaceNode(),
+            // and deals damage during combat =
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                // number of spaces from start position to end position of whoever initiated combat × 4
+                // (max 20; including when dealing damage with a Special triggered before combat).
+                new EnsureMaxNode(MULT_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 4), 20),
+            ),
+        ),
+    ));
+
+    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat after moving to a different space,
+        // TODO: rename and make alias
+        IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+                GTE_NODE(new NumOfTargetsMovingSpacesNode(), 1)),
+            // triggers the following effects depending on unit's equipped Special:
+            // if unit has an area-of-effect Special equipped,
+            IF_NODE(new HasTargetAoeSpecialNode(),
+                new NumThatIsNode(
+                    // grants Special cooldown count-X to unit before Special triggers before combat (excluding Rokkr area-of-effect Specials);
+                    new GrantsSpecialCooldownCountMinusOnTargetNode(READ_NUM_NODE),
+                    // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
+                    COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
+                ),
+            ),
+            // if unit has a Special that triggers when unit attacks
+            // (excluding area-of-effect Specials),
+            // grants Special cooldown count-X to unit before unit's first attack during combat
+            // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
+        ),
+    ))
+}
+
+// オーバードライヴ
+{
+    let skillId = Special.Override;
+
+    // 範囲奥義
+    // If unit's Special is ready, before combat this unit initiates,
+    // foes in an area near target take damage equal to 1.5 x (unit's Atk minus foe's Def or Res).
+    RANGED_ATTACK_SPECIAL_SET.add(skillId);
+    RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.set(skillId, 1.5);
+
+    // 十字範囲
+    AOE_SPECIAL_SPACES_HOOKS.addSkill(skillId, () =>
+        new OverrideAoeSpacesNode(),
+    );
+
+    // When unit deals damage to 2 or more foes at the same time using a Special (including target; including foes dealt 0 damage),
+    // grants another action to unit after combat (once per turn).
+    AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(new DoesTargetDealDamageTo2OrMoreTargetsFoesAtTheSameTimeUsingSpecialNode(),
+            new GrantsAnotherActionNode(),
+        ),
+    ));
+
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's or foe's Special is ready or triggered before or during this combat,
+        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            // reduces damage from foe's next attack by 40% during combat (once per combat; excluding area-of-effect Specials).
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
+// 聖騎士の槍
+{
+    let skillId = Weapon.HolyWarSpear;
+    // Enables (Canto (3)] .
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(3));
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At the start of turn, grants [Gallop) to unit.
+        new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Gallop),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + number of foes within 3 rows or 3 columns centered on unit × 3 (max 14),
+            new GrantsAllStatsPlusNToUnitDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(5, MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)),
+                    14,
+                )
+            ),
+            // deals damage = 20% of unit's Def (including when dealing damage with a Special triggered before combat), and
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_DEF_DURING_COMBAT_NODE)),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials), and
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // deals damage = 20% of unit's Def (including when dealing damage with a Special triggered before combat), and
+            new UnitDealsDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+        ),
+    ))
+}
+
 // 攻撃守備の備え3
 {
     let skillId = PassiveA.AtkDefPrime3;
@@ -19,6 +175,8 @@
 {
     let skillId = Weapon.PraisePinerAxe;
     // Effective against flying foes. Grants Def+3.
+    // Calculates damage using the lower of foe's Def or Res.
+    CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL(skillId);
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // if unit's HP ≥ 25%,
@@ -33,8 +191,6 @@
         ),
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // Calculates damage using the lower of foe's Def or Res.
-        CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
         // If foe initiates combat or foe's HP ≥ 75% at start of combat,
         IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
             new NumThatIsNode(
@@ -56,10 +212,6 @@
                 RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
             )
         ),
-    ));
-    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // Calculates damage using the lower of foe's Def or Res.
-        CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
     ));
 }
 
@@ -242,7 +394,7 @@
 {
     let skillId = Weapon.SentinelBow;
     // Accelerates Special trigger (cooldown count-1). Effective against flying foes.
-    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or foe's Range = 2,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, FOES_RANGE_IS_2_NODE),
             // foe cannot trigger Specials during combat or area-of-effect Specials (excluding Røkkr area-of-effect Specials).
@@ -2280,7 +2432,7 @@
 // 清風明月の夏祭の槍
 {
     let skillId = Weapon.BreezySpear;
-    BEFORE_COMBAT_HOOKS.addSkill(skillId, () =>
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // 範囲奥義無効
             UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,

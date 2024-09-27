@@ -72,8 +72,7 @@ function setUnitToTile(unit, tile) {
     if (tile != null) {
         tile.placedUnit = unit;
         unit.setPos(tile.posX, tile.posY);
-    }
-    else {
+    } else {
         unit.setPos(-1, -1);
     }
 }
@@ -123,6 +122,10 @@ class Tile extends BattleMapElement {
 
         /** @type {Tile} */
         this.snapshot = null;
+    }
+
+    toString() {
+        return `Tile(${this.posX}, ${this.posY})`;
     }
 
     isInXRange(fromX, toX) {
@@ -440,8 +443,17 @@ class Tile extends BattleMapElement {
             return 0;
         }
 
-        if (this.__isForestType() && unit.moveType === MoveType.Infantry && unit.moveCount === 1) {
+        // 再移動中は侵入コストが1より大きいマスには入れない
+        if (unit.isCantoActivating) {
+            if (this._moveWeights[unit.moveType] > 1) {
+                return CanNotReachTile;
+            }
+        }
+
+        if (this.__isForestType() && unit.moveType === MoveType.Infantry &&
+            unit.moveCount === 1 && !unit.isCantoActivating) {
             // 歩行に1マス移動制限がかかっている場合は森地形のウェイトは通常地形と同じ
+            // 再移動中は残り移動距離1に対する侵入保証は無い
             return 1;
         }
 
@@ -638,7 +650,7 @@ class Tile extends BattleMapElement {
                 continue;
             }
 
-            let isObstructTile = weight == ObstructTile;
+            let isObstructTile = weight === ObstructTile;
             if (isObstructTile) {
                 // 進軍阻止
                 weight = 1;
@@ -699,9 +711,15 @@ class Tile extends BattleMapElement {
         ignoreWeightsExceptCanNotReach,
         ignoresUnits,
         tracedDepthDict,
-        currentDepth = 0
+        currentDepth = 0,
+        isEnteringObstructTile = false,
     ) {
         for (let neighborTile of this._neighbors) {
+            // 進軍阻止のマスに入っている場合は通過不可能
+            // 戻ることもできないが戻るマスはすでに登録されているはず
+            if (isEnteringObstructTile) {
+                continue;
+            }
             let key = neighborTile.id;
             let hasKey = key in tracedDepthDict;
             if (hasKey) {
@@ -716,10 +734,10 @@ class Tile extends BattleMapElement {
                 weight = neighborTile.getMoveWeight(unit, ignoresUnits, false);
             }
 
+            // 進軍阻止
             let isObstructTile = weight === ObstructTile;
             if (isObstructTile) {
-                // 進軍阻止
-                weight = 1;
+                weight = Math.max(1, neighborTile._moveWeights[unit.moveType]);
             }
 
             if (ignoreWeightsExceptCanNotReach) {
@@ -747,7 +765,7 @@ class Tile extends BattleMapElement {
 
             neighborTile.getNeighborTilesImpl(
                 result, unit, maxDepth, ignoreWeights, ignoreWeightsExceptCanNotReach, ignoresUnits,
-                tracedDepthDict, nextDepth);
+                tracedDepthDict, nextDepth, isObstructTile);
         }
     }
 

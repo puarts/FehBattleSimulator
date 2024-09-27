@@ -30,7 +30,12 @@ const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 const AT_START_OF_ENEMY_PHASE_HOOK = new SkillEffectHooks();
 
 /**
- * 戦闘前(主に範囲奥義を発動するかどうかの判定など)
+ * 範囲奥義判定前(主に範囲奥義を発動するかどうかの判定など)
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘開始前
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_COMBAT_HOOKS = new SkillEffectHooks();
 
@@ -136,7 +141,7 @@ const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
- * 範囲奥義前
+ * 範囲奥義前（範囲奥義発動直前）
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_AOE_SPECIAL_HOOKS = new SkillEffectHooks();
 
@@ -221,3 +226,7 @@ const CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHoo
  * Foes with Range = 2 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
 const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
+const AOE_SPECIAL_SPACES_HOOKS = new SkillEffectHooks();

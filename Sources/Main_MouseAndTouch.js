@@ -23,6 +23,8 @@ const g_keyboardManager = new KeyboardManager();
 let g_draggingElemId = "";
 /** @type {Queue<Tile>} */
 let g_dragoverTileHistory = new Queue(10);
+let g_currentTile = null;
+let g_attackTile = null;
 let g_dragoverTargetTileForCalcSummary = null;
 
 let g_doubleClickChecker = new DoubleClickChecker();
@@ -94,6 +96,8 @@ function f_dragstart(event) {
     event.dataTransfer.setData("text", event.target.id);
     g_draggingElemId = event.target.id;
     g_dragoverTileHistory.clear();
+    g_currentTile = null;
+    g_attackTile = null;
 }
 
 /***** ドラッグ要素がドロップ要素に重なっている間の処理 *****/
@@ -250,28 +254,63 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
             }
 
             if (g_appData.showMovableRangeWhenMovingUnit) {
-                let currentTile = g_dragoverTileHistory.lastValue;
+                // 全てのタイルの背景色を消す
+                for (let tile of g_appData.map.enumerateTiles()) {
+                    updateCellBgColor(tile.posX, tile.posY, null);
+                }
+                let currentTile = g_currentTile;
                 const alpha = "a0";
                 for (let tile of unit.attackableTiles) {
                     let color = "#feccc5";
                     color = "#ff8888" + alpha;
                     updateCellBgColor(tile.posX, tile.posY, color);
                 }
-                for (let tile of unit.movableTiles) {
+                for (let tile of unit.movableTilesIgnoringWarpBubble) {
+                    if (unit.movableTiles.includes(tile)) {
+                        let color = "#cbd6ee";
+                        color = "#0066ff" + alpha;
+                        if (tile.getMoveWeight(unit, false) === ObstructTile) {
+                            color = "#cccc00" + alpha;
+                        }
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    } else {
+                        let cellId = getCellId(tile.posX, tile.posY);
+                        let cell = document.getElementById(cellId);
+                        if (tile.isUnitPlacable(unit)) {
+                            Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
+                                    node.classList.remove('map-hidden');
+                                }
+                            );
+                        }
+                    }
+                }
+                for (let tile of unit.teleportOnlyTiles) {
                     let color = "#cbd6ee";
-                    color = "#88aaff" + alpha;
+                    color = "#88ffff" + alpha;
                     if (tile === currentTile) {
                         color = "#8888ff" + alpha;
                     }
                     updateCellBgColor(tile.posX, tile.posY, color);
                 }
-                for (let tile of unit.teleportOnlyTiles) {
-                    let color = "#cbd6ee";
-                    color = "#aaccff" + alpha;
-                    if (tile === currentTile) {
-                        color = "#8888ff" + alpha;
+                // 現在のタイルもしくは攻撃位置のタイルに色をつける
+                for (let tile of g_appData.map.enumerateTiles()) {
+                    let color = null;
+                    color = "#00ccff" + alpha;
+                    if (tile === currentTile && g_attackTile == null) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
                     }
-                    updateCellBgColor(tile.posX, tile.posY, color);
+                    if (tile === g_attackTile) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    }
+                }
+                // 範囲奥義表示
+                for (let tile of unit.precombatSpecialTiles) {
+                    let cellId = getCellId(tile.posX, tile.posY);
+                    let cell = document.getElementById(cellId);
+                    Array.from(cell.querySelectorAll('.map-aoe-special-icon')).forEach(node => {
+                            node.classList.remove('map-hidden');
+                        }
+                    );
                 }
             }
         }
@@ -283,6 +322,18 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
 function dragoverImplForTargetTile(unit, targetTile) {
     // ターゲットのタイルが変化していなければ再計算しない
     if (g_dragoverTargetTileForCalcSummary === targetTile) { return; }
+    g_attackTile = null;
+    g_currentTile = targetTile;
+    unit.precombatSpecialTiles = [];
+    // 範囲奥義を非表示に
+    for (let tile of g_appData.map.enumerateTiles()) {
+        let cellId = getCellId(tile.posX, tile.posY);
+        let cell = document.getElementById(cellId);
+        Array.from(cell.querySelectorAll('.map-aoe-special-icon')).forEach(node => {
+                node.classList.add('map-hidden');
+            }
+        );
+    }
 
     g_app.clearDamageCalcSummary();
 
@@ -298,9 +349,10 @@ function dragoverImplForTargetTile(unit, targetTile) {
             unit.groupId !== unitPlacedOnTargetTile.groupId;
         if (isThereEnemyOnTile) {
             let attackTile = findBestActionTile(targetTile, unit.attackRange);
+            g_attackTile = attackTile;
             // TODO: 応急処置なのできちんと修正する
-            if (attackTile === null) {
-                attackTile = unit.placedTile;
+            // ダメージプレビューではplacedTileは変更できないのでfromPosにattackTileの情報を入れて無理やり移動距離を計算するようにしている
+            if (attackTile != null) {
                 unit.fromPosX = attackTile.posX;
                 unit.fromPosY = attackTile.posY;
             }
@@ -511,6 +563,14 @@ function dropEventImpl(objId, dropTargetId) {
 
     g_app.clearDamageCalcSummary();
     g_app.showItemInfo(objId);
+    for (let tile of g_appData.map.enumerateTiles()) {
+        let cellId = getCellId(tile.posX, tile.posY);
+        let cell = document.getElementById(cellId);
+        Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
+                node.classList.add('map-hidden');
+            }
+        );
+    }
 
     // ユニットのドロップ処理
     {
