@@ -48,6 +48,15 @@
                 new EnsureMaxNode(MULT_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 4), 20),
             ),
         ),
+        // if unit has a Special that triggers when unit attacks
+        // (excluding area-of-effect Specials),
+        IF_NODE(new CanTargetsAttackTriggerTargetsSpecialNode(),
+            // grants Special cooldown count-X to unit before unit's first attack during combat
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(
+                // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
+                COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
+            ),
+        ),
     ));
 
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -76,10 +85,6 @@
                     COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
                 ),
             ),
-            // if unit has a Special that triggers when unit attacks
-            // (excluding area-of-effect Specials),
-            // grants Special cooldown count-X to unit before unit's first attack during combat
-            // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
         ),
     ))
 }
