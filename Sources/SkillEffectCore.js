@@ -99,8 +99,12 @@ class SkillEffectHooks {
                 type = '紋章士'
                 break;
         }
-        // TODO: 紋章士に対応する
-        let name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
+        let name;
+        if (prefix === 'e') {
+            name = Object.keys(EmblemHero).find(key => EmblemHero[key].toString() === suffix);
+        } else {
+            name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
+        }
         env?.info(`${env.skillOwner.nameWithGroup}の${type}${name}を評価`);
     }
 

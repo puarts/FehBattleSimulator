@@ -1,4 +1,36 @@
 // noinspection JSUnusedLocalSymbols
+// 紋章士シグルド
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Sigurd);
+    // Enables [Canto (X)] . If unit's Range = 1, X = 3; otherwise, X = 2.
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoXNode());
+
+    // Canto (X)]
+    // After an attack, Assist skill, or structure destruction, unit can move X spaces (once per turn; only highest value applied; does not stack).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // 1 turn (does not stack; excludes cavalry with Range = 2).
+        IF_NODE(NOT_NODE(AND_NODE(
+                EQ_NODE(new TargetsMoveTypeNode(), MoveType.Cavalry),
+                EQ_NODE(new TargetsRangeNode(), 2))),
+            // grants "unit can move 1 extra space" to unit for
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Boosts Special damage by
+        new BoostsDamageWhenSpecialTriggersNode(
+            // number of spaces from start position to end position of whoever initiated combat (max 4) × 2.
+            MULT_NODE(
+                new EnsureMaxNode(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT,
+                    4),
+                2),
+        ),
+    ));
+}
+
 // 助走4
 {
     let skillId = PassiveB.Momentum4;
