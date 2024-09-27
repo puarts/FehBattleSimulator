@@ -7465,15 +7465,18 @@ class BattleSimulatorBase {
 
             if (unit.isActionDone) {
                 unit.isActionDoneDuringMoveCommand = true;
+                unit.applyEndActionSkills();
+                // 同時タイミングに付与された天脈を消滅させる
+                g_appData.map.applyReservedDivineVein();
             }
 
             if (!unit.isActionDone && endAction) {
                 unit.endAction();
                 unit.deactivateCanto();
+                unit.applyEndActionSkills();
+                // 同時タイミングに付与された天脈を消滅させる
+                g_appData.map.applyReservedDivineVein();
             }
-            unit.applyEndActionSkills();
-            // 同時タイミングに付与された天脈を消滅させる
-            g_appData.map.applyReservedDivineVein();
 
             self.__updateDistanceFromClosestEnemy(unit);
 
