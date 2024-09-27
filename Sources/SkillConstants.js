@@ -2904,6 +2904,8 @@ const PassiveB = {
     
     ShieldFighter: 3006, // 連盾隊形
 
+    Momentum4: 3025, // 助走4
+
     // 専用B
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!

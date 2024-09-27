@@ -30,7 +30,12 @@ const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 const AT_START_OF_ENEMY_PHASE_HOOK = new SkillEffectHooks();
 
 /**
- * 戦闘前(主に範囲奥義を発動するかどうかの判定など)
+ * 範囲奥義判定前(主に範囲奥義を発動するかどうかの判定など)
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘開始前
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_COMBAT_HOOKS = new SkillEffectHooks();
 
@@ -136,7 +141,7 @@ const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
- * 範囲奥義前
+ * 範囲奥義前（範囲奥義発動直前）
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_AOE_SPECIAL_HOOKS = new SkillEffectHooks();
 

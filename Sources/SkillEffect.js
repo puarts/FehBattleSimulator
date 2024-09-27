@@ -408,6 +408,22 @@ const NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_
     }
 }();
 
+/**
+ * moving to a different space
+ */
+class NumOfTargetsMovingSpacesNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = Unit.calcMoveDistance(unit);
+        env.debug(`${unit.nameWithGroup}の移動距離: ${result}`);
+        return result;
+    }
+}
+
 // 周囲のユニット
 
 class CantoEnv extends NodeEnv {
@@ -646,6 +662,22 @@ class CanTargetsAttackTriggerTargetsSpecialNode extends BoolNode {
         let unit = this.getUnit(env);
         let result = unit.hasNormalAttackSpecial();
         env.debug(`${unit.nameWithGroup}が攻撃時に発動する奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
+        return result;
+    }
+}
+
+/**
+ * if unit has an area-of-effect Special equipped,
+ */
+class HasTargetAoeSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasPrecombatSpecial();
+        env.debug(`${unit.nameWithGroup}は範囲奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
         return result;
     }
 }

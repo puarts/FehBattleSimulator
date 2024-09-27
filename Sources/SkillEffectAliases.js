@@ -127,7 +127,8 @@ const IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY = (...nodes) =>
  * @constructor
  */
 const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL = skillId => {
-    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    // TODO: 範囲奥義発動直前のタイミングに変更するか検討する
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(

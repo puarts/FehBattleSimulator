@@ -351,8 +351,8 @@ function dragoverImplForTargetTile(unit, targetTile) {
             let attackTile = findBestActionTile(targetTile, unit.attackRange);
             g_attackTile = attackTile;
             // TODO: 応急処置なのできちんと修正する
-            if (attackTile === null) {
-                attackTile = unit.placedTile;
+            // ダメージプレビューではplacedTileは変更できないのでfromPosにattackTileの情報を入れて無理やり移動距離を計算するようにしている
+            if (attackTile != null) {
                 unit.fromPosX = attackTile.posX;
                 unit.fromPosY = attackTile.posY;
             }

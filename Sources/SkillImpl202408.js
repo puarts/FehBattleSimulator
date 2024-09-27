@@ -1,4 +1,57 @@
 // noinspection JSUnusedLocalSymbols
+// 助走4
+{
+    let skillId = PassiveB.Momentum4;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit or foe initiates combat after moving to a different space,
+        IF_NODE(new IfUnitOrFoeInitiatesCombatAfterMovingToADifferentSpaceNode(),
+            // inflicts Atk/Def-4 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(4, 0, 4, 0),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and deals damage during combat =
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                // number of spaces from start position to end position of whoever initiated combat × 4
+                // (max 20; including when dealing damage with a Special triggered before combat).
+                new EnsureMaxNode(MULT_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 4), 20),
+            ),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(new IfUnitOrFoeInitiatesCombatAfterMovingToADifferentSpaceNode(),
+            // and deals damage during combat =
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                // number of spaces from start position to end position of whoever initiated combat × 4
+                // (max 20; including when dealing damage with a Special triggered before combat).
+                new EnsureMaxNode(MULT_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 4), 20),
+            ),
+        ),
+    ));
+
+    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat after moving to a different space,
+        // TODO: rename and make alias
+        IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+                GTE_NODE(new NumOfTargetsMovingSpacesNode(), 1)),
+            // triggers the following effects depending on unit's equipped Special:
+            // if unit has an area-of-effect Special equipped,
+            IF_NODE(new HasTargetAoeSpecialNode(),
+                new NumThatIsNode(
+                    // grants Special cooldown count-X to unit before Special triggers before combat (excluding Rokkr area-of-effect Specials);
+                    new GrantsSpecialCooldownCountMinusOnTargetNode(READ_NUM_NODE),
+                    // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
+                    COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
+                ),
+            ),
+            // if unit has a Special that triggers when unit attacks
+            // (excluding area-of-effect Specials),
+            // grants Special cooldown count-X to unit before unit's first attack during combat
+            // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
+        ),
+    ))
+}
+
 // オーバードライヴ
 {
     let skillId = Special.Override;
@@ -309,7 +362,7 @@
 {
     let skillId = Weapon.SentinelBow;
     // Accelerates Special trigger (cooldown count-1). Effective against flying foes.
-    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or foe's Range = 2,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, FOES_RANGE_IS_2_NODE),
             // foe cannot trigger Specials during combat or area-of-effect Specials (excluding Røkkr area-of-effect Specials).
@@ -2347,7 +2400,7 @@
 // 清風明月の夏祭の槍
 {
     let skillId = Weapon.BreezySpear;
-    BEFORE_COMBAT_HOOKS.addSkill(skillId, () =>
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // 範囲奥義無効
             UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,

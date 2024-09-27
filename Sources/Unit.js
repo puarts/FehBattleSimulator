@@ -599,6 +599,7 @@ class Unit extends BattleMapElement {
         this.initPosY = 0;
 
         // 元の場所に再移動の際に使用
+        // TODO: rename
         this.fromPosX = 0;
         this.fromPosY = 0;
 
@@ -5882,7 +5883,11 @@ class Unit extends BattleMapElement {
     }
 
     canActivatePrecombatSpecial() {
-        return isPrecombatSpecial(this.special) && Number(this.specialCount) === 0;
+        return this.hasPrecombatSpecial() && Number(this.specialCount) === 0;
+    }
+
+    hasPrecombatSpecial() {
+        return isPrecombatSpecial(this.special);
     }
 
     /**

@@ -72,8 +72,7 @@ function setUnitToTile(unit, tile) {
     if (tile != null) {
         tile.placedUnit = unit;
         unit.setPos(tile.posX, tile.posY);
-    }
-    else {
+    } else {
         unit.setPos(-1, -1);
     }
 }
