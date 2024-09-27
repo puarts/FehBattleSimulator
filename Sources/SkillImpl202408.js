@@ -6,14 +6,10 @@
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoXNode());
 
-    // Canto (X)]
-    // After an attack, Assist skill, or structure destruction, unit can move X spaces (once per turn; only highest value applied; does not stack).
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // 1 turn (does not stack; excludes cavalry with Range = 2).
-        IF_NODE(NOT_NODE(AND_NODE(
-                EQ_NODE(new TargetsMoveTypeNode(), MoveType.Cavalry),
-                EQ_NODE(new TargetsRangeNode(), 2))),
+        UNLESS_NODE(IS_TARGET_CAVALRY_WITH_RANGE_2_NODE,
             // grants "unit can move 1 extra space" to unit for
             new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
         ),
