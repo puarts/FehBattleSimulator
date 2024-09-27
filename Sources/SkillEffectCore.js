@@ -656,6 +656,8 @@ class IfNode extends SkillEffectNode {
 
 const IF_NODE = (condNode, ...stmtNodes) => new IfNode(condNode, ...stmtNodes);
 
+const UNLESS_NODE = (condNode, ...stmtNodes) => IF_NODE(NOT_NODE(condNode), ...stmtNodes);
+
 class TernaryConditionalNumberNode extends NumberNode {
     /** @type {BoolNode} */
     #condNode;

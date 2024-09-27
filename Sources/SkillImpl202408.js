@@ -6,14 +6,10 @@
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoXNode());
 
-    // Canto (X)]
-    // After an attack, Assist skill, or structure destruction, unit can move X spaces (once per turn; only highest value applied; does not stack).
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // 1 turn (does not stack; excludes cavalry with Range = 2).
-        IF_NODE(NOT_NODE(AND_NODE(
-                EQ_NODE(new TargetsMoveTypeNode(), MoveType.Cavalry),
-                EQ_NODE(new TargetsRangeNode(), 2))),
+        UNLESS_NODE(IS_TARGET_CAVALRY_WITH_RANGE_2_NODE,
             // grants "unit can move 1 extra space" to unit for
             new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
         ),
@@ -48,6 +44,15 @@
                 new EnsureMaxNode(MULT_NODE(NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE, 4), 20),
             ),
         ),
+        // if unit has a Special that triggers when unit attacks
+        // (excluding area-of-effect Specials),
+        IF_NODE(new CanTargetsAttackTriggerTargetsSpecialNode(),
+            // grants Special cooldown count-X to unit before unit's first attack during combat
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(
+                // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
+                COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
+            ),
+        ),
     ));
 
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -76,10 +81,6 @@
                     COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
                 ),
             ),
-            // if unit has a Special that triggers when unit attacks
-            // (excluding area-of-effect Specials),
-            // grants Special cooldown count-X to unit before unit's first attack during combat
-            // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
         ),
     ))
 }

@@ -135,3 +135,9 @@ const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL = skillId => {
         CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
     ))
 }
+
+/**
+ * cavalry with Range = 2
+ */
+const IS_TARGET_CAVALRY_WITH_RANGE_2_NODE =
+    AND_NODE(EQ_NODE(new TargetsMoveTypeNode(), MoveType.Cavalry), EQ_NODE(new TargetsRangeNode(), 2));

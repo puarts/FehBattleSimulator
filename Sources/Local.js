@@ -6,10 +6,10 @@ const SKILL_EFFECT_FILES = [
     "SkillEffect.js",
     "SkillEffectBattleContext.js",
     "SkillEffectHooks.js",
-    "SkillEffectAliases.js",
 ];
 
 const SKILL_IMPL_FILES = [
+    "SkillEffectAliases.js",
     "SkillImpl.js",
     "SkillImpl202408.js",
 ];

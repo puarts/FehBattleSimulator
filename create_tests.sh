@@ -11,7 +11,6 @@ SOURCE_FILE_NAMES=(
     SkillEffect
     SkillEffectBattleContext
     SkillEffectHooks
-    SkillEffectAliases
     BattleMapElement
     Tile
     Structures
@@ -34,6 +33,7 @@ SOURCE_FILE_NAMES=(
     HeroDatabase
     SampleSkillInfos
     SampleHeroInfos
+    SkillEffectAliases
     SkillImpl
     SkillImpl202408
     TestUtilities
