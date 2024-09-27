@@ -1,4 +1,36 @@
 // noinspection JSUnusedLocalSymbols
+// オーバードライヴ
+{
+    let skillId = Special.Override;
+
+    // 範囲奥義
+    // If unit's Special is ready, before combat this unit initiates,
+    // foes in an area near target take damage equal to 1.5 x (unit's Atk minus foe's Def or Res).
+    RANGED_ATTACK_SPECIAL_SET.add(skillId);
+    RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.set(skillId, 1.5);
+
+    // 十字範囲
+    AOE_SPECIAL_SPACES_HOOKS.addSkill(skillId, () =>
+        new OverrideAoeSpacesNode(),
+    );
+
+    // When unit deals damage to 2 or more foes at the same time using a Special (including target; including foes dealt 0 damage),
+    // grants another action to unit after combat (once per turn).
+    AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(new DoesTargetDealDamageTo2OrMoreTargetsFoesAtTheSameTimeUsingSpecialNode(),
+            new GrantsAnotherActionNode(),
+        ),
+    ));
+
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's or foe's Special is ready or triggered before or during this combat,
+        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            // reduces damage from foe's next attack by 40% during combat (once per combat; excluding area-of-effect Specials).
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
 // 聖騎士の槍
 {
     let skillId = Weapon.HolyWarSpear;

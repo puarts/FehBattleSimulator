@@ -1426,6 +1426,22 @@ class FoesMoveNode extends NumberNode {
 
 const FOE_MOVE_NODE = new FoesMoveNode();
 
+/**
+ * When unit deals damage to 2 or more foes at the same time using a Special (including target; including foes dealt 0 damage),
+ */
+class DoesTargetDealDamageTo2OrMoreTargetsFoesAtTheSameTimeUsingSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.damageCountOfSpecialAtTheSameTime;
+        env.debug(`${unit.nameWithGroup}は範囲奥義で2人以上に攻撃したか: ${result}人`);
+        return result >= 2;
+    }
+}
+
 // Unit or BattleContextの値を参照 END
 
 class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
@@ -2328,6 +2344,22 @@ class DealsDamageToTargetAtStartOfTurnNode extends FromPositiveNumberNode {
 }
 
 // 再行動・再移動
+class GrantsAnotherActionNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let success = unit.grantAnotherActionOnAssistIfPossible();
+        if (success) {
+            env.debug(`${unit.nameWithGroup}は再行動`);
+        } else {
+            env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
+        }
+    }
+}
+
 class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
