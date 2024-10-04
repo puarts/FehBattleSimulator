@@ -10126,11 +10126,15 @@ class BattleSimulatorBase {
                 let env = new BattleSimulatorBaseEnv(this, supporterUnit);
                 env.setName('応援を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
                 AFTER_RALLY_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+                // 神獣の蜜
+                this.applyDivineNectarSkills(supporterUnit, targetUnit);
             }
             if (supporterUnit.hasMoveAssist) {
                 let env = new BattleSimulatorBaseEnv(this, supporterUnit);
                 env.setName('移動補助を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
                 AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+                // 神獣の蜜
+                this.applyDivineNectarSkills(supporterUnit, targetUnit);
             }
             for (let skillId of supporterUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForSupporterFuncMap);
@@ -10185,8 +10189,6 @@ class BattleSimulatorBase {
     }
 
     #applySupportSkillForSupporter(skillId, supporterUnit, targetUnit) {
-        // 神獣の蜜
-        this.applyDivineNectarSkills(supporterUnit, targetUnit);
         switch (skillId) {
             case Support.GoldSerpent: {
                 let currentTurn = g_appData.globalBattleContext.currentTurn;
