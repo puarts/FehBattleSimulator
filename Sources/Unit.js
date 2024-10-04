@@ -3580,6 +3580,18 @@ class Unit extends BattleMapElement {
         this.fromPosY = y;
     }
 
+    fromPosStr() {
+        return `(${this.fromPosX}, ${this.fromPosY})`;
+    }
+
+    getLocationStr(tileToAttack = null) {
+        let atkInfo = '';
+        if (tileToAttack) {
+            atkInfo = ` 攻撃マス: ${tileToAttack}`;
+        }
+        return `${this.nameWithGroup}: ${this.fromPosStr()} => ${this.placedTile}${atkInfo}`;
+    }
+
     getTriangleAdeptAdditionalRatio() {
         if (this.passiveA === PassiveA.Duality) {
             return 0;
