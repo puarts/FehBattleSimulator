@@ -5660,7 +5660,6 @@
                 let count = 0;
                 for (let enemy of enemies) {
                     if (enemy.isInCrossWithOffset(targetUnit, 1)) {
-                        this.writeDebugLogLine(`${enemy.nameWithGroup}`);
                         count++;
                         // 5ダメージ、
                         enemy.reserveTakeDamage(5);
