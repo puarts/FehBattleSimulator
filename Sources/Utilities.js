@@ -200,6 +200,47 @@ class CookieWriter {
     }
 }
 
+class LocalStorageUtil {
+    /**
+     * 数値をローカルストレージに保存します。
+     * @param {string} key - 保存するためのキー。
+     * @param {number} value - 保存する数値。
+     */
+    static setNumber(key, value) {
+        if (typeof value === 'number') {
+            localStorage.setItem(key, value.toString());
+        } else {
+            console.error('Value must be a number');
+        }
+    }
+
+    /**
+     * ローカルストレージから数値を取得します。
+     * @param {string} key - 取得するためのキー。
+     * @param {number} defaultValue - キーが見つからない場合のデフォルト値。
+     * @returns {number} - 取得した数値、またはデフォルト値。
+     */
+    static getNumber(key, defaultValue = 0) {
+        const value = localStorage.getItem(key);
+        return value !== null ? parseFloat(value) : defaultValue;
+    }
+
+    /**
+     * ローカルストレージから数値を削除します。
+     * @param {string} key - 削除するためのキー。
+     */
+    static removeNumber(key) {
+        localStorage.removeItem(key);
+    }
+
+    /**
+     * ローカルストレージの全ての数値をクリアします。
+     */
+    static clear() {
+        localStorage.clear();
+    }
+}
+
 /// キーボードの入力を管理するクラスです。
 class KeyboardManager {
     constructor() {
