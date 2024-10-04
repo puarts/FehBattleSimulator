@@ -4384,6 +4384,7 @@ class BattleSimulatorBase {
 
         this.__initializeUnitsPerTurn(targetUnits);
         this.__initializeAllUnitsOnMapPerTurn(targetUnits);
+        this.__initializeAllUnitsOnMapPerTurn(enemyTurnSkillTargetUnits);
         this.__initializeTilesPerTurn(this.map._tiles, group);
 
         if (this.data.gameMode !== GameMode.SummonerDuels) {
@@ -4481,6 +4482,7 @@ class BattleSimulatorBase {
      */
     __initializeAllUnitsOnMapPerTurn(units) {
         for (let unit of units) {
+            unit.isAttackDone = false;
             unit.isCombatDone = false;
             unit.isSupportDone = false;
             unit.isSupportedDone = false;
