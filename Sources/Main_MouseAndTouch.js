@@ -270,7 +270,8 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                         let color = "#cbd6ee";
                         color = "#0066ff" + alpha;
                         if (tile.getMoveWeight(unit, false) === ObstructTile) {
-                            color = "#cccc00" + alpha;
+                            // color = "#cccc00" + alpha;
+                            color = "#88ffff" + alpha;
                         }
                         updateCellBgColor(tile.posX, tile.posY, color);
                     } else {
