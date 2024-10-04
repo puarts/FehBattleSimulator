@@ -145,7 +145,7 @@ class SettingManager {
                             moveStructureToTrashBox(targetTile.obj);
                         }
                         moveStructureToMap(structure, posX, posY);
-                        console.log("move " + structure.id + " to (" + structure.posX + ", " + structure.posY + ")");
+                        // console.log("move " + structure.id + " to (" + structure.posX + ", " + structure.posY + ")");
                     }
                 }
                 break;
