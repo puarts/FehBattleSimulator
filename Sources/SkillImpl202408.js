@@ -1691,7 +1691,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of combat, if unit's HP ≥ 25%,
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
-            new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 0, 0),
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 0, 5),
             new NumThatIsNode(
                 new SkillEffectNode(
                     // unit deals +X × 5 damage (max 25; excluding area-of-effect Specials), and
