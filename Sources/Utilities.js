@@ -1,5 +1,17 @@
 /// @file
 /// @brief ユーティリティークラス、関数等の定義です。
+/**
+ * ObjectUtil
+ */
+class ObjectUtil {
+    static makeMapFromObj(object) {
+        return new Map(Object.entries(object).map(([text, value]) => [value, text]));
+    }
+
+    static makeOptionFromObj(object) {
+        return Object.entries(object).map(([text, value]) => ({value, text}));
+    }
+}
 
 /**
  * @template T
