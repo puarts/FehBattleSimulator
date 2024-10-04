@@ -2594,7 +2594,7 @@ class IsTargetsSpecialCooldownCountIsAtItsMaximumNode extends BoolNode {
 
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {
-        return NodeEnv.LOG_LEVEL.OFF;
+        return LoggerBase.LOG_LEVEL.OFF;
     }
-    return g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF;
+    return g_appData?.skillLogLevel ?? LoggerBase.LOG_LEVEL.OFF;
 }

@@ -284,23 +284,20 @@ class AppData extends UnitManager {
         this.enableAllSkillOptions = false; // スキルを継承可能なものだけに制限しない
         this.disableLowRankSkillOptions = false; // 下位スキルを表示する
 
-        this.showDetailLog = true;
+        this.simulatorLogLevel = LocalStorageUtil.getNumber('simulatorLogLevel', LoggerBase.LOG_LEVEL.INFO);
+        this.simulatorLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LOG_LEVEL);
+
+        this.damageCalcLogger = new HtmlLogger();
+        this.damageCalcLogger.logLevel = this.simulatorLogLevel;
+        this.beginningOfTurnSkillHanderLogger = new HtmlLogger();
+        this.beginningOfTurnSkillHanderLogger.logLevel = this.simulatorLogLevel;
+
         this.isDebugMenuEnabled = DebugModeDefault;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
-        let level = new CookieWriter().read("skill_log_level");
-        this.skillLogLevel = level ? level : G_SKILL_LOG_LEVEL;
-        this.skillLogLevelOption = [
-            { value: 1, text: "OFF" },
-            { value: 2, text: "FATAL" },
-            { value: 3, text: "ERROR" },
-            { value: 4, text: "WARN" },
-            { value: 5, text: "INFO" },
-            { value: 6, text: "DEBUG" },
-            { value: 7, text: "TRACE" },
-            { value: 8, text: "ALL" },
-        ];
 
+        this.skillLogLevel = LocalStorageUtil.getNumber('skillLogLevel', LoggerBase.LOG_LEVEL.OFF);
+        this.skillLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LOG_LEVEL);
 
         /**
          * ダブル補正が有効かどうか

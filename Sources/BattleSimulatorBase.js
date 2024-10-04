@@ -76,9 +76,9 @@ class BattleSimulatorBase {
 
         /** @type {DamageCalculatorWrapper} **/
         this.damageCalc = new DamageCalculatorWrapper(
-            g_appData, g_appData.map, g_appData.globalBattleContext, new HtmlLogger());
+            g_appData, g_appData.map, g_appData.globalBattleContext, g_appData.damageCalcLogger);
         this.beginningOfTurnSkillHandler = new BeginningOfTurnSkillHandler(
-            g_appData, g_appData.map, g_appData.globalBattleContext, new HtmlLogger(), moveStructureToTrashBox);
+            g_appData, g_appData.map, g_appData.globalBattleContext, g_appData.beginningOfTurnSkillHanderLogger, moveStructureToTrashBox);
         this.weaponSkillCharWhiteList = "";
         this.supportSkillCharWhiteList = "";
         this.specialSkillCharWhiteList = "";
@@ -622,11 +622,13 @@ class BattleSimulatorBase {
             slotOrderChanged: function () {
                 updateMapUi();
             },
-            showDetailLogChanged: function () {
+            saveSimulatorLogLevel: function() {
+                LocalStorageUtil.setNumber('simulatorLogLevel', this.simulatorLogLevel);
+                this.damageCalcLogger.logLevel = this.simulatorLogLevel;
+                this.beginningOfTurnSkillHanderLogger.logLevel = this.simulatorLogLevel;
             },
             saveSkillLogLevel: function() {
-                let writer = new CookieWriter();
-                writer.write("skill_log_level", this.skillLogLevel);
+                LocalStorageUtil.setNumber('skillLogLevel', this.skillLogLevel);
             },
             resetUnitRandom: function () {
                 if (g_app == null) {
@@ -3169,46 +3171,43 @@ class BattleSimulatorBase {
         return preset.setting;
     }
 
-
     writeSimpleLogLine(log) {
-        if (this.disableAllLogs) {
-            return;
-        }
-
-        this.vm.simpleLog += "<span style='font-size:10px;color:#000000'>" + log + '</span><br/>';
+        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        this.vm.simpleLog += `<span class="log-info log-simple">${log}</span><br/>`;
     }
 
     writeErrorLine(log) {
-        let error = "<span style='font-size:14px;color:red'>" + log + '</span><br/>';
+        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.ERROR)) return;
+        let error = `<span class="log-error">${log}</span><br/>`;
         this.vm.damageCalcLog += error;
         this.writeSimpleLogLine(error);
     }
 
     writeWarningLine(log) {
-        let warning = "<span style='font-size:10px;color:#d05000'>" + log + '</span><br/>';
+        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.WARN)) return;
+        let warning = `<span class="log-warn">${log}</span><br/>`;
         this.vm.damageCalcLog += warning;
         this.writeSimpleLogLine(warning);
     }
 
     writeLog(log) {
-        if (this.disableAllLogs) {
-            return;
-        }
-        this.vm.damageCalcLog += log;
+        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        this.vm.damageCalcLog += `<span class="log-info">${log}</span>`;
     }
 
     writeLogLine(log) {
-        if (this.disableAllLogs) {
-            return;
-        }
-        this.vm.damageCalcLog += "<span style='font-size:14px'>" + log + '</span><br/>';
+        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        this.vm.damageCalcLog += `<span class="log-info">${log}</span><br/>`;
     }
 
     writeDebugLogLine(log) {
-        if (this.disableAllLogs || this.vm.showDetailLog === false) {
-            return;
-        }
-        this.vm.damageCalcLog += "<span style='font-size:10px;color:#666666;'>" + log + '</span><br/>';
+        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.DEBUG)) return;
+        this.vm.damageCalcLog += `<span class="log-debug">${log}</span><br/>`;
+    }
+
+    #shouldLog(level) {
+        if (this.disableAllLogs) return false;
+        return LoggerBase.compPriority(level, this.vm.simulatorLogLevel) >= 0;
     }
 
     clearSimpleLog() {
@@ -3218,6 +3217,7 @@ class BattleSimulatorBase {
     clearLog() {
         this.vm.damageCalcLog = "";
     }
+
     clearAllLogs() {
         this.clearLog();
         this.clearSimpleLog();

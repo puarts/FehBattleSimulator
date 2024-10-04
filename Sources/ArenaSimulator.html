@@ -849,19 +849,22 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <span style="font-size:12px"><b>デバッグログ</b></span>
-                    <input id="showDetailLog" type="checkbox" v-model="showDetailLog"
-                        @change="showDetailLogChanged"><label class="normal" for="showDetailLog">詳細ログを出力</label>
-                    <input type="button" @click="g_app.clearLog()" value="クリア" style="font-size: 8px;" />
-                    <input type="button" @click="copyDebugLogToClipboard()" value="コピー" style="font-size: 8px;" />
-                    <span style="font-size:12px"><b>スキル効果デバッグログレベル</b></span>
-                    <select v-model="skillLogLevel" @change="saveSkillLogLevel">
+                    <label for="simulatorLogLevel" style="font-size:12px"><b>ログレベル</b></label>
+                    <select id="simulatorLogLevel" v-model="simulatorLogLevel" @change="saveSimulatorLogLevel">
+                        <option v-for="option in simulatorLogLevelOption" :key="option.value" :value="option.value">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                    <input type="button" @click="g_app.clearLog()" value="クリア" style="font-size: 8px;"/>
+                    <input type="button" @click="copyDebugLogToClipboard()" value="コピー" style="font-size: 8px;"/>
+                    <label for="skillLogLevel" style="font-size:12px"><b>スキル効果ログレベル</b></label>
+                    <select id="skillLogLevel" v-model="skillLogLevel" @change="saveSkillLogLevel">
                         <option v-for="option in skillLogLevelOption" :key="option.value" :value="option.value">
                             {{ option.text }}
                         </option>
                     </select>
                     <div v-html="damageCalcLog" id="debugLogPanel"
-                        style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
+                         style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
                     </div>
                 </td>
             </tr>
@@ -883,14 +886,15 @@
                         onchange="g_appData.map.switchClosestDistanceToEnemy();updateMap();"><label class="normal"
                         for="showClosestDistanceToEnemy">最も近い敵への距離を表示</label>
                     <br />
-                    <input id="showDivineVeinImage" type="checkbox" v-model="showDivineVeinImageWithoutBreakable"
-                        @change="onDivineVeinImageVisibilityChanged"><label class="normal"
-                        for="showDivineVeinImage">破壊可能な天脈以外の画像表示</label>
+                    <input id="showDivineVeinImage" type="checkbox"
+                           v-model="showDivineVeinImageWithoutBreakable"
+                           @change="onDivineVeinImageVisibilityChanged">
+                    <label class="normal" for="showDivineVeinImage">破壊可能な天脈以外の画像表示</label>
                     <br />
                     <input id="onChangeEnemyIceColor" type="checkbox"
                            v-model="changeEnemyIceColor"
-                           @change="onChangeEnemyIceColor"><label class="normal"
-                                                                  for="showDivineVeinImage">敵の天脈・氷の色をかえる</label>
+                           @change="onChangeEnemyIceColor">
+                    <label class="normal" for="onChangeEnemyIceColor">敵の天脈・氷の色をかえる</label>
                     <br/>
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
                     <br />

@@ -2393,7 +2393,7 @@ class Unit extends BattleMapElement {
         let hasSkills = false;
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(2マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('移動時(2マス以内)').setLogLevel(NodeEnv.LOG_LEVEL.WARN);
+        env.setName('移動時(2マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
         hasSkills |=
             CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
         for (let skillId of this.enumerateSkills()) {
@@ -2418,7 +2418,7 @@ class Unit extends BattleMapElement {
         let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwalk);
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(1マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('移動時(1マス以内)').setLogLevel(NodeEnv.LOG_LEVEL.WARN);
+        env.setName('移動時(1マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
         hasSkills |=
             CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
         for (let skillId of this.enumerateSkills()) {

@@ -64,6 +64,7 @@ class DamageCalculatorWrapper {
         this.map = map;
         this.globalBattleContext = globalBattleContext;
         this._damageCalc = new DamageCalculator(logger, unitManager);
+        this.logger = logger;
         this.profiler = new PerformanceProfile();
         this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger);
 
@@ -281,6 +282,7 @@ class DamageCalculatorWrapper {
             let saverUnit = result.defUnit;
             let tile = saverUnit.placedTile;
             saverUnit.restoreOriginalTile();
+            this.logger.trace2(`[護り手後] ${saverUnit.getLocationStr()}`);
             tile.setUnit(defUnit);
         }
 
@@ -307,10 +309,12 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
         let result;
+        this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
         using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
             self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
             self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
         }), () => {
+            this.logger.trace2(`[マス移動後] ${atkUnit.getLocationStr(tileToAttack)}`);
             this.#initBattleContext(atkUnit, defUnit);
 
             this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageType, true);
@@ -386,6 +390,7 @@ class DamageCalculatorWrapper {
             atkUnit.copySpursToSnapshot();
             actualDefUnit.copySpursToSnapshot();
         });
+        this.logger.trace2(`[行動後] ${atkUnit.getLocationStr(tileToAttack)}`);
 
         return result;
     }
@@ -454,8 +459,11 @@ class DamageCalculatorWrapper {
         // 1マスに複数ユニットが配置される状況は考慮していなかった。
         // おそらく戦闘中だけの設定であれば不要だと思われるので一旦設定無視してる。
         // todo: 必要になったら、Tile.placedUnit を複数設定できるよう対応する
+        this.logger.trace2(`[護り手配置前] ${saverUnit.getLocationStr()}`);
         saverUnit.placedTile = defUnit.placedTile;
         saverUnit.setPos(saverUnit.placedTile.posX, saverUnit.placedTile.posY);
+        saverUnit.setFromPos(saverUnit.placedTile.posX, saverUnit.placedTile.posY);
+        this.logger.trace2(`[護り手配置後] ${saverUnit.getLocationStr()}`);
 
         saverUnit.initBattleContext(defUnit.battleContext.initiatesCombat);
         saverUnit.battleContext.isSaviorActivated = true;

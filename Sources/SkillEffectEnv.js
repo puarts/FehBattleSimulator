@@ -7,18 +7,6 @@ class NodeEnv {
         AFTER_COMBAT: 'AFTER_COMBAT',
     });
 
-    // ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
-    static LOG_LEVEL = Object.freeze({
-        OFF: 1,
-        FATAL: 2,
-        ERROR: 3,
-        WARN: 4,
-        INFO: 5,
-        DEBUG: 6,
-        TRACE: 7,
-        ALL: 8
-    })
-
     /** @type {string} */
     phase = NodeEnv.PHASE.NULL_PHASE;
     /** @type {Unit} */
@@ -64,7 +52,7 @@ class NodeEnv {
     /** @type {boolean|null} */
     isStatusFixedNullable = null;
 
-    #logLevel = NodeEnv.LOG_LEVEL.OFF;
+    #logLevel = LoggerBase.LOG_LEVEL.OFF;
 
     /** @type {function(string): void} */
     #logFunc = (_message) => {
@@ -374,10 +362,11 @@ class NodeEnv {
     }
 
     /**
-     * @param {string} logLevel
+     * @param {number} level
      * @param {string} message
      */
-    #log(logLevel, message) {
+    #log(level, message) {
+        let logLevel = LoggerBase.levelStr(level);
         let name = this.name ? `[${this.name}] ` : '';
         let messageWithName = `${name}${message}`;
         let paddedLevel = logLevel.padEnd(5);
@@ -386,111 +375,62 @@ class NodeEnv {
 
         if (this.damageCalculatorWrapper) {
             if (this.damageType !== null && this.damageType === DamageType.ActualDamage) {
-                this.logWithLevel(logLevel, messageWithName, this.blackBGStyles);
+                ConsoleLogger.logWithLevel(level, messageWithName, ConsoleLogger.BLACK_BG_STYLES);
             }
         } else if (this.damageCalculator) {
             if (this.damageType !== null && this.damageType === DamageType.ActualDamage) {
-                this.logWithLevel(logLevel, messageWithName, this.blackBGStyles);
+                ConsoleLogger.logWithLevel(level, messageWithName, ConsoleLogger.BLACK_BG_STYLES);
             }
         } else {
-            this.logWithLevel(logLevel, messageWithName, this.blackBGStyles);
+            ConsoleLogger.logWithLevel(level, messageWithName, ConsoleLogger.BLACK_BG_STYLES);
         }
     }
-
-    logWithLevel(level, message, styles) {
-        const {FATAL, ERROR, WARN, INFO, DEBUG, TRACE, UNKNOWN} = styles;
-        switch (level) {
-            case 'FATAL':
-                console.log('[%cFATAL%c] ' + message, FATAL, '');
-                break;
-            case 'ERROR':
-                console.log('[%cERROR%c] ' + message, ERROR, '');
-                break;
-            case 'WARN':
-                console.log('[%cWARN %c] ' + message, WARN, '');
-                break;
-            case 'INFO':
-                console.log('[%cINFO %c] ' + message, INFO, '');
-                break;
-            case 'DEBUG':
-                console.log('[%cDEBUG%c] ' + message, DEBUG, '');
-                break;
-            case 'TRACE':
-                console.log('[%cTRACE%c] ' + `%c${message}%c`, TRACE, '', TRACE, '');
-                break;
-            default:
-                console.log(`[%cUNKNOWN:${level}%c] ` + message, UNKNOWN, '');
-        }
-    }
-
-    // 黒背景用のスタイル
-    blackBGStyles = {
-        FATAL: 'color: #FF6B6B; font-weight: bold;',
-        ERROR: 'color: #FF5252; font-weight: bold;',
-        WARN: 'color: #FFC107; font-weight: bold;',
-        INFO: 'color: #64B5F6;',
-        DEBUG: 'color: #81C784;',
-        TRACE: 'color: #888888;',
-        UNKNOWN: 'color: white;'
-    };
-
-    // 白背景用のスタイル
-    whiteBGStyles = {
-        FATAL: 'color: darkred; font-weight: bold;',
-        ERROR: 'color: red; font-weight: bold;',
-        WARN: 'color: orange; font-weight: bold;',
-        INFO: 'color: blue;',
-        DEBUG: 'color: green;',
-        TRACE: 'color: #888888;',
-        UNKNOWN: 'color: black;'
-    };
 
     /**
      * @param {string} message
      */
     fatal(message) {
-        if (this.getLogLevel() < NodeEnv.LOG_LEVEL.FATAL) return;
-        this.#log('FATAL', message);
+        this.#logIf(message, LoggerBase.LOG_LEVEL.FATAL);
     }
 
     /**
      * @param {string} message
      */
     error(message) {
-        if (this.getLogLevel() < NodeEnv.LOG_LEVEL.ERROR) return;
-        this.#log('ERROR', message);
+        this.#logIf(message, LoggerBase.LOG_LEVEL.ERROR);
     }
 
     /**
      * @param {string} message
      */
     warn(message) {
-        if (this.getLogLevel() < NodeEnv.LOG_LEVEL.WARN) return;
-        this.#log('WARN', message);
+        this.#logIf(message, LoggerBase.LOG_LEVEL.WARN);
     }
 
     /**
      * @param {string} message
      */
     info(message) {
-        if (this.getLogLevel() < NodeEnv.LOG_LEVEL.INFO) return;
-        this.#log('INFO', message);
+        this.#logIf(message, LoggerBase.LOG_LEVEL.INFO);
     }
 
     /**
      * @param {string} message
      */
     debug(message) {
-        if (this.getLogLevel() < NodeEnv.LOG_LEVEL.DEBUG) return;
-        this.#log('DEBUG', message);
+        this.#logIf(message, LoggerBase.LOG_LEVEL.DEBUG);
     }
 
     /**
      * @param {string} message
      */
     trace(message) {
-        if (this.getLogLevel() < NodeEnv.LOG_LEVEL.TRACE) return;
-        this.#log('TRACE', message);
+        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE);
+    }
+
+    #logIf(message, level) {
+        if (this.getLogLevel() < level) return;
+        this.#log(level, message);
     }
 
     // TODO: 予約が必要なフェーズを調べる
