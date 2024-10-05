@@ -2357,11 +2357,11 @@ class DamageCalculatorWrapper {
             // 各ターンについて、自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時、戦闘中、
             // 受けるダメージー10（範囲奥義を除く）
             if (targetUnit.battleContext.initiatesCombat) {
-                if (targetUnit.isAttackDone) {
+                if (!targetUnit.isAttackDone) {
                     targetUnit.battleContext.damageReductionValue += 10;
                 }
             } else {
-                if (!targetUnit.isCombatDone && !targetUnit.isAttackDone) {
+                if (!targetUnit.isAttackedDone) {
                     targetUnit.battleContext.damageReductionValue += 10;
                 }
             }

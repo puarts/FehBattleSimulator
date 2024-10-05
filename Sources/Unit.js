@@ -543,6 +543,8 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
         // このターン自分から攻撃を行ったか
         this.isAttackDone = false;
+        // このターン相手から攻撃を行われたか
+        this.isAttackedDone = false;
         // このターン戦闘を行なったか
         this.isCombatDone = false;
         // このターン補助を行ったか

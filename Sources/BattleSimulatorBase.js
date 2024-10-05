@@ -3580,6 +3580,7 @@ class BattleSimulatorBase {
 
         let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack, this.data.gameMode);
         atkUnit.isAttackDone = true;
+        defUnit.isAttackedDone = true;
         atkUnit.isCombatDone = true;
         defUnit.isCombatDone = true;
 
