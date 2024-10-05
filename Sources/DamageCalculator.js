@@ -1579,46 +1579,62 @@ class DamageCalculator {
     }
 
     #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context) {
-        if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied !== null) {
-            let env = new DamageCalculatorEnv(this, defUnit, atkUnit);
-            env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
-            AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
-            for (let skillId of defUnit.enumerateSkills()) {
-                let func = getSkillFunc(skillId, applyDamageReductionRatiosWhenCondSatisfiedFuncMap);
-                func?.call(this, atkUnit, defUnit);
-                switch (skillId) {
-                    case Special.DragonBlast:
-                        if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
-                            if (defUnit.battleContext.specialSkillCondSatisfied) {
-                                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
-                            }
+        let env = new DamageCalculatorEnv(this, defUnit, atkUnit);
+        env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
+        AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
+        for (let skillId of defUnit.enumerateSkills()) {
+            let func = getSkillFunc(skillId, applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap);
+            func?.call(this, atkUnit, defUnit);
+            switch (skillId) {
+                case Special.DragonBlast:
+                    if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
+                        if (defUnit.battleContext.specialSkillCondSatisfied) {
+                            defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
                         }
-                        break;
-                    case Special.ArmoredFloe:
-                    case Special.ArmoredBeacon:
-                        if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
-                            if (isRangedWeaponType(atkUnit.weaponType)) {
-                                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
-                            }
+                    }
+                    break;
+                case Special.ArmoredFloe:
+                case Special.ArmoredBeacon:
+                    if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
+                        if (isRangedWeaponType(atkUnit.weaponType)) {
+                            defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
                         }
-                        break;
-                }
+                    }
+                    break;
             }
-            // 1戦闘に1回しか発動しないので発動後はnullをいれる（初期値は[]）
-            if (defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.length > 0) {
-                for (let ratio of defUnit.battleContext.damageReductionRatiosWhenCondSatisfied) {
+        }
+        // 1戦闘に1回しか発動しない盾形でない奥義でのダメージ軽減
+        let currentCount = defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecialCount;
+        let additionalCount = defUnit.battleContext.additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount;
+        if (currentCount < 1 + additionalCount) {
+            this.writeDebugLog(`${defUnit.nameWithGroup}は1戦闘にN回しか発動しない奥義効果によるダメージ軽減を発動可能。軽減: [${defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial}], 発動回数: ${currentCount}, 追加発動: ${additionalCount}`);
+            if (defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.length > 0) {
+                defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecialCount++;
+                for (let ratio of defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial) {
                     damageReductionRatiosByNonDefenderSpecial.push(ratio);
-                    this.writeDebugLog(`1戦闘1回の奥義によるダメージ軽減。ratio: ${ratio}`);
+                    this.writeDebugLog(`1戦闘N回の奥義によるダメージ軽減。ratio: ${ratio}`);
                 }
-                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied = null;
+                defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial = [];
             }
-            // 防御系奥義以外によるダメージ軽減
-            let reductionRatios = defUnit.battleContext.damageReductionRatiosByNonDefenderSpecial;
-            if (reductionRatios.length > 0) {
-                for (let ratio of reductionRatios) {
+        }
+        let engageCount = defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecialCount;
+        if (engageCount < 1) {
+            this.writeDebugLog(`${defUnit.nameWithGroup}は1戦闘に1回しか発動しないエンゲージ効果によるダメージ軽減を発動可能。軽減: [${defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial}], 発動回数: ${engageCount}`);
+            if (defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial.length > 0) {
+                defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecialCount++;
+                for (let ratio of defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial) {
                     damageReductionRatiosByNonDefenderSpecial.push(ratio);
-                    this.writeDebugLog(`防御系奥義以外の奥義によるダメージ軽減。ratio: ${ratio}`);
+                    this.writeDebugLog(`1戦闘1回のエンゲージによるダメージ軽減。ratio: ${ratio}`);
                 }
+                defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial = [];
+            }
+        }
+        // 防御系奥義以外によるダメージ軽減
+        let reductionRatios = defUnit.battleContext.damageReductionRatiosByNonDefenderSpecial;
+        if (reductionRatios.length > 0) {
+            for (let ratio of reductionRatios) {
+                damageReductionRatiosByNonDefenderSpecial.push(ratio);
+                this.writeDebugLog(`防御系奥義以外の奥義によるダメージ軽減。ratio: ${ratio}`);
             }
         }
 

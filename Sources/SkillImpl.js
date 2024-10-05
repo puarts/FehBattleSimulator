@@ -388,7 +388,7 @@
     );
 
     // 攻撃奥義のダメージ軽減
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             // 「自分または敵が奥義発動可能状態の時」、
             // 「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
@@ -398,7 +398,7 @@
                 if (defUnit.isHigherOrEqualSpdInCombat(atkUnit, -4)) {
                     // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）
                     // （範囲奥義を除く）
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                    defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
                 }
             }
         }
@@ -1427,7 +1427,7 @@
     );
 
     // 攻撃奥義のダメージ軽減
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             // 「自分または敵が奥義発動可能状態の時」、「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
             // 2条件のいずれかを満たした時、
@@ -1438,7 +1438,7 @@
                 // スキル効果の発動条件となる有利な状態（1ターン）
                 let pred = u => defUnit.isPartner(u) || u.hasStatusEffect(StatusEffectType.Bonded);
                 if (this.unitManager.isThereAllyInSpecifiedSpaces(defUnit, 3, pred)) {
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                    defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
                 }
             }
         }
@@ -2327,13 +2327,13 @@
     );
 
     // 攻撃奥義のダメージ軽減
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             // 自分または敵が奥義発動可能状態の時、または、この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時、
             if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // 戦闘中、受けた攻撃のダメージを30%軽減（1戦闘1回のみ）
                 // （範囲奥義を除く）
-                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.3);
+                defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.3);
             }
         }
     );
@@ -5538,7 +5538,7 @@
 // 紋章士アイク
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Ike);
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             // 「自分または敵が奥義発動可能状態の時」、「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
             // 2条件のいずれかを満たした時、
@@ -5546,7 +5546,7 @@
                 // かつ、敵が射程2の時、
                 if (isRangedWeaponType(atkUnit.weaponType)) {
                     // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）（範囲奥義を除く）
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                    defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial.push(0.4);
                 }
             }
         }
@@ -7148,7 +7148,7 @@
     );
 
     // 攻撃奥義のダメージ軽減
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             let canActivateSpecial =
                 defUnit.tmpSpecialCount === 0 ||
@@ -7159,7 +7159,7 @@
             if (canActivateSpecial || isSpecialActivated) {
                 // 40%軽減
                 if (defUnit.getEvalResInCombat(atkUnit) >= atkUnit.getEvalResInCombat(defUnit) - 4) {
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                    defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
                 }
             }
         }
@@ -8296,10 +8296,10 @@
     );
 
     // 攻撃奥義のダメージ軽減
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
-                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
             }
         }
     );
@@ -10048,11 +10048,11 @@
     );
 
     // 攻撃奥義のダメージ軽減
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 if (isRangedWeaponType(atkUnit.weaponType)) {
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.3);
+                    defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.3);
                 }
             }
         }
@@ -10268,12 +10268,12 @@
     );
 
     // 攻撃奥義のダメージ軽減
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // 40%軽減
                 if (isMeleeWeaponType(atkUnit.weaponType)) {
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                    defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
                 }
             }
         }
@@ -12114,10 +12114,10 @@
             targetUnit.battleContext.specialSufferPercentage = 80;
         }
     );
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
-                defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
             }
         }
     );

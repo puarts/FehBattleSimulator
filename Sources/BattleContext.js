@@ -201,8 +201,14 @@ class BattleContext {
         // 奥義による攻撃でダメージを与えた時、次の敵の攻撃ダメージ軽減
         this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
 
-        // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
-        this.damageReductionRatiosWhenCondSatisfied = [];
+        // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘N回のみ)(範囲奥義を除く)
+        this.nTimesDamageReductionRatiosByNonDefenderSpecial = [];
+        this.nTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
+        this.additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
+
+        this.nTimesDamageReductionRatiosByEngageSpecial = [];
+        this.nTimesDamageReductionRatiosByEngageSpecialCount = 0;
+        // this.additionalNTimesDamageReductionRatiosByEngageSpecialCount = 0;
 
         // 戦闘中に変化する可能性のある奥義扱いのダメージ軽減
         this.damageReductionRatiosBySpecialPerAttack = [];

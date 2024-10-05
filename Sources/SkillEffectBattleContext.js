@@ -807,8 +807,8 @@ class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode extends 
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.damageReductionRatiosWhenCondSatisfied.push(n / 100.0);
-        let ratios = unit.battleContext.damageReductionRatiosWhenCondSatisfied;
+        unit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(n / 100.0);
+        let ratios = unit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial;
         env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${n}%軽減(1戦闘1回のみ): ratios [${ratios}]`);
     }
 }

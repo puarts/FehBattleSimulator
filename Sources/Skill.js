@@ -1617,7 +1617,7 @@ const applyRefreshFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySkillEffectsPerCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculator, atkUnit: Unit, defUnit: Unit) => void>} */
-const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
+const applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap = new Map();
 // 応援後のスキル
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySkillsAfterRallyForSupporterFuncMap = new Map();
