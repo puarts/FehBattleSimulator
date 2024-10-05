@@ -2592,6 +2592,19 @@ class IsTargetsSpecialCooldownCountIsAtItsMaximumNode extends BoolNode {
     }
 }
 
+class IsTargetTransformedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isTransformed;
+        env.debug(`${unit.nameWithGroup}は化身しているか: ${result}`);
+        return result;
+    }
+}
+
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {
         return LoggerBase.LOG_LEVEL.OFF;

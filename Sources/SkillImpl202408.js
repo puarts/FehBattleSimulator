@@ -1,4 +1,44 @@
 // noinspection JSUnusedLocalSymbols
+// 堅固なる獣
+{
+    let skillId = Special.SturdyBeast;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    COUNT3_SPECIALS.push(skillId);
+    INHERITABLE_COUNT3_SPECIALS.push(skillId);
+
+    // Boosts damage by X% of unit's Def when Special triggers (if transformed, X = 50; otherwise, X = 40).
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(
+                COND_OP(new IsTargetTransformedNode(), 0.5, 0.4),
+                UNITS_DEF_DURING_COMBAT_NODE),
+        ),
+    ));
+
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If both of the following conditions are met, reduces damage from foe's next attack by 40% during combat:
+        IF_NODE(
+            AND_NODE(
+                //   - Unit's or foe's Special is ready, or unit's
+                //     or foe's Special triggered before or during
+                //     this combat.
+                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                //   - Unit is transformed or unit's Def ≥ foe's
+                //     Def-4.
+                // (Once per combat; excluding area-of-effect Specials).
+                OR_NODE(
+                    new IsTargetTransformedNode(),
+                    GTE_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, SUB_NODE(FOES_EVAL_DEF_DURING_COMBAT_NODE, 4)),
+                ),
+            ),
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
 // 開かれし祭の角
 {
     let skillId = Weapon.HornOfHarvest;

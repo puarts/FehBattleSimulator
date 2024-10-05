@@ -2159,6 +2159,7 @@ const Special = {
     Gust: 2952, // 陣風
     FierceBeast: 2960, // 猛獣
     CurvedShot: 2986, // 曲射
+    SturdyBeast: 3027, // 堅固なる獣
 
     // 専用奥義
     Override: 3024, // オーバードライヴ
