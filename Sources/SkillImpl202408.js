@@ -1,4 +1,84 @@
 // noinspection JSUnusedLocalSymbols
+// 開かれし祭の角
+{
+    let skillId = Weapon.HornOfHarvest;
+    // Accelerates Special trigger (cooldown count-1).
+    // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills). Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
+    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () =>
+        TRUE_NODE,
+    )
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
+        EQ_NODE(new TargetsRangeNode(), 2),
+    )
+
+    FOR_ALLIES_AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 2 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // restores X HP to those allies as their combat begins (triggers after effects that deal damage as combat begins),
+            RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE(),
+            // (If target's Def > foe's Def,
+            // X = 20% of target's max HP + difference between stats × 4; otherwise,
+            // X = 20% of target's max HP; max 40% of target's max HP + damage dealt to unit as combat begins; only highest value applied; does not stack.)
+        ),
+    ));
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // and reduces the effect of【Deep Wounds】by 50% during combat.
+            new ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode(50),
+        ),
+    ));
+
+    AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_AT_START_OF_COMBAT(
+            // and restores X HP to unit as unit's combat begins (triggers after effects that deal damage as combat begins).
+            RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE(),
+        ),
+    ));
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or if foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_AT_START_OF_COMBAT(
+            // inflicts penalty on foe's Atk/Def during combat = 6 + number of allies within 3 spaces of unit × 3 (max 15),
+            new NumThatIsNode(
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                new EnsureMaxNode(
+                    ADD_NODE(6, MULT_NODE(new NumOfTargetsAlliesWithinNSpacesNode(3), 3)),
+                    15,
+                ),
+            ),
+            // reduces the effect of【Deep Wounds】by 50% during combat,
+            new ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode(50),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // deals damage = 20% of unit's Def (including when dealing damage with a Special triggered before combat),
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_DEF_DURING_COMBAT_NODE)),
+                // reduces damage from foe's attacks by 20% of unit's Def (including when taking damage with a Special triggered before combat),
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_DEF_DURING_COMBAT_NODE)),
+            ),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // deals damage = 20% of unit's Def (including when dealing damage with a Special triggered before combat),
+        new UnitDealsDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+        // reduces damage from foe's attacks by 20% of unit's Def (including when taking damage with a Special triggered before combat),
+        new ReducesDamageBeforeCombatNode(MULT_TRUNC_NODE(0.2, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+    ));
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // grants Atk+2,
+    // deals +7 damage when Special triggers,
+    // and neutralizes effects that grant "Special cooldown charge +X" to foe or inflict "Special cooldown charge -X" on unit.
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry2);
+}
+
 // 紋章士シグルド
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Sigurd);

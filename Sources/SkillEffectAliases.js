@@ -141,3 +141,9 @@ const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL = skillId => {
  */
 const IS_TARGET_CAVALRY_WITH_RANGE_2_NODE =
     AND_NODE(EQ_NODE(new TargetsMoveTypeNode(), MoveType.Cavalry), EQ_NODE(new TargetsRangeNode(), 2));
+
+/**
+ * If foe initiates combat or if foe's HP ≥ 75% at start of combat,
+ */
+const IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_AT_START_OF_COMBAT = (...nodes) =>
+    IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE), ...nodes);

@@ -1932,6 +1932,9 @@ const Weapon = {
 
     // 紋章士シグルド
     HolyWarSpear: 3023, // 聖騎士の槍
+
+    // ハロウィン
+    HornOfHarvest: 3026, // 開かれし祭の角
 };
 
 const Support = {

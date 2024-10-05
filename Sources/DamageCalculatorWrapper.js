@@ -658,13 +658,14 @@ class DamageCalculatorWrapper {
         self.__selectReferencingResOrDef(defUnit, atkUnit);
 
         // 戦闘開始後ダメージ決定後に評価されるスキル効果
+        // TODO: リファクタリング。戦闘開始時にBattleContextに設定できるようにする
         {
             this.applySkillEffectsAfterAfterBeginningOfCombat(atkUnit, defUnit, calcPotentialDamage, damageType);
             this.applySkillEffectsAfterAfterBeginningOfCombat(defUnit, atkUnit, calcPotentialDamage, damageType);
 
             // 周囲の敵からのスキル効果
-            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(atkUnit, defUnit, calcPotentialDamage);
-            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(defUnit, atkUnit, calcPotentialDamage);
+            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(atkUnit, defUnit, calcPotentialDamage, damageType);
+            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(defUnit, atkUnit, calcPotentialDamage, damageType);
         }
 
         let result;
@@ -17360,6 +17361,12 @@ class DamageCalculatorWrapper {
         }
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {number} damageType
+     */
     applySkillEffectsAfterAfterBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         // 神獣の蜜
         if (targetUnit.hasStatusEffect(StatusEffectType.DivineNectar)) {
@@ -17375,7 +17382,13 @@ class DamageCalculatorWrapper {
         }
     }
 
-    applySkillEffectsAfterAfterBeginningOfCombatFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {number} damageType
+     */
+    applySkillEffectsAfterAfterBeginningOfCombatFromAllies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
             return;
         }
@@ -17384,6 +17397,9 @@ class DamageCalculatorWrapper {
         }
 
         if (!calcPotentialDamage) {
+            let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+            env.setName('周囲からの戦闘開始後ダメージ後').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+            FOR_ALLIES_AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.evaluateWithUnit(targetUnit, env);
             // 距離に関係ない効果
             for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                 if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
