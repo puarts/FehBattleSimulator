@@ -597,6 +597,23 @@ class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
 }
 
 /**
+ * reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials),
+ */
+class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.addDamageReductionRatio(percentage / 100);
+        let ratios = unit.battleContext.getDamageReductionRatios();
+        env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+    }
+}
+
+/**
  * reduces damage from foe's first attack by X% during combat
  */
 class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends ApplyingNumberNode {

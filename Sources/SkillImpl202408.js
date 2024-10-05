@@ -1,4 +1,80 @@
 // noinspection JSUnusedLocalSymbols
+// 人と神が繋がる世界
+{
+    let skillId = PassiveC.ConnectedWorld;
+    // If unit can transform,
+    // transformation effects gain "if unit is within 2 spaces of any allies from a different title than unit" as a trigger condition (in addition to existing conditions).
+    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
+        new IsTargetWithinNSpacesOfTargetsAllyNode(2, new IsDifferentOriginNode()),
+    );
+
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met,
+    // unit transforms.
+    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
+
+    let skillEffectNode = new SkillEffectNode(
+        // if unit is within 3 spaces of any allies from a different title than unit,
+        IF_NODE(new IsTargetWithinNSpacesOfTargetsAllyNode(3, new IsDifferentOriginNode()),
+            // to unit and allies within 3 spaces of unit for 1 turn,
+            new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
+                // grants Atk/Def+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 0, 6, 0),
+                // 【Resonance: Blades】,
+                // 【Resonance: Shields】,
+                // and "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% during combat (excluding area-of-effect Specials)"
+                new GrantsStatusEffectsAtStartOfTurnNode(
+                    StatusEffectType.ResonantBlades,
+                    StatusEffectType.ResonantShield,
+                    StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent),
+                // and also,
+                // for unit and allies within 3 spaces of unit,
+                // if Special cooldown count is at its maximum value,
+                IF_NODE(IS_TARGETS_SPECIAL_COOLDOWN_COUNT_AT_ITS_MAX_AT_START_OF_TURN_NODE,
+                    // grants Special cooldown count-1.
+                    new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+                )
+            ),
+        )
+    );
+
+    // At start of turn,
+    // and at start of enemy phase (except for in Summoner Duels),
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => skillEffectNode);
+    AT_START_OF_ENEMY_PHASE_HOOK.addSkill(skillId, () =>
+        IF_NODE(IS_NOT_SUMMONER_DUELS_MODE_NODE, skillEffectNode),
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Def/Res+5 to unit and
+            new GrantsStatsPlusToTargetDuringCombatNode(5, 0, 5, 5),
+            // reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials),
+            new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(40),
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // and also,
+            // if unit's Special cooldown count is at its maximum value after combat,
+            // grants Special cooldown count-1 to unit after combat.
+            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+        ),
+    ))
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // if Special cooldown count is at its maximum value after combat,
+            // grants Special cooldown count-1.
+            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+        ),
+    ));
+}
+
 // 堅固なる獣
 {
     let skillId = Special.SturdyBeast;
@@ -1716,7 +1792,7 @@
 {
     let skillId = PassiveS.Beast;
     // Removes the condition to transform
-    AT_TRANSFORMATION_PHASE_HOOKS.addSkill(skillId, () => new TraceBoolNode(TRUE_NODE));
+    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () => new TraceBoolNode(TRUE_NODE));
 }
 
 // 重歩傭兵の槍

@@ -711,6 +711,7 @@ class CanTargetsFoesAttackTriggerTargetsSpecialNode extends BoolNode {
 }
 
 /**
+ * TODO: FromNumberNodeに統合する
  * @abstract
  */
 class ApplyingNumberNode extends SkillEffectNode {
@@ -1288,7 +1289,15 @@ const WHEN_DEFENDING_IN_AETHER_RAIDS_NODE = new class extends BoolNode {
         // TODO: 値を渡すようにする
         return g_appData.gameMode === GameMode.AetherRaid && env.skillOwner.groupId === UnitGroupType.Enemy;
     }
-}
+}();
+
+const IS_NOT_SUMMONER_DUELS_MODE_NODE = new class extends BoolNode {
+    evaluate(env) {
+        let result = g_appData.gameMode !== GameMode.SummonerDuels;
+        env.debug(`英雄決闘以外か: ${result}`);
+        return result;
+    }
+}();
 
 /**
  * If【Penalty】is active on foe,
@@ -2601,6 +2610,19 @@ class IsTargetTransformedNode extends BoolNode {
         let unit = this.getUnit(env);
         let result = unit.isTransformed;
         env.debug(`${unit.nameWithGroup}は化身しているか: ${result}`);
+        return result;
+    }
+}
+
+class IsDifferentOriginNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = !unit.hasSameOrigin(env.skillOwner);
+        env.debug(`${unit.nameWithGroup}は${env.skillOwner.nameWithGroup}と異なる出典か: ${result}`);
         return result;
     }
 }

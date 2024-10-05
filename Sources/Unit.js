@@ -6149,6 +6149,25 @@ class Unit extends BattleMapElement {
     hasEmblemHero() {
         return this.emblemHeroIndex !== EmblemHero.None;
     }
+
+    hasSameOrigin(targetUnit) {
+        let origins = this.heroInfo.origin.split('|');
+        let targetOrigins = targetUnit.heroInfo.origin.split('|');
+        for (let origin of origins) {
+            let includesEmblem = origin.indexOf("紋章の謎") >= 0;
+            for (let targetOrigin of targetOrigins) {
+                if (includesEmblem) {
+                    if (targetOrigin.indexOf("紋章の謎") >= 0) {
+                        return true;
+                    }
+                }
+                else if (origin === targetOrigin) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
 
 

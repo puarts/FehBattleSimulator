@@ -69,6 +69,8 @@ class BeginningOfTurnSkillHandler {
      * @param  {Unit} unit
      */
     applyEnemySkillsForBeginningOfTurn(unit) {
+        this.applyEnemyTransformSkillForBeginningOfTurn(unit);
+
         let env = new AtStartOfTurnEnv(this, unit);
         env.setName('敵軍ターン開始時').setLogLevel(getSkillLogLevel());
         AT_START_OF_ENEMY_PHASE_HOOK.evaluateWithUnit(unit, env);
@@ -142,24 +144,24 @@ class BeginningOfTurnSkillHandler {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             let env = new AtStartOfTurnEnv(this, skillOwner);
             env.setName('化身スキル').setLogLevel(getSkillLogLevel());
-            let hasTransformSkills = AT_TRANSFORMATION_PHASE_HOOKS.evaluateSomeWithUnit(skillOwner, env);
+            let canTransform = CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.evaluateSomeWithUnit(skillOwner, env);
             for (let skillId of skillOwner.enumerateSkills()) {
                 let func = getSkillFunc(skillId, hasTransformSkillsFuncMap);
-                hasTransformSkills |= func?.call(this) ?? false;
+                canTransform |= func?.call(this) ?? false;
                 switch (skillId) {
                     case PassiveB.BeastAgility3:
                     case PassiveB.BeastNTrace3:
                     case PassiveB.BeastFollowUp3:
                     case PassiveB.BeastSense4:
                     case PassiveB.BindingNecklacePlus:
-                        hasTransformSkills = true;
+                        canTransform = true;
                         break;
                 }
-                if (hasTransformSkills) {
+                if (canTransform) {
                     break;
                 }
             }
-            if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner) || hasTransformSkills) {
+            if (!this.__isNextToOtherUnitsExceptDragonAndBeast(skillOwner) || canTransform) {
                 skillOwner.isTransformed = true;
                 if (skillOwner.moveType === MoveType.Flying &&
                     isWeaponTypeBeast(skillOwner.weaponType) &&
@@ -176,6 +178,20 @@ class BeginningOfTurnSkillHandler {
                 let currentTurn = this.globalBattleContext.currentTurn;
                 skillOwner.isTransformed = currentTurn === 2 || currentTurn >= 4;
                 break;
+            }
+        }
+    }
+
+    /**
+     * 敵ターン開始時の化身処理を行う
+     * @param skillOwner
+     */
+    applyEnemyTransformSkillForBeginningOfTurn(skillOwner) {
+        if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
+            let env = new AtStartOfTurnEnv(this, skillOwner);
+            env.setName('敵化身スキル').setLogLevel(getSkillLogLevel());
+            if (CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.evaluateSomeWithUnit(skillOwner, env)) {
+                this.applyTransformSkillForBeginningOfTurn(skillOwner);
             }
         }
     }

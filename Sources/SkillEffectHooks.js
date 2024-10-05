@@ -200,7 +200,12 @@ const HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS = new SkillEffectHooks();
 /**
  * ターン開始時の化身のタイミング
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
-const AT_TRANSFORMATION_PHASE_HOOKS = new SkillEffectHooks();
+const CAN_TRANSFORM_AT_START_OF_TURN__HOOKS = new SkillEffectHooks();
+
+/**
+ * 敵ターン開始時の化身のタイミング
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS = new SkillEffectHooks();
 
 /**
  * Unit can move to a space

@@ -197,6 +197,9 @@ class NodeEnv {
         return this.#unitDuringCombat;
     }
 
+    /**
+     * @returns {Unit}
+     */
     get foeDuringCombat() {
         return this.#foeDuringCombat;
     }
