@@ -1935,6 +1935,7 @@ const Weapon = {
 
     // ハロウィン
     HornOfHarvest: 3026, // 開かれし祭の角
+    HungryCatFang: 3029, // 感謝の戦猫の爪牙
 };
 
 const Support = {
