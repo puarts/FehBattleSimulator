@@ -1607,8 +1607,8 @@ class DamageCalculator {
         let currentCount = defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecialCount;
         let additionalCount = defUnit.battleContext.additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount;
         if (currentCount < 1 + additionalCount) {
-            this.writeDebugLog(`${defUnit.nameWithGroup}は1戦闘にN回しか発動しない奥義効果によるダメージ軽減を発動可能。軽減: [${defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial}], 発動回数: ${currentCount}, 追加発動: ${additionalCount}`);
             if (defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.length > 0) {
+                this.writeDebugLog(`${defUnit.nameWithGroup}は1戦闘にN回しか発動しない奥義効果によるダメージ軽減を発動可能。軽減: [${defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial}], 発動回数: ${currentCount}, 追加発動: ${additionalCount}`);
                 defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecialCount++;
                 for (let ratio of defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial) {
                     damageReductionRatiosByNonDefenderSpecial.push(ratio);
@@ -1619,8 +1619,8 @@ class DamageCalculator {
         }
         let engageCount = defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecialCount;
         if (engageCount < 1) {
-            this.writeDebugLog(`${defUnit.nameWithGroup}は1戦闘に1回しか発動しないエンゲージ効果によるダメージ軽減を発動可能。軽減: [${defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial}], 発動回数: ${engageCount}`);
             if (defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial.length > 0) {
+                this.writeDebugLog(`${defUnit.nameWithGroup}は1戦闘に1回しか発動しないエンゲージ効果によるダメージ軽減を発動可能。軽減: [${defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial}], 発動回数: ${engageCount}`);
                 defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecialCount++;
                 for (let ratio of defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial) {
                     damageReductionRatiosByNonDefenderSpecial.push(ratio);
