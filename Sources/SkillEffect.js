@@ -1067,6 +1067,7 @@ class FoesStatsDuringCombatNode extends UnitsStatsDuringCombat {
 
 const FOES_ATK_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Atk);
 const FOES_DEF_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Def);
+const FOES_RES_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Res);
 
 class UnitsEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
     static {

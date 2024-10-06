@@ -2912,6 +2912,8 @@ const PassiveB = {
 
     Momentum4: 3025, // 助走4
 
+    DragonsScales: 3031, // 竜の堅鱗
+
     // 専用B
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!

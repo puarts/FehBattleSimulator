@@ -1,4 +1,33 @@
 // noinspection JSUnusedLocalSymbols
+// 竜の堅鱗
+{
+    let skillId = PassiveB.DragonsScales;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or if unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE),
+            new GrantsOrInflictsStatsAfterStatusFixedNode(
+                new NumThatIsNode(
+                    // inflicts Atk/Def/Res-X on foe
+                    new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                    // (X = 4 + the greater of the difference between Def stats or difference between Res stats (unit's Def/Res minus foe's Def/Res); max 11; if either of unit's stats < foe's stat,
+                    // difference is treated as 0),
+                    new EnsureMaxNode(
+                        ADD_NODE(4, MAX_NODE(DEF_DIFF_DURING_COMBAT_NODE, RES_DIFF_DURING_COMBAT_NODE, 0)),
+                        11,
+                    ),
+                ),
+            ),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // grants Special cooldown count-1 to unit before foe's first attack,
+            new GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNode(1),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
 // 収穫の喜びの竜石
 {
     let skillId = Weapon.StoneOfDelights;
