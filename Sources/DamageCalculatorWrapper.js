@@ -829,6 +829,16 @@ class DamageCalculatorWrapper {
         }
 
         for (let skillId of ally.enumerateSkills()) {
+            if (atkUnit.isMeleeWeaponType()) {
+                if (CAN_SAVE_FROM_MELEE_SKILL_SET.has(skillId)) {
+                    return true;
+                }
+            }
+            if (atkUnit.isRangedWeaponType()) {
+                if (CAN_SAVE_FROM_RANGED_SKILL_SET.has(skillId)) {
+                    return true;
+                }
+            }
             if (getSkillFunc(skillId, canActivateSaveSkillFuncMap)?.call(this, atkUnit, ally) ?? false) {
                 return true;
             }

@@ -1450,6 +1450,44 @@ class FoesRangeNode extends TargetsRangeNode {
     }
 }
 
+class IsTargetMeleeWeaponNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isMeleeWeaponType();
+        env.debug(`${unit.nameWithGroup}は1距離の武器か: ${result}`);
+        return result;
+    }
+}
+
+class IsFoeMeleeWeaponNode extends IsTargetMeleeWeaponNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+class IsTargetRangedWeaponNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isRangedWeaponType();
+        env.debug(`${unit.nameWithGroup}は2距離の武器か: ${result}`);
+        return result;
+    }
+}
+
+class IsFoeRangedWeaponNode extends IsTargetRangedWeaponNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 class IsTarget2SpacesFromTargetsFoeNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2675,6 +2713,22 @@ class IsDifferentOriginNode extends BoolNode {
         let result = unit.hasDifferentOrigin(env.skillOwner);
         env.debug(`${unit.nameWithGroup}は${env.skillOwner.nameWithGroup}と異なる出典を持つか: ${result}}`);
         return result;
+    }
+}
+
+/**
+ * any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
+ */
+class AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.addAdditionalNTimesDamageReductionRatiosByNonDefenderSpecialCount(n);
+        env.debug(`${unit.nameWithGroup}は1戦闘1回の奥義スキルが持つダメージ軽減の発動回数を${n}回増加（${n + 1}回発動）}`);
     }
 }
 

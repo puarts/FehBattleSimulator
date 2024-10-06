@@ -6038,7 +6038,7 @@
                     unit.reserveToAddStatusEffect(StatusEffectType.Guard);
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 2)) {
                         for (let skillId of ally.enumerateSkills()) {
-                            if (SAVE_SKILLS_SET.has(skillId)) {
+                            if (SAVE_SKILL_SET.has(skillId)) {
                                 ally.reserveToAddStatusEffect(StatusEffectType.Guard);
                             }
                         }
@@ -8145,7 +8145,7 @@
 {
     let skillId = PassiveC.DarklingDragon;
     // 護り手
-    SAVE_SKILLS_SET.add(skillId);
+    SAVE_SKILL_SET.add(skillId);
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {

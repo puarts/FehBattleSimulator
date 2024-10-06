@@ -3375,6 +3375,8 @@ const PassiveC = {
 
     ShadowShift4: 3020, // 影助・引き戻し4
 
+    DRTwinNSave: 3032, // 盾の護り手・近・双
+
     // 専用C
     ConnectedWorld: 3028, // 人と神が繋がる世界
     Paranoia: 2987, // 被害妄想

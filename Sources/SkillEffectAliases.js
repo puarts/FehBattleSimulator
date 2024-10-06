@@ -98,6 +98,12 @@ const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_C
     );
 
 /**
+ * 敵の射程が1であるか
+ * @type {EqNode}
+ */
+const FOES_RANGE_IS_1_NODE = EQ_NODE(new FoesRangeNode(), 1);
+
+/**
  * 敵の射程が2であるか
  * @type {EqNode}
  */

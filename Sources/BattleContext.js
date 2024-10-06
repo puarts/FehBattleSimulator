@@ -44,6 +44,11 @@ class BattleContext {
      */
     #damageReductionRatiosByChainGuard = [];
 
+    /**
+     * 軽減回数増加(最大値適用)
+     */
+    #additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
+
     constructor() {
         this.initContext();
     }
@@ -204,7 +209,8 @@ class BattleContext {
         // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘N回のみ)(範囲奥義を除く)
         this.nTimesDamageReductionRatiosByNonDefenderSpecial = [];
         this.nTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
-        this.additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
+        // 軽減回数増加(最大値適用)
+        this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
 
         this.nTimesDamageReductionRatiosByEngageSpecial = [];
         this.nTimesDamageReductionRatiosByEngageSpecialCount = 0;
@@ -1030,5 +1036,14 @@ class BattleContext {
 
     getDamageReductionRatiosByChainGuard() {
         return this.#damageReductionRatiosByChainGuard;
+    }
+
+    get additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount() {
+        return this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount;
+    }
+
+    addAdditionalNTimesDamageReductionRatiosByNonDefenderSpecialCount(value) {
+        this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount =
+            Math.max(this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount, value);
     }
 }

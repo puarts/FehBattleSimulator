@@ -1,4 +1,25 @@
 // noinspection JSUnusedLocalSymbols
+// 盾の護り手・近・双
+{
+    let skillId = PassiveC.DRTwinNSave;
+    // If foe with Range = 1 initiates combat against an ally within 2 spaces of unit,
+    // triggers 【Savior】on unit.
+    SAVE_SKILL_SET.add(skillId);
+    CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe's Range = 1,
+        IF_NODE(FOES_RANGE_IS_1_NODE,
+            // grants Def/Res+4 to unit during combat,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4),
+            // any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
+            new AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode(1),
+            // and restores 7 HP to unit when unit deals damage to foe during combat (triggers even if 0 damage is dealt).
+            new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(7),
+        )
+    ));
+}
+
 // 竜の堅鱗
 {
     let skillId = PassiveB.DragonsScales;
