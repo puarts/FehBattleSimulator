@@ -156,3 +156,30 @@ const IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT = 
 
 const DEF_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_DEF_DURING_COMBAT_NODE, FOES_DEF_DURING_COMBAT_NODE);
 const RES_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_RES_DURING_COMBAT_NODE, FOES_RES_DURING_COMBAT_NODE);
+
+/**
+ * @param skillId
+ * @param {boolean} isMelee
+ * @param {SkillEffectNode} grantsNode
+ */
+function setTwinSave(skillId, isMelee, grantsNode) {
+    SAVE_SKILL_SET.add(skillId);
+    if (isMelee) {
+        CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
+    } else {
+        CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
+    }
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            IF_NODE(isMelee ? FOES_RANGE_IS_1_NODE : FOES_RANGE_IS_2_NODE,
+                // grants XXX+4 to unit during combat,
+                grantsNode,
+                // any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
+                new AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode(1),
+                // and restores 7 HP to unit when unit deals damage to foe during combat (triggers even if 0 damage is dealt).
+                new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(7),
+            ),
+        ),
+    );
+}
