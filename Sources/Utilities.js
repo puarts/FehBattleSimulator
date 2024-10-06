@@ -1634,6 +1634,58 @@ class ArrayUtil {
     }
 }
 
+/**
+ * Utility class for performing set operations.
+ */
+class SetUtil {
+    /**
+     * Computes the union of multiple sets.
+     * @template T
+     * @param {...Set<T>} sets - A list of sets.
+     * @returns {Set<T>} A new set that contains all unique elements from all sets.
+     */
+    static union(...sets) {
+        return new Set(sets.reduce((acc, set) => [...acc, ...set], []));
+    }
+
+    /**
+     * Computes the intersection of multiple sets.
+     * @template T
+     * @param {...Set<T>} sets - A list of sets.
+     * @returns {Set<T>} A new set that contains elements present in all sets.
+     */
+    static intersection(...sets) {
+        if (sets.length === 0) return new Set();
+        return sets.reduce((acc, set) => new Set([...acc].filter(item => set.has(item))));
+    }
+
+    /**
+     * Computes the difference of multiple sets.
+     * @template T
+     * @param {Set<T>} baseSet - The base set.
+     * @param {...Set<T>} sets - A list of sets to subtract from the base set.
+     * @returns {Set<T>} A new set that contains elements in the base set but not in the other sets.
+     */
+    static difference(baseSet, ...sets) {
+        return sets.reduce((acc, set) => new Set([...acc].filter(item => !set.has(item))), baseSet);
+    }
+
+    /**
+     * Computes the symmetric difference of multiple sets.
+     * @template T
+     * @param {...Set<T>} sets - A list of sets.
+     * @returns {Set<T>} A new set that contains elements in either one of the sets but not in both.
+     */
+    static symmetricDifference(...sets) {
+        if (sets.length === 0) return new Set();
+        return sets.reduce((acc, set) => {
+            const union = SetUtil.union(acc, set);
+            const intersection = SetUtil.intersection(acc, set);
+            return SetUtil.difference(union, intersection);
+        });
+    }
+}
+
 class MathUtil {
     /**
      * 「最低min、最大max」した値を返す。

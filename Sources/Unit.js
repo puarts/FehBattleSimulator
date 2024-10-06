@@ -2020,18 +2020,11 @@ class Unit extends BattleMapElement {
      * @return {Set<String>}
      */
     static getOriginSet(units) {
-        /** @type {Set<String>} */
-        let originSet = new Set();
-        for (let unit of units) {
-            for (let origin of unit.getOrigins()) {
-                if (origin.indexOf("紋章の謎") >= 0) {
-                    originSet.add("紋章の謎");
-                } else {
-                    originSet.add(origin);
-                }
-            }
-        }
-        return originSet;
+        return SetUtil.union(...Array.from(units).map(u => u.getOriginSet()));
+    }
+
+    getOriginSet() {
+        return new Set(this.getOrigins());
     }
 
     get hasWeapon() {
@@ -6151,22 +6144,36 @@ class Unit extends BattleMapElement {
     }
 
     hasSameOrigin(targetUnit) {
-        let origins = this.heroInfo.origin.split('|');
-        let targetOrigins = targetUnit.heroInfo.origin.split('|');
-        for (let origin of origins) {
-            let includesEmblem = origin.indexOf("紋章の謎") >= 0;
-            for (let targetOrigin of targetOrigins) {
-                if (includesEmblem) {
-                    if (targetOrigin.indexOf("紋章の謎") >= 0) {
-                        return true;
-                    }
-                }
-                else if (origin === targetOrigin) {
-                    return true;
-                }
-            }
+        return SetUtil.intersection(this.getNormalizedOriginSet(), targetUnit.getNormalizedOriginSet()).size > 0;
+    }
+
+    /**
+     * targetUnitが異なる出典を持っているか
+     * @param {Unit} targetUnit
+     * @returns {boolean}
+     */
+    hasDifferentOrigin(targetUnit) {
+        return SetUtil.difference(targetUnit.getNormalizedOriginSet(), this.getNormalizedOriginSet()).size > 0;
+    }
+
+    /**
+     * 暗黒竜と光の剣 => 暗黒竜・紋章など正規化された出典を返す。出典の数を参照したい場合は使用できないので注意(getOrigins, Unit.getOriginSetを使用すること)。
+     * @returns {Set<any>}
+     */
+    getNormalizedOriginSet() {
+        return new Set(this.heroInfo.origin.split('|').map(Unit.#normalizeOrigin));
+    }
+
+    static #normalizeOrigin(origin) {
+        let map = new Map([
+            ['暗黒竜と光の剣', '暗黒竜・紋章'],
+            ['紋章の謎', '暗黒竜・紋章'],
+            ['新・紋章の謎', '暗黒竜・紋章'],
+        ]);
+        if (map.has(origin)) {
+            return map.get(origin);
         }
-        return false;
+        return origin;
     }
 }
 

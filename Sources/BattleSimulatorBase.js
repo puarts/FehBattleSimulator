@@ -1178,48 +1178,27 @@ class BattleSimulatorBase {
         this.executePerActionCommand();
     }
 
-    __areSameOrigin(unit, targetOrigins) {
-        let origins = unit.heroInfo.origin.split('|');
-        for (let origin of origins) {
-            let includesEmblem = origin.indexOf("紋章の謎") >= 0;
-            for (let targetOrigin of targetOrigins) {
-                if (includesEmblem) {
-                    if (targetOrigin.indexOf("紋章の謎") >= 0) {
-                        return true;
-                    }
-                }
-                else if (origin === targetOrigin) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     __addStatusEffectToSameOriginUnits(duoUnit, statusEffect) {
-        let targetOrigins = duoUnit.heroInfo.origin.split('|');
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-            if (this.__areSameOrigin(unit, targetOrigins)) {
+            if (unit.hasSameOrigin(duoUnit)) {
                 unit.addStatusEffect(statusEffect);
             }
         }
     }
 
     __applySkillEffectToSameOriginUnits(duoUnit, func) {
-        let targetOrigins = duoUnit.heroInfo.origin.split('|');
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-            if (this.__areSameOrigin(unit, targetOrigins)) {
+            if (unit.hasSameOrigin(duoUnit)) {
                 func(unit);
             }
         }
     }
 
     __refreshHighestHpUnitsInSameOrigin(duoUnit) {
-        let targetOrigins = duoUnit.heroInfo.origin.split('|');
         let highestHpUnits = [];
         let highestHp = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
-            if (this.__areSameOrigin(unit, targetOrigins)) {
+            if (unit.hasSameOrigin(duoUnit)) {
                 if (unit !== duoUnit && unit.isActionDone) {
                     if (unit.hp > highestHp) {
                         highestHpUnits = [unit];
@@ -1355,9 +1334,8 @@ class BattleSimulatorBase {
                 }
                 break;
             case Hero.HarmonizedKarla: {
-                let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                    if (unit.hasSameOrigin(duoUnit)) {
                         unit.reduceSpecialCount(2);
                         unit.applyAtkBuff(6);
                         unit.addStatusEffect(StatusEffectType.ResonantBlades);
@@ -1377,9 +1355,8 @@ class BattleSimulatorBase {
                 }
                 break;
             case Hero.HarmonizedCordelia: {
-                let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                    if (unit.hasSameOrigin(duoUnit)) {
                         unit.applyBuffs(6, 6, 0, 0);
                         unit.addStatusEffect(StatusEffectType.ResonantBlades);
                         unit.addStatusEffect(StatusEffectType.Treachery);
@@ -1425,9 +1402,8 @@ class BattleSimulatorBase {
                 break;
             }
             case Hero.HarmonizedEdelgard: {
-                let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                    if (unit.hasSameOrigin(duoUnit)) {
                         unit.applyAtkBuff(6);
                     }
                 }
@@ -1436,9 +1412,8 @@ class BattleSimulatorBase {
                 break;
             }
             case Hero.HarmonizedRoy: {
-                let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                    if (unit.hasSameOrigin(duoUnit)) {
                         unit.applyDefBuff(6);
                         unit.applyResBuff(6);
                         unit.addStatusEffect(StatusEffectType.ResonantShield);
@@ -1462,9 +1437,8 @@ class BattleSimulatorBase {
                 }
                 break;
             case Hero.HarmonizedSonya: {
-                let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                    if (unit.hasSameOrigin(duoUnit)) {
                         unit.reduceSpecialCount(2);
                         unit.applyAtkBuff(6);
                         unit.addStatusEffect(StatusEffectType.ResonantBlades);
@@ -1490,9 +1464,8 @@ class BattleSimulatorBase {
                 }
                 break;
             case Hero.HarmonizedLysithea: {
-                let targetOrigins = duoUnit.heroInfo.origin.split('|');
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (this.__areSameOrigin(unit, targetOrigins)) {
+                    if (unit.hasSameOrigin(duoUnit)) {
                         unit.applyAtkBuff(6);
                     }
                 }
