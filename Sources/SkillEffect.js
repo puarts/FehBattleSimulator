@@ -2716,22 +2716,6 @@ class IsDifferentOriginNode extends BoolNode {
     }
 }
 
-/**
- * any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
- */
-class AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode extends FromPositiveNumberNode {
-    static {
-        Object.assign(this.prototype, GetUnitMixin);
-    }
-
-    evaluate(env) {
-        let unit = this.getUnit(env);
-        let n = this.evaluateChildren(env);
-        unit.battleContext.addAdditionalNTimesDamageReductionRatiosByNonDefenderSpecialCount(n);
-        env.debug(`${unit.nameWithGroup}は1戦闘1回の奥義スキルが持つダメージ軽減の発動回数を${n}回増加（${n + 1}回発動）}`);
-    }
-}
-
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {
         return LoggerBase.LOG_LEVEL.OFF;

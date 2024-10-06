@@ -1937,6 +1937,7 @@ const Weapon = {
     HornOfHarvest: 3026, // 開かれし祭の角
     HungryCatFang: 3029, // 感謝の戦猫の爪牙
     StoneOfDelights: 3030, // 収穫の喜びの竜石
+    OpposingStones: 3033, // 神魔の双竜の竜石
 };
 
 const Support = {

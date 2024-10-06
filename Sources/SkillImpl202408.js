@@ -1,4 +1,76 @@
 // noinspection JSUnusedLocalSymbols
+// 神魔の双竜の竜石
+{
+    let skillId = Weapon.OpposingStones;
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against dragon foes. Neutralizes "effective against armored" bonuses.
+    // If foe's Range = 2,
+    // calculates damage using the lower of foe's Def or Res.
+    // Unit can counterattack regardless of foe's range.
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Reduces damage from area-of-effect Specials (excluding Røkkr area-of-effect Specials) by 80%.
+        new ReducesDamageFromAoeSpecialsByXPercentNode(80),
+    ));
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's Special cooldown count is at its maximum value,
+        // grants Special cooldown count-1 to unit.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants weapon-triangle advantage against colorless foes and inflicts weapon-triangle disadvantage on colorless foes during combat.
+        GRANTS_TRIANGLE_ADVANTAGE_AGAINST_COLORLESS_TARGETS_FOES_AND_INFLICTS_TRIANGLE_DISADVANTAGE_ON_COLORLESS_TARGETS_FOES_DURING_COMBAT_NODE,
+        // If foe initiates combat or if foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            new NumThatIsNode(
+                // inflicts penalty on foe's Atk/Def/Res = 5 + number of allies within 3 spaces of unit × 3 (max 14; if unit triggers Savior,
+                // value is treated as 14),
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                COND_OP(new DoesTargetTriggerSaviorNode(),
+                    14,
+                    new EnsureMaxNode(
+                        ADD_NODE(5, MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)),
+                        14,
+                    ),
+                )
+            ),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // and reduces damage from foe's attacks by 20% of unit's Res during combat (excluding area-of-effect Specials),
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.2, UNITS_RES_DURING_COMBAT_NODE)),
+            ),
+            // and after combat,
+            // restores 7 HP to unit,
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // and also,
+            // if unit's Special cooldown count is at its maximum value,
+            // grants Special cooldown count-1 to unit.
+            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+        ),
+    ))
+
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // Grants Atk/Def/Res+4 to allies within 3 spaces during combat and restores 7 HP to those allies after their combat.
+            new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 4),
+        )
+    ));
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // Grants Atk/Def/Res+4 to allies within 3 spaces during combat and restores 7 HP to those allies after their combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        )
+    ));
+}
+
 // 盾の護り手・近・双
 {
     let skillId = PassiveC.DRTwinNSave;
@@ -246,18 +318,11 @@
             // and also,
             // if unit's Special cooldown count is at its maximum value after combat,
             // grants Special cooldown count-1 to unit after combat.
-            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+            new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
+                IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+            ),
         ),
     ))
-
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // For allies within 3 spaces of unit,
-        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
-            // if Special cooldown count is at its maximum value after combat,
-            // grants Special cooldown count-1.
-            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
-        ),
-    ));
 }
 
 // 堅固なる獣
@@ -331,7 +396,7 @@
     ));
 
     AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_AT_START_OF_COMBAT(
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
             // and restores X HP to unit as unit's combat begins (triggers after effects that deal damage as combat begins).
             RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE(),
         ),
@@ -342,7 +407,7 @@
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If foe initiates combat or if foe's HP ≥ 75% at start of combat,
-        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_AT_START_OF_COMBAT(
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
             // inflicts penalty on foe's Atk/Def during combat = 6 + number of allies within 3 spaces of unit × 3 (max 15),
             new NumThatIsNode(
                 new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
