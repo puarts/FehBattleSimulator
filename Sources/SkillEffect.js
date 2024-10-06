@@ -1647,6 +1647,20 @@ const NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE = new class extends SkillEffectNode {
     }
 }();
 
+class RestoreTargetHpNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let hp = unit.hp;
+        unit.heal(n);
+        env.debug(`${unit.nameWithGroup}はHPが${n}回復: ${hp} => ${unit.hp}`);
+    }
+}
+
 class ForEachNode extends SkillEffectNode {
 }
 

@@ -1,4 +1,29 @@
 // noinspection JSUnusedLocalSymbols
+// 双界ナギの比翼効果
+{
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(Hero.HarmonizedNagi,
+        new SkillEffectNode(
+            // For unit and allies from the same titles as unit,
+            new ForEachUnitFromSameTitlesNode(
+                // grants Atk/Res+6,
+                new GrantsStatsNode(6, 0, 0, 6),
+                // 【Resonance: Shields】,
+                // "neutralizes 'effective against dragons' bonuses," and
+                // 【Warp Bubble】for 1 turn,
+                new GrantsStatusEffectsNode(
+                    StatusEffectType.ResonantShield,
+                    StatusEffectType.ShieldDragon,
+                    StatusEffectType.WarpBubble,
+                ),
+                // neutralizes any【Penalty】,
+                NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+                // and restores 30 HP.
+                new RestoreTargetHpNode(30),
+            ),
+        )
+    )
+}
+
 // 兜の護り手・遠・双
 {
     setTwinSave(PassiveC.ARTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
@@ -1175,7 +1200,7 @@
 
 // 比翼フィヨルムの比翼効果
 {
-    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(1169,
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(Hero.DuoFjorm,
         new SkillEffectNode(
             new AppliesDivineVeinIceToTargetsSpaceAndSpacesWithinNSpacesOfTargetFor2TurnsNode(2),
         )
@@ -2715,8 +2740,7 @@
 
 // 双界ネフェニーの双界スキル
 {
-    // TODO: indexを直接書かないで良いように依存関係を修正する
-    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(1157,
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(Hero.HarmonizedNephenee,
         new SkillEffectNode(
             new ForEachUnitFromSameTitlesNode(
                 new GrantsStatsNode(6, 6, 0, 0),
