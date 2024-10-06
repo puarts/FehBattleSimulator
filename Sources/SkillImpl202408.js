@@ -1,4 +1,82 @@
 // noinspection JSUnusedLocalSymbols
+// 収穫の喜びの竜石
+{
+    let skillId = Weapon.StoneOfDelights;
+    // Accelerates Special trigger (cooldown count-1).
+    // If foe's Range = 2,
+    // calculates damage using the lower of foe's Def or Res.
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // grants Special cooldown count-1 to unit and to any ally with max HP < unit's max HP.
+        new ForTargetsAlliesOnMapNode(LT_NODE(new TargetsHpAtStartOfTurnNode(), new SkillOwnerMaxHpNode()), true,
+            new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            new NumThatIsNode(
+                // inflicts penalty on foe's Atk/Def/Res = 5 + number of allies within 3 spaces of unit × 3 (max 14; if unit triggers Savior,
+                // value is treated as 14),
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                COND_OP(new DoesTargetTriggerSaviorNode(),
+                    14,
+                    new EnsureMaxNode(
+                        ADD_NODE(5, MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)),
+                        14,
+                    ),
+                )
+            ),
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // unit deals +X damage,
+                    new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                    // and reduces damage from foe's attacks by X during combat
+                    new ReducesDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                ),
+                new EnsureMinMaxNode(SUB_NODE(new TargetsMaxHpNode(), new FoesHpAtStartOfCombatNode()), 8, 16),
+                // (X = unit's max HP - foe's HP at start of combat; max 16; min 8; including when dealing damage with a Special triggered before combat,
+                // in which case X is calculated using HP before Special triggers),
+            ),
+            // and also,
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5 during combat,
+                IF_NODE(AND_NODE(
+                        CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                        GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5))),
+                    // inflicts Special cooldown count+1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                ),
+            ),
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // and unit's Special cooldown count is at its maximum value after combat,
+            // grants Special cooldown count-1 to unit after combat.
+            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new NumThatIsNode(
+            new SkillEffectNode(
+                // unit deals +X damage,
+                new UnitDealsDamageBeforeCombatNode(READ_NUM_NODE),
+                // and reduces damage from foe's attacks by X during combat
+                new ReducesDamageBeforeCombatNode(READ_NUM_NODE),
+            ),
+            new EnsureMinMaxNode(SUB_NODE(new TargetsMaxHpNode(), new FoesHpAtStartOfCombatNode()), 8, 16),
+            // (X = unit's max HP - foe's HP at start of combat; max 16; min 8; including when dealing damage with a Special triggered before combat,
+            // in which case X is calculated using HP before Special triggers),
+        ),
+    ));
+}
+
 // 感謝の戦猫の爪牙
 {
     let skillId = Weapon.HungryCatFang;

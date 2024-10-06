@@ -77,6 +77,45 @@ class DoesFoeInitiateCombatNode extends DoesTargetInitiateCombatNode {
 
 const DOES_FOE_INITIATE_COMBAT_NODE = new DoesFoeInitiateCombatNode();
 
+class TargetsHpAtStartOfTurnNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hp = unit.hp;
+        env.debug(`${unit.nameWithGroup}のターン開始時のHP: ${hp}`);
+        return hp;
+    }
+}
+
+class FoesHpAtStartOfTurnNode extends TargetsHpAtStartOfTurnNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+// TODO: ターン開始時HPと戦闘開始時HPについて調査する
+class TargetsHpAtStartOfCombatNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hp = unit.hp;
+        env.debug(`${unit.nameWithGroup}の戦闘開始時のHP: ${hp}`);
+        return hp;
+    }
+}
+
+class FoesHpAtStartOfCombatNode extends TargetsHpAtStartOfCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 class TargetsHpPercentageAtStartOfCombatNode extends NumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
