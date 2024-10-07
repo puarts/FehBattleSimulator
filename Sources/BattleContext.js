@@ -44,6 +44,11 @@ class BattleContext {
      */
     #damageReductionRatiosByChainGuard = [];
 
+    /**
+     * 軽減回数増加(最大値適用)
+     */
+    #additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
+
     constructor() {
         this.initContext();
     }
@@ -201,8 +206,15 @@ class BattleContext {
         // 奥義による攻撃でダメージを与えた時、次の敵の攻撃ダメージ軽減
         this.damageReductionRatiosOfNextAttackWhenSpecialActivated = [];
 
-        // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
-        this.damageReductionRatiosWhenCondSatisfied = [];
+        // 戦闘中受けた攻撃ダメージを40%軽減(1戦闘N回のみ)(範囲奥義を除く)
+        this.nTimesDamageReductionRatiosByNonDefenderSpecial = [];
+        this.nTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
+        // 軽減回数増加(最大値適用)
+        this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount = 0;
+
+        this.nTimesDamageReductionRatiosByEngageSpecial = [];
+        this.nTimesDamageReductionRatiosByEngageSpecialCount = 0;
+        // this.additionalNTimesDamageReductionRatiosByEngageSpecialCount = 0;
 
         // 戦闘中に変化する可能性のある奥義扱いのダメージ軽減
         this.damageReductionRatiosBySpecialPerAttack = [];
@@ -1024,5 +1036,14 @@ class BattleContext {
 
     getDamageReductionRatiosByChainGuard() {
         return this.#damageReductionRatiosByChainGuard;
+    }
+
+    get additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount() {
+        return this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount;
+    }
+
+    addAdditionalNTimesDamageReductionRatiosByNonDefenderSpecialCount(value) {
+        this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount =
+            Math.max(this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount, value);
     }
 }

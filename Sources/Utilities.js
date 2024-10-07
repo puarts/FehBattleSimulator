@@ -1,5 +1,17 @@
 /// @file
 /// @brief ユーティリティークラス、関数等の定義です。
+/**
+ * ObjectUtil
+ */
+class ObjectUtil {
+    static makeMapFromObj(object) {
+        return new Map(Object.entries(object).map(([text, value]) => [value, text]));
+    }
+
+    static makeOptionFromObj(object) {
+        return Object.entries(object).map(([text, value]) => ({value, text}));
+    }
+}
 
 /**
  * @template T
@@ -148,11 +160,11 @@ class CookieWriter {
     delete(name) {
         if (this.useCookieJs) {
             $.removeCookie(name);
-        }
-        else {
+        } else {
             document.cookie = `${name}=; max-age=0;`;
         }
     }
+
     write(name, value) {
         if (this.useCookieJs) {
             $.cookie(name, value);
@@ -161,11 +173,11 @@ class CookieWriter {
         }
         // console.log("write:" + document.cookie);
     }
+
     read(name) {
         if (this.useCookieJs) {
             return $.cookie(name);
-        }
-        else {
+        } else {
             // console.log("read:" + document.cookie);
             if (document.cookie !== "") {
                 let settings = document.cookie.split(';');
@@ -185,6 +197,47 @@ class CookieWriter {
             }
         }
         return null;
+    }
+}
+
+class LocalStorageUtil {
+    /**
+     * 数値をローカルストレージに保存します。
+     * @param {string} key - 保存するためのキー。
+     * @param {number} value - 保存する数値。
+     */
+    static setNumber(key, value) {
+        if (typeof value === 'number') {
+            localStorage.setItem(key, value.toString());
+        } else {
+            console.error('Value must be a number');
+        }
+    }
+
+    /**
+     * ローカルストレージから数値を取得します。
+     * @param {string} key - 取得するためのキー。
+     * @param {number} defaultValue - キーが見つからない場合のデフォルト値。
+     * @returns {number} - 取得した数値、またはデフォルト値。
+     */
+    static getNumber(key, defaultValue = 0) {
+        const value = localStorage.getItem(key);
+        return value !== null ? parseFloat(value) : defaultValue;
+    }
+
+    /**
+     * ローカルストレージから数値を削除します。
+     * @param {string} key - 削除するためのキー。
+     */
+    static removeNumber(key) {
+        localStorage.removeItem(key);
+    }
+
+    /**
+     * ローカルストレージの全ての数値をクリアします。
+     */
+    static clear() {
+        localStorage.clear();
     }
 }
 
@@ -212,7 +265,7 @@ class KeyboardManager {
             }
         }, false);
 
-        document.addEventListener('visibilitychange', function() {
+        document.addEventListener('visibilitychange', function () {
             // 画面を離れた際にShift, Controlのフラグが残り続けるのでリセットする
             self.isShiftKeyPressing = false;
             self.isControlKeyPressing = false;
@@ -273,14 +326,14 @@ class ObjectStorage {
         return null;
     }
 
-    *enumerateAllObjs() {
+    * enumerateAllObjs() {
         for (let i = 0; i < this._objs.length; ++i) {
             let obj = this._objs[i];
             yield obj;
         }
     }
 
-    *enumerateRequiredObjs() {
+    * enumerateRequiredObjs() {
         for (let i = 0; i < this._objs.length; ++i) {
             let obj = this._objs[i];
             if (obj.isRequired) {
@@ -456,14 +509,18 @@ class CommandQueue {
 
     undo() {
         this.__undoRedoImpl(
-            function (command) { command.undo(); },
+            function (command) {
+                command.undo();
+            },
             this.undoStack, this.redoStack,
             CommandType.End, CommandType.Begin);
     }
 
     redo() {
         this.__undoRedoImpl(
-            function (command) { command.execute(); },
+            function (command) {
+                command.execute();
+            },
             this.redoStack, this.undoStack,
             CommandType.Begin, CommandType.End);
     }
@@ -494,7 +551,7 @@ class CommandQueue {
  */
 function sleep(waitMilliseconds) {
     let startMilliseconds = new Date();
-    while (new Date() - startMilliseconds < waitMilliseconds);
+    while (new Date() - startMilliseconds < waitMilliseconds) ;
 }
 
 /**
@@ -562,15 +619,19 @@ function toBoolean(text) {
 function calcDistance(ax, ay, bx, by) {
     return Math.abs(ax - bx) + Math.abs(ay - by);
 }
+
 function boolToInt(value) {
     return value ? 1 : 0;
 }
+
 function intToBool(value) {
     return value !== 0;
 }
+
 function calcSimilarity(s1, s2) {
     return levenshtein(adjustChars(s1), adjustChars(s2));
 }
+
 function adjustChars(s1) {
     // 日本語で区別が難しい単語は同じ単語とみなして類似度を計算する
     const replaceChars = {
@@ -914,6 +975,7 @@ function combineText(textArray) {
     }
     return result;
 }
+
 /**
  * @param  {String} ocrResult
  * @returns {String[]}
@@ -992,36 +1054,59 @@ function loadAndProcessImage(file, processFunc) {
 
 function matTypeToString(mat) {
     switch (mat.type()) {
-        case cv.CV_8U: return "CV_8U";
-        case cv.CV_8S: return "CV_8S";
-        case cv.CV_16U: return "CV_16U";
-        case cv.CV_16S: return "CV_16S";
-        case cv.CV_32S: return "CV_32S";
-        case cv.CV_32F: return "CV_32F";
-        case cv.CV_64F: return "CV_64F";
+        case cv.CV_8U:
+            return "CV_8U";
+        case cv.CV_8S:
+            return "CV_8S";
+        case cv.CV_16U:
+            return "CV_16U";
+        case cv.CV_16S:
+            return "CV_16S";
+        case cv.CV_32S:
+            return "CV_32S";
+        case cv.CV_32F:
+            return "CV_32F";
+        case cv.CV_64F:
+            return "CV_64F";
 
-        case cv.CV_8UC4: return "CV_8UC4";
+        case cv.CV_8UC4:
+            return "CV_8UC4";
 
-        case cv.CV_8SC4: return "CV_8SC4";
+        case cv.CV_8SC4:
+            return "CV_8SC4";
 
-        case cv.CV_16UC4: return "CV_16UC4";
+        case cv.CV_16UC4:
+            return "CV_16UC4";
 
 
-        case cv.CV_16SC1: return "CV_16SC1";
-        case cv.CV_16SC2: return "CV_16SC2";
-        case cv.CV_16SC3: return "CV_16SC3";
-        case cv.CV_16SC4: return "CV_16SC4";
+        case cv.CV_16SC1:
+            return "CV_16SC1";
+        case cv.CV_16SC2:
+            return "CV_16SC2";
+        case cv.CV_16SC3:
+            return "CV_16SC3";
+        case cv.CV_16SC4:
+            return "CV_16SC4";
 
-        case cv.CV_32SC1: return "CV_32SC1";
-        case cv.CV_32SC2: return "CV_32SC2";
-        case cv.CV_32SC3: return "CV_32SC3";
-        case cv.CV_32SC4: return "CV_32SC4";
+        case cv.CV_32SC1:
+            return "CV_32SC1";
+        case cv.CV_32SC2:
+            return "CV_32SC2";
+        case cv.CV_32SC3:
+            return "CV_32SC3";
+        case cv.CV_32SC4:
+            return "CV_32SC4";
 
-        case cv.CV_32FC1: return "CV_32FC1";
-        case cv.CV_32FC2: return "CV_32FC2";
-        case cv.CV_32FC3: return "CV_32FC3";
-        case cv.CV_32FC4: return "CV_32FC4";
-        default: return mat.type();
+        case cv.CV_32FC1:
+            return "CV_32FC1";
+        case cv.CV_32FC2:
+            return "CV_32FC2";
+        case cv.CV_32FC3:
+            return "CV_32FC3";
+        case cv.CV_32FC4:
+            return "CV_32FC4";
+        default:
+            return mat.type();
     }
 }
 
@@ -1076,8 +1161,7 @@ function truncNumberWithFloatError(value) {
     let revisedValue = value;
     if (value < 0) {
         revisedValue -= ErrorCorrectionValue;
-    }
-    else {
+    } else {
         revisedValue += ErrorCorrectionValue;
     }
     return Math.trunc(revisedValue);
@@ -1547,6 +1631,58 @@ class ArrayUtil {
      */
     static apply(array1, array2, func) {
         return array1.map((value, index) => func(value, array2[index]));
+    }
+}
+
+/**
+ * Utility class for performing set operations.
+ */
+class SetUtil {
+    /**
+     * Computes the union of multiple sets.
+     * @template T
+     * @param {...Set<T>} sets - A list of sets.
+     * @returns {Set<T>} A new set that contains all unique elements from all sets.
+     */
+    static union(...sets) {
+        return new Set(sets.reduce((acc, set) => [...acc, ...set], []));
+    }
+
+    /**
+     * Computes the intersection of multiple sets.
+     * @template T
+     * @param {...Set<T>} sets - A list of sets.
+     * @returns {Set<T>} A new set that contains elements present in all sets.
+     */
+    static intersection(...sets) {
+        if (sets.length === 0) return new Set();
+        return sets.reduce((acc, set) => new Set([...acc].filter(item => set.has(item))));
+    }
+
+    /**
+     * Computes the difference of multiple sets.
+     * @template T
+     * @param {Set<T>} baseSet - The base set.
+     * @param {...Set<T>} sets - A list of sets to subtract from the base set.
+     * @returns {Set<T>} A new set that contains elements in the base set but not in the other sets.
+     */
+    static difference(baseSet, ...sets) {
+        return sets.reduce((acc, set) => new Set([...acc].filter(item => !set.has(item))), baseSet);
+    }
+
+    /**
+     * Computes the symmetric difference of multiple sets.
+     * @template T
+     * @param {...Set<T>} sets - A list of sets.
+     * @returns {Set<T>} A new set that contains elements in either one of the sets but not in both.
+     */
+    static symmetricDifference(...sets) {
+        if (sets.length === 0) return new Set();
+        return sets.reduce((acc, set) => {
+            const union = SetUtil.union(acc, set);
+            const intersection = SetUtil.intersection(acc, set);
+            return SetUtil.difference(union, intersection);
+        });
     }
 }
 

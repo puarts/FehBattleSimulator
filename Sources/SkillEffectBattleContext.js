@@ -77,6 +77,45 @@ class DoesFoeInitiateCombatNode extends DoesTargetInitiateCombatNode {
 
 const DOES_FOE_INITIATE_COMBAT_NODE = new DoesFoeInitiateCombatNode();
 
+class TargetsHpAtStartOfTurnNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hp = unit.hp;
+        env.debug(`${unit.nameWithGroup}のターン開始時のHP: ${hp}`);
+        return hp;
+    }
+}
+
+class FoesHpAtStartOfTurnNode extends TargetsHpAtStartOfTurnNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+// TODO: ターン開始時HPと戦闘開始時HPについて調査する
+class TargetsHpAtStartOfCombatNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hp = unit.hp;
+        env.debug(`${unit.nameWithGroup}の戦闘開始時のHP: ${hp}`);
+        return hp;
+    }
+}
+
+class FoesHpAtStartOfCombatNode extends TargetsHpAtStartOfCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 class TargetsHpPercentageAtStartOfCombatNode extends NumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -597,6 +636,39 @@ class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
 }
 
 /**
+ * Reduces damage from area-of-effect Specials (excluding Røkkr area-of-effect Specials) by 80%.
+ */
+class ReducesDamageFromAoeSpecialsByXPercentNode extends ApplyingNumberNode {
+    getDescription(n) {
+        return `受けた範囲奥義のダメージを${n}%軽減`;
+    }
+
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let n = this.evaluateChildren(env);
+        unit.battleContext.multDamageReductionRatioOfPrecombatSpecial(n / 100);
+        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${unit.battleContext.damageReductionRatioForPrecombat}`);
+    }
+}
+
+/**
+ * reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials),
+ */
+class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.addDamageReductionRatio(percentage / 100);
+        let ratios = unit.battleContext.getDamageReductionRatios();
+        env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+    }
+}
+
+/**
  * reduces damage from foe's first attack by X% during combat
  */
 class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends ApplyingNumberNode {
@@ -807,8 +879,8 @@ class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode extends 
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.damageReductionRatiosWhenCondSatisfied.push(n / 100.0);
-        let ratios = unit.battleContext.damageReductionRatiosWhenCondSatisfied;
+        unit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(n / 100.0);
+        let ratios = unit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial;
         env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${n}%軽減(1戦闘1回のみ): ratios [${ratios}]`);
     }
 }
@@ -1263,3 +1335,37 @@ class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkNode extends FromPos
         env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに守備の値を使用(${percentage}%)`);
     }
 }
+
+/**
+ * any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
+ */
+class AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.addAdditionalNTimesDamageReductionRatiosByNonDefenderSpecialCount(n);
+        env.debug(`${unit.nameWithGroup}は1戦闘1回の奥義スキルが持つダメージ軽減の発動回数を${n}回増加（${n + 1}回発動）}`);
+    }
+}
+
+/**
+ * Grants weapon-triangle advantage against colorless foes and inflicts weapon-triangle disadvantage on colorless foes during combat.
+ */
+class GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisadvantageOnColorlessTargetsFoesDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.isAdvantageForColorless = true;
+        env.debug(`${unit.nameWithGroup}は無属性の敵との戦闘時自分は3すくみ有利、敵は3すくみ不利となる`);
+    }
+}
+
+const GRANTS_TRIANGLE_ADVANTAGE_AGAINST_COLORLESS_TARGETS_FOES_AND_INFLICTS_TRIANGLE_DISADVANTAGE_ON_COLORLESS_TARGETS_FOES_DURING_COMBAT_NODE
+    = new GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisadvantageOnColorlessTargetsFoesDuringCombatNode();

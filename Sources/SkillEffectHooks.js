@@ -200,7 +200,12 @@ const HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS = new SkillEffectHooks();
 /**
  * ターン開始時の化身のタイミング
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
-const AT_TRANSFORMATION_PHASE_HOOKS = new SkillEffectHooks();
+const CAN_TRANSFORM_AT_START_OF_TURN__HOOKS = new SkillEffectHooks();
+
+/**
+ * 敵ターン開始時の化身のタイミング
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS = new SkillEffectHooks();
 
 /**
  * Unit can move to a space
@@ -213,9 +218,14 @@ const UNIT_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
 
 /**
- * unit can move through foes' spaces.
+ * 戦闘開始後ダメージ後の回復
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS = new SkillEffectHooks();
+
+/**
+ * 周囲からの戦闘開始後ダメージ後の回復
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const FOR_ALLIES_AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS = new SkillEffectHooks();
 
 /**
  * Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).

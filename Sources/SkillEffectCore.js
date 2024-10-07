@@ -616,6 +616,8 @@ class LtNode extends CompareNode {
     }
 }
 
+const LT_NODE = (a, b) => new LtNode(a, b);
+
 class LteNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);

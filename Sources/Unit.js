@@ -543,6 +543,8 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
         // このターン自分から攻撃を行ったか
         this.isAttackDone = false;
+        // このターン相手から攻撃を行われたか
+        this.isAttackedDone = false;
         // このターン戦闘を行なったか
         this.isCombatDone = false;
         // このターン補助を行ったか
@@ -2003,33 +2005,12 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * 出典を返す。
-     * @return {[String]}
-     */
-    getOrigins() {
-        let info = this.heroInfo;
-        if (info === null) return [];
-        return info.origin.split('|');
-    }
-
-    /**
      * 出典の集合を返す。
      * @param {[Unit]|Generator<Unit>} units
      * @return {Set<String>}
      */
-    static getOriginSet(units) {
-        /** @type {Set<String>} */
-        let originSet = new Set();
-        for (let unit of units) {
-            for (let origin of unit.getOrigins()) {
-                if (origin.indexOf("紋章の謎") >= 0) {
-                    originSet.add("紋章の謎");
-                } else {
-                    originSet.add(origin);
-                }
-            }
-        }
-        return originSet;
+    static getTitleSet(units) {
+        return SetUtil.union(...Array.from(units).map(u => u.getTitleSet()));
     }
 
     get hasWeapon() {
@@ -2393,7 +2374,7 @@ class Unit extends BattleMapElement {
         let hasSkills = false;
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(2マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('移動時(2マス以内)').setLogLevel(NodeEnv.LOG_LEVEL.WARN);
+        env.setName('移動時(2マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
         hasSkills |=
             CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
         for (let skillId of this.enumerateSkills()) {
@@ -2418,7 +2399,7 @@ class Unit extends BattleMapElement {
         let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwalk);
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(1マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('移動時(1マス以内)').setLogLevel(NodeEnv.LOG_LEVEL.WARN);
+        env.setName('移動時(1マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
         hasSkills |=
             CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
         for (let skillId of this.enumerateSkills()) {
@@ -3578,6 +3559,18 @@ class Unit extends BattleMapElement {
     setFromPos(x, y) {
         this.fromPosX = x;
         this.fromPosY = y;
+    }
+
+    fromPosStr() {
+        return `(${this.fromPosX}, ${this.fromPosY})`;
+    }
+
+    getLocationStr(tileToAttack = null) {
+        let atkInfo = '';
+        if (tileToAttack) {
+            atkInfo = ` 攻撃マス: ${tileToAttack}`;
+        }
+        return `${this.nameWithGroup}: ${this.fromPosStr()} => ${this.placedTile}${atkInfo}`;
     }
 
     getTriangleAdeptAdditionalRatio() {
@@ -6031,7 +6024,7 @@ class Unit extends BattleMapElement {
 
     __hasSaveSkills() {
         for (let skillId of this.enumerateSkills()) {
-            if (SAVE_SKILLS_SET.has(skillId)) {
+            if (SAVE_SKILL_SET.has(skillId)) {
                 return true;
             }
         }
@@ -6134,6 +6127,39 @@ class Unit extends BattleMapElement {
 
     hasEmblemHero() {
         return this.emblemHeroIndex !== EmblemHero.None;
+    }
+
+    hasSameTitle(targetUnit) {
+        return SetUtil.intersection(this.getTitleSet(), targetUnit.getTitleSet()).size > 0;
+    }
+
+    /**
+     * targetUnitが異なる出典を持っているか
+     * @param {Unit} targetUnit
+     * @returns {boolean}
+     */
+    hasDifferentTitle(targetUnit) {
+        return SetUtil.difference(targetUnit.getTitleSet(), this.getTitleSet()).size > 0;
+    }
+
+    /**
+     * タイトル（登場フィルタ）の集合を返す。暗黒竜、紋章は同様のタイトルとみなす。
+     * @returns {Set<any>}
+     */
+    getTitleSet() {
+        return new Set(this.heroInfo.origin.split('|').map(Unit.#originToTitle));
+    }
+
+    static #originToTitle(origin) {
+        let map = new Map([
+            ['暗黒竜と光の剣', '暗黒竜・紋章'],
+            ['紋章の謎', '暗黒竜・紋章'],
+            ['新・紋章の謎', '暗黒竜・紋章'],
+        ]);
+        if (map.has(origin)) {
+            return map.get(origin);
+        }
+        return origin;
     }
 }
 

@@ -98,6 +98,12 @@ const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_C
     );
 
 /**
+ * 敵の射程が1であるか
+ * @type {EqNode}
+ */
+const FOES_RANGE_IS_1_NODE = EQ_NODE(new FoesRangeNode(), 1);
+
+/**
  * 敵の射程が2であるか
  * @type {EqNode}
  */
@@ -141,3 +147,39 @@ const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL = skillId => {
  */
 const IS_TARGET_CAVALRY_WITH_RANGE_2_NODE =
     AND_NODE(EQ_NODE(new TargetsMoveTypeNode(), MoveType.Cavalry), EQ_NODE(new TargetsRangeNode(), 2));
+
+/**
+ * If foe initiates combat or if foe's HP ≥ 75% at start of combat,
+ */
+const IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT = (...nodes) =>
+    IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE), ...nodes);
+
+const DEF_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_DEF_DURING_COMBAT_NODE, FOES_DEF_DURING_COMBAT_NODE);
+const RES_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_RES_DURING_COMBAT_NODE, FOES_RES_DURING_COMBAT_NODE);
+
+/**
+ * @param skillId
+ * @param {boolean} isMelee
+ * @param {SkillEffectNode} grantsNode
+ */
+function setTwinSave(skillId, isMelee, grantsNode) {
+    SAVE_SKILL_SET.add(skillId);
+    if (isMelee) {
+        CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
+    } else {
+        CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
+    }
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            IF_NODE(isMelee ? FOES_RANGE_IS_1_NODE : FOES_RANGE_IS_2_NODE,
+                // grants XXX+4 to unit during combat,
+                grantsNode,
+                // any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
+                new AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode(1),
+                // and restores 7 HP to unit when unit deals damage to foe during combat (triggers even if 0 damage is dealt).
+                new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(7),
+            ),
+        ),
+    );
+}

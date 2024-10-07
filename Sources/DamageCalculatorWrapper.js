@@ -64,6 +64,7 @@ class DamageCalculatorWrapper {
         this.map = map;
         this.globalBattleContext = globalBattleContext;
         this._damageCalc = new DamageCalculator(logger, unitManager);
+        this.logger = logger;
         this.profiler = new PerformanceProfile();
         this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger);
 
@@ -281,6 +282,7 @@ class DamageCalculatorWrapper {
             let saverUnit = result.defUnit;
             let tile = saverUnit.placedTile;
             saverUnit.restoreOriginalTile();
+            this.logger.trace2(`[護り手後] ${saverUnit.getLocationStr()}`);
             tile.setUnit(defUnit);
         }
 
@@ -307,10 +309,12 @@ class DamageCalculatorWrapper {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
         let result;
+        this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
         using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
             self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
             self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
         }), () => {
+            this.logger.trace2(`[マス移動後] ${atkUnit.getLocationStr(tileToAttack)}`);
             this.#initBattleContext(atkUnit, defUnit);
 
             this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageType, true);
@@ -386,6 +390,7 @@ class DamageCalculatorWrapper {
             atkUnit.copySpursToSnapshot();
             actualDefUnit.copySpursToSnapshot();
         });
+        this.logger.trace2(`[行動後] ${atkUnit.getLocationStr(tileToAttack)}`);
 
         return result;
     }
@@ -454,8 +459,11 @@ class DamageCalculatorWrapper {
         // 1マスに複数ユニットが配置される状況は考慮していなかった。
         // おそらく戦闘中だけの設定であれば不要だと思われるので一旦設定無視してる。
         // todo: 必要になったら、Tile.placedUnit を複数設定できるよう対応する
+        this.logger.trace2(`[護り手配置前] ${saverUnit.getLocationStr()}`);
         saverUnit.placedTile = defUnit.placedTile;
         saverUnit.setPos(saverUnit.placedTile.posX, saverUnit.placedTile.posY);
+        saverUnit.setFromPos(saverUnit.placedTile.posX, saverUnit.placedTile.posY);
+        this.logger.trace2(`[護り手配置後] ${saverUnit.getLocationStr()}`);
 
         saverUnit.initBattleContext(defUnit.battleContext.initiatesCombat);
         saverUnit.battleContext.isSaviorActivated = true;
@@ -650,13 +658,14 @@ class DamageCalculatorWrapper {
         self.__selectReferencingResOrDef(defUnit, atkUnit);
 
         // 戦闘開始後ダメージ決定後に評価されるスキル効果
+        // TODO: リファクタリング。戦闘開始時にBattleContextに設定できるようにする
         {
             this.applySkillEffectsAfterAfterBeginningOfCombat(atkUnit, defUnit, calcPotentialDamage, damageType);
             this.applySkillEffectsAfterAfterBeginningOfCombat(defUnit, atkUnit, calcPotentialDamage, damageType);
 
             // 周囲の敵からのスキル効果
-            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(atkUnit, defUnit, calcPotentialDamage);
-            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(defUnit, atkUnit, calcPotentialDamage);
+            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(atkUnit, defUnit, calcPotentialDamage, damageType);
+            this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(defUnit, atkUnit, calcPotentialDamage, damageType);
         }
 
         let result;
@@ -820,6 +829,16 @@ class DamageCalculatorWrapper {
         }
 
         for (let skillId of ally.enumerateSkills()) {
+            if (atkUnit.isMeleeWeaponType()) {
+                if (CAN_SAVE_FROM_MELEE_SKILL_SET.has(skillId)) {
+                    return true;
+                }
+            }
+            if (atkUnit.isRangedWeaponType()) {
+                if (CAN_SAVE_FROM_RANGED_SKILL_SET.has(skillId)) {
+                    return true;
+                }
+            }
             if (getSkillFunc(skillId, canActivateSaveSkillFuncMap)?.call(this, atkUnit, ally) ?? false) {
                 return true;
             }
@@ -2348,11 +2367,11 @@ class DamageCalculatorWrapper {
             // 各ターンについて、自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時、戦闘中、
             // 受けるダメージー10（範囲奥義を除く）
             if (targetUnit.battleContext.initiatesCombat) {
-                if (targetUnit.isAttackDone) {
+                if (!targetUnit.isAttackDone) {
                     targetUnit.battleContext.damageReductionValue += 10;
                 }
             } else {
-                if (!targetUnit.isCombatDone && !targetUnit.isAttackDone) {
+                if (!targetUnit.isAttackedDone) {
                     targetUnit.battleContext.damageReductionValue += 10;
                 }
             }
@@ -2784,8 +2803,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-                let originSet = Unit.getOriginSet(units);
-                let amount = Math.min(originSet.size * 3 + 4, 10);
+                let amount = Math.min(Unit.getTitleSet(units).size * 3 + 4, 10);
                 enemyUnit.addAllSpur(-amount);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
             }
@@ -4174,8 +4192,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
                 let units = self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-                let originSet = Unit.getOriginSet(units);
-                let amount = Math.min(originSet.size * 4 + 4, 12);
+                let amount = Math.min(Unit.getTitleSet(units).size * 4 + 4, 12);
                 enemyUnit.addSpurs(0, -amount, -amount, 0);
             }
         }
@@ -17352,6 +17369,12 @@ class DamageCalculatorWrapper {
         }
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {number} damageType
+     */
     applySkillEffectsAfterAfterBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         // 神獣の蜜
         if (targetUnit.hasStatusEffect(StatusEffectType.DivineNectar)) {
@@ -17367,7 +17390,13 @@ class DamageCalculatorWrapper {
         }
     }
 
-    applySkillEffectsAfterAfterBeginningOfCombatFromAllies(targetUnit, enemyUnit, calcPotentialDamage) {
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @param {number} damageType
+     */
+    applySkillEffectsAfterAfterBeginningOfCombatFromAllies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
             return;
         }
@@ -17376,6 +17405,9 @@ class DamageCalculatorWrapper {
         }
 
         if (!calcPotentialDamage) {
+            let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, calcPotentialDamage);
+            env.setName('周囲からの戦闘開始後ダメージ後').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+            FOR_ALLIES_AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.evaluateWithUnit(targetUnit, env);
             // 距離に関係ない効果
             for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
                 if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {

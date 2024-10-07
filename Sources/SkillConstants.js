@@ -1932,6 +1932,12 @@ const Weapon = {
 
     // 紋章士シグルド
     HolyWarSpear: 3023, // 聖騎士の槍
+
+    // ハロウィン
+    HornOfHarvest: 3026, // 開かれし祭の角
+    HungryCatFang: 3029, // 感謝の戦猫の爪牙
+    StoneOfDelights: 3030, // 収穫の喜びの竜石
+    OpposingStones: 3033, // 神魔の双竜の竜石
 };
 
 const Support = {
@@ -2156,6 +2162,7 @@ const Special = {
     Gust: 2952, // 陣風
     FierceBeast: 2960, // 猛獣
     CurvedShot: 2986, // 曲射
+    SturdyBeast: 3027, // 堅固なる獣
 
     // 専用奥義
     Override: 3024, // オーバードライヴ
@@ -2906,6 +2913,8 @@ const PassiveB = {
 
     Momentum4: 3025, // 助走4
 
+    DragonsScales: 3031, // 竜の堅鱗
+
     // 専用B
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!
@@ -3367,7 +3376,11 @@ const PassiveC = {
 
     ShadowShift4: 3020, // 影助・引き戻し4
 
+    DRTwinNSave: 3032, // 盾の護り手・近・双
+    ARTwinFSave: 3034, // 兜の護り手・遠・双
+
     // 専用C
+    ConnectedWorld: 3028, // 人と神が繋がる世界
     Paranoia: 2987, // 被害妄想
     DivineNectar: 2959, // 神獣の蜜
     ForeverYours: 2890, // あなたのシャロン

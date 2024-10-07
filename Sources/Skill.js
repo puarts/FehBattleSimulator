@@ -1169,7 +1169,7 @@ const PASSIVE_S_VALUE_DICT = __createValueDict(PassiveS);
 const PASSIVE_X_VALUE_DICT = __createValueDict(PassiveX);
 const CAPTAIN_VALUE_DICT = __createValueDict(Captain);
 
-const SAVE_SKILLS_SET = new Set([
+const SAVE_SKILL_SET = new Set([
     PassiveC.WoefulUpheaval,
     PassiveC.WithEveryone2,
     PassiveC.AsFarSave3,
@@ -1181,6 +1181,18 @@ const SAVE_SKILLS_SET = new Set([
     PassiveC.AdNearSave3,
     PassiveC.DrNearSave3,
 ]);
+
+/**
+ * 無条件で近距離からの護り手を発動できる
+ * @type {Set<number|string>}
+ */
+const CAN_SAVE_FROM_MELEE_SKILL_SET = new Set();
+
+/**
+ * 無条件で遠距離からの護り手を発動できる
+ * @type {Set<number|string>}
+ */
+const CAN_SAVE_FROM_RANGED_SKILL_SET = new Set();
 
 const StatusEffectType = {
     None: -1,
@@ -1617,7 +1629,7 @@ const applyRefreshFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculator, target: Unit, enemy: Unit, context: DamageCalcContext) => void>} */
 const applySkillEffectsPerCombatFuncMap = new Map();
 /** @type {Map<number|string, (this: DamageCalculator, atkUnit: Unit, defUnit: Unit) => void>} */
-const applyDamageReductionRatiosWhenCondSatisfiedFuncMap = new Map();
+const applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap = new Map();
 // 応援後のスキル
 /** @type {Map<number|string, (this: BattleSimulatorBase, supporter: Unit, target: Unit) => void>} */
 const applySkillsAfterRallyForSupporterFuncMap = new Map();

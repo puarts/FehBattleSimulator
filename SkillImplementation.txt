@@ -713,17 +713,17 @@ __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentia
     );
 
     // 攻撃奥義のダメージ軽減
-    applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
         function (atkUnit, defUnit) {
             if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
                 // 敵が1距離の時40%軽減
                 if (isMeleeWeaponType(atkUnit.weaponType)) {
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                    defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
                 }
                 // かつ、敵が射程2の時、
                 if (isRangedWeaponType(atkUnit.weaponType)) {
                     // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）（範囲奥義を除く）
-                    defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+                    defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
                 }
             }
         }
@@ -1003,10 +1003,10 @@ __applySkillEffectsBeforePrecombat(atkUnit, defUnit) {
 }
 
 自分または敵が奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で自分または敵が奥義発動済みの時、戦闘中、受けた攻撃のダメージを40%軽減(1戦闘1回のみ)(範囲奥義を除く)
-applyDamageReductionRatiosWhenCondSatisfiedFuncMap.set(skillId,
+applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
     function (atkUnit, defUnit) {
         if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
-            defUnit.battleContext.damageReductionRatiosWhenCondSatisfied.push(0.4);
+            defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
         }
     }
 );
@@ -1837,15 +1837,15 @@ hasDivineVeinSkillsWhenActionDoneFuncMap.set(skillId,
     }
 );
 
-出典の配列を返す
-unit.getOrigins();
+出典の集合を返す
+unit.getTitleSet();
 
 ユーザーリストから出典の集合を得る
-Unit.getOriginSet(units);
+Unit.getTitleSet(units);
 
 周囲3マス以内の味方の出典の種類数
 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-let num = Unit.getOriginSet(units).size;
+let num = Unit.getTitleSet(units).size;
 
 比翼・双界英雄
 Unit.js

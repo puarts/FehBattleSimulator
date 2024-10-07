@@ -25,7 +25,7 @@ const GetFoeDuringCombatMixin = {
     },
 };
 
-const GetSkillOwnerDuringCombatMixin = {
+const GetSkillOwnerCombatMixin = {
     getUnit(env) {
         return env.skillOwner;
     },
@@ -711,6 +711,7 @@ class CanTargetsFoesAttackTriggerTargetsSpecialNode extends BoolNode {
 }
 
 /**
+ * TODO: FromNumberNodeに統合する
  * @abstract
  */
 class ApplyingNumberNode extends SkillEffectNode {
@@ -904,6 +905,12 @@ class TargetsMaxHpNode extends NumberNode {
     }
 }
 
+class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerCombatMixin);
+    }
+}
+
 /**
  * @abstract
  */
@@ -1060,6 +1067,7 @@ class FoesStatsDuringCombatNode extends UnitsStatsDuringCombat {
 
 const FOES_ATK_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Atk);
 const FOES_DEF_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Def);
+const FOES_RES_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Res);
 
 class UnitsEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
     static {
@@ -1288,7 +1296,15 @@ const WHEN_DEFENDING_IN_AETHER_RAIDS_NODE = new class extends BoolNode {
         // TODO: 値を渡すようにする
         return g_appData.gameMode === GameMode.AetherRaid && env.skillOwner.groupId === UnitGroupType.Enemy;
     }
-}
+}();
+
+const IS_NOT_SUMMONER_DUELS_MODE_NODE = new class extends BoolNode {
+    evaluate(env) {
+        let result = g_appData.gameMode !== GameMode.SummonerDuels;
+        env.debug(`英雄決闘以外か: ${result}`);
+        return result;
+    }
+}();
 
 /**
  * If【Penalty】is active on foe,
@@ -1434,6 +1450,44 @@ class FoesRangeNode extends TargetsRangeNode {
     }
 }
 
+class IsTargetMeleeWeaponNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isMeleeWeaponType();
+        env.debug(`${unit.nameWithGroup}は1距離の武器か: ${result}`);
+        return result;
+    }
+}
+
+class IsFoeMeleeWeaponNode extends IsTargetMeleeWeaponNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+class IsTargetRangedWeaponNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isRangedWeaponType();
+        env.debug(`${unit.nameWithGroup}は2距離の武器か: ${result}`);
+        return result;
+    }
+}
+
+class IsFoeRangedWeaponNode extends IsTargetRangedWeaponNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 class IsTarget2SpacesFromTargetsFoeNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1471,6 +1525,22 @@ class DoesTargetDealDamageTo2OrMoreTargetsFoesAtTheSameTimeUsingSpecialNode exte
         let result = unit.battleContext.damageCountOfSpecialAtTheSameTime;
         env.debug(`${unit.nameWithGroup}は範囲奥義で2人以上に攻撃したか: ${result}人`);
         return result >= 2;
+    }
+}
+
+/**
+ * if unit triggers Savior
+ */
+class DoesTargetTriggerSaviorNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.isSaviorActivated;
+        env.debug(`${unit.nameWithGroup}は護り手を発動しているか: ${result}`);
+        return result;
     }
 }
 
@@ -1539,7 +1609,7 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
 
 class GrantsStatusEffectToSkillOwnerNode extends GrantsStatusEffectsNode {
     static {
-        Object.assign(this.prototype, GetSkillOwnerDuringCombatMixin);
+        Object.assign(this.prototype, GetSkillOwnerCombatMixin);
     }
 }
 
@@ -1576,6 +1646,20 @@ const NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE = new class extends SkillEffectNode {
         unit.neutralizeNegativeStatusEffects();
     }
 }();
+
+class RestoreTargetHpNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let hp = unit.hp;
+        unit.heal(n);
+        env.debug(`${unit.nameWithGroup}はHPが${n}回復: ${hp} => ${unit.hp}`);
+    }
+}
 
 class ForEachNode extends SkillEffectNode {
 }
@@ -1877,10 +1961,14 @@ class AreTargetAndSkillOwnerPartnersNode extends BoolNode {
 }
 
 /**
- * TODO: 動作確認する。Mixinを使用する
+ * TODO: 動作確認する。
  * @abstract
  */
 class ForTargetsOfTargetNode extends ForEachNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     /**
      * @param {BoolNode} predNode
      * @param {...SkillEffectNode} procedureNodes
@@ -1899,10 +1987,33 @@ class ForTargetsOfTargetNode extends ForEachNode {
     }
 
     evaluate(env) {
-        for (let unit of this.getUnitSet(env)) {
-            env.debug(`${unit.nameWithGroup}を対象に選択`);
-            this.evaluateChildren(env.copy().setTarget(unit));
+        for (let ally of this.getUnitSet(env)) {
+            env.debug(`${ally.nameWithGroup}を対象に選択`);
+            this.evaluateChildren(env.copy().setTarget(ally));
         }
+    }
+}
+
+class ForTargetsAlliesOnMapNode extends ForTargetsOfTargetNode {
+    /**
+     * @param {BoolNode} predNode
+     * @param {boolean|BoolNode} containsTarget
+     * @param {...SkillEffectNode} procedureNodes
+     */
+    constructor(predNode, containsTarget, ...procedureNodes) {
+        super(predNode, ...procedureNodes);
+        this._containsTargetNode = BoolNode.makeBoolNodeFrom(containsTarget);
+    }
+
+    getUnitSet(env) {
+        let unit = this.getUnit(env);
+        let pred = u => this._predNode.evaluate(env.copy().setTarget(u));
+        let allies = env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit);
+        let allySet = new Set(GeneratorUtil.filter(allies, pred));
+        if (this._containsTargetNode.evaluate(env)) {
+            allySet.add(unit);
+        }
+        return allySet;
     }
 }
 
@@ -1930,9 +2041,10 @@ class ForTargetsAlliesInNRangeOfTargetNode extends ForTargetsOfTargetNode {
  */
 class ForTargetsAlliesWithinNSpacesOfTargetNode extends ForTargetsAlliesInNRangeOfTargetNode {
     getUnitSet(env) {
+        let unit = this.getUnit(env);
         let pred = u => this._predNode.evaluate(env.copy().setTarget(u));
         let n = this.getN(env);
-        let allies = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(env.target, n);
+        let allies = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n);
         return new Set(GeneratorUtil.filter(allies, pred));
     }
 }
@@ -2592,9 +2704,35 @@ class IsTargetsSpecialCooldownCountIsAtItsMaximumNode extends BoolNode {
     }
 }
 
+class IsTargetTransformedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isTransformed;
+        env.debug(`${unit.nameWithGroup}は化身しているか: ${result}`);
+        return result;
+    }
+}
+
+class IsDifferentOriginNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasDifferentTitle(env.skillOwner);
+        env.debug(`${unit.nameWithGroup}は${env.skillOwner.nameWithGroup}と異なる出典を持つか: ${result}}`);
+        return result;
+    }
+}
+
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {
-        return NodeEnv.LOG_LEVEL.OFF;
+        return LoggerBase.LOG_LEVEL.OFF;
     }
-    return g_appData?.skillLogLevel ?? NodeEnv.LOG_LEVEL.OFF;
+    return g_appData?.skillLogLevel ?? LoggerBase.LOG_LEVEL.OFF;
 }
