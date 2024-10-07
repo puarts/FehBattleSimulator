@@ -6147,7 +6147,7 @@ class Unit extends BattleMapElement {
      * @returns {Set<any>}
      */
     getTitleSet() {
-        return new Set(this.heroInfo.origin.split('|').map(Unit.#originToTitle));
+        return new Set(this.heroInfo?.origin?.split('|') ?? [].map(Unit.#originToTitle));
     }
 
     static #originToTitle(origin) {
