@@ -1837,15 +1837,15 @@ hasDivineVeinSkillsWhenActionDoneFuncMap.set(skillId,
     }
 );
 
-出典の配列を返す
-unit.getOrigins();
+出典の集合を返す
+unit.getTitleSet();
 
 ユーザーリストから出典の集合を得る
-Unit.getOriginSet(units);
+Unit.getTitleSet(units);
 
 周囲3マス以内の味方の出典の種類数
 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-let num = Unit.getOriginSet(units).size;
+let num = Unit.getTitleSet(units).size;
 
 比翼・双界英雄
 Unit.js

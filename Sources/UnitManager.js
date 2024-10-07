@@ -171,7 +171,7 @@ class UnitManager {
      */
     * enumerateAlliesThatHaveSameOrigin(targetUnit) {
         let alliesAndUnit = this.enumerateUnitsInTheSameGroupOnMap(targetUnit, true);
-        yield* GeneratorUtil.filter(alliesAndUnit, u => u.hasSameOrigin(targetUnit));
+        yield* GeneratorUtil.filter(alliesAndUnit, u => u.hasSameTitle(targetUnit));
     }
 
     /**

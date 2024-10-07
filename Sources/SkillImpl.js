@@ -1459,14 +1459,14 @@
                 targetUnit.addAllSpur(5);
                 // - 敵の攻撃、速さ、守備、魔防が周囲3マス以内の味方の出典の種類数✕3＋4だけ減少
                 let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-                let num = Unit.getOriginSet(allies).size;
+                let num = Unit.getTitleSet(allies).size;
                 enemyUnit.addAllSpur(-num * 3 + 4);
                 // - （〇は、「自分を除く味方の出典の種類数」と「自分を除くエンゲージしている味方の数」の合計値x5（最大15））（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
-                let numOrigin = Unit.getOriginSet(this.enumerateUnitsInTheSameGroupOnMap(targetUnit)).size;
+                let numTitle = Unit.getTitleSet(this.enumerateUnitsInTheSameGroupOnMap(targetUnit)).size;
                 let isEngaged = u => u.emblemHeroIndex !== EmblemHero.None;
                 let numEngaged =
                     GeneratorUtil.countIf(this.enumerateUnitsInTheSameGroupOnMap(targetUnit), isEngaged);
-                let n = MathUtil.ensureMax((numOrigin + numEngaged) * 5, 15);
+                let n = MathUtil.ensureMax((numTitle + numEngaged) * 5, 15);
                 this.writeDebugLog(`n: ${n}`);
                 // - ダメージ+〇（範囲奥養を除く）、
                 targetUnit.battleContext.additionalDamage += n;
@@ -7174,7 +7174,7 @@
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-                let num = Unit.getOriginSet(units).size;
+                let num = Unit.getTitleSet(units).size;
                 let amount = MathUtil.ensureMax(num * 3 + 4, 10);
                 enemyUnit.addAllSpur(-amount);
                 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);

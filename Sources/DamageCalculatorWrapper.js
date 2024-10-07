@@ -2803,8 +2803,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-                let originSet = Unit.getOriginSet(units);
-                let amount = Math.min(originSet.size * 3 + 4, 10);
+                let amount = Math.min(Unit.getTitleSet(units).size * 3 + 4, 10);
                 enemyUnit.addAllSpur(-amount);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
             }
@@ -4193,8 +4192,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);
                 let units = self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-                let originSet = Unit.getOriginSet(units);
-                let amount = Math.min(originSet.size * 4 + 4, 12);
+                let amount = Math.min(Unit.getTitleSet(units).size * 4 + 4, 12);
                 enemyUnit.addSpurs(0, -amount, -amount, 0);
             }
         }

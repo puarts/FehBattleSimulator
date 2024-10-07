@@ -2724,7 +2724,7 @@ class IsDifferentOriginNode extends BoolNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = unit.hasDifferentOrigin(env.skillOwner);
+        let result = unit.hasDifferentTitle(env.skillOwner);
         env.debug(`${unit.nameWithGroup}は${env.skillOwner.nameWithGroup}と異なる出典を持つか: ${result}}`);
         return result;
     }

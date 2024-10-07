@@ -2005,26 +2005,12 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * 出典を返す。
-     * @return {[String]}
-     */
-    getOrigins() {
-        let info = this.heroInfo;
-        if (info === null) return [];
-        return info.origin.split('|');
-    }
-
-    /**
      * 出典の集合を返す。
      * @param {[Unit]|Generator<Unit>} units
      * @return {Set<String>}
      */
-    static getOriginSet(units) {
-        return SetUtil.union(...Array.from(units).map(u => u.getOriginSet()));
-    }
-
-    getOriginSet() {
-        return new Set(this.getOrigins());
+    static getTitleSet(units) {
+        return SetUtil.union(...Array.from(units).map(u => u.getTitleSet()));
     }
 
     get hasWeapon() {
@@ -6143,8 +6129,8 @@ class Unit extends BattleMapElement {
         return this.emblemHeroIndex !== EmblemHero.None;
     }
 
-    hasSameOrigin(targetUnit) {
-        return SetUtil.intersection(this.getNormalizedOriginSet(), targetUnit.getNormalizedOriginSet()).size > 0;
+    hasSameTitle(targetUnit) {
+        return SetUtil.intersection(this.getTitleSet(), targetUnit.getTitleSet()).size > 0;
     }
 
     /**
@@ -6152,19 +6138,19 @@ class Unit extends BattleMapElement {
      * @param {Unit} targetUnit
      * @returns {boolean}
      */
-    hasDifferentOrigin(targetUnit) {
-        return SetUtil.difference(targetUnit.getNormalizedOriginSet(), this.getNormalizedOriginSet()).size > 0;
+    hasDifferentTitle(targetUnit) {
+        return SetUtil.difference(targetUnit.getTitleSet(), this.getTitleSet()).size > 0;
     }
 
     /**
-     * 暗黒竜と光の剣 => 暗黒竜・紋章など正規化された出典を返す。出典の数を参照したい場合は使用できないので注意(getOrigins, Unit.getOriginSetを使用すること)。
+     * タイトル（登場フィルタ）の集合を返す。暗黒竜、紋章は同様のタイトルとみなす。
      * @returns {Set<any>}
      */
-    getNormalizedOriginSet() {
-        return new Set(this.heroInfo.origin.split('|').map(Unit.#normalizeOrigin));
+    getTitleSet() {
+        return new Set(this.heroInfo.origin.split('|').map(Unit.#originToTitle));
     }
 
-    static #normalizeOrigin(origin) {
+    static #originToTitle(origin) {
         let map = new Map([
             ['暗黒竜と光の剣', '暗黒竜・紋章'],
             ['紋章の謎', '暗黒竜・紋章'],

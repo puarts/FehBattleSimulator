@@ -1180,7 +1180,7 @@ class BattleSimulatorBase {
 
     __addStatusEffectToSameOriginUnits(duoUnit, statusEffect) {
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-            if (unit.hasSameOrigin(duoUnit)) {
+            if (unit.hasSameTitle(duoUnit)) {
                 unit.addStatusEffect(statusEffect);
             }
         }
@@ -1188,7 +1188,7 @@ class BattleSimulatorBase {
 
     __applySkillEffectToSameOriginUnits(duoUnit, func) {
         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-            if (unit.hasSameOrigin(duoUnit)) {
+            if (unit.hasSameTitle(duoUnit)) {
                 func(unit);
             }
         }
@@ -1198,7 +1198,7 @@ class BattleSimulatorBase {
         let highestHpUnits = [];
         let highestHp = 0;
         for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(duoUnit, 2, true)) {
-            if (unit.hasSameOrigin(duoUnit)) {
+            if (unit.hasSameTitle(duoUnit)) {
                 if (unit !== duoUnit && unit.isActionDone) {
                     if (unit.hp > highestHp) {
                         highestHpUnits = [unit];
@@ -1335,7 +1335,7 @@ class BattleSimulatorBase {
                 break;
             case Hero.HarmonizedKarla: {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (unit.hasSameOrigin(duoUnit)) {
+                    if (unit.hasSameTitle(duoUnit)) {
                         unit.reduceSpecialCount(2);
                         unit.applyAtkBuff(6);
                         unit.addStatusEffect(StatusEffectType.ResonantBlades);
@@ -1356,7 +1356,7 @@ class BattleSimulatorBase {
                 break;
             case Hero.HarmonizedCordelia: {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (unit.hasSameOrigin(duoUnit)) {
+                    if (unit.hasSameTitle(duoUnit)) {
                         unit.applyBuffs(6, 6, 0, 0);
                         unit.addStatusEffect(StatusEffectType.ResonantBlades);
                         unit.addStatusEffect(StatusEffectType.Treachery);
@@ -1403,7 +1403,7 @@ class BattleSimulatorBase {
             }
             case Hero.HarmonizedEdelgard: {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (unit.hasSameOrigin(duoUnit)) {
+                    if (unit.hasSameTitle(duoUnit)) {
                         unit.applyAtkBuff(6);
                     }
                 }
@@ -1413,7 +1413,7 @@ class BattleSimulatorBase {
             }
             case Hero.HarmonizedRoy: {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (unit.hasSameOrigin(duoUnit)) {
+                    if (unit.hasSameTitle(duoUnit)) {
                         unit.applyDefBuff(6);
                         unit.applyResBuff(6);
                         unit.addStatusEffect(StatusEffectType.ResonantShield);
@@ -1438,7 +1438,7 @@ class BattleSimulatorBase {
                 break;
             case Hero.HarmonizedSonya: {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (unit.hasSameOrigin(duoUnit)) {
+                    if (unit.hasSameTitle(duoUnit)) {
                         unit.reduceSpecialCount(2);
                         unit.applyAtkBuff(6);
                         unit.addStatusEffect(StatusEffectType.ResonantBlades);
@@ -1465,7 +1465,7 @@ class BattleSimulatorBase {
                 break;
             case Hero.HarmonizedLysithea: {
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(duoUnit, true)) {
-                    if (unit.hasSameOrigin(duoUnit)) {
+                    if (unit.hasSameTitle(duoUnit)) {
                         unit.applyAtkBuff(6);
                     }
                 }
