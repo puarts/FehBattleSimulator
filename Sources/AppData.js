@@ -1388,7 +1388,7 @@ class AppData extends UnitManager {
             case GameMode.AetherRaid:
                 return this.isEnemyActionTriggered;
             case GameMode.ResonantBattles:
-                if (unit.groupId == UnitGroupType.Ally) {
+                if (unit.groupId === UnitGroupType.Ally) {
                     return true;
                 }
                 if (isThief(unit)) {

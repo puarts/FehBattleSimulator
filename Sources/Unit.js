@@ -296,6 +296,7 @@ class ActionContext {
 
         // 移動のコンテキスト
         this.movePriority = 0;
+        this.hasShuffleStatus = false;
     }
 
     clear() {
@@ -315,6 +316,7 @@ class ActionContext {
         this.attackableTiles = [];
 
         this.movePriority = 0;
+        this.hasShuffleStatus = false;
     }
 
     findAssistableUnitInfo(unit) {

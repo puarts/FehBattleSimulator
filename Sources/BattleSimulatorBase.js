@@ -5552,16 +5552,9 @@ class BattleSimulatorBase {
             return false;
         }
 
-        let triggeredActionableUnits = [];
-        for (let unit of actionableUnits) {
-            if (g_appData.examinesEnemyActionTriggered(unit)) {
-                triggeredActionableUnits.push(unit);
-            }
-        }
-
         this.writeLogLine("■移動の計算------------");
         // noinspection RedundantIfStatementJS
-        if (this.simulateMovement(triggeredActionableUnits, enemyUnits, allyUnits)) {
+        if (this.simulateMovement(actionableUnits, enemyUnits, allyUnits, true)) {
             return false;
         }
 
@@ -6538,7 +6531,14 @@ class BattleSimulatorBase {
         }
     }
 
-    simulateMovement(targetUnits, enemyUnits, allyUnits) {
+    /**
+     * @param {Unit[]} targetUnits
+     * @param {Unit[]} enemyUnits
+     * @param {Unit[]} allyUnits
+     * @param {boolean} isEnemyAction
+     * @returns {boolean}
+     */
+    simulateMovement(targetUnits, enemyUnits, allyUnits, isEnemyAction = false) {
         // コンテキスト初期化
         for (let unit of targetUnits) {
             unit.actionContext.clear();
@@ -6552,6 +6552,56 @@ class BattleSimulatorBase {
             return a.movementOrder - b.movementOrder;
         });
 
+        // 各ユニットのシャッフルステータスを確認
+        // A unit can only gain the shuffle status in specific conditions.
+        // First, if the unit is adjacent to any ally to which it could teleport,
+        // then the unit cannot gain the shuffle status.
+        // This includes both self induced teleport (e.g. Flier Formation, Escape Route) and ally induced teleport (e.g. Guidance).
+        // The next condition depends on the unit's weapon as follows:
+        // if the unit has a ranged weapon and they are within 2 spaces of an enemy or are adjacent to a breakable block,
+        // then they can get the shuffle status.
+        // If the unit has no weapon equipped and they are are within 2 spaces of an enemy AND are adjacent to an ally,
+        // then they can get the shuffle status.
+        // A unit with a melee weapon equipped will never gain the shuffle status.
+        for (let unit of targetUnits) {
+            // First condition
+            if (unit.canTeleport() || this.__isThereAllyInSpecifiedSpaces(1, u => u.canTeleport())) {
+                continue;
+            }
+            // Second condition
+            if (unit.isRangedWeaponType()) {
+                // 2距離
+                if (this.unitManager.isThereEnemyInSpecifiedSpaces(unit, 2) ||
+                    this.map.isThereBreakableTileWithinSpecifiedSpaces(unit.placedTile, 1, unit.groupId)) {
+                    unit.actionContext.hasShuffleStatus = true;
+                }
+            } else if (!unit.hasWeapon) {
+                // 武器なし
+                if (this.unitManager.isThereEnemyInSpecifiedSpaces(unit, 2) &&
+                    this.unitManager.isThereAllyInSpecifiedSpaces(unit, 1)) {
+                    unit.actionContext.hasShuffleStatus = true;
+                }
+            }
+            // 1距離はシャッフルステータスを取得できない
+        }
+
+        if (isEnemyAction) {
+            let triggeredActionableUnits = [];
+            for (let unit of targetUnits) {
+                if (unit.actionContext.hasShuffleStatus) {
+                    triggeredActionableUnits.push(unit);
+                } else {
+                    if (g_appData.examinesEnemyActionTriggered(unit)) {
+                        triggeredActionableUnits.push(unit);
+                    } else if (unit.actionContext.hasShuffleStatus) {
+                        triggeredActionableUnits.push(unit);
+                    }
+                }
+            }
+            targetUnits = [];
+            targetUnits = [...triggeredActionableUnits];
+        }
+
         this.writeLogLine("移動順:");
         for (let i = 0; i < targetUnits.length; ++i) {
             let unit = targetUnits[i];
@@ -6561,7 +6611,7 @@ class BattleSimulatorBase {
         let isActionActivated = false;
         for (let i = 0; i < targetUnits.length; ++i) {
             let unit = targetUnits[i];
-            this.writeDebugLogLine(unit.getNameWithGroup() + "の移動計算");
+            this.writeDebugLogLine(`${unit.getNameWithGroup()}の移動計算`);
             if (unit.chaseTargetTile == null) {
                 this.__enqueueEndActionCommand(unit);
                 isActionActivated = true;
@@ -6573,7 +6623,7 @@ class BattleSimulatorBase {
 
             let movableTiles = this.__getMovableTiles(unit);
             if (movableTiles.length === 0) {
-                this.writeDebugLogLine(unit.getNameWithGroup() + "が移動可能なマスはなし");
+                this.writeDebugLogLine(`${unit.getNameWithGroup()}が移動可能なマスはなし`);
                 continue;
             }
 
@@ -6609,6 +6659,15 @@ class BattleSimulatorBase {
             }
 
             let targetTileContexts = this.__createTargetTileContexts(unit, movableTiles, pivotTiles);
+            if (unit.actionContext.hasShuffleStatus) {
+                targetTileContexts = [];
+                for (let tile of movableTiles) {
+                    let context = new TilePriorityContext(tile, unit);
+                    context.isPivotRequired = pivotTiles.includes(context.tile);
+                    context.calcPriorityToMove(unit, chaseTargetTile, g_appData.map.width, g_appData.map.height);
+                    targetTileContexts.push(context);
+                }
+            }
             let targetTileContextsWithoutPivot = targetTileContexts;
             if (unit.support === Support.Pivot) {
                 // 壁破壊計算では回り込みなしの最適タイルが必要
@@ -6811,7 +6870,7 @@ class BattleSimulatorBase {
         let ignoresUnits = true;
         let isPathfinderEnabled = false; // 移動先のマスを選ぶときに天駆の道を考慮しない
         let targetTileContexts = [];
-        for (let tile of g_appData.map.getNearestMovableTiles(
+        let nearestMovableTiles = g_appData.map.getNearestMovableTiles(
             unit, chaseTargetTile, pivotTiles, false, movableTiles, ignoresUnits, tileUnit => {
                 if (isThief(unit)) {
                     if (tileUnit.passiveS === PassiveS.GoeiNoGuzo && unit.isOnInitPos()) {
@@ -6820,8 +6879,8 @@ class BattleSimulatorBase {
                     }
                 }
                 return true;
-            }, isPathfinderEnabled)
-        ) {
+            }, isPathfinderEnabled);
+        for (let tile of nearestMovableTiles) {
             let context = new TilePriorityContext(tile, unit);
             context.isPivotRequired = pivotTiles.includes(context.tile);
             context.calcPriorityToMove(unit, chaseTargetTile, g_appData.map.width, g_appData.map.height);
@@ -8428,8 +8487,9 @@ class BattleSimulatorBase {
      * @param {Unit} assistUnit
      * @param {AssistableUnitInfo[]|Generator<AssistableUnitInfo>} assistableUnitInfos
      * @param {boolean} isPrecombat
+     * @param {boolean} isCantoAssist
      */
-    __selectBestAssistTarget(assistUnit, assistableUnitInfos, isPrecombat, isCantoAssist) {
+    __selectBestAssistTarget(assistUnit, assistableUnitInfos, isPrecombat, isCantoAssist = false) {
         // 補助対象を選択
         this.writeDebugLogLine("最適な補助対象を選択");
         for (let info of assistableUnitInfos) {

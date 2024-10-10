@@ -1557,6 +1557,15 @@ class BattleMap {
         }
     }
 
+    isThereBreakableTileWithinSpecifiedSpaces(targetTile, n, groupId) {
+        for (let tile of this.enumerateTilesWithinSpecifiedDistance(targetTile, n)) {
+            if (tile instanceof BreakableWall || tile.hasEnemyBreakableDivineVein(groupId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * nxn以内のタイルを列挙。
      * @param  {Tile} targetTile
@@ -1763,8 +1772,7 @@ class BattleMap {
         let minDist = CanNotReachTile;
         if (evalsAttackableTiles) {
             minDist = this.getMinDistToAttackableTile(moveUnit.placedTile, moveUnit, targetUnitTile);
-        }
-        else {
+        } else {
             minDist = targetUnitTile.calculateUnitMovementCountToThisTile(
                 moveUnit, moveUnit.placedTile, -1, ignoresUnits, isUnitIgnoredFunc, isPathfinderEnabled);
         }
@@ -1774,8 +1782,7 @@ class BattleMap {
             for (let tile of movableTiles) {
                 evalTiles.push(tile);
             }
-        }
-        else {
+        } else {
             for (let tile of this.enumerateMovableTiles(moveUnit, false, false, false)) {
                 evalTiles.push(tile);
             }
