@@ -91,6 +91,11 @@ const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
 const AFTER_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
+ * 戦闘後(HP確定後)
+ * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
+const AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘後(死んでも発動)
  * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
 const AFTER_COMBAT_NEVERTHELESS_HOOKS = new SkillEffectHooks();

@@ -1071,6 +1071,9 @@ const BeastCommonSkillType = {
     Cavalry2: 6, // TODO: 次世代騎馬なのか魔器だけなのか確認する
 }
 
+/**
+ * @type {Map<number|string, number>}
+ */
 const BEAST_COMMON_SKILL_MAP = new Map([
     // 次世代歩行
     [Weapon.HeraldingHorn, BeastCommonSkillType.Infantry2],

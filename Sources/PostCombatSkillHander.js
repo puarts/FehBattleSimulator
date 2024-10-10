@@ -127,8 +127,14 @@ class PostCombatSkillHander {
 
         this.#applyReservedEffects();
 
+        // 回復・ダメージ適用後のスキル効果
+        this.#applySkillEffectsAfterHealOrDamage(atkUnit, defUnit);
+        this.#applySkillEffectsAfterHealOrDamage(defUnit, atkUnit);
+        this.#applyReservedEffects();
+
         this.#applyPostCombatAllySkills(atkUnit);
         this.#applyPostCombatAllySkills(defUnit);
+        this.#applyReservedEffects();
     }
 
     #applySkillEffectsAfterCombatNeverthelessDeadForUnits(atkUnit, defUnit, result) {
@@ -160,6 +166,12 @@ class PostCombatSkillHander {
         // TODO: このタイミングで良いか検証する(アニメーションを見る限り回復・ダメージの後に天脈付与)
         // 切り込みなどの前に天脈が付与(アニメーションではほぼ同時)
         g_appData.map.applyReservedDivineVein();
+    }
+
+    #applySkillEffectsAfterHealOrDamage(targetUnit, enemyUnit) {
+        let env = new AfterCombatEnv(this, targetUnit, enemyUnit);
+        env.setName('戦闘後(HP確定後)').setLogLevel(getSkillLogLevel());
+        AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS.evaluateWithUnit(targetUnit, env);
     }
 
     __applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, attackTargetUnit) {
