@@ -187,18 +187,19 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
 
     /**
      * @param {number|NumberNode} n
-     * @param {UnitNode} targetNode
+     * @param {BoolNode} predNode
      */
-    constructor(n, targetNode = null) {
+    constructor(n, predNode = null) {
         super();
         this._n = NumberNode.makeNumberNodeFrom(n);
-        this._targetNode = targetNode;
+        this._predNode = predNode;
     }
 
     evaluate(env) {
-        let unit = this._targetNode ? this._targetNode.evaluate(env) : this.getUnit(env);
+        let unit = this.getUnit(env);
         let n = this._n.evaluate(env);
-        let result = env.unitManager.countAlliesWithinSpecifiedSpaces(unit, n);
+        let pred = this._predNode ? u => this._predNode.evaluate(env.copy().setTarget(u)) : null;
+        let result = env.unitManager.countAlliesWithinSpecifiedSpaces(unit, n, pred);
         env.debug(`${unit.nameWithGroup}の周囲${n}マスの味方の数: ${result}`);
         return result;
     }
@@ -1450,6 +1451,19 @@ class FoesRangeNode extends TargetsRangeNode {
     }
 }
 
+class IsTargetBeastOrDragonTypeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = isWeaponTypeBreathOrBeast(unit.weaponType);
+        env.debug(`${unit.nameWithGroup}は竜もしくは獣であるか: ${result}`);
+        return result;
+    }
+}
+
 class IsTargetMeleeWeaponNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2445,6 +2459,9 @@ class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPosit
         env.debug(`${unit.nameWithGroup}は奥義発動カウント-${n}を予約`);
         return super.evaluate(env);
     }
+}
+
+class GrantsSpecialCooldownCountMinusOnTargetOnMapNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
 class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {

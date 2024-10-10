@@ -1938,6 +1938,7 @@ const Weapon = {
     HungryCatFang: 3029, // 感謝の戦猫の爪牙
     StoneOfDelights: 3030, // 収穫の喜びの竜石
     OpposingStones: 3033, // 神魔の双竜の竜石
+    FullRabbitFang: 3035, // 豊穣の子兎の爪牙
 };
 
 const Support = {

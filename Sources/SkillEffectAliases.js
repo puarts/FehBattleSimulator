@@ -183,3 +183,26 @@ function setTwinSave(skillId, isMelee, grantsNode) {
         ),
     );
 }
+
+/**
+ * Enables【Canto (Rem. +1)】
+ */
+function enablesCantoRemPlus(skillId, n) {
+    // CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    // CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoRemNode(n));
+}
+
+const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percentage, statNode) =>
+    new AppliesSkillEffectsAfterStatusFixedNode(
+        // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+        new TargetDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(percentage / 100, statNode)),
+    );
+
+/**
+ * @param {number|string} skillId
+ * @param {number} beastCommonSkillType
+ */
+function setBeastSkill(skillId, beastCommonSkillType) {
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, beastCommonSkillType);
+}

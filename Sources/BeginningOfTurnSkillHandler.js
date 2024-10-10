@@ -141,6 +141,7 @@ class BeginningOfTurnSkillHandler {
      * @param skillOwner
      */
     applyTransformSkillForBeginningOfTurn(skillOwner) {
+        // TODO: 化身を予約制にする
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             let env = new AtStartOfTurnEnv(this, skillOwner);
             env.setName('化身スキル').setLogLevel(getSkillLogLevel());

@@ -1,4 +1,67 @@
 // noinspection JSUnusedLocalSymbols
+// 豊穣の子兎の爪牙
+{
+    let skillId = Weapon.FullRabbitFang;
+    // Enables【Canto (Rem. +1)】.
+    enablesCantoRemPlus(skillId, 1);
+    // Effective against cavalry foes. Grants Spd+3.
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // grants Atk+2 to unit,
+    // inflicts Atk/Def-X on foe during combat (X = number of spaces from start position to end position of whoever initiated combat,
+    // + 3; max 6),
+    // and also,
+    // if X ≥ 5,
+    // reduces damage from foe's first attack by 30% during combat.
+    setBeastSkill(skillId, BeastCommonSkillType.Cavalry2);
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if number of adjacent allies other than beast or dragon allies ≤ 1,
+        // or if unit's conditions for transforming are met,
+        IF_NODE(OR_NODE(
+                // TODO: 化身が予約になっていないので化身条件を満たすかではなく化身したかによっての判定になっているので化身修正時に同時に修正する
+                LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1, new IsTargetBeastOrDragonTypeNode()), 1),
+                new IsTargetTransformedNode()),
+            // grants Special cooldown count-1 to unit.
+            new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If number of adjacent allies other than beast or dragon allies ≤ 1,
+        // or if unit is transformed,
+        IF_NODE(OR_NODE(
+                // TODO: 化身が予約になっていないので化身条件を満たすかではなく化身したかによっての判定になっているので化身修正時に同時に修正する
+                LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1, new IsTargetBeastOrDragonTypeNode()), 1),
+                new IsTargetTransformedNode()),
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + number of foes within 3 rows or 3 columns centered on unit × 3 (max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(5, MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)),
+                    14,
+                ),
+            ),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat,
+            NULL_UNIT_FOLLOW_UP_NODE,
+        ),
+    ));
+
+    AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // and after combat,
+        // if unit's HP ≤ 90%,
+        IF_NODE(new IsTargetsHpLteXPercentOnMapNode(90),
+            // grants Special cooldown count-2 to unit.
+            new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(2),
+        ),
+    ));
+}
+
 // 双界ナギの比翼効果
 {
     WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(Hero.HarmonizedNagi,
@@ -228,8 +291,7 @@
     // and also,
     // if X ≥ 5,
     // reduces damage from foe's first attack by 30% during combat.
-    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
-    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Cavalry2);
+    setBeastSkill(skillId, BeastCommonSkillType.Cavalry2);
 
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
@@ -455,8 +517,7 @@
     // grants Atk+2,
     // deals +7 damage when Special triggers,
     // and neutralizes effects that grant "Special cooldown charge +X" to foe or inflict "Special cooldown charge -X" on unit.
-    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
-    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry2);
+    setBeastSkill(skillId, BeastCommonSkillType.Infantry2);
 }
 
 // 紋章士シグルド
@@ -1069,8 +1130,8 @@
     // grants Atk+2,
     // deals +7 damage when Special triggers,
     // and neutralizes effects that grant "Special cooldown charge +X" to foe or inflict "Special cooldown charge -X" on unit.
-    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
-    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Infantry2);
+    setBeastSkill(skillId, BeastCommonSkillType.Infantry2);
+
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If foe initiates combat or foe's HP ≥ 75% at start of combat,
         IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
