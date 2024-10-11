@@ -2747,6 +2747,14 @@ class IsDifferentOriginNode extends BoolNode {
     }
 }
 
+class CalcPotentialDamageNode extends BoolNode {
+    evaluate(env) {
+        let result = env.calcPotentialDamage;
+        env.trace(`calcPotentialDamage: ${result}`);
+        return result;
+    }
+}
+
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {
         return LoggerBase.LOG_LEVEL.OFF;

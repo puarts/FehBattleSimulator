@@ -1,4 +1,75 @@
 // noinspection JSUnusedLocalSymbols
+// 波閉ざす錨の斧
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.GateAnchorAxe);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // inflicts Atk/Def-7 and【Feud】on closest foes and foes within 2 spaces of those foes through their next actions.
+            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+                new InflictsStatsMinusAtStartOfTurnNode(7, 0, 7, 0),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Feud),
+            ),
+        )
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants Def/Res+5 to unit,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 5, 5),
+            // inflicts Def/Res-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 5, 5),
+            // and deals damage = 20% of unit's Def during combat (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_DEF_DURING_COMBAT_NODE),
+            // and also,
+            // when unit's Special triggers,
+            // neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills (excluding area-of-effect Specials).
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        ),
+    ));
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.GateAnchorAxe);
+    // Enables【Canto (Dist. +1; Max ４)】.
+    enablesCantDist(skillId, 1, 4);
+    // Accelerates Special trigger (cooldown count-1).
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or if the number of allies adjacent to unit ≤ 1,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET(), 1)),
+            // grants Def/Res+5 to unit,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 5, 5),
+            // inflicts Def/Res-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 5, 5),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and grants Special cooldown count-X to unit before unit's first attack during combat
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(
+                // (X = number of spaces from start position to end position of whoever initiated combat; max 3).
+                new EnsureMaxNode(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 3),
+            ),
+        ),
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.GateAnchorAxe);
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is not adjacent to an ally,
+        IF_NODE(IS_NOT_TARGET_ADJACENT_TO_AN_ALLY(),
+            // grants Def/Res+5 to unit and inflicts Def/Res-5 on foe during combat and unit makes a guaranteed follow-up attack.
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 5, 5),
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 5, 5),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        )
+    ));
+}
+
 // 豊穣の子兎の爪牙
 {
     let skillId = Weapon.FullRabbitFang;

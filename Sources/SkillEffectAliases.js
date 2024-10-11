@@ -188,8 +188,16 @@ function setTwinSave(skillId, isMelee, grantsNode) {
  * Enables【Canto (Rem. +1)】
  */
 function enablesCantoRemPlus(skillId, n) {
-    // CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    // CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoRemNode(n));
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoRemNode(n));
+}
+
+/**
+ * Enables【Canto (Dist. +1; Max ４)】.
+ */
+function enablesCantDist(skillId, n, max) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoDistNode(n, max));
 }
 
 const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percentage, statNode) =>
@@ -206,3 +214,14 @@ function setBeastSkill(skillId, beastCommonSkillType) {
     WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
     BEAST_COMMON_SKILL_MAP.set(skillId, beastCommonSkillType);
 }
+
+const CALC_POTENTIAL_DAMAGE_NODE = new CalcPotentialDamageNode();
+
+const IS_NOT_TARGET_ADJACENT_TO_AN_ALLY = () =>
+    OR_NODE(CALC_POTENTIAL_DAMAGE_NODE, NOT_NODE(GT_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1), 0)));
+
+const NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET =
+    () => new NumOfTargetsAlliesWithinNSpacesNode(1);
+
+const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = (...nodes) =>
+    IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE, ...nodes);

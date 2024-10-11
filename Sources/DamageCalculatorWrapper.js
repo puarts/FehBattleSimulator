@@ -7805,14 +7805,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesDefBuff = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.GateAnchorAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                targetUnit.defSpur += 5;
-                targetUnit.resSpur += 5;
-                enemyUnit.defSpur -= 5;
-                enemyUnit.resSpur -= 5;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.FlowingLancePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                 enemyUnit.atkSpur -= 5;
@@ -14604,11 +14596,6 @@ class DamageCalculatorWrapper {
                         break;
                     case PassiveB.TsuigekiRing:
                         if (atkUnit.battleContext.restHpPercentage >= 50) {
-                            ++followupAttackPriority;
-                        }
-                        break;
-                    case Weapon.GateAnchorAxe:
-                        if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)) {
                             ++followupAttackPriority;
                         }
                         break;
