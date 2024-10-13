@@ -8935,7 +8935,9 @@ class BattleSimulatorBase {
             }
 
             // 壁などが途中にあったらぶちかましなどを行えない
-            if (!tile.isMovableTile() || !isMovableForUnit(tile.obj)) {
+            if (!tile.isMovableTile() ||
+                !tile.isMovableTileForUnit(targetUnit) ||
+                !isMovableForUnit(tile.obj)) {
                 moveTile = null;
                 continue;
             }

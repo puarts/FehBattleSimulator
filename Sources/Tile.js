@@ -368,13 +368,15 @@ class Tile extends BattleMapElement {
     // TODO: なぜBreakableWallが条件になっているのか調べる
     // とりあえずはBreakableDivineVeinも同じように判定する
     isMovableTileForMoveType(moveType, groupId) {
-        let canReachForThisMoveType = this._moveWeights[moveType] !== CanNotReachTile;
-        return canReachForThisMoveType && (
-            this._obj == null ||
+        if (this._moveWeights[moveType] === CanNotReachTile) {
+            return false;
+        }
+        if (this.hasEnemyBreakableDivineVein(groupId)) {
+            return false;
+        }
+        return this._obj == null ||
             this._obj instanceof TrapBase ||
-            this._obj instanceof BreakableWall ||
-            (this.hasEnemyBreakableDivineVein(groupId)) // 敵のDivineVeinだけがBreakableWallと同じ働きをする
-        );
+            this._obj instanceof BreakableWall;
     }
 
     get tempData() {
