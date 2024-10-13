@@ -62,7 +62,7 @@ const NSpacesMixin = {
  * @description getUnitsを実装すること
  */
 const ForUnitMixin = {
-    flatDepth: 1,
+    joinFunc: results => results.flat(1),
     evaluate(env) {
         let results = [];
         if (typeof this.getUnits !== 'function') {
@@ -70,9 +70,10 @@ const ForUnitMixin = {
         }
         for (let unit of this.getUnits(env)) {
             env.debug(`${unit.nameWithGroup}を対象に選択`);
-            results.push(this.evaluateChildren(env.copy().setTarget(unit)));
+            let items = this.evaluateChildren(env.copy().setTarget(unit));
+            results.push(items);
         }
-        return results.flat(this.flatDepth);
+        return this.joinFunc(results);
     }
 };
 
@@ -103,6 +104,31 @@ const FOE_NODE = new class extends UnitNode {
 /**
  * @abstract
  */
+class UnitsNode extends SkillEffectNode {
+    /**
+     * @param {NodeEnv} env
+     * @returns {Iterable<Unit>}
+     */
+    evaluate(env) {
+    }
+}
+
+class UniteUnitsNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(...unitsNode) {
+        super(...unitsNode);
+    }
+
+    evaluate(env) {
+        return IterUtil.concat(this.evaluateChildren(env).flat());
+    }
+}
+
+/**
+ * @abstract
+ */
 class SpacesNode extends SkillEffectNode {
     /**
      * @abstract
@@ -113,9 +139,9 @@ class SpacesNode extends SkillEffectNode {
     }
 }
 
-class ForSpacesNode extends SpacesNode {
+class UniteSpacesNode extends SpacesNode {
     /**
-     * @param {...ForSpacesNode} children
+     * @param {...SpacesNode} children
      */
     constructor(...children) {
         super(...children);
@@ -126,7 +152,26 @@ class ForSpacesNode extends SpacesNode {
      * @returns {Iterable<Tile>}
      */
     evaluate(env) {
-        return Array.from(IterUtil.concat(...this.evaluateChildren(env).flat(1)));
+        return [...new Set(Array.from(IterUtil.concat(...this.evaluateChildren(env))))];
+    }
+}
+
+class UniteSpacesIfNode extends SpacesNode {
+    constructor(pred, ...children) {
+        super(...children);
+        this.predNode = BoolNode.makeBoolNodeFrom(pred);
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @returns {Iterable<Tile>}
+     */
+    evaluate(env) {
+        if (this.predNode.evaluate(env)) {
+            return [...new Set(Array.from(IterUtil.concat(...this.evaluateChildren(env))))];
+        } else {
+            return [];
+        }
     }
 }
 
@@ -1678,6 +1723,46 @@ class RestoreTargetHpNode extends FromPositiveNumberNode {
 class ForEachNode extends SkillEffectNode {
 }
 
+class ForEachUnitNode extends ForEachNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(unitsNode, ...nodes) {
+        super(...nodes);
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let units = this._unitsNode.evaluate(env);
+        for (let unit of units) {
+            env.debug(`${unit.nameWithGroup}を対象に選択`);
+            this.evaluateChildren(env.copy().setTarget(unit));
+        }
+    }
+}
+
+/**
+ * foe on the enemy team with the lowest stat
+ */
+class TargetsFoesOnTheEnemyTeamWithLowestStat extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(statusType) {
+        super();
+        this._statusType = NumberNode.makeNumberNodeFrom(statusType);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let index = this._statusType.evaluate(env);
+        let units = env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit);
+        return IterUtil.minElements(units, u => u.getEvalStatusesInPrecombat(true)[index]);
+    }
+}
+
 class ForEachUnitOnMapNode extends ForEachNode {
     static {
         Object.assign(this.prototype, ForUnitMixin);
@@ -1873,6 +1958,36 @@ class ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachClos
 
 const FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE =
     (...children) => new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE, ...children);
+
+/**
+ * Target and target's allis within n spaces.
+ */
+class ForEachTargetAndTargetsAllysWithinNSpacesNode extends ForEachUnitAndAllyNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {BoolNode} predNode
+     * @param {...SkillEffectNode} children
+     */
+    constructor(n, predNode, ...children) {
+        super(predNode, ...children)
+        this._nNode = NumberWithUnitNode.makeNumberNodeFrom(n);
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @returns {Generator<Unit>|Unit[]}
+     */
+    getUnits(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let pred = u => this._predNode.evaluate(env.copy().setTarget(u));
+        return GeneratorUtil.filter(env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n , true), pred);
+    }
+}
 
 class ForEachUnitFromSameTitlesNode extends ForEachNode {
     static {
@@ -2279,18 +2394,19 @@ class AppliesDivineVeinIceToTargetsSpaceAndSpacesWithinNSpacesOfTargetFor2TurnsN
 // Tileへの効果 END
 
 // Tileを返す START
-class ForEachTargetForSpacesNode extends ForSpacesNode {
+class ForEachTargetForSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin, ForUnitMixin);
     }
 
     /**
      * @param {BoolNode} predNode
-     * @param {...ForSpacesNode} children
+     * @param {...SpacesNode} children
      */
     constructor(predNode, ...children) {
         super(...children);
         this._predNode = predNode;
+        this.joinFunc = unitEvaluations => IterUtil.concat(...unitEvaluations.flat());
     }
 }
 
@@ -2301,7 +2417,7 @@ class ForEachAllyForSpacesNode extends ForEachTargetForSpacesNode {
     }
 }
 
-class ForSpacesWithinNSpacesNode extends ForSpacesNode {
+class SpacesWithinNSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2314,6 +2430,10 @@ class ForSpacesWithinNSpacesNode extends ForSpacesNode {
         this._nNode = NumberNode.makeNumberNodeFrom(n);
     }
 
+    /**
+     * @param {NodeEnv} env
+     * @returns {Iterable<Tile>}
+     */
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this._nNode.evaluate(env);
@@ -2322,7 +2442,7 @@ class ForSpacesWithinNSpacesNode extends ForSpacesNode {
     }
 }
 
-class OverrideAoeSpacesNode extends ForSpacesNode {
+class OverrideAoeSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }

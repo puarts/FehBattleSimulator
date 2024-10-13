@@ -115,6 +115,7 @@ class SkillEffectHooks {
      */
     evaluateWithUnit(unit, env) {
         // TODO: 付与されたステータスも入れるようにする
+        // 1つのskillIdに複数の効果が入るのでflatで平らにする
         return Array.from(unit.enumerateSkills()).map(skillId => this.evaluate(skillId, env)).flat();
     }
 

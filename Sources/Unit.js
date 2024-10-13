@@ -3774,13 +3774,14 @@ class Unit extends BattleMapElement {
         ];
     }
 
-    getEvalStatusesInPrecombat() {
-        return [
+    getEvalStatusesInPrecombat(includesHp = false) {
+        let stats = [
             this.getEvalAtkInPrecombat(),
             this.getEvalSpdInPrecombat(),
             this.getEvalDefInPrecombat(),
             this.getEvalResInPrecombat()
         ];
+        return includesHp ? [this.hp, ...stats] : stats;
     }
 
     // 強化無効の場合0。パニックの場合マイナス。強化無効かつパニックの場合マイナス。

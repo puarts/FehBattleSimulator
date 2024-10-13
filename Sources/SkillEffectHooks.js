@@ -214,12 +214,17 @@ const CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS = new SkillEffectHooks();
 
 /**
  * Unit can move to a space
- * @type {SkillEffectHooks<ForSpacesNode, BattleMapEnv>} */
+ * @type {SkillEffectHooks<SpacesNode, BattleMapEnv>} */
 const UNIT_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 
 /**
+ * Ally can move to a space
+ * @type {SkillEffectHooks<SpacesNode, BattleMapEnv>} */
+const ALLY_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
+
+/**
  * unit can move through foes' spaces.
- * @type {SkillEffectHooks<ForSpacesNode, NodeEnv>} */
+ * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
 const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
 
 /**

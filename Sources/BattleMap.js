@@ -2044,7 +2044,7 @@ class BattleMap {
 
         let env = new BattleMapEnv(this, unit);
         env.setName('ワープ').setLogLevel(getSkillLogLevel());
-        yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(unit, env).flat(1);
+        yield* IterUtil.concat(...UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(unit, env));
 
         for (let skillId of unit.enumerateSkills()) {
             yield* getSkillFunc(skillId, enumerateTeleportTilesForUnitFuncMap)?.call(this, unit) ?? [];
@@ -2052,6 +2052,10 @@ class BattleMap {
         }
 
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+            let env = new BattleMapEnv(this, unit).setTarget(ally);
+            env.setName('ワープ(周囲)').setLogLevel(getSkillLogLevel());
+            yield* IterUtil.concat(...ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(ally, env));
+
             for (let skillId of ally.enumerateSkills()) {
                 yield* getSkillFunc(skillId, enumerateTeleportTilesForAllyFuncMap)?.call(this, unit, ally) ?? [];
             }

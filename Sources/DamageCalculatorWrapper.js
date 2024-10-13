@@ -10380,9 +10380,6 @@ class DamageCalculatorWrapper {
                                 targetUnit.battleContext.increaseCooldownCountForBoth();
                             }
                             break;
-                        case Weapon.CaduceusStaff:
-                            targetUnit.battleContext.addDamageReductionRatio(0.3);
-                            break;
                         case Weapon.Flykoogeru:
                             if (!targetUnit.isWeaponRefined) {
                                 // <通常効果>

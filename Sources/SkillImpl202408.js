@@ -1,4 +1,77 @@
 // noinspection JSUnusedLocalSymbols
+// カドゥケウスの杖
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.CaduceusStaff);
+    // Allies within 2 spaces of unit can move to any space within 2 spaces of unit.
+    setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, 2, 2);
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // grants Atk/Res+6 and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)"
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 0, 0, 6),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.SpecialCooldownChargePlusOnePerAttack),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd/Def/Res+5 to unit and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // unit makes a guaranteed follow-up attack during combat.
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.CaduceusStaff);
+    // Calculates damage from staff like other weapons.
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // reduces damage from foe's attacks by 30% (excluding area-of-effect Specials),
+            new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),
+            // and inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ),
+    ));
+
+    // For allies within 2 spaces of unit,
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // grants Atk/Res+4,
+            new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4),
+        ),
+    ));
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // reduces damage from foe's attacks by 30% (excluding area-of-effect Specials),
+            new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),
+            // and inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getNormalSkillId(Weapon.CaduceusStaff);
+    // Calculates damage from staff like other weapons.
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Reduces damage from foes' attacks during combat to allies within 2 spaces by 30%.
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),
+        ),
+    ));
+}
+
 // 波閉ざす錨の斧
 {
     let skillId = getSpecialRefinementSkillId(Weapon.GateAnchorAxe);
@@ -2110,14 +2183,14 @@
 // 無間の瞬動
 {
     let skillId = PassiveB.ShadowSlide;
-    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new ForSpacesNode(
+    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
         // Unit can move to a space within 2 spaces of any ally that has entered combat during the current turn.
         new ForEachAllyForSpacesNode(new HasTargetEnteredCombatDuringTheCurrentTurnNode,
-            new ForSpacesWithinNSpacesNode(2),
+            new SpacesWithinNSpacesNode(2),
         ),
         // Unit can move to a space within 2 spaces of any ally within 2 spaces.
         new ForEachAllyForSpacesNode(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
-            new ForSpacesWithinNSpacesNode(2),
+            new SpacesWithinNSpacesNode(2),
         ),
     ));
 
