@@ -975,6 +975,7 @@
         // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Swap, 3),
         // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Shove, 1),
         // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Smite, 1),
+        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Refresh, CantoSupport.SingDance, 1),
         // (this effect is not treated as an Assist skill; if similar effects are active, this effect does not trigger).
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(

@@ -3530,6 +3530,7 @@ const CantoSupport = {
     Drawback: 4,
     Swap: 5,
     Pivot: 6,
+    SingDance: 7,
 };
 
 // 紋章士

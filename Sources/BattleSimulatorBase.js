@@ -6095,6 +6095,8 @@ class BattleSimulatorBase {
         // let assistType = determineAssistType(unit, targetUnit);
         let assistType = unit.cantoAssistType;
         switch (assistType) {
+            case AssistType.Refresh:
+                return targetUnit.isActionDone;
             // case AssistType.Refresh:
             //     return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
             // case AssistType.Heal:
@@ -10609,6 +10611,8 @@ class BattleSimulatorBase {
                     (unit, target, tile) => this.__findTileAfterCantoMovementAssist(unit, target, tile),
                     false
                 );
+            case AssistType.Refresh:
+                return this.__applyRefresh(supporterUnit, targetUnit);
         }
         return result;
     }
