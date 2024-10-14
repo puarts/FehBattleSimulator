@@ -89,22 +89,40 @@ class UnitNode extends SkillEffectNode {
     }
 }
 
-const UNIT_NODE = new class extends UnitNode {
-    evaluate(env) {
-        return env.unitDuringCombat;
+class TargetNode extends UnitNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
     }
-}();
 
-const FOE_NODE = new class extends UnitNode {
     evaluate(env) {
-        return env.unitDuringCombat;
+        return this.getUnit(env);
     }
-}();
+}
+
+const TARGET_NODE = new TargetNode();
+
+const FOE_NODE = new class extends TargetNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
 
 /**
  * @abstract
  */
 class UnitsNode extends SkillEffectNode {
+    /**
+     * @param {UnitNode} unitNode
+     * @returns {UnitsNode}
+     */
+    static makeFromUnit(unitNode) {
+        return new class extends UnitsNode {
+            evaluate(env) {
+                return [unitNode.evaluate(env)];
+            }
+        };
+    }
+
     /**
      * @param {NodeEnv} env
      * @returns {Iterable<Unit>}
@@ -122,7 +140,26 @@ class UniteUnitsNode extends UnitsNode {
     }
 
     evaluate(env) {
-        return IterUtil.concat(this.evaluateChildren(env).flat());
+        return IterUtil.concat(...this.evaluateChildren(env).flat());
+    }
+}
+
+class MapUnitsNode extends NumbersNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {NumberNode} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let values = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Map units: ${units.map(u => u.nameWithGroup)} => values: [${values}]`);
+        return values;
     }
 }
 
@@ -415,6 +452,7 @@ class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
 
 const IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
 
+// TODO: Aliasの方を利用する
 /**
  * number of allies adjacent to unit
  */
@@ -1603,6 +1641,22 @@ class DoesTargetTriggerSaviorNode extends BoolNode {
     }
 }
 
+/**
+ * total penalties
+ */
+class TargetsTotalPenaltiesNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = -unit.getDebuffTotal(unit !== env.foeDuringCombat);
+        env.debug(`${unit.nameWithGroup}の弱化の合計値は${result}`);
+        return result;
+    }
+}
+
 // Unit or BattleContextの値を参照 END
 
 class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
@@ -1742,10 +1796,12 @@ class ForEachUnitNode extends ForEachNode {
     }
 }
 
+const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNode, ...nodes);
+
 /**
  * foe on the enemy team with the lowest stat
  */
-class TargetsFoesOnTheEnemyTeamWithLowestStat extends UnitsNode {
+class TargetsFoesOnTheEnemyTeamWithLowestStatNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1758,8 +1814,36 @@ class TargetsFoesOnTheEnemyTeamWithLowestStat extends UnitsNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let index = this._statusType.evaluate(env);
-        let units = env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit);
-        return IterUtil.minElements(units, u => u.getEvalStatusesInPrecombat(true)[index]);
+        let units = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+        let enemies = IterUtil.minElements(units, u => u.getEvalStatusesInPrecombat(true)[index]);
+        let statName = statusTypeToString(index);
+        let stat = enemies[0]?.getEvalStatusesInPrecombat(true)[index] ?? '-';
+        env.trace(`最も低い${statName}(${stat})を持つユニットを選択: ${enemies.map(u => u.nameWithGroup)}`);
+        return enemies;
+    }
+}
+
+class TargetAndAlliesWithinNSpacesNode extends UnitsNode {
+    /**
+     * @param {number|NumberNode} n
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(n, unitsNode) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let n = this._nNode.evaluate(env);
+        let units = this._unitsNode.evaluate(env);
+        let results = [];
+        for (let unit of units) {
+            env.trace2(`${unit.nameWithGroup}の周囲${n}マスの味方を選択`);
+            let allies = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n, true);
+            results.push(allies);
+        }
+        return IterUtil.concat(...results);
     }
 }
 
@@ -1985,7 +2069,7 @@ class ForEachTargetAndTargetsAllysWithinNSpacesNode extends ForEachUnitAndAllyNo
         let unit = this.getUnit(env);
         let n = this._nNode.evaluate(env);
         let pred = u => this._predNode.evaluate(env.copy().setTarget(u));
-        return GeneratorUtil.filter(env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n , true), pred);
+        return GeneratorUtil.filter(env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n, true), pred);
     }
 }
 

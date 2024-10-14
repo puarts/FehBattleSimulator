@@ -259,7 +259,10 @@ class ConsoleLogger extends LoggerBase {
         [LoggerBase.LOG_LEVEL.INFO, 'color: #64B5F6;'],
         [LoggerBase.LOG_LEVEL.DEBUG, 'color: #81C784;'],
         [LoggerBase.LOG_LEVEL.TRACE, 'color: #888888;'],
-        // [LoggerBase.LOG_LEVEL.UNKNOWN, 'color, white;'],
+        [LoggerBase.LOG_LEVEL.TRACE2, 'color: #777777;'],
+        [LoggerBase.LOG_LEVEL.TRACE3, 'color: #666666;'],
+        [LoggerBase.LOG_LEVEL.TRACE4, 'color: #555555;'],
+        [LoggerBase.LOG_LEVEL.TRACE5, 'color: #444444;'],
     ]);
 
     // 白背景用のスタイル
@@ -270,7 +273,10 @@ class ConsoleLogger extends LoggerBase {
         [LoggerBase.LOG_LEVEL.INFO, 'color: blue;'],
         [LoggerBase.LOG_LEVEL.DEBUG, 'color: green;'],
         [LoggerBase.LOG_LEVEL.TRACE, 'color: #888888;'],
-        // [LoggerBase.LOG_LEVEL.UNKNOWN, 'color, black;'],
+        [LoggerBase.LOG_LEVEL.TRACE2, 'color: #999999;'],
+        [LoggerBase.LOG_LEVEL.TRACE3, 'color: #aaaaaa;'],
+        [LoggerBase.LOG_LEVEL.TRACE4, 'color: #bbbbbb;'],
+        [LoggerBase.LOG_LEVEL.TRACE5, 'color: #cccccc;'],
     ]);
 
     static logWithLevel(level, message, styles) {

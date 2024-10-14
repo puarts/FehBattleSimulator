@@ -1,4 +1,87 @@
 // noinspection JSUnusedLocalSymbols
+// ストーン
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Petrify);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // neutralizes foe's bonuses to Atk/Res,
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(true, false, false, true),
+            // unit deals +X damage (excluding area-of-effect Specials;
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                // X = highest total penalties among target and foes within 2 spaces of target),
+                highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(2),
+            ),
+            // and reduces damage from foe's attacks by 30% during combat (excluding area-of-effect Specials).
+            new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),
+        )
+    ));
+}
+
+{
+    let skillId = getRefinementSkillId(Weapon.Petrify);
+    // Grants Res+3.
+    let getNode = (turn, index) =>
+        IF_NODE(EQ_NODE(CURRENT_TURN_NODE, turn),
+            // At start of turns 1 through 5,
+            // inflicts【Gravity】on foe on the enemy team with the lowest specified stat (see below), and also,
+            FOR_EACH_UNIT_NODE(new TargetsFoesOnTheEnemyTeamWithLowestStatNode(index),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Gravity),
+            ),
+            // inflicts Atk/Spd-7 and【Sabotage】 on that foe and foes within 2 spaces of that foe through their next actions.
+            // (Specified stats: Turn 1 = HP, Turn 2 = Atk, Turn 3 = Spd, Turn 4 = Def, Turn 5 = Res.)
+            FOR_EACH_UNIT_NODE(
+                new UniteUnitsNode(
+                    new TargetAndAlliesWithinNSpacesNode(2,
+                        new TargetsFoesOnTheEnemyTeamWithLowestStatNode(index),
+                    ),
+                ),
+                new InflictsStatsMinusAtStartOfTurnNode(7, 7, 0, 0),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Sabotage),
+            ),
+        );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        getNode(1, StatusType.Hp),
+        getNode(2, StatusType.Atk),
+        getNode(3, StatusType.Spd),
+        getNode(4, StatusType.Def),
+        getNode(5, StatusType.Res),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or the number of allies adjacent to unit ≤ 1,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET(), 1)),
+            // grants Atk/Spd/Def/Res+5 to unit and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // unit makes a guaranteed follow-up attack during combat.
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getNormalSkillId(Weapon.Petrify);
+    let getNode = (turn, index) =>
+        IF_NODE(EQ_NODE(CURRENT_TURN_NODE, turn),
+            // At start of turns 1 through 5, inflicts Atk/Spd-7 and【Gravity】on foe on the enemy team with the lowest specified stat (see below).
+            // (Specified stats: Turn 1 = HP, Turn 2 = Atk, Turn 3 = Spd, Turn 4 = Def, Turn 5 = Res.)
+            FOR_EACH_UNIT_NODE(new TargetsFoesOnTheEnemyTeamWithLowestStatNode(index),
+                new InflictsStatsMinusAtStartOfTurnNode(7, 7, 0, 0),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Gravity),
+            ),
+        );
+    // Grants Res+3.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        getNode(1, StatusType.Hp),
+        getNode(2, StatusType.Atk),
+        getNode(3, StatusType.Spd),
+        getNode(4, StatusType.Def),
+        getNode(5, StatusType.Res),
+    ));
+}
+
 // カドゥケウスの杖
 {
     let skillId = getSpecialRefinementSkillId(Weapon.CaduceusStaff);

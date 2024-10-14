@@ -239,3 +239,23 @@ function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUn
         ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT(n, m)
     );
 }
+
+/**
+ * @param {number|NumberNode} n
+ * @param {PositiveNumberNode} unitValueNode
+ * @returns {NumberNode}
+ */
+function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
+    return MAX_NODE(new MapUnitsNode(
+        new TargetAndAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
+        unitValueNode,
+    ));
+}
+
+/**
+ * highest total penalties among target and foes within 2 spaces of target
+ * @returns {NumberNode}
+ */
+function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
+    return highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
+}

@@ -1456,6 +1456,18 @@ class IterUtil {
             yield* iterable;
         }
     }
+
+    /**
+     * @template T1, T2
+     * @param {Iterable<T1>} iterable
+     * @param {function(T1): T2} func
+     * @return {Iterable<T2>}
+     */
+    static* map(iterable, func) {
+        for (const value of iterable) {
+            yield func(value);
+        }
+    }
 }
 
 class GeneratorUtil {
