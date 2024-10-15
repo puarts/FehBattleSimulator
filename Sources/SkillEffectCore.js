@@ -480,7 +480,9 @@ class NumberOperationNode extends NumberNode {
             return evaluations[0];
         }
         evaluations.forEach(evaluation => {
-            env?.error(`Expected a number but received: ${JSON.stringify(evaluation)}. Type: ${evaluation.constructor.name}.`);
+            if (typeof evaluation !== 'number') {
+                env?.error(`Expected a number but received: ${JSON.stringify(evaluation)}. Type: ${evaluation.constructor.name}.`);
+            }
         })
         return evaluations;
     }
