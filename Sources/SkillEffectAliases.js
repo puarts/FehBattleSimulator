@@ -54,18 +54,31 @@ const BOOST_3_NODE =
         ),
     );
 
+/// 戦闘開始時ステータスの比較
+const UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE =
+    GT_NODE(UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE, FOES_EVAL_RES_AT_START_OF_COMBAT_NODE);
+const DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE =
+    SUB_NODE(UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE, FOES_EVAL_RES_AT_START_OF_COMBAT_NODE);
+
+/// 戦闘中ステータスの比較
 /**
  * 戦闘中守備が高い
  * @type {GtNode}
  */
-const UNITS_DEF_GT_FOES_DEF_NODE = GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
+const UNITS_DEF_GT_FOES_DEF_DURING_COMBAT_NODE =
+    GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
+const UNITS_RES_GT_FOES_RES_DURING_COMBAT_NODE =
+    GT_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
+/// 戦闘中ステータスの差
 /**
  * 戦闘中の守備の差
  * @type {SubNode}
  */
 const DIFFERENCE_BETWEEN_DEF_STATS_NODE =
     SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
+const DIFFERENCE_BETWEEN_RES_STATS_NODE =
+    SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
@@ -226,6 +239,9 @@ const NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET =
 const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = (...nodes) =>
     IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE, ...nodes);
 
+const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = (...nodes) =>
+    IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE, ...nodes);
+
 /**
  * Allies within n spaces of unit can move to any space within m spaces of unit.
  */
@@ -258,4 +274,21 @@ function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
  */
 function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
     return highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
+}
+
+function setSpecialCount(skillId, n) {
+    switch (n) {
+        case 2:
+            COUNT2_SPECIALS.push(skillId);
+            INHERITABLE_COUNT2_SPECIALS.push(skillId);
+            break;
+        case 3:
+            COUNT3_SPECIALS.push(skillId);
+            INHERITABLE_COUNT3_SPECIALS.push(skillId);
+            break;
+        case 4:
+            COUNT4_SPECIALS.push(skillId);
+            INHERITABLE_COUNT4_SPECIALS.push(skillId);
+            break;
+    }
 }

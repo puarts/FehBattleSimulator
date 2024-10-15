@@ -243,14 +243,11 @@ const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
     }
 }();
 
-/**
- * @abstract
- */
-class IsSpecialTriggeredNode extends NumberWithUnitNode {
-    /**
-     * @param {NodeEnv} env
-     * @returns {number}
-     */
+class IsTargetsSpecialTriggeredNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.battleContext.isSpecialActivated;
@@ -259,16 +256,15 @@ class IsSpecialTriggeredNode extends NumberWithUnitNode {
     }
 }
 
-const IS_UNITS_SPECIAL_TRIGGERED = new class extends IsSpecialTriggeredNode {
-    getUnit(env) {
-        return env.unitDuringCombat;
+const IS_UNITS_SPECIAL_TRIGGERED = new class extends IsTargetsSpecialTriggeredNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
     }
 }();
 
-// noinspection JSUnusedGlobalSymbols
-const IS_FOES_SPECIAL_TRIGGERED = new class extends IsSpecialTriggeredNode {
-    getUnit(env) {
-        return env.foeDuringCombat;
+const IS_FOES_SPECIAL_TRIGGERED = new class extends IsTargetsSpecialTriggeredNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }();
 
@@ -751,7 +747,7 @@ class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends Applying
  * [Special]
  * Reduces damage from attacks during combat by percentage = N
  */
-class ReducesDamageFromAttacksDuringCombatByXPercentConsideredSpecialPerAttackNode extends FromNumberEnsuredNonNegativeNode {
+class ReducesDamageFromAttacksDuringCombatByXPercentAsSpecialSkillEffectPerAttackNode extends FromNumberEnsuredNonNegativeNode {
     evaluate(env) {
         let n = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;

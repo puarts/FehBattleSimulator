@@ -630,6 +630,8 @@ class Unit extends BattleMapElement {
         //（1ターンに1回のみ）
         this.isAnotherActionInPostCombatActivated = false;
 
+        this.isOneTimeActionActivatedForCantoRefresh = false;
+
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
         this.isOncePerMapSpecialActivated = false;
 
@@ -1354,6 +1356,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.cantoAssistType
             + ValueDelimiter + this.cantoAssistRange
             + ValueDelimiter + this.cantoSupport
+            + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForCantoRefresh)
             ;
     }
 
@@ -1494,6 +1497,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.cantoAssistType = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.cantoAssistRange = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.cantoSupport = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForCantoRefresh = intToBool(Number(values[i])); ++i; }
     }
 
 
@@ -2602,6 +2606,7 @@ class Unit extends BattleMapElement {
         this.hasGrantedAnotherActionAfterActionWithoutCombat = false;
         this.isCantoActivatedInCurrentTurn = false;
         this.isAnotherActionInPostCombatActivated = false;
+        this.isOneTimeActionActivatedForCantoRefresh = false;
     }
 
     setOnetimeActionActivated() {

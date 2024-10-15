@@ -1,4 +1,40 @@
 // noinspection JSUnusedLocalSymbols
+// 魔器ブルトガング
+{
+    let skillId = Weapon.ArcaneBlutgang;
+    // Arcane Blutgang
+    // Mt: 14 Rng:2
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat, if unit's HP ≥ 25%, grants bonus to
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // unit's Atk/Spd/Def/Res = 25% of foe's Atk at start of
+            // combat - 4 (min 5; max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMinMaxNode(
+                    SUB_NODE(MULT_TRUNC_NODE(0.25, FOES_ATK_AT_START_OF_COMBAT_NODE), 4),
+                    5, 14,
+                ),
+            ),
+            // deals damage = 15% of unit's
+            // Atk (including when dealing damage with a Special triggered before combat),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, UNITS_ATK_DURING_COMBAT_NODE),
+            // reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and grants Special cooldown count-1 to unit before unit's first attack during combat.
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+        )
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // deals damage = 15% of unit's
+        // Atk (including when dealing damage with a Special triggered before combat),
+        new UnitDealsDamageBeforeCombatNode(MULT_TRUNC_NODE(15, UNITS_ATK_AT_START_OF_COMBAT_NODE)),
+    ));
+}
+
 // ストーン
 {
     let skillId = getSpecialRefinementSkillId(Weapon.Petrify);
@@ -1216,14 +1252,14 @@
 
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Reduces damage from attacks by percentage = 40 - current Special cooldown count value × 10 during combat.
-        new ReducesDamageFromAttacksDuringCombatByXPercentConsideredSpecialPerAttackNode(
+        new ReducesDamageFromAttacksDuringCombatByXPercentAsSpecialSkillEffectPerAttackNode(
             SUB_NODE(40, MULT_NODE(10, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT))
         ),
     ));
 
     WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's Def > foe's Def,
-        IF_NODE(UNITS_DEF_GT_FOES_DEF_NODE,
+        IF_NODE(UNITS_DEF_GT_FOES_DEF_DURING_COMBAT_NODE,
             new NumThatIsNode(
                 new SkillEffectNode(
                     // decreases Spd difference necessary for unit to make a follow-up attack by X and
@@ -2851,7 +2887,7 @@
 
     // Reduces damage from attacks during combat by percentage = 40, - 10 × current Special cooldown count value.
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        new ReducesDamageFromAttacksDuringCombatByXPercentConsideredSpecialPerAttackNode(
+        new ReducesDamageFromAttacksDuringCombatByXPercentAsSpecialSkillEffectPerAttackNode(
             SUB_NODE(40, MULT_NODE(10, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT))
         ),
     ));

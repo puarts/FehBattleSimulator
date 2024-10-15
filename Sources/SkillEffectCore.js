@@ -341,6 +341,7 @@ class FromPositiveNumbersNode extends FromNumbersNode {
 }
 
 class ConstantNumberNode extends NumberNode {
+    /** @type {number} */
     #value;
 
     /**
@@ -678,6 +679,10 @@ class IfNode extends SkillEffectNode {
     /** @type {BoolNode} */
     #condNode;
 
+    /**
+     * @param {BoolNode} condNode
+     * @param {...SkillEffectNode} stmtNodes
+     */
     constructor(condNode, ...stmtNodes) {
         super(...stmtNodes);
         this.#condNode = condNode;
@@ -693,6 +698,12 @@ class IfNode extends SkillEffectNode {
     }
 }
 
+/**
+ * @param {BoolNode} condNode
+ * @param {...SkillEffectNode} stmtNodes
+ * @returns {IfNode}
+ * @constructor
+ */
 const IF_NODE = (condNode, ...stmtNodes) => new IfNode(condNode, ...stmtNodes);
 
 const UNLESS_NODE = (condNode, ...stmtNodes) => IF_NODE(NOT_NODE(condNode), ...stmtNodes);

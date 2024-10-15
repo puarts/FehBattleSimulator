@@ -1939,6 +1939,9 @@ const Weapon = {
     StoneOfDelights: 3030, // 収穫の喜びの竜石
     OpposingStones: 3033, // 神魔の双竜の竜石
     FullRabbitFang: 3035, // 豊穣の子兎の爪牙
+
+    // お供ダグ&魔器マリアンヌ
+    ArcaneBlutgang: 3038, // 魔器ブルトガング
 };
 
 const Support = {

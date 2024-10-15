@@ -1080,6 +1080,11 @@ const UNITS_SPD_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STAT
 const UNITS_DEF_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STATUS_INDEX.Def);
 const UNITS_RES_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STATUS_INDEX.Res);
 
+const FOES_ATK_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Atk);
+const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Spd);
+const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Def);
+const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Res);
+
 const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Atk);
 const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Spd);
 const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Def);
@@ -2955,6 +2960,19 @@ class CalcPotentialDamageNode extends BoolNode {
     evaluate(env) {
         let result = env.calcPotentialDamage;
         env.trace(`calcPotentialDamage: ${result}`);
+        return result;
+    }
+}
+
+class IsCantoSingDanceActivatedByTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isOneTimeActionActivatedForCantoRefresh;
+        env.debug(`${unit.nameWithGroup}はこのターン再移動【歌う・踊る】を発動したか: ${result}`);
         return result;
     }
 }
