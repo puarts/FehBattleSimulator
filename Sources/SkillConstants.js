@@ -2169,6 +2169,7 @@ const Special = {
     SturdyBeast: 3027, // 堅固なる獣
 
     // 専用奥義
+    RequiemPrayer: 3039, // 鎮魂の願い
     Override: 3024, // オーバードライヴ
     SeidrBurst: 3019, // 連魔弾
     Sandstorm: 3011, // 砂陣

@@ -1,4 +1,68 @@
 // noinspection JSUnusedLocalSymbols
+// 鎮魂の願い
+{
+    let skillId = Special.RequiemPrayer;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    setSpecialCount(skillId, 2)
+
+    // When Special triggers, boosts damage by 40% of unit's Res and neutralizes "reduces damage by X%" effects from foe's non-Special skills.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(0.4, UNITS_RES_DURING_COMBAT_NODE),
+        ),
+    ));
+
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's Res > foe's Res, reduces damage from attacks during combat and from area-of-effect Specials (excluding
+        // Rokkr area-of-effect Specials) by percentage = 4 - current
+        // Special cooldown count value, x difference between stats (max difference between stats: 10).
+        IF_NODE(UNITS_RES_GT_FOES_RES_DURING_COMBAT_NODE,
+            new ReducesDamageFromAoeSpecialsByXPercentNode(
+                MULT_TRUNC_NODE(
+                    SUB_NODE(4, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT),
+                    new EnsureMaxNode(DIFFERENCE_BETWEEN_RES_STATS_NODE, 10),
+                ),
+            ),
+        ),
+
+        // Reduces damage from attacks by percentage = 40 - current Special cooldown count value × 10 during combat.
+        new ReducesDamageFromAttacksDuringCombatByXPercentAsSpecialSkillEffectPerAttackNode(
+            SUB_NODE(40, MULT_NODE(10, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT))
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's Res > foe's Res, reduces damage from attacks during combat and from area-of-effect Specials (excluding
+        // Rokkr area-of-effect Specials) by percentage = 4 - current
+        // Special cooldown count value, x difference between stats (max difference between stats: 10).
+        IF_NODE(UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE,
+            new ReducesDamageFromAoeSpecialsByXPercentNode(
+                MULT_TRUNC_NODE(
+                    SUB_NODE(4, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT),
+                    new EnsureMaxNode(DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE, 10),
+                ),
+            ),
+        ),
+    ))
+
+    // If unit triggers Special during the current turn, enables (Canto (2)] .
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => new IsTargetsSpecialTriggeredNode());
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(2));
+
+    // When Canto triggers,
+    // enables unit to use (Sing/Dance) (can be triggered by any Canto effect other than the Canto effect from this Special; once per turn; if similar effects are active,
+    // this effect does not trigger; this effect is not treated as an Assist skill,
+    // nor is it treated as a Sing or Dance skill).
+    WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        UNLESS_NODE(new IsCantoSingDanceActivatedByTargetNode(),
+            new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Refresh, CantoSupport.SingDance, 1),
+        ),
+    ));
+}
+
 // 魔器ブルトガング
 {
     let skillId = Weapon.ArcaneBlutgang;
