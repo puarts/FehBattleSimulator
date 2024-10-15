@@ -1468,6 +1468,18 @@ class IterUtil {
             yield func(value);
         }
     }
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @param {function(T): boolean} func
+     * @return {Iterable<T>}
+     */
+    static* filter(iterable, func) {
+        for (const value of iterable) {
+            if (func) yield value;
+        }
+    }
 }
 
 class GeneratorUtil {

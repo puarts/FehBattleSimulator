@@ -25,7 +25,7 @@ const GetFoeDuringCombatMixin = {
     },
 };
 
-const GetSkillOwnerCombatMixin = {
+const GetSkillMixin = {
     getUnit(env) {
         return env.skillOwner;
     },
@@ -163,6 +163,23 @@ class MapUnitsNode extends NumbersNode {
     }
 }
 
+class FilterUnitsNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {BoolNode} predNode
+     */
+    constructor(unitsNode, predNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        let units = this._unitsNode.evaluate(env);
+        return IterUtil.filter(units, u => this._predNode.evaluate(env.copy().setTarget(u)));
+    }
+}
+
 /**
  * @abstract
  */
@@ -284,6 +301,12 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
         let result = env.unitManager.countAlliesWithinSpecifiedSpaces(unit, n, pred);
         env.debug(`${unit.nameWithGroup}の周囲${n}マスの味方の数: ${result}`);
         return result;
+    }
+}
+
+class NumOfFoesAlliesWithinNSpacesNode extends NumOfTargetsAlliesWithinNSpacesNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
@@ -991,7 +1014,7 @@ class TargetsMaxHpNode extends NumberNode {
 
 class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
     static {
-        Object.assign(this.prototype, GetSkillOwnerCombatMixin);
+        Object.assign(this.prototype, GetSkillMixin);
     }
 }
 
@@ -1029,6 +1052,30 @@ class GetStatNode extends NumberNode {
     }
 }
 
+class TargetsStatsOnMapNode extends GetStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    statsDescription = "マップ時";
+
+    getStats(env) {
+        return this.getUnit(env).getStatusesInPrecombat();
+    }
+}
+
+class TargetsEvalStatsOnMapNode extends GetStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    statsDescription = "マップ時";
+
+    getStats(env) {
+        return this.getUnit(env).getEvalStatusesInPrecombat();
+    }
+}
+
 class TargetsStatsAtStartOfTurnNode extends GetStatNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1038,6 +1085,18 @@ class TargetsStatsAtStartOfTurnNode extends GetStatNode {
 
     getStats(env) {
         return this.getUnit(env).getStatusesInPrecombat();
+    }
+}
+
+class SkillOwnersStatsOnMapNode extends TargetsStatsOnMapNode {
+    static {
+        Object.assign(this.prototype, GetSkillMixin);
+    }
+}
+
+class SkillOwnersEvalStatsOnMapNode extends TargetsEvalStatsOnMapNode {
+    static {
+        Object.assign(this.prototype, GetSkillMixin);
     }
 }
 
@@ -1494,6 +1553,12 @@ class HasTargetStatusEffectNode extends BoolNode {
     }
 }
 
+class HasFoeStatusEffectNode extends HasTargetStatusEffectNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 class NumOfTargetsDragonflowersNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1727,7 +1792,7 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
 
 class GrantsStatusEffectToSkillOwnerNode extends GrantsStatusEffectsNode {
     static {
-        Object.assign(this.prototype, GetSkillOwnerCombatMixin);
+        Object.assign(this.prototype, GetSkillMixin);
     }
 }
 
@@ -1785,23 +1850,42 @@ class ForEachNode extends SkillEffectNode {
 class ForEachUnitNode extends ForEachNode {
     /**
      * @param {UnitsNode} unitsNode
+     * @param {BoolNode} predNode
      * @param {...SkillEffectNode} nodes
      */
-    constructor(unitsNode, ...nodes) {
+    constructor(unitsNode, predNode, ...nodes) {
         super(...nodes);
         this._unitsNode = unitsNode;
+        this._predNode = predNode;
     }
 
     evaluate(env) {
         let units = this._unitsNode.evaluate(env);
         for (let unit of units) {
-            env.debug(`${unit.nameWithGroup}を対象に選択`);
-            this.evaluateChildren(env.copy().setTarget(unit));
+            if (this._predNode.evaluate(env.copy().setTarget(unit))) {
+                env.debug(`${unit.nameWithGroup}を対象に選択`);
+                this.evaluateChildren(env.copy().setTarget(unit));
+            } else {
+                env.trace3(`${unit.nameWithGroup}は対象外`);
+            }
         }
     }
 }
 
-const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNode, ...nodes);
+const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNode, TRUE_NODE, ...nodes);
+
+class TargetsFoesNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        return env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+    }
+}
+
+const TARGETS_FOES_NODE = new TargetsFoesNode();
 
 /**
  * foe on the enemy team with the lowest stat
@@ -2580,6 +2664,19 @@ class GrantsStatsPlusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     }
 }
 
+class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let amounts = this.evaluateChildren(env).map(v => -v);
+        env.debug(`${unit.nameWithGroup}にデバフ予約: [${amounts}]`);
+        unit.reserveToApplyDebuffs(...amounts);
+    }
+}
+
 class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     evaluate(env) {
         let unit = env.target;
@@ -2590,6 +2687,23 @@ class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
 }
 
 class InflictsStatsMinusAfterCombatNode extends InflictsStatsMinusAtStartOfTurnNode {
+}
+
+class GrantsStatusEffectsOnTargetOnMapNode extends FromNumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        this.evaluateChildren(env).forEach(e => {
+            let unit = this.getUnit(env);
+            env.debug(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与予約`);
+            unit.reserveToAddStatusEffect(e);
+        });
+    }
+}
+
+class InflictsStatusEffectsOnTargetOnMapNode extends GrantsStatusEffectsOnTargetOnMapNode {
 }
 
 // TODO: rename

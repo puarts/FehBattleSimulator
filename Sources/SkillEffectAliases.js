@@ -54,6 +54,27 @@ const BOOST_3_NODE =
         ),
     );
 
+/// ステータス
+const TARGETS_ATK_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Atk);
+const TARGETS_SPD_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Spd);
+const TARGETS_DEF_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Def);
+const TARGETS_RES_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Res);
+
+const TARGETS_EVAL_ATK_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Atk);
+const TARGETS_EVAL_SPD_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Spd);
+const TARGETS_EVAL_DEF_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Def);
+const TARGETS_EVAL_RES_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Res);
+
+const SKILL_OWNERS_ATK_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Atk);
+const SKILL_OWNERS_SPD_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Spd);
+const SKILL_OWNERS_DEF_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Def);
+const SKILL_OWNERS_RES_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Res);
+
+const SKILL_OWNERS_EVAL_ATK_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Atk);
+const SKILL_OWNERS_EVAL_SPD_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Spd);
+const SKILL_OWNERS_EVAL_DEF_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Def);
+const SKILL_OWNERS_EVAL_RES_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Res);
+
 /// 戦闘開始時ステータスの比較
 const UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE =
     GT_NODE(UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE, FOES_EVAL_RES_AT_START_OF_COMBAT_NODE);

@@ -2920,6 +2920,8 @@ const PassiveB = {
 
     DragonsScales: 3031, // 竜の堅鱗
 
+    SpdResDiscord: 3040, // 速さ魔防の不和
+
     // 専用B
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!

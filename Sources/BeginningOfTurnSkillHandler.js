@@ -73,7 +73,7 @@ class BeginningOfTurnSkillHandler {
 
         let env = new AtStartOfTurnEnv(this, unit);
         env.setName('敵軍ターン開始時').setLogLevel(getSkillLogLevel());
-        AT_START_OF_ENEMY_PHASE_HOOK.evaluateWithUnit(unit, env);
+        AT_START_OF_ENEMY_PHASE_HOOKS.evaluateWithUnit(unit, env);
 
         for (let skillId of unit.enumerateSkills()) {
             this.applyEnemySkillForBeginningOfTurn(skillId, unit);

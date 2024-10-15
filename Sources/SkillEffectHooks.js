@@ -27,7 +27,7 @@ const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 /**
  * 敵軍ターン開始時
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
-const AT_START_OF_ENEMY_PHASE_HOOK = new SkillEffectHooks();
+const AT_START_OF_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
 
 /**
  * 範囲奥義判定前(主に範囲奥義を発動するかどうかの判定など)

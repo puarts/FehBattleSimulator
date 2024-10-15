@@ -1,4 +1,51 @@
 // noinspection JSUnusedLocalSymbols
+// 速さ魔防の不和
+{
+    let skillId = PassiveB.SpdResDiscord;
+    // Spd/Res Discord
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        new ForEachUnitNode(
+            TARGETS_FOES_NODE,
+            AND_NODE(
+                // on foes with Res ‹ unit's Res and
+                LT_NODE(TARGETS_EVAL_RES_ON_MAP, SKILL_OWNERS_EVAL_RES_ON_MAP),
+                // that are within 2 spaces of another foe through their next actions.
+                IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+
+            // inflicts Spd/Res-6 and [Discord]
+            new InflictsStatsMinusOnTargetOnMapNode(0, 6, 0, 6),
+            new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Discord),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new NumThatIsNode(
+            // Inflicts penalty on foe's Spd/Res during combat
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, READ_NUM_NODE, 0, READ_NUM_NODE),
+            // = number of foes inflicted with (Discord) within 2 spaces of target,
+            // including target, x 2, + 4 (max 10) and
+            new EnsureMaxNode(
+                ADD_NODE(
+                    MULT_NODE(
+                        // TODO: リファクタリング
+                        ADD_NODE(
+                            new NumOfFoesAlliesWithinNSpacesNode(2, new HasTargetStatusEffectNode(StatusEffectType.Discord)),
+                            COND_OP(new HasFoeStatusEffectNode(StatusEffectType.Discord), 1, 0)),
+                        2,
+                    ),
+                    4,
+                ),
+                10,
+            ),
+        ),
+        // deals damage = 15% of unit's Res (excluding area-of-effect Specials).
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, UNITS_RES_DURING_COMBAT_NODE),
+    ));
+}
+
 // 鎮魂の願い
 {
     let skillId = Special.RequiemPrayer;
@@ -702,7 +749,7 @@
     // At start of turn,
     // and at start of enemy phase (except for in Summoner Duels),
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => skillEffectNode);
-    AT_START_OF_ENEMY_PHASE_HOOK.addSkill(skillId, () =>
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () =>
         IF_NODE(IS_NOT_SUMMONER_DUELS_MODE_NODE, skillEffectNode),
     );
 
@@ -2615,7 +2662,7 @@
     // applies 【Divine Vein (Ice)】to spaces 2 spaces away from unit for 1 turn
     // (excludes spaces occupied by a foe, destructible terrain, and warp spaces in Rival Domains).
     AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
-    AT_START_OF_ENEMY_PHASE_HOOK.addSkill(skillId, () => new SkillEffectNode(
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
             nodeFunc(),
         )
