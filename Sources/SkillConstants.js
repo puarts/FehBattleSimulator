@@ -1943,6 +1943,7 @@ const Weapon = {
     // お供ダグ&魔器マリアンヌ
     ArcaneBlutgang: 3038, // 魔器ブルトガング
     JustBow: 3041, // 正義の一矢の弓
+    BlarvulturePlus: 3043 // ブラーバルチャー
 };
 
 const Support = {

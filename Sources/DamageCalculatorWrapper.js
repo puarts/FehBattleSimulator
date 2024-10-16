@@ -5780,6 +5780,7 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[Weapon.HvitrvulturePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.GronnvulturePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.BlarvulturePlus] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.SellSpellTome] = (targetUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -11309,6 +11310,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.HvitrvulturePlus:
                 case Weapon.GronnvulturePlus:
+                case Weapon.BlarvulturePlus:
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
                         enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
