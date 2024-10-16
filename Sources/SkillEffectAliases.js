@@ -101,6 +101,12 @@ const DIFFERENCE_BETWEEN_DEF_STATS_NODE =
 const DIFFERENCE_BETWEEN_RES_STATS_NODE =
     SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
+/// 強化(バフ)
+const FOES_ATK_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Atk);
+const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
+const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
+const FOES_RES_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Res);
+
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
  * 奥義カウント最大判定
@@ -314,17 +320,31 @@ function setSpecialCount(skillId, n) {
     }
 }
 
+function setPathfinder(skillId) {
+    PATHFINDER_SKILL_SET.add(skillId);
+}
+
 const IS_TARGET_SKILL_OWNER_NODE = new IsTargetSkillOwnerNode();
+const UNITS_ON_MAP_NODE = new UnitsOnMapNode();
+const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
+const FILTER_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
+const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);
 const SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
-    new FilterUnitsNode(
-        new UnitsOnMapNode(),
+    FILTER_UNITS_NODE(
         OR_NODE(IS_TARGET_SKILL_OWNER_NODE,
             AND_NODE(
                 ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE,
-                IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE)));
+                IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE))
+    );
 
 const TARGETS_TOTAL_BONUSES_NODE = new TargetsTotalBonusesNode();
 const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT =
     MAX_NODE(new MapUnitsNode(
         SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         TARGETS_TOTAL_BONUSES_NODE));
+
+const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
+
+const MAX_UNITS_NODE = (unitsNode, predNode) => new MaxUnitsNode(unitsNode, predNode);
+
+const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_DEF_ON_MAP);

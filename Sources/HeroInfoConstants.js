@@ -301,6 +301,21 @@ function nameToStatusType(statusName) {
     }
 }
 
+function statusIndexStr(index) {
+    switch (index) {
+        case STATUS_INDEX.Atk:
+            return "攻撃";
+        case STATUS_INDEX.Spd:
+            return "速さ";
+        case STATUS_INDEX.Def:
+            return "守備";
+        case STATUS_INDEX.Res:
+            return "魔防";
+        default:
+            return "-";
+    }
+}
+
 /**
  * シーズンが光、闇、天、理のいずれかであるかを判定します。
  * @param {number} season

@@ -1,4 +1,54 @@
 // noinspection JSUnusedLocalSymbols
+// 始祖の炎翼
+{
+    let skillId = PassiveB.VedfolnirsWing;
+    // Effect:【Pathfinder】
+    setPathfinder(skillId);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is on a team with only 1 support partner,
+        IF_NODE(EQ_NODE(1, new CountUnitsNode(TARGETS_PARTNERS_NODE)),
+            FOR_EACH_UNIT_NODE(TARGETS_PARTNERS_NODE,
+                // grants【Pathfinder】to support partner for 1 turn.
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Pathfinder),
+            ),
+        ),
+
+        // At start of turn,
+        // if unit is not on a team with support partner and if there is only 1 ally who has the highest Def,
+        IF_NODE(EQ_NODE(0, new CountUnitsNode(TARGETS_PARTNERS_NODE)),
+            IF_NODE(EQ_NODE(1, new CountUnitsNode(HIGHEST_DEF_ALLIES_ON_MAP_NODE)),
+                FOR_EACH_UNIT_NODE(HIGHEST_DEF_ALLIES_ON_MAP_NODE,
+                    // grants【Pathfinder】to that ally for 1 turn.
+                    new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Pathfinder),
+                ),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // TODO: リファクタリング。それぞれの値について一括で設定できるようにする
+            // inflicts penalty on foe's Atk/Spd/Def =
+            // 5 + current bonus on each of foe's stats × 2
+            new InflictsStatsMinusOnFoeDuringCombatNode(
+                ADD_NODE(5, MULT_NODE(FOES_ATK_BONUS_NODE, 2)),
+                ADD_NODE(5, MULT_NODE(FOES_SPD_BONUS_NODE, 2)),
+                ADD_NODE(5, MULT_NODE(FOES_DEF_BONUS_NODE, 2)),
+                0
+            ),
+            // (calculates each stat penalty independently; example: if foe has a +7 bonus to Atk, inflicts Atk-19, for a net penalty of Atk-12),
+
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        )
+    ));
+}
+
 // 引き戻し・歩法
 {
     let skillId = Support.RepositionGait;

@@ -2929,6 +2929,7 @@ const PassiveB = {
     SpdResDiscord: 3040, // 速さ魔防の不和
 
     // 専用B
+    VedfolnirsWing: 3046, // 始祖の炎翼
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!
     LoneWolf: 2983, // 一匹狼

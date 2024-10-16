@@ -901,6 +901,12 @@ function isTeleportationSkill(skillId) {
     return TELEPORTATION_SKILL_SET.has(skillId);
 }
 
+PATHFINDER_SKILL_SET = new Set([
+    PassiveB.TwinSkyWing,
+    Weapon.JotnarBow,
+    Captain.Eminence,
+]);
+
 /**
  * 天駆の道の効果を持つスキルかどうか
  */
@@ -908,14 +914,7 @@ function hasPathfinderEffect(skillId) {
     if (getSkillFunc(skillId, hasPathfinderEffectFuncMap)?.call(this) ?? false) {
         return true;
     }
-    switch (skillId) {
-        case PassiveB.TwinSkyWing:
-        case Weapon.JotnarBow:
-        case Captain.Eminence:
-            return true;
-        default:
-            return false;
-    }
+    return PATHFINDER_SKILL_SET.has(skillId);
 }
 
 /**

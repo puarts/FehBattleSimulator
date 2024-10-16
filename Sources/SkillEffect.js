@@ -143,6 +143,45 @@ class UnitsOnMapNode extends UnitsNode {
     }
 }
 
+class TargetsAlliesOnMapNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {BoolNode} includesTarget
+     */
+    constructor(includesTarget = FALSE_NODE) {
+        super();
+        this._includesTargetNode = includesTarget;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let withTargetUnit = this._includesTargetNode.evaluate(env);
+        return env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
+    }
+}
+
+class MaxUnitsNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {NumberNode} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let maxUnits = IterUtil.maxElements(units, u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Max units: ${maxUnits.map(u => u.nameWithGroup)}`);
+        return maxUnits;
+    }
+}
+
 class UniteUnitsNode extends UnitsNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -189,6 +228,23 @@ class FilterUnitsNode extends UnitsNode {
     evaluate(env) {
         let units = this._unitsNode.evaluate(env);
         return IterUtil.filter(units, u => this._predNode.evaluate(env.copy().setTarget(u)));
+    }
+}
+
+class CountUnitsNode extends PositiveNumberNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(unitsNode) {
+        super();
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let result = units.length;
+        env.debug(`ユニットの数: ${result}`);
+        return result;
     }
 }
 
@@ -263,6 +319,12 @@ class IsThereUnitOnMapNode extends BoolNode {
 const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode {
     evaluate(env) {
         return env.target.groupId === env.skillOwner.groupId;
+    }
+}();
+
+const ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE = new class extends BoolNode {
+    evaluate(env) {
+        return env.target.isPartner(env.skillOwner);
     }
 }();
 
@@ -1226,6 +1288,7 @@ class FoesStatsDuringCombatNode extends UnitsStatsDuringCombat {
 }
 
 const FOES_ATK_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Atk);
+const FOES_SPD_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Spd);
 const FOES_DEF_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Def);
 const FOES_RES_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Res);
 
@@ -3140,9 +3203,39 @@ class TargetsTotalBonusesNode extends NumberNode {
         /** @type {Unit} */
         let unit = this.getUnit(env);
         let result = unit === env.unitDuringCombat ?
-            unit.getBuffTotalInCombat(env.foeDuringCombat) : unit.getBuffTotalInPreCombat();
+            unit.getBuffTotalInCombat(env.getFoeDuringCombatOf(unit)) : unit.getBuffTotalInPreCombat();
         env.debug(`${unit.nameWithGroup}の強化の合計値: ${result}`);
         return result;
+    }
+}
+
+class TargetsBonusNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} indexNode
+     */
+    constructor(indexNode) {
+        super();
+        this._indexNode = NumberNode.makeNumberNodeFrom(indexNode);
+    }
+
+    evaluate(env) {
+        /** @type {Unit} */
+        let unit = this.getUnit(env);
+        let index = this._indexNode.evaluate(env);
+        let result = unit === env.unitDuringCombat ?
+            unit.getBuffsInCombat(env.getFoeDuringCombatOf(unit))[index] : unit.getBuffsInPreCombat()[index];
+        env.debug(`${unit.nameWithGroup}の強化の値: ${result}(${statusIndexStr(index)})`);
+        return result;
+    }
+}
+
+class FoesBonusNode extends TargetsBonusNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
