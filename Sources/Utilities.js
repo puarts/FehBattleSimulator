@@ -1477,7 +1477,7 @@ class IterUtil {
      */
     static* filter(iterable, func) {
         for (const value of iterable) {
-            if (func) yield value;
+            if (func(value)) yield value;
         }
     }
 }
