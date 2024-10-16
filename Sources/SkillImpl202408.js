@@ -1,4 +1,54 @@
 // noinspection JSUnusedLocalSymbols
+// 始まりの巨人の剣
+{
+    let skillId = Weapon.VedfolnirsEdge;
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if there is an ally within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            FOR_EACH_UNIT_NODE(SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+                // grants Atk/Spd+6 and [Null Follow-Up) to unit and allies within 3 rows or 3 columns centered on unit for 1 turn.
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.NullFollowUp),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or if there is an ally within 3 rows or 3 columns centered on unit,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
+            // grants bonus to unit's
+            // Atk/Spd/Def/Res = 5 + number of allies within 3 rows or 3 columns centered on unit x 3 (max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(5, MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3)),
+                    14,
+                ),
+            ),
+            // neutralizes unit's penalties,
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // unit deals +X damage,
+                    new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                    // and reduces damage from foe's first attack by 50% of X during combat
+                    new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(
+                        MULT_TRUNC_NODE(0.5, READ_NUM_NODE)),
+                    // and also,
+                    // when foe's attack triggers foe's Special, reduces Special damage by 50% of X (excluding area-of-effect Specials).
+                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(MULT_TRUNC_NODE(0.5, READ_NUM_NODE)),
+                ),
+                // (X = highest total bonuses among unit and allies within 3 rows or 3 columns centered on unit;
+                HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT,
+                // "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            ),
+        ),
+    ));
+}
+
 // 正義の一矢の弓
 {
     let skillId = Weapon.JustBow;

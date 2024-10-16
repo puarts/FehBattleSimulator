@@ -77,6 +77,12 @@ const ForUnitMixin = {
     }
 };
 
+class DebugEnvNode extends SkillEffectNode {
+    evaluate(env) {
+        console.log('env: %o', env);
+    }
+}
+
 /**
  * @abstract
  */
@@ -128,6 +134,12 @@ class UnitsNode extends SkillEffectNode {
      * @returns {Iterable<Unit>}
      */
     evaluate(env) {
+    }
+}
+
+class UnitsOnMapNode extends UnitsNode {
+    evaluate(env) {
+        return env.unitManager.enumerateAllUnitsOnMap();
     }
 }
 
@@ -1887,6 +1899,19 @@ class TargetsFoesNode extends UnitsNode {
 
 const TARGETS_FOES_NODE = new TargetsFoesNode();
 
+class IsTargetSkillOwnerNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit === env.skillOwner;
+        env.debug(`${unit.nameWithGroup}はスキル所持者${env.skillOwner.nameWithGroup}と同一ユニットか: ${result}`);
+        return result;
+    }
+}
+
 /**
  * foe on the enemy team with the lowest stat
  */
@@ -3087,6 +3112,24 @@ class IsCantoSingDanceActivatedByTargetNode extends BoolNode {
         let unit = this.getUnit(env);
         let result = unit.isOneTimeActionActivatedForCantoRefresh;
         env.debug(`${unit.nameWithGroup}はこのターン再移動【歌う・踊る】を発動したか: ${result}`);
+        return result;
+    }
+}
+
+/**
+ * highest total bonuses
+ */
+class TargetsTotalBonusesNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        /** @type {Unit} */
+        let unit = this.getUnit(env);
+        let result = unit === env.unitDuringCombat ?
+            unit.getBuffTotalInCombat(env.foeDuringCombat) : unit.getBuffTotalInPreCombat();
+        env.debug(`${unit.nameWithGroup}の強化の合計値: ${result}`);
         return result;
     }
 }

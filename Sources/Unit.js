@@ -2035,6 +2035,10 @@ class Unit extends BattleMapElement {
         return isAdvantageousForColorless(this.weapon) || this.battleContext.isAdvantageForColorless;
     }
 
+    getBuffTotalInPreCombat() {
+        return this.getBuffsInPreCombat().reduce((a, b) => a + b, 0);
+    }
+
     getBuffTotalInCombat(enemyUnit) {
         return this.getAtkBuffInCombat(enemyUnit)
             + this.getSpdBuffInCombat(enemyUnit)
@@ -3851,6 +3855,18 @@ class Unit extends BattleMapElement {
             () => Number(this.defBuff),
             () => this.battleContext.invalidatesOwnDefDebuff
         );
+    }
+
+    /**
+     * @returns {[number, number, number, number]}
+     */
+    getBuffsInPreCombat() {
+        return [
+            this.atkBuff * this.__getBuffMultiply(),
+            this.spdBuff * this.__getBuffMultiply(),
+            this.defBuff * this.__getBuffMultiply(),
+            this.resBuff * this.__getBuffMultiply(),
+        ];
     }
 
     /**

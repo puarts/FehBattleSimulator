@@ -259,7 +259,7 @@ class NodeEnv {
     }
 
     setTargetFoe(foe) {
-        this.#foeDuringCombat = foe;
+        this.#targetFoe = foe;
         return this;
     }
 
