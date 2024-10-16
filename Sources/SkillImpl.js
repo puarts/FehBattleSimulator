@@ -5796,7 +5796,7 @@
 
 // 2種類封じ3
 {
-    let setSkill = (skillId, spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
+    let setSkill = (skillId,spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 // 戦闘中、敵の速さ、魔防一3、
@@ -5805,7 +5805,6 @@
                 // さらに、敵の速さ、魔防がそれぞれ減少
                 // 減少値は、6一敵が受けているその能力値の弱化の値
                 // （最低値O、
-                // TODO: バグ修正
                 // 敵が弱化無効の効果を発動していても減少）
                 let debuffValues = enemyUnit.getDebuffTotals(true).map(n => Math.abs(n));
                 let spurFunc = (n, i) => -n * MathUtil.ensureMin(spurMax - debuffValues[i], 0);
@@ -5832,6 +5831,8 @@
     setSkill(PassiveB.SealSpdRes3, [0, 1, 0, 1]);
     // 守備魔防封じ3
     setSkill(PassiveB.SealDefRes3, [0, 0, 1, 1]);
+    // 速さ守備封じ3
+    setSkill(PassiveB.SealSpdDef3, [0, 1, 1, 0]);
 }
 
 // 神聖風

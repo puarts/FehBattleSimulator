@@ -2780,6 +2780,7 @@ const PassiveB = {
     SealDefRes3: 2950, // 守備魔防封じ3
     SealSpdDef1: 1465,
     SealSpdDef2: 855,
+    SealSpdDef3: 3042, // 速さ守備封じ3
     SealSpdRes1: 1466,
     SealSpdRes2: 1389, // 速さ魔防封じ2
     SealSpdRes3: 2829, // 速さ魔防封じ3
