@@ -9667,6 +9667,7 @@ class BattleSimulatorBase {
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition:
+            case Support.RepositionGait:
                 result = this.__findTileAfterReposition(unit, targetUnit, assistTile);
                 break;
             case Support.FoulPlay:
@@ -10455,6 +10456,7 @@ class BattleSimulatorBase {
             case Support.ReturnPlus:
             case Support.Return:
             case Support.Reposition:
+            case Support.RepositionGait:
                 return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
             case Support.Smite:
                 return this.__findTileAfterSmite(assistUnit, assistTargetUnit, tile);

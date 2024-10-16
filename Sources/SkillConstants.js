@@ -1956,6 +1956,8 @@ const Support = {
     Swap: 416, // 入れ替え
     Pivot: 422, // 回り込み
 
+    RepositionGait: 3045, // 引き戻し・歩法
+
     // 専用補助
     ChangingWaters: 2857, // つたうみなすじ
     SpringsDream: 2806, // しろいはるのゆめ

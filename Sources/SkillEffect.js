@@ -1407,6 +1407,18 @@ class ApplyingNumberToEachStatNode extends FromNumbersNode {
     }
 }
 
+class IfTargetHasUsedAssistDuringCurrentTurnNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetValueMixin);
+    }
+
+    debugMessage = "は現在ターン中に補助を使用したか";
+
+    getValue(unit) {
+        return unit.isSupportDone;
+    }
+}
+
 /**
  * If unit has not used or been the target of an Assist skill during the current turn,
  */

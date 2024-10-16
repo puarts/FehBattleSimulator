@@ -1,4 +1,13 @@
 // noinspection JSUnusedLocalSymbols
+// 引き戻し・歩法
+{
+    let skillId = Support.RepositionGait;
+    // Target ally moves to opposite side of unit.
+    // If unit uses an Assist skill on the current turn, enables【Canto (１)】.
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => new IfTargetHasUsedAssistDuringCurrentTurnNode());
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(1));
+}
+
 // 始まりの巨人の剣
 {
     let skillId = Weapon.VedfolnirsEdge;
