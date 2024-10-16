@@ -5805,6 +5805,7 @@
                 // さらに、敵の速さ、魔防がそれぞれ減少
                 // 減少値は、6一敵が受けているその能力値の弱化の値
                 // （最低値O、
+                // TODO: バグ修正
                 // 敵が弱化無効の効果を発動していても減少）
                 let debuffValues = enemyUnit.getDebuffTotals(true).map(n => Math.abs(n));
                 let spurFunc = (n, i) => -n * MathUtil.ensureMin(spurMax - debuffValues[i], 0);

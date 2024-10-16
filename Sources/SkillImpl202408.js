@@ -1,4 +1,62 @@
 // noinspection JSUnusedLocalSymbols
+// 正義の一矢の弓
+{
+    let skillId = Weapon.JustBow;
+    // Accelerates Special trigger (cooldown count-1). Effective against flying foes.
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or if there is an ally within 3 rows or 3 columns centered on unit,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
+            // grants bonus to unit's
+            // Atk/Spd/Def/Res = 5 + 15% of unit's Spd at start of combat,
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                ADD_NODE(5, MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            ),
+            // unit deals +7 damage (excluding area-of-effect Specials),
+            new UnitDealsDamageExcludingAoeSpecialsNode(7),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and also,
+            // when unit's Special triggers,
+            // neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills during combat (excluding area-of-effect Specials).
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        ),
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // grants Special cooldown count-1 to unit before unit's first attack during combat,
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+            // and also,
+            // if foe's attack can trigger foe's Special,
+            IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+            ),
+        ),
+    ));
+
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // grants Atk/Spd+4 during their combat,
+            new GrantsStatsPlusToTargetDuringCombatNode(4, 4, 0, 0),
+        ),
+    ));
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // if ally initiates combat and
+            IF_NODE(DOES_TARGET_INITIATE_COMBAT_NODE,
+                // foe's attack can trigger foe's Special,
+                IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                    // inflicts Special cooldown count+ 1 on foe before foe's first attack during their combat (cannot exceed the foe's maximum Special cooldown).
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                ),
+            ),
+        ),
+    ));
+}
+
 // 速さ魔防の不和
 {
     let skillId = PassiveB.SpdResDiscord;
