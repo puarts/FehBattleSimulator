@@ -5780,6 +5780,7 @@ class DamageCalculatorWrapper {
             };
             this._applySkillEffectForUnitFuncDict[Weapon.HvitrvulturePlus] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.GronnvulturePlus] = func;
+            this._applySkillEffectForUnitFuncDict[Weapon.BlarvulturePlus] = func;
         }
         this._applySkillEffectForUnitFuncDict[Weapon.SellSpellTome] = (targetUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -7803,14 +7804,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.defSpur -= 5;
                 targetUnit.battleContext.invalidatesAtkBuff = true;
                 targetUnit.battleContext.invalidatesDefBuff = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.GateAnchorAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                targetUnit.defSpur += 5;
-                targetUnit.resSpur += 5;
-                enemyUnit.defSpur -= 5;
-                enemyUnit.resSpur -= 5;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.FlowingLancePlus] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -10388,9 +10381,6 @@ class DamageCalculatorWrapper {
                                 targetUnit.battleContext.increaseCooldownCountForBoth();
                             }
                             break;
-                        case Weapon.CaduceusStaff:
-                            targetUnit.battleContext.addDamageReductionRatio(0.3);
-                            break;
                         case Weapon.Flykoogeru:
                             if (!targetUnit.isWeaponRefined) {
                                 // <通常効果>
@@ -11320,6 +11310,7 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.HvitrvulturePlus:
                 case Weapon.GronnvulturePlus:
+                case Weapon.BlarvulturePlus:
                     if (this.__isSolo(targetUnit) || calcPotentialDamage) {
                         enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
                         enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
@@ -14604,11 +14595,6 @@ class DamageCalculatorWrapper {
                         break;
                     case PassiveB.TsuigekiRing:
                         if (atkUnit.battleContext.restHpPercentage >= 50) {
-                            ++followupAttackPriority;
-                        }
-                        break;
-                    case Weapon.GateAnchorAxe:
-                        if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)) {
                             ++followupAttackPriority;
                         }
                         break;

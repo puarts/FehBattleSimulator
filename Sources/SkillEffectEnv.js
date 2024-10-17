@@ -259,7 +259,7 @@ class NodeEnv {
     }
 
     setTargetFoe(foe) {
-        this.#foeDuringCombat = foe;
+        this.#targetFoe = foe;
         return this;
     }
 
@@ -432,6 +432,34 @@ class NodeEnv {
      */
     trace(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE);
+    }
+
+    /**
+     * @param {string} message
+     */
+    trace2(message) {
+        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE2);
+    }
+
+    /**
+     * @param {string} message
+     */
+    trace3(message) {
+        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE3);
+    }
+
+    /**
+     * @param {string} message
+     */
+    trace4(message) {
+        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE4);
+    }
+
+    /**
+     * @param {string} message
+     */
+    trace5(message) {
+        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE5);
     }
 
     #logIf(message, level) {

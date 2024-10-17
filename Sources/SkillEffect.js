@@ -25,7 +25,7 @@ const GetFoeDuringCombatMixin = {
     },
 };
 
-const GetSkillOwnerCombatMixin = {
+const GetSkillMixin = {
     getUnit(env) {
         return env.skillOwner;
     },
@@ -62,7 +62,7 @@ const NSpacesMixin = {
  * @description getUnitsを実装すること
  */
 const ForUnitMixin = {
-    flatDepth: 1,
+    joinFunc: results => results.flat(1),
     evaluate(env) {
         let results = [];
         if (typeof this.getUnits !== 'function') {
@@ -70,11 +70,18 @@ const ForUnitMixin = {
         }
         for (let unit of this.getUnits(env)) {
             env.debug(`${unit.nameWithGroup}を対象に選択`);
-            results.push(this.evaluateChildren(env.copy().setTarget(unit)));
+            let items = this.evaluateChildren(env.copy().setTarget(unit));
+            results.push(items);
         }
-        return results.flat(this.flatDepth);
+        return this.joinFunc(results);
     }
 };
+
+class DebugEnvNode extends SkillEffectNode {
+    evaluate(env) {
+        console.log('env: %o', env);
+    }
+}
 
 /**
  * @abstract
@@ -88,17 +95,158 @@ class UnitNode extends SkillEffectNode {
     }
 }
 
-const UNIT_NODE = new class extends UnitNode {
-    evaluate(env) {
-        return env.unitDuringCombat;
+class TargetNode extends UnitNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
     }
-}();
 
-const FOE_NODE = new class extends UnitNode {
     evaluate(env) {
-        return env.unitDuringCombat;
+        return this.getUnit(env);
     }
-}();
+}
+
+const TARGET_NODE = new TargetNode();
+
+const FOE_NODE = new class extends TargetNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+/**
+ * @abstract
+ */
+class UnitsNode extends SkillEffectNode {
+    /**
+     * @param {UnitNode} unitNode
+     * @returns {UnitsNode}
+     */
+    static makeFromUnit(unitNode) {
+        return new class extends UnitsNode {
+            evaluate(env) {
+                return [unitNode.evaluate(env)];
+            }
+        };
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @returns {Iterable<Unit>}
+     */
+    evaluate(env) {
+    }
+}
+
+class UnitsOnMapNode extends UnitsNode {
+    evaluate(env) {
+        return env.unitManager.enumerateAllUnitsOnMap();
+    }
+}
+
+class TargetsAlliesOnMapNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {BoolNode} includesTarget
+     */
+    constructor(includesTarget = FALSE_NODE) {
+        super();
+        this._includesTargetNode = includesTarget;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let withTargetUnit = this._includesTargetNode.evaluate(env);
+        return env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
+    }
+}
+
+class MaxUnitsNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {NumberNode} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let maxUnits = IterUtil.maxElements(units, u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Max units: ${maxUnits.map(u => u.nameWithGroup)}`);
+        return maxUnits;
+    }
+}
+
+class UniteUnitsNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(...unitsNode) {
+        super(...unitsNode);
+    }
+
+    evaluate(env) {
+        return IterUtil.concat(...this.evaluateChildren(env).flat());
+    }
+}
+
+class MapUnitsNode extends NumbersNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {NumberNode} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let values = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Map units: ${units.map(u => u.nameWithGroup)} => values: [${values}]`);
+        return values;
+    }
+}
+
+class FilterUnitsNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {BoolNode} predNode
+     */
+    constructor(unitsNode, predNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        let units = this._unitsNode.evaluate(env);
+        return IterUtil.filter(units, u => this._predNode.evaluate(env.copy().setTarget(u)));
+    }
+}
+
+class CountUnitsNode extends PositiveNumberNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(unitsNode) {
+        super();
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let result = units.length;
+        env.debug(`ユニットの数: ${result}`);
+        return result;
+    }
+}
 
 /**
  * @abstract
@@ -113,9 +261,9 @@ class SpacesNode extends SkillEffectNode {
     }
 }
 
-class ForSpacesNode extends SpacesNode {
+class UniteSpacesNode extends SpacesNode {
     /**
-     * @param {...ForSpacesNode} children
+     * @param {...SpacesNode} children
      */
     constructor(...children) {
         super(...children);
@@ -126,7 +274,26 @@ class ForSpacesNode extends SpacesNode {
      * @returns {Iterable<Tile>}
      */
     evaluate(env) {
-        return Array.from(IterUtil.concat(...this.evaluateChildren(env).flat(1)));
+        return [...new Set(Array.from(IterUtil.concat(...this.evaluateChildren(env))))];
+    }
+}
+
+class UniteSpacesIfNode extends SpacesNode {
+    constructor(pred, ...children) {
+        super(...children);
+        this.predNode = BoolNode.makeBoolNodeFrom(pred);
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @returns {Iterable<Tile>}
+     */
+    evaluate(env) {
+        if (this.predNode.evaluate(env)) {
+            return [...new Set(Array.from(IterUtil.concat(...this.evaluateChildren(env))))];
+        } else {
+            return [];
+        }
     }
 }
 
@@ -152,6 +319,12 @@ class IsThereUnitOnMapNode extends BoolNode {
 const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode {
     evaluate(env) {
         return env.target.groupId === env.skillOwner.groupId;
+    }
+}();
+
+const ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE = new class extends BoolNode {
+    evaluate(env) {
+        return env.target.isPartner(env.skillOwner);
     }
 }();
 
@@ -187,20 +360,27 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
 
     /**
      * @param {number|NumberNode} n
-     * @param {UnitNode} targetNode
+     * @param {BoolNode} predNode
      */
-    constructor(n, targetNode = null) {
+    constructor(n, predNode = null) {
         super();
         this._n = NumberNode.makeNumberNodeFrom(n);
-        this._targetNode = targetNode;
+        this._predNode = predNode;
     }
 
     evaluate(env) {
-        let unit = this._targetNode ? this._targetNode.evaluate(env) : this.getUnit(env);
+        let unit = this.getUnit(env);
         let n = this._n.evaluate(env);
-        let result = env.unitManager.countAlliesWithinSpecifiedSpaces(unit, n);
+        let pred = this._predNode ? u => this._predNode.evaluate(env.copy().setTarget(u)) : null;
+        let result = env.unitManager.countAlliesWithinSpecifiedSpaces(unit, n, pred);
         env.debug(`${unit.nameWithGroup}の周囲${n}マスの味方の数: ${result}`);
         return result;
+    }
+}
+
+class NumOfFoesAlliesWithinNSpacesNode extends NumOfTargetsAlliesWithinNSpacesNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
@@ -369,6 +549,7 @@ class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
 
 const IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
 
+// TODO: Aliasの方を利用する
 /**
  * number of allies adjacent to unit
  */
@@ -907,7 +1088,7 @@ class TargetsMaxHpNode extends NumberNode {
 
 class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
     static {
-        Object.assign(this.prototype, GetSkillOwnerCombatMixin);
+        Object.assign(this.prototype, GetSkillMixin);
     }
 }
 
@@ -945,6 +1126,30 @@ class GetStatNode extends NumberNode {
     }
 }
 
+class TargetsStatsOnMapNode extends GetStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    statsDescription = "マップ時";
+
+    getStats(env) {
+        return this.getUnit(env).getStatusesInPrecombat();
+    }
+}
+
+class TargetsEvalStatsOnMapNode extends GetStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    statsDescription = "マップ時";
+
+    getStats(env) {
+        return this.getUnit(env).getEvalStatusesInPrecombat();
+    }
+}
+
 class TargetsStatsAtStartOfTurnNode extends GetStatNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -954,6 +1159,18 @@ class TargetsStatsAtStartOfTurnNode extends GetStatNode {
 
     getStats(env) {
         return this.getUnit(env).getStatusesInPrecombat();
+    }
+}
+
+class SkillOwnersStatsOnMapNode extends TargetsStatsOnMapNode {
+    static {
+        Object.assign(this.prototype, GetSkillMixin);
+    }
+}
+
+class SkillOwnersEvalStatsOnMapNode extends TargetsEvalStatsOnMapNode {
+    static {
+        Object.assign(this.prototype, GetSkillMixin);
     }
 }
 
@@ -995,6 +1212,11 @@ const UNITS_SPD_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STAT
 // noinspection JSUnusedGlobalSymbols
 const UNITS_DEF_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STATUS_INDEX.Def);
 const UNITS_RES_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STATUS_INDEX.Res);
+
+const FOES_ATK_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Atk);
+const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Spd);
+const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Def);
+const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Res);
 
 const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Atk);
 const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Spd);
@@ -1066,6 +1288,7 @@ class FoesStatsDuringCombatNode extends UnitsStatsDuringCombat {
 }
 
 const FOES_ATK_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Atk);
+const FOES_SPD_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Spd);
 const FOES_DEF_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Def);
 const FOES_RES_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Res);
 
@@ -1247,6 +1470,18 @@ class ApplyingNumberToEachStatNode extends FromNumbersNode {
     }
 }
 
+class IfTargetHasUsedAssistDuringCurrentTurnNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetValueMixin);
+    }
+
+    debugMessage = "は現在ターン中に補助を使用したか";
+
+    getValue(unit) {
+        return unit.isSupportDone;
+    }
+}
+
 /**
  * If unit has not used or been the target of an Assist skill during the current turn,
  */
@@ -1405,6 +1640,12 @@ class HasTargetStatusEffectNode extends BoolNode {
     }
 }
 
+class HasFoeStatusEffectNode extends HasTargetStatusEffectNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 class NumOfTargetsDragonflowersNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1447,6 +1688,19 @@ class TargetsRangeNode extends PositiveNumberNode {
 class FoesRangeNode extends TargetsRangeNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+class IsTargetBeastOrDragonTypeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = isWeaponTypeBreathOrBeast(unit.weaponType);
+        env.debug(`${unit.nameWithGroup}は竜もしくは獣であるか: ${result}`);
+        return result;
     }
 }
 
@@ -1544,6 +1798,22 @@ class DoesTargetTriggerSaviorNode extends BoolNode {
     }
 }
 
+/**
+ * total penalties
+ */
+class TargetsTotalPenaltiesNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = -unit.getDebuffTotal(unit !== env.foeDuringCombat);
+        env.debug(`${unit.nameWithGroup}の弱化の合計値は${result}`);
+        return result;
+    }
+}
+
 // Unit or BattleContextの値を参照 END
 
 class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
@@ -1609,7 +1879,7 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
 
 class GrantsStatusEffectToSkillOwnerNode extends GrantsStatusEffectsNode {
     static {
-        Object.assign(this.prototype, GetSkillOwnerCombatMixin);
+        Object.assign(this.prototype, GetSkillMixin);
     }
 }
 
@@ -1662,6 +1932,108 @@ class RestoreTargetHpNode extends FromPositiveNumberNode {
 }
 
 class ForEachNode extends SkillEffectNode {
+}
+
+class ForEachUnitNode extends ForEachNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {BoolNode} predNode
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(unitsNode, predNode, ...nodes) {
+        super(...nodes);
+        this._unitsNode = unitsNode;
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        let units = this._unitsNode.evaluate(env);
+        for (let unit of units) {
+            if (this._predNode.evaluate(env.copy().setTarget(unit))) {
+                env.debug(`${unit.nameWithGroup}を対象に選択`);
+                this.evaluateChildren(env.copy().setTarget(unit));
+            } else {
+                env.trace3(`${unit.nameWithGroup}は対象外`);
+            }
+        }
+    }
+}
+
+const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNode, TRUE_NODE, ...nodes);
+
+class TargetsFoesNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        return env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+    }
+}
+
+const TARGETS_FOES_NODE = new TargetsFoesNode();
+
+class IsTargetSkillOwnerNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit === env.skillOwner;
+        env.debug(`${unit.nameWithGroup}はスキル所持者${env.skillOwner.nameWithGroup}と同一ユニットか: ${result}`);
+        return result;
+    }
+}
+
+/**
+ * foe on the enemy team with the lowest stat
+ */
+class TargetsFoesOnTheEnemyTeamWithLowestStatNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(statusType) {
+        super();
+        this._statusType = NumberNode.makeNumberNodeFrom(statusType);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let index = this._statusType.evaluate(env);
+        let units = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+        let enemies = IterUtil.minElements(units, u => u.getEvalStatusesInPrecombat(true)[index]);
+        let statName = statusTypeToString(index);
+        let stat = enemies[0]?.getEvalStatusesInPrecombat(true)[index] ?? '-';
+        env.trace(`最も低い${statName}(${stat})を持つユニットを選択: ${enemies.map(u => u.nameWithGroup)}`);
+        return enemies;
+    }
+}
+
+class TargetAndAlliesWithinNSpacesNode extends UnitsNode {
+    /**
+     * @param {number|NumberNode} n
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(n, unitsNode) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let n = this._nNode.evaluate(env);
+        let units = this._unitsNode.evaluate(env);
+        let results = [];
+        for (let unit of units) {
+            env.trace2(`${unit.nameWithGroup}の周囲${n}マスの味方を選択`);
+            let allies = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n, true);
+            results.push(allies);
+        }
+        return IterUtil.concat(...results);
+    }
 }
 
 class ForEachUnitOnMapNode extends ForEachNode {
@@ -1859,6 +2231,36 @@ class ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachClos
 
 const FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE =
     (...children) => new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE, ...children);
+
+/**
+ * Target and target's allis within n spaces.
+ */
+class ForEachTargetAndTargetsAllysWithinNSpacesNode extends ForEachUnitAndAllyNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {BoolNode} predNode
+     * @param {...SkillEffectNode} children
+     */
+    constructor(n, predNode, ...children) {
+        super(predNode, ...children)
+        this._nNode = NumberWithUnitNode.makeNumberNodeFrom(n);
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @returns {Generator<Unit>|Unit[]}
+     */
+    getUnits(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let pred = u => this._predNode.evaluate(env.copy().setTarget(u));
+        return GeneratorUtil.filter(env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n, true), pred);
+    }
+}
 
 class ForEachUnitFromSameTitlesNode extends ForEachNode {
     static {
@@ -2265,18 +2667,19 @@ class AppliesDivineVeinIceToTargetsSpaceAndSpacesWithinNSpacesOfTargetFor2TurnsN
 // Tileへの効果 END
 
 // Tileを返す START
-class ForEachTargetForSpacesNode extends ForSpacesNode {
+class ForEachTargetForSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin, ForUnitMixin);
     }
 
     /**
      * @param {BoolNode} predNode
-     * @param {...ForSpacesNode} children
+     * @param {...SpacesNode} children
      */
     constructor(predNode, ...children) {
         super(...children);
         this._predNode = predNode;
+        this.joinFunc = unitEvaluations => IterUtil.concat(...unitEvaluations.flat());
     }
 }
 
@@ -2287,7 +2690,7 @@ class ForEachAllyForSpacesNode extends ForEachTargetForSpacesNode {
     }
 }
 
-class ForSpacesWithinNSpacesNode extends ForSpacesNode {
+class SpacesWithinNSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2300,6 +2703,10 @@ class ForSpacesWithinNSpacesNode extends ForSpacesNode {
         this._nNode = NumberNode.makeNumberNodeFrom(n);
     }
 
+    /**
+     * @param {NodeEnv} env
+     * @returns {Iterable<Tile>}
+     */
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this._nNode.evaluate(env);
@@ -2308,7 +2715,7 @@ class ForSpacesWithinNSpacesNode extends ForSpacesNode {
     }
 }
 
-class OverrideAoeSpacesNode extends ForSpacesNode {
+class OverrideAoeSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2357,6 +2764,19 @@ class GrantsStatsPlusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     }
 }
 
+class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let amounts = this.evaluateChildren(env).map(v => -v);
+        env.debug(`${unit.nameWithGroup}にデバフ予約: [${amounts}]`);
+        unit.reserveToApplyDebuffs(...amounts);
+    }
+}
+
 class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     evaluate(env) {
         let unit = env.target;
@@ -2367,6 +2787,23 @@ class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
 }
 
 class InflictsStatsMinusAfterCombatNode extends InflictsStatsMinusAtStartOfTurnNode {
+}
+
+class GrantsStatusEffectsOnTargetOnMapNode extends FromNumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        this.evaluateChildren(env).forEach(e => {
+            let unit = this.getUnit(env);
+            env.debug(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与予約`);
+            unit.reserveToAddStatusEffect(e);
+        });
+    }
+}
+
+class InflictsStatusEffectsOnTargetOnMapNode extends GrantsStatusEffectsOnTargetOnMapNode {
 }
 
 // TODO: rename
@@ -2445,6 +2882,9 @@ class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPosit
         env.debug(`${unit.nameWithGroup}は奥義発動カウント-${n}を予約`);
         return super.evaluate(env);
     }
+}
+
+class GrantsSpecialCooldownCountMinusOnTargetOnMapNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
 class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
@@ -2727,6 +3167,75 @@ class IsDifferentOriginNode extends BoolNode {
         let result = unit.hasDifferentTitle(env.skillOwner);
         env.debug(`${unit.nameWithGroup}は${env.skillOwner.nameWithGroup}と異なる出典を持つか: ${result}}`);
         return result;
+    }
+}
+
+class CalcPotentialDamageNode extends BoolNode {
+    evaluate(env) {
+        let result = env.calcPotentialDamage;
+        env.trace(`calcPotentialDamage: ${result}`);
+        return result;
+    }
+}
+
+class IsCantoSingDanceActivatedByTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isOneTimeActionActivatedForCantoRefresh;
+        env.debug(`${unit.nameWithGroup}はこのターン再移動【歌う・踊る】を発動したか: ${result}`);
+        return result;
+    }
+}
+
+/**
+ * highest total bonuses
+ */
+class TargetsTotalBonusesNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        /** @type {Unit} */
+        let unit = this.getUnit(env);
+        let result = unit === env.unitDuringCombat ?
+            unit.getBuffTotalInCombat(env.getFoeDuringCombatOf(unit)) : unit.getBuffTotalInPreCombat();
+        env.debug(`${unit.nameWithGroup}の強化の合計値: ${result}`);
+        return result;
+    }
+}
+
+class TargetsBonusNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} indexNode
+     */
+    constructor(indexNode) {
+        super();
+        this._indexNode = NumberNode.makeNumberNodeFrom(indexNode);
+    }
+
+    evaluate(env) {
+        /** @type {Unit} */
+        let unit = this.getUnit(env);
+        let index = this._indexNode.evaluate(env);
+        let result = unit === env.unitDuringCombat ?
+            unit.getBuffsInCombat(env.getFoeDuringCombatOf(unit))[index] : unit.getBuffsInPreCombat()[index];
+        env.debug(`${unit.nameWithGroup}の強化の値: ${result}(${statusIndexStr(index)})`);
+        return result;
+    }
+}
+
+class FoesBonusNode extends TargetsBonusNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 

@@ -368,13 +368,15 @@ class Tile extends BattleMapElement {
     // TODO: なぜBreakableWallが条件になっているのか調べる
     // とりあえずはBreakableDivineVeinも同じように判定する
     isMovableTileForMoveType(moveType, groupId) {
-        let canReachForThisMoveType = this._moveWeights[moveType] !== CanNotReachTile;
-        return canReachForThisMoveType && (
-            this._obj == null ||
+        if (this._moveWeights[moveType] === CanNotReachTile) {
+            return false;
+        }
+        if (this.hasEnemyBreakableDivineVein(groupId)) {
+            return false;
+        }
+        return this._obj == null ||
             this._obj instanceof TrapBase ||
-            this._obj instanceof BreakableWall ||
-            (this.hasEnemyBreakableDivineVein(groupId)) // 敵のDivineVeinだけがBreakableWallと同じ働きをする
-        );
+            this._obj instanceof BreakableWall;
     }
 
     get tempData() {
@@ -1131,6 +1133,10 @@ class TilePriorityContext {
     }
 
     calcPriorityToMove(moveUnit, chaseTargetTile, mapWidth, mapHeight) {
+        let standingStill = 0;
+        if (moveUnit.actionContext.hasShuffleStatus) {
+            standingStill = moveUnit.placedTile === this.tile ? 0 : 1;
+        }
         let defensiveTileWeight = 0;
         if (this.isDefensiveTile) { defensiveTileWeight = 1; }
         let tileTypeWeight = this.__getTileTypePriority(moveUnit, this.tileType);
@@ -1148,7 +1154,8 @@ class TilePriorityContext {
         this.distanceFromDiagonal = this.__calcMinDiaglonalDist(chaseTargetTile, mapWidth, mapHeight);
 
         this.priorityToMove =
-            defensiveTileWeight * 10000000
+            standingStill * 100000000
+            + defensiveTileWeight * 10000000
             - this.enemyThreat * 1000000
             + teleportationRequirementWeight * 500000
             - pivotRequiredPriority * 100000

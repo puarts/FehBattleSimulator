@@ -1557,6 +1557,15 @@ class BattleMap {
         }
     }
 
+    isThereBreakableTileWithinSpecifiedSpaces(targetTile, n, groupId) {
+        for (let tile of this.enumerateTilesWithinSpecifiedDistance(targetTile, n)) {
+            if (tile instanceof BreakableWall || tile.hasEnemyBreakableDivineVein(groupId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * nxn以内のタイルを列挙。
      * @param  {Tile} targetTile
@@ -1763,8 +1772,7 @@ class BattleMap {
         let minDist = CanNotReachTile;
         if (evalsAttackableTiles) {
             minDist = this.getMinDistToAttackableTile(moveUnit.placedTile, moveUnit, targetUnitTile);
-        }
-        else {
+        } else {
             minDist = targetUnitTile.calculateUnitMovementCountToThisTile(
                 moveUnit, moveUnit.placedTile, -1, ignoresUnits, isUnitIgnoredFunc, isPathfinderEnabled);
         }
@@ -1774,8 +1782,7 @@ class BattleMap {
             for (let tile of movableTiles) {
                 evalTiles.push(tile);
             }
-        }
-        else {
+        } else {
             for (let tile of this.enumerateMovableTiles(moveUnit, false, false, false)) {
                 evalTiles.push(tile);
             }
@@ -2037,7 +2044,7 @@ class BattleMap {
 
         let env = new BattleMapEnv(this, unit);
         env.setName('ワープ').setLogLevel(getSkillLogLevel());
-        yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(unit, env).flat(1);
+        yield* IterUtil.concat(...UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(unit, env));
 
         for (let skillId of unit.enumerateSkills()) {
             yield* getSkillFunc(skillId, enumerateTeleportTilesForUnitFuncMap)?.call(this, unit) ?? [];
@@ -2045,6 +2052,10 @@ class BattleMap {
         }
 
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+            let env = new BattleMapEnv(this, unit).setTarget(ally);
+            env.setName('ワープ(周囲)').setLogLevel(getSkillLogLevel());
+            yield* IterUtil.concat(...ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(ally, env));
+
             for (let skillId of ally.enumerateSkills()) {
                 yield* getSkillFunc(skillId, enumerateTeleportTilesForAllyFuncMap)?.call(this, unit, ally) ?? [];
             }

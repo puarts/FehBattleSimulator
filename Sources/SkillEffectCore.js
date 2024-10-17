@@ -115,6 +115,7 @@ class SkillEffectHooks {
      */
     evaluateWithUnit(unit, env) {
         // TODO: 付与されたステータスも入れるようにする
+        // 1つのskillIdに複数の効果が入るのでflatで平らにする
         return Array.from(unit.enumerateSkills()).map(skillId => this.evaluate(skillId, env)).flat();
     }
 
@@ -231,6 +232,19 @@ class NumberNode extends SkillEffectNode {
     }
 }
 
+/**
+ * @abstract
+ */
+class NumbersNode extends SkillEffectNode {
+    /**
+     * @abstract
+     * @param {NodeEnv} env
+     * @returns {number[]}
+     */
+    evaluate(env) {
+    }
+}
+
 class PositiveNumberNode extends NumberNode {
     evaluate(env) {
         let number = super.evaluate(env);
@@ -327,6 +341,7 @@ class FromPositiveNumbersNode extends FromNumbersNode {
 }
 
 class ConstantNumberNode extends NumberNode {
+    /** @type {number} */
     #value;
 
     /**
@@ -441,10 +456,35 @@ class TraceBoolNode extends BoolNode {
  */
 class NumberOperationNode extends NumberNode {
     /**
-     * @param {...(number|NumberNode)} values
+     * @param {...(number|NumberNode)|(number|NumberNode)[]} values
      */
     constructor(...values) {
-        super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
+        let numbers;
+        if (Array.isArray(values[0])) {
+            // 配列が渡された場合
+            numbers = values[0];
+        } else {
+            // 可変長引数の場合
+            numbers = values;
+        }
+        super(...numbers.map(v => NumberNode.makeNumberNodeFrom(v)));
+    }
+
+    /**
+     * @param env
+     * @returns {number[]}
+     */
+    evaluateChildren(env) {
+        let evaluations = this._children.map(child => child.evaluate(env));
+        if (Array.isArray(evaluations[0]) && evaluations.length === 1) {
+            return evaluations[0];
+        }
+        evaluations.forEach(evaluation => {
+            if (typeof evaluation !== 'number') {
+                env?.error(`Expected a number but received: ${JSON.stringify(evaluation)}. Type: ${evaluation.constructor.name}.`);
+            }
+        })
+        return evaluations;
     }
 }
 
@@ -568,7 +608,7 @@ class MaxNode extends NumberOperationNode {
     evaluate(env) {
         let evaluated = super.evaluateChildren(env);
         let result = Math.max(...evaluated);
-        env?.trace(`[MaxNode] max trunc [${[evaluated]}] = ${result}`);
+        env?.trace(`[MaxNode] max [${[evaluated]}] = ${result}`);
         return result;
     }
 }
@@ -641,6 +681,10 @@ class IfNode extends SkillEffectNode {
     /** @type {BoolNode} */
     #condNode;
 
+    /**
+     * @param {BoolNode} condNode
+     * @param {...SkillEffectNode} stmtNodes
+     */
     constructor(condNode, ...stmtNodes) {
         super(...stmtNodes);
         this.#condNode = condNode;
@@ -656,6 +700,12 @@ class IfNode extends SkillEffectNode {
     }
 }
 
+/**
+ * @param {BoolNode} condNode
+ * @param {...SkillEffectNode} stmtNodes
+ * @returns {IfNode}
+ * @constructor
+ */
 const IF_NODE = (condNode, ...stmtNodes) => new IfNode(condNode, ...stmtNodes);
 
 const UNLESS_NODE = (condNode, ...stmtNodes) => IF_NODE(NOT_NODE(condNode), ...stmtNodes);

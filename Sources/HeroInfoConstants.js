@@ -263,6 +263,24 @@ function statusTypeToShortString(type) {
     }
 }
 
+function statusTypeToString(type) {
+    switch (type) {
+        case StatusType.Hp:
+            return "HP";
+        case StatusType.Atk:
+            return "攻撃";
+        case StatusType.Spd:
+            return "速さ";
+        case StatusType.Def:
+            return "守備";
+        case StatusType.Res:
+            return "魔防";
+        case StatusType.None:
+        default:
+            return "-";
+    }
+}
+
 /**
  * @param {String} statusName
  * @returns {number}
@@ -280,6 +298,21 @@ function nameToStatusType(statusName) {
         return StatusType.Res;
     } else {
         return StatusType.None;
+    }
+}
+
+function statusIndexStr(index) {
+    switch (index) {
+        case STATUS_INDEX.Atk:
+            return "攻撃";
+        case STATUS_INDEX.Spd:
+            return "速さ";
+        case STATUS_INDEX.Def:
+            return "守備";
+        case STATUS_INDEX.Res:
+            return "魔防";
+        default:
+            return "-";
     }
 }
 

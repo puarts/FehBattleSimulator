@@ -27,7 +27,7 @@ const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 /**
  * 敵軍ターン開始時
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
-const AT_START_OF_ENEMY_PHASE_HOOK = new SkillEffectHooks();
+const AT_START_OF_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
 
 /**
  * 範囲奥義判定前(主に範囲奥義を発動するかどうかの判定など)
@@ -89,6 +89,11 @@ const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
  * 戦闘後
  * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
 const AFTER_COMBAT_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘後(HP確定後)
+ * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
+const AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘後(死んでも発動)
@@ -209,12 +214,17 @@ const CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS = new SkillEffectHooks();
 
 /**
  * Unit can move to a space
- * @type {SkillEffectHooks<ForSpacesNode, BattleMapEnv>} */
+ * @type {SkillEffectHooks<SpacesNode, BattleMapEnv>} */
 const UNIT_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 
 /**
+ * Ally can move to a space
+ * @type {SkillEffectHooks<SpacesNode, BattleMapEnv>} */
+const ALLY_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
+
+/**
  * unit can move through foes' spaces.
- * @type {SkillEffectHooks<ForSpacesNode, NodeEnv>} */
+ * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
 const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
 
 /**

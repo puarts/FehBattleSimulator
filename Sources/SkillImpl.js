@@ -5796,7 +5796,7 @@
 
 // 2種類封じ3
 {
-    let setSkill = (skillId, spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
+    let setSkill = (skillId,spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 // 戦闘中、敵の速さ、魔防一3、
@@ -5831,6 +5831,8 @@
     setSkill(PassiveB.SealSpdRes3, [0, 1, 0, 1]);
     // 守備魔防封じ3
     setSkill(PassiveB.SealDefRes3, [0, 0, 1, 1]);
+    // 速さ守備封じ3
+    setSkill(PassiveB.SealSpdDef3, [0, 1, 1, 0]);
 }
 
 // 神聖風

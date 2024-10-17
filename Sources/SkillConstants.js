@@ -1938,6 +1938,13 @@ const Weapon = {
     HungryCatFang: 3029, // 感謝の戦猫の爪牙
     StoneOfDelights: 3030, // 収穫の喜びの竜石
     OpposingStones: 3033, // 神魔の双竜の竜石
+    FullRabbitFang: 3035, // 豊穣の子兎の爪牙
+
+    // お供ダグ&魔器マリアンヌ
+    ArcaneBlutgang: 3038, // 魔器ブルトガング
+    JustBow: 3041, // 正義の一矢の弓
+    BlarvulturePlus: 3043, // ブラーバルチャー
+    VedfolnirsEdge: 3044, // 始まりの巨人の剣
 };
 
 const Support = {
@@ -1948,6 +1955,8 @@ const Support = {
     Shove: 424, // 体当たり
     Swap: 416, // 入れ替え
     Pivot: 422, // 回り込み
+
+    RepositionGait: 3045, // 引き戻し・歩法
 
     // 専用補助
     ChangingWaters: 2857, // つたうみなすじ
@@ -2165,6 +2174,7 @@ const Special = {
     SturdyBeast: 3027, // 堅固なる獣
 
     // 専用奥義
+    RequiemPrayer: 3039, // 鎮魂の願い
     Override: 3024, // オーバードライヴ
     SeidrBurst: 3019, // 連魔弾
     Sandstorm: 3011, // 砂陣
@@ -2774,6 +2784,7 @@ const PassiveB = {
     SealDefRes3: 2950, // 守備魔防封じ3
     SealSpdDef1: 1465,
     SealSpdDef2: 855,
+    SealSpdDef3: 3042, // 速さ守備封じ3
     SealSpdRes1: 1466,
     SealSpdRes2: 1389, // 速さ魔防封じ2
     SealSpdRes3: 2829, // 速さ魔防封じ3
@@ -2915,7 +2926,10 @@ const PassiveB = {
 
     DragonsScales: 3031, // 竜の堅鱗
 
+    SpdResDiscord: 3040, // 速さ魔防の不和
+
     // 専用B
+    VedfolnirsWing: 3046, // 始祖の炎翼
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!
     LoneWolf: 2983, // 一匹狼
@@ -3529,6 +3543,7 @@ const CantoSupport = {
     Drawback: 4,
     Swap: 5,
     Pivot: 6,
+    SingDance: 7,
 };
 
 // 紋章士

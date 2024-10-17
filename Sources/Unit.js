@@ -296,6 +296,7 @@ class ActionContext {
 
         // 移動のコンテキスト
         this.movePriority = 0;
+        this.hasShuffleStatus = false;
     }
 
     clear() {
@@ -315,6 +316,7 @@ class ActionContext {
         this.attackableTiles = [];
 
         this.movePriority = 0;
+        this.hasShuffleStatus = false;
     }
 
     findAssistableUnitInfo(unit) {
@@ -627,6 +629,8 @@ class Unit extends BattleMapElement {
         //（同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
         //（1ターンに1回のみ）
         this.isAnotherActionInPostCombatActivated = false;
+
+        this.isOneTimeActionActivatedForCantoRefresh = false;
 
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
         this.isOncePerMapSpecialActivated = false;
@@ -1352,6 +1356,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.cantoAssistType
             + ValueDelimiter + this.cantoAssistRange
             + ValueDelimiter + this.cantoSupport
+            + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForCantoRefresh)
             ;
     }
 
@@ -1492,6 +1497,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.cantoAssistType = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.cantoAssistRange = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.cantoSupport = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isOneTimeActionActivatedForCantoRefresh = intToBool(Number(values[i])); ++i; }
     }
 
 
@@ -2027,6 +2033,10 @@ class Unit extends BattleMapElement {
 
     isAdvantageForColorless() {
         return isAdvantageousForColorless(this.weapon) || this.battleContext.isAdvantageForColorless;
+    }
+
+    getBuffTotalInPreCombat() {
+        return this.getBuffsInPreCombat().reduce((a, b) => a + b, 0);
     }
 
     getBuffTotalInCombat(enemyUnit) {
@@ -2600,6 +2610,7 @@ class Unit extends BattleMapElement {
         this.hasGrantedAnotherActionAfterActionWithoutCombat = false;
         this.isCantoActivatedInCurrentTurn = false;
         this.isAnotherActionInPostCombatActivated = false;
+        this.isOneTimeActionActivatedForCantoRefresh = false;
     }
 
     setOnetimeActionActivated() {
@@ -3772,13 +3783,14 @@ class Unit extends BattleMapElement {
         ];
     }
 
-    getEvalStatusesInPrecombat() {
-        return [
+    getEvalStatusesInPrecombat(includesHp = false) {
+        let stats = [
             this.getEvalAtkInPrecombat(),
             this.getEvalSpdInPrecombat(),
             this.getEvalDefInPrecombat(),
             this.getEvalResInPrecombat()
         ];
+        return includesHp ? [this.hp, ...stats] : stats;
     }
 
     // 強化無効の場合0。パニックの場合マイナス。強化無効かつパニックの場合マイナス。
@@ -3843,6 +3855,18 @@ class Unit extends BattleMapElement {
             () => Number(this.defBuff),
             () => this.battleContext.invalidatesOwnDefDebuff
         );
+    }
+
+    /**
+     * @returns {[number, number, number, number]}
+     */
+    getBuffsInPreCombat() {
+        return [
+            this.atkBuff * this.__getBuffMultiply(),
+            this.spdBuff * this.__getBuffMultiply(),
+            this.defBuff * this.__getBuffMultiply(),
+            this.resBuff * this.__getBuffMultiply(),
+        ];
     }
 
     /**
@@ -6147,7 +6171,7 @@ class Unit extends BattleMapElement {
      * @returns {Set<any>}
      */
     getTitleSet() {
-        return new Set(this.heroInfo.origin.split('|').map(Unit.#originToTitle));
+        return new Set(this.heroInfo?.origin?.split('|') ?? [].map(Unit.#originToTitle));
     }
 
     static #originToTitle(origin) {

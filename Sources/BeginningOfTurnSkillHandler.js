@@ -73,7 +73,7 @@ class BeginningOfTurnSkillHandler {
 
         let env = new AtStartOfTurnEnv(this, unit);
         env.setName('敵軍ターン開始時').setLogLevel(getSkillLogLevel());
-        AT_START_OF_ENEMY_PHASE_HOOK.evaluateWithUnit(unit, env);
+        AT_START_OF_ENEMY_PHASE_HOOKS.evaluateWithUnit(unit, env);
 
         for (let skillId of unit.enumerateSkills()) {
             this.applyEnemySkillForBeginningOfTurn(skillId, unit);
@@ -141,6 +141,7 @@ class BeginningOfTurnSkillHandler {
      * @param skillOwner
      */
     applyTransformSkillForBeginningOfTurn(skillOwner) {
+        // TODO: 化身を予約制にする
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             let env = new AtStartOfTurnEnv(this, skillOwner);
             env.setName('化身スキル').setLogLevel(getSkillLogLevel());

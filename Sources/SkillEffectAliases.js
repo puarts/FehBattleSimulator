@@ -54,18 +54,58 @@ const BOOST_3_NODE =
         ),
     );
 
+/// ステータス
+const TARGETS_ATK_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Atk);
+const TARGETS_SPD_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Spd);
+const TARGETS_DEF_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Def);
+const TARGETS_RES_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Res);
+
+const TARGETS_EVAL_ATK_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Atk);
+const TARGETS_EVAL_SPD_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Spd);
+const TARGETS_EVAL_DEF_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Def);
+const TARGETS_EVAL_RES_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Res);
+
+const SKILL_OWNERS_ATK_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Atk);
+const SKILL_OWNERS_SPD_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Spd);
+const SKILL_OWNERS_DEF_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Def);
+const SKILL_OWNERS_RES_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Res);
+
+const SKILL_OWNERS_EVAL_ATK_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Atk);
+const SKILL_OWNERS_EVAL_SPD_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Spd);
+const SKILL_OWNERS_EVAL_DEF_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Def);
+const SKILL_OWNERS_EVAL_RES_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Res);
+
+/// 戦闘開始時ステータスの比較
+const UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE =
+    GT_NODE(UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE, FOES_EVAL_RES_AT_START_OF_COMBAT_NODE);
+const DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE =
+    SUB_NODE(UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE, FOES_EVAL_RES_AT_START_OF_COMBAT_NODE);
+
+/// 戦闘中ステータスの比較
 /**
  * 戦闘中守備が高い
  * @type {GtNode}
  */
-const UNITS_DEF_GT_FOES_DEF_NODE = GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
+const UNITS_DEF_GT_FOES_DEF_DURING_COMBAT_NODE =
+    GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
+const UNITS_RES_GT_FOES_RES_DURING_COMBAT_NODE =
+    GT_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
+/// 戦闘中ステータスの差
 /**
  * 戦闘中の守備の差
  * @type {SubNode}
  */
 const DIFFERENCE_BETWEEN_DEF_STATS_NODE =
     SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
+const DIFFERENCE_BETWEEN_RES_STATS_NODE =
+    SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
+
+/// 強化(バフ)
+const FOES_ATK_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Atk);
+const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
+const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
+const FOES_RES_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Res);
 
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
@@ -183,3 +223,128 @@ function setTwinSave(skillId, isMelee, grantsNode) {
         ),
     );
 }
+
+/**
+ * Enables【Canto (Rem. +1)】
+ */
+function enablesCantoRemPlus(skillId, n) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoRemNode(n));
+}
+
+/**
+ * Enables【Canto (Dist. +1; Max ４)】.
+ */
+function enablesCantDist(skillId, n, max) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoDistNode(n, max));
+}
+
+const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percentage, statNode) =>
+    new AppliesSkillEffectsAfterStatusFixedNode(
+        // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+        new TargetDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(percentage / 100, statNode)),
+    );
+
+/**
+ * @param {number|string} skillId
+ * @param {number} beastCommonSkillType
+ */
+function setBeastSkill(skillId, beastCommonSkillType) {
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
+    BEAST_COMMON_SKILL_MAP.set(skillId, beastCommonSkillType);
+}
+
+const CALC_POTENTIAL_DAMAGE_NODE = new CalcPotentialDamageNode();
+
+const IS_NOT_TARGET_ADJACENT_TO_AN_ALLY = () =>
+    OR_NODE(CALC_POTENTIAL_DAMAGE_NODE, NOT_NODE(GT_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1), 0)));
+
+const NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET =
+    () => new NumOfTargetsAlliesWithinNSpacesNode(1);
+
+const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = (...nodes) =>
+    IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE, ...nodes);
+
+const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = (...nodes) =>
+    IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE, ...nodes);
+
+/**
+ * Allies within n spaces of unit can move to any space within m spaces of unit.
+ */
+const ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT = (n, m) =>
+    new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
+        new SpacesWithinNSpacesNode(m),
+    );
+
+function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, n, m) {
+    ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT(n, m)
+    );
+}
+
+/**
+ * @param {number|NumberNode} n
+ * @param {PositiveNumberNode} unitValueNode
+ * @returns {NumberNode}
+ */
+function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
+    return MAX_NODE(new MapUnitsNode(
+        new TargetAndAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
+        unitValueNode,
+    ));
+}
+
+/**
+ * highest total penalties among target and foes within 2 spaces of target
+ * @returns {NumberNode}
+ */
+function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
+    return highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
+}
+
+function setSpecialCount(skillId, n) {
+    switch (n) {
+        case 2:
+            COUNT2_SPECIALS.push(skillId);
+            INHERITABLE_COUNT2_SPECIALS.push(skillId);
+            break;
+        case 3:
+            COUNT3_SPECIALS.push(skillId);
+            INHERITABLE_COUNT3_SPECIALS.push(skillId);
+            break;
+        case 4:
+            COUNT4_SPECIALS.push(skillId);
+            INHERITABLE_COUNT4_SPECIALS.push(skillId);
+            break;
+    }
+}
+
+function setPathfinder(skillId) {
+    PATHFINDER_SKILL_SET.add(skillId);
+}
+
+const IS_TARGET_SKILL_OWNER_NODE = new IsTargetSkillOwnerNode();
+const UNITS_ON_MAP_NODE = new UnitsOnMapNode();
+const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
+const FILTER_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
+const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);
+const SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
+    FILTER_UNITS_NODE(
+        OR_NODE(IS_TARGET_SKILL_OWNER_NODE,
+            AND_NODE(
+                ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE,
+                IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE))
+    );
+
+const TARGETS_TOTAL_BONUSES_NODE = new TargetsTotalBonusesNode();
+const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT =
+    MAX_NODE(new MapUnitsNode(
+        SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        TARGETS_TOTAL_BONUSES_NODE));
+
+const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
+
+const MAX_UNITS_NODE = (unitsNode, predNode) => new MaxUnitsNode(unitsNode, predNode);
+
+const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_DEF_ON_MAP);

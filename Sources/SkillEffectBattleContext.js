@@ -208,6 +208,19 @@ class IsFoesHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
 const IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(50);
 const IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(75);
 
+class IsTargetsHpLteXPercentOnMapNode extends PercentageCondNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hpPercentage = unit.hpPercentage;
+        env.debug(`${unit.nameWithGroup}のHPが${this._percentage}%以下であるか: ${hpPercentage}%(HP:${unit.hp}) <= ${this._percentage}%`);
+        return hpPercentage <= this._percentage;
+    }
+}
+
 // 自分の最初の攻撃前に自身の奥義発動カウント-N(符号に注意Nは自然数)
 class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode extends FromPositiveNumberNode {
     evaluate(env) {
@@ -230,14 +243,11 @@ const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
     }
 }();
 
-/**
- * @abstract
- */
-class IsSpecialTriggeredNode extends NumberWithUnitNode {
-    /**
-     * @param {NodeEnv} env
-     * @returns {number}
-     */
+class IsTargetsSpecialTriggeredNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.battleContext.isSpecialActivated;
@@ -246,16 +256,15 @@ class IsSpecialTriggeredNode extends NumberWithUnitNode {
     }
 }
 
-const IS_UNITS_SPECIAL_TRIGGERED = new class extends IsSpecialTriggeredNode {
-    getUnit(env) {
-        return env.unitDuringCombat;
+const IS_UNITS_SPECIAL_TRIGGERED = new class extends IsTargetsSpecialTriggeredNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
     }
 }();
 
-// noinspection JSUnusedGlobalSymbols
-const IS_FOES_SPECIAL_TRIGGERED = new class extends IsSpecialTriggeredNode {
-    getUnit(env) {
-        return env.foeDuringCombat;
+const IS_FOES_SPECIAL_TRIGGERED = new class extends IsTargetsSpecialTriggeredNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }();
 
@@ -738,7 +747,7 @@ class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends Applying
  * [Special]
  * Reduces damage from attacks during combat by percentage = N
  */
-class ReducesDamageFromAttacksDuringCombatByXPercentConsideredSpecialPerAttackNode extends FromNumberEnsuredNonNegativeNode {
+class ReducesDamageFromAttacksDuringCombatByXPercentAsSpecialSkillEffectPerAttackNode extends FromNumberEnsuredNonNegativeNode {
     evaluate(env) {
         let n = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;
