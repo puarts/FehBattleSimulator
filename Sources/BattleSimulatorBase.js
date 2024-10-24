@@ -8938,7 +8938,7 @@ class BattleSimulatorBase {
 
             // 壁などが途中にあったらぶちかましなどを行えない
             if (!tile.isMovableTile() ||
-                !tile.isMovableTileForUnit(targetUnit) ||
+                tile.hasEnemyBreakableDivineVein(unit.groupId) ||
                 !isMovableForUnit(tile.obj)) {
                 moveTile = null;
                 continue;
