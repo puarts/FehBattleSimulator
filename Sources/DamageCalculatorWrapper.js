@@ -564,8 +564,8 @@ class DamageCalculatorWrapper {
 
         // 暗闘の対象外になる周囲からのスキル効果
         // 主に戦闘外の効果。味方の存在などで発動するスキルも書いて良い（ただし大抵の場合他の場所で書ける）
-        self.__applySkillEffectFromAlliesExcludedFromFeud(atkUnit, defUnit, calcPotentialDamage);
-        self.__applySkillEffectFromAlliesExcludedFromFeud(defUnit, atkUnit, calcPotentialDamage);
+        self.__applySkillEffectFromAlliesExcludedFromFeud(atkUnit, defUnit, calcPotentialDamage, damageType);
+        self.__applySkillEffectFromAlliesExcludedFromFeud(defUnit, atkUnit, calcPotentialDamage, damageType);
 
         // 神罰の杖
         self.__setWrathfulStaff(atkUnit, defUnit);
@@ -10535,12 +10535,15 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage) {
+    __applySkillEffectFromAlliesExcludedFromFeud(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         if (calcPotentialDamage) {
             return;
         }
         // マップ全域
         for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+            let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
+            env.setName('周囲の味方のスキル(戦闘後)').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+            FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
             for (let skillId of allyUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySkillEffectFromAlliesExcludedFromFeudFuncMap);
                 func?.call(this, targetUnit, enemyUnit, allyUnit, calcPotentialDamage);

@@ -697,7 +697,7 @@
         )
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // Grants Atk/Def/Res+4 to allies within 3 spaces during combat and restores 7 HP to those allies after their combat.
             RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
