@@ -3333,14 +3333,16 @@ class Unit extends BattleMapElement {
         if (this.hasStatusEffect(StatusEffectType.Gravity)) {
             return 1;
         }
-        if (this.hasStatusEffect(StatusEffectType.MobilityIncreased)) {
-            if (this.hasStatusEffect(StatusEffectType.Stall)) {
+        if (this.hasStatusEffect(StatusEffectType.Stall)) {
+            if (this.hasStatusEffect(StatusEffectType.MobilityIncreased)) {
                 return 1;
             }
-            return this.getNormalMoveCount() + 1;
         }
         if (this.hasStatusEffect(StatusEffectType.Gallop)) {
             return this.getNormalMoveCount() + 2;
+        }
+        if (this.hasStatusEffect(StatusEffectType.MobilityIncreased)) {
+            return this.getNormalMoveCount() + 1;
         }
         return this._moveCount;
     }
