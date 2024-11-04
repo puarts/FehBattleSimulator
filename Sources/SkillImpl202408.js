@@ -1,4 +1,163 @@
 // noinspection JSUnusedLocalSymbols
+// 神獣の鋭爪
+{
+    let skillId = PassiveC.DivineTalon;
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+            // neutralizes any【Penalty】 effects on unit and allies within 2 spaces of unit (excluding penalties inflicted at the start of the same turn),
+            NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+            // and deals 1 damage to unit and allies within 2 spaces of unit.
+            new DealsDamageToTargetAtStartOfTurnNode(1),
+        ),
+        // At start of turn,
+        new ForEachTargetsAllyWithinNSpacesNode(2,
+            // dragon, beast, infantry, and armored allies within 2 spaces of unit (that turn only; does not stack).
+            OR_NODE(IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE, IS_TARGET_INFANTRY_NODE, IS_TARGET_ARMOR_NODE),
+            // grants "unit can move 1 extra space" to
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
+        )
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            new NumThatIsNode(
+                // and reduces damage from foe's attacks by X during combat
+                // and also,
+                // when foe's attack triggers foe's Special,
+                // reduces damage by X (excluding area-of-effect Specials).
+                new SkillEffectNode(
+                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(READ_NUM_NODE),
+                ),
+                // (X = number of spaces from start position to end position of whoever initiated combat × 4; max 12),
+                new EnsureMaxNode(
+                    MULT_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 4),
+                    12,
+                ),
+            ),
+        ),
+    ));
+}
+
+// 共栄
+{
+    // 攻撃速さの共栄
+    setFortune(PassiveA.AtkSpdFortune, [true, true, false, false]);
+}
+
+// 敏捷なる獣
+{
+    let skillId = Special.NimbleBeast;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    setSpecialCount(skillId, 3)
+
+    // Boosts damage by X% of unit's Spd when Special triggers (if transformed, X = 50; otherwise, X = 40).
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(
+                COND_OP(new IsTargetTransformedNode(), 0.5, 0.4),
+                UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+    ));
+
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If both of the following conditions are met, reduces damage from foe's next attack by 40% during combat:
+        IF_NODE(
+            AND_NODE(
+                //   - Unit's or foe's Special is ready, or unit's
+                //     or foe's Special triggered before or during
+                //     this combat.
+                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                //   - Unit is transformed or unit's Spd ≥ foe's
+                //     Spd-4.
+                // (Once per combat; excluding area-of-effect Specials).
+                OR_NODE(
+                    new IsTargetTransformedNode(),
+                    GTE_NODE(UNITS_EVAL_SPD_DURING_COMBAT_NODE, SUB_NODE(FOES_EVAL_SPD_DURING_COMBAT_NODE, 4)),
+                ),
+            ),
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
+// 刃の葬り手の爪
+{
+    let skillId = Weapon.QuietingClaw;
+    // Accelerates Special trigger (cooldown count-1).
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // on nearest foe and foes within 2 spaces of them through their next actions.
+            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+                // inflicts Spd/Def-7,
+                new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
+                // 【Exposure】,
+                // and a penalty that neutralizes non-Special "if foe would reduce unit's HP to 0, unit survives with 1 HP" effects
+                new InflictsStatusEffectsAtStartOfTurnNode(
+                    StatusEffectType.Exposure,
+                    StatusEffectType.NeutralizeUnitSurvivesWith1HP
+                ),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants Atk/Spd/Def/Res+5 to unit and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            new NumThatIsNode(
+                // inflicts Atk/Spd/Def-X on foe
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, 0),
+                // (X = number of foes within 2 spaces of target with Bonuses or Penalties active on them,
+                // excluding target, × 3, + 4; max 10),
+                new EnsureMaxNode(
+                    ADD_NODE(
+                        MULT_NODE(
+                            new NumOfTargetsAlliesWithinNSpacesNode(2, IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE),
+                            3),
+                        4),
+                    10,
+                ),
+            ),
+            // deals Y damage
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                // (Y = total number of Bonuses and Penalties active on foe and any foe within 2 spaces of foe,
+                // excluding stat bonuses and stat penalties, x 3;
+                MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
+                // excluding when dealing damage with an area-of-effect Special),
+            ),
+            // reduces damage from attacks by 40%,
+            new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(40),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat.
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // unit can move 1 extra space (that turn only; does not stack) and grants Atk+2 to unit.
+    setBeastSkill(skillId, BeastCommonSkillType.Flying);
+}
+
 // 始祖の炎翼
 {
     let skillId = PassiveB.VedfolnirsWing;
@@ -349,7 +508,7 @@
             // (Specified stats: Turn 1 = HP, Turn 2 = Atk, Turn 3 = Spd, Turn 4 = Def, Turn 5 = Res.)
             FOR_EACH_UNIT_NODE(
                 new UniteUnitsNode(
-                    new TargetAndAlliesWithinNSpacesNode(2,
+                    new TargetAndTargetsAlliesWithinNSpacesNode(2,
                         new TargetsFoesOnTheEnemyTeamWithLowestStatNode(index),
                     ),
                 ),
@@ -697,7 +856,7 @@
         )
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // Grants Atk/Def/Res+4 to allies within 3 spaces during combat and restores 7 HP to those allies after their combat.
             RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
@@ -2715,7 +2874,7 @@
     let skillId = PassiveC.CreationPulse;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If【Penalty】is active on foe,
-        IF_NODE(IF_PENALTY_IS_ACTIVE_ON_FOE_NODE,
+        IF_NODE(IS_PENALTY_ACTIVE_ON_FOE_NODE,
             // grants Atk/Spd+3 to unit during combat, and also,
             new GrantsStatsPlusToUnitDuringCombatNode(3, 3, 0, 0),
             // if unit's attack can trigger unit's Special,

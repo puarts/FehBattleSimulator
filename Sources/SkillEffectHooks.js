@@ -71,6 +71,11 @@ const FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS = new SkillEffe
 const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
+ * 周囲に対するスキル効果(戦闘後)
+ * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
+const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
+
+/**
  * 周囲の敵から受ける紋章効果
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
 const WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS = new SkillEffectHooks();

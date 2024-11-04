@@ -107,6 +107,11 @@ const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
 const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
 const FOES_RES_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Res);
 
+const NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new numOfBonusesActiveOnTargetExcludingStatNode();
+const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new numOfPenaltiesActiveOnTargetExcludingStatNode();
+const NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE =
+    SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
+
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
  * 奥義カウント最大判定
@@ -148,6 +153,11 @@ const FOES_RANGE_IS_1_NODE = EQ_NODE(new FoesRangeNode(), 1);
  * @type {EqNode}
  */
 const FOES_RANGE_IS_2_NODE = EQ_NODE(new FoesRangeNode(), 2);
+
+const IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE = new IsTargetBeastOrDragonTypeNode();
+
+const IS_TARGET_INFANTRY_NODE = new IsTargetInfantryNode();
+const IS_TARGET_ARMOR_NODE = new IsTargetArmorNode();
 
 /**
  * 戦闘中に奥義が発動できない
@@ -290,7 +300,7 @@ function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUn
  */
 function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
     return MAX_NODE(new MapUnitsNode(
-        new TargetAndAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
+        new TargetAndTargetsAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
         unitValueNode,
     ));
 }
@@ -301,6 +311,23 @@ function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
  */
 function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
     return highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
+}
+
+/**
+ * @param {number|NumberNode} n
+ * @param {NumberNode} unitValueNode
+ * @returns {NumberNode}
+ */
+function sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n, unitValueNode) {
+    return SUM_NODE(new MapUnitsNode(
+        new TargetAndTargetsAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
+        unitValueNode,
+    ));
+}
+
+function totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(n) {
+    return sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n,
+        NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
 }
 
 function setSpecialCount(skillId, n) {
@@ -348,3 +375,40 @@ const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OW
 const MAX_UNITS_NODE = (unitsNode, predNode) => new MaxUnitsNode(unitsNode, predNode);
 
 const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_DEF_ON_MAP);
+
+const IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE =
+    OR_NODE(new IsBonusActiveOnTargetNode(), new IsPenaltyActiveOnTargetNode());
+
+/**
+ * @param {number|string} skillId
+ * @param {[boolean, boolean, boolean, boolean]} statsFlags
+ */
+function setFortune(skillId, statsFlags) {
+    let bonuses = statsFlags.map(n => n ? 8 : 0);
+    // If unit can transform,
+    // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
+    // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            new IsTargetWithinNSpacesOfTargetsAllyNode(2, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE),
+            LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1, NOT_NODE(IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE)), 2),
+        ),
+    );
+
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met,
+    // unit transforms.
+    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe initiates combat,
+        IF_NODE(OR_NODE(new IsTargetTransformedNode(), DOES_UNIT_INITIATE_COMBAT_NODE),
+            // grants Atk/Spd+8 to unit and neutralizes foe's bonuses to Spd/Def during combat,
+            new GrantsStatsPlusToUnitDuringCombatNode(...bonuses),
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(...statsFlags),
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}

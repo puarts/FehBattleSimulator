@@ -1727,7 +1727,7 @@ const Weapon = {
     WindsOfChange: 1236, // 予兆の風
 
     // フレスベルグ(敵)
-    QuietingClaw: 2737, // 刃の葬り手の爪
+    // QuietingClaw: 2737, // 刃の葬り手の爪
 
     // 超英雄 (理想郷の守護者)
     // https://www.youtube.com/watch?v=y9LRrSYLkbc&t=18s&ab_channel=NintendoMobile
@@ -1945,6 +1945,9 @@ const Weapon = {
     JustBow: 3041, // 正義の一矢の弓
     BlarvulturePlus: 3043, // ブラーバルチャー
     VedfolnirsEdge: 3044, // 始まりの巨人の剣
+
+    // 神階フレスベルグ
+    QuietingClaw: 2737, // 刃の葬り手の爪
 };
 
 const Support = {
@@ -2172,6 +2175,7 @@ const Special = {
     FierceBeast: 2960, // 猛獣
     CurvedShot: 2986, // 曲射
     SturdyBeast: 3027, // 堅固なる獣
+    NimbleBeast: 3052, // 敏捷なる獣
 
     // 専用奥義
     RequiemPrayer: 3039, // 鎮魂の願い
@@ -2445,6 +2449,8 @@ const PassiveA = {
     AtkSpdMastery: 2973, // 攻撃速さの制空
 
     Fortifications: 2990, // 野戦築城
+
+    AtkSpdFortune: 3053, // 攻撃速さの共栄
 
     // 専用A
     ObsidianTactics: 2946, // 黒曜石の教え
@@ -3394,6 +3400,7 @@ const PassiveC = {
     ARTwinFSave: 3034, // 兜の護り手・遠・双
 
     // 専用C
+    DivineTalon: 3054, // 神獣の鋭爪
     ConnectedWorld: 3028, // 人と神が繋がる世界
     Paranoia: 2987, // 被害妄想
     DivineNectar: 2959, // 神獣の蜜

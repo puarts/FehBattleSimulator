@@ -615,6 +615,21 @@ class MaxNode extends NumberOperationNode {
 
 const MAX_NODE = (...node) => new MaxNode(...node);
 
+class SumNode extends NumberOperationNode {
+    /**
+     * @override
+     * @returns {number}
+     */
+    evaluate(env) {
+        let evaluated = super.evaluateChildren(env);
+        let result = evaluated.reduce((a, b) => a + b, 0);
+        env?.trace(`[SumNode] max [${[evaluated]}] = ${result}`);
+        return result;
+    }
+}
+
+const SUM_NODE = (...node) => new SumNode(...node);
+
 /**
  * @abstract
  */

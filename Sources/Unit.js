@@ -606,6 +606,7 @@ class Unit extends BattleMapElement {
         // TODO: rename
         this.fromPosX = 0;
         this.fromPosY = 0;
+        this._startTile = null;
 
         // 迅雷やノヴァの聖戦士が発動したかを記録しておく
         this.isOneTimeActionActivatedForWeapon = false;
@@ -3332,14 +3333,16 @@ class Unit extends BattleMapElement {
         if (this.hasStatusEffect(StatusEffectType.Gravity)) {
             return 1;
         }
-        if (this.hasStatusEffect(StatusEffectType.MobilityIncreased)) {
-            if (this.hasStatusEffect(StatusEffectType.Stall)) {
+        if (this.hasStatusEffect(StatusEffectType.Stall)) {
+            if (this.hasStatusEffect(StatusEffectType.MobilityIncreased)) {
                 return 1;
             }
-            return this.getNormalMoveCount() + 1;
         }
         if (this.hasStatusEffect(StatusEffectType.Gallop)) {
             return this.getNormalMoveCount() + 2;
+        }
+        if (this.hasStatusEffect(StatusEffectType.MobilityIncreased)) {
+            return this.getNormalMoveCount() + 1;
         }
         return this._moveCount;
     }
@@ -3574,6 +3577,30 @@ class Unit extends BattleMapElement {
 
     fromPosStr() {
         return `(${this.fromPosX}, ${this.fromPosY})`;
+    }
+
+    setStartTile(tile = null) {
+        this._startTile = tile ? tile : this.placedTile;
+    }
+
+    getStartTile() {
+        return this._startTile;
+    }
+
+    resetStartTile() {
+        this.startTile = null;
+    }
+
+    getStartX() {
+        return this._startTile ? this._startTile.posX : this.posX;
+    }
+
+    getStartY() {
+        return this._startTile ? this._startTile.posY : this.posY;
+    }
+
+    moveDistance() {
+        return this._startTile ? this._startTile.calculateDistanceTo(this.placedTile.posX, this.placedTile.posY) : 0;
     }
 
     getLocationStr(tileToAttack = null) {
@@ -6078,18 +6105,12 @@ class Unit extends BattleMapElement {
     // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
     static calcAttackerMoveDistance(unit1, unit2) {
         let unit = unit1.battleContext.initiatesCombat ? unit1 : unit2;
-        if (unit.fromPosX === -1 || unit.fromPosY === -1) {
-            return 0;
-        }
-        return Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
+        return unit.moveDistance();
     }
 
     // 移動した距離を返す(移動前と移動後のマスの距離)
     static calcMoveDistance(unit) {
-        if (unit.fromPosX === -1 || unit.fromPosY === -1) {
-            return 0;
-        }
-        return Math.abs(unit.fromPosX - unit.posX) + Math.abs(unit.fromPosY - unit.posY);
+        return unit.moveDistance();
     }
 
     canActivateOrActivatedSpecial() {
