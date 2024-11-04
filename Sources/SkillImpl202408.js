@@ -1,4 +1,10 @@
 // noinspection JSUnusedLocalSymbols
+// 共栄
+{
+    // 攻撃速さの共栄
+    setFortune(PassiveA.AtkSpdFortune, [true, true, false, false]);
+}
+
 // 敏捷なる獣
 {
     let skillId = Special.NimbleBeast;

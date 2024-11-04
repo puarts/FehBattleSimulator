@@ -154,6 +154,8 @@ const FOES_RANGE_IS_1_NODE = EQ_NODE(new FoesRangeNode(), 1);
  */
 const FOES_RANGE_IS_2_NODE = EQ_NODE(new FoesRangeNode(), 2);
 
+const IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE = new IsTargetBeastOrDragonTypeNode();
+
 /**
  * 戦闘中に奥義が発動できない
  * @type {SkillEffectNode}
@@ -373,3 +375,37 @@ const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE
 
 const IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE =
     OR_NODE(new IsBonusActiveOnTargetNode(), new IsPenaltyActiveOnTargetNode());
+
+/**
+ * @param {number|string} skillId
+ * @param {[boolean, boolean, boolean, boolean]} statsFlags
+ */
+function setFortune(skillId, statsFlags) {
+    let bonuses = statsFlags.map(n => n ? 8 : 0);
+    // If unit can transform,
+    // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
+    // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            new IsTargetWithinNSpacesOfTargetsAllyNode(2, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE),
+            LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1, NOT_NODE(IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE)), 2),
+        ),
+    );
+
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met,
+    // unit transforms.
+    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe initiates combat,
+        IF_NODE(OR_NODE(new IsTargetTransformedNode(), DOES_UNIT_INITIATE_COMBAT_NODE),
+            // grants Atk/Spd+8 to unit and neutralizes foe's bonuses to Spd/Def during combat,
+            new GrantsStatsPlusToUnitDuringCombatNode(...bonuses),
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(...statsFlags),
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}

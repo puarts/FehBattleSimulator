@@ -2450,6 +2450,8 @@ const PassiveA = {
 
     Fortifications: 2990, // 野戦築城
 
+    AtkSpdFortune: 3053, // 攻撃速さの共栄
+
     // 専用A
     ObsidianTactics: 2946, // 黒曜石の教え
     FellWyrmscale: 2842, // 邪竜の暗鱗
