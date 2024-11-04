@@ -519,6 +519,32 @@ const NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new 
     }
 }();
 
+class numOfBonusesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getPositiveStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の有利な状態の数: ${result}`);
+        return result;
+    }
+}
+
+class numOfPenaltiesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getNegativeStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の不利な状態の数: ${result}`);
+        return result;
+    }
+}
+
 const NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;

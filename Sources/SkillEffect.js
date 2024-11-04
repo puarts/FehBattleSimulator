@@ -786,16 +786,33 @@ class EnablesTargetToUseCantoAssistOnTargetsAllyNode extends SkillEffectNode {
     }
 }
 
-/**
- * 【Bonus】is active on unit
- */
-const IS_BONUS_ACTIVE_ON_UNIT_NODE = new class extends BoolNode {
+class IsBonusActiveOnTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
-        let unit = env.unitDuringCombat;
-        let foe = env.foeDuringCombat;
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
         let result = unit.hasPositiveStatusEffect(foe);
         env.debug(`${unit.nameWithGroup}は有利な状態を受けているか: ${result}`);
         return result;
+    }
+}
+
+/**
+ * 【Bonus】is active on unit
+ */
+const IS_BONUS_ACTIVE_ON_UNIT_NODE = new class extends IsBonusActiveOnTargetNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}();
+
+
+const IS_BONUS_ACTIVE_ON_FOE_NODE = new class extends IsBonusActiveOnTargetNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }();
 
@@ -1541,19 +1558,29 @@ const IS_NOT_SUMMONER_DUELS_MODE_NODE = new class extends BoolNode {
     }
 }();
 
-/**
- * If【Penalty】is active on foe,
- */
-class IfPenaltyIsActiveOnFoeNode extends BoolNode {
+class IsPenaltyActiveOnTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
-        let foe = env.foeDuringCombat;
-        let result = foe.hasNegativeStatusEffect()
-        env.debug(`${foe.nameWithGroup}は不利な状態を受けているか: ${result}`);
+        let unit = this.getUnit(env);
+        let result = unit.hasNegativeStatusEffect()
+        env.debug(`${unit.nameWithGroup}は不利な状態を受けているか: ${result}`);
         return result;
     }
 }
 
-const IF_PENALTY_IS_ACTIVE_ON_FOE_NODE = new IfPenaltyIsActiveOnFoeNode();
+/**
+ * If【Penalty】is active on foe,
+ */
+class IsPenaltyActiveOnFoeNode extends IsPenaltyActiveOnTargetNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const IS_PENALTY_ACTIVE_ON_FOE_NODE = new IsPenaltyActiveOnFoeNode();
 
 const NUM_OF_COMBAT_ON_CURRENT_TURN_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
@@ -2012,7 +2039,7 @@ class TargetsFoesOnTheEnemyTeamWithLowestStatNode extends UnitsNode {
     }
 }
 
-class TargetAndAlliesWithinNSpacesNode extends UnitsNode {
+class TargetAndTargetsAlliesWithinNSpacesNode extends UnitsNode {
     /**
      * @param {number|NumberNode} n
      * @param {UnitsNode} unitsNode

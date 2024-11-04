@@ -107,6 +107,11 @@ const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
 const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
 const FOES_RES_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Res);
 
+const NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new numOfBonusesActiveOnTargetExcludingStatNode();
+const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new numOfPenaltiesActiveOnTargetExcludingStatNode();
+const NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE =
+    SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
+
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
  * 奥義カウント最大判定
@@ -290,7 +295,7 @@ function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUn
  */
 function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
     return MAX_NODE(new MapUnitsNode(
-        new TargetAndAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
+        new TargetAndTargetsAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
         unitValueNode,
     ));
 }
@@ -301,6 +306,23 @@ function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
  */
 function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
     return highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
+}
+
+/**
+ * @param {number|NumberNode} n
+ * @param {NumberNode} unitValueNode
+ * @returns {NumberNode}
+ */
+function sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n, unitValueNode) {
+    return SUM_NODE(new MapUnitsNode(
+        new TargetAndTargetsAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
+        unitValueNode,
+    ));
+}
+
+function totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(n) {
+    return sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n,
+        NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
 }
 
 function setSpecialCount(skillId, n) {
@@ -348,3 +370,6 @@ const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OW
 const MAX_UNITS_NODE = (unitsNode, predNode) => new MaxUnitsNode(unitsNode, predNode);
 
 const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_DEF_ON_MAP);
+
+const IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE =
+    OR_NODE(new IsBonusActiveOnTargetNode(), new IsPenaltyActiveOnTargetNode());

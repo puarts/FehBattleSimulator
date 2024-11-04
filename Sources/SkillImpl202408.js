@@ -1,4 +1,69 @@
 // noinspection JSUnusedLocalSymbols
+// 刃の葬り手の爪
+{
+    let skillId = Weapon.QuietingClaw;
+    // Accelerates Special trigger (cooldown count-1).
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // on nearest foe and foes within 2 spaces of them through their next actions.
+            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+                // inflicts Spd/Def-7,
+                new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
+                // 【Exposure】,
+                // and a penalty that neutralizes non-Special "if foe would reduce unit's HP to 0, unit survives with 1 HP" effects
+                new InflictsStatusEffectsAtStartOfTurnNode(
+                    StatusEffectType.Exposure,
+                    StatusEffectType.NeutralizeUnitSurvivesWith1HP
+                ),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants Atk/Spd/Def/Res+5 to unit and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            new NumThatIsNode(
+                // inflicts Atk/Spd/Def-X on foe
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, 0),
+                // (X = number of foes within 2 spaces of target with Bonuses or Penalties active on them,
+                // excluding target, × 3, + 4; max 10),
+                new EnsureMaxNode(
+                    ADD_NODE(
+                        MULT_NODE(
+                            new NumOfTargetsAlliesWithinNSpacesNode(2, IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE),
+                            3),
+                        4),
+                    10,
+                ),
+            ),
+            // deals Y damage
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                // (Y = total number of Bonuses and Penalties active on foe and any foe within 2 spaces of foe,
+                // excluding stat bonuses and stat penalties, x 3;
+                MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
+                // excluding when dealing damage with an area-of-effect Special),
+            ),
+            // reduces damage from attacks by 40%,
+            new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(40),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat.
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // unit can move 1 extra space (that turn only; does not stack) and grants Atk+2 to unit.
+    setBeastSkill(skillId, BeastCommonSkillType.Flying);
+}
+
 // 始祖の炎翼
 {
     let skillId = PassiveB.VedfolnirsWing;
@@ -349,7 +414,7 @@
             // (Specified stats: Turn 1 = HP, Turn 2 = Atk, Turn 3 = Spd, Turn 4 = Def, Turn 5 = Res.)
             FOR_EACH_UNIT_NODE(
                 new UniteUnitsNode(
-                    new TargetAndAlliesWithinNSpacesNode(2,
+                    new TargetAndTargetsAlliesWithinNSpacesNode(2,
                         new TargetsFoesOnTheEnemyTeamWithLowestStatNode(index),
                     ),
                 ),
@@ -2715,7 +2780,7 @@
     let skillId = PassiveC.CreationPulse;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If【Penalty】is active on foe,
-        IF_NODE(IF_PENALTY_IS_ACTIVE_ON_FOE_NODE,
+        IF_NODE(IS_PENALTY_ACTIVE_ON_FOE_NODE,
             // grants Atk/Spd+3 to unit during combat, and also,
             new GrantsStatsPlusToUnitDuringCombatNode(3, 3, 0, 0),
             // if unit's attack can trigger unit's Special,

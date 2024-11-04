@@ -1727,7 +1727,7 @@ const Weapon = {
     WindsOfChange: 1236, // 予兆の風
 
     // フレスベルグ(敵)
-    QuietingClaw: 2737, // 刃の葬り手の爪
+    // QuietingClaw: 2737, // 刃の葬り手の爪
 
     // 超英雄 (理想郷の守護者)
     // https://www.youtube.com/watch?v=y9LRrSYLkbc&t=18s&ab_channel=NintendoMobile
@@ -1945,6 +1945,9 @@ const Weapon = {
     JustBow: 3041, // 正義の一矢の弓
     BlarvulturePlus: 3043, // ブラーバルチャー
     VedfolnirsEdge: 3044, // 始まりの巨人の剣
+
+    // 神階フレスベルグ
+    QuietingClaw: 2737, // 刃の葬り手の爪
 };
 
 const Support = {
