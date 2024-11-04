@@ -2175,6 +2175,7 @@ const Special = {
     FierceBeast: 2960, // 猛獣
     CurvedShot: 2986, // 曲射
     SturdyBeast: 3027, // 堅固なる獣
+    NimbleBeast: 3052, // 敏捷なる獣
 
     // 専用奥義
     RequiemPrayer: 3039, // 鎮魂の願い

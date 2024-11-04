@@ -1,4 +1,43 @@
 // noinspection JSUnusedLocalSymbols
+// 敏捷なる獣
+{
+    let skillId = Special.NimbleBeast;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    setSpecialCount(skillId, 3)
+
+    // Boosts damage by X% of unit's Spd when Special triggers (if transformed, X = 50; otherwise, X = 40).
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(
+                COND_OP(new IsTargetTransformedNode(), 0.5, 0.4),
+                UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+    ));
+
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If both of the following conditions are met, reduces damage from foe's next attack by 40% during combat:
+        IF_NODE(
+            AND_NODE(
+                //   - Unit's or foe's Special is ready, or unit's
+                //     or foe's Special triggered before or during
+                //     this combat.
+                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                //   - Unit is transformed or unit's Spd ≥ foe's
+                //     Spd-4.
+                // (Once per combat; excluding area-of-effect Specials).
+                OR_NODE(
+                    new IsTargetTransformedNode(),
+                    GTE_NODE(UNITS_EVAL_SPD_DURING_COMBAT_NODE, SUB_NODE(FOES_EVAL_SPD_DURING_COMBAT_NODE, 4)),
+                ),
+            ),
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
 // 刃の葬り手の爪
 {
     let skillId = Weapon.QuietingClaw;
