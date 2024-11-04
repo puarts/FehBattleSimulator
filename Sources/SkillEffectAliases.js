@@ -156,6 +156,9 @@ const FOES_RANGE_IS_2_NODE = EQ_NODE(new FoesRangeNode(), 2);
 
 const IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE = new IsTargetBeastOrDragonTypeNode();
 
+const IS_TARGET_INFANTRY_NODE = new IsTargetInfantryNode();
+const IS_TARGET_ARMOR_NODE = new IsTargetArmorNode();
+
 /**
  * 戦闘中に奥義が発動できない
  * @type {SkillEffectNode}

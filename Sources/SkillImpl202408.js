@@ -1,4 +1,53 @@
 // noinspection JSUnusedLocalSymbols
+// 神獣の鋭爪
+{
+    let skillId = PassiveC.DivineTalon;
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+            // neutralizes any【Penalty】 effects on unit and allies within 2 spaces of unit (excluding penalties inflicted at the start of the same turn),
+            NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+            // and deals 1 damage to unit and allies within 2 spaces of unit.
+            new DealsDamageToTargetAtStartOfTurnNode(1),
+        ),
+        // At start of turn,
+        new ForEachTargetsAllyWithinNSpacesNode(2,
+            // dragon, beast, infantry, and armored allies within 2 spaces of unit (that turn only; does not stack).
+            OR_NODE(IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE, IS_TARGET_INFANTRY_NODE, IS_TARGET_ARMOR_NODE),
+            // grants "unit can move 1 extra space" to
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
+        )
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            new NumThatIsNode(
+                // and reduces damage from foe's attacks by X during combat
+                // and also,
+                // when foe's attack triggers foe's Special,
+                // reduces damage by X (excluding area-of-effect Specials).
+                new SkillEffectNode(
+                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(READ_NUM_NODE),
+                ),
+                // (X = number of spaces from start position to end position of whoever initiated combat × 4; max 12),
+                new EnsureMaxNode(
+                    MULT_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 4),
+                    12,
+                ),
+            ),
+        ),
+    ));
+}
+
 // 共栄
 {
     // 攻撃速さの共栄

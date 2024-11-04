@@ -642,12 +642,31 @@ class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
 
 class ReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     getDescription(n) {
-        return `受けるダメージ-${n}`;
+        return `受けるダメージ-${n}（範囲奥義を除く）`;
     }
 
     evaluate(env) {
         let n = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;
+        let context = unit.battleContext;
+        let beforeValue = context.damageReductionValue;
+        context.damageReductionValue += n;
+        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValue}`);
+    }
+}
+
+class ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode extends ApplyingNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    getDescription(n) {
+        return `受けるダメージ-${n}（範囲奥義を除く）`;
+    }
+
+    evaluate(env) {
+        let n = this.evaluateChildren(env);
+        let unit = this.getUnit(env);
         let context = unit.battleContext;
         let beforeValue = context.damageReductionValue;
         context.damageReductionValue += n;
@@ -746,7 +765,7 @@ class ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode extends 
 
 class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumberNode {
     getDescription(n) {
-        return `敵の奥義による攻撃の時、受けるダメージ-${n}`;
+        return `敵の奥義による攻撃の時、受けるダメージ-${n}（範囲奥義を除く）`;
     }
 
     evaluate(env) {

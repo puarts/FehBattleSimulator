@@ -3400,6 +3400,7 @@ const PassiveC = {
     ARTwinFSave: 3034, // 兜の護り手・遠・双
 
     // 専用C
+    DivineTalon: 3054, // 神獣の鋭爪
     ConnectedWorld: 3028, // 人と神が繋がる世界
     Paranoia: 2987, // 被害妄想
     DivineNectar: 2959, // 神獣の蜜

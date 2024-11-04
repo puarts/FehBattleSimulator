@@ -1731,6 +1731,32 @@ class IsTargetBeastOrDragonTypeNode extends BoolNode {
     }
 }
 
+class IsTargetInfantryNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.moveType === MoveType.Infantry;
+        env.debug(`${unit.nameWithGroup}は歩行か: ${result}`);
+        return result;
+    }
+}
+
+class IsTargetArmorNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.moveType === MoveType.Armor;
+        env.debug(`${unit.nameWithGroup}は重装か: ${result}`);
+        return result;
+    }
+}
+
 class IsTargetMeleeWeaponNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2095,6 +2121,29 @@ class ForEachAllyNode extends ForEachUnitOnMapNode {
     getUnits(env) {
         let pred = u => this._predNode.evaluate(env.copy().setTarget(u));
         return GeneratorUtil.filter(env.unitManager.enumerateUnitsInTheSameGroup(env.target), pred);
+    }
+}
+
+class ForEachTargetsAllyWithinNSpacesNode extends ForEachAllyNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {BoolNode} pred
+     * @param {...SkillEffectNode} children
+     */
+    constructor(n, pred, ...children) {
+        super(pred, ...children);
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    getUnits(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let pred = u => this._predNode.evaluate(env.copy().setTarget(u));
+        return GeneratorUtil.filter(env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n), pred);
     }
 }
 
