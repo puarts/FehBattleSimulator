@@ -2421,13 +2421,17 @@ class BattleMap {
         }
     }
 
+    /**
+     * @param {Unit} unit
+     * @returns {Generator<Tile>}
+     */
     * enumerateWarpCantoTiles(unit) {
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.ShadowyQuill:
                     for (let tile of this.enumerateTiles()) {
-                        if (tile.posX === unit.fromPosX &&
-                            tile.posY === unit.fromPosY) {
+                        if (tile.posX === unit.getStartX() &&
+                            tile.posY === unit.getStartY()) {
                             if (this.__canWarp(tile, unit)) {
                                 yield tile;
                             }

@@ -269,12 +269,6 @@ class DamageCalculatorWrapper {
         // TODO: tmpSpecialCountを使用するようにする
         let atkSpecialCount = atkUnit.specialCount;
         this.#initBattleContext(atkUnit, defUnit);
-        if (damageType === DamageType.EstimatedDamage) {
-            this.__applySkillEffectsBeforeCombat(atkUnit, defUnit, DamageType.ActualDamage, false);
-            this.__applySkillEffectsBeforeCombat(defUnit, atkUnit, DamageType.ActualDamage, false);
-            atkUnit.applyReservedState();
-            defUnit.applyReservedState();
-        }
 
         let result = this.calcDamage(atkUnit, defUnit, tileToAttack, damageType, gameMode);
         if (defUnit !== result.defUnit) {
@@ -316,6 +310,12 @@ class DamageCalculatorWrapper {
         }), () => {
             this.logger.trace2(`[マス移動後] ${atkUnit.getLocationStr(tileToAttack)}`);
             this.#initBattleContext(atkUnit, defUnit);
+            if (damageType === DamageType.EstimatedDamage) {
+                this.__applySkillEffectsBeforeCombat(atkUnit, defUnit, DamageType.ActualDamage, false);
+                this.__applySkillEffectsBeforeCombat(defUnit, atkUnit, DamageType.ActualDamage, false);
+                atkUnit.applyReservedState();
+                defUnit.applyReservedState();
+            }
 
             this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageType, true);
             this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit, damageType, true);

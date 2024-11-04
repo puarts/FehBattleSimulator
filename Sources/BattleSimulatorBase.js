@@ -3829,6 +3829,7 @@ class BattleSimulatorBase {
         damageType = DamageType.EstimatedDamage
     ) {
         this.damageCalc.clearLog();
+        atkUnit.setStartTile();
         let result = this.damageCalc.calcDamageTemporary(atkUnit, defUnit, tileToAttack, damageType, this.data.gameMode);
         this.damageCalc.updateUnitSpur(atkUnit, false);
         this.damageCalc.updateUnitSpur(defUnit, false);
@@ -7036,12 +7037,20 @@ class BattleSimulatorBase {
         this.__enqueueCommandsImpl(commands);
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {Tile} tile
+     * @param {Unit} assistTargetUnit
+     * @returns {*[]}
+     * @private
+     */
     __createSupportCommands(unit, tile, assistTargetUnit) {
         let commands = [];
         if (unit.support < 0) {
             return commands;
         }
 
+        unit.setStartTile();
         commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
         commands.push(this.__createSupportCommand(unit, tile, assistTargetUnit, CommandType.End));
         return commands;
@@ -7104,8 +7113,16 @@ class BattleSimulatorBase {
         this.__enqueueCommandsImpl(commands);
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {Tile} tile
+     * @param {Unit} assistTargetUnit
+     * @returns {*[]}
+     * @private
+     */
     __createCantoAssistCommands(unit, tile, assistTargetUnit) {
         let commands = [];
+        unit.setStartTile();
         commands.push(this.__createMoveCommand(unit, tile, false, CommandType.Begin));
         commands.push(this.__createCantoAssistCommand(unit, tile, assistTargetUnit, CommandType.End));
         return commands;
@@ -7144,8 +7161,16 @@ class BattleSimulatorBase {
         );
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param {BattleMapElement} obj
+     * @returns {*[]}
+     * @private
+     */
     __createBreakStructureCommands(unit, moveTile, obj) {
         let commands = [];
+        unit.setStartTile();
         commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
         commands.push(this.__createBreakStructureCommand(unit, moveTile, obj, CommandType.End));
         return commands;
@@ -7206,8 +7231,16 @@ class BattleSimulatorBase {
         );
     }
 
+    /**
+     * @param {Unit} unit
+     * @param {Tile} moveTile
+     * @param {Tile} targetTile
+     * @returns {*[]}
+     * @private
+     */
     __createBreakDivineVeinCommands(unit, moveTile, targetTile) {
         let commands = [];
+        unit.setStartTile();
         commands.push(this.__createMoveCommand(unit, moveTile, false, CommandType.Begin));
         commands.push(this.__createBreakDivineVeinCommand(unit, moveTile, targetTile, CommandType.End));
         return commands;
@@ -7569,8 +7602,16 @@ class BattleSimulatorBase {
         );
     }
 
+    /**
+     * @param {Unit} attackerUnit
+     * @param {Unit} targetUnit
+     * @param {Tile} tile
+     * @returns {*[]}
+     * @private
+     */
     __createAttackCommands(attackerUnit, targetUnit, tile) {
         let commands = [];
+        attackerUnit.setStartTile();
         commands.push(this.__createMoveCommand(attackerUnit, tile, false, CommandType.Begin));
         commands.push(this.__createAttackCommand(attackerUnit, targetUnit, tile, CommandType.End));
         return commands;
