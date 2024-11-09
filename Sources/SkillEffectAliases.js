@@ -245,7 +245,7 @@ function enablesCantoRemPlus(skillId, n) {
 /**
  * Enables【Canto (Dist. +1; Max ４)】.
  */
-function enablesCantDist(skillId, n, max) {
+function enablesCantoDist(skillId, n, max) {
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoDistNode(n, max));
 }

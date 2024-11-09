@@ -1269,6 +1269,8 @@ const StatusEffectType = {
     DivineNectar: 68, // 神獣の蜜
     Paranoia: 69, // 被害妄想
     Gallop: 70, // 迅走
+    Anathema: 71, // 赤の呪い
+    // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };
 
 const NEGATIVE_STATUS_EFFECT_ARRAY = [

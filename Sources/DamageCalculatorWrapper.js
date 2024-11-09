@@ -16909,6 +16909,9 @@ class DamageCalculatorWrapper {
             if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, unit)) {
                 continue;
             }
+            if (unit.hasStatusEffect(StatusEffectType.Anathema)) {
+                targetUnit.addSpurs(0, -4, -4, -4);
+            }
             for (let skillId of unit.enumerateSkills()) {
                 switch (skillId) {
                     case Weapon.Syurugu:

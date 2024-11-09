@@ -1,4 +1,48 @@
 // noinspection JSUnusedLocalSymbols
+// 呪い忍者の忍法帳
+{
+    let skillId = Weapon.ScrollOfCurses;
+    // Accelerates Special trigger (cooldown count-1).
+    // Enables【Canto (Dist.; Max ３)】.
+    enablesCantoDist(skillId, 0, 3);
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // to unit and allies within 2 spaces for 1 turn:
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Atk/Spd+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Anathema】,
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Anathema),
+                // and the following status
+                // "Grants Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)."
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.SpecialCooldownChargePlusOnePerAttack),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // unit attacks twice,
+            TARGET_ATTACKS_TWICE_NODE,
+            // and unit can make a follow-up attack before foe can counterattack.
+            UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+        ),
+
+        // If unit initiates combat or if foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants bonus to unit's Atk/Spd during combat = 6 + 20% of unit's Spd at start of combat.
+            new NumThatIsNode(
+                new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(6, MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
+        )
+    ));
+}
+
 // 神獣の鋭爪
 {
     let skillId = PassiveC.DivineTalon;
@@ -663,7 +707,7 @@
 {
     let skillId = getRefinementSkillId(Weapon.GateAnchorAxe);
     // Enables【Canto (Dist. +1; Max ４)】.
-    enablesCantDist(skillId, 1, 4);
+    enablesCantoDist(skillId, 1, 4);
     // Accelerates Special trigger (cooldown count-1).
 
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
