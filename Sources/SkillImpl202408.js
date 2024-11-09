@@ -1,4 +1,41 @@
 // noinspection JSUnusedLocalSymbols
+// 鬼神飛燕の掩撃
+{
+    let skillId = PassiveA.SlySwiftSparrow;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // grants Atk/Spd+8 to unit and unit makes a guaranteed follow-up attack during combat,
+            new GrantsStatsPlusToTargetDuringCombatNode(8, 8, 0, 0),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and also,
+            // if number of 【Bonus】effects active on unit ≥ 2, excluding stat bonuses,
+            // or if number of 【Penalty】effects active on foe ≥ 2, excluding stat penalties,
+            IF_NODE(OR_NODE(
+                    GTE_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, 2),
+                    GTE_NODE(NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 2)
+                ),
+                // unit deals +5 damage during combat
+                new UnitDealsDamageExcludingAoeSpecialsNode(5),
+                // (including when dealing damage with an area-of-effect Special; excluding Røkkr area-of-effect Specials).
+            ),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            IF_NODE(OR_NODE(
+                    GTE_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, 2),
+                    GTE_NODE(NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 2)
+                ),
+                // unit deals +5 damage during combat
+                new UnitDealsDamageBeforeCombatNode(5),
+                // (including when dealing damage with an area-of-effect Special; excluding Røkkr area-of-effect Specials).
+            ),
+        ),
+    ));
+}
+
 // 呪い忍者の忍法帳
 {
     let skillId = Weapon.ScrollOfCurses;

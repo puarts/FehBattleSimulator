@@ -2454,6 +2454,8 @@ const PassiveA = {
 
     AtkSpdFortune: 3053, // 攻撃速さの共栄
 
+    SlySwiftSparrow: 3056, // 鬼神飛燕の掩撃
+
     // 専用A
     ObsidianTactics: 2946, // 黒曜石の教え
     FellWyrmscale: 2842, // 邪竜の暗鱗
