@@ -99,6 +99,9 @@ class BeginningOfTurnSkillHandler {
      * @param  {Unit} unit
      */
     applySkillsAfterEnemySkillsForBeginningOfTurn(unit) {
+        let env = new AtStartOfTurnEnv(this, unit);
+        env.setName('敵軍のターン開始時スキル発動後').setLogLevel(getSkillLogLevel());
+        AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS.evaluateWithUnit(unit, env);
         for (let skillId of unit.enumerateSkills()) {
             this.applySkillAfterEnemySkillsForBeginningOfTurn(skillId, unit);
         }

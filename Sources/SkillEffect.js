@@ -1475,6 +1475,22 @@ class SetBoolToEachStatusNode extends SkillEffectNode {
 /**
  * @abstract
  */
+class FromBoolStatsNode extends SkillEffectNode {
+    /**
+     * @param {boolean|BoolNode} atk
+     * @param {boolean|BoolNode} spd
+     * @param {boolean|BoolNode} def
+     * @param {boolean|BoolNode} res
+     */
+    constructor(atk, spd, def, res) {
+        super(BoolNode.makeBoolNodeFrom(atk), BoolNode.makeBoolNodeFrom(spd),
+            BoolNode.makeBoolNodeFrom(def), BoolNode.makeBoolNodeFrom(res));
+    }
+}
+
+/**
+ * @abstract
+ */
 class ApplyingNumberToEachStatNode extends FromNumbersNode {
     /**
      * @param {number|NumberNode} atk
@@ -1969,6 +1985,19 @@ const NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE = new class extends SkillEffectNode {
         unit.neutralizeNegativeStatusEffects();
     }
 }();
+
+class RestoreTargetsHpOnMapNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.reserveHeal(n);
+        env.debug(`${unit.nameWithGroup}はHPが${n}回復予約`);
+    }
+}
 
 class RestoreTargetHpNode extends FromPositiveNumberNode {
     static {
@@ -3312,6 +3341,50 @@ class TargetsBonusNode extends NumberNode {
 class FoesBonusNode extends TargetsBonusNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+/**
+ * neutralizes stat penalties
+ */
+class NeutralizesTargetsStatPenaltiesNode extends FromBoolStatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.reservedDebuffFlagsToNeutralize = this.evaluateChildren(env).slice(0, 4);
+        let result = unit.reservedDebuffFlagsToNeutralize;
+        env.debug(`${unit.nameWithGroup}は弱化を解除予約: ${result}`);
+    }
+}
+
+const NEUTRALIZES_TARGETS_ALL_STAT_PENALTIES_NODE =
+    new NeutralizesTargetsStatPenaltiesNode(true, true, true, true);
+
+/**
+ * neutralizes n 【Penalty】 effects
+ * (does not apply to Penalty effects that are applied at the same time;
+ * neutralizes the first applicable Penalty effects on unit's list of active effects).
+ */
+class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
+        env.debug(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
+        let n = this.evaluateChildren(env);
+        for (let i = 0; i < n; i++) {
+            if (effects.length >= i + 1) {
+                env.debug(`${unit.nameWithGroup}の${getStatusEffectName(effects[i])}を解除予約(${i + 1})`);
+                unit.reservedStatusEffectSetToNeutralize.add(effects[i]);
+            }
+        }
     }
 }
 

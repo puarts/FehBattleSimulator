@@ -1,4 +1,71 @@
 // noinspection JSUnusedLocalSymbols
+// 花と茶の忍法帳
+{
+    let skillId = Weapon.ScrollOfTeas;
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit attacks twice (even if foe initiates combat, unit attacks twice).
+
+    // Unit can move to any space within 2 spaces of an ally within 2 spaces of unit.
+    setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, 2, 2);
+
+    // At start of enemy phase,
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // restores 10 HP to unit and allies within 3 spaces of unit.
+        new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
+            new RestoreTargetsHpOnMapNode(10),
+        ),
+    ));
+
+    // After start-of-turn effects trigger on enemy phase,
+    AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // for unit and allies within 3 spaces of unit,
+        new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
+            // neutralizes stat penalties and
+            NEUTRALIZES_TARGETS_ALL_STAT_PENALTIES_NODE,
+            // two【Penalty】 effects (does not apply to Penalty effects that are applied at the same time; neutralizes the first applicable Penalty effects on unit's list of active effects).
+            new NeutralizesTargetsNPenaltyEffectsNode(2),
+        ),
+    ));
+
+    // Grants Spd/Res+4 to allies within 3 spaces of unit during their combat and
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 4, 0, 4),
+        ),
+    ));
+
+    // to allies within 3 spaces of unit during their combat and
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // restores 10 HP to those allies after their combat.
+            RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 3 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat + 5,
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                ADD_NODE(MULT_TRUNC_NODE(0.15, UNITS_SPD_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            // deals damage = 6 × number of allies with HP ≥ 50% during combat (max 18; excluding area-of-effect Specials),
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                new EnsureMaxNode(
+                    MULT_NODE(
+                        6,
+                        new NumOfTargetsAlliesWithinNSpacesNode(99,
+                            GTE_NODE(new TargetsHpPercentageAtStartOfCombatNode(), 50))
+                    ),
+                    18,
+                ),
+            ),
+            // and restores 10 HP to unit after combat.
+            RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
 // 鬼神飛燕の掩撃
 {
     let skillId = PassiveA.SlySwiftSparrow;

@@ -30,6 +30,11 @@ const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 const AT_START_OF_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
 
 /**
+ * 敵軍のターン開始時スキル発動後
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
+
+/**
  * 範囲奥義判定前(主に範囲奥義を発動するかどうかの判定など)
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS = new SkillEffectHooks();

@@ -1950,6 +1950,7 @@ const Weapon = {
     QuietingClaw: 2737, // 刃の葬り手の爪
 
     ScrollOfCurses: 3055,
+    ScrollOfTeas: 3057, // 花と茶の忍法帳
 };
 
 const Support = {
