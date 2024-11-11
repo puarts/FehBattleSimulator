@@ -484,7 +484,7 @@ class BattleSimulatorBase {
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
-            emblemHeroMergeChanged: function () {
+            emblemHeroMergeChanged: function (resetsMerge = false) {
                 if (g_app == null) {
                     return;
                 }
@@ -493,6 +493,9 @@ class BattleSimulatorBase {
                     return;
                 }
                 let currentUnit = self.__getCurrentUnit();
+                if (resetsMerge === true) {
+                    currentUnit.emblemHeroMerge = 0;
+                }
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
                 appData.__showStatusToAttackerInfo();
