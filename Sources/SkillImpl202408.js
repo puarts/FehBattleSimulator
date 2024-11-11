@@ -1,4 +1,36 @@
 // noinspection JSUnusedLocalSymbols
+// 巨岩
+{
+    let skillId = Special.Boulder;
+    // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
+    setSpecialCount(skillId, 3)
+
+    // Boosts Special damage by 50% of unit's Def when Special triggers.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(0.5, UNITS_DEF_DURING_COMBAT_NODE),
+        ),
+    ));
+
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(
+            AND_NODE(
+                // If unit's or foe's Special is ready,
+                // or unit's or foe's Special triggered before or during this combat,
+                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                // and also,
+                // if unit's Def ≥ foe's Def-4 during combat,
+                GTE_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, SUB_NODE(FOES_EVAL_DEF_DURING_COMBAT_NODE, 4)),
+            ),
+            // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
 // 武と勇の鎖鎌
 {
     let skillId = Weapon.BoldKusarigama;

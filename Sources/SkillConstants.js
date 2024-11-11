@@ -2180,6 +2180,7 @@ const Special = {
     CurvedShot: 2986, // 曲射
     SturdyBeast: 3027, // 堅固なる獣
     NimbleBeast: 3052, // 敏捷なる獣
+    Boulder: 3061, // 巨岩
 
     // 専用奥義
     RequiemPrayer: 3039, // 鎮魂の願い
