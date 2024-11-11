@@ -1951,6 +1951,7 @@ const Weapon = {
 
     ScrollOfCurses: 3055,
     ScrollOfTeas: 3057, // 花と茶の忍法帳
+    BoldKusarigama: 3060, // 武と勇の鎖鎌
 };
 
 const Support = {

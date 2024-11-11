@@ -1,4 +1,50 @@
 // noinspection JSUnusedLocalSymbols
+// 武と勇の鎖鎌
+{
+    let skillId = Weapon.BoldKusarigama;
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit attacks twice (even if foe initiates combat, unit attacks twice).
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Def at start of combat + 5,
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                ADD_NODE(MULT_TRUNC_NODE(0.15, UNITS_DEF_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // deals damage = 25% of unit's Def (excluding area-of-effect Specials),
+                new UnitDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.25, UNITS_DEF_DURING_COMBAT_NODE)),
+                // reduces damage from foe's attacks by 25% of unit's Def (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+                new ReducesDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(0.25, UNITS_DEF_DURING_COMBAT_NODE)),
+            ),
+            // neutralizes "reduces damage by X%" effects from unit's and foe's non-Special skills (excluding area-of-effect Specials),
+            NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_UNITS_NON_SPECIAL_NODE,
+            NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_FOES_NON_SPECIAL_NODE,
+            // neutralizes effects that guarantee unit's and foe's follow-up attacks,
+            UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+            FOE_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_UNITS_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+            // and increases the Spd difference necessary for unit or foe to make a follow-up attack by 20 during combat (Spd must be ≥ 25 to make a follow-up attack; stacks with similar skills).
+            new IncreasesSpdDiffNecessaryForTargetToMakeFollowUpNode(20),
+            new IncreasesSpdDiffNecessaryForFoeToMakeFollowUpNode(20),
+        ),
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // grants Special cooldown count-1 to unit before unit's first attack during combat.
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+        ),
+    ));
+
+    // reduces damage from foe's attacks by 25% of unit's Def (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            new ReducesDamageByAoeNode(
+                MULT_TRUNC_NODE(0.25, UNITS_DEF_AT_START_OF_COMBAT_NODE),
+            ),
+        ),
+    ));
+}
+
 // 花と茶の忍法帳
 {
     let skillId = Weapon.ScrollOfTeas;
@@ -2171,7 +2217,7 @@
             new AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode(MULT_TRUNC_NODE(0.4, UNITS_RES_DURING_COMBAT_NODE)),
         ),
         // neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills for that attack (resets at end of combat).
-        new NeutralizeTargetsFoesReducesDamageByXPercentEffectsFromTargetFoesNonSpecialNode(),
+        new NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialAfterDefenderSpecialNode(),
         // Unit can counterattack regardless of foe's range during combat.
         TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
     ));
