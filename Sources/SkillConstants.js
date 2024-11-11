@@ -3023,6 +3023,7 @@ const PassiveB = {
     SpdResTempo3: 2204, // 速さ魔坊の拍節3
     AtkResTempo4: 2634, // 攻撃魔防の拍節4
     SpdDefTempo4: 2661, // 速さ守備の拍節4
+    SpdResTempo4: 3058, // 速さ魔防の拍節4
 
     // 防壁
     AtkSpdBulwark3: 2414, // 攻撃速さの防壁3

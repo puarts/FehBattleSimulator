@@ -12250,6 +12250,8 @@
     setTempo4Skill(PassiveB.AtkResTempo4, unit => unit.addAtkResSpurs(-4));
     // 速さ守備の拍節4
     setTempo4Skill(PassiveB.SpdDefTempo4, unit => unit.addSpdDefSpurs(-4));
+    // 速さ魔防の拍節4
+    setTempo4Skill(PassiveB.SpdResTempo4, unit => unit.addSpdResSpurs(-4));
 }
 
 // オヴスキュリテ
