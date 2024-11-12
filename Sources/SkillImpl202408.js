@@ -1,4 +1,42 @@
 // noinspection JSUnusedLocalSymbols
+// 聖王国の父娘の忍弓
+{
+    let skillId = Weapon.YlisseNinjaBow;
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Unit attacks twice (even if foe initiates combat, unit attacks twice).
+        TARGET_ATTACKS_TWICE_NODE,
+        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat + 5,
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                ADD_NODE(PERCENTAGE_NODE(15, UNITS_SPD_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            // unit deals +X × 5 damage (max 25; X = number of【Bonus】effects active on unit,
+            // excluding stat bonuses + number of【Penalty】effects active on foe,
+            // excluding stat penalties; excluding area-of-effect Specials),
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                new EnsureMaxNode(
+                    MULT_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+                    25,
+                ),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and also,
+            // if unit's attack can trigger unit's Special,
+            IF_NODE(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                // grants Special cooldown count-1 to unit after first Special trigger per combat (excluding area-of-effect Specials).
+                new GrantsSpecialCooldownCountMinusNToTargetAfterFirstSpecialTriggerPerCombatNode(1),
+            ),
+        ),
+    ));
+}
+
 // 攻撃守備の刃壁
 {
     let skillId = PassiveB.ADSpikedWall;

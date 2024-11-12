@@ -1,3 +1,5 @@
+const PERCENTAGE_NODE = (percentage, num) => MULT_TRUNC_NODE(percentage / 100.0, num);
+
 /**
  * 生の息吹4のようなHP回復効果。
  * @param {number|NumberNode} hpPercentage

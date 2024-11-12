@@ -246,6 +246,8 @@ class BattleContext {
         // 敵の最初の2回攻撃の2撃目前の奥義発動カウント減少値(Shield Fighterなど)
         this.specialCountReductionBeforeSecondFirstAttacksByEnemy = 0;
 
+        this.specialCountReductionAfterFirstSpecial = 0;
+
         // 攻撃時の追加ダメージ
         // TODO: 戦闘前と戦闘中で変数を分ける
         this.additionalDamage = 0;

@@ -235,6 +235,19 @@ class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode extends Fr
 const UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE =
     new UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode(1);
 
+class GrantsSpecialCooldownCountMinusNToTargetAfterFirstSpecialTriggerPerCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let count = this.evaluateChildren(env);
+        let result = unit.battleContext.specialCountReductionAfterFirstSpecial += count;
+        env.debug(`${unit.nameWithGroup}は各戦闘の最初の奥義発動後、奥義発動カウント-${count}: ${result}`);
+    }
+}
+
 const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
