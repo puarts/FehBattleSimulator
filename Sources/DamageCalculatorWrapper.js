@@ -10606,10 +10606,9 @@ class DamageCalculatorWrapper {
         // 攻撃回数初期化
         let atkWeaponInfo = targetUnit.weaponInfo;
         if (atkWeaponInfo != null) {
-            targetUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
-            targetUnit.battleContext.counterattackCount = atkWeaponInfo.counterattackCount;
-        }
-        else {
+            targetUnit.battleContext.updateAttackCount(atkWeaponInfo.attackCount);
+            targetUnit.battleContext.updateCounterattackCount(atkWeaponInfo.counterattackCount);
+        } else {
             targetUnit.battleContext.attackCount = 0;
             targetUnit.battleContext.counterattackCount = 0;
         }

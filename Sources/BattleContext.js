@@ -810,6 +810,14 @@ class BattleContext {
         );
     }
 
+    updateAttackCount(count) {
+        this.attackCount = Math.max(this.attackCount, count);
+    }
+
+    updateCounterattackCount(count) {
+        this.counterattackCount = Math.max(this.counterattackCount, count);
+    }
+
     isTriggeringAttackTwice() {
         if (this.initiatesCombat) {
             return this.attackCount === 2;
