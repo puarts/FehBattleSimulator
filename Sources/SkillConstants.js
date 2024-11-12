@@ -2941,6 +2941,8 @@ const PassiveB = {
 
     SpdResDiscord: 3040, // 速さ魔防の不和
 
+    ADSpikedWall: 3062, // 攻撃守備の刃壁
+
     // 専用B
     VedfolnirsWing: 3046, // 始祖の炎翼
     ShadowSlide: 2996, // 無間の瞬動
