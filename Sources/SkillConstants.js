@@ -1967,6 +1967,7 @@ const Support = {
     RepositionGait: 3045, // 引き戻し・歩法
 
     // 専用補助
+    FutureFocus: 3064, // 未来を叶える瞳
     ChangingWaters: 2857, // つたうみなすじ
     SpringsDream: 2806, // しろいはるのゆめ
     FutureVision: 433, // 未来を移す瞳

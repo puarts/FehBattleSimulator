@@ -134,6 +134,10 @@ function getRefinementSkillIds(id) {
     ];
 }
 
+function getStatusEffectSkillId(id) {
+    return `se_${id}`;
+}
+
 const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
 
 const PHYSICAL_WEAPON_TYPE_SET = new Set([
@@ -789,6 +793,11 @@ function canRallyForciblyByPlayer(unit) {
     return getSkillFunc(unit.support, canRallyForciblyByPlayerFuncMap)?.call(this, unit) ?? false;
 }
 
+/**
+ * @type {Set<number|string>}
+ */
+SWAP_ASSIST_SET = new Set();
+
 CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET = new Set();
 DIVINE_NECTAR_SKILL_SET = new Set();
 
@@ -1270,6 +1279,7 @@ const StatusEffectType = {
     Paranoia: 69, // 被害妄想
     Gallop: 70, // 迅走
     Anathema: 71, // 赤の呪い
+    FutureWitness: 72, // 未来を知るもの
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };
 

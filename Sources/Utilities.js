@@ -11,6 +11,10 @@ class ObjectUtil {
     static makeOptionFromObj(object) {
         return Object.entries(object).map(([text, value]) => ({value, text}));
     }
+
+    static getKeyName(object, value) {
+        return Object.keys(object).find(key => object[key].toString() === value);
+    }
 }
 
 /**

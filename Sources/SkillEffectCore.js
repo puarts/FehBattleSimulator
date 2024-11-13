@@ -98,10 +98,15 @@ class SkillEffectHooks {
             case 'e':
                 type = '紋章士'
                 break;
+            case 'se':
+                type = 'ステータス効果'
+                break;
         }
         let name;
         if (prefix === 'e') {
-            name = Object.keys(EmblemHero).find(key => EmblemHero[key].toString() === suffix);
+            name = ObjectUtil.getKeyName(EmblemHero, suffix);
+        } else if (prefix === 'se') {
+            name = ObjectUtil.getKeyName(StatusEffectType, suffix);
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }

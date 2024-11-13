@@ -322,6 +322,12 @@ const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode
     }
 }();
 
+const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode {
+    evaluate(env) {
+        return env.target.groupId === env.assistTargeting.groupId;
+    }
+}();
+
 const ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE = new class extends BoolNode {
     evaluate(env) {
         return env.target.isPartner(env.skillOwner);
@@ -2454,6 +2460,34 @@ class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
 const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
 
+class IsTargetWithinNSpacesOfAssistTargetNode extends IsInRangeNNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let spaces = this._nNode.evaluate(env);
+        let result = unit.distance(env.assistTarget) <= spaces;
+        env.debug(`${env.assistTarget.nameWithGroup}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
+        return result;
+    }
+}
+
+class IsTargetWithinNSpacesOfAssistTargetingNode extends IsInRangeNNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let spaces = this._nNode.evaluate(env);
+        let result = unit.distance(env.assistTargeting) <= spaces;
+        env.debug(`${env.assistTargeting.nameWithGroup}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
+        return result;
+    }
+}
+
 class AreTargetAndSkillOwnerPartnersNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -3384,6 +3418,32 @@ class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
                 env.debug(`${unit.nameWithGroup}の${getStatusEffectName(effects[i])}を解除予約(${i + 1})`);
                 unit.reservedStatusEffectSetToNeutralize.add(effects[i]);
             }
+        }
+    }
+}
+
+class TargetsOncePerTurnAssistEffectNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {string} id
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(id, ...nodes) {
+        super(...nodes);
+        this._id = id;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        if (!unit.oneTimeActionPerTurnActivatedSet.has(this._id)) {
+            unit.oneTimeActionPerTurnActivatedSet.add(this._id);
+            env.debug(`${unit.nameWithGroup}は1ターン1回の補助効果（${this._id}）をこのターン初めて発動`);
+            return this.evaluateChildren(env);
+        } else {
+            env.debug(`${unit.nameWithGroup}は1ターン1回の補助効果（${this._id}）を発動済み`);
         }
     }
 }

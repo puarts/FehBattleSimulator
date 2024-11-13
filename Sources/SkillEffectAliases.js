@@ -252,6 +252,11 @@ function enablesCantoDist(skillId, n, max) {
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoDistNode(n, max));
 }
 
+function enablesCantoN(skillId, n) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(n));
+}
+
 const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percentage, statNode) =>
     new AppliesSkillEffectsAfterStatusFixedNode(
         // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
@@ -367,10 +372,10 @@ function setPathfinder(skillId) {
 const IS_TARGET_SKILL_OWNER_NODE = new IsTargetSkillOwnerNode();
 const UNITS_ON_MAP_NODE = new UnitsOnMapNode();
 const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
-const FILTER_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
+const FILTER_MAP_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
 const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);
 const SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
-    FILTER_UNITS_NODE(
+    FILTER_MAP_UNITS_NODE(
         OR_NODE(IS_TARGET_SKILL_OWNER_NODE,
             AND_NODE(
                 ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE,
@@ -391,6 +396,21 @@ const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE
 
 const IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE =
     OR_NODE(new IsBonusActiveOnTargetNode(), new IsPenaltyActiveOnTargetNode());
+
+/**
+ * @param {number|NumberNode} n
+ * @returns {UnitsNode}
+ * @constructor
+ */
+const ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET = (n) =>
+    FILTER_MAP_UNITS_NODE(
+        AND_NODE(ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE,
+            OR_NODE(
+                new IsTargetWithinNSpacesOfAssistTargetingNode(n, TRUE_NODE),
+                new IsTargetWithinNSpacesOfAssistTargetNode(n, TRUE_NODE)
+            ),
+        )
+    );
 
 /**
  * @param {number|string} skillId

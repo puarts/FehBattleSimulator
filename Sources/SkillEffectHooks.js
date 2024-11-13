@@ -234,7 +234,7 @@ const ALLY_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 
 /**
  * unit can move through foes' spaces.
- * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
 const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
 
 /**

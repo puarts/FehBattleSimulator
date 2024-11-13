@@ -626,6 +626,11 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForWeaponPerGame = false;
         this.isOneTimeActionActivatedForWeaponPerGame2 = false;
 
+        /**
+         * @type {Set<string>}
+         */
+        this.oneTimeActionPerTurnActivatedSet = new Set();
+
         // 戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
         //（同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
         //（1ターンに1回のみ）
@@ -1358,6 +1363,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.cantoAssistRange
             + ValueDelimiter + this.cantoSupport
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForCantoRefresh)
+            + ValueDelimiter + JSON.stringify(Array.from(this.oneTimeActionPerTurnActivatedSet))
             ;
     }
 
@@ -1499,6 +1505,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.cantoAssistRange = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.cantoSupport = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForCantoRefresh = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.oneTimeActionPerTurnActivatedSet = new Set(JSON.parse(values[i])); ++i; }
     }
 
 
@@ -2612,6 +2619,7 @@ class Unit extends BattleMapElement {
         this.isCantoActivatedInCurrentTurn = false;
         this.isAnotherActionInPostCombatActivated = false;
         this.isOneTimeActionActivatedForCantoRefresh = false;
+        this.oneTimeActionPerTurnActivatedSet = new Set();
     }
 
     setOnetimeActionActivated() {
@@ -4871,6 +4879,7 @@ class Unit extends BattleMapElement {
         if (this.emblemHeroIndex > 0) {
             yield getEmblemHeroSkillId(this.emblemHeroIndex);
         }
+        yield* this.getStatusEffects().map(getStatusEffectSkillId);
     }
 
     /**

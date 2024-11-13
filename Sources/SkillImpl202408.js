@@ -1,4 +1,49 @@
 // noinspection JSUnusedLocalSymbols
+// 未来を知るもの
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.FutureWitness);
+    // Enables【Canto (２)】.
+    enablesCantoN(skillId, 2);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants Atk/Spd/Def/Res+5 to unit and
+        GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+        // reduces damage from foe's first attack by 7 during combat
+        // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+        new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+        // and also,
+        // if unit initiates combat and foe's attack can trigger foe's Special,
+        IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
+            // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+        ),
+    ));
+}
+
+// 未来を叶える瞳
+{
+    let skillId = Support.FutureFocus;
+    // Unit and target ally swap spaces.
+    SWAP_ASSIST_SET.add(skillId);
+
+    let nodeFunc = () => new SkillEffectNode(
+        new TargetsOncePerTurnAssistEffectNode(`${skillId}-周囲への効果`,
+            new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2), TRUE_NODE,
+                // Grants 【Future Witness】and【Null Follow-Up】to allies within 2 spaces of both unit and target after movement for 1 turn (including unit and target),
+                new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.FutureWitness),
+                new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.NullFollowUp),
+                // grants Special cooldown-1 to unit and those allies,
+                new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
+            )
+        ),
+    );
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc);
+
+    // and grants another action to unit (once per turn).
+    AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionOnAssistNode());
+}
+
 // 聖王国の父娘の忍弓
 {
     let skillId = Weapon.YlisseNinjaBow;

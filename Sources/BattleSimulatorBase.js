@@ -9122,8 +9122,8 @@ class BattleSimulatorBase {
             this.__applyMovementAssistSkill(targetUnit, unit);
 
             let env;
-            env = new BattleSimulatorBaseEnv(this, unit);
 
+            env = new BattleSimulatorBaseEnv(this, unit);
             env.setName('移動補助を使用した時').setLogLevel(getSkillLogLevel()).setAssistUnits(unit, targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(unit, env);
 
@@ -9698,6 +9698,9 @@ class BattleSimulatorBase {
         let func = getSkillFunc(skillId, getTargetUnitTileAfterMoveAssistFuncMap);
         /** @type {MovementAssistResult} */
         let result = func?.call(this, unit, targetUnit, assistTile) ?? null;
+        if (SWAP_ASSIST_SET.has(skillId)) {
+            result = this.__findTileAfterSwap(unit, targetUnit, assistTile);
+        }
         switch (skillId) {
             case Support.RescuePlus:
             case Support.Rescue:
@@ -9731,11 +9734,10 @@ class BattleSimulatorBase {
             case Support.Pivot:
                 result = this.__findTileAfterPivot(unit, targetUnit, assistTile);
                 break;
-            default:
-                this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
-                return null;
         }
-        return result;
+        if (result) return result;
+        this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
+        return null;
     }
 
     /**
@@ -10491,6 +10493,9 @@ class BattleSimulatorBase {
         let skillId = assistUnit.support;
         let func = getSkillFunc(skillId, findTileAfterMovementAssistFuncMap);
         func?.call(this, assistUnit, assistTargetUnit, tile);
+        if (SWAP_ASSIST_SET.has(skillId)) {
+            return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
+        }
 
         switch (assistUnit.support) {
             case Support.FateUnchanged:
