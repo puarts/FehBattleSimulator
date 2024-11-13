@@ -1,4 +1,15 @@
 // noinspection JSUnusedLocalSymbols
+// 赤の呪い
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Anathema);
+    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // Inflicts Spd/Def/Res-4 on foes within 3 spaces of unit during combat.
+            new InflictsStatsMinusOnTargetDuringCombatNode(0, 4, 4, 4),
+        ),
+    ));
+}
+
 // 未来を知るもの
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.FutureWitness);
