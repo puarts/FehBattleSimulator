@@ -1124,7 +1124,7 @@ class BattleSimulatorBase {
         }
 
         let env = new EnumerationEnv(g_appData, duoUnit);
-        env.setName('比翼双界スキル使用可能判定').setLogLevel(getSkillLogLevel());
+        env.setName('比翼双界スキル使用可能判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
         let cannotTrigger =
             CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP
                 .getValues(duoUnit.heroIndex)
