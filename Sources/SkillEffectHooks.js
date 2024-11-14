@@ -80,10 +80,16 @@ const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS = new SkillEffectH
  * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
 const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
 
+// TODO: 周囲に対する紋章・スキル効果と命名規則が同じになるようにする
 /**
  * 周囲の敵から受ける紋章効果
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
 const WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS = new SkillEffectHooks();
+
+/**
+ * 周囲の敵から受けるスキル効果
+ * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
+const WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS = new SkillEffectHooks();
 
 /**
  * ボタンを押したときのスキル効果

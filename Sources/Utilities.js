@@ -1484,6 +1484,15 @@ class IterUtil {
             if (func(value)) yield value;
         }
     }
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @returns {Iterable<T>}
+     */
+    static unique(iterable) {
+        return new Set(Array.from(iterable));
+    }
 }
 
 class GeneratorUtil {

@@ -163,6 +163,65 @@ class TargetsAlliesOnMapNode extends UnitsNode {
     }
 }
 
+class TargetsAlliesWithinNSpacesNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {BoolNode} includesTarget
+     */
+    constructor(n, includesTarget = FALSE_NODE) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._includesTargetNode = includesTarget;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let spaces = this._nNode.evaluate(env);
+        let withTargetUnit = this._includesTargetNode.evaluate(env);
+        return env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, spaces, withTargetUnit);
+    }
+}
+
+class TargetsClosestFoesNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+        return IterUtil.minElements(enemies, u => u.distance(unit));
+    }
+}
+
+class TargetsClosestFoesWithinNSpaces extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+        let n = this._nNode.evaluate(env);
+        return IterUtil.filter(
+            IterUtil.minElements(enemies, u => u.distance(unit)),
+            u => u.distance(unit) <= n
+        );
+    }
+}
+
 class MaxUnitsNode extends UnitsNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -245,6 +304,27 @@ class CountUnitsNode extends PositiveNumberNode {
         let result = units.length;
         env.debug(`ユニットの数: ${result}`);
         return result;
+    }
+}
+
+/**
+ * ターゲットを補助ユニット、補助を受けるユニットにそれぞれ設定して引数のUnitsNodeを評価する
+ */
+class UnitsOfBothAssistTargetingAndAssistTargetNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(unitsNode) {
+        super();
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let targetAndAlliesNode = this._unitsNode;
+        return IterUtil.unique(IterUtil.concat(
+            targetAndAlliesNode.evaluate(env.copy().setTarget(env.assistTargeting)),
+            targetAndAlliesNode.evaluate(env.copy().setTarget(env.assistTarget)),
+        ));
     }
 }
 

@@ -1,4 +1,41 @@
 // noinspection JSUnusedLocalSymbols
+// 速さ守備の看破
+{
+    let skillId = PassiveB.SpdDefDetect;
+    let nodeFunc = () => new SkillEffectNode(
+        // If a movement Assist skill (like Reposition, Shove, Pivot, etc.) is used by unit or targets unit,
+        // inflicts【Exposure】on closest foes within 5 spaces of both unit and target ally or unit and targeting ally after movement and foes within 2 spaces of those foes through their next actions.
+        new ForEachUnitNode(
+            CLOSEST_FOES_WITHIN5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN2_SPACES_OF_THOSE_FOES_NODE,
+            TRUE_NODE,
+            new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Exposure),
+        ),
+    );
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc)
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc)
+
+    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // on the map with the 【Exposure】effect active and
+        IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
+            // Inflicts Spd/Def-5 on foes
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
+        ),
+    ));
+
+    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // on the map with the 【Exposure】effect active and
+        IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
+            // neutralizes bonuses to Spd/Def for those foes during combat.
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, true, false),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Spd/Def-4 on foe during combat.
+        new InflictsStatsMinusOnFoeDuringCombatNode(0, 4, 4, 0),
+    ));
+}
+
 // 赤の呪い
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.Anathema);

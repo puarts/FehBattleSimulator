@@ -2945,6 +2945,8 @@ const PassiveB = {
 
     ADSpikedWall: 3062, // 攻撃守備の刃壁
 
+    SpdDefDetect: 3065, // 速さ守備の看破
+
     // 専用B
     VedfolnirsWing: 3046, // 始祖の炎翼
     ShadowSlide: 2996, // 無間の瞬動
