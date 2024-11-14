@@ -88,7 +88,7 @@
     // Unit and target ally swap spaces.
     SWAP_ASSIST_SET.add(skillId);
 
-    let nodeFunc = () => new SkillEffectNode(
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         new TargetsOncePerTurnAssistEffectNode(`${skillId}-周囲への効果`,
             new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2), TRUE_NODE,
                 // Grants 【Future Witness】and【Null Follow-Up】to allies within 2 spaces of both unit and target after movement for 1 turn (including unit and target),
@@ -98,9 +98,7 @@
                 new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
             )
         ),
-    );
-    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
-    AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc);
+    ));
 
     // and grants another action to unit (once per turn).
     AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionOnAssistNode());
