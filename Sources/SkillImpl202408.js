@@ -1,4 +1,18 @@
 // noinspection JSUnusedLocalSymbols
+// 比翼ルキナ
+{
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(Hero.DuoLucina,
+        new SkillEffectNode(
+            new GrantsAnotherActionToTargetOnMapNode(),
+            new ReEnablesCantoToTargetOnMapNode(),
+        )
+    );
+
+    CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(Hero.DuoLucina,
+        HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+    );
+}
+
 // 速さ守備の看破
 {
     let skillId = PassiveB.SpdDefDetect;

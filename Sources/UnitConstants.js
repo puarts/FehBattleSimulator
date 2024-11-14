@@ -69,6 +69,7 @@ const Hero = {
     HarmonizedNephenee: 1157,
     DuoFjorm: 1169,
     HarmonizedNagi: 1181,
+    DuoLucina: 1193,
 };
 
 const IvStateOptions = [

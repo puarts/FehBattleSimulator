@@ -6153,6 +6153,14 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
     }
 
+    grantsAnotherActionOnMap() {
+        this.isActionDone = false;
+    }
+
+    reEnablesCantoOnMap() {
+        this.isCantoActivatedInCurrentTurn = false;
+    }
+
     grantsAnotherActionWhenAssist(isAssist) {
         if (isAssist) {
             this.grantsAnotherActionOnAssist();

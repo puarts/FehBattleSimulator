@@ -97,6 +97,11 @@ const WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS = new SkillEffectHooks();
 const WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
 
 /**
+ * ボタンを押せるかどうか
+ * @type {MultiValueMap<number, BoolNode>} */
+const CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
+
+/**
  * 神速追撃
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();

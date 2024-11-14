@@ -3163,6 +3163,30 @@ class GrantsAnotherActionNode extends SkillEffectNode {
     }
 }
 
+class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.grantsAnotherActionOnMap();
+        env.debug(`${unit.nameWithGroup}は行動可能な状態になる`);
+    }
+}
+
+class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.debug(`${unit.nameWithGroup}は再移動を再発動可能になる`);
+        unit.reEnablesCantoOnMap();
+    }
+}
+
 class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

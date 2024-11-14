@@ -1123,6 +1123,14 @@ class BattleSimulatorBase {
             return false;
         }
 
+        let env = new EnumerationEnv(g_appData, duoUnit);
+        env.setName('比翼双界スキル使用可能判定').setLogLevel(getSkillLogLevel());
+        let cannotTrigger =
+            CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP
+                .getValues(duoUnit.heroIndex)
+                .some(node => !node.evaluate(env));
+        if (cannotTrigger) return false;
+
         switch (duoUnit.heroIndex) {
             case Hero.DuoSharena: {
                 let areThereAnyAllies =
