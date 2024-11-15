@@ -559,8 +559,8 @@ class DamageCalculatorWrapper {
         // });
 
         // 周囲の敵からのスキル効果
-        this.__applySkillEffectFromEnemyAllies(atkUnit, defUnit, calcPotentialDamage);
-        this.__applySkillEffectFromEnemyAllies(defUnit, atkUnit, calcPotentialDamage);
+        this.__applySkillEffectFromEnemyAllies(atkUnit, defUnit, calcPotentialDamage, damageType);
+        this.__applySkillEffectFromEnemyAllies(defUnit, atkUnit, calcPotentialDamage, damageType);
 
         // 暗闘の対象外になる周囲からのスキル効果
         // 主に戦闘外の効果。味方の存在などで発動するスキルも書いて良い（ただし大抵の場合他の場所で書ける）
@@ -10507,7 +10507,7 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applySkillEffectFromEnemyAllies(targetUnit, enemyUnit, calcPotentialDamage) {
+    __applySkillEffectFromEnemyAllies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         let disablesSkillsFromEnemyAlliesInCombat = false;
         if (enemyUnit) {
             if (enemyUnit.hasStatusEffect(StatusEffectType.Feud) ||
@@ -10525,6 +10525,12 @@ class DamageCalculatorWrapper {
             if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAlly)) {
                 continue;
             }
+
+            let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
+            env.setName('周囲の敵からのスキル効果').setLogLevel(getSkillLogLevel())
+                .setDamageType(damageType);
+            WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
+
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySkillEffectFromEnemyAlliesFuncMap);
                 func?.call(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
@@ -10606,10 +10612,9 @@ class DamageCalculatorWrapper {
         // 攻撃回数初期化
         let atkWeaponInfo = targetUnit.weaponInfo;
         if (atkWeaponInfo != null) {
-            targetUnit.battleContext.attackCount = atkWeaponInfo.attackCount;
-            targetUnit.battleContext.counterattackCount = atkWeaponInfo.counterattackCount;
-        }
-        else {
+            targetUnit.battleContext.updateAttackCount(atkWeaponInfo.attackCount);
+            targetUnit.battleContext.updateCounterattackCount(atkWeaponInfo.counterattackCount);
+        } else {
             targetUnit.battleContext.attackCount = 0;
             targetUnit.battleContext.counterattackCount = 0;
         }

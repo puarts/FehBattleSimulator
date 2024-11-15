@@ -1683,7 +1683,7 @@
                                 <label class="normal">紋章士: </label>
                                 <select2 :options="g_app.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
                                          class="hero"
-                                         @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur();g_app.vm.emblemHeroMergeChanged()">
+                                         @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur();g_app.vm.emblemHeroMergeChanged(true)">
                                 </select2>
                                 <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.emblemHeroIndex}})</span>
 
@@ -1963,12 +1963,23 @@
                         </tr>
                         <tr>
                             <td colspan="7">
-                                <input v-bind:id='"isActionDone"+value.id' type="checkbox" v-model="value.isActionDone" @change="g_app.vm.actionDoneChanged" />
+                                <input v-bind:id='"isActionDone"+value.id' type="checkbox" v-model="value.isActionDone"
+                                       @change="g_app.vm.actionDoneChanged"/>
                                 <label class="normal" v-bind:for='"isActionDone"+value.id'>行動済み</label>
-                                <input v-bind:id='"isEnemyActionTriggered"+value.id' type="checkbox" v-model="value.isEnemyActionTriggered" />
-                                <label class="normal" v-bind:for='"isEnemyActionTriggered"+value.id'>AIの行動制限解除</label>
+
+                                <input v-bind:id='"isCantoActivatedInCurrentTurn"+value.id' type="checkbox"
+                                       v-model="value.isCantoActivatedInCurrentTurn"/>
+                                <label class="normal"
+                                       v-bind:for='"isCantoActivatedInCurrentTurn"+value.id'>再移動発動済み</label>
+
+                                <input v-bind:id='"isEnemyActionTriggered"+value.id' type="checkbox"
+                                       v-model="value.isEnemyActionTriggered"/>
+                                <label class="normal"
+                                       v-bind:for='"isEnemyActionTriggered"+value.id'>AIの行動制限解除</label>
+
                                 <span v-if="isWeaponTypeBeast(value.weaponType)">
-                                    <input v-bind:id='"isTransformed"+value.id' type="checkbox" v-model="value.isTransformed" @change="g_app.vm.mergeChanged" />
+                                    <input v-bind:id='"isTransformed"+value.id' type="checkbox"
+                                           v-model="value.isTransformed" @change="g_app.vm.mergeChanged"/>
                                     <label class="normal" v-bind:for='"isTransformed"+value.id'>化身状態</label>
                                 </span>
                             </td>

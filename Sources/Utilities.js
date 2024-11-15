@@ -11,6 +11,10 @@ class ObjectUtil {
     static makeOptionFromObj(object) {
         return Object.entries(object).map(([text, value]) => ({value, text}));
     }
+
+    static getKeyName(object, value) {
+        return Object.keys(object).find(key => object[key].toString() === value);
+    }
 }
 
 /**
@@ -1479,6 +1483,15 @@ class IterUtil {
         for (const value of iterable) {
             if (func(value)) yield value;
         }
+    }
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @returns {Iterable<T>}
+     */
+    static unique(iterable) {
+        return new Set(Array.from(iterable));
     }
 }
 

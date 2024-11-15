@@ -235,6 +235,19 @@ class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode extends Fr
 const UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE =
     new UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode(1);
 
+class GrantsSpecialCooldownCountMinusNToTargetAfterFirstSpecialTriggerPerCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let count = this.evaluateChildren(env);
+        let result = unit.battleContext.specialCountReductionAfterFirstSpecial += count;
+        env.debug(`${unit.nameWithGroup}は各戦闘の最初の奥義発動後、奥義発動カウント-${count}: ${result}`);
+    }
+}
+
 const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
@@ -361,6 +374,14 @@ const UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMB
     }
 }
 
+const FOE_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_UNITS_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        let unit = env.foeDuringCombat;
+        unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+        env.debug(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
+    }
+}
+
 // noinspection JSUnusedGlobalSymbols
 /**
  * neutralizes effects that prevent unit's follow-up attacks during combat.
@@ -447,6 +468,25 @@ const FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillE
         unit.battleContext.canUnitDisableSkillsThatChangeAttackPriority = true;
     }
 }();
+
+class IncreasesSpdDiffNecessaryForTargetToMakeFollowUpNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
+        env.debug(`${unit.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+    }
+}
+
+class IncreasesSpdDiffNecessaryForFoeToMakeFollowUpNode extends IncreasesSpdDiffNecessaryForTargetToMakeFollowUpNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
 
 /**
  * increases the Spd difference necessary for foe to make a follow-up attack by N during combat
@@ -689,6 +729,9 @@ class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
     }
 }
 
+class ReducesDamageByAoeNode extends ReducesDamageBeforeCombatNode {
+}
+
 /**
  * Reduces damage from area-of-effect Specials (excluding Røkkr area-of-effect Specials) by 80%.
  */
@@ -815,6 +858,7 @@ class RestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
 }
 
 const RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(7);
+const RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(10);
 
 const WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -1157,7 +1201,33 @@ class WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode extends FromPosit
     }
 }
 
-class NeutralizeTargetsFoesReducesDamageByXPercentEffectsFromTargetFoesNonSpecialNode extends SkillEffectNode {
+class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.invalidatesDamageReductionExceptSpecial = true;
+        env.debug(`${unit.nameWithGroup}は相手の奥義以外のダメージ軽減を無効`);
+    }
+}
+
+const NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_FOES_NON_SPECIAL_NODE =
+    new class extends NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode {
+        static {
+            Object.assign(this.prototype, GetUnitDuringCombatMixin);
+        }
+    }();
+
+const NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_UNITS_NON_SPECIAL_NODE =
+    new class extends NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode {
+        static {
+            Object.assign(this.prototype, GetFoeDuringCombatMixin);
+        }
+    }();
+
+class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialAfterDefenderSpecialNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }

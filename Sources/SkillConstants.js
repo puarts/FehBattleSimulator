@@ -1948,6 +1948,11 @@ const Weapon = {
 
     // 神階フレスベルグ
     QuietingClaw: 2737, // 刃の葬り手の爪
+
+    ScrollOfCurses: 3055,
+    ScrollOfTeas: 3057, // 花と茶の忍法帳
+    BoldKusarigama: 3060, // 武と勇の鎖鎌
+    YlisseNinjaBow: 3063, // 聖王国の父娘の忍弓
 };
 
 const Support = {
@@ -1962,6 +1967,7 @@ const Support = {
     RepositionGait: 3045, // 引き戻し・歩法
 
     // 専用補助
+    FutureFocus: 3064, // 未来を叶える瞳
     ChangingWaters: 2857, // つたうみなすじ
     SpringsDream: 2806, // しろいはるのゆめ
     FutureVision: 433, // 未来を移す瞳
@@ -2176,6 +2182,7 @@ const Special = {
     CurvedShot: 2986, // 曲射
     SturdyBeast: 3027, // 堅固なる獣
     NimbleBeast: 3052, // 敏捷なる獣
+    Boulder: 3061, // 巨岩
 
     // 専用奥義
     RequiemPrayer: 3039, // 鎮魂の願い
@@ -2451,6 +2458,8 @@ const PassiveA = {
     Fortifications: 2990, // 野戦築城
 
     AtkSpdFortune: 3053, // 攻撃速さの共栄
+
+    SlySwiftSparrow: 3056, // 鬼神飛燕の掩撃
 
     // 専用A
     ObsidianTactics: 2946, // 黒曜石の教え
@@ -2934,6 +2943,10 @@ const PassiveB = {
 
     SpdResDiscord: 3040, // 速さ魔防の不和
 
+    ADSpikedWall: 3062, // 攻撃守備の刃壁
+
+    SpdDefDetect: 3065, // 速さ守備の看破
+
     // 専用B
     VedfolnirsWing: 3046, // 始祖の炎翼
     ShadowSlide: 2996, // 無間の瞬動
@@ -3018,6 +3031,7 @@ const PassiveB = {
     SpdResTempo3: 2204, // 速さ魔坊の拍節3
     AtkResTempo4: 2634, // 攻撃魔防の拍節4
     SpdDefTempo4: 2661, // 速さ守備の拍節4
+    SpdResTempo4: 3058, // 速さ魔防の拍節4
 
     // 防壁
     AtkSpdBulwark3: 2414, // 攻撃速さの防壁3

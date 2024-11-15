@@ -2246,13 +2246,12 @@
                 let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
                 let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
                 this.writeDebugLog(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
-                if (effects.length >= 1) {
-                    this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[0])}を解除予約(1)`);
-                    unit.reservedStatusEffectSetToNeutralize.add(effects[0]);
-                }
-                if (effects.length >= 2) {
-                    this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[1])}を解除予約(2)`);
-                    unit.reservedStatusEffectSetToNeutralize.add(effects[1]);
+                let n = 2;
+                for (let i = 0; i < n; i++) {
+                    if (effects.length >= i + 1) {
+                        this.writeDebugLog(`${unit.nameWithGroup}の${getStatusEffectName(effects[0])}を解除予約(${i + 1})`);
+                        unit.reservedStatusEffectSetToNeutralize.add(effects[i]);
+                    }
                 }
             }
         }
@@ -12251,6 +12250,8 @@
     setTempo4Skill(PassiveB.AtkResTempo4, unit => unit.addAtkResSpurs(-4));
     // 速さ守備の拍節4
     setTempo4Skill(PassiveB.SpdDefTempo4, unit => unit.addSpdDefSpurs(-4));
+    // 速さ魔防の拍節4
+    setTempo4Skill(PassiveB.SpdResTempo4, unit => unit.addSpdResSpurs(-4));
 }
 
 // オヴスキュリテ

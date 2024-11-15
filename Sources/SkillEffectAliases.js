@@ -1,3 +1,14 @@
+const PERCENTAGE_NODE = (percentage, num) => MULT_TRUNC_NODE(percentage / 100.0, num);
+
+const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpaces(5);
+const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
+    new TargetAndTargetsAlliesWithinNSpacesNode(2, TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE);
+
+const CLOSEST_FOES_WITHIN5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN2_SPACES_OF_THOSE_FOES_NODE =
+    new UnitsOfBothAssistTargetingAndAssistTargetNode(
+        TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE
+    );
+
 /**
  * 生の息吹4のようなHP回復効果。
  * @param {number|NumberNode} hpPercentage
@@ -245,9 +256,14 @@ function enablesCantoRemPlus(skillId, n) {
 /**
  * Enables【Canto (Dist. +1; Max ４)】.
  */
-function enablesCantDist(skillId, n, max) {
+function enablesCantoDist(skillId, n, max) {
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoDistNode(n, max));
+}
+
+function enablesCantoN(skillId, n) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(n));
 }
 
 const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percentage, statNode) =>
@@ -278,6 +294,17 @@ const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = (...nodes) =>
 
 const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = (...nodes) =>
     IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE, ...nodes);
+
+/**
+ * Unit can move to any space within 2 spaces of an ally within 2 spaces of unit.
+ */
+function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, n, m) {
+    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
+        new ForEachAllyForSpacesNode(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
+            new SpacesWithinNSpacesNode(n),
+        ),
+    ));
+}
 
 /**
  * Allies within n spaces of unit can move to any space within m spaces of unit.
@@ -354,10 +381,10 @@ function setPathfinder(skillId) {
 const IS_TARGET_SKILL_OWNER_NODE = new IsTargetSkillOwnerNode();
 const UNITS_ON_MAP_NODE = new UnitsOnMapNode();
 const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
-const FILTER_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
+const FILTER_MAP_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
 const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);
 const SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
-    FILTER_UNITS_NODE(
+    FILTER_MAP_UNITS_NODE(
         OR_NODE(IS_TARGET_SKILL_OWNER_NODE,
             AND_NODE(
                 ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE,
@@ -378,6 +405,21 @@ const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE
 
 const IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE =
     OR_NODE(new IsBonusActiveOnTargetNode(), new IsPenaltyActiveOnTargetNode());
+
+/**
+ * @param {number|NumberNode} n
+ * @returns {UnitsNode}
+ * @constructor
+ */
+const ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET = (n) =>
+    FILTER_MAP_UNITS_NODE(
+        AND_NODE(ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE,
+            OR_NODE(
+                new IsTargetWithinNSpacesOfAssistTargetingNode(n, TRUE_NODE),
+                new IsTargetWithinNSpacesOfAssistTargetNode(n, TRUE_NODE)
+            ),
+        )
+    );
 
 /**
  * @param {number|string} skillId

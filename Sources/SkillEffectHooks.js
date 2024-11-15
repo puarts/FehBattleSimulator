@@ -30,6 +30,11 @@ const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 const AT_START_OF_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
 
 /**
+ * 敵軍のターン開始時スキル発動後
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
+
+/**
  * 範囲奥義判定前(主に範囲奥義を発動するかどうかの判定など)
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS = new SkillEffectHooks();
@@ -75,15 +80,26 @@ const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS = new SkillEffectH
  * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
 const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
 
+// TODO: 周囲に対する紋章・スキル効果と命名規則が同じになるようにする
 /**
  * 周囲の敵から受ける紋章効果
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
 const WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS = new SkillEffectHooks();
 
 /**
+ * 周囲の敵から受けるスキル効果
+ * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
+const WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS = new SkillEffectHooks();
+
+/**
  * ボタンを押したときのスキル効果
  * @type {MultiValueMap<number, SkillEffectNode>} */
 const WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
+
+/**
+ * ボタンを押せるかどうか
+ * @type {MultiValueMap<number, BoolNode>} */
+const CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
 
 /**
  * 神速追撃
@@ -229,7 +245,7 @@ const ALLY_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 
 /**
  * unit can move through foes' spaces.
- * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
 const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
 
 /**

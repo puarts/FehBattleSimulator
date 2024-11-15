@@ -484,7 +484,7 @@ class BattleSimulatorBase {
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
-            emblemHeroMergeChanged: function () {
+            emblemHeroMergeChanged: function (resetsMerge = false) {
                 if (g_app == null) {
                     return;
                 }
@@ -493,6 +493,9 @@ class BattleSimulatorBase {
                     return;
                 }
                 let currentUnit = self.__getCurrentUnit();
+                if (resetsMerge === true) {
+                    currentUnit.emblemHeroMerge = 0;
+                }
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
                 appData.__showStatusToAttackerInfo();
@@ -1119,6 +1122,14 @@ class BattleSimulatorBase {
         if (duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn) {
             return false;
         }
+
+        let env = new EnumerationEnv(g_appData, duoUnit);
+        env.setName('比翼双界スキル使用可能判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        let cannotTrigger =
+            CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP
+                .getValues(duoUnit.heroIndex)
+                .some(node => !node.evaluate(env));
+        if (cannotTrigger) return false;
 
         switch (duoUnit.heroIndex) {
             case Hero.DuoSharena: {
@@ -9119,8 +9130,8 @@ class BattleSimulatorBase {
             this.__applyMovementAssistSkill(targetUnit, unit);
 
             let env;
-            env = new BattleSimulatorBaseEnv(this, unit);
 
+            env = new BattleSimulatorBaseEnv(this, unit);
             env.setName('移動補助を使用した時').setLogLevel(getSkillLogLevel()).setAssistUnits(unit, targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(unit, env);
 
@@ -9695,6 +9706,9 @@ class BattleSimulatorBase {
         let func = getSkillFunc(skillId, getTargetUnitTileAfterMoveAssistFuncMap);
         /** @type {MovementAssistResult} */
         let result = func?.call(this, unit, targetUnit, assistTile) ?? null;
+        if (SWAP_ASSIST_SET.has(skillId)) {
+            result = this.__findTileAfterSwap(unit, targetUnit, assistTile);
+        }
         switch (skillId) {
             case Support.RescuePlus:
             case Support.Rescue:
@@ -9728,11 +9742,10 @@ class BattleSimulatorBase {
             case Support.Pivot:
                 result = this.__findTileAfterPivot(unit, targetUnit, assistTile);
                 break;
-            default:
-                this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
-                return null;
         }
-        return result;
+        if (result) return result;
+        this.writeErrorLine("未実装の補助: " + unit.supportInfo.name);
+        return null;
     }
 
     /**
@@ -10488,6 +10501,9 @@ class BattleSimulatorBase {
         let skillId = assistUnit.support;
         let func = getSkillFunc(skillId, findTileAfterMovementAssistFuncMap);
         func?.call(this, assistUnit, assistTargetUnit, tile);
+        if (SWAP_ASSIST_SET.has(skillId)) {
+            return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
+        }
 
         switch (assistUnit.support) {
             case Support.FateUnchanged:

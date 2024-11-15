@@ -1736,6 +1736,11 @@ class DamageCalculator {
      * @param {DamageCalcContext} context
      */
     applySkillEffectAfterSpecialActivated(targetUnit, enemyUnit, context) {
+        if (targetUnit.battleContext.specialCountReductionAfterFirstSpecial > 0 &&
+            targetUnit.battleContext.specialActivatedCount === 1) {
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の奥義発動直後の奥義カウントが${targetUnit.tmpSpecialCount}から1減少`);
+            this.__reduceSpecialCount(targetUnit, targetUnit.battleContext.specialCountReductionAfterFirstSpecial);
+        }
         for (let skillId of targetUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectAfterSpecialActivatedFuncMap);
             func?.call(this, targetUnit, enemyUnit, context);

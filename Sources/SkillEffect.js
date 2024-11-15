@@ -163,6 +163,65 @@ class TargetsAlliesOnMapNode extends UnitsNode {
     }
 }
 
+class TargetsAlliesWithinNSpacesNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {BoolNode} includesTarget
+     */
+    constructor(n, includesTarget = FALSE_NODE) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._includesTargetNode = includesTarget;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let spaces = this._nNode.evaluate(env);
+        let withTargetUnit = this._includesTargetNode.evaluate(env);
+        return env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, spaces, withTargetUnit);
+    }
+}
+
+class TargetsClosestFoesNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+        return IterUtil.minElements(enemies, u => u.distance(unit));
+    }
+}
+
+class TargetsClosestFoesWithinNSpaces extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+        let n = this._nNode.evaluate(env);
+        return IterUtil.filter(
+            IterUtil.minElements(enemies, u => u.distance(unit)),
+            u => u.distance(unit) <= n
+        );
+    }
+}
+
 class MaxUnitsNode extends UnitsNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -249,6 +308,27 @@ class CountUnitsNode extends PositiveNumberNode {
 }
 
 /**
+ * ターゲットを補助ユニット、補助を受けるユニットにそれぞれ設定して引数のUnitsNodeを評価する
+ */
+class UnitsOfBothAssistTargetingAndAssistTargetNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(unitsNode) {
+        super();
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let targetAndAlliesNode = this._unitsNode;
+        return IterUtil.unique(IterUtil.concat(
+            targetAndAlliesNode.evaluate(env.copy().setTarget(env.assistTargeting)),
+            targetAndAlliesNode.evaluate(env.copy().setTarget(env.assistTarget)),
+        ));
+    }
+}
+
+/**
  * @abstract
  */
 class SpacesNode extends SkillEffectNode {
@@ -319,6 +399,12 @@ class IsThereUnitOnMapNode extends BoolNode {
 const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode {
     evaluate(env) {
         return env.target.groupId === env.skillOwner.groupId;
+    }
+}();
+
+const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode {
+    evaluate(env) {
+        return env.target.groupId === env.assistTargeting.groupId;
     }
 }();
 
@@ -1475,6 +1561,22 @@ class SetBoolToEachStatusNode extends SkillEffectNode {
 /**
  * @abstract
  */
+class FromBoolStatsNode extends SkillEffectNode {
+    /**
+     * @param {boolean|BoolNode} atk
+     * @param {boolean|BoolNode} spd
+     * @param {boolean|BoolNode} def
+     * @param {boolean|BoolNode} res
+     */
+    constructor(atk, spd, def, res) {
+        super(BoolNode.makeBoolNodeFrom(atk), BoolNode.makeBoolNodeFrom(spd),
+            BoolNode.makeBoolNodeFrom(def), BoolNode.makeBoolNodeFrom(res));
+    }
+}
+
+/**
+ * @abstract
+ */
 class ApplyingNumberToEachStatNode extends FromNumbersNode {
     /**
      * @param {number|NumberNode} atk
@@ -1970,6 +2072,19 @@ const NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE = new class extends SkillEffectNode {
     }
 }();
 
+class RestoreTargetsHpOnMapNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.reserveHeal(n);
+        env.debug(`${unit.nameWithGroup}はHPが${n}回復予約`);
+    }
+}
+
 class RestoreTargetHpNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2424,6 +2539,34 @@ class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
 // noinspection JSUnusedGlobalSymbols
 const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
+
+class IsTargetWithinNSpacesOfAssistTargetNode extends IsInRangeNNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let spaces = this._nNode.evaluate(env);
+        let result = unit.distance(env.assistTarget) <= spaces;
+        env.debug(`${env.assistTarget.nameWithGroup}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
+        return result;
+    }
+}
+
+class IsTargetWithinNSpacesOfAssistTargetingNode extends IsInRangeNNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let spaces = this._nNode.evaluate(env);
+        let result = unit.distance(env.assistTargeting) <= spaces;
+        env.debug(`${env.assistTargeting.nameWithGroup}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
+        return result;
+    }
+}
 
 class AreTargetAndSkillOwnerPartnersNode extends BoolNode {
     static {
@@ -3020,6 +3163,30 @@ class GrantsAnotherActionNode extends SkillEffectNode {
     }
 }
 
+class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.grantsAnotherActionOnMap();
+        env.debug(`${unit.nameWithGroup}は行動可能な状態になる`);
+    }
+}
+
+class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.debug(`${unit.nameWithGroup}は再移動を再発動可能になる`);
+        unit.reEnablesCantoOnMap();
+    }
+}
+
 class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -3312,6 +3479,76 @@ class TargetsBonusNode extends NumberNode {
 class FoesBonusNode extends TargetsBonusNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+/**
+ * neutralizes stat penalties
+ */
+class NeutralizesTargetsStatPenaltiesNode extends FromBoolStatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.reservedDebuffFlagsToNeutralize = this.evaluateChildren(env).slice(0, 4);
+        let result = unit.reservedDebuffFlagsToNeutralize;
+        env.debug(`${unit.nameWithGroup}は弱化を解除予約: ${result}`);
+    }
+}
+
+const NEUTRALIZES_TARGETS_ALL_STAT_PENALTIES_NODE =
+    new NeutralizesTargetsStatPenaltiesNode(true, true, true, true);
+
+/**
+ * neutralizes n 【Penalty】 effects
+ * (does not apply to Penalty effects that are applied at the same time;
+ * neutralizes the first applicable Penalty effects on unit's list of active effects).
+ */
+class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
+        env.debug(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
+        let n = this.evaluateChildren(env);
+        for (let i = 0; i < n; i++) {
+            if (effects.length >= i + 1) {
+                env.debug(`${unit.nameWithGroup}の${getStatusEffectName(effects[i])}を解除予約(${i + 1})`);
+                unit.reservedStatusEffectSetToNeutralize.add(effects[i]);
+            }
+        }
+    }
+}
+
+class TargetsOncePerTurnAssistEffectNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {string} id
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(id, ...nodes) {
+        super(...nodes);
+        this._id = id;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        if (!unit.oneTimeActionPerTurnActivatedSet.has(this._id)) {
+            unit.oneTimeActionPerTurnActivatedSet.add(this._id);
+            env.debug(`${unit.nameWithGroup}は1ターン1回の補助効果（${this._id}）をこのターン初めて発動`);
+            return this.evaluateChildren(env);
+        } else {
+            env.debug(`${unit.nameWithGroup}は1ターン1回の補助効果（${this._id}）を発動済み`);
+        }
     }
 }
 
