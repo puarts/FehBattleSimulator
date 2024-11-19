@@ -22,6 +22,7 @@
             // inflicts Atk/Spd-7,【Guard】,
             new InflictsStatsMinusAtStartOfTurnNode(7, 7, 0, 0),
             // and 【Exposure】on those foes through their next actions.
+            new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Guard),
             new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Exposure),
         ),
     );
