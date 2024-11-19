@@ -4376,6 +4376,8 @@
     }
     // 攻撃守備の魅了3
     setSkill(PassiveB.ADCantrip3, e => e.applyDebuffs(-7, 0, -7, 0));
+    // 攻撃魔防の魅了3
+    setSkill(PassiveB.ARCantrip3, e => e.applyDebuffs(-7, 0, 0, -7));
 }
 
 // つたうみなすじ
