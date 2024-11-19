@@ -163,6 +163,21 @@ class TargetsAlliesOnMapNode extends UnitsNode {
     }
 }
 
+class TargetsFoesOnMapNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor() {
+        super();
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        return env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+    }
+}
+
 class TargetsAlliesWithinNSpacesNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

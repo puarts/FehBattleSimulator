@@ -1,4 +1,49 @@
 // noinspection JSUnusedLocalSymbols
+// エトルリアの光
+{
+    let skillId = Weapon.LightOfEtruria;
+    // Grants Res+3.
+
+    let nodeFunc = () => new SkillEffectNode(
+        // At start of player phase or enemy phase,
+        // to unit and allies within 2 spaces of unit for 1 turn,
+        new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(
+            // grants Spd/Res+6 and【Hexblade】
+            new GrantsStatsPlusAtStartOfTurnNode(0, 6, 0, 6),
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Hexblade),
+        ),
+        // and also,
+        new ForEachUnitNode(new TargetsFoesOnMapNode(),
+            // if any foes within 3 rows or 3 columns centered on unit have Res < unit's Res+5,
+            AND_NODE(
+                IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+                LT_NODE(TARGETS_EVAL_RES_ON_MAP, ADD_NODE(SKILL_OWNERS_EVAL_RES_ON_MAP, 5)),
+            ),
+            // inflicts Atk/Spd-7,【Guard】,
+            new InflictsStatsMinusAtStartOfTurnNode(7, 7, 0, 0),
+            // and 【Exposure】on those foes through their next actions.
+            new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Exposure),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat,
+        IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+            new NumThatIsNode(
+                // inflicts penalty on foe's Atk/Spd during combat = 6 + 20% of unit's Res at start of combat,
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(6, PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE)),
+            ),
+            // and also,
+            // if unit's HP > 1 and foe would reduce unit's HP to 0,
+            // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
+            new CanTargetActivateNonSpecialMiracleNode(100),
+        )
+    ));
+}
+
 // 比翼ルキナ
 {
     WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(Hero.DuoLucina,
