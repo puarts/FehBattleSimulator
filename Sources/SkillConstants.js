@@ -1949,10 +1949,14 @@ const Weapon = {
     // 神階フレスベルグ
     QuietingClaw: 2737, // 刃の葬り手の爪
 
+    // 忍者
     ScrollOfCurses: 3055,
     ScrollOfTeas: 3057, // 花と茶の忍法帳
     BoldKusarigama: 3060, // 武と勇の鎖鎌
     YlisseNinjaBow: 3063, // 聖王国の父娘の忍弓
+
+    // 魔器シアチ＆魔器リリーナ
+    LightOfEtruria: 3069, // エトルリアの光
 };
 
 const Support = {
