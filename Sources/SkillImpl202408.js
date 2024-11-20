@@ -1,4 +1,61 @@
 // noinspection JSUnusedLocalSymbols
+// 魔器・業火の理書
+{
+    let skillId = Weapon.ArcaneTruthfire;
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants Atk+6 and the following status to unit for 1 turn: "Unit can move to a space adjacent to any ally within 2 spaces."
+            new GrantsStatsPlusAtStartOfTurnNode(6, 0, 0, 0),
+            new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.AirOrders),
+        ),
+    ));
+
+    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat with HP ≥ 25% and unit has an area-of-effect Special equipped,
+        IF_NODE(AND_NODE(
+                DOES_UNIT_INITIATE_COMBAT_NODE,
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                new HasTargetAoeSpecialNode()),
+            // grants Special cooldown count-1 to unit before Special triggers before combat.
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(1),
+        )
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res = 25% of foe's Atk at start of combat - 4 (min 5, max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMinMaxNode(
+                    SUB_NODE(PERCENTAGE_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE), -4),
+                    5,
+                    14,
+                )
+            ),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // deals damage = 15% of unit's Atk (including when dealing damage with an area-of-effect Special),
+                new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
+            ),
+            // and reduces damage from foe's first attack by 7 during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+            // and also if unit's attack can trigger unit's Special (excluding area-of-effect Specials),
+            IF_NODE(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                // grants Special cooldown count-1 to unit before unit's first attack during combat.
+                new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+            ),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // deals damage = 15% of unit's Atk (including when dealing damage with an area-of-effect Special),
+        new UnitDealsDamageBeforeCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_AT_START_OF_COMBAT_NODE)),
+    ));
+}
+
 // 強化増幅の剣+
 {
     let skillId = Weapon.DoublerSwordPlus;
@@ -1763,7 +1820,7 @@
             IF_NODE(new HasTargetAoeSpecialNode(),
                 new NumThatIsNode(
                     // grants Special cooldown count-X to unit before Special triggers before combat (excluding Rokkr area-of-effect Specials);
-                    new GrantsSpecialCooldownCountMinusOnTargetNode(READ_NUM_NODE),
+                    new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(READ_NUM_NODE),
                     // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
                     COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
                 ),

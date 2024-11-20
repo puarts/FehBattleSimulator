@@ -3146,6 +3146,9 @@ class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpeci
 class GrantsSpecialCooldownCountMinusOnTargetNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
+class GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode extends GrantsSpecialCooldownCountMinusOnTargetNode {
+}
+
 /**
  * inflicts Special cooldown count+1
  */

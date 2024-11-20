@@ -1958,6 +1958,7 @@ const Weapon = {
     // 魔器シアチ＆魔器リリーナ
     LightOfEtruria: 3069, // エトルリアの光
     DoublerSwordPlus: 3071, // 強化増幅の剣+
+    ArcaneTruthfire: 3072, // 魔器・業火の理書
 };
 
 const Support = {
