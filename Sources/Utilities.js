@@ -1643,19 +1643,31 @@ class ArrayUtil {
     }
 
     /**
-     * @param {number[]} array1
-     * @param {number[]} array2
+     * @param {...Array<number>} arrays
+     * @returns {number[]}
      */
-    static min(array1, array2) {
-        return array1.map((value, index) => Math.min(value, array2[index]));
+    static min(...arrays) {
+        // 配列の最大長を取得
+        const maxLength = Math.max(...arrays.map(arr => arr.length));
+
+        // 各インデックスの最小値を求める
+        return Array.from({length: maxLength}, (_, i) => {
+            return Math.min(...arrays.map(arr => arr[i] ?? Infinity));
+        });
     }
 
     /**
-     * @param {number[]} array1
-     * @param {number[]} array2
+     * @param {...Array<number>} arrays
+     * @returns {number[]}
      */
-    static max(array1, array2) {
-        return array1.map((value, index) => Math.max(value, array2[index]));
+    static max(...arrays) {
+        // 配列の最大長を取得
+        const maxLength = Math.max(...arrays.map(arr => arr.length));
+
+        // 各インデックスの最大値を求める
+        return Array.from({length: maxLength}, (_, i) => {
+            return Math.max(...arrays.map(arr => arr[i] ?? -Infinity));
+        });
     }
 
     /**

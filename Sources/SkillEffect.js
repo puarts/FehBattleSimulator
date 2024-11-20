@@ -118,15 +118,19 @@ const FOE_NODE = new class extends TargetNode {
  */
 class UnitsNode extends SkillEffectNode {
     /**
-     * @param {UnitNode} unitNode
+     * @param {UnitNode|UnitsNode} unitNode
      * @returns {UnitsNode}
      */
     static makeFromUnit(unitNode) {
-        return new class extends UnitsNode {
-            evaluate(env) {
-                return [unitNode.evaluate(env)];
-            }
-        };
+        if (unitNode instanceof UnitNode) {
+            return new class extends UnitsNode {
+                evaluate(env) {
+                    return [unitNode.evaluate(env)];
+                }
+            };
+        } else {
+            return unitNode;
+        }
     }
 
     /**
@@ -1035,12 +1039,12 @@ class ApplyingNumberNode extends SkillEffectNode {
 
 class FromPositiveStatsNode extends FromPositiveNumbersNode {
     /**
-     * @param {number|NumberNode} atk
+     * @param {number|NumberNode|NumbersNode} atk
      * @param {number|NumberNode} spd
      * @param {number|NumberNode} def
      * @param {number|NumberNode} res
      */
-    constructor(atk, spd, def, res) {
+    constructor(atk, spd = null, def = null, res = null) {
         super(atk, spd, def, res);
     }
 }
@@ -1105,7 +1109,7 @@ const GRANTS_ATK_SPD_PLUS_7_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUn
 /**
  * @abstract
  */
-class StatsNode extends SkillEffectNode {
+class StatsNode extends NumbersNode {
     /**
      * @param {number|NumberNode} atk
      * @param {number|NumberNode} spd
@@ -1125,13 +1129,34 @@ class StatsNode extends SkillEffectNode {
      * @return {[number, number, number, number]}
      */
     evaluate(env) {
-        let result = super.evaluate(env);
+        let result = this.evaluateChildren(env);
         env.trace(`各要素を評価: [${result}]`)
         return result;
     }
 }
 
 const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
+
+class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {StatsNode} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let evaluated = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Units: ${units.map(u => u.nameWithGroup)} => values array: [${evaluated.map(a => `[${a}]`)}]`);
+        let result = ArrayUtil.max(...evaluated);
+        env.trace(`Highest values: [${result}]`);
+        return result;
+    }
+}
 
 class GrantsGreatTalentsPlusToTargetNode extends SkillEffectNode {
     /**
@@ -1140,14 +1165,6 @@ class GrantsGreatTalentsPlusToTargetNode extends SkillEffectNode {
      */
     constructor(statsNode, maxStatsNode) {
         super(statsNode, maxStatsNode);
-    }
-
-    /**
-     * @param {NodeEnv} env
-     * @returns {[[number, number, number, number], [number, number, number, number]]}
-     */
-    evaluateChildren(env) {
-        return super.evaluateChildren(env);
     }
 
     evaluate(env) {
@@ -2198,12 +2215,12 @@ class TargetsFoesOnTheEnemyTeamWithLowestStatNode extends UnitsNode {
 class TargetAndTargetsAlliesWithinNSpacesNode extends UnitsNode {
     /**
      * @param {number|NumberNode} n
-     * @param {UnitsNode} unitsNode
+     * @param {UnitNode|UnitsNode} unitsNode
      */
     constructor(n, unitsNode) {
         super();
         this._nNode = NumberNode.makeNumberNodeFrom(n);
-        this._unitsNode = unitsNode;
+        this._unitsNode = UnitsNode.makeFromUnit(unitsNode);
     }
 
     evaluate(env) {
@@ -3445,6 +3462,20 @@ class IsCantoSingDanceActivatedByTargetNode extends BoolNode {
         let unit = this.getUnit(env);
         let result = unit.isOneTimeActionActivatedForCantoRefresh;
         env.debug(`${unit.nameWithGroup}はこのターン再移動【歌う・踊る】を発動したか: ${result}`);
+        return result;
+    }
+}
+
+class TargetsBonusesNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit === env.unitDuringCombat ?
+            unit.getBuffsInCombat(env.getFoeDuringCombatOf(unit)) : unit.getBuffsInPreCombat();
+        env.debug(`${unit.nameWithGroup}の強化: ${result}`);
         return result;
     }
 }
