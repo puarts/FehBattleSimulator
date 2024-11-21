@@ -51,8 +51,10 @@
     ));
 
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // deals damage = 15% of unit's Atk (including when dealing damage with an area-of-effect Special),
-        new UnitDealsDamageBeforeCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_AT_START_OF_COMBAT_NODE)),
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // deals damage = 15% of unit's Atk (including when dealing damage with an area-of-effect Special),
+            new UnitDealsDamageBeforeCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_AT_START_OF_COMBAT_NODE)),
+        ),
     ));
 }
 
