@@ -3421,6 +3421,7 @@ const PassiveC = {
 
     ShadowShift4: 3020, // 影助・引き戻し4
 
+    ADTwinNSave: 3077, // 鎧の護り手・近・双
     DRTwinNSave: 3032, // 盾の護り手・近・双
     ARTwinFSave: 3034, // 兜の護り手・遠・双
 

@@ -1478,8 +1478,11 @@
     ));
 }
 
-// 盾の護り手・近・双
+// 護り手・近・双
 {
+    // 鎧の護り手・近・双
+    setTwinSave(PassiveC.ADTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
+    // 盾の護り手・近・双
     setTwinSave(PassiveC.DRTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4));
 }
 
