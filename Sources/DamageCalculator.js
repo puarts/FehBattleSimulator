@@ -1031,6 +1031,7 @@ class DamageCalculator {
         }
 
         atkUnit.battleContext.isSpecialActivated = true;
+        atkUnit.battleContext.isPreCombatSpecialActivated = true;
         let totalDamageWithOverkill = this.calcPrecombatSpecialDamage(atkUnit, defUnit);
         let totalDamage = Math.min(totalDamageWithOverkill, defUnit.restHp - 1);
 

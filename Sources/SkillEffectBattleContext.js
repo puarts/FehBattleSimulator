@@ -281,6 +281,19 @@ const IS_FOES_SPECIAL_TRIGGERED = new class extends IsTargetsSpecialTriggeredNod
     }
 }();
 
+class IsTargetsSpecialTriggeredBeforeCombatNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isPreCombatSpecialActivated;
+        env.debug(`${unit.nameWithGroup}は範囲奥義を発動済み: ${result}`);
+        return result;
+    }
+}
+
 const UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;

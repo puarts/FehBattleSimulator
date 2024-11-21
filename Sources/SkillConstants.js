@@ -2191,6 +2191,7 @@ const Special = {
     Boulder: 3061, // 巨岩
 
     // 専用奥義
+    GiftForMagic: 3073, // 天与の魔才
     RequiemPrayer: 3039, // 鎮魂の願い
     Override: 3024, // オーバードライヴ
     SeidrBurst: 3019, // 連魔弾

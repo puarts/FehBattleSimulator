@@ -1,4 +1,36 @@
 // noinspection JSUnusedLocalSymbols
+// 天与の魔才
+{
+    let skillId = Special.GiftForMagic;
+    // Before combat this unit initiates, foes in an area near target take damage equal to (unit's Atk minus foe's Def or Res).
+    RANGED_ATTACK_SPECIAL_SET.add(skillId);
+    RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.set(skillId, 1);
+
+    // 十字範囲
+    AOE_SPECIAL_SPACES_HOOKS.addSkill(skillId, () =>
+        new CrossSpacesNode(),
+    );
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Disables unit's and foe's skills that change attack priority.
+        UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+        // If unit's Special is triggered before combat,
+        IF_NODE(new IsTargetsSpecialTriggeredBeforeCombatNode(),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        )
+    ));
+
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's or foe's Special is ready or triggered before or during this combat,
+        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
 // 魔器・業火の理書
 {
     let skillId = Weapon.ArcaneTruthfire;

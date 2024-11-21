@@ -2966,6 +2966,14 @@ class SpacesWithinNSpacesNode extends SpacesNode {
     }
 }
 
+class CrossSpacesNode extends SpacesNode {
+    evaluate(env) {
+        let targetTile = env.tile;
+        let isInRange = tile => tile.calculateDistance(targetTile) <= 1;
+        return env.battleMap.enumerateTiles(isInRange);
+    }
+}
+
 class OverrideAoeSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
