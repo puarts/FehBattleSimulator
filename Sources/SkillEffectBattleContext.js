@@ -1506,3 +1506,28 @@ class GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisad
 
 const GRANTS_TRIANGLE_ADVANTAGE_AGAINST_COLORLESS_TARGETS_FOES_AND_INFLICTS_TRIANGLE_DISADVANTAGE_ON_COLORLESS_TARGETS_FOES_DURING_COMBAT_NODE
     = new GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisadvantageOnColorlessTargetsFoesDuringCombatNode();
+
+class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesStatusEffectThatTakeEffectOnTargetAtThatTimeNode extends FromNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let e = this.evaluateChildren(env);
+        unit.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(e);
+        env.debug(`${unit.nameWithGroup}は付与される${getStatusEffectName(e)}を無効化`);
+    }
+}
+
+class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTargetAtThatTimeNode extends FromBoolStatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn = this.evaluateChildren(env);
+        env.debug(`${unit.nameWithGroup}は付与される弱化を無効化: [${result}]`);
+    }
+}

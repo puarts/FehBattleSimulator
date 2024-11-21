@@ -1604,6 +1604,14 @@ class FromBoolStatsNode extends SkillEffectNode {
         super(BoolNode.makeBoolNodeFrom(atk), BoolNode.makeBoolNodeFrom(spd),
             BoolNode.makeBoolNodeFrom(def), BoolNode.makeBoolNodeFrom(res));
     }
+
+    /**
+     * @param env
+     * @returns {[boolean, boolean, boolean, boolean]}
+     */
+    evaluateChildren(env) {
+        return super.evaluateChildren(env);
+    }
 }
 
 /**

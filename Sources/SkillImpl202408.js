@@ -1,4 +1,47 @@
 // noinspection JSUnusedLocalSymbols
+// 魔器・ヨトゥンの斧
+{
+    let skillId = Weapon.ArcaneGiantAxe;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // At start of player phase or enemy phase, neutralizes【Panic】and penalties on unit's Atk/Def that take effect on unit at that time.
+    let nodeFunc = () => new SkillEffectNode(
+        new AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesStatusEffectThatTakeEffectOnTargetAtThatTimeNode(StatusEffectType.Panic),
+        new AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTargetAtThatTimeNode(true, false, true, false),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or if unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants bonus to unit's Atk/Spd/Def/Res = 25% of foe's Atk at start of combat - 4 (max 14; min 5),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMinMaxNode(
+                    SUB_NODE(PERCENTAGE_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE), -4),
+                    5,
+                    14,
+                )
+            ),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // deals damage = 15% of unit's Atk (including when dealing damage with an area-of-effect Special),
+                new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
+                // reduces damage from foe's attacks by 15% of unit's Atk (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+                new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
+            ),
+            // and grants Special cooldown count-1 to unit before unit's first attack during combat.
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            new UnitDealsDamageBeforeCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_AT_START_OF_COMBAT_NODE)),
+            new ReducesDamageBeforeCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_AT_START_OF_COMBAT_NODE)),
+        ),
+    ));
+}
+
 // 天与の魔才
 {
     let skillId = Special.GiftForMagic;
