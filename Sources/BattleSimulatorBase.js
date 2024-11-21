@@ -6780,7 +6780,7 @@ class BattleSimulatorBase {
         for (let unit of targetUnits) {
             let env = new BattleSimulatorBaseEnv(this, unit);
             env.setName('AIの天脈処理').setLogLevel(getSkillLogLevel());
-            if (HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS.evaluateWithUnit(unit, env) && !unit.isActionDone) {
+            if (HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS.evaluateSomeWithUnit(unit, env) && !unit.isActionDone) {
                 env.debug(`${unit.nameWithGroup}は行動を自ら終了`);
                 unit.endAction();
                 unit.applyEndActionSkills();
