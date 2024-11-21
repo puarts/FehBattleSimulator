@@ -90,6 +90,19 @@ class TargetsHpAtStartOfTurnNode extends PositiveNumberNode {
     }
 }
 
+class TargetsHpOnMapNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hp = unit.hp;
+        env.debug(`${unit.nameWithGroup}のマップ上でのHP: ${hp}`);
+        return hp;
+    }
+}
+
 class FoesHpAtStartOfTurnNode extends TargetsHpAtStartOfTurnNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);

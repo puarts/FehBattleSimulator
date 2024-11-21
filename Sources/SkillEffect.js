@@ -421,6 +421,12 @@ const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode
     }
 }();
 
+const ARE_TARGET_AND_SKILL_OWNER_IN_DIFFERENT_GROUP_NODE = new class extends BoolNode {
+    evaluate(env) {
+        return env.target.groupId !== env.skillOwner.groupId;
+    }
+}();
+
 const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode {
     evaluate(env) {
         return env.target.groupId === env.assistTargeting.groupId;
@@ -653,6 +659,24 @@ class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
 }
 
 const IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
+
+class IsTargetsFoeInCardinalDirectionsOfTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        for (let ally of env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit)) {
+            if (ally.isInCrossOf(unit)) {
+                env.debug(`${unit.nameWithGroup}の十字方向に敵がいる: ${ally.nameWithGroup}`);
+                return true;
+            }
+        }
+        env.debug(`${unit.nameWithGroup}の十字方向に敵がいない`);
+        return false;
+    }
+}
 
 // TODO: Aliasの方を利用する
 /**
@@ -2810,6 +2834,16 @@ class IsSpacesWithinNSpacesOfTargetNode extends BoolNode {
         // TODO: 警告が出ないようにする
         // noinspection JSIncompatibleTypesComparison
         return distance <= n;
+    }
+}
+
+class IsTargetInCardinalDirectionsOfSkillOwnerNode extends BoolNode {
+    evaluate(env) {
+        let unit = env.target;
+        let skillOwner = env.skillOwner;
+        let result = unit.isInCrossOf(skillOwner);
+        env.debug(`${unit.nameWithGroup}は${skillOwner.name}の十字方向にいるか: ${result}`);
+        return result;
     }
 }
 

@@ -2958,6 +2958,7 @@ const PassiveB = {
     SpdDefDetect: 3065, // 速さ守備の看破
 
     // 専用B
+    BrutalFerocity: 3076, // 獰猛かつ残忍
     VedfolnirsWing: 3046, // 始祖の炎翼
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!

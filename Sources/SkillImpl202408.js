@@ -1,4 +1,47 @@
 // noinspection JSUnusedLocalSymbols
+// 獰猛かつ残忍
+{
+    let skillId = PassiveB.BrutalFerocity;
+    // Effect:【Pathfinder】
+    setPathfinder(skillId);
+
+    // At start of turn, and after unit acts (if Canto triggers, after Canto), inflicts Atk/Def-7 and 【Gravity】on foes in cardinal directions of unit with HP < unit's max HP through their next actions.
+    let nodeFunc = () => new SkillEffectNode(
+        new ForEachUnitOnMapNode(AND_NODE(
+                ARE_TARGET_AND_SKILL_OWNER_IN_DIFFERENT_GROUP_NODE,
+                new IsTargetInCardinalDirectionsOfSkillOwnerNode(),
+                LT_NODE(new TargetsHpOnMapNode(), new SkillOwnerMaxHpNode())
+            ),
+            new InflictsStatsMinusOnTargetOnMapNode(7, 0, 7, 0),
+            new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Gravity),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
+
+    HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS.addSkill(skillId, () => new IsTargetsFoeInCardinalDirectionsOfTargetNode());
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or if unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            new NumThatIsNode(
+                // inflicts penalty on foe's Atk/Def = 5 + unit's max HP - foe's HP at start of combat (min 8,
+                // max 18),
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                new EnsureMinMaxNode(
+                    ADD_NODE(5, SUB_NODE(new TargetsMaxHpNode(), new FoesHpAtStartOfCombatNode())), 8, 18,
+                ),
+            ),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
 // 魔器・ヨトゥンの斧
 {
     let skillId = Weapon.ArcaneGiantAxe;

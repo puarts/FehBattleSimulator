@@ -2719,9 +2719,12 @@ class Unit extends BattleMapElement {
             getSkillFunc(skillId, applyEndActionSkillsFuncMap)?.call(this);
         }
 
-        let env = new NodeEnv().setTarget(this).setSkillOwner(this);
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this).setUnitManager(g_appData);
         env.setName('行動後or再移動後').setLogLevel(getSkillLogLevel());
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
+        for (let unit of g_appData.enumerateAllUnitsOnMap()) {
+            unit.applyReservedState(false);
+        }
     }
 
     applyAllBuff(amount) {
