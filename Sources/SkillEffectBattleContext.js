@@ -1350,6 +1350,20 @@ class CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode 
     }
 }
 
+class InflictsBonusReversalPenaltyOnTargetsFoeNode extends FromBoolStatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let booleans = this.evaluateChildren(env);
+        foe.battleContext.setBonusReversals(...booleans);
+        env.debug(`${foe.nameWithGroup}は強化反転を受ける: [${booleans}]`);
+    }
+}
+
 // Unit or BattleContextに値を設定 END
 
 class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {

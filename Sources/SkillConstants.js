@@ -1960,6 +1960,7 @@ const Weapon = {
     DoublerSwordPlus: 3071, // 強化増幅の剣+
     ArcaneTruthfire: 3072, // 魔器・業火の理書
     ArcaneGiantAxe: 3075, // 魔器・ヨトゥンの斧
+    ReversalLancePlus: 3078, // 強化反転の槍+
 };
 
 const Support = {
