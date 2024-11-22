@@ -1361,9 +1361,6 @@ class DamageCalculatorWrapper {
                         atkUnit.battleContext.isDesperationActivatable = true;
                     }
                     break;
-                case Weapon.TalreganAxe:
-                    atkUnit.battleContext.isDesperationActivatable = true;
-                    break;
                 case Weapon.DarkSpikesT:
                     if (atkUnit.battleContext.restHpPercentage <= 99) {
                         atkUnit.battleContext.isDesperationActivatable = true;
@@ -7676,14 +7673,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.resSpur -= 6;
                 targetUnit.battleContext.increaseCooldownCountForDefense = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.TalreganAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat
-                || (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
-            ) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.GiltGoblet] = (targetUnit, enemyUnit) => {

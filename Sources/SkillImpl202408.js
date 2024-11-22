@@ -1,4 +1,54 @@
 // noinspection JSUnusedLocalSymbols
+// ダルレカの激斧
+{
+    let skillId = getNormalSkillId(Weapon.TalreganAxe);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 奥義が発動しやすい(発動カウント-1)
+        // 自分から攻撃した時、または周囲2マス以内に味方がいる時、戦闘中、攻撃、速さ+6
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            new GrantsStatsPlusToTargetDuringCombatNode(6, 6, 0, 0),
+        ),
+        // 自分から攻撃した時、追撃可能なら自分の攻撃の直後に追撃を行う
+        UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.TalreganAxe);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、攻撃、速さ+6、自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            new GrantsStatsPlusToTargetDuringCombatNode(6, 6, 0, 0),
+            new GrantsSpecialCooldownChargePlus1ToTargetPerAttackDuringCombatNode(),
+        ),
+        // 自分から攻撃した時、追撃可能なら自分の攻撃の直後に追撃を行う
+        UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.TalreganAxe);
+    // 【再移動(残り+1)】を発動可能
+    enablesCantoRemPlus(skillId, 1);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // ターン開始時、周囲3マス以内に射程1の味方がいる時、自分と周囲3マス以内の射程1の味方の攻撃、速さ+6、「移動+1』(重複しない)、【見切り・追撃効果】を付与(1ターン)
+        IF_NODE(new IsTargetWithinNSpacesOfTargetsAllyNode(3, new IsTargetMeleeWeaponNode()),
+            new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, new IsTargetMeleeWeaponNode(),
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.MobilityIncreased),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.NullFollowUp),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ+6、ダメージ+速さの20％(範囲奥義を除く)
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            new GrantsStatsPlusToTargetDuringCombatNode(6, 6, 0, 0),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(20, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
+        ),
+    ));
+}
+
 // 強化反転の槍+
 {
     let skillId = Weapon.ReversalLancePlus;
