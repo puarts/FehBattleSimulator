@@ -7811,12 +7811,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesDefBuff = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.SkyPirateClaw] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                targetUnit.atkSpur += 5;
-                enemyUnit.atkSpur -= 5;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.ShirokiChiNoNaginata] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
@@ -14592,11 +14586,6 @@ class DamageCalculatorWrapper {
                         break;
                     case PassiveB.TsuigekiRing:
                         if (atkUnit.battleContext.restHpPercentage >= 50) {
-                            ++followupAttackPriority;
-                        }
-                        break;
-                    case Weapon.SkyPirateClaw:
-                        if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)) {
                             ++followupAttackPriority;
                         }
                         break;

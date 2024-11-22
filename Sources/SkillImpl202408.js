@@ -1,4 +1,57 @@
 // noinspection JSUnusedLocalSymbols
+// 天空の海賊の嘴爪
+{
+    let skillId = getNormalSkillId(Weapon.SkyPirateClaw);
+    setBeastSkill(skillId, BeastCommonSkillType.Flying);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 周囲1マス以内に味方がいない時、戦闘中、攻撃+5、敵の攻撃-5、かつ自身は絶対追撃
+        IF_NODE(EQ_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1), 0),
+            new GrantsStatsPlusToTargetDuringCombatNode(5, 0, 0, 0),
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 0, 0, 0),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.SkyPirateClaw);
+    setBeastSkill(skillId, BeastCommonSkillType.Flying);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 周囲1マス以内の竜、獣以外の味方が1体以下の時、または、自分が化身時、戦闘中、攻撃、速さ+5、敵の攻撃-5、かつ自身は絶対追撃、敵の奥義以外のスキルによる「ダメージを○○％軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)、戦闘後、7回復
+        IF_NODE(OR_NODE(
+                LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE), 1),
+                new IsTargetTransformedNode()),
+            new GrantsStatsPlusToTargetDuringCombatNode(5, 5, 0, 0),
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 0, 0, 0),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.SkyPirateClaw);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // ターン開始時、自身のHPが25%以上なら、最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【弱点露呈】、【凍結】を付与(敵の次回行動終了まで)
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+                new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Exposure),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Frozen),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防+5、ダメージ+自分の攻撃の15％(範囲奥義を除く)、自身の奥義発動カウント変動量-を無効
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
+            ),
+            new NeutralizesEffectsThatInflictSpecialCooldownChargeMinusXOnUnit(),
+        )
+    ));
+}
+
 // ダルレカの激斧
 {
     let skillId = getNormalSkillId(Weapon.TalreganAxe);
