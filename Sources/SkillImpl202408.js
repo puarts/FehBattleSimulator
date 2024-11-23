@@ -1,4 +1,53 @@
 // noinspection JSUnusedLocalSymbols
+// 生存本能の弓
+{
+    let skillId = getNormalSkillId(Weapon.SurvivalistBow);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 周囲1マス以内に味方がいない時、戦闘中、攻撃、速さ+6、かつ、戦闘開始時の敵のHPが80%以上なら、敵は反撃不可
+        IF_NODE(EQ_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1), 0),
+            new GrantsStatsPlusToTargetDuringCombatNode(6, 6, 0, 0),
+            IF_NODE(GTE_NODE(FOES_HP_PERCENTAGE_AT_START_OF_COMBAT_NODE, 80),
+                FOE_CANNOT_COUNTERATTACK_NODE,
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.SurvivalistBow);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分から攻撃した時、または、周囲1マス以内の味方が1体以下の時、戦闘中、攻撃、速さ+6、自分の最初の攻撃前に奥義発動カウント-1、かつ、戦闘開始時の敵のHPが50%以上なら、敵は反撃不可
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1), 1)),
+            new GrantsStatsPlusToTargetDuringCombatNode(6, 6, 0, 0),
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+            IF_NODE(GTE_NODE(FOES_HP_PERCENTAGE_AT_START_OF_COMBAT_NODE, 50),
+                FOE_CANNOT_COUNTERATTACK_NODE,
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.SurvivalistBow);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // ターン開始時、自身のHPが25%以上なら、最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【混乱】を付与(敵の次回行動終了まで)
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+                new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Sabotage),
+            )
+        )
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ+6、攻撃、速さの弱化を無効、ダメージ+速さの20％(範囲奥義を除く)
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            new GrantsStatsPlusToTargetDuringCombatNode(6, 6, 0, 0),
+            new NeutralizesPenaltiesToTargetsStatsNode(true, true, false, false),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(20, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
+        )
+    ));
+}
+
 // 機斧ロヴンヘイズ
 {
     let skillId = getNormalSkillId(Weapon.AutoLofnheior);

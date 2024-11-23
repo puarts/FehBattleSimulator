@@ -14392,11 +14392,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.SurvivalistBow:
-                    if (this.__isSolo(atkUnit) && defUnit.battleContext.restHpPercentage >= 80) {
-                        return true;
-                    }
-                    break;
                 case Weapon.Nizuheggu:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (isWeaponTypeTome(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
@@ -16402,10 +16397,6 @@ class DamageCalculatorWrapper {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
                     }
-                    break;
-                case Weapon.SurvivalistBow:
-                    targetUnit.atkSpur += 6;
-                    targetUnit.spdSpur += 6;
                     break;
                 case Weapon.GousouJikumunto:
                     if (!targetUnit.isWeaponRefined) {
