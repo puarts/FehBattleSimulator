@@ -1,4 +1,32 @@
 // noinspection JSUnusedLocalSymbols
+// 凶弾・神
+{
+    let skillId = Special.BrutalShellPlus;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    setSpecialCount(3);
+
+    // 奥義発動時、 自分と敵の守備の高い方の値の50%を奥義ダメージに加算
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(0.5, MAX_NODE(UNITS_DEF_DURING_COMBAT_NODE, FOES_RES_DURING_COMBAT_NODE)),
+        ),
+    ));
+
+    // 自分または敵が奥義発動可能状態の時、または、この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時、戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ） （範囲奥義を除く）
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 1～4ターン目始時、奥義発動カウントー3
+        IF_NODE(LTE_NODE(CURRENT_TURN_NODE, 4),
+            new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(3),
+        )
+    ));
+}
+
 // 神槌大地を穿つ・神
 {
     let skillId = PassiveC.WorldbreakerPlus;

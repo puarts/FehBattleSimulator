@@ -2126,6 +2126,7 @@ const Special = {
     SeidrShell: 1542, // 魔弾
     SeidrShellPlus: 2761, // 魔弾・神
     BrutalShell: 1853, // 凶弾
+    BrutalShellPlus: 3067, // 凶弾・神
     Flare: 2548, // 陽光
     NoQuarter: 2702, // 車懸
 
