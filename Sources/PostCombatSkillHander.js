@@ -588,11 +588,6 @@ class PostCombatSkillHander {
                         }
                     }
                     break;
-                case Weapon.Aureola:
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 2, true)) {
-                        unit.reserveHeal(7);
-                    }
-                    break;
                 case Weapon.EffiesLance:
                     if (targetUnit.isWeaponSpecialRefined) {
                         targetUnit.isOneTimeActionActivatedForWeapon = true;

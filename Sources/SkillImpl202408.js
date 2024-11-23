@@ -1,4 +1,75 @@
 // noinspection JSUnusedLocalSymbols
+// アーリアル
+{
+    let skillId = getNormalSkillId(Weapon.Aureola);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分から攻撃した時、または周囲2マスに味方がいる時、戦闘中、攻撃、速さ、魔防+5、かつ、敵の「敵の守備か魔防の低い方でダメージ計算」を無効化、かつ、戦闘後、自分と周囲2マスの味方を7回復
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(5, 5, 0, 5),
+            new DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefOrResDuringCombatNode(),
+        ),
+    ));
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+            new RestoreTargetsHpOnMapNode(7),
+        ),
+    ))
+}
+{
+    let skillId = getRefinementSkillId(Weapon.Aureola);
+    // Grants Res+3. Effective against magic foes.
+    // Restores 7 HP to unit and allies within 2 spaces of unit after combat.
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+            new RestoreTargetsHpOnMapNode(7),
+        ),
+    ))
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or if unit is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd/Def/Res+5,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // disables foe's effects that "calculate damage using the lower of foe's Def or Res,"
+            new DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefOrResDuringCombatNode(),
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // unit deals X damage (excluding area-of-effect Specials),
+                    new DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(READ_NUM_NODE),
+                    // and reduces damage from foe's first attack by 40% of X during combat
+                    new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(PERCENTAGE_NODE(40, READ_NUM_NODE)),
+                ),
+                // (X = highest total bonuses among unit and allies within 2 spaces of unit; "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+                new HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(2),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Aureola);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Spd/Res+6 and "neutralizes penalties on unit during combat" to unit and allies within 2 spaces of unit for 1 turn.
+                new GrantsStatsPlusAtStartOfTurnNode(0, 6, 0, 6),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.NeutralizesPenalties),
+            ),
+        )
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ),
+    ));
+}
+
 // 生存本能の弓
 {
     let skillId = getNormalSkillId(Weapon.SurvivalistBow);

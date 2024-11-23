@@ -1364,6 +1364,18 @@ class InflictsBonusReversalPenaltyOnTargetsFoeNode extends FromBoolStatsNode {
     }
 }
 
+class DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefOrResDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.invalidatesReferenceLowerMit = true;
+        env.debug(`${unit.nameWithGroup}は敵の「敵の守備か魔防の低い方でダメージ計算」を無効化`);
+    }
+}
+
 // Unit or BattleContextに値を設定 END
 
 class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {

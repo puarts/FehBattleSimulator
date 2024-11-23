@@ -497,7 +497,7 @@ class DamageCalculatorWrapper {
         this.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
 
         // 守備、魔防のどちらを参照するか決定
-        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit, true);
+        defUnit.battleContext.invalidatesReferenceLowerMit |= this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit, true);
         this.__selectReferencingResOrDef(atkUnit, defUnit);
 
         this.#applySkillEffectsBeforePrecombatSpecial(atkUnit, defUnit, damageType);
@@ -652,8 +652,8 @@ class DamageCalculatorWrapper {
         // });
 
         // 守備、魔防のどちらを参照するか決定
-        atkUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
-        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
+        atkUnit.battleContext.invalidatesReferenceLowerMit |= this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
+        defUnit.battleContext.invalidatesReferenceLowerMit |= this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
         self.__selectReferencingResOrDef(atkUnit, defUnit);
         self.__selectReferencingResOrDef(defUnit, atkUnit);
 
@@ -677,6 +677,9 @@ class DamageCalculatorWrapper {
 
     __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit, isPrecombat = false) {
         let self = this;
+        if (targetUnit.battleContext.invalidatesReferenceLowerMit) {
+            return true;
+        }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveA.RareTalent:
@@ -706,11 +709,6 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.SplashyBucketPlus:
                     return true;
-                case Weapon.Aureola:
-                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                        return true;
-                    }
-                    break;
                 case Weapon.Naga:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (isWeaponTypeBreath(enemyUnit.weaponType)) {
@@ -7579,13 +7577,6 @@ class DamageCalculatorWrapper {
                 targetUnit.spdSpur += 5;
                 targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.Aureola] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.atkSpur += 5;
-                targetUnit.spdSpur += 5;
-                targetUnit.resSpur += 5;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Thunderbrand] = (targetUnit, enemyUnit) => {
