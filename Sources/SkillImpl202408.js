@@ -1,4 +1,25 @@
 // noinspection JSUnusedLocalSymbols
+// 神槌大地を穿つ・神
+{
+    let skillId = PassiveC.WorldbreakerPlus;
+    // 周囲2マス以内の味方は、自身の周囲2マス以内に移動可能
+    ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT(2, 2),
+    )
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘中、攻撃、守備、魔防＋5、自身の奥義発動カウント変動量＋1 （同系統効果複数時、最大值適用）、 自分の最初の攻撃前に奥義発動カウントー2
+        new GrantsStatsPlusToTargetDuringCombatNode(5, 0, 5, 5),
+        new GrantsSpecialCooldownChargePlus1ToTargetPerAttackDuringCombatNode(),
+        new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(2),
+    ));
+    // 周囲3マス以内の味方は、戦闘中、攻撃、守備、魔防＋4、 奥義発動カウント変動量＋1 （同系統効果複数時、最大値適用）、戦闘中、最初の攻撃前に奥義発動カウントー1
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 4),
+        new GrantsSpecialCooldownChargePlus1ToTargetPerAttackDuringCombatNode(),
+        new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+    ));
+}
+
 // アーリアル
 {
     let skillId = getNormalSkillId(Weapon.Aureola);

@@ -3486,6 +3486,7 @@ const PassiveC = {
     DomainOfFlame: 1848, // 絶炎結界
     EverlivingDomain: 2144, // 永生結界
     Worldbreaker: 1913, // 神槌大地を穿つ
+    WorldbreakerPlus: 3066, // 神槌大地を穿つ・神
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者
     GoddessBearer2: 3009, // 女神を宿せし者・承
