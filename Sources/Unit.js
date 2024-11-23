@@ -6017,10 +6017,6 @@ class Unit extends BattleMapElement {
                 case Weapon.BlazingPolearms:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);
                     break;
-                // 再移動(3)
-                case Weapon.AutoLofnheior:
-                    moveCountForCanto = Math.max(moveCountForCanto, 3);
-                    break;
                 // 残り+1
                 case Weapon.NightmareHorn:
                     if (this.isWeaponRefined) {

@@ -6342,13 +6342,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.AutoLofnheior] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.atkSpur += 6;
-                enemyUnit.atkSpur -= 6;
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.FlamelickBreath] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addAllSpur(5);

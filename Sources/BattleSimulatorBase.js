@@ -7407,7 +7407,6 @@ class BattleSimulatorBase {
                     break;
                 case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
-                case Weapon.AutoLofnheior:
                     if (g_appData.currentTurn <= 4) {
                         return true;
                     }

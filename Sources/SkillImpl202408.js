@@ -1,4 +1,61 @@
 // noinspection JSUnusedLocalSymbols
+// 機斧ロヴンヘイズ
+{
+    let skillId = getNormalSkillId(Weapon.AutoLofnheior);
+    // 1~4ターン目の間、【再移動(3)】を発動可能
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => LTE_NODE(CURRENT_TURN_NODE, 4));
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(3));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、攻撃+6、敵の攻撃-6、自分は絶対追撃
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            new GrantsStatsPlusToTargetDuringCombatNode(6, 0, 0, 0),
+            new InflictsStatsMinusOnFoeDuringCombatNode(6, 0, 0, 0),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        )
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.AutoLofnheior);
+    // 1〜4ターン目の間、【再移動(3)】を発動可能
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => LTE_NODE(CURRENT_TURN_NODE, 4));
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(3));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、攻撃+6、敵の攻撃-6、自分は絶対追撃、
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            new GrantsStatsPlusToTargetDuringCombatNode(6, 0, 0, 0),
+            new InflictsStatsMinusOnFoeDuringCombatNode(6, 0, 0, 0),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // 敵は追撃不可、かつ奥義発動時、敵の奥義以外のスキルによる「ダメージを○○%軽減」を無効(範囲奥義を除く)
+            FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+            // (自身の移動タイプで移動、例：歩行は、林には移動しづらい)(攻撃、補助、地形破壊不可)(同系統効果重複時、最大値適用)(1ターンに1回のみ)(行動直後に再行動可能にするスキル発動時は、再行動で条件を満たせば、再移動が可能)(再移動できる距離は、通常の移動の距離とは無関係)(再移動の距離の上限を超えたワープ移動はできない)
+        )
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.AutoLofnheior);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // ターン開始時、自身のHPが25%以上なら、自分と周囲2マス以内の味方に「自分が移動可能な地形を平地のように移動可能』、【奮激】を付与(1ターン)
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.UnitCannotBeSlowedByTerrain, StatusEffectType.Incited),
+            ),
+        )
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘開始時、自身のHPが25%以上なら、戦闘中、自身の攻撃、守備、魔防+5、敵の攻撃、守備が敵が受けている攻撃、守備の強化の値の2倍だけ減少(能力値ごとに計算)、
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            new GrantsStatsPlusToTargetDuringCombatNode(5, 5, 0, 0),
+            new InflictsBonusReversalPenaltyOnTargetsFoeNode(true, true, false, false),
+        ),
+        // 自分が与えるダメージ+自分の守備の20%(範囲奥義を除く)
+        new AppliesSkillEffectsAfterStatusFixedNode(
+            new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(20, UNITS_DEF_DURING_COMBAT_NODE)),
+        ),
+    ));
+}
+
 // 神槌ミョルニル
 {
     let skillId = getNormalSkillId(Weapon.WarGodMjolnir);
