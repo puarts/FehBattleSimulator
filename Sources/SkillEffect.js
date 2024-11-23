@@ -3615,13 +3615,10 @@ class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
         let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
         let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
         env.debug(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
+
         let n = this.evaluateChildren(env);
-        for (let i = 0; i < n; i++) {
-            if (effects.length >= i + 1) {
-                env.debug(`${unit.nameWithGroup}の${getStatusEffectName(effects[i])}を解除予約(${i + 1})`);
-                unit.reservedStatusEffectSetToNeutralize.add(effects[i]);
-            }
-        }
+        let result = unit.reservedStatusEffectCountInOrder += n;
+        env.debug(`${unit.nameWithGroup}は不利な状態を上位${n}個解除: ${result - n} -> ${result}`);
     }
 }
 
