@@ -1056,7 +1056,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.ShirasagiNoTsubasa,
     Weapon.SeijuNoKeshinHiko,
     Weapon.GroomsWings,
-    Weapon.SkyPirateClaw,
     Weapon.TwinCrestPower,
     Weapon.IlluminatingHorn,
 ]);

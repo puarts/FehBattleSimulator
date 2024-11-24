@@ -397,6 +397,19 @@ const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CEN
         SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         TARGETS_TOTAL_BONUSES_NODE));
 
+const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n) =>
+    MAX_NODE(new MapUnitsNode(
+        new TargetAndTargetsAlliesWithinNSpacesNode(n, TARGET_NODE),
+        TARGETS_TOTAL_BONUSES_NODE));
+
+const TARGETS_BONUSES_NODE = new TargetsBonusesNode();
+const HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n) =>
+        new HighestValueOnEachStatAmongUnitsNode(
+            new TargetAndTargetsAlliesWithinNSpacesNode(n, TARGET_NODE),
+            TARGETS_BONUSES_NODE
+        );
+
 const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
 
 const MAX_UNITS_NODE = (unitsNode, predNode) => new MaxUnitsNode(unitsNode, predNode);
@@ -454,3 +467,39 @@ function setFortune(skillId, statsFlags) {
         ),
     ));
 }
+
+function setSlyEffect(skillId, atk, spd, def, res) {
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // grants Atk/Spd+8 to unit and unit makes a guaranteed follow-up attack during combat,
+            new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and also,
+            // if number of 【Bonus】effects active on unit ≥ 2, excluding stat bonuses,
+            // or if number of 【Penalty】effects active on foe ≥ 2, excluding stat penalties,
+            IF_NODE(OR_NODE(
+                    GTE_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, 2),
+                    GTE_NODE(NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 2)
+                ),
+                // unit deals +5 damage during combat
+                new UnitDealsDamageExcludingAoeSpecialsNode(5),
+                // (including when dealing damage with an area-of-effect Special; excluding Røkkr area-of-effect Specials).
+            ),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            IF_NODE(OR_NODE(
+                    GTE_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, 2),
+                    GTE_NODE(NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 2)
+                ),
+                // unit deals +5 damage during combat
+                new UnitDealsDamageBeforeCombatNode(5),
+                // (including when dealing damage with an area-of-effect Special; excluding Røkkr area-of-effect Specials).
+            ),
+        ),
+    ));
+}
+

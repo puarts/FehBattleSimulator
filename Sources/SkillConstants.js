@@ -1949,10 +1949,18 @@ const Weapon = {
     // 神階フレスベルグ
     QuietingClaw: 2737, // 刃の葬り手の爪
 
+    // 忍者
     ScrollOfCurses: 3055,
     ScrollOfTeas: 3057, // 花と茶の忍法帳
     BoldKusarigama: 3060, // 武と勇の鎖鎌
     YlisseNinjaBow: 3063, // 聖王国の父娘の忍弓
+
+    // 魔器シアチ＆魔器リリーナ
+    LightOfEtruria: 3069, // エトルリアの光
+    DoublerSwordPlus: 3071, // 強化増幅の剣+
+    ArcaneTruthfire: 3072, // 魔器・業火の理書
+    ArcaneGiantAxe: 3075, // 魔器・ヨトゥンの斧
+    ReversalLancePlus: 3078, // 強化反転の槍+
 };
 
 const Support = {
@@ -2118,6 +2126,7 @@ const Special = {
     SeidrShell: 1542, // 魔弾
     SeidrShellPlus: 2761, // 魔弾・神
     BrutalShell: 1853, // 凶弾
+    BrutalShellPlus: 3067, // 凶弾・神
     Flare: 2548, // 陽光
     NoQuarter: 2702, // 車懸
 
@@ -2185,6 +2194,7 @@ const Special = {
     Boulder: 3061, // 巨岩
 
     // 専用奥義
+    GiftForMagic: 3073, // 天与の魔才
     RequiemPrayer: 3039, // 鎮魂の願い
     Override: 3024, // オーバードライヴ
     SeidrBurst: 3019, // 連魔弾
@@ -2460,6 +2470,7 @@ const PassiveA = {
     AtkSpdFortune: 3053, // 攻撃速さの共栄
 
     SlySwiftSparrow: 3056, // 鬼神飛燕の掩撃
+    SlyMirror: 3074, // 鬼神明鏡の掩撃
 
     // 専用A
     ObsidianTactics: 2946, // 黒曜石の教え
@@ -2730,6 +2741,7 @@ const PassiveB = {
     ResCantrip3: 1589,
     // 2種魅了
     ADCantrip3: 2858, // 攻撃守備の魅了3
+    ARCantrip3: 3070, // 攻撃魔防の魅了3
 
     // 連携
     AtkSpdLink2: 1133, // 攻撃速さの連携2
@@ -2948,6 +2960,7 @@ const PassiveB = {
     SpdDefDetect: 3065, // 速さ守備の看破
 
     // 専用B
+    BrutalFerocity: 3076, // 獰猛かつ残忍
     VedfolnirsWing: 3046, // 始祖の炎翼
     ShadowSlide: 2996, // 無間の瞬動
     AccordingToPlan: 2980, // 読み通りです!
@@ -3410,6 +3423,7 @@ const PassiveC = {
 
     ShadowShift4: 3020, // 影助・引き戻し4
 
+    ADTwinNSave: 3077, // 鎧の護り手・近・双
     DRTwinNSave: 3032, // 盾の護り手・近・双
     ARTwinFSave: 3034, // 兜の護り手・遠・双
 
@@ -3473,6 +3487,7 @@ const PassiveC = {
     DomainOfFlame: 1848, // 絶炎結界
     EverlivingDomain: 2144, // 永生結界
     Worldbreaker: 1913, // 神槌大地を穿つ
+    WorldbreakerPlus: 3066, // 神槌大地を穿つ・神
     OpeningRetainer: 1922, // 開神の眷属
     GoddessBearer: 1939, // 女神を宿せし者
     GoddessBearer2: 3009, // 女神を宿せし者・承

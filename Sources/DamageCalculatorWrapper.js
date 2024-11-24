@@ -497,7 +497,7 @@ class DamageCalculatorWrapper {
         this.__calcFixedSpecialAddDamage(atkUnit, defUnit, true);
 
         // 守備、魔防のどちらを参照するか決定
-        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit, true);
+        defUnit.battleContext.invalidatesReferenceLowerMit |= this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit, true);
         this.__selectReferencingResOrDef(atkUnit, defUnit);
 
         this.#applySkillEffectsBeforePrecombatSpecial(atkUnit, defUnit, damageType);
@@ -652,8 +652,8 @@ class DamageCalculatorWrapper {
         // });
 
         // 守備、魔防のどちらを参照するか決定
-        atkUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
-        defUnit.battleContext.invalidatesReferenceLowerMit = this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
+        atkUnit.battleContext.invalidatesReferenceLowerMit |= this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
+        defUnit.battleContext.invalidatesReferenceLowerMit |= this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
         self.__selectReferencingResOrDef(atkUnit, defUnit);
         self.__selectReferencingResOrDef(defUnit, atkUnit);
 
@@ -677,6 +677,9 @@ class DamageCalculatorWrapper {
 
     __canInvalidatesReferenceLowerMit(targetUnit, enemyUnit, isPrecombat = false) {
         let self = this;
+        if (targetUnit.battleContext.invalidatesReferenceLowerMit) {
+            return true;
+        }
         for (let skillId of targetUnit.enumerateSkills()) {
             switch (skillId) {
                 case PassiveA.RareTalent:
@@ -706,11 +709,6 @@ class DamageCalculatorWrapper {
                     break;
                 case Weapon.SplashyBucketPlus:
                     return true;
-                case Weapon.Aureola:
-                    if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                        return true;
-                    }
-                    break;
                 case Weapon.Naga:
                     if (targetUnit.isWeaponSpecialRefined) {
                         if (isWeaponTypeBreath(enemyUnit.weaponType)) {
@@ -1360,9 +1358,6 @@ class DamageCalculatorWrapper {
                     if (defUnit.battleContext.restHpPercentage >= 50) {
                         atkUnit.battleContext.isDesperationActivatable = true;
                     }
-                    break;
-                case Weapon.TalreganAxe:
-                    atkUnit.battleContext.isDesperationActivatable = true;
                     break;
                 case Weapon.DarkSpikesT:
                     if (atkUnit.battleContext.restHpPercentage <= 99) {
@@ -6150,16 +6145,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveC.Worldbreaker] = (targetUnit) => {
             targetUnit.battleContext.increaseCooldownCountForBoth();
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.WarGodMjolnir] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.atkSpur += 6;
-                enemyUnit.atkSpur -= 6;
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
-                if (self.__isSolo(targetUnit) || calcPotentialDamage) {
-                    targetUnit.battleContext.invalidateAllBuffs();
-                }
-            }
-        }
         this._applySkillEffectForUnitFuncDict[PassiveB.DivineRecreation] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.restHpPercentage >= 50) {
                 enemyUnit.addAllSpur(-4);
@@ -6353,13 +6338,6 @@ class DamageCalculatorWrapper {
                 targetUnit.atkSpur += 6;
                 enemyUnit.atkSpur -= 6;
                 targetUnit.battleContext.maxHpRatioToHealBySpecial += 0.3;
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.AutoLofnheior] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.atkSpur += 6;
-                enemyUnit.atkSpur -= 6;
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.FlamelickBreath] = (targetUnit, enemyUnit) => {
@@ -7601,13 +7579,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Aureola] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.atkSpur += 5;
-                targetUnit.spdSpur += 5;
-                targetUnit.resSpur += 5;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Thunderbrand] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.restHpPercentage >= 50) {
                 targetUnit.atkSpur += 5;
@@ -7676,14 +7647,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.resSpur -= 6;
                 targetUnit.battleContext.increaseCooldownCountForDefense = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.TalreganAxe] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat
-                || (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 2))
-            ) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.GiltGoblet] = (targetUnit, enemyUnit) => {
@@ -7820,12 +7783,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.defSpur -= 5;
                 targetUnit.battleContext.invalidatesSpdBuff = true;
                 targetUnit.battleContext.invalidatesDefBuff = true;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.SkyPirateClaw] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (calcPotentialDamage || !self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
-                targetUnit.atkSpur += 5;
-                enemyUnit.atkSpur -= 5;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.ShirokiChiNoNaginata] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -14426,11 +14383,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.SurvivalistBow:
-                    if (this.__isSolo(atkUnit) && defUnit.battleContext.restHpPercentage >= 80) {
-                        return true;
-                    }
-                    break;
                 case Weapon.Nizuheggu:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (isWeaponTypeTome(defUnit.weaponType) || isWeaponTypeBreath(defUnit.weaponType)) {
@@ -14603,11 +14555,6 @@ class DamageCalculatorWrapper {
                         break;
                     case PassiveB.TsuigekiRing:
                         if (atkUnit.battleContext.restHpPercentage >= 50) {
-                            ++followupAttackPriority;
-                        }
-                        break;
-                    case Weapon.SkyPirateClaw:
-                        if (calcPotentialDamage || !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)) {
                             ++followupAttackPriority;
                         }
                         break;
@@ -16441,10 +16388,6 @@ class DamageCalculatorWrapper {
                         targetUnit.atkSpur += 5;
                         targetUnit.spdSpur += 5;
                     }
-                    break;
-                case Weapon.SurvivalistBow:
-                    targetUnit.atkSpur += 6;
-                    targetUnit.spdSpur += 6;
                     break;
                 case Weapon.GousouJikumunto:
                     if (!targetUnit.isWeaponRefined) {

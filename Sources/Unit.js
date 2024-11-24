@@ -453,6 +453,7 @@ class Unit extends BattleMapElement {
         this.reservedHeal = 0;
         this.reservedStatusEffects = [];
         this.reservedStatusEffectSetToNeutralize = new Set();
+        this.reservedStatusEffectCountInOrder = 0;
         this.reservedAtkBuff = 0;
         this.reservedSpdBuff = 0;
         this.reservedDefBuff = 0;
@@ -2215,6 +2216,17 @@ class Unit extends BattleMapElement {
     neutralizeReservedStatusEffectsToNeutralize() {
         this.neutralizeStatusEffects([...this.reservedStatusEffectSetToNeutralize]);
         this.reservedStatusEffectSetToNeutralize.clear();
+
+        // TODO: 予約解除の順序を検証する
+        let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let effects = this.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
+        for (let i = 0; i < this.reservedStatusEffectCountInOrder; i++) {
+            if (effects.length >= i + 1) {
+                this.reservedStatusEffectSetToNeutralize.add(effects[i]);
+                this.neutralizeStatusEffect(effects[i]);
+            }
+        }
+        this.reservedStatusEffectCountInOrder = 0;
     }
 
     neutralizeNegativeStatusEffects() {
@@ -2719,9 +2731,12 @@ class Unit extends BattleMapElement {
             getSkillFunc(skillId, applyEndActionSkillsFuncMap)?.call(this);
         }
 
-        let env = new NodeEnv().setTarget(this).setSkillOwner(this);
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this).setUnitManager(g_appData);
         env.setName('行動後or再移動後').setLogLevel(getSkillLogLevel());
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
+        for (let unit of g_appData.enumerateAllUnitsOnMap()) {
+            unit.applyReservedState(false);
+        }
     }
 
     applyAllBuff(amount) {
@@ -6013,10 +6028,6 @@ class Unit extends BattleMapElement {
                 case Weapon.FlowerLance:
                 case Weapon.BlazingPolearms:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);
-                    break;
-                // 再移動(3)
-                case Weapon.AutoLofnheior:
-                    moveCountForCanto = Math.max(moveCountForCanto, 3);
                     break;
                 // 残り+1
                 case Weapon.NightmareHorn:

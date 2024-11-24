@@ -118,15 +118,19 @@ const FOE_NODE = new class extends TargetNode {
  */
 class UnitsNode extends SkillEffectNode {
     /**
-     * @param {UnitNode} unitNode
+     * @param {UnitNode|UnitsNode} unitNode
      * @returns {UnitsNode}
      */
     static makeFromUnit(unitNode) {
-        return new class extends UnitsNode {
-            evaluate(env) {
-                return [unitNode.evaluate(env)];
-            }
-        };
+        if (unitNode instanceof UnitNode) {
+            return new class extends UnitsNode {
+                evaluate(env) {
+                    return [unitNode.evaluate(env)];
+                }
+            };
+        } else {
+            return unitNode;
+        }
     }
 
     /**
@@ -160,6 +164,21 @@ class TargetsAlliesOnMapNode extends UnitsNode {
         let unit = this.getUnit(env);
         let withTargetUnit = this._includesTargetNode.evaluate(env);
         return env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
+    }
+}
+
+class TargetsFoesOnMapNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor() {
+        super();
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        return env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
     }
 }
 
@@ -402,6 +421,12 @@ const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode
     }
 }();
 
+const ARE_TARGET_AND_SKILL_OWNER_IN_DIFFERENT_GROUP_NODE = new class extends BoolNode {
+    evaluate(env) {
+        return env.target.groupId !== env.skillOwner.groupId;
+    }
+}();
+
 const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode {
     evaluate(env) {
         return env.target.groupId === env.assistTargeting.groupId;
@@ -634,6 +659,24 @@ class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
 }
 
 const IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
+
+class IsTargetsFoeInCardinalDirectionsOfTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        for (let ally of env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit)) {
+            if (ally.isInCrossOf(unit)) {
+                env.debug(`${unit.nameWithGroup}の十字方向に敵がいる: ${ally.nameWithGroup}`);
+                return true;
+            }
+        }
+        env.debug(`${unit.nameWithGroup}の十字方向に敵がいない`);
+        return false;
+    }
+}
 
 // TODO: Aliasの方を利用する
 /**
@@ -1020,12 +1063,12 @@ class ApplyingNumberNode extends SkillEffectNode {
 
 class FromPositiveStatsNode extends FromPositiveNumbersNode {
     /**
-     * @param {number|NumberNode} atk
+     * @param {number|NumberNode|NumbersNode} atk
      * @param {number|NumberNode} spd
      * @param {number|NumberNode} def
      * @param {number|NumberNode} res
      */
-    constructor(atk, spd, def, res) {
+    constructor(atk, spd = null, def = null, res = null) {
         super(atk, spd, def, res);
     }
 }
@@ -1090,7 +1133,7 @@ const GRANTS_ATK_SPD_PLUS_7_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUn
 /**
  * @abstract
  */
-class StatsNode extends SkillEffectNode {
+class StatsNode extends NumbersNode {
     /**
      * @param {number|NumberNode} atk
      * @param {number|NumberNode} spd
@@ -1110,13 +1153,34 @@ class StatsNode extends SkillEffectNode {
      * @return {[number, number, number, number]}
      */
     evaluate(env) {
-        let result = super.evaluate(env);
+        let result = this.evaluateChildren(env);
         env.trace(`各要素を評価: [${result}]`)
         return result;
     }
 }
 
 const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
+
+class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {StatsNode} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let evaluated = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Units: ${units.map(u => u.nameWithGroup)} => values array: [${evaluated.map(a => `[${a}]`)}]`);
+        let result = ArrayUtil.max(...evaluated);
+        env.trace(`Highest values: [${result}]`);
+        return result;
+    }
+}
 
 class GrantsGreatTalentsPlusToTargetNode extends SkillEffectNode {
     /**
@@ -1125,14 +1189,6 @@ class GrantsGreatTalentsPlusToTargetNode extends SkillEffectNode {
      */
     constructor(statsNode, maxStatsNode) {
         super(statsNode, maxStatsNode);
-    }
-
-    /**
-     * @param {NodeEnv} env
-     * @returns {[[number, number, number, number], [number, number, number, number]]}
-     */
-    evaluateChildren(env) {
-        return super.evaluateChildren(env);
     }
 
     evaluate(env) {
@@ -1571,6 +1627,14 @@ class FromBoolStatsNode extends SkillEffectNode {
     constructor(atk, spd, def, res) {
         super(BoolNode.makeBoolNodeFrom(atk), BoolNode.makeBoolNodeFrom(spd),
             BoolNode.makeBoolNodeFrom(def), BoolNode.makeBoolNodeFrom(res));
+    }
+
+    /**
+     * @param env
+     * @returns {[boolean, boolean, boolean, boolean]}
+     */
+    evaluateChildren(env) {
+        return super.evaluateChildren(env);
     }
 }
 
@@ -2183,12 +2247,12 @@ class TargetsFoesOnTheEnemyTeamWithLowestStatNode extends UnitsNode {
 class TargetAndTargetsAlliesWithinNSpacesNode extends UnitsNode {
     /**
      * @param {number|NumberNode} n
-     * @param {UnitsNode} unitsNode
+     * @param {UnitNode|UnitsNode} unitsNode
      */
     constructor(n, unitsNode) {
         super();
         this._nNode = NumberNode.makeNumberNodeFrom(n);
-        this._unitsNode = unitsNode;
+        this._unitsNode = UnitsNode.makeFromUnit(unitsNode);
     }
 
     evaluate(env) {
@@ -2773,6 +2837,16 @@ class IsSpacesWithinNSpacesOfTargetNode extends BoolNode {
     }
 }
 
+class IsTargetInCardinalDirectionsOfSkillOwnerNode extends BoolNode {
+    evaluate(env) {
+        let unit = env.target;
+        let skillOwner = env.skillOwner;
+        let result = unit.isInCrossOf(skillOwner);
+        env.debug(`${unit.nameWithGroup}は${skillOwner.name}の十字方向にいるか: ${result}`);
+        return result;
+    }
+}
+
 // TODO: renameを検討
 class IsNotSpaceOccupiedByTargetsFoeNode extends BoolNode {
     static {
@@ -2931,6 +3005,14 @@ class SpacesWithinNSpacesNode extends SpacesNode {
         let n = this._nNode.evaluate(env);
         env.debug(`${env.skillOwner.nameWithGroup}は${unit.nameWithGroup}の周囲${n}マスに移動可能`);
         return env.battleMap.__enumeratePlacableTilesWithinSpecifiedSpaces(unit.placedTile, env.skillOwner, n);
+    }
+}
+
+class CrossSpacesNode extends SpacesNode {
+    evaluate(env) {
+        let targetTile = env.tile;
+        let isInRange = tile => tile.calculateDistance(targetTile) <= 1;
+        return env.battleMap.enumerateTiles(isInRange);
     }
 }
 
@@ -3112,6 +3194,9 @@ class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpeci
 // TODO: rename
 // skill text: grants Special cooldown count-1
 class GrantsSpecialCooldownCountMinusOnTargetNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
+}
+
+class GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode extends GrantsSpecialCooldownCountMinusOnTargetNode {
 }
 
 /**
@@ -3434,6 +3519,20 @@ class IsCantoSingDanceActivatedByTargetNode extends BoolNode {
     }
 }
 
+class TargetsBonusesNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit === env.unitDuringCombat ?
+            unit.getBuffsInCombat(env.getFoeDuringCombatOf(unit)) : unit.getBuffsInPreCombat();
+        env.debug(`${unit.nameWithGroup}の強化: ${result}`);
+        return result;
+    }
+}
+
 /**
  * highest total bonuses
  */
@@ -3516,13 +3615,10 @@ class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
         let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
         let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
         env.debug(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
+
         let n = this.evaluateChildren(env);
-        for (let i = 0; i < n; i++) {
-            if (effects.length >= i + 1) {
-                env.debug(`${unit.nameWithGroup}の${getStatusEffectName(effects[i])}を解除予約(${i + 1})`);
-                unit.reservedStatusEffectSetToNeutralize.add(effects[i]);
-            }
-        }
+        let result = unit.reservedStatusEffectCountInOrder += n;
+        env.debug(`${unit.nameWithGroup}は不利な状態を上位${n}個解除: ${result - n} -> ${result}`);
     }
 }
 

@@ -88,6 +88,7 @@ class BattleContext {
         // 戦闘中に奥義が発動されたかどうか
         this.isSpecialActivated = false;
         this.specialActivatedCount = 0;
+        this.isPreCombatSpecialActivated = false;
 
         // 自身の奥義発動カウント変動量を+1
         this.increaseCooldownCountForAttack = false;

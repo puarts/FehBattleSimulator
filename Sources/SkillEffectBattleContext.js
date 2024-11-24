@@ -90,6 +90,19 @@ class TargetsHpAtStartOfTurnNode extends PositiveNumberNode {
     }
 }
 
+class TargetsHpOnMapNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let hp = unit.hp;
+        env.debug(`${unit.nameWithGroup}のマップ上でのHP: ${hp}`);
+        return hp;
+    }
+}
+
 class FoesHpAtStartOfTurnNode extends TargetsHpAtStartOfTurnNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -280,6 +293,19 @@ const IS_FOES_SPECIAL_TRIGGERED = new class extends IsTargetsSpecialTriggeredNod
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }();
+
+class IsTargetsSpecialTriggeredBeforeCombatNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isPreCombatSpecialActivated;
+        env.debug(`${unit.nameWithGroup}は範囲奥義を発動済み: ${result}`);
+        return result;
+    }
+}
 
 const UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -1324,6 +1350,32 @@ class CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode 
     }
 }
 
+class InflictsBonusReversalPenaltyOnTargetsFoeNode extends FromBoolStatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let booleans = this.evaluateChildren(env);
+        foe.battleContext.setBonusReversals(...booleans);
+        env.debug(`${foe.nameWithGroup}は強化反転を受ける: [${booleans}]`);
+    }
+}
+
+class DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefOrResDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.invalidatesReferenceLowerMit = true;
+        env.debug(`${unit.nameWithGroup}は敵の「敵の守備か魔防の低い方でダメージ計算」を無効化`);
+    }
+}
+
 // Unit or BattleContextに値を設定 END
 
 class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
@@ -1493,3 +1545,28 @@ class GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisad
 
 const GRANTS_TRIANGLE_ADVANTAGE_AGAINST_COLORLESS_TARGETS_FOES_AND_INFLICTS_TRIANGLE_DISADVANTAGE_ON_COLORLESS_TARGETS_FOES_DURING_COMBAT_NODE
     = new GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisadvantageOnColorlessTargetsFoesDuringCombatNode();
+
+class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesStatusEffectThatTakeEffectOnTargetAtThatTimeNode extends FromNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let e = this.evaluateChildren(env);
+        unit.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(e);
+        env.debug(`${unit.nameWithGroup}は付与される${getStatusEffectName(e)}を無効化`);
+    }
+}
+
+class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTargetAtThatTimeNode extends FromBoolStatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn = this.evaluateChildren(env);
+        env.debug(`${unit.nameWithGroup}は付与される弱化を無効化: [${result}]`);
+    }
+}
