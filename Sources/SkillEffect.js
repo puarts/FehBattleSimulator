@@ -345,6 +345,26 @@ class CountUnitsNode extends PositiveNumberNode {
     }
 }
 
+class CountIfUnitsNode extends PositiveNumberNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {BoolNode} predNode
+     */
+    constructor(unitsNode, predNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        units = units.filter(u => this._predNode.evaluate(env.copy().setTarget(u)));
+        let result = units.length;
+        env.debug(`ユニットの数: ${result}`);
+        return result;
+    }
+}
+
 /**
  * ターゲットを補助ユニット、補助を受けるユニットにそれぞれ設定して引数のUnitsNodeを評価する
  */

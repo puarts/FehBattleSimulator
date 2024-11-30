@@ -19,6 +19,12 @@ const CLOSEST_FOES_WITHIN5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND
     );
 
 /**
+ * number of foes on the map with the【Discord】 effect active
+ */
+const NUM_OF_TARGETS_FOES_ON_MAP_WITH_STATUS_EFFECT_ACTIVE_NODE = (e) =>
+    new CountIfUnitsNode(TARGETS_FOES_NODE, new HasTargetStatusEffectNode(e))
+
+/**
  * 生の息吹4のようなHP回復効果。
  * @param {number|NumberNode} hpPercentage
  * @param {number|NumberNode} maxHpPercentage

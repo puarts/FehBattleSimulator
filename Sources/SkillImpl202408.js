@@ -1,4 +1,43 @@
 // noinspection JSUnusedLocalSymbols
+// 世界樹の半身
+{
+    let skillId = PassiveB.YggdrasillsAlter;
+    // At start of player phase or enemy phase, inflicts Atk/Def-7 and【Discord】on foes that are within 2 spaces of another foe through their next actions.
+    let nodeFunc = () => new SkillEffectNode(
+        new ForEachUnitNode(TARGETS_FOES_NODE,
+            IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+
+            new InflictsStatsMinusAtStartOfTurnNode(7, 0, 7, 0),
+            new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Discord),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new NumThatIsNode(
+            // Inflicts penalty on foe's Atk/Def during combat = number of foes on the map with the【Discord】 effect active (including target) × 3 + 5 (max 14),
+            new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+            new EnsureMaxNode(
+                ADD_NODE(
+                    MULT_NODE(NUM_OF_TARGETS_FOES_ON_MAP_WITH_STATUS_EFFECT_ACTIVE_NODE(StatusEffectType.Discord), 3),
+                    5,
+                ),
+                14,
+            ),
+        ),
+        // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+        // and unit makes a guaranteed follow-up attack during combat,
+        UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        // and also,
+        // when Special triggers,
+        // neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills during combat (excluding area-of-effect Specials).
+        WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+    ));
+}
+
+// 心の葬り手の枝
 {
     let skillId = Weapon.QuietingBranch;
     // 威力14
@@ -139,7 +178,7 @@
             new NumThatIsNode(
                 new SkillEffectNode(
                     // unit deals X damage (excluding area-of-effect Specials),
-                    new DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(READ_NUM_NODE),
+                    new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
                     // and reduces damage from foe's first attack by 40% of X during combat
                     new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(PERCENTAGE_NODE(40, READ_NUM_NODE)),
                 ),
