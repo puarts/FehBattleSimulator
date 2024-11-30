@@ -260,6 +260,25 @@ class MaxUnitsNode extends UnitsNode {
     }
 }
 
+class MinUnitsNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {NumberNode} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let minUnits = IterUtil.minElements(units, u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Min units: ${minUnits.map(u => u.nameWithGroup)}`);
+        return minUnits;
+    }
+}
+
 class UniteUnitsNode extends UnitsNode {
     /**
      * @param {UnitsNode} unitsNode

@@ -1,4 +1,60 @@
 // noinspection JSUnusedLocalSymbols
+{
+    let skillId = Weapon.QuietingBranch;
+    // 威力14
+    // 射程1
+    // 奥義が発動しやすい（発動カウントー1）
+    // ターン開始時、竜、獣以外の味方と隣接していない場合
+    // 化身状態になる（そうでない場合、化身状態を解除）
+    // 化身状態なら、攻撃＋2、かつ敵から攻撃された時、距離に関係なく反撃する
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // ターン開始時、自身のHPが25%以上なら、
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // 最も近い敵とその周囲2マス以内の敵の守備、魔防ー7、【パニック】、【混乱】（敵の次回行動終了まで）、
+            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+                new InflictsStatsMinusAtStartOfTurnNode(0, 0, 7, 7),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Panic, StatusEffectType.Sabotage),
+            ),
+            // かつ最も近い敵とその周囲2マス以内の射程1の敵の中で最も守備が低い敵と
+            // 射程2の敵の中で最も守備が低い敵に【指名】、反撃不可の状態異常を付与
+            // （反撃不可の状態異常は敵の次回行動終了まで）
+            new ForEachUnitNode(new UniteUnitsNode(
+                    new MinUnitsNode(
+                        TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(2,
+                            new IsTargetMeleeWeaponNode()),
+                        TARGETS_EVAL_DEF_ON_MAP),
+                    new MinUnitsNode(
+                        TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(2,
+                            new IsTargetRangedWeaponNode()),
+                        TARGETS_EVAL_DEF_ON_MAP)),
+                TRUE_NODE,
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.AssignDecoy),
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.CounterattacksDisrupted),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘開始時、自身のHPが25%以上なら、
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            new NumThatIsNode(
+                // 戦闘中、敵の攻撃、守備が、戦闘開始時の自分の魔防の20%＋6だけ減少、
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            // 敵の最初の攻撃前に自分の奥義発動カウントー2、
+            new GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNode(2),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // 自分が受けるダメージー魔防の20%（範囲奥義を除く）、
+                new ReducesDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(20, UNITS_RES_DURING_COMBAT_NODE)),
+                // かつ、敵の奥義による攻撃の時、さらに、自分が受けるダメージー魔防の20％（範囲奥義を除く）、
+                new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(PERCENTAGE_NODE(20, UNITS_RES_DURING_COMBAT_NODE)),
+            ),
+            // 戦闘後・7回復
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
 // 凶弾・神
 {
     let skillId = Special.BrutalShellPlus;

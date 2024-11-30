@@ -3,6 +3,15 @@ const PERCENTAGE_NODE = (percentage, num) => MULT_TRUNC_NODE(percentage / 100.0,
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpaces(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
     new TargetAndTargetsAlliesWithinNSpacesNode(2, TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE);
+const TARGETS_CLOSEST_FOES_NODE = new TargetsClosestFoesNode();
+/**
+ * @param {number|NumberNode} n
+ * @param {BoolNode} pred
+ * @returns {UnitsNode}
+ * @constructor
+ */
+const TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE = (n, pred) =>
+    new FilterUnitsNode(new TargetAndTargetsAlliesWithinNSpacesNode(n, TARGETS_CLOSEST_FOES_NODE), pred);
 
 const CLOSEST_FOES_WITHIN5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN2_SPACES_OF_THOSE_FOES_NODE =
     new UnitsOfBothAssistTargetingAndAssistTargetNode(

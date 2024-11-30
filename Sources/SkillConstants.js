@@ -1961,6 +1961,9 @@ const Weapon = {
     ArcaneTruthfire: 3072, // 魔器・業火の理書
     ArcaneGiantAxe: 3075, // 魔器・ヨトゥンの斧
     ReversalLancePlus: 3078, // 強化反転の槍+
+
+    // 神階ニーズヘッグ、レーラズ
+    QuietingBranch: 2993, // 心の葬り手の枝
 };
 
 const Support = {
