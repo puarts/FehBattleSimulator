@@ -4069,7 +4069,7 @@ class Unit extends BattleMapElement {
     }
 
     getEvalDefInPrecombat() {
-        return this.getAtkInPrecombat() + this.__getEvalAtkAdd();
+        return this.getDefInPrecombat() + this.__getEvalDefAdd();
     }
 
     getEvalDefInCombat(enemyUnit = null) {
