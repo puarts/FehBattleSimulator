@@ -445,10 +445,10 @@ const ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET = (n) =>
 
 /**
  * @param {number|string} skillId
- * @param {[boolean, boolean, boolean, boolean]} statsFlags
+ * @param {[boolean, boolean, boolean, boolean]} neutralizesBonusFlags
+ * @param {[number|NumberNode, number|NumberNode, number|NumberNode, number|NumberNode]} bonuses
  */
-function setFortune(skillId, statsFlags) {
-    let bonuses = statsFlags.map(n => n ? 8 : 0);
+function setFortune(skillId, neutralizesBonusFlags, bonuses) {
     // If unit can transform,
     // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
     // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
@@ -469,8 +469,8 @@ function setFortune(skillId, statsFlags) {
         // If unit is transformed or if foe initiates combat,
         IF_NODE(OR_NODE(new IsTargetTransformedNode(), DOES_UNIT_INITIATE_COMBAT_NODE),
             // grants Atk/Spd+8 to unit and neutralizes foe's bonuses to Spd/Def during combat,
-            new GrantsStatsPlusToUnitDuringCombatNode(...bonuses),
-            new NeutralizesFoesBonusesToStatsDuringCombatNode(...statsFlags),
+            new GrantsStatsPlusToUnitDuringCombatNode(StatsNode.makeStatsNodeFrom(...bonuses)),
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(...neutralizesBonusFlags),
             // and restores 7 HP to unit after combat.
             RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
         ),

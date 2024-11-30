@@ -1118,7 +1118,9 @@
 // 共栄
 {
     // 攻撃速さの共栄
-    setFortune(PassiveA.AtkSpdFortune, [true, true, false, false]);
+    setFortune(PassiveA.AtkSpdFortune, [false, true, true, false], [8, 8, 0, 0]);
+    // 攻撃魔防の共栄
+    setFortune(PassiveA.AtkResFortune, [true, false, true, false], [8, 0, 0, 8]);
 }
 
 // 敏捷なる獣

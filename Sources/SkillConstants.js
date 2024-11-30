@@ -2471,6 +2471,7 @@ const PassiveA = {
     Fortifications: 2990, // 野戦築城
 
     AtkSpdFortune: 3053, // 攻撃速さの共栄
+    AtkResFortune: 3084, // 攻撃魔防の共栄
 
     SlySwiftSparrow: 3056, // 鬼神飛燕の掩撃
     SlyMirror: 3074, // 鬼神明鏡の掩撃
