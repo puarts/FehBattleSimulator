@@ -269,7 +269,7 @@ class UniteUnitsNode extends UnitsNode {
     }
 
     evaluate(env) {
-        return IterUtil.concat(...this.evaluateChildren(env).flat());
+        return IterUtil.concat(...this.evaluateChildren(env));
     }
 }
 
