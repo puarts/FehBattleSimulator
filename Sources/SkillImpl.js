@@ -9268,7 +9268,7 @@
             let logger = this;
             // ステータス付与予約
             this.writeDebugLog("シーフの効果を発動");
-            stealBonusEffects(enemies, targetUnits, logger);
+            stealBonusEffects(enemies, skillOwner, targetUnits, logger);
         }
     );
     applySkillEffectForUnitFuncMap.set(skillId,

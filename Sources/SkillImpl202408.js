@@ -1,4 +1,59 @@
 // noinspection JSUnusedLocalSymbols
+// 毒も薬に、薬も毒に
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Dosage);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants Atk/Spd/Def/Res+5 to unit during combat and restores 10 HP to unit after combat.
+        GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+        RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE,
+    ));
+
+    // stealBonusEffectsに実装されている
+    // TODO: リファクタリング
+    // When a foe triggers "grants the【Bonus】 effects active on foe" and "neutralizes any 【Bonus】active on foe" effects from skills such as Essence Drain on unit with this status active,
+    // prevents those effects on unit and other targets and neutralizes any【Bonus】effects active on that foe (does not neutralize【Bonus】 effects applied at the same time).
+}
+
+// 神獣の猛毒
+{
+    let skillId = PassiveA.DivineToxin;
+    // If unit can transform,
+    // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
+    // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+    setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId);
+
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met,
+    // unit transforms.
+    setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId);
+
+    // At start of player phase or enemy phase,
+    // grants【Dosage】to unit and allies within 2 spaces of unit for 1 turn.
+    let nodeFunc = () => new SkillEffectNode(
+        new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+            new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.Dosage),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe initiates combat,
+        IF_NODE(OR_NODE(new IsTargetTransformedNode(), DOES_FOE_INITIATE_COMBAT_NODE),
+            // grants Atk/Def/Res+10 to unit,
+            new GrantsStatsPlusToTargetDuringCombatNode(10, 0, 10, 10),
+            // neutralizes foe's bonuses to Atk/Def,
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(true, false, true, false),
+            // grants Special cooldown charge +1 to unit per attack (only highest value applied; does not stack),
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+}
+
 // 毒の葬り手の妖牙
 {
     let skillId = Weapon.EnticingDose;

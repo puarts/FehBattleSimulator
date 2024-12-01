@@ -523,3 +523,17 @@ function setSlyEffect(skillId, atk, spd, def, res) {
     ));
 }
 
+// If unit can transform, transformation effects gain "if unit is within 2 spaces of a beast or dragon ally, or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+function setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId) {
+    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
+        new IsTargetWithinNSpacesOfTargetsAllyNode(2, new IsDifferentOriginNode()),
+    );
+}
+
+// If defending in Aether Raids,
+// at the start of enemy turn 1,
+// if conditions for transforming are met,
+// unit transforms.
+function setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId) {
+    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
+}
