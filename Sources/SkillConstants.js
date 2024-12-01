@@ -3433,6 +3433,7 @@ const PassiveC = {
     ADTwinNSave: 3077, // 鎧の護り手・近・双
     DRTwinNSave: 3032, // 盾の護り手・近・双
     ARTwinFSave: 3034, // 兜の護り手・遠・双
+    ADTwinFSave: 3082, // 鎧の護り手・遠・双
 
     Barricade: 3086, // 縄張り・守護
 

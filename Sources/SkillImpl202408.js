@@ -2054,9 +2054,10 @@
     )
 }
 
-// 兜の護り手・遠・双
+// 護り手・遠・双
 {
     setTwinSave(PassiveC.ARTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
+    setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
 }
 
 // 神魔の双竜の竜石
