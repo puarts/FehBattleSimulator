@@ -1,4 +1,73 @@
 // noinspection JSUnusedLocalSymbols
+// 毒の葬り手の妖牙
+{
+    let skillId = Weapon.EnticingDose;
+    // Accelerates Special trigger (cooldown count-1).
+    // At start of turn and after unit acts (if Canto triggers, after Canto), inflicts Atk/Def-7 and 【Sabotage】on foes within 3 rows or 3 columns centered on unit through their next actions.
+    let nodeFunc = () => new SkillEffectNode(
+        new ForEachUnitNode(new TargetsFoesOnMapNode(), IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            new InflictsStatsMinusOnTargetOnMapNode(7, 0, 7, 0),
+            new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Sabotage),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
+
+    // At start of turn, if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally, unit transforms (otherwise, unit reverts). If unit transforms, grants Atk+2, and unit can counterattack regardless of foe's range.
+    setBeastSkill(skillId, BeastCommonSkillType.Armor);
+
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(new IsTargetTransformedNode(), IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            // deals damage to foe = 25% of foe's max HP as combat begins
+            // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
+            new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
+        ),
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(new IsTargetTransformedNode(), IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            new NumThatIsNode(
+                // inflicts penalty on foe's Atk/Def = 6 + 20% of unit's Def at start of combat,
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(6, PERCENTAGE_NODE(20, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+            ),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // deals damage = 30% of foe's max HP (excluding area-of-effect Specials; excluding certain foes, such as Røkkr),
+            new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(30, new FoesMaxHpNode())),
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
+                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+                    // and also,
+                    // when foe's attack triggers foe's Special,
+                    // reduces damage from foe's attacks by an additional X
+                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(READ_NUM_NODE),
+                ),
+                // (excluding area-of-effect Specials; X = total damage dealt to foe; min 10; max 20).
+                new EnsureMinMaxNode(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
+            )
+        ),
+    ));
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(new IsTargetTransformedNode(), IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            new NumThatIsNode(
+                new SkillEffectNode(
+                    // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
+                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode(READ_NUM_NODE),
+                    // and also,
+                    // when foe's attack triggers foe's Special,
+                    // reduces damage from foe's attacks by an additional X
+                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode(READ_NUM_NODE),
+                ),
+                // (excluding area-of-effect Specials; X = total damage dealt to foe; min 10; max 20).
+                new EnsureMinMaxNode(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
+            )
+        ),
+    ));
+}
+
 // 縄張り・守護
 {
     let skillId = PassiveC.Barricade;

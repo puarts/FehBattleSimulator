@@ -1964,6 +1964,7 @@ const Weapon = {
 
     // 神階ニーズヘッグ、レーラズ
     QuietingBranch: 2993, // 心の葬り手の枝
+    EnticingDose: 3079, // 毒の葬り手の妖牙
 };
 
 const Support = {

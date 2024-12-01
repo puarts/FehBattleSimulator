@@ -1284,6 +1284,12 @@ class TargetsMaxHpNode extends NumberNode {
     }
 }
 
+class FoesMaxHpNode extends TargetsMaxHpNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);

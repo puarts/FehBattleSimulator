@@ -14449,6 +14449,14 @@ class DamageCalculatorWrapper {
             return false;
         }
 
+        for (let skillId of defUnit.enumerateSkills()) {
+            if (defUnit.isTransformed &&
+                BEAST_COMMON_SKILL_MAP.has(skillId) &&
+                BEAST_COMMON_SKILL_MAP.get(skillId) === BeastCommonSkillType.Armor) {
+                return true;
+            }
+        }
+
         if (defUnit.battleContext.canCounterattackToAllDistance) {
             return true;
         }
