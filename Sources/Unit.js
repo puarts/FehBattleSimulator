@@ -2990,10 +2990,10 @@ class Unit extends BattleMapElement {
     }
 
     initReservedDebuffs() {
-        this.reservedAtkDebuff = this.atkDebuff;
-        this.reservedSpdDebuff = this.spdDebuff;
-        this.reservedDefDebuff = this.defDebuff;
-        this.reservedResDebuff = this.resDebuff;
+        this.reservedAtkDebuff = 0;
+        this.reservedSpdDebuff = 0;
+        this.reservedDefDebuff = 0;
+        this.reservedResDebuff = 0;
     }
 
     getReservedBuffs() {
@@ -4069,7 +4069,7 @@ class Unit extends BattleMapElement {
     }
 
     getEvalDefInPrecombat() {
-        return this.getAtkInPrecombat() + this.__getEvalAtkAdd();
+        return this.getDefInPrecombat() + this.__getEvalDefAdd();
     }
 
     getEvalDefInCombat(enemyUnit = null) {

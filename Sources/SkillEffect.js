@@ -25,7 +25,7 @@ const GetFoeDuringCombatMixin = {
     },
 };
 
-const GetSkillMixin = {
+const GetSkillOwnerMixin = {
     getUnit(env) {
         return env.skillOwner;
     },
@@ -260,6 +260,25 @@ class MaxUnitsNode extends UnitsNode {
     }
 }
 
+class MinUnitsNode extends UnitsNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {NumberNode} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let minUnits = IterUtil.minElements(units, u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Min units: ${minUnits.map(u => u.nameWithGroup)}`);
+        return minUnits;
+    }
+}
+
 class UniteUnitsNode extends UnitsNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -269,7 +288,7 @@ class UniteUnitsNode extends UnitsNode {
     }
 
     evaluate(env) {
-        return IterUtil.concat(...this.evaluateChildren(env).flat());
+        return IterUtil.concat(...this.evaluateChildren(env));
     }
 }
 
@@ -320,6 +339,26 @@ class CountUnitsNode extends PositiveNumberNode {
 
     evaluate(env) {
         let units = Array.from(this._unitsNode.evaluate(env));
+        let result = units.length;
+        env.debug(`ユニットの数: ${result}`);
+        return result;
+    }
+}
+
+class CountIfUnitsNode extends PositiveNumberNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {BoolNode} predNode
+     */
+    constructor(unitsNode, predNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        units = units.filter(u => this._predNode.evaluate(env.copy().setTarget(u)));
         let result = units.length;
         env.debug(`ユニットの数: ${result}`);
         return result;
@@ -1245,9 +1284,15 @@ class TargetsMaxHpNode extends NumberNode {
     }
 }
 
+class FoesMaxHpNode extends TargetsMaxHpNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
     static {
-        Object.assign(this.prototype, GetSkillMixin);
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
@@ -1323,13 +1368,13 @@ class TargetsStatsAtStartOfTurnNode extends GetStatNode {
 
 class SkillOwnersStatsOnMapNode extends TargetsStatsOnMapNode {
     static {
-        Object.assign(this.prototype, GetSkillMixin);
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
 class SkillOwnersEvalStatsOnMapNode extends TargetsEvalStatsOnMapNode {
     static {
-        Object.assign(this.prototype, GetSkillMixin);
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
@@ -2098,7 +2143,7 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
 
 class GrantsStatusEffectToSkillOwnerNode extends GrantsStatusEffectsNode {
     static {
-        Object.assign(this.prototype, GetSkillMixin);
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
@@ -2603,6 +2648,31 @@ class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
 // noinspection JSUnusedGlobalSymbols
 const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
+const IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(4, TRUE_NODE);
+
+class IsSpaceWithinNSpacesOfTargetNode extends IsInRangeNNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let spaces = this._nNode.evaluate(env);
+        let result = env.tile.calculateDistanceToUnit(unit) <= spaces;
+        env.debug(`${env.tile}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
+        return result;
+    }
+}
+
+class IsSpaceWithinNSpacesOfSkillOwnerNode extends IsSpaceWithinNSpacesOfTargetNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const IS_SPACE_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsSpaceWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
+const IS_SPACE_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsSpaceWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
+const IS_SPACE_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE = new IsSpaceWithinNSpacesOfSkillOwnerNode(4, TRUE_NODE);
 
 class IsTargetWithinNSpacesOfAssistTargetNode extends IsInRangeNNode {
     static {

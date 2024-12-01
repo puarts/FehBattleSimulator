@@ -249,6 +249,12 @@ const ALLY_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
 
 /**
+ * Foes cannot warp into spaces
+ * @type {SkillEffectHooks}
+ */
+const UNIT_CANNOT_WARP_INTO_SPACES_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘開始後ダメージ後の回復
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS = new SkillEffectHooks();

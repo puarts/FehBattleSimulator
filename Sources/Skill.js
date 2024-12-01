@@ -1279,6 +1279,7 @@ const StatusEffectType = {
     Gallop: 70, // 迅走
     Anathema: 71, // 赤の呪い
     FutureWitness: 72, // 未来を知るもの
+    Dosage: 73, // 毒も薬に、薬も毒に
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };
 
@@ -1550,13 +1551,25 @@ const STATUS_INDEX = {
 
 // TODO: リファクタリングする(適切な場所に移動する。引数の型を確定する)
 /**
+ * enemiesのスキルを奪取する
  * @param {Generator<Unit>|Unit[]} enemies
+ * @param {Unit} targetUnit
  * @param {Generator<Unit>|Unit[]} targetAllies
  * @param logger
  */
-function stealBonusEffects(enemies, targetAllies, logger = null) {
+function stealBonusEffects(enemies, targetUnit, targetAllies, logger = null) {
     let statusSet = new Set();
     let enemyArray = Array.from(enemies);
+
+    let hasDosage = enemyArray.some(u => u.hasStatusEffect(StatusEffectType.Dosage));
+    if (hasDosage) {
+        logger?.writeDebugLog(`${targetUnit.nameWithGroup}からの奪取を無効`);
+        logger?.writeDebugLog(`${targetUnit.nameWithGroup}の強化を解除`);
+        targetUnit.getPositiveStatusEffects().forEach(e => targetUnit.reservedStatusEffectSetToNeutralize.add(e));
+        targetUnit.reservedBuffFlagsToNeutralize = [true, true, true, true];
+        return;
+    }
+
     enemyArray.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => {
         logger?.writeDebugLog(`${enemy.nameWithGroup}から${getStatusEffectName(e)}を解除`);
         statusSet.add(e);

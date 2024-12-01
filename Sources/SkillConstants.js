@@ -1961,6 +1961,10 @@ const Weapon = {
     ArcaneTruthfire: 3072, // 魔器・業火の理書
     ArcaneGiantAxe: 3075, // 魔器・ヨトゥンの斧
     ReversalLancePlus: 3078, // 強化反転の槍+
+
+    // 神階ニーズヘッグ、レーラズ
+    QuietingBranch: 2993, // 心の葬り手の枝
+    EnticingDose: 3079, // 毒の葬り手の妖牙
 };
 
 const Support = {
@@ -2468,11 +2472,13 @@ const PassiveA = {
     Fortifications: 2990, // 野戦築城
 
     AtkSpdFortune: 3053, // 攻撃速さの共栄
+    AtkResFortune: 3084, // 攻撃魔防の共栄
 
     SlySwiftSparrow: 3056, // 鬼神飛燕の掩撃
     SlyMirror: 3074, // 鬼神明鏡の掩撃
 
     // 専用A
+    DivineToxin: 3080, // 神獣の猛毒
     ObsidianTactics: 2946, // 黒曜石の教え
     FellWyrmscale: 2842, // 邪竜の暗鱗
     EmblemsMiracle: 2797, // 紋章の奇跡
@@ -2696,6 +2702,7 @@ const PassiveB = {
     SpecialFighter4: 2289,// 奥義隊形4
     CraftFighter3: 1483, // 抑止隊形3
     SlickFighter3: 1497, // 正面隊形・自己3
+    SlickFighter4: 3081, // 正面隊形・自己4
     WilyFighter3: 2003, //正面隊形・敵方3
     HardyFighter3: 1872, // 盾壁隊形3
     SavvyFighter3: 1991, // 慧眼隊形3
@@ -2960,6 +2967,7 @@ const PassiveB = {
     SpdDefDetect: 3065, // 速さ守備の看破
 
     // 専用B
+    YggdrasillsAlter: 3085, // 世界樹の半身
     BrutalFerocity: 3076, // 獰猛かつ残忍
     VedfolnirsWing: 3046, // 始祖の炎翼
     ShadowSlide: 2996, // 無間の瞬動
@@ -3426,6 +3434,9 @@ const PassiveC = {
     ADTwinNSave: 3077, // 鎧の護り手・近・双
     DRTwinNSave: 3032, // 盾の護り手・近・双
     ARTwinFSave: 3034, // 兜の護り手・遠・双
+    ADTwinFSave: 3082, // 鎧の護り手・遠・双
+
+    Barricade: 3086, // 縄張り・守護
 
     // 専用C
     DivineTalon: 3054, // 神獣の鋭爪

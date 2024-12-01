@@ -1,13 +1,33 @@
+/**
+ * total damage dealt to foe
+ */
+const TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE = SUB_NODE(new FoesMaxHpNode(), new FoesHpDuringCombatNode());
+
 const PERCENTAGE_NODE = (percentage, num) => MULT_TRUNC_NODE(percentage / 100.0, num);
 
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpaces(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
     new TargetAndTargetsAlliesWithinNSpacesNode(2, TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE);
+const TARGETS_CLOSEST_FOES_NODE = new TargetsClosestFoesNode();
+/**
+ * @param {number|NumberNode} n
+ * @param {BoolNode} pred
+ * @returns {UnitsNode}
+ * @constructor
+ */
+const TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE = (n, pred) =>
+    new FilterUnitsNode(new TargetAndTargetsAlliesWithinNSpacesNode(n, TARGETS_CLOSEST_FOES_NODE), pred);
 
 const CLOSEST_FOES_WITHIN5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN2_SPACES_OF_THOSE_FOES_NODE =
     new UnitsOfBothAssistTargetingAndAssistTargetNode(
         TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE
     );
+
+/**
+ * number of foes on the map with the【Discord】 effect active
+ */
+const NUM_OF_TARGETS_FOES_ON_MAP_WITH_STATUS_EFFECT_ACTIVE_NODE = (e) =>
+    new CountIfUnitsNode(TARGETS_FOES_NODE, new HasTargetStatusEffectNode(e))
 
 /**
  * 生の息吹4のようなHP回復効果。
@@ -436,10 +456,10 @@ const ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET = (n) =>
 
 /**
  * @param {number|string} skillId
- * @param {[boolean, boolean, boolean, boolean]} statsFlags
+ * @param {[boolean, boolean, boolean, boolean]} neutralizesBonusFlags
+ * @param {[number|NumberNode, number|NumberNode, number|NumberNode, number|NumberNode]} bonuses
  */
-function setFortune(skillId, statsFlags) {
-    let bonuses = statsFlags.map(n => n ? 8 : 0);
+function setFortune(skillId, neutralizesBonusFlags, bonuses) {
     // If unit can transform,
     // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
     // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
@@ -460,8 +480,8 @@ function setFortune(skillId, statsFlags) {
         // If unit is transformed or if foe initiates combat,
         IF_NODE(OR_NODE(new IsTargetTransformedNode(), DOES_UNIT_INITIATE_COMBAT_NODE),
             // grants Atk/Spd+8 to unit and neutralizes foe's bonuses to Spd/Def during combat,
-            new GrantsStatsPlusToUnitDuringCombatNode(...bonuses),
-            new NeutralizesFoesBonusesToStatsDuringCombatNode(...statsFlags),
+            new GrantsStatsPlusToUnitDuringCombatNode(StatsNode.makeStatsNodeFrom(...bonuses)),
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(...neutralizesBonusFlags),
             // and restores 7 HP to unit after combat.
             RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
         ),
@@ -503,3 +523,17 @@ function setSlyEffect(skillId, atk, spd, def, res) {
     ));
 }
 
+// If unit can transform, transformation effects gain "if unit is within 2 spaces of a beast or dragon ally, or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+function setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId) {
+    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
+        new IsTargetWithinNSpacesOfTargetsAllyNode(2, new IsDifferentOriginNode()),
+    );
+}
+
+// If defending in Aether Raids,
+// at the start of enemy turn 1,
+// if conditions for transforming are met,
+// unit transforms.
+function setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId) {
+    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
+}

@@ -972,7 +972,7 @@ class PostCombatSkillHander {
         let allyArray = Array.from(this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true));
         let targetAllyArray = allyArray.filter(u => u.hasStatusEffect(StatusEffectType.EssenceDrain));
         this.writeDebugLog("エーギル奪取の効果を発動");
-        stealBonusEffects(Array.from(enemies), targetAllyArray, this);
+        stealBonusEffects(Array.from(enemies), attackUnit, targetAllyArray, this);
         // 戦闘で敵を撃破していれば、
         // 戦闘後に自分と【エーギル奪取】が付与されている味方は10回復
         // (敵を撃破しているなら1回は攻撃しているはず)

@@ -150,6 +150,25 @@ class FoesHpPercentageAtStartOfCombatNode extends TargetsHpPercentageAtStartOfCo
 
 const FOES_HP_PERCENTAGE_AT_START_OF_COMBAT_NODE = new FoesHpPercentageAtStartOfCombatNode();
 
+class TargetsHpDuringCombatNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.restHp;
+        env.debug(`${unit.nameWithGroup}の戦闘中のHP: ${result}/${unit.maxHpWithSkills}`);
+        return result;
+    }
+}
+
+class FoesHpDuringCombatNode extends TargetsHpDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
 /**
  * @abstract
  */
@@ -740,6 +759,23 @@ class ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode extends ApplyingNum
     }
 }
 
+class ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode extends ApplyingNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    getDescription(n) {
+        return `受けるダメージ-${n}（攻撃ごと、範囲奥義を除く）`;
+    }
+
+    evaluate(env) {
+        let n = this.evaluateChildren(env);
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.damageReductionValuePerAttack += n;
+        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${result - n} => ${result}`);
+    }
+}
+
 class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
     getDescription(n) {
         return `受けるダメージ-${n}(戦闘前)`;
@@ -844,6 +880,19 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumber
         let beforeValue = context.damageReductionValueOfSpecialAttack;
         context.damageReductionValueOfSpecialAttack += n;
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValueOfSpecialAttack}`);
+    }
+}
+
+class ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode extends ApplyingNumberNode {
+    getDescription(n) {
+        return `敵の奥義による攻撃の時、受けるダメージ-${n}（攻撃ごと、範囲奥義を除く）`;
+    }
+
+    evaluate(env) {
+        let n = this.evaluateChildren(env);
+        let unit = env.unitDuringCombat;
+        let result = unit.battleContext.damageReductionValueOfSpecialAttackPerAttack += n;
+        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${result - n} => ${result}`);
     }
 }
 
@@ -1440,6 +1489,51 @@ class DamageDealtToTargetAsCombatBeginsNode extends NumberNode {
         let result = unit.battleContext.getMaxDamageAfterBeginningOfCombat();
         env.debug(`${unit.nameWithGroup}は戦闘開始後${result}のダメージを受けた`);
         return result;
+    }
+}
+
+class DamageDealtToFoeAsCombatBeginsNode extends DamageDealtToTargetAsCombatBeginsNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+class DealsDamageToTargetAsCombatBeginsNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let result = unit.battleContext.damageAfterBeginningOfCombat += n;
+        env.debug(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ: ${result - n} -> ${result}`);
+    }
+}
+
+class DealsDamageToFoeAsCombatBeginsNode extends DealsDamageToTargetAsCombatBeginsNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+class DealsDamageToTargetAsCombatBeginsThatDoesNotStackNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.addDamageAfterBeginningOfCombatNotStack(n);
+        let result = unit.battleContext.getDamagesAfterBeginningOfCombatNotStack();
+        env.debug(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ（最大値適用）: ${result}`);
+    }
+}
+
+class DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode extends DealsDamageToTargetAsCombatBeginsThatDoesNotStackNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
