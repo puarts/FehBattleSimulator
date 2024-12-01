@@ -2349,6 +2349,13 @@ class BattleMap {
         for (let tile of this.enumerateTiles()) {
             if (tile.existsEnemyUnit(warpUnit)) {
                 let enemyUnit = tile.placedUnit;
+
+                let env = new BattleMapEnv(this, warpUnit).setSkillOwner(enemyUnit).setTile(targetTile);
+                env.setName('ワープ不可').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
+                if (UNIT_CANNOT_WARP_INTO_SPACES_HOOKS.evaluateSomeWithUnit(enemyUnit, env)) {
+                    return false;
+                }
+
                 for (let skillId of enemyUnit.enumerateSkills()) {
                     let canWarp = getSkillFunc(skillId, canWarpFuncMap)?.call(this, targetTile, warpUnit, enemyUnit) ?? true;
                     if (!canWarp) {

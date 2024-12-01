@@ -3432,6 +3432,8 @@ const PassiveC = {
     DRTwinNSave: 3032, // 盾の護り手・近・双
     ARTwinFSave: 3034, // 兜の護り手・遠・双
 
+    Barricade: 3086, // 縄張り・守護
+
     // 専用C
     DivineTalon: 3054, // 神獣の鋭爪
     ConnectedWorld: 3028, // 人と神が繋がる世界

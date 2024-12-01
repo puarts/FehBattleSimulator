@@ -25,7 +25,7 @@ const GetFoeDuringCombatMixin = {
     },
 };
 
-const GetSkillMixin = {
+const GetSkillOwnerMixin = {
     getUnit(env) {
         return env.skillOwner;
     },
@@ -1286,7 +1286,7 @@ class TargetsMaxHpNode extends NumberNode {
 
 class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
     static {
-        Object.assign(this.prototype, GetSkillMixin);
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
@@ -1362,13 +1362,13 @@ class TargetsStatsAtStartOfTurnNode extends GetStatNode {
 
 class SkillOwnersStatsOnMapNode extends TargetsStatsOnMapNode {
     static {
-        Object.assign(this.prototype, GetSkillMixin);
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
 class SkillOwnersEvalStatsOnMapNode extends TargetsEvalStatsOnMapNode {
     static {
-        Object.assign(this.prototype, GetSkillMixin);
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
@@ -2137,7 +2137,7 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
 
 class GrantsStatusEffectToSkillOwnerNode extends GrantsStatusEffectsNode {
     static {
-        Object.assign(this.prototype, GetSkillMixin);
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
@@ -2642,6 +2642,31 @@ class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
 // noinspection JSUnusedGlobalSymbols
 const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
+const IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(4, TRUE_NODE);
+
+class IsSpaceWithinNSpacesOfTargetNode extends IsInRangeNNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let spaces = this._nNode.evaluate(env);
+        let result = env.tile.calculateDistanceToUnit(unit) <= spaces;
+        env.debug(`${env.tile}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
+        return result;
+    }
+}
+
+class IsSpaceWithinNSpacesOfSkillOwnerNode extends IsSpaceWithinNSpacesOfTargetNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const IS_SPACE_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsSpaceWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
+const IS_SPACE_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsSpaceWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
+const IS_SPACE_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE = new IsSpaceWithinNSpacesOfSkillOwnerNode(4, TRUE_NODE);
 
 class IsTargetWithinNSpacesOfAssistTargetNode extends IsInRangeNNode {
     static {

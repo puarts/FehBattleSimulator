@@ -1,4 +1,39 @@
 // noinspection JSUnusedLocalSymbols
+// 縄張り・守護
+{
+    let skillId = PassiveC.Barricade;
+    UNIT_CANNOT_WARP_INTO_SPACES_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // Foes with Range = 1 cannot warp into spaces within 3 spaces of unit and
+            AND_NODE(new IsTargetMeleeWeaponNode(), IS_SPACE_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
+            // foes with Range = 2 cannot warp into spaces within 4 spaces of unit
+            AND_NODE(new IsTargetRangedWeaponNode(), IS_SPACE_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE),
+            // (in either case, does not affect foes with Pass skills or warp effects from structures, like camps and fortresses in Rival Domains).
+        ),
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Def/Res+4 to unit and neutralizes unit's penalties to Def/Res during combat.
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4),
+            new NeutralizesPenaltiesToTargetsStatsNode(false, false, true, true),
+        )
+    ));
+
+    // Grants Def/Res+4 to allies within 3 spaces of unit and neutralizes their penalties to Def/Res during their combat.
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4),
+        )
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            new NeutralizesPenaltiesToTargetsStatsNode(false, false, true, true),
+        )
+    ));
+}
+
 // 世界樹の半身
 {
     let skillId = PassiveB.YggdrasillsAlter;
