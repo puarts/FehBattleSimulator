@@ -1,4 +1,29 @@
 // noinspection JSUnusedLocalSymbols
+// 正面隊形・自己4
+{
+    let skillId = PassiveB.SlickFighter4;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or if unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            // inflicts Atk-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 0, 0, 0),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                new SkillEffectNode(
+                    // deals +X damage (X = 20% of unit's Def; excluding area-of-effect Specials),
+                    new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                    // reduces damage from foe's attacks by X (excluding area-of-effect Specials),
+                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+                ),
+                PERCENTAGE_NODE(20, UNITS_DEF_DURING_COMBAT_NODE),
+            ),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and neutralizes penalties on unit during combat.
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+        )
+    ));
+}
+
 // 毒も薬に、薬も毒に
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.Dosage);
