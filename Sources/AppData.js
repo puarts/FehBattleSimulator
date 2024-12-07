@@ -565,13 +565,13 @@ class AppData extends UnitManager {
     }
 
     getEnemyExpansionUnitOnMap() {
-        if (this.gameMode != GameMode.AetherRaid) {
+        if (this.gameMode !== GameMode.AetherRaid) {
             return null;
         }
 
-        let lastSlotIndex = this.enemyUnits.length - 1;
+        let lastSlotIndex = this.enemyUnits.length - 2;
         for (let unit of this.enemyUnits) {
-            if (unit.isOnMap && unit.slotOrder == lastSlotIndex) {
+            if (unit.isOnMap && unit.slotOrder === lastSlotIndex) {
                 return unit;
             }
         }
@@ -580,15 +580,25 @@ class AppData extends UnitManager {
     }
 
     isSpecialSlotUnit(unit) {
-        if (this.gameMode != GameMode.AetherRaid) {
+        if (this.gameMode !== GameMode.AetherRaid) {
             return false;
         }
 
-        let lastSlotIndex = this.allyUnits.length - 1;
-        if (unit.groupId == UnitGroupType.Enemy) {
-            lastSlotIndex = this.enemyUnits.length - 1;
+        let slot = unit.groupId === UnitGroupType.Enemy ?
+            this.enemyUnits.length - 2 :
+            this.allyUnits.length - 2;
+        return unit.slotOrder === slot;
+    }
+
+    isReinforcementSlotUnit(unit) {
+        if (this.gameMode !== GameMode.AetherRaid) {
+            return false;
         }
-        return unit.slotOrder == lastSlotIndex;
+
+        let slot = unit.groupId === UnitGroupType.Enemy ?
+            this.enemyUnits.length - 1 :
+            this.allyUnits.length - 1;
+        return unit.slotOrder === slot;
     }
 
     setPawnsOfLokiTurnCountByRank() {
@@ -2176,7 +2186,7 @@ class AppData extends UnitManager {
 
     getEnemyCount() {
         switch (this.gameMode) {
-            case GameMode.AetherRaid: return 7;
+            case GameMode.AetherRaid: return 8;
             case GameMode.Arena: return 4;
             case GameMode.ResonantBattles: return 12;
             case GameMode.TempestTrials: return 6;
@@ -2186,7 +2196,7 @@ class AppData extends UnitManager {
     }
     getAllyCount() {
         switch (this.gameMode) {
-            case GameMode.AetherRaid: return 6;
+            case GameMode.AetherRaid: return 7;
             case GameMode.Arena: return 4;
             case GameMode.ResonantBattles: return 4;
             case GameMode.TempestTrials: return 4;

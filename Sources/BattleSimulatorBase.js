@@ -4660,7 +4660,9 @@ class BattleSimulatorBase {
             let expansionEnemyUnit = g_appData.getEnemyExpansionUnitOnMap();
             if (expansionEnemyUnit != null) {
                 // todo: 敵が7体編成じゃない場合、正しく判定できてない
-                if (self.countEnemyUnitsOnMap() === g_appData.enemyUnits.length) {
+                // 増援を含め8体編成
+                // マップに8-1=7体いれば特別枠は行動終了
+                if (self.countEnemyUnitsOnMap() === g_appData.enemyUnits.length - 1) {
                     expansionEnemyUnit.endAction();
                 }
             }
