@@ -586,7 +586,7 @@ class Tile extends BattleMapElement {
             fromTile = moveUnit.placedTile;
         }
 
-        if (fromTile == this) {
+        if (fromTile === this) {
             return 0;
         }
 
@@ -599,10 +599,10 @@ class Tile extends BattleMapElement {
             maxDepth = this.__getMaxDepth();
         }
         maxDepth = Math.min(this.__getMaxDepth(), maxDepth);
-        return fromTile._calculateDistanceToClosestTile(
+        return fromTile?._calculateDistanceToClosestTile(
             alreadyTraced, moveUnit, maxDepth,
             tile => {
-                return tile == this;
+                return tile === this;
             },
             neighbors => {
                 // 遅くなってしまった
@@ -615,7 +615,7 @@ class Tile extends BattleMapElement {
             ignoresBreakableWalls,
             isUnitIgnoredFunc,
             isPathfinderEnabled
-        );
+        ) ?? 0;
     }
 
     __getMaxDepth() {
