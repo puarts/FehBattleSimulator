@@ -525,8 +525,14 @@ function setSlyEffect(skillId, atk, spd, def, res) {
 
 // If unit can transform, transformation effects gain "if unit is within 2 spaces of a beast or dragon ally, or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
 function setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId) {
+    // If unit can transform, transformation effects gain
     CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
-        new IsTargetWithinNSpacesOfTargetsAllyNode(2, new IsDifferentOriginNode()),
+        OR_NODE(
+            // "if unit is within 2 spaces of a beast or dragon ally,
+            new IsTargetWithinNSpacesOfTargetsAllyNode(2, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE),
+            // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+            LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1, NOT_NODE(IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE)), 2),
+        ),
     );
 }
 
