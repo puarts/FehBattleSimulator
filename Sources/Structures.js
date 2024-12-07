@@ -54,7 +54,7 @@ const OrnamentSettings = [
 function findOrnamentTypeIndexByIcon(icon) {
     for (let i = 0; i < OrnamentSettings.length; ++i) {
         let setting = OrnamentSettings[i];
-        if (setting.icon == icon) {
+        if (setting.icon === icon) {
             return i;
         }
     }
@@ -551,8 +551,7 @@ class Ornament extends DefenceStructureBase {
         return false;
     }
     setIconByOrnamentTypeIndex() {
-        let icon = OrnamentSettings[this.ornamentTypeIndex].icon;
-        this._icon = icon;
+        this._icon = OrnamentSettings[this.ornamentTypeIndex].icon;
     }
 }
 
@@ -844,6 +843,7 @@ class HeavyTrap extends TrapBase {
     get iconFileName() {
         return "HeavyTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "重圧の罠";
     }
