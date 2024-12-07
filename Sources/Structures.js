@@ -730,6 +730,8 @@ class TrapBase extends TileTypeStructureBase {
     constructor(id) {
         super(id);
     }
+
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "罠";
     }
@@ -742,6 +744,7 @@ class FalseHexTrap extends TrapBase {
     get iconFileName() {
         return "HexTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "偽・停止の魔法罠";
     }
@@ -763,6 +766,7 @@ class HexTrap extends TrapBase {
     get iconFileName() {
         return "HexTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "停止の魔法罠";
     }
@@ -782,6 +786,7 @@ class FalseBoltTrap extends TrapBase {
     get iconFileName() {
         return "BoltTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "偽・落雷の罠";
     }
@@ -803,6 +808,7 @@ class BoltTrap extends TrapBase {
     get iconFileName() {
         return "BoltTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "落雷の罠";
     }
@@ -822,6 +828,7 @@ class FalseHeavyTrap extends TrapBase {
     get iconFileName() {
         return "HeavyTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "偽・重圧の罠";
     }
@@ -906,7 +913,7 @@ class BreakableWall extends DefenceStructureBase {
     }
 
     get isBroken() {
-        return this.breakCount == 0;
+        return this.breakCount === 0;
     }
     get type() {
         return ObjType.BreakableWall;
