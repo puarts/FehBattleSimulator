@@ -61,7 +61,11 @@ function findOrnamentTypeIndexByIcon(icon) {
     return -1;
 }
 
-/// 配置物の基底クラスです。
+/**
+ * 配置物の基底クラスです。
+ * 画像は以下を参照
+ * https://feheroes.fandom.com/wiki/Category:Structure_sprites
+ */
 class StructureBase extends BattleMapElement {
     constructor(id) {
         super();
@@ -863,6 +867,68 @@ class HeavyTrap extends TrapBase {
     }
 }
 
+class OfCallingCircle extends TileTypeStructureBase {
+    static getIcon() {
+        if (DebugModeDefault) {
+            return `/images/CallingCircle.webp`;
+        } else {
+            return `${g_imageRootPath}CallingCircle.webp`;
+        }
+    }
+
+    // noinspection JSCheckFunctionSignatures
+    get name() {
+        return "攻撃・転移の魔法陣";
+    }
+
+    get description() {
+        return "3ターン目、増援が登場する。このターン、増援は行動後に再行動可能（1回のみ）。この設備は、攻撃部隊に「増援枠」の神階効果を持つ神階英雄が必要。※詳細は、「飛空城　攻撃部隊編成」のヘルプに記載";
+    }
+
+    get icon() {
+        if (DebugModeDefault) {
+            return `/images/${this.iconFileName}`;
+        } else {
+            return `${g_imageRootPath}${this.iconFileName}`;
+        }
+    }
+
+    get iconFileName() {
+        return "CallingCircle.webp";
+    }
+
+    get isBreakable() {
+        return false;
+    }
+}
+
+class DefCallingCircle extends TileTypeStructureBase {
+    // noinspection JSCheckFunctionSignatures
+    get name() {
+        return "防衛・転移の魔法陣";
+    }
+
+    get description() {
+        return "3ターン目、増援が登場する。この設備は、攻撃部隊に「増援枠」の神階効果を持つ神階英雄が必要。※詳細は、「飛空城　攻撃部隊編成」のヘルプに記載";
+    }
+
+    get icon() {
+        if (DebugModeDefault) {
+            return `/images/${this.iconFileName}`;
+        } else {
+            return `${g_imageRootPath}${this.iconFileName}`;
+        }
+    }
+
+    get iconFileName() {
+        return "CallingCircle_Red.webp";
+    }
+
+    get isBreakable() {
+        return false;
+    }
+}
+
 class Wall extends DefenceStructureBase {
     constructor(id) {
         super(id);
@@ -960,5 +1026,5 @@ function isMovableForUnit(structure) {
         return true;
     }
 
-    return structure instanceof TrapBase;
+    return structure instanceof TileTypeStructureBase;
 }

@@ -1633,6 +1633,10 @@
                                 <input name="dragonflower" type="number"
                                     v-model="value.dragonflower" min="0" v-bind:max="value.maxDragonflower"
                                     class="numeric" @input="g_app.vm.dragonflowerChanged" />
+                                <label class="normal" for="reinforcementMerge">増+</label>
+                                <input name="reinforcementMerge" type="number"
+                                       v-model="value.reinforcementMerge" min="0" v-bind:max="10"
+                                       class="numeric" disabled/>
                             </td>
                         </tr>
                         <tr  v-bind:style="g_app.vm.debugMenuStyle">

@@ -579,6 +579,36 @@ class AppData extends UnitManager {
         return null;
     }
 
+    getReinforcementSlotUnit(groupType) {
+        if (this.gameMode !== GameMode.AetherRaid) {
+            return null;
+        }
+
+        let units = groupType === UnitGroupType.Ally ? this.allyUnits : this.enemyUnits;
+        for (let unit of units) {
+            if (this.isReinforcementSlotUnit(unit)) {
+                return unit;
+            }
+        }
+
+        return null;
+    }
+
+    getReinforcementSlotUnitOnTrash(groupType) {
+        if (this.gameMode !== GameMode.AetherRaid) {
+            return null;
+        }
+
+        let units = groupType === UnitGroupType.Ally ? this.allyUnits : this.enemyUnits;
+        for (let unit of units) {
+            if (!unit.isOnMap && this.isReinforcementSlotUnit(unit)) {
+                return unit;
+            }
+        }
+
+        return null;
+    }
+
     isSpecialSlotUnit(unit) {
         if (this.gameMode !== GameMode.AetherRaid) {
             return false;
@@ -918,6 +948,10 @@ class AppData extends UnitManager {
         if (updateBlessingEffects) {
             unit.clearBlessingEffects();
             for (let ally of this.enumerateUnitsInTheSameGroup(unit, false)) {
+                // 増援枠にいる神階は神階補正を与えない
+                if (this.isReinforcementSlotUnit(ally)) {
+                    continue;
+                }
                 if (!this.isBlessingEffectEnabled(unit, ally)) {
                     continue;
                 }
@@ -1098,11 +1132,17 @@ class AppData extends UnitManager {
         switch (this.gameMode) {
             case GameMode.AetherRaid:
                 {
-                    if (targetUnit.grantedBlessing == SeasonType.None && targetUnit.providableBlessingSeason == SeasonType.None) {
+                    if (this.isReinforcementSlotUnit(targetUnit)) {
+                        // 増援は神階でも補正を受ける
+                        // シーズン一致しか増援に出せないのでシーズンチェックは不要
+                        return true;
+                    }
+                    if (targetUnit.grantedBlessing === SeasonType.None &&
+                        targetUnit.providableBlessingSeason === SeasonType.None) {
                         // 祝福付与なし、かつ伝承英雄でもない
                         return false;
                     }
-                    if (providerUnit.providableBlessingSeason == SeasonType.None) {
+                    if (providerUnit.providableBlessingSeason === SeasonType.None) {
                         return false;
                     }
 
@@ -1116,7 +1156,7 @@ class AppData extends UnitManager {
                         return false;
                     }
 
-                    if (targetUnit.grantedBlessing == providerUnit.providableBlessingSeason) {
+                    if (targetUnit.grantedBlessing === providerUnit.providableBlessingSeason) {
                         // 祝福が一致した
                         return true;
                     }
@@ -1659,7 +1699,7 @@ class AppData extends UnitManager {
 
     examinesIsCurrentSeason(season) {
         for (let currentSeason of this.enumerateCurrentSeasons()) {
-            if (season == currentSeason) {
+            if (season === currentSeason) {
                 return true;
             }
         }
@@ -2023,6 +2063,8 @@ class AppData extends UnitManager {
         this.registerOffenceStructure(new SafetyFence(g_idGenerator.generate()));
         this.registerDefenceStructure(new FalseHexTrap(g_idGenerator.generate()));
         this.registerDefenceStructure(new HexTrap(g_idGenerator.generate()));
+        this.registerOffenceStructure(new OfCallingCircle(g_idGenerator.generate()));
+        this.registerDefenceStructure(new DefCallingCircle(g_idGenerator.generate()));
     }
 
     registerDefenceStructure(structure) {

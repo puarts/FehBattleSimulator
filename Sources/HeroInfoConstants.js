@@ -123,6 +123,24 @@ function isLegendarySeason(seasonType) {
     }
 }
 
+/**
+ * 攻撃側のシーズン（光天）であるかどうか
+ * @param seasonType
+ * @returns {boolean}
+ */
+function isAetherRaidAllySeason(seasonType) {
+    return seasonType === SeasonType.Light || seasonType === SeasonType.Astra;
+}
+
+/**
+ * 防衛側のシーズン（闇理）であるかどうか
+ * @param seasonType
+ * @returns {boolean}
+ */
+function isAetherRaidEnemySeason(seasonType) {
+    return seasonType === SeasonType.Dark || seasonType === SeasonType.Anima;
+}
+
 /// ☆5の成長量から純粋成長率を計算します。
 function getGrowthRateOfStar5(growthAmount) {
     let growthRate = GrowthRateOfStar5[growthAmount];
@@ -326,6 +344,26 @@ function isMythicSeasonType(season) {
         case SeasonType.Light:
         case SeasonType.Dark:
         case SeasonType.Astra:
+        case SeasonType.Anima:
+            return true;
+        default:
+            return false;
+    }
+}
+
+function isOffenseMythicSeasonType(season) {
+    switch (season) {
+        case SeasonType.Light:
+        case SeasonType.Astra:
+            return true;
+        default:
+            return false;
+    }
+}
+
+function isDefenseMythicSeasonType(season) {
+    switch (season) {
+        case SeasonType.Dark:
         case SeasonType.Anima:
             return true;
         default:

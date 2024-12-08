@@ -84,6 +84,7 @@ class Tile extends BattleMapElement {
         this.posX = px;
         this.posY = py;
         this._type = TileType.Normal;
+        /** @type {BattleMapElement} */
         this._obj = null;
         this._moveWeights = [];
         this._moveWeights[MoveType.Infantry] = 1;
@@ -375,7 +376,7 @@ class Tile extends BattleMapElement {
             return false;
         }
         return this._obj == null ||
-            this._obj instanceof TrapBase ||
+            this._obj instanceof TileTypeStructureBase ||
             this._obj instanceof BreakableWall;
     }
 
@@ -771,6 +772,101 @@ class Tile extends BattleMapElement {
         }
     }
 
+    /**
+     * 以下の優先順位でマスを選択する
+     * 1. 転移の魔法陣から増援ユニットが到達可能なマスのうち最も近いマス
+     * 2. 到達不可能なマスも含め最も近いマス
+     * 3. 上のマス
+     * 4. 右のマス
+     *
+     * 配置できないマス
+     * 1. 未作動の罠、ダミー罠
+     * 2. 通過不可なマス
+     * @param {Unit|null} unit 全てのマスが配布不可能の時nullを返す
+     * @param {OfCallingCircle|DefCallingCircle} callingCircle
+     */
+    findTileForCallingCircle(unit,  callingCircle) {
+        if (!callingCircle.placedTile.placedUnit) {
+            return callingCircle.placedTile;
+        }
+        let tile = this._findTileForCallingCircle(unit, callingCircle.placedTile);
+        if (tile) return tile;
+        return this._findTileForCallingCircle(unit, callingCircle.placedTile, false);
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {Tile} callingTile
+     * @param {boolean} placableOnly
+     * @returns {Tile|null}
+     * @private
+     */
+    _findTileForCallingCircle(unit, callingTile, placableOnly = true) {
+        // 開始地点が空いていないマスなら、それを返す
+        if (callingTile.isUnitPlacable(unit)) {
+            return callingTile;
+        }
+
+        // BFSの初期設定
+        const queue = [callingTile];
+        /** @type {Set<Tile>} */
+        const visited = new Set();
+        visited.add(callingTile);
+
+        while (queue.length > 0) {
+            const currentTile = queue.shift();
+            let sortedNeighborTiles = this._sortNeighborTiles(currentTile.neighbors, unit);
+            // 各方向を確認
+            for (let neighborTile of sortedNeighborTiles) {
+                // グリッド範囲内かつ未訪問の場合
+                if (!visited.has(neighborTile)) {
+                    // ユニットが配置可能かつ罠（偽含む）でもない
+                    if (neighborTile.isUnitPlacableForUnit(unit) &&
+                        !(neighborTile.obj instanceof TrapBase)) {
+                        if (unit.groupId === UnitGroupType.Ally && !(neighborTile.obj instanceof DefCallingCircle)) {
+                            return neighborTile;
+                        } else if (unit.groupId === UnitGroupType.Enemy && !(neighborTile.obj instanceof OfCallingCircle)) {
+                            return neighborTile;
+                        }
+                    }
+
+                    visited.add(neighborTile);
+                    if (placableOnly && !neighborTile.isMovableTileForUnit(unit)) {
+                        continue;
+                    }
+                    // 探索を続ける
+                    queue.push(neighborTile);
+                }
+            }
+        }
+
+        // 空いていないマスが見つからない場合
+        return null;
+    }
+
+    /**
+     * @param {Tile[]} neighborTiles
+     * @param {Unit} unit
+     * @return {Tile[]}
+     * @private
+     */
+    _sortNeighborTiles(neighborTiles, unit) {
+        if (unit.groupId === UnitGroupType.Ally) {
+            return neighborTiles.sort((a, b) => {
+                // y が低いほど優先順位が高い（yの昇順）
+                // y が同じ場合、x が高いほど優先順位が高い（xの降順）
+                return a.posY !== b.posY ? a.posY - b.posY : b.posX - a.posX;
+            });
+        } else {
+            // TODO: 敵の増援実装時に条件について確認する
+            return neighborTiles.sort((a, b) => {
+                // y が高いほど優先順位が高い
+                // y が同じ場合、x が低いほど優先順位が高い
+                return a.posY !== b.posY ? b.posY - a.posY : a.posX - b.posX;
+            });
+        }
+    }
+
     existsEnemyUnit(moveUnit) {
         return this.placedUnit != null && this.placedUnit.groupId !== moveUnit.groupId;
     }
@@ -845,11 +941,12 @@ class Tile extends BattleMapElement {
             return weight;
         }
 
-        if (this._obj instanceof TrapBase) {
+        if (this._obj instanceof TileTypeStructureBase) {
             return weight;
         }
 
         if (ignoresBreakableWalls) {
+            // TODO: 修正する
             if (!this._obj.isBreakable) {
                 return CanNotReachTile;
             }

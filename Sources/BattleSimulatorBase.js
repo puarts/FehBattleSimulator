@@ -470,6 +470,19 @@ class BattleSimulatorBase {
                 }
                 let currentUnit = self.__getCurrentUnit();
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
+
+                // 増援神階の凸数の変化が増援ユニットのステータスに影響するので更新する
+                let hasReinforcementAbility = currentUnit.hasReinforcementAbility(
+                    appData.enumerateCurrentSeasons(),
+                    currentUnit.groupId === UnitGroupType.Ally
+                );
+                if (hasReinforcementAbility) {
+                    let reinforcementUnit = appData.getReinforcementSlotUnit(currentUnit.groupId);
+                    if (reinforcementUnit != null) {
+                        reinforcementUnit.reinforcementMerge = reinforcementUnit.getReinforcementMerge();
+                        appData.__updateStatusBySkillsAndMerges(reinforcementUnit);
+                    }
+                }
                 updateAllUi();
             },
             dragonflowerChanged: function () {
@@ -4373,6 +4386,12 @@ class BattleSimulatorBase {
         this.__initializeAllUnitsOnMapPerTurn(enemyTurnSkillTargetUnits);
         this.__initializeTilesPerTurn(this.map._tiles, group);
 
+        // 増援処理
+        let reinforcementUnit = this._callReinforcement(group);
+        if (reinforcementUnit?.isOnMap) {
+            targetUnits.push(reinforcementUnit);
+        }
+
         if (this.data.gameMode !== GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
                 // TODO: 正しい挙動か確認する
@@ -4398,6 +4417,47 @@ class BattleSimulatorBase {
             this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
         }
     }
+
+    /**
+     * @param group
+     * @returns {Unit} 増援ユニットを返す。ただし実際に増援として出現したのかは問わないのでマップ上にいるか確認すること。
+     * @private
+     */
+    _callReinforcement(group) {
+        let reinforcementUnit = null;
+        if (this.data.gameMode === GameMode.AetherRaid &&
+            g_appData.currentTurn === 3) {
+            let isAllyPhase = group === UnitGroupType.Ally;
+            let units = isAllyPhase ? this.enumerateAllyUnits() : this.enumerateEnemyUnits();
+            let existsMythicHeroForReinforcement = false;
+            let isReinforcementSlotUnitCallable = false;
+            for (let unit of units) {
+                if (g_appData.isReinforcementSlotUnit(unit)) {
+                    reinforcementUnit = unit;
+                    for (let season of g_appData.enumerateCurrentSeasons()) {
+                        if (isAllyPhase && isAetherRaidEnemySeason(season)) continue;
+                        if (!isAllyPhase && isAetherRaidAllySeason(season)) continue;
+                        if (unit.canCallAsReinforcement(season)) {
+                            isReinforcementSlotUnitCallable = true;
+                        }
+                    }
+                }
+                if (unit.hasReinforcementAbility(g_appData.enumerateCurrentSeasons(), isAllyPhase)) {
+                    existsMythicHeroForReinforcement = true;
+                }
+            }
+            if (existsMythicHeroForReinforcement &&
+                isReinforcementSlotUnitCallable) {
+                for (let tile of g_appData.map.enumerateTiles()) {
+                    if (isAllyPhase && tile.obj instanceof OfCallingCircle) {
+                        this.executeStructure(tile.obj);
+                    }
+                }
+            }
+        }
+        return reinforcementUnit;
+    }
+
     __getCaptainSkill(groupId) {
         let captainUnit = this.__getCaptainUnitOnMap(groupId);
         if (captainUnit == null) {
@@ -8712,6 +8772,10 @@ class BattleSimulatorBase {
         }
     }
 
+    /**
+     * @returns {Generator<StructureBase>}
+     * @private
+     */
     * __enumerateDefenseStructuresOnMap() {
         for (let st of this.defenseStructureStorage.enumerateAllObjs()) {
             if (g_appData.map.isObjAvailable(st)) { yield st; }
@@ -8737,6 +8801,10 @@ class BattleSimulatorBase {
         }
     }
 
+    /**
+     * @param {StructureBase} structure
+     * @param {boolean} appliesDamage
+     */
     executeStructure(structure, appliesDamage = true) {
         if (appliesDamage) {
             this.__initReservedStateForAllUnitsOnMap();
@@ -8885,6 +8953,23 @@ class BattleSimulatorBase {
                 }
             }
         }
+        else if (structure instanceof OfCallingCircle) {
+            let unit = g_appData.getReinforcementSlotUnitOnTrash(UnitGroupType.Ally);
+            if (unit !== null) {
+                let circleTile = structure.placedTile;
+                let tile = circleTile.findTileForCallingCircle(unit, structure);
+                if (tile) {
+                    moveUnitToMap(unit, tile.posX, tile.posY, false, false);
+                    unit.anotherActionTurnForCallingCircle = g_appData.currentTurn;
+                }
+            }
+        }
+        else if (structure instanceof DefCallingCircle) {
+            let unit = g_appData.getReinforcementSlotUnitOnTrash(UnitGroupType.Enemy);
+            if (unit !== null) {
+                moveUnitToMap(unit, structure.posX, structure.posY, false, false);
+            }
+        }
         else {
             this.writeLogLine("<span style='color:red'>" + structure.name + "は効果の発動に未対応です。</span>");
         }
@@ -8914,6 +8999,10 @@ class BattleSimulatorBase {
     }
     executeCurrentStructure() {
         let structure = g_appData.currentStructure;
+        if (structure === null) {
+            return;
+        }
+
         if (g_appData.map.isObjAvailable(structure) === false) {
             return;
         }
