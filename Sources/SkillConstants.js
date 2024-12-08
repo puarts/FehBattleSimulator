@@ -3606,14 +3606,11 @@ const EmblemHero = {
 const EngagedSpecialIcon = {};
 EngagedSpecialIcon[EmblemHero.None] = `${g_imageRootPath}Special.png`;
 const g_engagedSpecialIconRoot = `${g_skillIconRootPath}EngagedSpecial/`;
+const g_debugEngagedSpecialIconRoot = `${g_debugSkillIconRootPath}EngagedSpecial/`;
 EngagedSpecialIcon[EmblemHero.Marth] = `${g_engagedSpecialIconRoot}Marth_Of_Beginnings_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
-if (DebugModeDefault) {
-    EngagedSpecialIcon[EmblemHero.Sigurd] = `/images/EngagedSpecial/Sigurd_Of_Holy_War_ES.webp`;
-} else {
-    EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
-}
+EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_debugEngagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 // https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
 
 const EffectiveType = {

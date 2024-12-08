@@ -869,11 +869,7 @@ class HeavyTrap extends TrapBase {
 
 class OfCallingCircle extends TileTypeStructureBase {
     static getIcon() {
-        if (DebugModeDefault) {
-            return `/images/CallingCircle.webp`;
-        } else {
-            return `${g_imageRootPath}CallingCircle.webp`;
-        }
+        return `${g_debugImageRootPath}CallingCircle.webp`;
     }
 
     // noinspection JSCheckFunctionSignatures
@@ -886,11 +882,7 @@ class OfCallingCircle extends TileTypeStructureBase {
     }
 
     get icon() {
-        if (DebugModeDefault) {
-            return `/images/${this.iconFileName}`;
-        } else {
-            return `${g_imageRootPath}${this.iconFileName}`;
-        }
+        return `${g_debugImageRootPath}${this.iconFileName}`;
     }
 
     get iconFileName() {
@@ -913,11 +905,7 @@ class DefCallingCircle extends TileTypeStructureBase {
     }
 
     get icon() {
-        if (DebugModeDefault) {
-            return `/images/${this.iconFileName}`;
-        } else {
-            return `${g_imageRootPath}${this.iconFileName}`;
-        }
+        return `${g_debugImageRootPath}${this.iconFileName}`;
     }
 
     get iconFileName() {
