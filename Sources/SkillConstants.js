@@ -3442,6 +3442,8 @@ const PassiveC = {
 
     Barricade: 3086, // 縄張り・守護
 
+    LookoutForce: 3089, // 露払い・不屈
+
     // 専用C
     DivineTalon: 3054, // 神獣の鋭爪
     ConnectedWorld: 3028, // 人と神が繋がる世界

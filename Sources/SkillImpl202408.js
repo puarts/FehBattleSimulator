@@ -1,4 +1,27 @@
 // noinspection JSUnusedLocalSymbols
+// 露払い・不屈
+{
+    let skillId = PassiveC.LookoutForce;
+    // Enables [Canto (2)] •
+    enablesCantoN(skillId, 2);
+
+    // When Canto triggers,
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd+4 to unit and neutralizes unit's penalties to Atk/Spd during combat.
+    WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Swap, 2),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd+4 to unit and neutralizes unit's penalties to Atk/Spd during combat.
+            new GrantsStatsPlusToTargetDuringCombatNode(4, 4, 0, 0),
+            new NeutralizesPenaltiesToTargetsStatsNode(true, true, false, false),
+        ),
+    ));
+}
+
 // 暗香疎影
 {
     let skillId = PassiveB.DarkPerfume;
