@@ -8,13 +8,15 @@
             // inflicts Atk-5 on foe,
             new InflictsStatsMinusOnFoeDuringCombatNode(5, 0, 0, 0),
             new AppliesSkillEffectsAfterStatusFixedNode(
-                new SkillEffectNode(
-                    // deals +X damage (X = 20% of unit's Def; excluding area-of-effect Specials),
-                    new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
-                    // reduces damage from foe's attacks by X (excluding area-of-effect Specials),
-                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+                new NumThatIsNode(
+                    new SkillEffectNode(
+                        // deals +X damage (X = 20% of unit's Def; excluding area-of-effect Specials),
+                        new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                        // reduces damage from foe's attacks by X (excluding area-of-effect Specials),
+                        new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+                    ),
+                    PERCENTAGE_NODE(20, UNITS_DEF_DURING_COMBAT_NODE),
                 ),
-                PERCENTAGE_NODE(20, UNITS_DEF_DURING_COMBAT_NODE),
             ),
             // unit makes a guaranteed follow-up attack,
             UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
