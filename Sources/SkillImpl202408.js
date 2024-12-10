@@ -1,4 +1,50 @@
 // noinspection JSUnusedLocalSymbols
+// 暗香疎影
+{
+    let skillId = PassiveB.DarkPerfume;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // grants Special cooldown count-1 to unit,
+        new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+        // inflicts (Undefended) and status preventing counterattacks on closest foes through their next actions,
+        new ForEachUnitNode(new TargetsClosestFoesNode(), TRUE_NODE,
+            new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Undefended),
+        ),
+        // and inflicts status preventing counterattacks on foes within 2 spaces of those foes through their next actions.
+        new ForEachUnitNode(new TargetsClosestFoesNode(), TRUE_NODE,
+            new ForEachTargetsAllyWithinNSpacesNode(2, TRUE_NODE,
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.CounterattacksDisrupted),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // inflicts Atk/Spd/Def-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 0),
+            // deals damage = 20% of unit's Spd
+            // (including when dealing damage with an area-of-effect Special),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // deals damage = 20% of unit's Spd
+        // (including when dealing damage with an area-of-effect Special),
+        new UnitDealsDamageBeforeCombatNode(PERCENTAGE_NODE(20, UNITS_SPD_DURING_COMBAT_NODE)),
+    ));
+
+    // While attacking in Aether Raids,
+    // if unit ends movement on a space with a Bolt Trap or a Heavy Trap,
+    // cancels trap's effect; if unit ends movement on a space with a Hex Trap,
+    // reduces trap's trigger condition by 10 HP.
+    DISARM_TRAP_SKILL_SET.add(skillId);
+    DISARM_HEX_TRAP_SKILL_SET.add(skillId);
+}
+
 // 魔器・姿なき影刃
 {
     let skillId = Weapon.ArcaneSlyKnife;

@@ -2970,6 +2970,7 @@ const PassiveB = {
     SpdDefDetect: 3065, // 速さ守備の看破
 
     // 専用B
+    DarkPerfume: 3088, // 暗香疎影
     YggdrasillsAlter: 3085, // 世界樹の半身
     BrutalFerocity: 3076, // 獰猛かつ残忍
     VedfolnirsWing: 3046, // 始祖の炎翼
