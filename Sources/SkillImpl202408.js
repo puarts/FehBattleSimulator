@@ -1,4 +1,17 @@
 // noinspection JSUnusedLocalSymbols
+// 追撃の斧+
+{
+    let skillId = Weapon.PursualAxePlus;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Def+5 to unit during combat and unit makes a guaranteed follow-up attack.
+            new GrantsStatsPlusToTargetDuringCombatNode(5, 0, 5, 0),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+    ));
+}
+
 // 露払い・不屈
 {
     let skillId = PassiveC.LookoutForce;
