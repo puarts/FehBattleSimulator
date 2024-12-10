@@ -1,4 +1,42 @@
 // noinspection JSUnusedLocalSymbols
+// 魔器・姿なき影刃
+{
+    let skillId = Weapon.ArcaneSlyKnife;
+    // Arcane Sly Knife
+    // Mt: 14 Rng:2
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat, if unit's HP ≥ 25%, grants bonus to
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // unit's Atk/Spd/Def/Res = 25% of foe's Atk at start of combat - 4 (min 5; max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMinMaxNode(
+                    SUB_NODE(PERCENTAGE_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE), 4),
+                    5, 14,
+                )
+            ),
+            // neutralizes foe's bonuses to Spd/Def,
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, true, false),
+            // deals damage = 15% of unit's Atk
+            // (including when dealing damage with an area-of-effect Special),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, UNITS_ATK_DURING_COMBAT_NODE),
+            // reduces damage from foe's first attack by 7
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            // and grants Special cooldown count- 1 to unit before unit's first attack during combat.
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // deals damage = 15% of unit's Atk
+            // (including when dealing damage with an area-of-effect Special),
+            new UnitDealsDamageBeforeCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_AT_START_OF_COMBAT_NODE)),
+        )
+    ))
+}
+
 // 正面隊形・自己4
 {
     let skillId = PassiveB.SlickFighter4;

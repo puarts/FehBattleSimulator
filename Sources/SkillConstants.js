@@ -1965,6 +1965,9 @@ const Weapon = {
     // 神階ニーズヘッグ、レーラズ
     QuietingBranch: 2993, // 心の葬り手の枝
     EnticingDose: 3079, // 毒の葬り手の妖牙
+
+    // 魔器レイラ、響心ヘクトル、神階ルーン
+    ArcaneSlyKnife: 3087, // 魔器・姿なき影刃
 };
 
 const Support = {
