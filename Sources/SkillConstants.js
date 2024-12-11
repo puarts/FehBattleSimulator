@@ -2710,6 +2710,7 @@ const PassiveB = {
     SlickFighter3: 1497, // 正面隊形・自己3
     SlickFighter4: 3081, // 正面隊形・自己4
     WilyFighter3: 2003, //正面隊形・敵方3
+    WilyFighter4: 3093, // 正面隊形・敵方4
     HardyFighter3: 1872, // 盾壁隊形3
     SavvyFighter3: 1991, // 慧眼隊形3
     SavvyFighter4: 2435, // 慧眼隊形4
