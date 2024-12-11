@@ -1,4 +1,39 @@
 // noinspection JSUnusedLocalSymbols
+// オスティアの血盟
+{
+    let skillId = PassiveA.OathOfOstia;
+    // Grants HP+5.
+
+    let applyDivineVeinFunc = () => new SkillEffectNode(
+        // applies Divine Vein (Stone) to unit's space and spaces within 2 spaces of unit for 1 turn.
+        new ForEachSpacesNode(new SpacesWithinNSpacesOfTargetNode(2),
+            new ApplyDivineVeinNode(DivineVeinType.Stone, new TargetGroupNode(), 1),
+        ),
+    );
+    // After unit acts (if Canto triggers, after Canto), or,
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, applyDivineVeinFunc);
+    // if defending in Aether Raids,
+    // at the start of enemy phase,
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            IF_NODE(WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
+                applyDivineVeinFunc(),
+            ),
+        )
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // inflicts Atk/Def-10 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(10, 0, 10, 0),
+            // grants Special cooldown count-2 to unit before foe's first attack,
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstFollowUpAttackDuringCombatNode(2),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
 // 盟友との絆の剣
 {
     let skillId = Weapon.FellowshipBlade;

@@ -435,6 +435,25 @@ class UniteSpacesIfNode extends SpacesNode {
     }
 }
 
+class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let result = env.battleMap.enumerateTilesWithinSpecifiedDistance(unit.placedTile, n);
+        env.trace(`Spaces within ${n} spaces of ${unit.nameWithGroup}`);
+        return result;
+    }
+}
+
 class IsThereUnitOnMapNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -450,6 +469,19 @@ class IsThereUnitOnMapNode extends BoolNode {
         let pred = u => u.isOnMap && this._predNode.evaluate(env.copy().setTarget(u));
         let result = env.unitManager.isThereUnit(pred);
         env.debug(`${unit.nameWithGroup}に対して条件を満たすユニットがマップ上にいるか: ${result}`);
+        return result;
+    }
+}
+
+class TargetGroupNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.groupId;
+        env.debug(`${unit.nameWithGroup}は${groupIdToString(result)}`);
         return result;
     }
 }
@@ -818,6 +850,7 @@ class AtStartOfTurnEnv extends NodeEnv {
         super();
         this.phase = NodeEnv.PHASE.AT_START_OF_TURN;
         this.setBeginningOfTurnSkillHandler(handler);
+        this.setBattleMap(handler.map);
         this.setSkillOwner(targetUnit);
         this.setTarget(targetUnit);
     }
@@ -3027,9 +3060,42 @@ class AppliesDivineVeinIceToTargetsSpaceAndSpacesWithinNSpacesOfTargetFor2TurnsN
     }
 }
 
+class ApplyDivineVeinNode extends SkillEffectNode {
+    constructor(divineVein, group, turns = 1) {
+        super();
+        this._divineVein = NumberNode.makeNumberNodeFrom(divineVein);
+        this._group = NumberNode.makeNumberNodeFrom(group);
+        this._turns = NumberNode.makeNumberNodeFrom(turns);
+    }
+
+    evaluate(env) {
+        let tile = env.tile;
+        let divineVein = this._divineVein.evaluate(env);
+        let groupId = this._group.evaluate(env);
+        let turns = this._turns.evaluate(env);
+        tile.reserveDivineVein(divineVein, groupId, turns);
+    }
+}
+
 // Tileへの効果 END
 
 // Tileを返す START
+class ForEachSpacesNode extends ForEachNode {
+    constructor(spacesNode, predNode, ...nodes) {
+        super(...nodes);
+        this._spacesNode = spacesNode;
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        for (let space of this._spacesNode.evaluate(env)) {
+            if (this._predNode.evaluate(env.copy().setTile(space))) {
+                this.evaluateChildren(env.copy().setTile(space))
+            }
+        }
+    }
+}
+
 class ForEachTargetForSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin, ForUnitMixin);

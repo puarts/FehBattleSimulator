@@ -2483,6 +2483,7 @@ const PassiveA = {
     SlyMirror: 3074, // 鬼神明鏡の掩撃
 
     // 専用A
+    OathOfOstia: 3092, // オスティアの血盟
     DivineToxin: 3080, // 神獣の猛毒
     ObsidianTactics: 2946, // 黒曜石の教え
     FellWyrmscale: 2842, // 邪竜の暗鱗
