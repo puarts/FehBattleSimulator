@@ -1969,6 +1969,7 @@ const Weapon = {
     // 魔器レイラ、響心ヘクトル、神階ルーン
     ArcaneSlyKnife: 3087, // 魔器・姿なき影刃
     PursualAxePlus: 3090, // 追撃の斧+
+    FellowshipBlade: 3091, // 盟友との絆の剣
 };
 
 const Support = {

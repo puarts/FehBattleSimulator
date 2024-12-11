@@ -1,4 +1,47 @@
 // noinspection JSUnusedLocalSymbols
+// 盟友との絆の剣
+{
+    let skillId = Weapon.FellowshipBlade;
+    // Accelerates Special trigger (cooldown count-1).
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Def/Res+6,
+                new GrantsStatsPlusAtStartOfTurnNode(0, 0, 6, 6),
+                // (Bulwark),
+                // and (Null Panic) to unit and allies within 2 spaces of unit for 1 turn.
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Bulwalk, StatusEffectType.NullPanic),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            X_NUM_NODE(
+                // inflicts penalty on
+                // foe's Atk/Def = 20% of unit's Def at start of combat + 6,
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_DEF_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage
+                new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                // reduces damage from foe's attacks by 50% of X (excluding area-of-effect Specials),
+                new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(PERCENTAGE_NODE(50, READ_NUM_NODE)),
+                // (X = highest total bonuses among unit and allies within 2 spaces of unit; excluding area-of-effect Specials),
+                HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(2),
+            ),
+            // and inflicts Special cooldown charge - 1 on foe per attack during combat (only highest value applied; does not stack).
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ),
+    ));
+}
+
 // 追撃の斧+
 {
     let skillId = Weapon.PursualAxePlus;

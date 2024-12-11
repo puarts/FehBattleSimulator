@@ -810,3 +810,27 @@ class NumThatIsNode extends SkillEffectNode {
         this.getChildren()[0].evaluate(env);
     }
 }
+
+class XNumNode extends SkillEffectNode {
+    /**
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(...nodes) {
+        super(...(nodes.slice(0, -1)));
+        // noinspection JSCheckFunctionSignatures
+        let xNode = NumberNode.makeNumberNodeFrom(nodes[nodes.length - 1]);
+        if (!(xNode instanceof NumbersNode)) {
+            console.error(`Last node must be a NumbersNode but received: ${xNode.constructor.name}`);
+        }
+        this._numNode = xNode;
+    }
+
+    evaluate(env) {
+        let value = this._numNode.evaluate(env);
+        env.storeValue(value);
+        env.trace(`store x value: ${value}`);
+        this.evaluateChildren(env);
+    }
+}
+
+const X_NUM_NODE = (...nodes) => new XNumNode(...nodes);
