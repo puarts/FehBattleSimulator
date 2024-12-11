@@ -3563,6 +3563,7 @@ const PassiveX = {
     FarTraceEcho: 2908, // 響・遠影
     NullCDisruptE: 2953, // 響・見切り反撃不可
     TimePulseEcho: 3013, // 響・始まりの鼓動
+    DCounterEcho: 3094, // 響・遠距離反撃
 };
 
 const Captain = {
