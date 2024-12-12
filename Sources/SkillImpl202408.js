@@ -1,4 +1,47 @@
 // noinspection JSUnusedLocalSymbols
+// 創世の文字の力
+{
+    let skillId = Weapon.OdrOfCreation;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants【Empathy】 and "unit can move to a space adjacent to any ally within 2 spaces"
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Empathy, StatusEffectType.AirOrders),
+            )
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res = number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14,
+                ),
+            ),
+            // neutralizes unit's penalties,
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+            X_NUM_NODE(
+                // deals +X damage
+                new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                // (X = number of【Bonus】effects active on unit and foe,
+                // excluding stat bonuses, × 5; max 25; excluding area-of-effect Specials),
+                new EnsureMaxNode(MULT_NODE(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25),
+            ),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+}
+
 // オスティアの血盟
 {
     let skillId = PassiveA.OathOfOstia;

@@ -1970,6 +1970,7 @@ const Weapon = {
     ArcaneSlyKnife: 3087, // 魔器・姿なき影刃
     PursualAxePlus: 3090, // 追撃の斧+
     FellowshipBlade: 3091, // 盟友との絆の剣
+    OdrOfCreation: 3095, // 創世の文字の力
 };
 
 const Support = {
