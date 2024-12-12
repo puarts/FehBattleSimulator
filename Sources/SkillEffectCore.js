@@ -819,8 +819,8 @@ class XNumNode extends SkillEffectNode {
         super(...(nodes.slice(0, -1)));
         // noinspection JSCheckFunctionSignatures
         let xNode = NumberNode.makeNumberNodeFrom(nodes[nodes.length - 1]);
-        if (!(xNode instanceof NumbersNode)) {
-            console.error(`Last node must be a NumbersNode but received: ${xNode.constructor.name}`);
+        if (!(xNode instanceof NumberNode)) {
+            console.error(`Last node must be a NumberNode but received: ${xNode.constructor.name}`);
         }
         this._numNode = xNode;
     }
