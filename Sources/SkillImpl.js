@@ -8611,14 +8611,14 @@
 
 // 防壁
 {
-    let generateFunc = (func, isBulwalk4 = false) => function (targetUnit, enemyUnit, calcPotentialDamage) {
+    let generateFunc = (func, isBulwark4 = false) => function (targetUnit, enemyUnit, calcPotentialDamage) {
         func(enemyUnit);
-        if (isBulwalk4) {
+        if (isBulwark4) {
             targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
         }
         targetUnit.battleContext.healedHpAfterCombat += 7;
     };
-    let setSkill = (skillId, func, isBulwalk4) => {
+    let setSkill = (skillId, func, isBulwark4) => {
         canActivateObstructToAdjacentTilesFuncMap.set(skillId,
             function (moveUnit) {
                 return true;
@@ -8629,7 +8629,7 @@
                 return true;
             }
         );
-        applySkillEffectForUnitFuncMap.set(skillId, generateFunc(func, isBulwalk4));
+        applySkillEffectForUnitFuncMap.set(skillId, generateFunc(func, isBulwark4));
     };
     // 攻撃速さの防壁4
     setSkill(PassiveB.ASBulwark4, u => u.addAtkSpdSpurs(-4), true);

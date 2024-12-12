@@ -2470,7 +2470,7 @@ class Unit extends BattleMapElement {
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstructToAdjacentTiles(moveUnit) {
-        let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwalk);
+        let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwark);
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(1マス以内)').setLogLevel(getSkillLogLevel());
         env.setName('移動時(1マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);

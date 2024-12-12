@@ -1258,7 +1258,7 @@ class BattleSimulatorBase {
                 // - 【強化増幅】、
                 this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.BonusDoubler);
                 // - 【防壁】の状態を付与（1ターン）
-                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Bulwalk);
+                this.__addStatusEffectToSameOriginUnits(duoUnit, StatusEffectType.Bulwark);
                 break;
             case Hero.DuoRobin:
                 // 自分と自分を中心とした

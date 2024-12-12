@@ -1273,7 +1273,7 @@ const StatusEffectType = {
     ShareSpoils: 64, // 戦果移譲
     Frozen: 65, // 凍結
     Bonded: 66, // 縁
-    Bulwalk: 67, // 防壁
+    Bulwark: 67, // 防壁
     DivineNectar: 68, // 神獣の蜜
     Paranoia: 69, // 被害妄想
     Gallop: 70, // 迅走

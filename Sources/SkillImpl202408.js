@@ -47,7 +47,7 @@
                 new GrantsStatsPlusAtStartOfTurnNode(0, 0, 6, 6),
                 // (Bulwark),
                 // and (Null Panic) to unit and allies within 2 spaces of unit for 1 turn.
-                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Bulwalk, StatusEffectType.NullPanic),
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Bulwark, StatusEffectType.NullPanic),
             ),
         ),
     );
