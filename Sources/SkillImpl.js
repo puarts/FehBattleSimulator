@@ -8722,58 +8722,6 @@
     );
 }
 
-// 刃の葬り手の爪
-{
-    let skillId = Weapon.QuietingClaw;
-    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET.add(skillId);
-    BEAST_COMMON_SKILL_MAP.set(skillId, BeastCommonSkillType.Flying);
-    // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            if (skillOwner.battleContext.restHpPercentage >= 25) {
-                for (let nearestEnemies of this.__findNearestEnemies(skillOwner)) {
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemies, 2, true)) {
-                        unit.reserveToApplyDebuffs(0, -7, -7, 0);
-                        unit.reserveToAddStatusEffect(StatusEffectType.Exposure);
-                    }
-                }
-            }
-        }
-    );
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAllSpur(5);
-                let count = 0;
-                let statusCount = 0;
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(enemyUnit, 2)) {
-                    if (unit.hasPositiveStatusEffect() ||
-                        unit.hasNegativeStatusEffect()) {
-                        count++;
-                    }
-                    statusCount += unit.getPositiveStatusEffects().length;
-                    statusCount += unit.getNegativeStatusEffects().length;
-                }
-                statusCount += enemyUnit.getPositiveStatusEffects().length;
-                statusCount += enemyUnit.getNegativeStatusEffects().length;
-                this.writeDebugLog(`有利・不利な状態を受けた周囲2マスの敵の数: ${count}`);
-                this.writeDebugLog(`敵と周囲2マスの敵の有利・不利な状態の数: ${statusCount}`);
-                let amount = Math.min(count * 3 + 4, 10);
-                enemyUnit.addSpursWithoutRes(amount);
-                // 固定ダメージ
-                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (isPrecombat) return;
-                    atkUnit.battleContext.additionalDamage += statusCount * 3;
-                });
-                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
-                    return 0.4;
-                });
-                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
-            }
-        }
-    );
-}
-
 // 王者の刃
 {
     let skillId = Weapon.BladeRoyale;
