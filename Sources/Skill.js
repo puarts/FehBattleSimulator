@@ -1280,9 +1280,15 @@ const StatusEffectType = {
     Anathema: 71, // 赤の呪い
     FutureWitness: 72, // 未来を知るもの
     Dosage: 73, // 毒も薬に、薬も毒に
+    Empathy: 74, // 多感
+    // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };
 
+/**
+ * 不利なステータスの解除される順番
+ * @type {(number)[]}
+ */
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Panic,
     StatusEffectType.Exposure,
