@@ -289,6 +289,9 @@ function statusEffectTypeToIconFilePath(value) {
 }
 
 function getStatusEffectName(effect) {
+    if (STATUS_EFFECT_INFO_MAP.has(effect)) {
+        return STATUS_EFFECT_INFO_MAP.get(effect)[1];
+    }
     for (let name in StatusEffectType) {
         if (StatusEffectType[name] === effect) {
             return name;

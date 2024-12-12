@@ -604,7 +604,7 @@ const NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new 
     }
 }();
 
-class numOfBonusesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
+class NumOfBonusesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -617,7 +617,7 @@ class numOfBonusesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
     }
 }
 
-class numOfPenaltiesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
+class NumOfPenaltiesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -626,6 +626,40 @@ class numOfPenaltiesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
         let unit = this.getUnit(env);
         let result = unit.getNegativeStatusEffects().length;
         env.debug(`${unit.nameWithGroup}の不利な状態の数: ${result}`);
+        return result;
+    }
+}
+
+class BonusesActiveOnTargetExcludingStatSetNode extends SetNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param env
+     * @returns {Set<Number>}
+     */
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = new Set(unit.getPositiveStatusEffects());
+        env.debug(`${unit.nameWithGroup}の有利な状態: ${[...result].map(e => getStatusEffectName(e))}`);
+        return result;
+    }
+}
+
+class PenaltiesActiveOnTargetExcludingStatSetNode extends SetNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param env
+     * @returns {Set<Number>}
+     */
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = new Set(unit.getNegativeStatusEffects());
+        env.debug(`${unit.nameWithGroup}の不利な状態: ${[...result].map(e => getStatusEffectName(e))}`);
         return result;
     }
 }

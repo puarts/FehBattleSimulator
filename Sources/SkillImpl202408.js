@@ -1,4 +1,26 @@
 // noinspection JSUnusedLocalSymbols
+// 多感
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Empathy);
+    // 【Empathy】
+    // Grants bonus to unit's Atk/Spd/Def/Res = number of types of【Bonus】effects,
+    // excluding stat bonuses,
+    // and【Penalty】effects,
+    // excluding stat penalties,
+    // active on player team and enemy team during combat (max 7).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new GrantsAllStatsPlusNToTargetDuringCombatNode(
+            new EnsureMaxNode(
+                SET_SIZE_NODE(new MapUnionUnitsNode(
+                    UNITS_ON_MAP_NODE,
+                    BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE)
+                ),
+                7
+            ),
+        ),
+    ));
+}
+
 // 創世の文字の力
 {
     let skillId = Weapon.OdrOfCreation;

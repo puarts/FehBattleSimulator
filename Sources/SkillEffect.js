@@ -292,7 +292,35 @@ class UniteUnitsNode extends UnitsNode {
     }
 }
 
-class MapUnitsNode extends NumbersNode {
+/**
+ * @template T
+ */
+class MapUnionUnitsNode extends SkillEffectNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {SetNode<T>} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    /**
+     * @param env
+     * @returns {Set<T>}
+     */
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let values = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Map units: ${units.map(u => u.nameWithGroup)} => values: [${values.map(s => SetUtil.toString(s))}]`);
+        let result = SetUtil.union(...values);
+        env.trace(`Union set: ${SetUtil.toString(result)}`);
+        return result;
+    }
+}
+
+class MapUnitsToNumNode extends NumbersNode {
     /**
      * @param {UnitsNode} unitsNode
      * @param {NumberNode} funcNode

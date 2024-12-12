@@ -138,10 +138,14 @@ const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
 const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
 const FOES_RES_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Res);
 
-const NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new numOfBonusesActiveOnTargetExcludingStatNode();
-const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new numOfPenaltiesActiveOnTargetExcludingStatNode();
+const NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfBonusesActiveOnTargetExcludingStatNode();
+const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfPenaltiesActiveOnTargetExcludingStatNode();
 const NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE =
     SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
+const BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new BonusesActiveOnTargetExcludingStatSetNode();
+const PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new PenaltiesActiveOnTargetExcludingStatSetNode();
+const BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE =
+    UNION_SET_NODE(BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE, PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE);
 
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
@@ -346,7 +350,7 @@ function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUn
  * @returns {NumberNode}
  */
 function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
-    return MAX_NODE(new MapUnitsNode(
+    return MAX_NODE(new MapUnitsToNumNode(
         new TargetAndTargetsAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
         unitValueNode,
     ));
@@ -366,7 +370,7 @@ function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
  * @returns {NumberNode}
  */
 function sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n, unitValueNode) {
-    return SUM_NODE(new MapUnitsNode(
+    return SUM_NODE(new MapUnitsToNumNode(
         new TargetAndTargetsAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
         unitValueNode,
     ));
@@ -413,12 +417,12 @@ const SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON
 
 const TARGETS_TOTAL_BONUSES_NODE = new TargetsTotalBonusesNode();
 const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT =
-    MAX_NODE(new MapUnitsNode(
+    MAX_NODE(new MapUnitsToNumNode(
         SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         TARGETS_TOTAL_BONUSES_NODE));
 
 const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n) =>
-    MAX_NODE(new MapUnitsNode(
+    MAX_NODE(new MapUnitsToNumNode(
         new TargetAndTargetsAlliesWithinNSpacesNode(n, TARGET_NODE),
         TARGETS_TOTAL_BONUSES_NODE));
 

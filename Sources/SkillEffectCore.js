@@ -379,6 +379,60 @@ class ConstantNumberNode extends NumberNode {
 }
 
 /**
+ * @template T
+ * @abstract
+ */
+class SetNode extends SkillEffectNode {
+    /**
+     * @param env
+     * @returns {Set<T>}
+     * @abstract
+     */
+    evaluate(env) {
+    }
+}
+
+/**
+ * @template T
+ */
+class UnionSetNode extends SetNode {
+    /**
+     * @param {...SetNode<T>} nodes
+     */
+    constructor(...nodes) {
+        let a = nodes;
+        super(...nodes);
+    }
+
+    /**
+     * @param env
+     * @returns {Set<T>}
+     */
+    evaluate(env) {
+        let sets = this.evaluateChildren(env);
+        return SetUtil.union(...sets);
+    }
+}
+
+const UNION_SET_NODE = (...nodes) => new UnionSetNode(...nodes);
+
+class SetSizeNode extends PositiveNumberNode {
+    /**
+     * @param {SetNode} setNode
+     */
+    constructor(setNode) {
+        super();
+        this._setNode = setNode;
+    }
+
+    evaluate(env) {
+        return this._setNode.evaluate(env).size;
+    }
+}
+
+const SET_SIZE_NODE = setNode => new SetSizeNode(setNode);
+
+/**
  * @abstract
  */
 class BoolNode extends SkillEffectNode {
