@@ -3424,6 +3424,7 @@ const PassiveC = {
 
     // 鍛錬の鼓動
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
+    PulseUpPloy: 3097, // 鍛錬の鼓動・謀策
 
     BeastThreaten: 2913, // 獣の威嚇
 

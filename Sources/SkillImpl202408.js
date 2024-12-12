@@ -1,4 +1,26 @@
 // noinspection JSUnusedLocalSymbols
+// 鍛錬の鼓動・謀策
+{
+    let skillId = PassiveC.PulseUpPloy;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn, grants Special cooldown count-1.
+        new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+    ));
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if any foes within 3 rows or 3 columns centered on unit have Res < unit's Res+5,
+        new ForEachUnitNode(new TargetsFoesOnMapNode(), IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            IF_NODE(LT_NODE(TARGETS_EVAL_RES_ON_MAP, ADD_NODE(SKILL_OWNERS_EVAL_RES_ON_MAP, 5)),
+                // inflicts【Ploy】 and【Exposure】on those foes through their next actions.
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Ploy, StatusEffectType.Exposure),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+}
+
 // 知の源
 {
     let skillId = PassiveB.FontOfWisdom;
