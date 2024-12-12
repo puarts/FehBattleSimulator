@@ -186,78 +186,95 @@ function isNegativeStatusEffect(type) {
 
 /// ステータス効果が有利なステータス効果であるかどうかを判定します。
 function isPositiveStatusEffect(type) {
-    return !isNegativeStatusEffect(type);
+    return type >= 0 && !isNegativeStatusEffect(type);
 }
 
-const STATUS_EFFECT_FILE_NAME_MAP = new Map([
-    [StatusEffectType.Panic, "Panic.png"],
-    [StatusEffectType.Gravity, "MobilityDecreased.png"],
-    [StatusEffectType.MobilityIncreased, "MobilityIncreased.png"],
-    [StatusEffectType.EffectiveAgainstDragons, "EffectiveAgainstDragons.png"],
-    [StatusEffectType.Isolation, "Isolation.png"],
-    [StatusEffectType.AirOrders, "AirOrders.png"],
-    [StatusEffectType.Guard, "Guard.png"],
-    [StatusEffectType.BonusDoubler, "BonusDoubler.png"],
-    [StatusEffectType.CounterattacksDisrupted, "CounterattacksDisrupted.png"],
-    [StatusEffectType.ShieldArmor, "NeutralizeEffectiveAgainstArmored.png"],
-    [StatusEffectType.ShieldDragon, "NeutralizeEffectiveAgainstDragon.png"],
-    [StatusEffectType.TotalPenaltyDamage, "Dominance.png"],
-    [StatusEffectType.ResonantBlades, "ResonanceBlades.png"],
-    [StatusEffectType.Desperation, "Desperation.png"],
-    [StatusEffectType.ResonantShield, "ResonanceShields.png"],
-    [StatusEffectType.Vantage, "Vantage.png"],
-    [StatusEffectType.DeepWounds, "DeepWounds.png"],
-    [StatusEffectType.FallenStar, "FallenStar.png"],
-    [StatusEffectType.FollowUpAttackPlus, "GuaranteedFollowUps.png"],
-    [StatusEffectType.FollowUpAttackMinus, "FoeCannotFollowUp.png"],
-    [StatusEffectType.ShieldFlying, "NeutralizeEffectiveAgainstFlying.png"],
-    [StatusEffectType.Dodge, "Dodge.png"],
-    [StatusEffectType.TriangleAttack, "TriangleAttack.png"],
-    [StatusEffectType.NullPanic, "NullPanic.png"],
-    [StatusEffectType.Stall, "Stall.png"],
-    [StatusEffectType.TriangleAdept, "TriangleAdept.png"],
-    [StatusEffectType.CancelAffinity, "CancelAffinity.png"],
-    [StatusEffectType.NullFollowUp, "NullFollowUp.png"],
-    [StatusEffectType.Pathfinder, "Pathfinder.png"],
-    [StatusEffectType.FalseStart, "FalseStart.png"],
-    [StatusEffectType.NeutralizesFoesBonusesDuringCombat, "NeutralizeFoeBonuses.png"],
-    [StatusEffectType.GrandStrategy, "GrandStrategy.png"],
-    [StatusEffectType.CantoControl, "CantoControl.png"],
-    [StatusEffectType.EnGarde, "EnGarde.webp"],
-    [StatusEffectType.SpecialCooldownChargePlusOnePerAttack, "AccelerateSpecial.webp"],
-    [StatusEffectType.Treachery, "Treachery.webp"],
-    [StatusEffectType.WarpBubble, "WarpBubble.webp"],
-    [StatusEffectType.Charge, "Charge.webp"],
-    [StatusEffectType.Exposure, "Exposure.webp"],
-    [StatusEffectType.Canto1, "Canto1.webp"],
-    [StatusEffectType.FoePenaltyDoubler, "FoePenaltyDoubler.webp"],
-    [StatusEffectType.Undefended, "Undefended.webp"],
-    [StatusEffectType.Feud, "Feud.webp"],
-    [StatusEffectType.DualStrike, "DualStrike.webp"],
-    [StatusEffectType.UnitCannotBeSlowedByTerrain, "UnitCannotBeSlowedByTerrain.webp"],
-    [StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent, "ReducesDamageFromAreaOfEffectSpecialsBy80Percent.webp"],
-    [StatusEffectType.NeutralizesPenalties, "NeutralizesPenalties.webp"],
-    [StatusEffectType.RallySpectrum, "RallySpectrum.webp"],
-    [StatusEffectType.Hexblade, "Hexblade.webp"],
-    [StatusEffectType.Sabotage, "Sabotage.webp"],
-    [StatusEffectType.Discord, "Discord.webp"],
-    [StatusEffectType.AssignDecoy, "AssignDecoy.webp"],
-    [StatusEffectType.DeepStar, "DeepStar.png"],
-    [StatusEffectType.Ploy, "Ploy.webp"],
-    [StatusEffectType.Schism, "Schism.png"],
-    [StatusEffectType.NeutralizeUnitSurvivesWith1HP, "NeutralizeUnitSurvivesWith1HP.webp"],
-    [StatusEffectType.TimesGate, "TimesGate.webp"],
-    [StatusEffectType.ReducesDamageFromFirstAttackBy40Percent, "ReduceFirstAttackDamage.webp"],
-    [StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent, "ReduceReduceDamageByX.webp"],
-    [StatusEffectType.TimesGrip, "TimesGrip.webp"],
-    [StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately, "AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp"],
-    [StatusEffectType.HushSpectrum, "HushSpectrum.webp"],
-    [StatusEffectType.EssenceDrain, "EssenceDrain.webp"],
-    [StatusEffectType.ShareSpoils, "ShareSpoils.webp"],
-    [StatusEffectType.Frozen, "Frozen.webp"],
-    [StatusEffectType.Bonded, "Bonded.webp"],
-    [StatusEffectType.DivineNectar, "DivineNectar.webp"],
-    [StatusEffectType.Paranoia, "Paranoia.webp"],
+function getPositiveStatusEffectTypes() {
+    return Object.values(StatusEffectType).filter(value => value >= 0 && isPositiveStatusEffect(value));
+}
+
+function getNegativeStatusEffectTypes() {
+    return Object.values(StatusEffectType).filter(value => value >= 0 && isNegativeStatusEffect(value));
+}
+
+/**
+ * @type {Map<number, [string, string, string]>}
+ */
+const STATUS_EFFECT_INFO_MAP = new Map([
+    [StatusEffectType.Panic, ["Panic.png", "パニック", "パニック"]],
+    [StatusEffectType.Gravity, ["MobilityDecreased.png", "グラビティ", "グラビティ"]],
+    [StatusEffectType.MobilityIncreased, ["MobilityIncreased.png", "移動+1", "移動+1"]],
+    [StatusEffectType.EffectiveAgainstDragons, ["EffectiveAgainstDragons.png", "竜特効", "竜特効"]],
+    [StatusEffectType.Isolation, ["Isolation.png", "補助不可", "補助不可"]],
+    [StatusEffectType.AirOrders, ["AirOrders.png", "周囲2マスの味方の隣接マスに移動可能", "周囲2マスの味方の隣接マスに移動可能"]],
+    [StatusEffectType.Guard, ["Guard.png", "キャンセル", "キャンセル"]],
+    [StatusEffectType.BonusDoubler, ["BonusDoubler.png", "強化増幅", "強化増幅"]],
+    [StatusEffectType.CounterattacksDisrupted, ["CounterattacksDisrupted.png", "反撃不可", "反撃不可"]],
+    [StatusEffectType.ShieldArmor, ["NeutralizeEffectiveAgainstArmored.png", "重装特効無効", "重装特効無効"]],
+    [StatusEffectType.ShieldDragon, ["NeutralizeEffectiveAgainstDragon.png", "竜特効無効", "竜特効無効"]],
+    [StatusEffectType.TotalPenaltyDamage, ["Dominance.png", "敵弱化ダメージ+", "敵弱化ダメージ+"]],
+    [StatusEffectType.ResonantBlades, ["ResonanceBlades.png", "双界効果・刃", "双界効果・刃"]],
+    [StatusEffectType.Desperation, ["Desperation.png", "攻め立て", "攻め立て"]],
+    [StatusEffectType.ResonantShield, ["ResonanceShields.png", "双界効果・盾", "双界効果・盾"]],
+    [StatusEffectType.Vantage, ["Vantage.png", "待ち伏せ", "待ち伏せ"]],
+    [StatusEffectType.DeepWounds, ["DeepWounds.png", "回復不可", "回復不可"]],
+    [StatusEffectType.FallenStar, ["FallenStar.png", "落星", "落星"]],
+    [StatusEffectType.FollowUpAttackPlus, ["GuaranteedFollowUps.png", "絶対追撃", "攻撃時絶対追撃"]],
+    [StatusEffectType.FollowUpAttackMinus, ["FoeCannotFollowUp.png", "追撃不可", "追撃不可"]],
+    [StatusEffectType.ShieldFlying, ["NeutralizeEffectiveAgainstFlying.png", "飛行特効無効", "飛行特効無効"]],
+    [StatusEffectType.Dodge, ["Dodge.png", "回避", "回避"]],
+    [StatusEffectType.TriangleAttack, ["TriangleAttack.png", "2マスに「トライアングルアタック」2体なら2回攻撃", "2マスに「トライアングルアタック」2体なら2回攻撃"]],
+    [StatusEffectType.NullPanic, ["NullPanic.png", "見切り・パニック", "見切り・パニック"]],
+    [StatusEffectType.Stall, ["Stall.png", "空転", "空転"]],
+    [StatusEffectType.TriangleAdept, ["TriangleAdept.png", "相性激化", "相性激化"]],
+    [StatusEffectType.CancelAffinity, ["CancelAffinity.png", "相性相殺", "相性相殺"]],
+    [StatusEffectType.NullFollowUp, ["NullFollowUp.png", "見切り・追撃", "速さが勝っている時見切り・追撃"]],
+    [StatusEffectType.Pathfinder, ["Pathfinder.png", "天駆の道", "天駆の道"]],
+    [StatusEffectType.FalseStart, ["FalseStart.png", "ターン開始スキル不可", "ターン開始スキル不可"]],
+    [StatusEffectType.NeutralizesFoesBonusesDuringCombat, ["NeutralizeFoeBonuses.png", "敵の強化の+を無効", "敵の強化の+を無効"]],
+    [StatusEffectType.GrandStrategy, ["GrandStrategy.png", "神軍師の策", "神軍師の策"]],
+    [StatusEffectType.CantoControl, ["CantoControl.png", "再移動制限", "再移動制限"]],
+    [StatusEffectType.EnGarde, ["EnGarde.webp", "戦闘外ダメージ無効", "戦闘外ダメージ無効"]],
+    [StatusEffectType.SpecialCooldownChargePlusOnePerAttack, ["AccelerateSpecial.webp", "戦闘中、奥義発動カウント変動量+1", "戦闘中、奥義発動カウント変動量+1"]],
+    [StatusEffectType.Treachery, ["Treachery.webp", "強化ダメージ+", "強化ダメージ+"]],
+    [StatusEffectType.WarpBubble, ["WarpBubble.webp", "敵ワープ抑制", "敵ワープ抑制"]],
+    [StatusEffectType.Charge, ["Charge.webp", "突撃", "突撃"]],
+    [StatusEffectType.Exposure, ["Exposure.webp", "弱点露呈", "弱点露呈"]],
+    [StatusEffectType.Canto1, ["Canto1.webp", "再移動1", "再移動1"]],
+    [StatusEffectType.FoePenaltyDoubler, ["FoePenaltyDoubler.webp", "敵弱化増幅", "敵弱化増幅"]],
+    [StatusEffectType.Undefended, ["Undefended.webp", "護られ不可", "護られ不可"]],
+    [StatusEffectType.Feud, ["Feud.webp", "暗闘", "暗闘"]],
+    [StatusEffectType.DualStrike, ["DualStrike.webp", "デュアルアタック", "デュアルアタック"]],
+    [StatusEffectType.UnitCannotBeSlowedByTerrain, ["UnitCannotBeSlowedByTerrain.webp", "自身が移動可能な地形を平地のように移動可能", "自身が移動可能な地形を平地のように移動可能"]],
+    [StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent, ["ReducesDamageFromAreaOfEffectSpecialsBy80Percent.webp", "受けた範囲奥義のダメージを80%軽減", "受けた範囲奥義のダメージを80%軽減"]],
+    [StatusEffectType.NeutralizesPenalties, ["NeutralizesPenalties.webp", "弱化無効", "弱化無効"]],
+    [StatusEffectType.RallySpectrum, ["RallySpectrum.webp", "七色の叫び", "七色の叫び"]],
+    [StatusEffectType.Hexblade, ["Hexblade.webp", "魔刃", "魔刃"]],
+    [StatusEffectType.Sabotage, ["Sabotage.webp", "混乱", "混乱"]],
+    [StatusEffectType.Discord, ["Discord.webp", "不和", "不和"]],
+    [StatusEffectType.AssignDecoy, ["AssignDecoy.webp", "囮指名", "囮指名"]],
+    [StatusEffectType.DeepStar, ["DeepStar.png", "真落星", "真落星"]],
+    [StatusEffectType.Ploy, ["Ploy.webp", "謀策", "謀策"]],
+    [StatusEffectType.Schism, ["Schism.png", "連携阻害", "連携阻害"]],
+    [StatusEffectType.NeutralizeUnitSurvivesWith1HP, ["NeutralizeUnitSurvivesWith1HP.webp", "奥義以外の祈り無効", "奥義以外の祈り無効"]],
+    [StatusEffectType.TimesGate, ["TimesGate.webp", "時の門", "時の門"]],
+    [StatusEffectType.ReducesDamageFromFirstAttackBy40Percent, ["ReduceFirstAttackDamage.webp", "自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減", "自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減"]],
+    [StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent, ["ReduceReduceDamageByX.webp", "「ダメージを〇〇%軽減」を半分無効", "「ダメージを〇〇%軽減」を半分無効"]],
+    [StatusEffectType.TimesGrip, ["TimesGrip.webp", "時の陥穽", "時の陥穽"]],
+    [StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately, ["AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp", "ターン開始後スキル発動後、即座に行動終了", "ターン開始後スキル発動後、即座に行動終了"]],
+    [StatusEffectType.HushSpectrum, ["HushSpectrum.webp", "七色の囁き", "七色の囁き"]],
+    [StatusEffectType.EssenceDrain, ["EssenceDrain.webp", "エーギル奪取", "エーギル奪取"]],
+    [StatusEffectType.ShareSpoils, ["ShareSpoils.webp", "戦果移譲", "戦果移譲"]],
+    [StatusEffectType.Frozen, ["Frozen.webp", "凍結", "凍結"]],
+    [StatusEffectType.Bonded, ["Bonded.webp", "縁", "縁"]],
+    [StatusEffectType.Bulwark, ["Bulwark.webp", "防壁", "防壁"]],
+    [StatusEffectType.DivineNectar, ["DivineNectar.webp", "神獣の蜜", "神獣の蜜"]],
+    [StatusEffectType.Paranoia, ["Paranoia.webp", "被害妄想", "被害妄想"]],
+    [StatusEffectType.Gallop, ["Gallop.webp", "迅走", "迅走"]],
+    [StatusEffectType.Anathema, ["Anathema.webp", "赤の呪い", "赤の呪い"]],
+    [StatusEffectType.FutureWitness, ["FutureWitness.webp", "未来を知るもの", "未来を知るもの"]],
+    [StatusEffectType.Dosage, ["Dosage.webp", "毒も薬に、薬も毒に", "毒も薬に、薬も毒に"]],
+    [StatusEffectType.Empathy, ["Empathy.webp", "多感", "多感"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
@@ -265,8 +282,8 @@ function statusEffectTypeToIconFilePath(value) {
     // https://feheroes.fandom.com/wiki/Category:Status_effect_icons
     // ステータス
     // https://feheroes.fandom.com/wiki/Status_effects
-    return STATUS_EFFECT_FILE_NAME_MAP.has(value) ?
-        `${g_imageRootPath}StatusEffect_${(STATUS_EFFECT_FILE_NAME_MAP.get(value))}` :
+    return STATUS_EFFECT_INFO_MAP.has(value) ?
+        `${g_imageRootPath}StatusEffect_${(STATUS_EFFECT_INFO_MAP.get(value)[0])}` :
         "";
 }
 
@@ -277,6 +294,13 @@ function getStatusEffectName(effect) {
         }
     }
     return "";
+}
+
+function getStatusDescription(effect) {
+    if (STATUS_EFFECT_INFO_MAP.has(effect)) {
+        return STATUS_EFFECT_INFO_MAP.get(effect)[2];
+    }
+    return getStatusEffectName(effect);
 }
 
 function combatResultToString(result) {

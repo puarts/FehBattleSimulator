@@ -2325,6 +2325,18 @@ class Unit extends BattleMapElement {
         this.#statusEffects = [...effects];
     }
 
+    forceRemoveStatusEffect(statusEffect) {
+        this.forceSetStatusEffects(...this.getStatusEffects().filter(e => e !== statusEffect));
+    }
+
+    forceAddStatusEffect(statusEffect) {
+        this.forceSetStatusEffects(...this.getStatusEffects(), statusEffect);
+    }
+
+    get statusEffects() {
+        return this.#statusEffects;
+    }
+
     getStatusEffects() {
         return [...this.#statusEffects];
     }

@@ -860,6 +860,86 @@ class BattleSimulatorBase {
                 writer.write('change_enemy_ice_color', g_appData.changeEnemyIceColor);
                 updateMap();
             },
+            statusEffectChanged(statusEffect) {
+                if (g_app == null) {
+                    return;
+                }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) {
+                    return;
+                }
+
+                // ステータスがすでに付与されていたら削除、そうでないなら付与
+                if (unit.hasStatusEffect(statusEffect)) {
+                    unit.forceRemoveStatusEffect(statusEffect);
+                } else {
+                    unit.forceAddStatusEffect(statusEffect);
+                }
+
+                appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+                appData.__showStatusToAttackerInfo();
+            },
+            addAllPositiveStatusEffects() {
+                if (g_app == null) {
+                    return;
+                }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) {
+                    return;
+                }
+                let effects = [...getPositiveStatusEffectTypes(), ...unit.getNegativeStatusEffects()];
+                unit.forceSetStatusEffects(...effects);
+
+                appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+                appData.__showStatusToAttackerInfo();
+            },
+            clearAllPositiveStatusEffects() {
+                if (g_app == null) {
+                    return;
+                }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) {
+                    return;
+                }
+
+                unit.forceSetStatusEffects(...unit.getNegativeStatusEffects());
+
+                appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+                appData.__showStatusToAttackerInfo();
+            },
+            addAllNegativeStatusEffects() {
+                if (g_app == null) {
+                    return;
+                }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) {
+                    return;
+                }
+                let effects = [...getNegativeStatusEffectTypes(), ...unit.getPositiveStatusEffects()];
+                unit.forceSetStatusEffects(...effects);
+
+                appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+                appData.__showStatusToAttackerInfo();
+            },
+            clearAllNegativeStatusEffects() {
+                if (g_app == null) {
+                    return;
+                }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) {
+                    return;
+                }
+
+                unit.forceSetStatusEffects(...unit.getPositiveStatusEffects());
+
+                appData.__updateStatusBySkillsAndMerges(unit);
+                updateAllUi();
+                appData.__showStatusToAttackerInfo();
+            },
         };
 
         if (additionalMethods != null) {
