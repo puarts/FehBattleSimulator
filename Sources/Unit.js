@@ -1818,6 +1818,10 @@ class Unit extends BattleMapElement {
             this.getResDebuffTotal(isPrecombat);
     }
 
+    /**
+     * @param {boolean} isPrecombat
+     * @returns {[number, number, number, number]}
+     */
     getDebuffTotals(isPrecombat = false) {
         return [
             this.getAtkDebuffTotal(isPrecombat),

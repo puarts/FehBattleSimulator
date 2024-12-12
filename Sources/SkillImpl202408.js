@@ -1,4 +1,40 @@
 // noinspection JSUnusedLocalSymbols
+// 知の源
+{
+    let skillId = PassiveB.FontOfWisdom;
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // inflicts Atk/Spd/Res-7 on foes that are within 2 spaces of another foe through their next actions.
+        new ForEachUnitNode(TARGETS_FOES_NODE,
+            IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+
+            new InflictsStatsMinusAtStartOfTurnNode(7, 7, 0, 7),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Atk/Spd/Res-5 on foe,
+        new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 0, 5),
+        // inflicts penalty on foe's Atk/Spd/Res = highest penalty on each stat between target and foes within 2 spaces of target
+        new InflictsStatsMinusOnFoeDuringCombatNode(
+            MULT_STATS_NODE(
+                StatsNode.makeStatsNodeFrom(1, 1, 0, 1),
+                HIGHEST_PENALTIES_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2),
+            ),
+        ),
+        // (calculates each stat penalty independently),
+        // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+        // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+        REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        // and reduces damage from foe's first attack by 7 during combat
+        // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+        new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+    ));
+}
+
 // 多感
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.Empathy);
@@ -2088,7 +2124,7 @@
             // (Specified stats: Turn 1 = HP, Turn 2 = Atk, Turn 3 = Spd, Turn 4 = Def, Turn 5 = Res.)
             FOR_EACH_UNIT_NODE(
                 new UniteUnitsNode(
-                    new TargetAndTargetsAlliesWithinNSpacesNode(2,
+                    new TargetsAndThoseAlliesWithinNSpacesNode(2,
                         new TargetsFoesOnTheEnemyTeamWithLowestStatNode(index),
                     ),
                 ),

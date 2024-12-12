@@ -2975,6 +2975,7 @@ const PassiveB = {
     SpdDefDetect: 3065, // 速さ守備の看破
 
     // 専用B
+    FontOfWisdom: 3096, // 知の源
     DarkPerfume: 3088, // 暗香疎影
     YggdrasillsAlter: 3085, // 世界樹の半身
     BrutalFerocity: 3076, // 獰猛かつ残忍

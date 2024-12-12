@@ -1261,6 +1261,19 @@ class StatsNode extends NumbersNode {
 
 const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
 
+class MultStatsNode extends StatsNode {
+    constructor(...statsNodes) {
+        super(...statsNodes);
+    }
+
+    evaluate(env) {
+        let statsArray = this.evaluateChildren(env);
+        return ArrayUtil.mult(...statsArray);
+    }
+}
+
+const MULT_STATS_NODE = (...statsNodes) => new MultStatsNode(...statsNodes);
+
 class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -2139,6 +2152,20 @@ class TargetsTotalPenaltiesNode extends PositiveNumberNode {
     }
 }
 
+class TargetsPenaltiesNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        /** @type {Unit} */
+        let unit = this.getUnit(env);
+        let result = unit.getDebuffTotals(unit !== env.foeDuringCombat).map(v => -v);
+        env.debug(`${unit.nameWithGroup}の弱化は${result}`);
+        return result;
+    }
+}
+
 // Unit or BattleContextの値を参照 END
 
 class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
@@ -2350,7 +2377,7 @@ class TargetsFoesOnTheEnemyTeamWithLowestStatNode extends UnitsNode {
     }
 }
 
-class TargetAndTargetsAlliesWithinNSpacesNode extends UnitsNode {
+class TargetsAndThoseAlliesWithinNSpacesNode extends UnitsNode {
     /**
      * @param {number|NumberNode} n
      * @param {UnitNode|UnitsNode} unitsNode
