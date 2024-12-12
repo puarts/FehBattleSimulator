@@ -1890,13 +1890,19 @@
                         <tr>
                             <td colspan="7">
                                 <div style="padding:5px">
-                                    <label class="normal" >状態: </label>
-                                    <span v-for="statusEffect in value.getPositiveStatusEffects()">
+                                    <div>
+                                        <label class="normal" >状態({{ value.getPositiveStatusEffects().length }}, {{ value.getNegativeStatusEffects().length }}): </label>
+                                        <span v-for="statusEffect in value.getPositiveStatusEffects()">
                                         <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px;background-color: #88CCFF" v-bind:title="getStatusEffectName(statusEffect)" v-bind:alt="getStatusEffectName(statusEffect)" />
                                     </span>
-                                    <span v-for="statusEffect in value.getNegativeStatusEffects()">
+                                        <span v-for="statusEffect in value.getNegativeStatusEffects()">
                                         <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px;background-color: #FFCCCC" v-bind:title="getStatusEffectName(statusEffect)" v-bind:alt="getStatusEffectName(statusEffect)" />
                                     </span>
+                                    </div>
+                                    <input type="button" value="全て付与"
+                                           @click="g_app.vm.addAllPositiveStatusEffects();g_app.vm.addAllNegativeStatusEffects()" >
+                                    <input type="button" value="全て解除"
+                                           @click="g_app.vm.clearAllPositiveStatusEffects();g_app.vm.clearAllNegativeStatusEffects()" >
                                     <div class="normal">
                                         <details>
                                             <summary>有利なステータス詳細</summary>
