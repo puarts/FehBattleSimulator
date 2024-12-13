@@ -372,7 +372,7 @@ class DefArmorSchool extends DefenceStructureBase {
         return `ターン開始時、この設備を中心とした縦3列にいる敵重装の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -390,7 +390,7 @@ class OfArmorSchool extends OffenceStructureBase {
         return `ターン開始時、この設備を中心とした縦3列にいる敵重装の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -432,7 +432,7 @@ class DefCavalrySchool extends DefenceStructureBase {
         return `ターン開始時、この設備を中心とした縦3列にいる敵騎馬の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -450,7 +450,7 @@ class OfCavalrySchool extends OffenceStructureBase {
         return `ターン開始時、この設備を中心とした縦3列にいる敵騎馬の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -468,7 +468,7 @@ class DefFlierSchool extends DefenceStructureBase {
         return `ターン開始時、この設備を中心とした縦3列にいる敵飛行の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -486,7 +486,7 @@ class OfFlierSchool extends OffenceStructureBase {
         return `ターン開始時、この設備を中心とした縦3列にいる敵飛行の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -534,7 +534,7 @@ class DefInfantrySchool extends DefenceStructureBase {
         return `ターン開始時、この設備を中心とした縦3列にいる敵歩行の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -552,7 +552,7 @@ class OfInfantrySchool extends OffenceStructureBase {
         return `ターン開始時、この設備を中心とした縦3列にいる敵歩行の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -669,7 +669,7 @@ class DefBrightShrine extends DefenceStructureBase {
         return `ターン開始時、敵軍内で最も攻撃+速さの合計値が高い敵の攻撃、速さ-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -687,7 +687,7 @@ class OfBrightShrine extends OffenceStructureBase {
         return `ターン開始時、敵軍内で最も攻撃+速さの合計値が高い敵の攻撃、速さ-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 
@@ -705,7 +705,7 @@ class DefDarkShrine extends DefenceStructureBase {
         return `ターン開始時、敵軍内で最も守備+魔防の合計値が高い敵の守備、魔防-${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
-        return -Number(this.level) - 1;
+        return Number(this.level) + 1;
     }
 }
 

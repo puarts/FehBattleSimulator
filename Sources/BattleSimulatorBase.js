@@ -9071,7 +9071,7 @@ class BattleSimulatorBase {
         let px = structure.posX;
         let py = structure.posY;
         for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, groupType, 3, 99)) {
-            if (unit.moveType === moveType) { unit.reserveToApplyAllDebuff(structure.amount); }
+            if (unit.moveType === moveType) { unit.reserveToApplyAllDebuff(-structure.amount); }
         }
     }
     executeCurrentStructure() {
@@ -9102,8 +9102,8 @@ class BattleSimulatorBase {
         this.__applyDebuffToMaxStatusUnits(unitGroup,
             unit => { return this.__getStatusEvalUnit(unit).getResInPrecombatWithoutDebuff() + this.__getStatusEvalUnit(unit).getDefInPrecombatWithoutDebuff() },
             unit => {
-                unit.reserveToApplyDefDebuff(structure.amount);
-                unit.reserveToApplyResDebuff(structure.amount);
+                unit.reserveToApplyDefDebuff(-structure.amount);
+                unit.reserveToApplyResDebuff(-structure.amount);
             });
     }
 
@@ -9111,8 +9111,8 @@ class BattleSimulatorBase {
         this.__applyDebuffToMaxStatusUnits(unitGroup,
             unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombatWithoutDebuff() + this.__getStatusEvalUnit(unit).getSpdInPrecombatWithoutDebuff() },
             unit => {
-                unit.reserveToApplyAtkDebuff(structure.amount);
-                unit.reserveToApplySpdDebuff(structure.amount);
+                unit.reserveToApplyAtkDebuff(-structure.amount);
+                unit.reserveToApplySpdDebuff(-structure.amount);
             });
     }
 
