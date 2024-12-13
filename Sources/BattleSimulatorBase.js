@@ -1254,7 +1254,7 @@ class BattleSimulatorBase {
         if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoHero || x.isHarmonicHero)) {
             for (let st of this.__enumerateDefenseStructuresOnMap()) {
                 if (st instanceof DefHiyokuNoTorikago) {
-                    let limitTurn = 2 + Number(st.level);
+                    let limitTurn = st.amount;
                     if (g_appData.currentTurn <= limitTurn) {
                         return false;
                     }
@@ -1266,7 +1266,7 @@ class BattleSimulatorBase {
         let activatableCount = 1;
         for (let st of this.__enumerateOffenceStructuresOnMap()) {
             if (st instanceof OfHiyokuNoHisyo) {
-                let limitTurn = 2 + Number(st.level);
+                let limitTurn = st.amount;
                 if (g_appData.currentTurn <= limitTurn) {
                     ++activatableCount;
                 }
@@ -4788,7 +4788,7 @@ class BattleSimulatorBase {
 
             // 安全柵の実行(他の施設と実行タイミングが異なるので、別途処理している)
             let safetyFence = self.__findSafetyFence();
-            if (safetyFence != null && Number(g_appData.currentTurn) <= Number(safetyFence.level)) {
+            if (safetyFence != null && Number(g_appData.currentTurn) <= safetyFence.amount) {
                 if (self.__areAllAlliesOnSafetyTiles(safetyFence)) {
                     for (let unit of self.enumerateEnemyUnitsOnMap()) {
                         unit.endAction();
@@ -8894,52 +8894,48 @@ class BattleSimulatorBase {
         let py = structure.posY;
         if (structure instanceof OfBoltTower) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Enemy, 3, 99)) {
-                let damage = Number(structure.level) * 5 + 5;
-                unit.reserveTakeDamage(damage);
+                unit.reserveTakeDamage(structure.amount);
             }
         }
         else if (structure instanceof DefBoltTower) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Ally, 3, 7)) {
-                let damage = Number(structure.level) * 5 + 5;
-                unit.reserveTakeDamage(damage);
+                unit.reserveTakeDamage(structure.amount);
             }
         }
         else if (structure instanceof OfHealingTower) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Ally, 5, 5)) {
-                let healAmount = Number(structure.level) * 5 + 5;
-                unit.reserveHeal(healAmount);
+                unit.reserveHeal(structure.amount);
             }
         }
         else if (structure instanceof DefHealingTower) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Enemy, 5, 5)) {
-                let healAmount = Number(structure.level) * 5 + 5;
-                unit.reserveHeal(healAmount);
+                unit.reserveHeal(structure.amount);
             }
         }
         else if (structure instanceof OfPanicManor) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Enemy, 3, 99)) {
-                if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
+                if (this.__getStatusEvalUnit(unit).hp <= structure.amount) {
                     unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                 }
             }
         }
         else if (structure instanceof DefPanicManor) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Ally, 3, 7)) {
-                if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
+                if (this.__getStatusEvalUnit(unit).hp <= structure.amount) {
                     unit.reserveToAddStatusEffect(StatusEffectType.Panic);
                 }
             }
         }
         else if (structure instanceof OfTacticsRoom) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Enemy, 1, 99)) {
-                if (unit.isRangedWeaponType() && this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
+                if (unit.isRangedWeaponType() && this.__getStatusEvalUnit(unit).hp <= structure.amount) {
                     unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
             }
         }
         else if (structure instanceof DefTacticsRoom) {
             for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, UnitGroupType.Ally, 3, 7)) {
-                if (unit.isRangedWeaponType() && this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
+                if (unit.isRangedWeaponType() && this.__getStatusEvalUnit(unit).hp <= structure.amount) {
                     unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
             }
@@ -8959,7 +8955,7 @@ class BattleSimulatorBase {
         else if (structure instanceof HexTrap) {
             for (let unit of g_appData.enumerateUnitsInSpecifiedGroupOnMap(UnitGroupType.Ally)) {
                 if (unit.posX === px && unit.posY === py) {
-                    if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
+                    if (this.__getStatusEvalUnit(unit).hp <= structure.amount) {
                         this.writeLogLine(unit.getNameWithGroup() + "に停止の魔法罠の効果適用");
                         unit.endAction();
                     }
@@ -8969,23 +8965,21 @@ class BattleSimulatorBase {
         }
         else if (structure instanceof BoltTrap) {
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Enemy, 3)) {
-                let damage = Number(structure.level) * 10;
-                unit.reserveTakeDamage(damage);
+                unit.reserveTakeDamage(structure.amount);
             }
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Ally, 3)) {
-                let damage = Number(structure.level) * 10;
-                unit.reserveTakeDamage(damage);
+                unit.reserveTakeDamage(structure.amount);
             }
         }
         else if (structure instanceof HeavyTrap) {
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Enemy, 2)) {
-                if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
+                if (this.__getStatusEvalUnit(unit).hp <= structure.amount) {
                     this.writeLogLine(unit.getNameWithGroup() + "に重圧の罠の効果適用");
                     unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
             }
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Ally, 2)) {
-                if (this.__getStatusEvalUnit(unit).hp <= (Number(structure.level) * 5 + 35)) {
+                if (this.__getStatusEvalUnit(unit).hp <= structure.amount) {
                     this.writeLogLine(unit.getNameWithGroup() + "に重圧の罠の効果適用");
                     unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
                 }
@@ -9051,7 +9045,7 @@ class BattleSimulatorBase {
             }
         }
         else {
-            this.writeLogLine("<span style='color:red'>" + structure.name + "は効果の発動に未対応です。</span>");
+            this.writeLogLine(`<span style='color:red'>${structure.name}は効果の発動に未対応です。</span>`);
         }
 
         if (appliesDamage) {
@@ -9074,7 +9068,7 @@ class BattleSimulatorBase {
         let px = structure.posX;
         let py = structure.posY;
         for (let unit of this.enumerateUnitsWithinSpecifiedRange(px, py, groupType, 3, 99)) {
-            if (unit.moveType === moveType) { unit.reserveToApplyAllDebuff(-(Number(structure.level) + 1)); }
+            if (unit.moveType === moveType) { unit.reserveToApplyAllDebuff(structure.amount); }
         }
     }
     executeCurrentStructure() {
@@ -9105,9 +9099,8 @@ class BattleSimulatorBase {
         this.__applyDebuffToMaxStatusUnits(unitGroup,
             unit => { return this.__getStatusEvalUnit(unit).getResInPrecombatWithoutDebuff() + this.__getStatusEvalUnit(unit).getDefInPrecombatWithoutDebuff() },
             unit => {
-                let amount = -(Number(structure.level) + 1);
-                unit.reserveToApplyDefDebuff(amount);
-                unit.reserveToApplyResDebuff(amount);
+                unit.reserveToApplyDefDebuff(structure.amount);
+                unit.reserveToApplyResDebuff(structure.amount);
             });
     }
 
@@ -9115,9 +9108,8 @@ class BattleSimulatorBase {
         this.__applyDebuffToMaxStatusUnits(unitGroup,
             unit => { return this.__getStatusEvalUnit(unit).getAtkInPrecombatWithoutDebuff() + this.__getStatusEvalUnit(unit).getSpdInPrecombatWithoutDebuff() },
             unit => {
-                let amount = -(Number(structure.level) + 1);
-                unit.reserveToApplyAtkDebuff(amount);
-                unit.reserveToApplySpdDebuff(amount);
+                unit.reserveToApplyAtkDebuff(structure.amount);
+                unit.reserveToApplySpdDebuff(structure.amount);
             });
     }
 
