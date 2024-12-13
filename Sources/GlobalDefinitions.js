@@ -22,6 +22,5 @@ const DebugModeDefault = false;
 const TabChar = "&emsp;&emsp;";
 const G_SKILL_LOG_LEVEL = 1;
 
-const IS_DEBUG_MODE = false;
 const g_debugImageRootPath = g_imageRootPath;
 const g_debugSkillIconRootPath = g_skillIconRootPath;

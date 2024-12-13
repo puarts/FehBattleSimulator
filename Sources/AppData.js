@@ -293,6 +293,7 @@ class AppData extends UnitManager {
         this.beginningOfTurnSkillHanderLogger.logLevel = this.simulatorLogLevel;
 
         this.isDebugMenuEnabled = DebugModeDefault;
+        this.isDevelopmentMode = LocalStorageUtil.getNumber('isDevelopmentMode', 0) === 1;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
 

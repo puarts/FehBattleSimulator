@@ -22,6 +22,5 @@ const DebugModeDefault = true;
 const TabChar = "&emsp;&emsp;";
 const G_SKILL_LOG_LEVEL = 7; // TRACE
 
-const IS_DEBUG_MODE = true;
 const g_debugImageRootPath = "/images/AetherRaidTacticsBoard/images/";
 const g_debugSkillIconRootPath = "/images/images/FehSkillIcons/";

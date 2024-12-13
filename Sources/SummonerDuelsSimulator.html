@@ -967,6 +967,10 @@
                         <input id="debugMenuEnabled" type="checkbox" v-model="isDebugMenuEnabled"
                             @change="debugMenuEnabledChanged"><label class="normal"
                             for="debugMenuEnabled">デバッグモード有効(開発者用)</label>
+
+                        <input id="isDevelopmentMode" type="checkbox" v-model="isDevelopmentMode"
+                               @change="developModeChanged">
+                        <label class="normal" for="isDevelopmentMode">開発モード有効(開発者用)</label>
                     </div>
                 </td>
             </tr>

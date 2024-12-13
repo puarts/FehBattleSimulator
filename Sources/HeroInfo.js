@@ -392,6 +392,11 @@ class HeroInfo {
      * @param  {SkillInfo} skillInfo
      */
     canEquipSkill(skillInfo) {
+        // 開発モードなら全てのスキルを装備可能
+        if (g_appData.isDevelopmentMode) {
+            return true;
+        }
+
         if (!skillInfo.canInherit) {
             switch (skillInfo.type) {
                 case SkillType.Weapon:

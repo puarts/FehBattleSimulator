@@ -678,6 +678,9 @@ class BattleSimulatorBase {
             debugMenuEnabledChanged: function () {
                 appData.applyDebugMenuVisibility();
             },
+            developModeChanged: function () {
+                LocalStorageUtil.setNumber('isDevelopmentMode', appData.isDevelopmentMode ? 1 : 0);
+            },
             actionDoneChanged: function () {
                 updateAllUi();
             },
