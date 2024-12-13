@@ -197,6 +197,15 @@ function getNegativeStatusEffectTypes() {
     return Object.values(StatusEffectType).filter(value => value >= 0 && isNegativeStatusEffect(value));
 }
 
+function sortNegativeStatusEffectTypes(types) {
+    let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+    return types.sort((a, b) => getValue(a) - getValue(b));
+}
+
+function getNegativeStatusEffectTypesInOrder() {
+    return sortNegativeStatusEffectTypes(getNegativeStatusEffectTypes());
+}
+
 /**
  * @type {Map<number, [string, string, string]>}
  */
