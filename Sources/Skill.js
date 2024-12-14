@@ -1273,16 +1273,22 @@ const StatusEffectType = {
     ShareSpoils: 64, // 戦果移譲
     Frozen: 65, // 凍結
     Bonded: 66, // 縁
-    Bulwalk: 67, // 防壁
+    Bulwark: 67, // 防壁
     DivineNectar: 68, // 神獣の蜜
     Paranoia: 69, // 被害妄想
     Gallop: 70, // 迅走
     Anathema: 71, // 赤の呪い
     FutureWitness: 72, // 未来を知るもの
     Dosage: 73, // 毒も薬に、薬も毒に
+    Empathy: 74, // 多感
+    // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };
 
+/**
+ * 不利なステータスの解除される順番
+ * @type {(number)[]}
+ */
 const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Panic,
     StatusEffectType.Exposure,

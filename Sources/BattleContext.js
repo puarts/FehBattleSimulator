@@ -574,6 +574,7 @@ class BattleContext {
         this.#damageReductionRatios = [];
         this.additionalDamage = 0;
         this.additionalDamageOfSpecial = 0;
+        this.additionalDamageInPrecombat = 0;
         this.damageReductionValue = 0;
         // TODO: renameを検討
         this.damageReductionForPrecombat = 0;

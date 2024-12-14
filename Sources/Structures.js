@@ -54,14 +54,18 @@ const OrnamentSettings = [
 function findOrnamentTypeIndexByIcon(icon) {
     for (let i = 0; i < OrnamentSettings.length; ++i) {
         let setting = OrnamentSettings[i];
-        if (setting.icon == icon) {
+        if (setting.icon === icon) {
             return i;
         }
     }
     return -1;
 }
 
-/// 配置物の基底クラスです。
+/**
+ * 配置物の基底クラスです。
+ * 画像は以下を参照
+ * https://feheroes.fandom.com/wiki/Category:Structure_sprites
+ */
 class StructureBase extends BattleMapElement {
     constructor(id) {
         super();
@@ -120,6 +124,15 @@ class StructureBase extends BattleMapElement {
 
     get serialId() {
         return StructureCookiePrefix + this.id;
+    }
+
+    get amount() {
+        let level = Number(this.level);
+        if (level <= 9) {
+            return level * 5 + 5;
+        } else {
+            return 9 * 5 + 5 + (level - 9) * 2;
+        }
     }
 
     perTurnStatusToString() {
@@ -241,8 +254,7 @@ class DefBoltTower extends DefenceStructureBase {
         return "防衛・雷の塔";
     }
     get description() {
-        let value = Number(this.level) * 5 + 5;
-        return `3ターン開始時、この設備を中心とした縦7×3マスにいる敵に${value}ダメージ`;
+        return `3ターン開始時、この設備を中心とした縦7×3マスにいる敵に${this.amount}ダメージ`;
     }
 }
 
@@ -257,8 +269,7 @@ class OfBoltTower extends OffenceStructureBase {
         return "攻撃・雷の塔";
     }
     get description() {
-        let value = Number(this.level) * 5 + 5;
-        return `3ターン開始時、この設備を中心とした縦3列にいる敵に${value}ダメージ`;
+        return `3ターン開始時、この設備を中心とした縦3列にいる敵に${this.amount}ダメージ`;
     }
 }
 
@@ -340,7 +351,10 @@ class SafetyFence extends OffenceStructureBase {
     }
     get description() {
         let value = Number(this.level);
-        return `${value}ターン目まで、防衛部隊のターン開始時スキル発動後に、攻撃部隊全員が危険範囲外か、本設備を下段とした縦2×横7マスにいる時、防衛部隊全員を行動終了`;
+        return `${this.amount}ターン目まで、防衛部隊のターン開始時スキル発動後に、攻撃部隊全員が危険範囲外か、本設備を下段とした縦2×横7マスにいる時、防衛部隊全員を行動終了`;
+    }
+    get amount() {
+        return Number(this.level);
     }
 }
 
@@ -355,8 +369,10 @@ class DefArmorSchool extends DefenceStructureBase {
         return "防衛・対重装訓練所";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、この設備を中心とした縦3列にいる敵重装の攻撃、速さ、守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいる敵重装の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -371,8 +387,10 @@ class OfArmorSchool extends OffenceStructureBase {
         return "攻撃・対重装訓練所";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、この設備を中心とした縦3列にいる敵重装の攻撃、速さ、守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいる敵重装の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -411,8 +429,10 @@ class DefCavalrySchool extends DefenceStructureBase {
         return "防衛・対騎馬訓練所";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、この設備を中心とした縦3列にいる敵騎馬の攻撃、速さ、守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいる敵騎馬の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -427,8 +447,10 @@ class OfCavalrySchool extends OffenceStructureBase {
         return "攻撃・対騎馬訓練所";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、この設備を中心とした縦3列にいる敵騎馬の攻撃、速さ、守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいる敵騎馬の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -443,8 +465,10 @@ class DefFlierSchool extends DefenceStructureBase {
         return "防衛・対飛行訓練所";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、この設備を中心とした縦3列にいる敵飛行の攻撃、速さ、守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいる敵飛行の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -459,8 +483,10 @@ class OfFlierSchool extends OffenceStructureBase {
         return "攻撃・対飛行訓練所";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、この設備を中心とした縦3列にいる敵飛行の攻撃、速さ、守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいる敵飛行の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -475,8 +501,7 @@ class DefHealingTower extends DefenceStructureBase {
         return "防衛・回復の塔";
     }
     get description() {
-        let value = Number(this.level) * 5 + 5;
-        return `ターン開始時、この設備を中心とした縦5×横5マスにいる味方を${value}回復`;
+        return `ターン開始時、この設備を中心とした縦5×横5マスにいる味方を${this.amount}回復`;
     }
 }
 
@@ -491,8 +516,7 @@ class OfHealingTower extends OffenceStructureBase {
         return "攻撃・回復の塔";
     }
     get description() {
-        let value = Number(this.level) * 5 + 5;
-        return `ターン開始時、この設備を中心とした縦3×横5マスにいる味方を${value}回復`;
+        return `ターン開始時、この設備を中心とした縦3×横5マスにいる味方を${this.amount}回復`;
     }
 }
 
@@ -507,8 +531,10 @@ class DefInfantrySchool extends DefenceStructureBase {
         return "防衛・対歩行訓練所";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、この設備を中心とした縦3列にいる敵歩行の攻撃、速さ、守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいる敵歩行の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -523,8 +549,10 @@ class OfInfantrySchool extends OffenceStructureBase {
         return "攻撃・対歩行訓練所";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、この設備を中心とした縦3列にいる敵歩行の攻撃、速さ、守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいる敵歩行の攻撃、速さ、守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -551,8 +579,7 @@ class Ornament extends DefenceStructureBase {
         return false;
     }
     setIconByOrnamentTypeIndex() {
-        let icon = OrnamentSettings[this.ornamentTypeIndex].icon;
-        this._icon = icon;
+        this._icon = OrnamentSettings[this.ornamentTypeIndex].icon;
     }
 }
 
@@ -567,8 +594,10 @@ class DefPanicManor extends DefenceStructureBase {
         return "防衛・恐慌の館";
     }
     get description() {
-        let threshold = Number(this.level) * 5 + 35;
-        return `ターン開始時、この設備を中心とした縦7×横3マスにいるHP${threshold}以下の敵の強化を+ではなく-とする(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦7×横3マスにいるHP${this.amount}以下の敵の強化を+ではなく-とする(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return super.amount + 30;
     }
 }
 
@@ -583,8 +612,10 @@ class OfPanicManor extends OffenceStructureBase {
         return "攻撃・恐慌の館";
     }
     get description() {
-        let threshold = Number(this.level) * 5 + 35;
-        return `ターン開始時、この設備を中心とした縦3列にいるHP${threshold}以下の敵の強化を+ではなく-とする(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦3列にいるHP${this.amount}以下の敵の強化を+ではなく-とする(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return super.amount + 30;
     }
 }
 
@@ -599,8 +630,10 @@ class DefTacticsRoom extends DefenceStructureBase {
         return "防衛・軍師の作戦室";
     }
     get description() {
-        let value = Number(this.level) * 5 + 35;
-        return `ターン開始時、この設備を中心とした縦7×3マスにいるHP${value}以下の弓、暗器、魔法、杖の敵の移動を最大1マスに制限(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備を中心とした縦7×3マスにいるHP${this.amount}以下の弓、暗器、魔法、杖の敵の移動を最大1マスに制限(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return super.amount + 30;
     }
 }
 
@@ -615,8 +648,10 @@ class OfTacticsRoom extends OffenceStructureBase {
         return "攻撃・軍師の作戦室";
     }
     get description() {
-        let value = Number(this.level) * 5 + 35;
-        return `ターン開始時、この設備と同じ縦列にいるHP${value}以下の弓、暗器、魔法、杖の敵の移動を最大1マスに制限(敵の次回行動終了まで)`;
+        return `ターン開始時、この設備と同じ縦列にいるHP${this.amount}以下の弓、暗器、魔法、杖の敵の移動を最大1マスに制限(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return super.amount + 30;
     }
 }
 
@@ -631,8 +666,10 @@ class DefBrightShrine extends DefenceStructureBase {
         return "防衛・白の封印祠";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、敵軍内で最も攻撃+速さの合計値が高い敵の攻撃、速さ-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、敵軍内で最も攻撃+速さの合計値が高い敵の攻撃、速さ-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -647,8 +684,10 @@ class OfBrightShrine extends OffenceStructureBase {
         return "攻撃・白の封印祠";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、敵軍内で最も攻撃+速さの合計値が高い敵の攻撃、速さ-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、敵軍内で最も攻撃+速さの合計値が高い敵の攻撃、速さ-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -663,8 +702,10 @@ class DefDarkShrine extends DefenceStructureBase {
         return "防衛・黒の封印祠";
     }
     get description() {
-        let value = - 1 - Number(this.level);
-        return `ターン開始時、敵軍内で最も守備+魔防の合計値が高い敵の守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、敵軍内で最も守備+魔防の合計値が高い敵の守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
@@ -696,8 +737,10 @@ class OfHiyokuNoHisyo extends OffenceStructureBase {
         return "比翼の飛翔";
     }
     get description() {
-        let value = Number(this.level) + 2;
-        return `1～${value}ターン目の間に最初に使用した比翼スキルを、もう一度だけ使用可能な状態にする ※ただし同ターンは使用不可`;
+        return `1～${this.amount}ターン目の間に最初に使用した比翼スキルを、もう一度だけ使用可能な状態にする ※ただし同ターンは使用不可`;
+    }
+    get amount() {
+        return Number(this.level) + 2;
     }
 }
 
@@ -712,8 +755,10 @@ class DefHiyokuNoTorikago extends DefenceStructureBase {
         return "比翼の鳥籠";
     }
     get description() {
-        let value = Number(this.level) + 2;
-        return `防衛部隊に比翼英雄がいる時、1～${value}ターン目の間、敵は比翼スキルを使用できない`;
+        return `防衛部隊に比翼英雄がいる時、1～${this.amount}ターン目の間、敵は比翼スキルを使用できない`;
+    }
+    get amount() {
+        return Number(this.level) + 2;
     }
 }
 
@@ -731,6 +776,8 @@ class TrapBase extends TileTypeStructureBase {
     constructor(id) {
         super(id);
     }
+
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "罠";
     }
@@ -743,6 +790,7 @@ class FalseHexTrap extends TrapBase {
     get iconFileName() {
         return "HexTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "偽・停止の魔法罠";
     }
@@ -764,6 +812,7 @@ class HexTrap extends TrapBase {
     get iconFileName() {
         return "HexTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "停止の魔法罠";
     }
@@ -771,8 +820,10 @@ class HexTrap extends TrapBase {
         return false;
     }
     get description() {
-        let value = Number(this.level) * 5 + 35;
-        return `設置したマスで敵が移動終了したとき、その敵がHP${value}以下なら、攻撃や補助スキルをキャンセルし、行動済みにする(魔法罠は、罠解除で解除できない)`;
+        return `設置したマスで敵が移動終了したとき、その敵がHP${this.amount}以下なら、攻撃や補助スキルをキャンセルし、行動済みにする(魔法罠は、罠解除で解除できない)`;
+    }
+    get amount() {
+        return super.amount + 30;
     }
 }
 
@@ -783,6 +834,7 @@ class FalseBoltTrap extends TrapBase {
     get iconFileName() {
         return "BoltTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "偽・落雷の罠";
     }
@@ -804,6 +856,7 @@ class BoltTrap extends TrapBase {
     get iconFileName() {
         return "BoltTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "落雷の罠";
     }
@@ -811,8 +864,10 @@ class BoltTrap extends TrapBase {
         return false;
     }
     get description() {
-        let value = Number(this.level) * 10;
-        return `設置したマスで敵が移動終了したとき、その敵と周囲3マスにいる敵味方に${value}ダメージ(敵の攻撃や補助スキルはキャンセルされる)`;
+        return `設置したマスで敵が移動終了したとき、その敵と周囲3マスにいる敵味方に${this.amount}ダメージ(敵の攻撃や補助スキルはキャンセルされる)`;
+    }
+    get amount() {
+        return Number(this.level) * 10;
     }
 }
 
@@ -823,6 +878,7 @@ class FalseHeavyTrap extends TrapBase {
     get iconFileName() {
         return "HeavyTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "偽・重圧の罠";
     }
@@ -844,6 +900,7 @@ class HeavyTrap extends TrapBase {
     get iconFileName() {
         return "HeavyTrap.png";
     }
+    // noinspection JSCheckFunctionSignatures
     get name() {
         return "重圧の罠";
     }
@@ -851,8 +908,60 @@ class HeavyTrap extends TrapBase {
         return false;
     }
     get description() {
-        let value = Number(this.level) * 5 + 35;
-        return `設置したマスで敵が移動終了したとき、その敵と周囲2マスにいるHP${value}以下の敵味方の移動を最大1マスに制限(敵の次回行動終了まで)(敵の攻撃や補助スキルはキャンセルされる)`;
+        return `設置したマスで敵が移動終了したとき、その敵と周囲2マスにいるHP${this.amount}以下の敵味方の移動を最大1マスに制限(敵の次回行動終了まで)(敵の攻撃や補助スキルはキャンセルされる)`;
+    }
+    get amount() {
+        return super.amount + 30;
+    }
+}
+
+class OfCallingCircle extends TileTypeStructureBase {
+    static getIcon() {
+        return `${g_debugImageRootPath}CallingCircle.webp`;
+    }
+
+    // noinspection JSCheckFunctionSignatures
+    get name() {
+        return "攻撃・転移の魔法陣";
+    }
+
+    get description() {
+        return "3ターン目、増援が登場する。このターン、増援は行動後に再行動可能（1回のみ）。この設備は、攻撃部隊に「増援枠」の神階効果を持つ神階英雄が必要。※詳細は、「飛空城　攻撃部隊編成」のヘルプに記載";
+    }
+
+    get icon() {
+        return `${g_debugImageRootPath}${this.iconFileName}`;
+    }
+
+    get iconFileName() {
+        return "CallingCircle.webp";
+    }
+
+    get isBreakable() {
+        return false;
+    }
+}
+
+class DefCallingCircle extends TileTypeStructureBase {
+    // noinspection JSCheckFunctionSignatures
+    get name() {
+        return "防衛・転移の魔法陣";
+    }
+
+    get description() {
+        return "3ターン目、増援が登場する。この設備は、攻撃部隊に「増援枠」の神階効果を持つ神階英雄が必要。※詳細は、「飛空城　攻撃部隊編成」のヘルプに記載";
+    }
+
+    get icon() {
+        return `${g_debugImageRootPath}${this.iconFileName}`;
+    }
+
+    get iconFileName() {
+        return "CallingCircle_Red.webp";
+    }
+
+    get isBreakable() {
+        return false;
     }
 }
 
@@ -906,7 +1015,7 @@ class BreakableWall extends DefenceStructureBase {
     }
 
     get isBroken() {
-        return this.breakCount == 0;
+        return this.breakCount === 0;
     }
     get type() {
         return ObjType.BreakableWall;
@@ -953,5 +1062,5 @@ function isMovableForUnit(structure) {
         return true;
     }
 
-    return structure instanceof TrapBase;
+    return structure instanceof TileTypeStructureBase;
 }

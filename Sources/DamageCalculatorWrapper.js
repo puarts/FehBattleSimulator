@@ -516,6 +516,7 @@ class DamageCalculatorWrapper {
      * @param damageType
      */
     calcPrecombatSpecialResult(atkUnit, defUnit, damageType) {
+        atkUnit.battleContext.clearPrecombatState();
         this.__applyPrecombatSkills(atkUnit, defUnit, damageType);
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }

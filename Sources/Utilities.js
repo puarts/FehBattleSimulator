@@ -1733,6 +1733,10 @@ class SetUtil {
             return SetUtil.difference(union, intersection);
         });
     }
+
+    static toString(set) {
+        return `{${Array.from(set).join(',')}}`;
+    }
 }
 
 class MathUtil {

@@ -292,7 +292,35 @@ class UniteUnitsNode extends UnitsNode {
     }
 }
 
-class MapUnitsNode extends NumbersNode {
+/**
+ * @template T
+ */
+class MapUnionUnitsNode extends SkillEffectNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {SetNode<T>} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super();
+        this._unitsNode = unitsNode;
+        this._funcNode = funcNode;
+    }
+
+    /**
+     * @param env
+     * @returns {Set<T>}
+     */
+    evaluate(env) {
+        let units = Array.from(this._unitsNode.evaluate(env));
+        let values = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Map units: ${units.map(u => u.nameWithGroup)} => values: [${values.map(s => SetUtil.toString(s))}]`);
+        let result = SetUtil.union(...values);
+        env.trace(`Union set: ${SetUtil.toString(result)}`);
+        return result;
+    }
+}
+
+class MapUnitsToNumNode extends NumbersNode {
     /**
      * @param {UnitsNode} unitsNode
      * @param {NumberNode} funcNode
@@ -435,6 +463,25 @@ class UniteSpacesIfNode extends SpacesNode {
     }
 }
 
+class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let result = env.battleMap.enumerateTilesWithinSpecifiedDistance(unit.placedTile, n);
+        env.trace(`Spaces within ${n} spaces of ${unit.nameWithGroup}`);
+        return result;
+    }
+}
+
 class IsThereUnitOnMapNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -450,6 +497,19 @@ class IsThereUnitOnMapNode extends BoolNode {
         let pred = u => u.isOnMap && this._predNode.evaluate(env.copy().setTarget(u));
         let result = env.unitManager.isThereUnit(pred);
         env.debug(`${unit.nameWithGroup}に対して条件を満たすユニットがマップ上にいるか: ${result}`);
+        return result;
+    }
+}
+
+class TargetGroupNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.groupId;
+        env.debug(`${unit.nameWithGroup}は${groupIdToString(result)}`);
         return result;
     }
 }
@@ -818,6 +878,7 @@ class AtStartOfTurnEnv extends NodeEnv {
         super();
         this.phase = NodeEnv.PHASE.AT_START_OF_TURN;
         this.setBeginningOfTurnSkillHandler(handler);
+        this.setBattleMap(handler.map);
         this.setSkillOwner(targetUnit);
         this.setTarget(targetUnit);
     }
@@ -1199,6 +1260,19 @@ class StatsNode extends NumbersNode {
 }
 
 const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
+
+class MultStatsNode extends StatsNode {
+    constructor(...statsNodes) {
+        super(...statsNodes);
+    }
+
+    evaluate(env) {
+        let statsArray = this.evaluateChildren(env);
+        return ArrayUtil.mult(...statsArray);
+    }
+}
+
+const MULT_STATS_NODE = (...statsNodes) => new MultStatsNode(...statsNodes);
 
 class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
     /**
@@ -2078,6 +2152,20 @@ class TargetsTotalPenaltiesNode extends PositiveNumberNode {
     }
 }
 
+class TargetsPenaltiesNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        /** @type {Unit} */
+        let unit = this.getUnit(env);
+        let result = unit.getDebuffTotals(unit !== env.foeDuringCombat).map(v => -v);
+        env.debug(`${unit.nameWithGroup}の弱化は${result}`);
+        return result;
+    }
+}
+
 // Unit or BattleContextの値を参照 END
 
 class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
@@ -2289,7 +2377,7 @@ class TargetsFoesOnTheEnemyTeamWithLowestStatNode extends UnitsNode {
     }
 }
 
-class TargetAndTargetsAlliesWithinNSpacesNode extends UnitsNode {
+class TargetsAndThoseAlliesWithinNSpacesNode extends UnitsNode {
     /**
      * @param {number|NumberNode} n
      * @param {UnitNode|UnitsNode} unitsNode
@@ -3027,9 +3115,42 @@ class AppliesDivineVeinIceToTargetsSpaceAndSpacesWithinNSpacesOfTargetFor2TurnsN
     }
 }
 
+class ApplyDivineVeinNode extends SkillEffectNode {
+    constructor(divineVein, group, turns = 1) {
+        super();
+        this._divineVein = NumberNode.makeNumberNodeFrom(divineVein);
+        this._group = NumberNode.makeNumberNodeFrom(group);
+        this._turns = NumberNode.makeNumberNodeFrom(turns);
+    }
+
+    evaluate(env) {
+        let tile = env.tile;
+        let divineVein = this._divineVein.evaluate(env);
+        let groupId = this._group.evaluate(env);
+        let turns = this._turns.evaluate(env);
+        tile.reserveDivineVein(divineVein, groupId, turns);
+    }
+}
+
 // Tileへの効果 END
 
 // Tileを返す START
+class ForEachSpacesNode extends ForEachNode {
+    constructor(spacesNode, predNode, ...nodes) {
+        super(...nodes);
+        this._spacesNode = spacesNode;
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        for (let space of this._spacesNode.evaluate(env)) {
+            if (this._predNode.evaluate(env.copy().setTile(space))) {
+                this.evaluateChildren(env.copy().setTile(space))
+            }
+        }
+    }
+}
+
 class ForEachTargetForSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin, ForUnitMixin);

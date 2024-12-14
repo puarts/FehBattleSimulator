@@ -392,6 +392,11 @@ class HeroInfo {
      * @param  {SkillInfo} skillInfo
      */
     canEquipSkill(skillInfo) {
+        // 開発モードなら全てのスキルを装備可能
+        if (g_appData.isDevelopmentMode) {
+            return true;
+        }
+
         if (!skillInfo.canInherit) {
             switch (skillInfo.type) {
                 case SkillType.Weapon:
@@ -523,6 +528,32 @@ class HeroInfo {
         if (release_date < 20221201) return 6;
         if (release_date < 20231201) return 7;
         if (release_date < 20241201) return 8;
+        if (release_date < 20251201) return 9;
+        if (release_date < 20261201) return 10;
+        if (release_date < 20271201) return 11;
+        if (release_date < 20281201) return 12;
+        if (release_date < 20291201) return 13;
+        if (release_date < 20301201) return 14;
+        if (release_date < 20311201) return 15;
+        if (release_date < 20321201) return 16;
+        if (release_date < 20331201) return 17;
+        if (release_date < 20341201) return 18;
+        if (release_date < 20351201) return 19;
+        if (release_date < 20361201) return 20;
+        if (release_date < 20371201) return 21;
+        if (release_date < 20381201) return 22;
+        if (release_date < 20391201) return 23;
+        if (release_date < 20401201) return 24;
+        if (release_date < 20411201) return 25;
+        if (release_date < 20421201) return 26;
+        if (release_date < 20431201) return 27;
+        if (release_date < 20441201) return 28;
+        if (release_date < 20451201) return 29;
+        if (release_date < 20461201) return 30;
+        if (release_date < 20471201) return 31;
+        if (release_date < 20481201) return 32;
+        if (release_date < 20491201) return 33;
+        if (release_date < 20501201) return 34;
         return -1;
     }
 

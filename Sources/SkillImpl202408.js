@@ -1,4 +1,350 @@
 // noinspection JSUnusedLocalSymbols
+// 鍛錬の鼓動・謀策
+{
+    let skillId = PassiveC.PulseUpPloy;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn, grants Special cooldown count-1.
+        new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+    ));
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if any foes within 3 rows or 3 columns centered on unit have Res < unit's Res+5,
+        new ForEachUnitNode(new TargetsFoesOnMapNode(), IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            IF_NODE(LT_NODE(TARGETS_EVAL_RES_ON_MAP, ADD_NODE(SKILL_OWNERS_EVAL_RES_ON_MAP, 5)),
+                // inflicts【Ploy】 and【Exposure】on those foes through their next actions.
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Ploy, StatusEffectType.Exposure),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+}
+
+// 知の源
+{
+    let skillId = PassiveB.FontOfWisdom;
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // inflicts Atk/Spd/Res-7 on foes that are within 2 spaces of another foe through their next actions.
+        new ForEachUnitNode(TARGETS_FOES_NODE,
+            IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+
+            new InflictsStatsMinusAtStartOfTurnNode(7, 7, 0, 7),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Atk/Spd/Res-5 on foe,
+        new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 0, 5),
+        // inflicts penalty on foe's Atk/Spd/Res = highest penalty on each stat between target and foes within 2 spaces of target
+        new InflictsStatsMinusOnFoeDuringCombatNode(
+            MULT_STATS_NODE(
+                StatsNode.makeStatsNodeFrom(1, 1, 0, 1),
+                HIGHEST_PENALTIES_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2),
+            ),
+        ),
+        // (calculates each stat penalty independently),
+        // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+        // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
+        REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        // and reduces damage from foe's first attack by 7 during combat
+        // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+        new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+    ));
+}
+
+// 多感
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Empathy);
+    // 【Empathy】
+    // Grants bonus to unit's Atk/Spd/Def/Res = number of types of【Bonus】effects,
+    // excluding stat bonuses,
+    // and【Penalty】effects,
+    // excluding stat penalties,
+    // active on player team and enemy team during combat (max 7).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new GrantsAllStatsPlusNToTargetDuringCombatNode(
+            new EnsureMaxNode(
+                SET_SIZE_NODE(new MapUnionUnitsNode(
+                    UNITS_ON_MAP_NODE,
+                    BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE)
+                ),
+                7
+            ),
+        ),
+    ));
+}
+
+// 創世の文字の力
+{
+    let skillId = Weapon.OdrOfCreation;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants【Empathy】 and "unit can move to a space adjacent to any ally within 2 spaces"
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Empathy, StatusEffectType.AirOrders),
+            )
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res = number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14,
+                ),
+            ),
+            // neutralizes unit's penalties,
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+            X_NUM_NODE(
+                // deals +X damage
+                new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                // (X = number of【Bonus】effects active on unit and foe,
+                // excluding stat bonuses, × 5; max 25; excluding area-of-effect Specials),
+                new EnsureMaxNode(MULT_NODE(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5), 25),
+            ),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+}
+
+// オスティアの血盟
+{
+    let skillId = PassiveA.OathOfOstia;
+    // Grants HP+5.
+
+    let applyDivineVeinFunc = () => new SkillEffectNode(
+        // applies Divine Vein (Stone) to unit's space and spaces within 2 spaces of unit for 1 turn.
+        new ForEachSpacesNode(new SpacesWithinNSpacesOfTargetNode(2),
+            new ApplyDivineVeinNode(DivineVeinType.Stone, new TargetGroupNode(), 1),
+        ),
+    );
+    // After unit acts (if Canto triggers, after Canto), or,
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, applyDivineVeinFunc);
+    // if defending in Aether Raids,
+    // at the start of enemy phase,
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            IF_NODE(WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
+                applyDivineVeinFunc(),
+            ),
+        )
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // inflicts Atk/Def-10 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(10, 0, 10, 0),
+            // grants Special cooldown count-2 to unit before foe's first attack,
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstFollowUpAttackDuringCombatNode(2),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
+// 盟友との絆の剣
+{
+    let skillId = Weapon.FellowshipBlade;
+    // Accelerates Special trigger (cooldown count-1).
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Def/Res+6,
+                new GrantsStatsPlusAtStartOfTurnNode(0, 0, 6, 6),
+                // (Bulwark),
+                // and (Null Panic) to unit and allies within 2 spaces of unit for 1 turn.
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Bulwark, StatusEffectType.NullPanic),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            X_NUM_NODE(
+                // inflicts penalty on
+                // foe's Atk/Def = 20% of unit's Def at start of combat + 6,
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_DEF_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage
+                new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                // reduces damage from foe's attacks by 50% of X (excluding area-of-effect Specials),
+                new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(PERCENTAGE_NODE(50, READ_NUM_NODE)),
+                // (X = highest total bonuses among unit and allies within 2 spaces of unit; excluding area-of-effect Specials),
+                HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(2),
+            ),
+            // and inflicts Special cooldown charge - 1 on foe per attack during combat (only highest value applied; does not stack).
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ),
+    ));
+}
+
+// 追撃の斧+
+{
+    let skillId = Weapon.PursualAxePlus;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Def+5 to unit during combat and unit makes a guaranteed follow-up attack.
+            new GrantsStatsPlusToTargetDuringCombatNode(5, 0, 5, 0),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+    ));
+}
+
+// 露払い・不屈
+{
+    let skillId = PassiveC.LookoutForce;
+    // Enables [Canto (2)] •
+    enablesCantoN(skillId, 2);
+
+    // When Canto triggers,
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd+4 to unit and neutralizes unit's penalties to Atk/Spd during combat.
+    WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Swap, 2),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd+4 to unit and neutralizes unit's penalties to Atk/Spd during combat.
+            new GrantsStatsPlusToTargetDuringCombatNode(4, 4, 0, 0),
+            new NeutralizesPenaltiesToTargetsStatsNode(true, true, false, false),
+        ),
+    ));
+}
+
+// 暗香疎影
+{
+    let skillId = PassiveB.DarkPerfume;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // grants Special cooldown count-1 to unit,
+        new GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode(1),
+        // inflicts (Undefended) and status preventing counterattacks on closest foes through their next actions,
+        new ForEachUnitNode(new TargetsClosestFoesNode(), TRUE_NODE,
+            new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Undefended),
+        ),
+        // and inflicts status preventing counterattacks on foes within 2 spaces of those foes through their next actions.
+        new ForEachUnitNode(new TargetsClosestFoesNode(), TRUE_NODE,
+            new ForEachTargetsAllyWithinNSpacesNode(2, TRUE_NODE,
+                new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.CounterattacksDisrupted),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // inflicts Atk/Spd/Def-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 0),
+            // deals damage = 20% of unit's Spd
+            // (including when dealing damage with an area-of-effect Special),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // deals damage = 20% of unit's Spd
+        // (including when dealing damage with an area-of-effect Special),
+        new UnitDealsDamageBeforeCombatNode(PERCENTAGE_NODE(20, UNITS_SPD_DURING_COMBAT_NODE)),
+    ));
+
+    // While attacking in Aether Raids,
+    // if unit ends movement on a space with a Bolt Trap or a Heavy Trap,
+    // cancels trap's effect; if unit ends movement on a space with a Hex Trap,
+    // reduces trap's trigger condition by 10 HP.
+    DISARM_TRAP_SKILL_SET.add(skillId);
+    DISARM_HEX_TRAP_SKILL_SET.add(skillId);
+}
+
+// 魔器・姿なき影刃
+{
+    let skillId = Weapon.ArcaneSlyKnife;
+    // Arcane Sly Knife
+    // Mt: 14 Rng:2
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat, if unit's HP ≥ 25%, grants bonus to
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // unit's Atk/Spd/Def/Res = 25% of foe's Atk at start of combat - 4 (min 5; max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMinMaxNode(
+                    SUB_NODE(PERCENTAGE_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE), 4),
+                    5, 14,
+                )
+            ),
+            // neutralizes foe's bonuses to Spd/Def,
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, true, false),
+            // deals damage = 15% of unit's Atk
+            // (including when dealing damage with an area-of-effect Special),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, UNITS_ATK_DURING_COMBAT_NODE),
+            // reduces damage from foe's first attack by 7
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            // and grants Special cooldown count- 1 to unit before unit's first attack during combat.
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+        ),
+    ));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // deals damage = 15% of unit's Atk
+            // (including when dealing damage with an area-of-effect Special),
+            new UnitDealsDamageBeforeCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_AT_START_OF_COMBAT_NODE)),
+        )
+    ))
+}
+
+// 正面隊形・敵方4
+{
+    let skillId = PassiveB.WilyFighter4;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or if unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            // inflicts Atk-5 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(5, 0, 0, 0),
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                X_NUM_NODE(
+                    // deals +X damage (X = 20% of unit's Def; excluding area-of-effect Specials),
+                    new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                    // reduces damage from foe's attacks by X (excluding area-of-effect Specials),
+                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+                    PERCENTAGE_NODE(20, UNITS_DEF_DURING_COMBAT_NODE),
+                ),
+            ),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and neutralizes foe's bonuses during combat.
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+        )
+    ));
+}
+
 // 正面隊形・自己4
 {
     let skillId = PassiveB.SlickFighter4;
@@ -8,13 +354,13 @@
             // inflicts Atk-5 on foe,
             new InflictsStatsMinusOnFoeDuringCombatNode(5, 0, 0, 0),
             new AppliesSkillEffectsAfterStatusFixedNode(
-                new SkillEffectNode(
+                X_NUM_NODE(
                     // deals +X damage (X = 20% of unit's Def; excluding area-of-effect Specials),
                     new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
                     // reduces damage from foe's attacks by X (excluding area-of-effect Specials),
                     new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+                    PERCENTAGE_NODE(20, UNITS_DEF_DURING_COMBAT_NODE),
                 ),
-                PERCENTAGE_NODE(20, UNITS_DEF_DURING_COMBAT_NODE),
             ),
             // unit makes a guaranteed follow-up attack,
             UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
@@ -1800,7 +2146,7 @@
             // (Specified stats: Turn 1 = HP, Turn 2 = Atk, Turn 3 = Spd, Turn 4 = Def, Turn 5 = Res.)
             FOR_EACH_UNIT_NODE(
                 new UniteUnitsNode(
-                    new TargetAndTargetsAlliesWithinNSpacesNode(2,
+                    new TargetsAndThoseAlliesWithinNSpacesNode(2,
                         new TargetsFoesOnTheEnemyTeamWithLowestStatNode(index),
                     ),
                 ),

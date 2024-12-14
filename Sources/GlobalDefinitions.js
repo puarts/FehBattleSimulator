@@ -1,3 +1,5 @@
+/// @file
+/// @brief 複数ファイル間で参照するグローバル変数の定義です。
 
 const g_siteRootPath = "/";
 const g_explicitSiteRootPath = "https://fire-emblem.fun/";
@@ -19,3 +21,6 @@ const ArrayValueElemDelimiter = '+';
 const DebugModeDefault = false;
 const TabChar = "&emsp;&emsp;";
 const G_SKILL_LOG_LEVEL = 1;
+
+const g_debugImageRootPath = g_imageRootPath;
+const g_debugSkillIconRootPath = g_skillIconRootPath;

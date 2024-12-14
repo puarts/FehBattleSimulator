@@ -337,3 +337,14 @@ td.enemy {
     width: 60%;
     height: 60%;
 }
+
+.map-status-icon-container {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    pointer-events: none;
+}
+
+.map-status-icon {
+    width: 15px;
+}

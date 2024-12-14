@@ -409,6 +409,7 @@ class Unit extends BattleMapElement {
         this.merge = 0; // 限界突破数
         this.dragonflower = 0; // 神竜の花
         this.emblemHeroMerge = 0; // 紋章士の限界突破
+        this.reinforcementMerge = 0; // 増援ユニットに対する増援神階の凸数の最大値
         this.blessingEffects = [];
         this.blessing1 = BlessingType.None;
         this.blessing2 = BlessingType.None;
@@ -740,6 +741,8 @@ class Unit extends BattleMapElement {
         this.isActionDoneDuringMoveCommand = false;
 
         this.canWarpForcibly = false;
+
+        this.anotherActionTurnForCallingCircle = -1;
     }
 
     /**
@@ -1302,6 +1305,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.captain
             + ValueDelimiter + this.passiveX
             + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
+            + ValueDelimiter + this.reinforcementMerge
             + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
@@ -1365,6 +1369,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.cantoSupport
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForCantoRefresh)
             + ValueDelimiter + JSON.stringify(Array.from(this.oneTimeActionPerTurnActivatedSet))
+            + ValueDelimiter + this.anotherActionTurnForCallingCircle
             ;
     }
 
@@ -1427,6 +1432,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.captain = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.reinforcementMerge = Number(values[i]); ++i; }
         if (i < elemCount) {
             this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
@@ -1507,6 +1513,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.cantoSupport = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForCantoRefresh = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.oneTimeActionPerTurnActivatedSet = new Set(JSON.parse(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.anotherActionTurnForCallingCircle = Number(values[i]); ++i; }
     }
 
 
@@ -1563,6 +1570,8 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
             + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
             + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
+            + ValueDelimiter + this.anotherActionTurnForCallingCircle
+            + ValueDelimiter + this.reinforcementMerge
             ;
     }
 
@@ -1625,6 +1634,8 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = toBoolean(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.anotherActionTurnForCallingCircle = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.reinforcementMerge = Number(values[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -1660,10 +1671,43 @@ class Unit extends BattleMapElement {
         return isMythicSeasonType(this.providableBlessingSeason);
     }
 
+    get isAttackMythicHero() {
+        return this.providableBlessingSeason === SeasonType.Light
+            || this.providableBlessingSeason === SeasonType.Astra;
+    }
+
     /// 防衛神階かどうかを取得します。
     get isDefenseMythicHero() {
         return this.providableBlessingSeason === SeasonType.Anima
             || this.providableBlessingSeason === SeasonType.Dark;
+    }
+
+    includesProvidableBlessingSeason(seasons) {
+        for (let season of seasons) {
+            if (season === this.providableBlessingSeason) return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param seasonType
+     * @returns {boolean}
+     */
+    canCallAsReinforcement(seasonType) {
+        return this.providableBlessingSeason === seasonType || this.grantedBlessing === seasonType;
+    }
+
+    /**
+     * @param {Iterable<number>} seasons
+     * @param {boolean} isAllyGroup
+     * @returns {boolean}
+     */
+    hasReinforcementAbility(seasons, isAllyGroup) {
+        if (this.heroInfo.bookVersion >= 9) {
+            if (isAllyGroup && this.isAttackMythicHero && this.includesProvidableBlessingSeason(seasons)) return true;
+            if (!isAllyGroup && this.isDefenseMythicHero && this.includesProvidableBlessingSeason(seasons)) return true;
+        }
+        return false;
     }
 
     get atkDebuffTotal() {
@@ -1774,6 +1818,10 @@ class Unit extends BattleMapElement {
             this.getResDebuffTotal(isPrecombat);
     }
 
+    /**
+     * @param {boolean} isPrecombat
+     * @returns {[number, number, number, number]}
+     */
     getDebuffTotals(isPrecombat = false) {
         return [
             this.getAtkDebuffTotal(isPrecombat),
@@ -2281,6 +2329,18 @@ class Unit extends BattleMapElement {
         this.#statusEffects = [...effects];
     }
 
+    forceRemoveStatusEffect(statusEffect) {
+        this.forceSetStatusEffects(...this.getStatusEffects().filter(e => e !== statusEffect));
+    }
+
+    forceAddStatusEffect(statusEffect) {
+        this.forceSetStatusEffects(...this.getStatusEffects(), statusEffect);
+    }
+
+    get statusEffects() {
+        return this.#statusEffects;
+    }
+
     getStatusEffects() {
         return [...this.#statusEffects];
     }
@@ -2426,7 +2486,7 @@ class Unit extends BattleMapElement {
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstructToAdjacentTiles(moveUnit) {
-        let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwalk);
+        let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwark);
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(1マス以内)').setLogLevel(getSkillLogLevel());
         env.setName('移動時(1マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
@@ -2494,6 +2554,8 @@ class Unit extends BattleMapElement {
         this.hp = this.maxHpWithSkills;
         this.specialCount = this.maxSpecialCount;
         this.isActionDone = false;
+        this.isAttackDone = false;
+        this.isAttackedDone = false;
         this.isTransformed = false;
         this.setMoveCountFromMoveType();
         this.forceResetBuffs();
@@ -2507,6 +2569,7 @@ class Unit extends BattleMapElement {
         this.fromPosY = this.posY;
         this.isEnemyActionTriggered = this.groupId !== UnitGroupType.Enemy;
         this.forceResetGreatTalents();
+        this.anotherActionTurnForCallingCircle = -1;
     }
 
     resetSpurs() {
@@ -2673,6 +2736,7 @@ class Unit extends BattleMapElement {
 
         this.isActionDone = false;
         this.isAttackDone = false;
+        this.isAttackedDone = false;
         this.neutralizeBuffsAtStartOfAction();
         this.setMoveCountFromMoveType();
         this.neutralizePositiveStatusEffectsAtStartOfTurn();
@@ -2691,6 +2755,10 @@ class Unit extends BattleMapElement {
         }
         this.neutralizeDebuffsAtEndOfAction();
         this.neutralizeNegativeStatusEffectsAtEndOfAction();
+        if (g_appData.currentTurn === this.anotherActionTurnForCallingCircle) {
+            this.anotherActionTurnForCallingCircle = -1;
+            this.isActionDone = false;
+        }
     }
 
     endActionBySkillEffect() {
@@ -2731,7 +2799,8 @@ class Unit extends BattleMapElement {
             getSkillFunc(skillId, applyEndActionSkillsFuncMap)?.call(this);
         }
 
-        let env = new NodeEnv().setTarget(this).setSkillOwner(this).setUnitManager(g_appData);
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this).setUnitManager(g_appData)
+            .setBattleMap(g_appData.map);
         env.setName('行動後or再移動後').setLogLevel(getSkillLogLevel());
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
         for (let unit of g_appData.enumerateAllUnitsOnMap()) {
@@ -4632,9 +4701,11 @@ class Unit extends BattleMapElement {
     }
 
     updateStatusByMergeAndDragonFlower() {
+        // 増援のステータス上昇
         const addValues = Unit.calcStatusAddValuesByMergeAndDragonFlower(
             this.ivHighStat, this.ivLowStat, this.ascendedAsset,
             this.merge, this.dragonflower, this.emblemHeroMerge,
+            this.reinforcementMerge,
             this.heroInfo.hpLv1,
             this.heroInfo.atkLv1,
             this.heroInfo.spdLv1,
@@ -4649,6 +4720,21 @@ class Unit extends BattleMapElement {
         this.resWithSkills += addValues[4];
     }
 
+    getReinforcementMerge() {
+        let mergeMax = 0;
+        if (g_appData.isReinforcementSlotUnit(this)) {
+            // 増設枠以外の増援神階英雄のマージの最大値
+            for (let unit of g_appData.map.enumerateUnitsInTheSameGroup(this)) {
+                if (unit === this) continue;
+                let seasons = g_appData.enumerateCurrentSeasons();
+                if (unit.hasReinforcementAbility(seasons, unit.groupId === UnitGroupType.Ally)) {
+                    mergeMax = Math.max(mergeMax, unit.merge);
+                }
+            }
+        }
+        return mergeMax;
+    }
+
     /**
      * 限界突破と神竜の花によるステータス加算を計算する。
      * 限界突破にはエンゲージされた紋章士の凸数も含む
@@ -4658,6 +4744,7 @@ class Unit extends BattleMapElement {
      * @param  {number} merge
      * @param  {number} dragonflower
      * @param  {number} emblemHeroMerge
+     * @param  {number} reinforcementMerge
      * @param  {number} hpLv1
      * @param  {number} atkLv1
      * @param  {number} spdLv1
@@ -4667,6 +4754,7 @@ class Unit extends BattleMapElement {
     static calcStatusAddValuesByMergeAndDragonFlower(
         ivHighStat, ivLowStat, ascendedAsset,
         merge, dragonflower, emblemHeroMerge,
+        reinforcementMerge,
         hpLv1,
         atkLv1,
         spdLv1,
@@ -4731,7 +4819,7 @@ class Unit extends BattleMapElement {
         const addValues = [0, 0, 0, 0, 0];
 
         // 限界突破によるステータス上昇
-        if (merge > 0 || dragonflower > 0 || emblemHeroMerge) {
+        if (merge > 0 || dragonflower > 0 || emblemHeroMerge > 0 || reinforcementMerge > 0) {
             const statusList = [
                 { type: StatusType.Hp, value: hpLv1 + hpLv1IvChange },
                 { type: StatusType.Atk, value: atkLv1 + atkLv1IvChange },
@@ -4744,26 +4832,6 @@ class Unit extends BattleMapElement {
                 if (b.type == StatusType.Hp) return 1;
                 return b.value - a.value;
             });
-            const updateStatus = (statItr) => {
-                let statIndex = statItr % 5;
-                switch (statusList[statIndex].type) {
-                    case StatusType.Hp:
-                        addValues[0] += 1;
-                        break;
-                    case StatusType.Atk:
-                        addValues[1] += 1;
-                        break;
-                    case StatusType.Spd:
-                        addValues[2] += 1;
-                        break;
-                    case StatusType.Def:
-                        addValues[3] += 1;
-                        break;
-                    case StatusType.Res:
-                        addValues[4] += 1;
-                        break;
-                }
-            };
 
             if (merge > 0 && ivHighStat === StatusType.None) {
                 // 基準値で限界突破済みの場合
@@ -4798,24 +4866,50 @@ class Unit extends BattleMapElement {
 
             // 限界突破
             for (let mergeItr = 0, statItr = 0; mergeItr < merge; ++mergeItr) {
-                updateStatus(statItr);
+                Unit.updateStatus(statusList, addValues, statItr);
                 statItr += 1;
-                updateStatus(statItr);
+                Unit.updateStatus(statusList, addValues, statItr);
                 statItr += 1;
             }
 
             // 神竜の花
             for (let i = 0; i < dragonflower; ++i) {
-                updateStatus(i);
+                Unit.updateStatus(statusList, addValues, i);
             }
 
             // 紋章士の限界突破
             for (let i = 0; i < emblemHeroMerge; ++i) {
-                updateStatus(i);
+                Unit.updateStatus(statusList, addValues, i);
+            }
+
+            // 増援のステータス上昇
+            for (let i = 0; i < reinforcementMerge * 2; ++i) {
+                Unit.updateStatus(statusList, addValues, i);
             }
         }
 
         return addValues;
+    }
+
+    static updateStatus(statusList, addValues, statItr) {
+        let statIndex = statItr % 5;
+        switch (statusList[statIndex].type) {
+            case StatusType.Hp:
+                addValues[0] += 1;
+                break;
+            case StatusType.Atk:
+                addValues[1] += 1;
+                break;
+            case StatusType.Spd:
+                addValues[2] += 1;
+                break;
+            case StatusType.Def:
+                addValues[3] += 1;
+                break;
+            case StatusType.Res:
+                addValues[4] += 1;
+                break;
+        }
     }
 
     canHeal(requiredHealAmount = 1) {

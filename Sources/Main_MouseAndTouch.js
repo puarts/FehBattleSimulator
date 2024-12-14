@@ -523,7 +523,7 @@ function dropToUnitImpl(unit, dropTargetId) {
                         }
                         isActioned = true;
                     }
-                } else if (obj instanceof TrapBase) {
+                } else if (obj instanceof TileTypeStructureBase) {
                     g_app.__enqueueMoveCommand(unit, targetTile, true);
                     isActioned = true;
                 }

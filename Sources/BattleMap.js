@@ -2998,7 +2998,7 @@ class BattleMap {
             cell.bgColor = SelectedTileColor;
         }
         if (!this.isIconOverlayDisabled) {
-            if (!this.isTrapIconOverlayDisabled || !(structure instanceof TrapBase)) {
+            if (!this.isTrapIconOverlayDisabled || !(structure instanceof TileTypeStructureBase)) {
                 let shadowCss = this.__getShadowCss();
                 if (structure.hasLevel) {
                     cell.innerText += "<span style='position:absolute;bottom:0;right:0;font-size:10px;" + shadowCss + ";'>"
@@ -3050,8 +3050,17 @@ class BattleMap {
         if (!this.isIconOverlayDisabled) {
             let shadowCss = this.__getShadowCss();
             if (this.isExpansionUnitFunc != null && this.isExpansionUnitFunc(unit)) {
-                cell.innerText += "<span style='position:absolute;bottom:0;right:0;pointer-events: none;'><img src='"
-                    + g_imageRootPath + "ExpansionUnit.png" + "' style='width:15px' ></span>";
+                cell.innerText += `
+                    <span class="map-status-icon-container">
+                        <img src="${g_imageRootPath}ExpansionUnit.png" class="map-status-icon">
+                    </span>`;
+            }
+            if (g_appData.isReinforcementSlotUnit(unit) &&
+                unit.anotherActionTurnForCallingCircle === g_appData.currentTurn) {
+                cell.innerText += `
+                    <span class="map-status-icon-container">
+                        <img src="${OfCallingCircle.getIcon()}" class="map-status-icon">
+                    </span>`;
             }
 
             let unitColor = unit.groupId === UnitGroupType.Ally ? "#00cccc" : "#ff3333";

@@ -379,6 +379,60 @@ class ConstantNumberNode extends NumberNode {
 }
 
 /**
+ * @template T
+ * @abstract
+ */
+class SetNode extends SkillEffectNode {
+    /**
+     * @param env
+     * @returns {Set<T>}
+     * @abstract
+     */
+    evaluate(env) {
+    }
+}
+
+/**
+ * @template T
+ */
+class UnionSetNode extends SetNode {
+    /**
+     * @param {...SetNode<T>} nodes
+     */
+    constructor(...nodes) {
+        let a = nodes;
+        super(...nodes);
+    }
+
+    /**
+     * @param env
+     * @returns {Set<T>}
+     */
+    evaluate(env) {
+        let sets = this.evaluateChildren(env);
+        return SetUtil.union(...sets);
+    }
+}
+
+const UNION_SET_NODE = (...nodes) => new UnionSetNode(...nodes);
+
+class SetSizeNode extends PositiveNumberNode {
+    /**
+     * @param {SetNode} setNode
+     */
+    constructor(setNode) {
+        super();
+        this._setNode = setNode;
+    }
+
+    evaluate(env) {
+        return this._setNode.evaluate(env).size;
+    }
+}
+
+const SET_SIZE_NODE = setNode => new SetSizeNode(setNode);
+
+/**
  * @abstract
  */
 class BoolNode extends SkillEffectNode {
@@ -810,3 +864,27 @@ class NumThatIsNode extends SkillEffectNode {
         this.getChildren()[0].evaluate(env);
     }
 }
+
+class XNumNode extends SkillEffectNode {
+    /**
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(...nodes) {
+        super(...(nodes.slice(0, -1)));
+        // noinspection JSCheckFunctionSignatures
+        let xNode = NumberNode.makeNumberNodeFrom(nodes[nodes.length - 1]);
+        if (!(xNode instanceof NumberNode)) {
+            console.error(`Last node must be a NumberNode but received: ${xNode.constructor.name}`);
+        }
+        this._numNode = xNode;
+    }
+
+    evaluate(env) {
+        let value = this._numNode.evaluate(env);
+        env.storeValue(value);
+        env.trace(`store x value: ${value}`);
+        this.evaluateChildren(env);
+    }
+}
+
+const X_NUM_NODE = (...nodes) => new XNumNode(...nodes);

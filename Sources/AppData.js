@@ -293,6 +293,7 @@ class AppData extends UnitManager {
         this.beginningOfTurnSkillHanderLogger.logLevel = this.simulatorLogLevel;
 
         this.isDebugMenuEnabled = DebugModeDefault;
+        this.isDevelopmentMode = LocalStorageUtil.getNumber('isDevelopmentMode', 0) === 1;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
 
@@ -565,13 +566,43 @@ class AppData extends UnitManager {
     }
 
     getEnemyExpansionUnitOnMap() {
-        if (this.gameMode != GameMode.AetherRaid) {
+        if (this.gameMode !== GameMode.AetherRaid) {
             return null;
         }
 
-        let lastSlotIndex = this.enemyUnits.length - 1;
+        let lastSlotIndex = this.enemyUnits.length - 2;
         for (let unit of this.enemyUnits) {
-            if (unit.isOnMap && unit.slotOrder == lastSlotIndex) {
+            if (unit.isOnMap && unit.slotOrder === lastSlotIndex) {
+                return unit;
+            }
+        }
+
+        return null;
+    }
+
+    getReinforcementSlotUnit(groupType) {
+        if (this.gameMode !== GameMode.AetherRaid) {
+            return null;
+        }
+
+        let units = groupType === UnitGroupType.Ally ? this.allyUnits : this.enemyUnits;
+        for (let unit of units) {
+            if (this.isReinforcementSlotUnit(unit)) {
+                return unit;
+            }
+        }
+
+        return null;
+    }
+
+    getReinforcementSlotUnitOnTrash(groupType) {
+        if (this.gameMode !== GameMode.AetherRaid) {
+            return null;
+        }
+
+        let units = groupType === UnitGroupType.Ally ? this.allyUnits : this.enemyUnits;
+        for (let unit of units) {
+            if (!unit.isOnMap && this.isReinforcementSlotUnit(unit)) {
                 return unit;
             }
         }
@@ -580,15 +611,25 @@ class AppData extends UnitManager {
     }
 
     isSpecialSlotUnit(unit) {
-        if (this.gameMode != GameMode.AetherRaid) {
+        if (this.gameMode !== GameMode.AetherRaid) {
             return false;
         }
 
-        let lastSlotIndex = this.allyUnits.length - 1;
-        if (unit.groupId == UnitGroupType.Enemy) {
-            lastSlotIndex = this.enemyUnits.length - 1;
+        let slot = unit.groupId === UnitGroupType.Enemy ?
+            this.enemyUnits.length - 2 :
+            this.allyUnits.length - 2;
+        return unit.slotOrder === slot;
+    }
+
+    isReinforcementSlotUnit(unit) {
+        if (this.gameMode !== GameMode.AetherRaid) {
+            return false;
         }
-        return unit.slotOrder == lastSlotIndex;
+
+        let slot = unit.groupId === UnitGroupType.Enemy ?
+            this.enemyUnits.length - 1 :
+            this.allyUnits.length - 1;
+        return unit.slotOrder === slot;
     }
 
     setPawnsOfLokiTurnCountByRank() {
@@ -908,6 +949,10 @@ class AppData extends UnitManager {
         if (updateBlessingEffects) {
             unit.clearBlessingEffects();
             for (let ally of this.enumerateUnitsInTheSameGroup(unit, false)) {
+                // 増援枠にいる神階は神階補正を与えない
+                if (this.isReinforcementSlotUnit(ally)) {
+                    continue;
+                }
                 if (!this.isBlessingEffectEnabled(unit, ally)) {
                     continue;
                 }
@@ -1088,11 +1133,17 @@ class AppData extends UnitManager {
         switch (this.gameMode) {
             case GameMode.AetherRaid:
                 {
-                    if (targetUnit.grantedBlessing == SeasonType.None && targetUnit.providableBlessingSeason == SeasonType.None) {
+                    if (this.isReinforcementSlotUnit(targetUnit)) {
+                        // 増援は神階でも補正を受ける
+                        // シーズン一致しか増援に出せないのでシーズンチェックは不要
+                        return true;
+                    }
+                    if (targetUnit.grantedBlessing === SeasonType.None &&
+                        targetUnit.providableBlessingSeason === SeasonType.None) {
                         // 祝福付与なし、かつ伝承英雄でもない
                         return false;
                     }
-                    if (providerUnit.providableBlessingSeason == SeasonType.None) {
+                    if (providerUnit.providableBlessingSeason === SeasonType.None) {
                         return false;
                     }
 
@@ -1106,7 +1157,7 @@ class AppData extends UnitManager {
                         return false;
                     }
 
-                    if (targetUnit.grantedBlessing == providerUnit.providableBlessingSeason) {
+                    if (targetUnit.grantedBlessing === providerUnit.providableBlessingSeason) {
                         // 祝福が一致した
                         return true;
                     }
@@ -1649,7 +1700,7 @@ class AppData extends UnitManager {
 
     examinesIsCurrentSeason(season) {
         for (let currentSeason of this.enumerateCurrentSeasons()) {
-            if (season == currentSeason) {
+            if (season === currentSeason) {
                 return true;
             }
         }
@@ -2013,6 +2064,8 @@ class AppData extends UnitManager {
         this.registerOffenceStructure(new SafetyFence(g_idGenerator.generate()));
         this.registerDefenceStructure(new FalseHexTrap(g_idGenerator.generate()));
         this.registerDefenceStructure(new HexTrap(g_idGenerator.generate()));
+        this.registerOffenceStructure(new OfCallingCircle(g_idGenerator.generate()));
+        this.registerDefenceStructure(new DefCallingCircle(g_idGenerator.generate()));
     }
 
     registerDefenceStructure(structure) {
@@ -2176,7 +2229,7 @@ class AppData extends UnitManager {
 
     getEnemyCount() {
         switch (this.gameMode) {
-            case GameMode.AetherRaid: return 7;
+            case GameMode.AetherRaid: return 8;
             case GameMode.Arena: return 4;
             case GameMode.ResonantBattles: return 12;
             case GameMode.TempestTrials: return 6;
@@ -2186,7 +2239,7 @@ class AppData extends UnitManager {
     }
     getAllyCount() {
         switch (this.gameMode) {
-            case GameMode.AetherRaid: return 6;
+            case GameMode.AetherRaid: return 7;
             case GameMode.Arena: return 4;
             case GameMode.ResonantBattles: return 4;
             case GameMode.TempestTrials: return 4;

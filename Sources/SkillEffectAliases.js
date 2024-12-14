@@ -7,7 +7,7 @@ const PERCENTAGE_NODE = (percentage, num) => MULT_TRUNC_NODE(percentage / 100.0,
 
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpaces(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
-    new TargetAndTargetsAlliesWithinNSpacesNode(2, TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE);
+    new TargetsAndThoseAlliesWithinNSpacesNode(2, TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE);
 const TARGETS_CLOSEST_FOES_NODE = new TargetsClosestFoesNode();
 /**
  * @param {number|NumberNode} n
@@ -16,7 +16,7 @@ const TARGETS_CLOSEST_FOES_NODE = new TargetsClosestFoesNode();
  * @constructor
  */
 const TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE = (n, pred) =>
-    new FilterUnitsNode(new TargetAndTargetsAlliesWithinNSpacesNode(n, TARGETS_CLOSEST_FOES_NODE), pred);
+    new FilterUnitsNode(new TargetsAndThoseAlliesWithinNSpacesNode(n, TARGETS_CLOSEST_FOES_NODE), pred);
 
 const CLOSEST_FOES_WITHIN5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN2_SPACES_OF_THOSE_FOES_NODE =
     new UnitsOfBothAssistTargetingAndAssistTargetNode(
@@ -138,10 +138,14 @@ const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
 const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
 const FOES_RES_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Res);
 
-const NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new numOfBonusesActiveOnTargetExcludingStatNode();
-const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new numOfPenaltiesActiveOnTargetExcludingStatNode();
+const NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfBonusesActiveOnTargetExcludingStatNode();
+const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfPenaltiesActiveOnTargetExcludingStatNode();
 const NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE =
     SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
+const BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new BonusesActiveOnTargetExcludingStatSetNode();
+const PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new PenaltiesActiveOnTargetExcludingStatSetNode();
+const BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE =
+    UNION_SET_NODE(BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE, PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE);
 
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
@@ -346,8 +350,8 @@ function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUn
  * @returns {NumberNode}
  */
 function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
-    return MAX_NODE(new MapUnitsNode(
-        new TargetAndTargetsAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
+    return MAX_NODE(new MapUnitsToNumNode(
+        new TargetsAndThoseAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
         unitValueNode,
     ));
 }
@@ -366,8 +370,8 @@ function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
  * @returns {NumberNode}
  */
 function sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n, unitValueNode) {
-    return SUM_NODE(new MapUnitsNode(
-        new TargetAndTargetsAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
+    return SUM_NODE(new MapUnitsToNumNode(
+        new TargetsAndThoseAlliesWithinNSpacesNode(n, UnitsNode.makeFromUnit(FOE_NODE)),
         unitValueNode,
     ));
 }
@@ -413,21 +417,29 @@ const SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON
 
 const TARGETS_TOTAL_BONUSES_NODE = new TargetsTotalBonusesNode();
 const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT =
-    MAX_NODE(new MapUnitsNode(
+    MAX_NODE(new MapUnitsToNumNode(
         SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         TARGETS_TOTAL_BONUSES_NODE));
 
 const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n) =>
-    MAX_NODE(new MapUnitsNode(
-        new TargetAndTargetsAlliesWithinNSpacesNode(n, TARGET_NODE),
+    MAX_NODE(new MapUnitsToNumNode(
+        new TargetsAndThoseAlliesWithinNSpacesNode(n, TARGET_NODE),
         TARGETS_TOTAL_BONUSES_NODE));
 
 const TARGETS_BONUSES_NODE = new TargetsBonusesNode();
 const HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
     (n) =>
         new HighestValueOnEachStatAmongUnitsNode(
-            new TargetAndTargetsAlliesWithinNSpacesNode(n, TARGET_NODE),
+            new TargetsAndThoseAlliesWithinNSpacesNode(n, TARGET_NODE),
             TARGETS_BONUSES_NODE
+        );
+
+const TARGETS_PENALTIES_NODE = new TargetsPenaltiesNode();
+const HIGHEST_PENALTIES_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n) =>
+        new HighestValueOnEachStatAmongUnitsNode(
+            new TargetsAndThoseAlliesWithinNSpacesNode(n, FOE_NODE),
+            TARGETS_PENALTIES_NODE
         );
 
 const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
@@ -525,8 +537,14 @@ function setSlyEffect(skillId, atk, spd, def, res) {
 
 // If unit can transform, transformation effects gain "if unit is within 2 spaces of a beast or dragon ally, or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
 function setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId) {
+    // If unit can transform, transformation effects gain
     CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
-        new IsTargetWithinNSpacesOfTargetsAllyNode(2, new IsDifferentOriginNode()),
+        OR_NODE(
+            // "if unit is within 2 spaces of a beast or dragon ally,
+            new IsTargetWithinNSpacesOfTargetsAllyNode(2, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE),
+            // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+            LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1, NOT_NODE(IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE)), 2),
+        ),
     );
 }
 

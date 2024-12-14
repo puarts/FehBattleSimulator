@@ -205,7 +205,7 @@ class DamageCalcHeroDatabase extends HeroDatabase {
             unit.isResplendent = false;
         }
 
-        unit.updateStatusBySkillsAndMerges(true);
+        unit.updateStatusBySkillsAndMergesForAll(true);
 
         unit.resetMaxSpecialCount();
         unit.specialCount = unit.maxSpecialCount;

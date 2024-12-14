@@ -1965,6 +1965,12 @@ const Weapon = {
     // 神階ニーズヘッグ、レーラズ
     QuietingBranch: 2993, // 心の葬り手の枝
     EnticingDose: 3079, // 毒の葬り手の妖牙
+
+    // 魔器レイラ、響心ヘクトル、神階ルーン
+    ArcaneSlyKnife: 3087, // 魔器・姿なき影刃
+    PursualAxePlus: 3090, // 追撃の斧+
+    FellowshipBlade: 3091, // 盟友との絆の剣
+    OdrOfCreation: 3095, // 創世の文字の力
 };
 
 const Support = {
@@ -2478,6 +2484,7 @@ const PassiveA = {
     SlyMirror: 3074, // 鬼神明鏡の掩撃
 
     // 専用A
+    OathOfOstia: 3092, // オスティアの血盟
     DivineToxin: 3080, // 神獣の猛毒
     ObsidianTactics: 2946, // 黒曜石の教え
     FellWyrmscale: 2842, // 邪竜の暗鱗
@@ -2704,6 +2711,7 @@ const PassiveB = {
     SlickFighter3: 1497, // 正面隊形・自己3
     SlickFighter4: 3081, // 正面隊形・自己4
     WilyFighter3: 2003, //正面隊形・敵方3
+    WilyFighter4: 3093, // 正面隊形・敵方4
     HardyFighter3: 1872, // 盾壁隊形3
     SavvyFighter3: 1991, // 慧眼隊形3
     SavvyFighter4: 2435, // 慧眼隊形4
@@ -2967,6 +2975,8 @@ const PassiveB = {
     SpdDefDetect: 3065, // 速さ守備の看破
 
     // 専用B
+    FontOfWisdom: 3096, // 知の源
+    DarkPerfume: 3088, // 暗香疎影
     YggdrasillsAlter: 3085, // 世界樹の半身
     BrutalFerocity: 3076, // 獰猛かつ残忍
     VedfolnirsWing: 3046, // 始祖の炎翼
@@ -3414,6 +3424,7 @@ const PassiveC = {
 
     // 鍛錬の鼓動
     PulseUpBlades: 2747, // 鍛錬の鼓動・刃
+    PulseUpPloy: 3097, // 鍛錬の鼓動・謀策
 
     BeastThreaten: 2913, // 獣の威嚇
 
@@ -3437,6 +3448,8 @@ const PassiveC = {
     ADTwinFSave: 3082, // 鎧の護り手・遠・双
 
     Barricade: 3086, // 縄張り・守護
+
+    LookoutForce: 3089, // 露払い・不屈
 
     // 専用C
     DivineTalon: 3054, // 神獣の鋭爪
@@ -3553,6 +3566,7 @@ const PassiveX = {
     FarTraceEcho: 2908, // 響・遠影
     NullCDisruptE: 2953, // 響・見切り反撃不可
     TimePulseEcho: 3013, // 響・始まりの鼓動
+    DCounterEcho: 3094, // 響・遠距離反撃
 };
 
 const Captain = {
@@ -3606,11 +3620,12 @@ const EmblemHero = {
 const EngagedSpecialIcon = {};
 EngagedSpecialIcon[EmblemHero.None] = `${g_imageRootPath}Special.png`;
 const g_engagedSpecialIconRoot = `${g_skillIconRootPath}EngagedSpecial/`;
+const g_debugEngagedSpecialIconRoot = `${g_debugSkillIconRootPath}EngagedSpecial/`;
 EngagedSpecialIcon[EmblemHero.Marth] = `${g_engagedSpecialIconRoot}Marth_Of_Beginnings_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_imageRootPath}Special.png`;
-// EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_debugEngagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
+// https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
 
 const EffectiveType = {
     None: -1,
