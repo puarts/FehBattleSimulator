@@ -1,4 +1,73 @@
 // noinspection JSUnusedLocalSymbols
+// 冬氷の魔拳
+{
+    let skillId = Weapon.IcyRavager;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // At start of turn, and at start of enemy phase (except for in Summoner Duels),
+    let nodeFunc = () => new SkillEffectNode(
+        // if Special cooldown count is at its maximum value,
+        IF_NODE(IS_TARGETS_SPECIAL_COOLDOWN_COUNT_AT_ITS_MAX_AT_START_OF_TURN_NODE,
+            // grants Special cooldown count-1.
+            new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_NOT_SUMMONER_DUELS_MODE_NODE,
+            nodeFunc(),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // inflicts penalty on foe's Atk/Def = 20% of unit's Def at start of combat + 6,
+            X_NUM_NODE(
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_DEF_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage
+                new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                // reduces damage from foe's attacks by X (excluding area-of-effect Specials),
+                new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+
+                // (X = total value of the number of foes defeated by unit's team on the current turn
+                // and the number of foes that have already performed an action, x 3, + 10; max 19;
+                // for "current turn." player phase and enemy phase are counted separately; excluding area-of-effect Specials),
+                new EnsureMaxNode(
+                    ADD_NODE(
+                        MULT_NODE(
+                            ADD_NODE(
+                                NUM_OF_TARGETS_FOES_DEFEATED_BY_TARGET_TEAM_ON_CURRENT_TURN_NODE,
+                                NUM_OF_TARGETS_FOES_THAT_HAVE_ALREADY_PERFORMED_ACTION
+                            ),
+                            3,
+                        ),
+                        10,
+                    ),
+                    19,
+                ),
+            ),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and also,
+            // and if unit's Special cooldown count is at its maximum value after combat,
+            // grants Special cooldown count-1 to unit after combat.
+            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+        )
+    ));
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // grants Atk+2,
+    // and unit can counterattack regardless of foe's range.
+    setBeastSkill(skillId, BeastCommonSkillType.Armor);
+}
+
 // 鍛錬の鼓動・謀策
 {
     let skillId = PassiveC.PulseUpPloy;

@@ -1120,7 +1120,7 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             case Weapon.DiplomacyStaff: {
-                let removedCount = this.globalBattleContext.RemovedUnitCountsInCombat[skillOwner.groupId];
+                let removedCount = this.globalBattleContext.removedUnitCountsInCombat[skillOwner.groupId];
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
                     if (skillOwner.partnerHeroIndex === unit.heroIndex) {
                         unit.reserveToApplyAtkBuff(6);

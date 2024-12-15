@@ -356,6 +356,8 @@ class FilterUnitsNode extends UnitsNode {
     }
 }
 
+const FILTER_UNITS_NODE = (unitsNode, predNode) => new FilterUnitsNode(unitsNode, predNode);
+
 class CountUnitsNode extends PositiveNumberNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -392,6 +394,8 @@ class CountIfUnitsNode extends PositiveNumberNode {
         return result;
     }
 }
+
+const COUNT_IF_UNITS_NODE = (unitsNode, predNode) => new CountIfUnitsNode(unitsNode, predNode);
 
 /**
  * ターゲットを補助ユニット、補助を受けるユニットにそれぞれ設定して引数のUnitsNodeを評価する
@@ -1874,6 +1878,22 @@ const NUM_OF_COMBAT_ON_CURRENT_TURN_NODE = new class extends PositiveNumberNode 
         return result;
     }
 }();
+
+class NumOfTargetsFoesDefeatedByTargetTeamOnCurrentTurnNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = g_appData?.globalBattleContext?.removedUnitCountInCombatInCurrentTurnsPhase[unit.enemyGroupId] ?? 0;
+        env.debug(`${unit.nameWithGroup}の軍が撃破した敵の数: ${result}`);
+        return result;
+    }
+}
+
+const NUM_OF_TARGETS_FOES_DEFEATED_BY_TARGET_TEAM_ON_CURRENT_TURN_NODE
+    = new NumOfTargetsFoesDefeatedByTargetTeamOnCurrentTurnNode();
 
 /**
  * Target that has entered combat during the current turn.
@@ -3838,6 +3858,21 @@ class TargetsOncePerTurnAssistEffectNode extends SkillEffectNode {
         }
     }
 }
+
+class HasTargetPerformedActionNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isActionDone;
+        env.debug(`${unit.nameWithGroup}は行動終了しているか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_PERFORMED_ACTION_NODE = new HasTargetPerformedActionNode();
 
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {

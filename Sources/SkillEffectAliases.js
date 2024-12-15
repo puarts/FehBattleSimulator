@@ -404,6 +404,8 @@ function setPathfinder(skillId) {
 
 const IS_TARGET_SKILL_OWNER_NODE = new IsTargetSkillOwnerNode();
 const UNITS_ON_MAP_NODE = new UnitsOnMapNode();
+const SKILL_OWNERS_ALLIES_ON_MAP_NODE = FILTER_UNITS_NODE(UNITS_ON_MAP_NODE, ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE)
+const SKILL_OWNERS_FOES_ON_MAP_NODE = FILTER_UNITS_NODE(UNITS_ON_MAP_NODE, NOT_NODE(ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE))
 const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
 const FILTER_MAP_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
 const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);
@@ -555,3 +557,9 @@ function setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillI
 function setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId) {
     CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
 }
+
+/**
+ * the number of foes that have already performed an action
+ */
+const NUM_OF_TARGETS_FOES_THAT_HAVE_ALREADY_PERFORMED_ACTION =
+    COUNT_IF_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE, HAS_TARGET_PERFORMED_ACTION_NODE);

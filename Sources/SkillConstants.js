@@ -1971,6 +1971,9 @@ const Weapon = {
     PursualAxePlus: 3090, // 追撃の斧+
     FellowshipBlade: 3091, // 盟友との絆の剣
     OdrOfCreation: 3095, // 創世の文字の力
+
+    // クリスマス
+    IcyRavager: 3099, // 冬氷の魔拳
 };
 
 const Support = {

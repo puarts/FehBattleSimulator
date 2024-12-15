@@ -3680,7 +3680,7 @@ class BattleSimulatorBase {
 
         if (atkUnit.hp === 0) {
             this.audioManager.playSoundEffect(SoundEffectId.Dead);
-            g_appData.globalBattleContext.RemovedUnitCountsInCombat[atkUnit.groupId]++;
+            g_appData.globalBattleContext.incrementRemovedUnitCount(atkUnit.groupId);
 
             // マップからの除外
             let updateRequiredTile = atkUnit.placedTile;
@@ -3692,7 +3692,7 @@ class BattleSimulatorBase {
             for (let unit of this.enumerateUnitsInTheSameGroupOnMap(defUnit, true)) {
                 if (unit.hp === 0) {
                     this.audioManager.playSoundEffect(SoundEffectId.Dead);
-                    g_appData.globalBattleContext.RemovedUnitCountsInCombat[unit.groupId]++;
+                    g_appData.globalBattleContext.removedUnitCountsInCombat[unit.groupId]++;
                     switch (unit.passiveS) {
                         case PassiveS.TozokuNoGuzoRakurai:
                             g_appData.resonantBattleItems.push(ItemType.RakuraiNoJufu);
@@ -4455,8 +4455,7 @@ class BattleSimulatorBase {
      */
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
         g_appData.isCombatOccuredInCurrentTurn = false;
-        g_appData.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[group] = false;
-        g_appData.globalBattleContext.numOfCombatOnCurrentTurn = 0;
+        g_appData.globalBattleContext.initContextInCurrentTurnsPhase(group);
 
         if (targetUnits.length === 0) {
             return;
