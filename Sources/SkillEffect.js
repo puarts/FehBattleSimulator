@@ -256,15 +256,21 @@ class TargetsClosestAlliesWithinNSpacesNode extends UnitsNode {
 
     /**
      * @param {number|NumberNode} n
+     * @param {BoolNode} includesTarget
+     * @param {BoolNode} predNode
      */
-    constructor(n) {
+    constructor(n, includesTarget = FALSE_NODE, predNode = TRUE_NODE) {
         super();
         this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._includesTargetNode = includesTarget;
+        this._predNode = predNode;
     }
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let allies = env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit);
+        let withTargetUnit = this._includesTargetNode.evaluate(env);
+        let allies = env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
+        allies = IterUtil.filter(allies, u => this._predNode.evaluate(env.copy().setTarget(u)));
         let n = this._nNode.evaluate(env);
         return IterUtil.filter(
             IterUtil.minElements(allies, u => u.distance(unit)),
@@ -273,15 +279,14 @@ class TargetsClosestAlliesWithinNSpacesNode extends UnitsNode {
     }
 }
 
-const TARGETS_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE = (n) => new TargetsClosestAlliesWithinNSpacesNode(n);
-
 class FoesClosestAlliesWithinNSpacesNode extends TargetsClosestAlliesWithinNSpacesNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
-const FOES_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE = (n) => new FoesClosestAlliesWithinNSpacesNode(n);
+const FOES_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTargetNode, predNode) =>
+    new FoesClosestAlliesWithinNSpacesNode(n, includesTargetNode, predNode);
 
 class MaxUnitsNode extends UnitsNode {
     /**

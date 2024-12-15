@@ -67,7 +67,8 @@
         IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
             // after combat,
             // the closest foes within 4 spaces of target who have yet to act have their actions end immediately.
-            FOR_EACH_UNIT_NODE(FOES_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE(4),
+            FOR_EACH_UNIT_NODE(
+                FOES_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE(4, FALSE_NODE, NOT_NODE(HAS_TARGET_PERFORMED_ACTION_NODE)),
                 ENDS_TARGET_IMMEDIATELY_BY_SKILL_NODE,
             ),
         ),
