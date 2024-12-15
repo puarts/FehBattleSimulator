@@ -1,4 +1,42 @@
 // noinspection JSUnusedLocalSymbols
+// 鉛色の残夢
+{
+    let skillId = PassiveA.LeadenRegrets;
+    // If unit can transform,
+    // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
+    // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+    setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId);
+
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met, unit transforms.
+    setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe initiates combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, DOES_FOE_INITIATE_COMBAT_NODE),
+            // inflicts Atk/Def-10 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(10, 0, 10, 0),
+            // reduces damage from foe's follow-up attack by 80%
+            new ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode(80),
+            // ("follow-up attack" normally means only the second strike; for effects that grant "unit attacks twice," it means the third and fourth strikes),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat,
+        IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+            // after combat,
+            // the closest foes within 4 spaces of target who have yet to act have their actions end immediately.
+            FOR_EACH_UNIT_NODE(FOES_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE(4),
+                ENDS_TARGET_IMMEDIATELY_BY_SKILL_NODE,
+            ),
+        ),
+    ));
+}
+
 // 冬氷の魔拳
 {
     let skillId = Weapon.IcyRavager;

@@ -875,6 +875,20 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends Applyin
     }
 }
 
+class ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode extends ApplyingNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.addDamageReductionRatioOfFollowupAttack(percentage / 100);
+        let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttack();
+        env.debug(`${unit.nameWithGroup}は追撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+    }
+}
+
 /**
  * reduces damage from foe's first attack by X% during combat
  * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)

@@ -205,6 +205,14 @@ class TargetsAlliesWithinNSpacesNode extends UnitsNode {
     }
 }
 
+class FoesAlliesWithinNSpacesNode extends TargetsAlliesWithinNSpacesNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOES_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTarget = FALSE_NODE) => new FoesAlliesWithinNSpacesNode(n, includesTarget);
+
 class TargetsClosestFoesNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -217,7 +225,7 @@ class TargetsClosestFoesNode extends UnitsNode {
     }
 }
 
-class TargetsClosestFoesWithinNSpaces extends UnitsNode {
+class TargetsClosestFoesWithinNSpacesNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -240,6 +248,40 @@ class TargetsClosestFoesWithinNSpaces extends UnitsNode {
         );
     }
 }
+
+class TargetsClosestAlliesWithinNSpacesNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let allies = env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit);
+        let n = this._nNode.evaluate(env);
+        return IterUtil.filter(
+            IterUtil.minElements(allies, u => u.distance(unit)),
+            u => u.distance(unit) <= n
+        );
+    }
+}
+
+const TARGETS_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE = (n) => new TargetsClosestAlliesWithinNSpacesNode(n);
+
+class FoesClosestAlliesWithinNSpacesNode extends TargetsClosestAlliesWithinNSpacesNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOES_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE = (n) => new FoesClosestAlliesWithinNSpacesNode(n);
 
 class MaxUnitsNode extends UnitsNode {
     /**
@@ -3696,6 +3738,8 @@ class IsTargetTransformedNode extends BoolNode {
     }
 }
 
+const IS_TARGET_TRANSFORMED_NODE = new IsTargetTransformedNode();
+
 class IsDifferentOriginNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -3873,6 +3917,20 @@ class HasTargetPerformedActionNode extends BoolNode {
 }
 
 const HAS_TARGET_PERFORMED_ACTION_NODE = new HasTargetPerformedActionNode();
+
+class EndsTargetImmediatelyNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.endActionBySkillEffect();
+        env.debug(`${unit.nameWithGroup}はスキル効果により行動終了`);
+    }
+}
+
+const ENDS_TARGET_IMMEDIATELY_BY_SKILL_NODE = new EndsTargetImmediatelyNode();
 
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {
