@@ -4157,7 +4157,7 @@
                         NUM_OF_PENALTY_ON_UNIT_EXCLUDING_STAT_NODE), 2), 5),
             ),
             // reduces damage from foe's first attack during combat by 40%,
-            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(40),
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(40),
             // and also,
             // if【Bonus】is active on unit,
             IF_NODE(IS_BONUS_ACTIVE_ON_UNIT_NODE,
