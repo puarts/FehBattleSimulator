@@ -868,7 +868,6 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends Applyin
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let percentage = this.evaluateChildren(env);
-        unit.battleContext.addDamageReductionRatioOfFirstAttacks(percentage / 100);
         unit.battleContext.addDamageReductionRatioOfFirstAttack(percentage / 100);
         let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttack();
         env.debug(`${unit.nameWithGroup}は最初に受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
