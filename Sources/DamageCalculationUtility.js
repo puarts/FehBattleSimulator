@@ -41,7 +41,7 @@ EffectiveFuncTable[EffectiveType.Dagger] = unit => { return unit.weaponType === 
 /// ダメージ計算用のユーティリティー関数です。
 class DamageCalculationUtility {
     /**
-     * 特効が指定したユニット対して有効化調べます。
+     * 特効が指定したユニット対して有効か調べます。
      * @param  {Unit} unit
      * @param  {EffectiveType} effective
      */

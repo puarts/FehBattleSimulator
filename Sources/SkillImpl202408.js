@@ -1,4 +1,47 @@
 // noinspection JSUnusedLocalSymbols
+// 真連閃
+{
+    let skillId = PassiveA.SwiftIce;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd/Def/Res+8 to unit,
+            GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 30%
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(30),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // If unit initiates combat against a non-dragon,
+                // non-beast infantry foe and unit's Spd ≥ foe's Spd+20,
+                IF_NODE(
+                    AND_NODE(
+                        DOES_UNIT_INITIATE_COMBAT_NODE,
+                        AND_NODE(NOT_NODE(IS_FOE_BEAST_OR_DRAGON_TYPE_NODE), IS_FOE_INFANTRY_NODE),
+                        GTE_NODE(UNITS_SPD_DURING_COMBAT_NODE, ADD_NODE(FOES_SPD_DURING_COMBAT_NODE, 20))
+                    ),
+                    // grants "effective against all weapon types" to unit during combat. Otherwise,
+                    GRANTS_EFFECTIVE_AGAINST_ALL_WEAPON_TYPES_TO_UNIT_DURING_COMBAT,
+                ),
+                // if unit initiates combat and unit's Spd ≥ foe's Spd+5,
+                IF_NODE(
+                    AND_NODE(
+                        DOES_UNIT_INITIATE_COMBAT_NODE,
+                        NOT_NODE(AND_NODE(NOT_NODE(IS_FOE_BEAST_OR_DRAGON_TYPE_NODE), IS_FOE_INFANTRY_NODE)),
+                        GTE_NODE(UNITS_SPD_DURING_COMBAT_NODE, ADD_NODE(FOES_SPD_DURING_COMBAT_NODE, 5))
+                    ),
+                    // grants "effective against all weapon types" to unit during combat.
+                    GRANTS_EFFECTIVE_AGAINST_ALL_WEAPON_TYPES_TO_UNIT_DURING_COMBAT,
+                ),
+            ),
+        ),
+    ));
+}
+
 // 冬の修羅の手甲刃
 {
     let skillId = Weapon.RedFistBlades;

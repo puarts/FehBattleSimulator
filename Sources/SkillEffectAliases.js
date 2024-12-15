@@ -193,6 +193,7 @@ const IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE = new IsTargetBeastOrDragonTypeNode();
 
 const IS_TARGET_INFANTRY_NODE = new IsTargetInfantryNode();
 const IS_TARGET_ARMOR_NODE = new IsTargetArmorNode();
+const IS_FOE_INFANTRY_NODE = new IsFoeInfantryNode();
 
 /**
  * 戦闘中に奥義が発動できない
@@ -588,3 +589,19 @@ function setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId) 
  */
 const NUM_OF_TARGETS_FOES_THAT_HAVE_ALREADY_PERFORMED_ACTION =
     COUNT_IF_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE, HAS_TARGET_PERFORMED_ACTION_NODE);
+
+/**
+ * grants "effective against all weapon types" to unit during combat.
+ */
+const GRANTS_EFFECTIVE_AGAINST_ALL_WEAPON_TYPES_TO_UNIT_DURING_COMBAT = new SkillEffectNode(
+    new EffectiveAgainstNode(EffectiveType.Dragon),
+    new EffectiveAgainstNode(EffectiveType.Beast),
+    new EffectiveAgainstNode(EffectiveType.Tome),
+    new EffectiveAgainstNode(EffectiveType.Sword),
+    new EffectiveAgainstNode(EffectiveType.Lance),
+    new EffectiveAgainstNode(EffectiveType.Axe),
+    new EffectiveAgainstNode(EffectiveType.ColorlessBow),
+    new EffectiveAgainstNode(EffectiveType.Staff),
+    new EffectiveAgainstNode(EffectiveType.Dagger),
+    new EffectiveAgainstNode(EffectiveType.Bow),
+);

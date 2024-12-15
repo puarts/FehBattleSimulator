@@ -1272,6 +1272,7 @@ class GrantsAllStatsPlusNToUnitDuringCombatNode extends GrantsAllStatsPlusNToTar
 
 const GRANTS_ALL_STATS_PLUS_4_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(5);
+const GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(8);
 
 const GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(5);
@@ -2083,6 +2084,14 @@ class IsTargetBeastOrDragonTypeNode extends BoolNode {
     }
 }
 
+class IsFoeBeastOrDragonTypeNode extends IsTargetBeastOrDragonTypeNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const IS_FOE_BEAST_OR_DRAGON_TYPE_NODE = new IsFoeBeastOrDragonTypeNode();
+
 class IsTargetInfantryNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2093,6 +2102,12 @@ class IsTargetInfantryNode extends BoolNode {
         let result = unit.moveType === MoveType.Infantry;
         env.debug(`${unit.nameWithGroup}は歩行か: ${result}`);
         return result;
+    }
+}
+
+class IsFoeInfantryNode extends IsTargetInfantryNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 

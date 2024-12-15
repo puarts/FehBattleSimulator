@@ -2488,6 +2488,7 @@ const PassiveA = {
     SlyMirror: 3074, // 鬼神明鏡の掩撃
 
     // 専用A
+    SwiftIce: 3103, // 真連閃
     LeadenRegrets: 3100, // 鉛色の残夢
     OathOfOstia: 3092, // オスティアの血盟
     DivineToxin: 3080, // 神獣の猛毒
