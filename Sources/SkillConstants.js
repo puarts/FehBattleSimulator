@@ -1974,6 +1974,7 @@ const Weapon = {
 
     // クリスマス
     IcyRavager: 3099, // 冬氷の魔拳
+    RedFistBlades: 3102, // 冬の修羅の手甲刃
 };
 
 const Support = {

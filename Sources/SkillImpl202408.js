@@ -1,4 +1,41 @@
 // noinspection JSUnusedLocalSymbols
+// 冬の修羅の手甲刃
+{
+    let skillId = Weapon.RedFistBlades;
+    // Accelerates Special trigger (cooldown count-1). Unit attacks twice (even if foe initiates combat, unit attacks twice).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Atk/Spd+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Incited】,
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Incited, StatusEffectType.SpecialCooldownChargePlusOnePerAttack),
+                // and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
+            )
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res = number of foes within 3 rows or 3 columns centered on unit × 3,
+            // + 5 (max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14,
+                ),
+            ),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and reduces damage from foe's first attack by 7 during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+        ),
+    ));
+}
+
 // 鉛色の残夢
 {
     let skillId = PassiveA.LeadenRegrets;
