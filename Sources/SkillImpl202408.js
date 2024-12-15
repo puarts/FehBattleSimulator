@@ -1,4 +1,31 @@
 // noinspection JSUnusedLocalSymbols
+// 罠解除・周到
+{
+    let skillId = PassiveB.FullDisarm;
+    // While attacking in Aether Raids,
+    // if unit ends movement on a space with a Bolt Trap or a Heavy Trap, cancels trap's effect;
+    // if unit ends movement on a space with a Hex Trap, reduces trap's trigger condition by 10 HP.
+    DISARM_TRAP_SKILL_SET.add(skillId);
+    DISARM_HEX_TRAP_SKILL_SET.add(skillId);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        X_NUM_NODE(
+            // Inflicts Spd/Def-X on foe
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, READ_NUM_NODE, READ_NUM_NODE, 0),
+            // (X = total number of【Bonus】effects active on unit, excluding stat bonuses,
+            // and【Penalty】effects active on foe, excluding stat penalties,
+            // × 2,
+            // + 4; max 12),
+            new EnsureMaxNode(
+                ADD_NODE(MULT_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 2), 4),
+                12,
+            ),
+        ),
+        // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+    ));
+}
+
 // 真連閃
 {
     let skillId = PassiveA.SwiftIce;
