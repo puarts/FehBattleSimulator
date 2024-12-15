@@ -1373,7 +1373,6 @@ class AfterSpecialTriggersTargetsNextAttackDealsDamageEqTotalDamageReducedNode e
     }
 }
 
-
 /**
  * unit's next attack deals damage = total damage reduced from foe's first attack (by any source, including other skills; resets at end of combat).
  */
@@ -1388,6 +1387,28 @@ class TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttack
         env.debug(`${unit.nameWithGroup}は敵の最初の攻撃で軽減した値を、自身の次の攻撃のダメージに+`);
     }
 }
+
+/**
+ * 最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)
+ * and unit's next attack deals damage = 40% of foe's attack damage prior to reductions
+ * (resets at end of combat; only highest value applied; does not stack).
+ */
+class TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOnlyHighestValueAppliedAndDoesNotStackNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let percentage = this.evaluateChildren(env);
+        let ratio = percentage / 100.0;
+        let result = unit.battleContext.reducedRatioForNextAttack = Math.max(ratio, unit.battleContext.reducedRatioForNextAttack);
+        env.debug(`${unit.nameWithGroup}は軽減前のダメージの${percentage}%を自身の次の攻撃のダメージに+(同系統効果複数時、最大値適用): ${result}`);
+    }
+}
+
+const TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE
+    = n => new TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOnlyHighestValueAppliedAndDoesNotStackNode(n);
 
 /**
  * restores X HP to unit as unit's combat begins

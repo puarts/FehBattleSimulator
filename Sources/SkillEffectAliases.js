@@ -269,6 +269,31 @@ function setTwinSave(skillId, isMelee, grantsNode) {
     );
 }
 
+function setBriarSave(skillId, isMelee, grantsNode) {
+    // If foe with Range = 2 initiates combat against an ally within 2 spaces of unit, triggers【Savior】on unit.
+    SAVE_SKILL_SET.add(skillId);
+    if (isMelee) {
+        CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
+    } else {
+        CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
+    }
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // If foe's Range = 2,
+            IF_NODE(isMelee ? FOES_RANGE_IS_1_NODE : FOES_RANGE_IS_2_NODE,
+                // grants Atk/Def+4 to unit and
+                grantsNode,
+                // reduces damage from foe's first attack by 5 during combat
+                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(5),
+                // and unit's next attack deals damage = 40% of foe's attack damage prior to reductions
+                // (resets at end of combat; only highest value applied; does not stack).
+                TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE(40),
+            ),
+        ),
+    );
+}
+
 /**
  * Enables【Canto (Rem. +1)】
  */

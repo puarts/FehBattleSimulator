@@ -2532,12 +2532,6 @@
     )
 }
 
-// 護り手・遠・双
-{
-    setTwinSave(PassiveC.ARTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
-    setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
-}
-
 // 神魔の双竜の竜石
 {
     let skillId = Weapon.OpposingStones;
@@ -2616,6 +2610,17 @@
     setTwinSave(PassiveC.ADTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
     // 盾の護り手・近・双
     setTwinSave(PassiveC.DRTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4));
+}
+
+// 護り手・遠・双
+{
+    setTwinSave(PassiveC.ARTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
+    setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
+}
+
+// 護り手・遠・茨
+{
+    setBriarSave(PassiveC.ADBriarFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
 }
 
 // 竜の堅鱗

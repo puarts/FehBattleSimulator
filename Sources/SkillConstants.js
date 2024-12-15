@@ -3451,6 +3451,8 @@ const PassiveC = {
     ARTwinFSave: 3034, // 兜の護り手・遠・双
     ADTwinFSave: 3082, // 鎧の護り手・遠・双
 
+    ADBriarFSave: 3101, // 鎧の護り手・遠・茨
+
     Barricade: 3086, // 縄張り・守護
 
     LookoutForce: 3089, // 露払い・不屈
