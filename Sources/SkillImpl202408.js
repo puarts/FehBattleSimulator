@@ -1,4 +1,48 @@
 // noinspection JSUnusedLocalSymbols
+// 光輝く理力
+{
+    let skillId = PassiveC.TwinklingAnima;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
+                // grants Atk/Spd+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Canto (１)】,
+                // and the following status
+                // to unit and allies within 3 spaces of unit for 1 turn:
+                // "neutralizes penalties on unit during combat."
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Canto1, StatusEffectType.NeutralizesPenalties),
+            ),
+        ),
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(3, TRUE_NODE,
+                // inflicts Spd/Res-7,
+                new InflictsStatsMinusOnTargetOnMapNode(0, 7, 0, 7),
+                // 【Panic】,
+                // and【Discord】
+                new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Panic, StatusEffectType.Discord),
+                // on closest foes and any foe within 3 spaces of those foes through their next actions.
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd+5 to unit,
+            new GrantsStatsPlusToTargetDuringCombatNode(5, 5, 0, 0),
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat
+            // (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
 // アイスロック+
 {
     let skillId = Support.IceLockPlus;

@@ -3463,6 +3463,7 @@ const PassiveC = {
     LookoutForce: 3089, // 露払い・不屈
 
     // 専用C
+    TwinklingAnima: 3107, // 光輝く理力
     DivineTalon: 3054, // 神獣の鋭爪
     ConnectedWorld: 3028, // 人と神が繋がる世界
     Paranoia: 2987, // 被害妄想
