@@ -1,4 +1,46 @@
 // noinspection JSUnusedLocalSymbols
+// アイスロック+
+{
+    let skillId = Support.IceLockPlus;
+    // This skill is treated as a Rally Assist skill.
+    // Restores HP = 40% of unit's Atk (min: 6 HP) to target ally and grants Def/Res+6 to target ally for 1 turn,
+    // and also,
+    setRallyHealSkill(skillId, [0, 0, 6, 6], 6, 0.4, [],
+        new IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode());
+
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // if there is no【Divine Vein (Ice)】 currently applied by unit or allies,
+        IF_NODE(IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE,
+            // applies 【Divine Vein (Ice)】to spaces 2 spaces away from target after movement for 1 turn
+            new AppliesDivineVeinNode(
+                DivineVeinType.Ice,
+                AND_NODE(
+                    new IsSpacesNSpacesAwayFromAssistedNode(2),
+                    // (excludes spaces occupied by a foe,
+                    IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                    // destructible terrain other than【Divine Vein (Ice)】, and
+                    IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE,
+                    // TODO: ワープができるコンテンツが来たら実装する
+                    // warp spaces in Rival Domains).
+                ),
+            ),
+        ),
+    ));
+
+    AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If used on turn 2 onward,
+        IF_NODE(GTE_NODE(CURRENT_TURN_NODE, 2),
+            // also grants another action to unit and inflicts "restricts movement to 1 space" on unit and Pair Up cohort through their next action.
+            // (Effects that can trigger on turn 2 onward will not trigger again for 2 turns after triggering;
+            // using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
+            TARGETS_REST_SUPPORT_SKILL_AVAILABLE_TURN_NODE(2,
+                GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+                new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.Gravity),
+            ),
+        ),
+    ));
+}
+
 // 雪だるまの雪杖
 {
     let skillId = Weapon.SnowmanStaff;

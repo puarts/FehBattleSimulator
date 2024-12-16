@@ -277,3 +277,7 @@ const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEf
 /**
  * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
 const AOE_SPECIAL_SPACES_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>} */
+const CALC_HEAL_AMOUNT_HOOKS = new SkillEffectHooks();

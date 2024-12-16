@@ -605,3 +605,45 @@ const GRANTS_EFFECTIVE_AGAINST_ALL_WEAPON_TYPES_TO_UNIT_DURING_COMBAT = new Skil
     new EffectiveAgainstNode(EffectiveType.Dagger),
     new EffectiveAgainstNode(EffectiveType.Bow),
 );
+
+// TODO: リファクタリング
+/**
+ * @param {number|string} skillId
+ * @param {[number, number, number, number]} buffs
+ * @param {number} minHeal
+ * @param {number} ratio
+ * @param {number[]} statusEffects
+ * @param {BoolNode} canRallyForciblyNode
+ */
+function setRallyHealSkill(skillId, buffs,
+                           minHeal = 8, ratio = 0.5, statusEffects = [],
+                           canRallyForciblyNode = FALSE_NODE) {
+    PRECOMBAT_HEAL_THRESHOLD_MAP.set(skillId, 10);
+    getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap.set(skillId, _ => AssistType.Heal);
+    // このスキルは「応援」として扱われる
+    RALLY_HEAL_SKILL_SET.add(skillId);
+    // TODO: 検証する。とりあえずプレーヤーなら強制的に応援できる。
+    canRallyForciblyByPlayerFuncMap.set(skillId, _ => true);
+    // 対象を攻撃のx%回復（最低minHeal）し、
+    calcHealAmountFuncMap.set(skillId,
+        function (supporterUnit, supportTargetUnit) {
+            return MathUtil.ensureMin(Math.trunc(supporterUnit.getAtkInPrecombat() * ratio), minHeal);
+        }
+    );
+    // 対象にbuff
+    RALLY_BUFF_AMOUNT_MAP.set(skillId, buffs);
+    canAddStatusEffectByRallyFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            return statusEffects.some(e => !targetUnit.hasStatusEffect(e));
+        }
+    );
+    canRallyForciblyFuncMap.set(skillId,
+        function (unit) {
+            let env = new NodeEnv().setBattleMap(g_appData.map).setTarget(unit).setSkillOwner(unit)
+                .setSkillOwner(unit).setName('強制応援可能判定').setLogLevel(getSkillLogLevel());
+            return canRallyForciblyNode.evaluate(env);
+        }
+    );
+    // （このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない）
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
+}

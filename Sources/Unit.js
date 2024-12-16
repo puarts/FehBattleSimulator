@@ -6383,6 +6383,11 @@ function calcHealAmount(assistUnit, targetUnit) {
     let healAmount = 0;
     let skillId = assistUnit.support;
     healAmount += getSkillFunc(skillId, calcHealAmountFuncMap)?.call(this, assistUnit, targetUnit) ?? 0;
+
+    let env = new NodeEnv().setAssistUnits(assistUnit, targetUnit);
+    env.setName('補助での回復時').setLogLevel(getSkillLogLevel());
+    healAmount += CALC_HEAL_AMOUNT_HOOKS.evaluateSumWithUnit(assistUnit, env);
+
     switch (skillId) {
         case Support.Heal:
             healAmount = 5;

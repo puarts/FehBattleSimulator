@@ -142,6 +142,10 @@ class SkillEffectHooks {
         return Math.max(...this.evaluateWithUnit(unit, env));
     }
 
+    evaluateSumWithUnit(unit, env) {
+        return Math.add(...this.evaluateWithUnit(unit, env)) ?? 0;
+    }
+
     /**
      * @param {Unit} unit
      * @param {E} env

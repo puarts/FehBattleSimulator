@@ -3086,7 +3086,11 @@ class BattleMap {
             }
 
             // バフ、デバフ
-            if (unit.isBuffed || unit.isDebuffed) {
+            if (unit.isBuffed ||
+                unit.isDebuffed ||
+                unit.restWeaponSkillAvailableTurn > 0 ||
+                unit.restSupportSkillAvailableTurn > 0 ||
+                unit.restPassiveBSkillAvailableTurn > 0) {
                 let span = document.createElement('span');
                 span.classList.add('map-buff-debuff-area', '.map-text-shadow');
                 if (unit.isBuffed) {

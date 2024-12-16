@@ -2086,6 +2086,7 @@ const Support = {
     Nudge: 1738, // プッシュ
 
     MagicShieldPlus: 2839, // マジックシールド+
+    IceLockPlus: 3106, // アイスロック+
 };
 
 const Special = {

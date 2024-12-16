@@ -3561,6 +3561,8 @@ class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
     }
 }
 
+const GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE = new GrantsAnotherActionOnAssistNode();
+
 class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
@@ -3922,6 +3924,36 @@ class TargetsOncePerTurnAssistEffectNode extends SkillEffectNode {
         }
     }
 }
+
+class TargetsRestSupportSkillAvailableTurnNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(n, ...nodes) {
+        super(...nodes);
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = env.target;
+        let n = this._nNode.evaluate(env);
+        if (unit.restSupportSkillAvailableTurn === 0) {
+            env.debug(`${unit.nameWithGroup}の補助スキル効果が発動`);
+            this.evaluateChildren(env);
+            unit.restSupportSkillAvailableTurn = n;
+        } else {
+            env.debug(`${unit.nameWithGroup}の補助スキル効果発動可能ターンまであと${unit.restSupportSkillAvailableTurn}ターン`);
+        }
+    }
+}
+
+const TARGETS_REST_SUPPORT_SKILL_AVAILABLE_TURN_NODE =
+    (n, ...nodes) => new TargetsRestSupportSkillAvailableTurnNode(n, ...nodes);
 
 class HasTargetPerformedActionNode extends BoolNode {
     static {
