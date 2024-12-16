@@ -1,4 +1,52 @@
 // noinspection JSUnusedLocalSymbols
+// 雪だるまの雪杖
+{
+    let skillId = Weapon.SnowmanStaff;
+    // Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1). Foe cannot counterattack.
+    // TODO: 修正する
+    resetMaxSpecialCountFuncMap.set(skillId,
+        function () {
+            return -1;
+        }
+    );
+    // Unit can move to a space within 2 spaces of any ally within 2 spaces of unit.
+    setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, 2, 2);
+
+    // If a Rally or movement Assist skill is used by unit,
+    let nodeFunc = () => new SkillEffectNode(
+        new TargetsOncePerTurnAssistEffectNode(`${skillId}-奥義発動カウント-1`,
+            new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(3), TRUE_NODE,
+                // Special cooldown count-1 to unit,
+                new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
+            )
+        ),
+        new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(3), TRUE_NODE,
+            // grants【Foe Penalty Doubler】and
+            // target ally,
+            new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.FoePenaltyDoubler),
+            // and allies within 3 spaces of target ally after movement (Special cooldown count-1 effect granted only once per turn).
+        )
+    );
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Spd = 6 + 20% of unit's Spd at start of combat,
+                new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(6, PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            ),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and deals damage = 20% of unit's Spd during combat
+            // (excluding area-of-effect Specials; if the "calculates damage from staff like other weapons" effect is not active, damage from staff is calculated after combat damage is added).
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+    ));
+}
+
 // 罠解除・周到
 {
     let skillId = PassiveB.FullDisarm;
