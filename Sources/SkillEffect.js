@@ -207,6 +207,8 @@ class TargetsAlliesWithinNSpacesNode extends UnitsNode {
     }
 }
 
+const TARGETS_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(n, includesTarget);
+
 class FoesAlliesWithinNSpacesNode extends TargetsAlliesWithinNSpacesNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -2033,6 +2035,8 @@ class HasTargetStatusEffectNode extends BoolNode {
         return result;
     }
 }
+
+const HAS_TARGET_STATUS_EFFECT_NODE = n => new HasTargetStatusEffectNode(n);
 
 class HasFoeStatusEffectNode extends HasTargetStatusEffectNode {
     static {

@@ -1,4 +1,30 @@
 // noinspection JSUnusedLocalSymbols
+// 神竜の結束
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.DivinelyInspiring)
+    // 【Divinely Inspiring】
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        X_NUM_NODE(
+            // Grants bonus to unit's Atk/Spd/Def/Res = X × 3
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(MULT_NODE(READ_NUM_NODE, 3)),
+            // grants Special cooldown count-X to unit before foe's first attack,
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode(READ_NUM_NODE),
+            // and when unit deals damage to foe during combat,
+            // restores X × 4 HP to unit during combat.
+            new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(MULT_NODE(READ_NUM_NODE, 4)),
+            // (X = number of allies with the Divinely Inspiring effect within 3 spaces of unit,
+            // excluding unit; max 2),
+            ENSURE_MAX_NODE(
+                COUNT_IF_UNITS_NODE(
+                    TARGETS_ALLIES_WITHIN_N_SPACES_NODE(3),
+                    HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.DivinelyInspiring),
+                ),
+                2,
+            )
+        ),
+    ));
+}
+
 // 冬の双神竜の体術
 {
     let skillId = Weapon.WinteryArts;
