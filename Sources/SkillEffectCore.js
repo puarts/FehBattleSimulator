@@ -589,6 +589,8 @@ class EnsureMaxNode extends NumberOperationNode {
     }
 }
 
+const ENSURE_MAX_NODE = (child, max) => new EnsureMaxNode(child, max);
+
 class EnsureMinMaxNode extends NumberOperationNode {
     #min = Number.MIN_SAFE_INTEGER;
     #max = Number.MAX_SAFE_INTEGER;

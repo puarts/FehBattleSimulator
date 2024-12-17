@@ -1,4 +1,64 @@
 // noinspection JSUnusedLocalSymbols
+// 冬の双神竜の体術
+{
+    let skillId = Weapon.WinteryArts;
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit attacks twice (even if foe initiates combat, unit attacks twice).
+    // If foe's Range = 2,
+    // calculates damage using the lower of foe's Def or Res.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(
+                // grants【Divinely Inspiring】
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.DivinelyInspiring),
+            ),
+            // to unit and allies within 2 spaces of unit for 1 turn.
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // inflicts penalty on foe's Atk/Spd/Def/Res = number of distinct game titles among allies within 3 spaces of unit × 3 + 4 (max 10),
+            INFLICTS_ALL_STATS_MINUS_N_ON_TARGET_DURING_COMBAT_NODE(
+                ENSURE_MAX_NODE(
+                    ADD_NODE(MULT_NODE(
+                            SET_SIZE_NODE(MAP_UNION_UNITS_NODE(new TargetsAlliesWithinNSpacesNode(3)),
+                                TARGETS_TITLE_SET_NODE),
+                            3),
+                        4),
+                    10
+                ),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage
+                new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                // and reduces damage from foe's first attack by X during combat
+                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+                new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(READ_NUM_NODE),
+                // (X = 5 × the total of the number of distinct game titles among allies,
+                // excluding unit,
+                // and the number of engaged allies,
+                // excluding unit; max 15; excluding area-of-effect Specials),
+                ENSURE_MAX_NODE(
+                    MULT_NODE(
+                        5,
+                        ADD_NODE(
+                            SET_SIZE_NODE(
+                                MAP_UNION_UNITS_NODE(TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE, TARGETS_TITLE_SET_NODE)),
+                            COUNT_IF_UNITS_NODE(TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE, IS_TARGET_ENGAGED_NODE),
+                        )
+                    ),
+                    15
+                ),
+            ),
+        ),
+    ));
+}
+
 // 光輝く理力
 {
     let skillId = PassiveC.TwinklingAnima;

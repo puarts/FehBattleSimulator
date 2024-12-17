@@ -167,6 +167,8 @@ class TargetsAlliesOnMapNode extends UnitsNode {
     }
 }
 
+const TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE = new TargetsAlliesOnMapNode();
+
 class TargetsFoesOnMapNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -366,6 +368,8 @@ class MapUnionUnitsNode extends SkillEffectNode {
         return result;
     }
 }
+
+const MAP_UNION_UNITS_NODE = (unitsNode, funcNode) => new MapUnionUnitsNode(unitsNode, funcNode);
 
 class MapUnitsToNumNode extends NumbersNode {
     /**
@@ -1396,6 +1400,16 @@ class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTarget
 
 const INFLICTS_ALL_STATS_MINUS_4_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 4, 4);
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 5);
+
+class InflictsAllStatsMinusNOnTargetDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
+    constructor(n) {
+        super(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE);
+        this._n = NumberNode.makeNumberNodeFrom(n);
+    }
+}
+
+const INFLICTS_ALL_STATS_MINUS_N_ON_TARGET_DURING_COMBAT_NODE =
+        n => new InflictsAllStatsMinusNOnTargetDuringCombatNode(n);
 
 class TargetsMaxHpNode extends NumberNode {
     static {
@@ -3983,6 +3997,36 @@ class EndsTargetImmediatelyNode extends SkillEffectNode {
 }
 
 const ENDS_TARGET_IMMEDIATELY_BY_SKILL_NODE = new EndsTargetImmediatelyNode();
+
+class TargetsTitleSetNode extends SetNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getTitleSet();
+        env.debug(`${unit.nameWithGroup}の出典の種類: [${[...result].join(", ")}]`);
+        return result;
+    }
+}
+
+const TARGETS_TITLE_SET_NODE = new TargetsTitleSetNode();
+
+class IsTargetEngagedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasEmblemHero();
+        env.debug(`${unit.nameWithGroup}はエンゲージしているか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_ENGAGED_NODE = new IsTargetEngagedNode();
 
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {

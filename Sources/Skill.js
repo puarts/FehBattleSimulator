@@ -193,9 +193,17 @@ function isFiresweepWeapon(weapon) {
 }
 
 /**
+ * @type {Map<number|string, number>}
+ */
+const ASSIST_RANGE_MAP = new Map();
+
+/**
  * 補助スキルの射程を取得します。
  */
 function getAssistRange(support) {
+    if (ASSIST_RANGE_MAP.has(support)) {
+        return ASSIST_RANGE_MAP.get(support);
+    }
     switch (support) {
         case Support.None:
             return 0;
@@ -1281,6 +1289,7 @@ const StatusEffectType = {
     FutureWitness: 72, // 未来を知るもの
     Dosage: 73, // 毒も薬に、薬も毒に
     Empathy: 74, // 多感
+    DivinelyInspiring: 75, // 神竜の結束
     // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };
