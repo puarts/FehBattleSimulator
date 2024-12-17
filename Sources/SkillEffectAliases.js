@@ -647,3 +647,26 @@ function setRallyHealSkill(skillId, buffs,
     // （このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない）
     NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
 }
+
+function setSpikedWall(skillId, debuffAmounts, statuses) {
+    // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
+    // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
+    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Atk/Def-4 on foe,
+        new InflictsStatsMinusOnFoeDuringCombatNode(...debuffAmounts),
+        new AppliesSkillEffectsAfterStatusFixedNode(
+            // deals damage = 15% of the greater of unit's Def or Res (excluding area-of-effect Specials),
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                MULT_TRUNC_NODE(0.15, MAX_NODE(...statuses)),
+            ),
+        ),
+        // reduces damage from foe's first attack by 7
+        new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+        // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+        // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+    ));
+}
+

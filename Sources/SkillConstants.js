@@ -2981,6 +2981,7 @@ const PassiveB = {
     SpdResDiscord: 3040, // 速さ魔防の不和
 
     ADSpikedWall: 3062, // 攻撃守備の刃壁
+    SRSpikedWall: 3109, // 速さ魔防の刃壁
 
     SpdDefDetect: 3065, // 速さ守備の看破
 
