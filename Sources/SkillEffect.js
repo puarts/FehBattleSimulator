@@ -1267,6 +1267,7 @@ class GrantsAllStatsPlusNToTargetDuringCombatNode extends GrantsStatsPlusToTarge
     evaluate(env) {
         env.storeValue(this._n.evaluate(env));
         super.evaluate(env);
+        env.popValue();
     }
 }
 
