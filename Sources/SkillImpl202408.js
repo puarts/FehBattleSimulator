@@ -46,6 +46,7 @@
 // アイスロック+
 {
     let skillId = Support.IceLockPlus;
+    ASSIST_RANGE_MAP.set(skillId, 2);
     // This skill is treated as a Rally Assist skill.
     // Restores HP = 40% of unit's Atk (min: 6 HP) to target ally and grants Def/Res+6 to target ally for 1 turn,
     // and also,
