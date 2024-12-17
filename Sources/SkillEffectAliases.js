@@ -669,4 +669,3 @@ function setSpikedWall(skillId, debuffAmounts, statuses) {
         NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
     ));
 }
-

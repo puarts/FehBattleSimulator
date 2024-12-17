@@ -1,4 +1,22 @@
 // noinspection JSUnusedLocalSymbols
+// 比翼リュール
+{
+    let skillId = Hero.DuoAlear;
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(skillId,
+        new SkillEffectNode(
+            new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
+                NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+                new GrantsStatusEffectsOnTargetOnMapNode(
+                    StatusEffectType.NeutralizesFoesBonusesDuringCombat,
+                    StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent
+                ),
+            ),
+        ),
+    );
+
+    RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.add(skillId);
+}
+
 // 神竜の結束
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.DivinelyInspiring)

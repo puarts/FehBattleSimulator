@@ -1812,6 +1812,9 @@ class BattleSimulatorBase {
                 }
                 break;
         }
+        for (let unit of this.enumerateUnitsOnMap()) {
+            unit.applyReservedState(false);
+        }
         duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn = true;
         ++duoUnit.duoOrHarmonizedSkillActivationCount;
         updateAllUi();
@@ -4583,22 +4586,25 @@ class BattleSimulatorBase {
 
     #resetDuoOrHarmonizedSkill(unit) {
         unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
-        if (unit.heroIndex === Hero.YoungPalla ||
-            unit.heroIndex === Hero.DuoSigurd ||
-            unit.heroIndex === Hero.DuoEirika ||
-            unit.heroIndex === Hero.DuoSothis ||
-            unit.heroIndex === Hero.DuoYmir) {
+        let heroIndex = unit.heroIndex;
+        if (RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET.has(heroIndex) ||
+            heroIndex === Hero.YoungPalla ||
+            heroIndex === Hero.DuoSigurd ||
+            heroIndex === Hero.DuoEirika ||
+            heroIndex === Hero.DuoSothis ||
+            heroIndex === Hero.DuoYmir) {
             if (this.isOddTurn) {
                 unit.duoOrHarmonizedSkillActivationCount = 0;
             }
-        } else if (unit.heroIndex === Hero.SummerMia ||
-            unit.heroIndex === Hero.SummerByleth ||
-            unit.heroIndex === Hero.PirateVeronica ||
-            unit.heroIndex === Hero.DuoHilda ||
-            unit.heroIndex === Hero.DuoNina ||
-            unit.heroIndex === Hero.DuoAskr ||
-            unit.heroIndex === Hero.HarmonizedTiki ||
-            unit.heroIndex === Hero.DuoKagero) {
+        } else if (RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.has(heroIndex) ||
+            heroIndex === Hero.SummerMia ||
+            heroIndex === Hero.SummerByleth ||
+            heroIndex === Hero.PirateVeronica ||
+            heroIndex === Hero.DuoHilda ||
+            heroIndex === Hero.DuoNina ||
+            heroIndex === Hero.DuoAskr ||
+            heroIndex === Hero.HarmonizedTiki ||
+            heroIndex === Hero.DuoKagero) {
             if (this.data.currentTurn % 3 === 1) {
                 unit.duoOrHarmonizedSkillActivationCount = 0;
             }

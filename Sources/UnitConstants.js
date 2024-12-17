@@ -70,7 +70,11 @@ const Hero = {
     DuoFjorm: 1169,
     HarmonizedNagi: 1181,
     DuoLucina: 1193,
+    DuoAlear: 1214,
 };
+
+const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
+const RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET = new Set();
 
 const IvStateOptions = [
     {id: StatusType.None, text: "なし"},
