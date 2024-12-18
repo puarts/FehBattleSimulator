@@ -669,3 +669,15 @@ function setSpikedWall(skillId, debuffAmounts, statuses) {
         NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
     ));
 }
+
+/**
+ * total of the number of distinct game titles among allies
+ */
+const TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE =
+    units => SET_SIZE_NODE(MAP_UNION_UNITS_NODE(units, TARGETS_TITLE_SET_NODE));
+
+/**
+ * number of distinct game titles among allies within 3 spaces of unit
+ */
+const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE =
+        n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));

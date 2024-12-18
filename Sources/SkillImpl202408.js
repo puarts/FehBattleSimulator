@@ -67,13 +67,12 @@
             // grants Atk/Spd/Def/Res+5 to unit,
             GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
             // inflicts penalty on foe's Atk/Spd/Def/Res = number of distinct game titles among allies within 3 spaces of unit × 3 + 4 (max 10),
-            INFLICTS_ALL_STATS_MINUS_N_ON_TARGET_DURING_COMBAT_NODE(
+            INFLICTS_ALL_STATS_MINUS_N_ON_FOE_DURING_COMBAT_NODE(
                 ENSURE_MAX_NODE(
-                    ADD_NODE(MULT_NODE(
-                            SET_SIZE_NODE(MAP_UNION_UNITS_NODE(new TargetsAlliesWithinNSpacesNode(3)),
-                                TARGETS_TITLE_SET_NODE),
-                            3),
-                        4),
+                    ADD_NODE(
+                        MULT_NODE(NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE(3), 3),
+                        4,
+                    ),
                     10
                 ),
             ),
@@ -91,8 +90,9 @@
                     MULT_NODE(
                         5,
                         ADD_NODE(
-                            SET_SIZE_NODE(
-                                MAP_UNION_UNITS_NODE(TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE, TARGETS_TITLE_SET_NODE)),
+                            TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(
+                                TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE
+                            ),
                             COUNT_IF_UNITS_NODE(TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE, IS_TARGET_ENGAGED_NODE),
                         )
                     ),

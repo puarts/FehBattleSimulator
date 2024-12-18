@@ -106,7 +106,7 @@ class SkillEffectHooks {
         if (prefix === 'e') {
             name = ObjectUtil.getKeyName(EmblemHero, suffix);
         } else if (prefix === 'se') {
-            name = ObjectUtil.getKeyName(StatusEffectType, suffix);
+            name = getStatusEffectName(suffix);
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }

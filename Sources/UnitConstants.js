@@ -303,6 +303,9 @@ function statusEffectTypeToIconFilePath(value) {
 }
 
 function getStatusEffectName(effect) {
+    if (typeof effect === "string") {
+        effect = Number(effect) || -1;
+    }
     if (STATUS_EFFECT_INFO_MAP.has(effect)) {
         return STATUS_EFFECT_INFO_MAP.get(effect)[1];
     }

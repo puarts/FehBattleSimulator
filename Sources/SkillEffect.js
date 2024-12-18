@@ -203,7 +203,10 @@ class TargetsAlliesWithinNSpacesNode extends UnitsNode {
         let unit = this.getUnit(env);
         let spaces = this._nNode.evaluate(env);
         let withTargetUnit = this._includesTargetNode.evaluate(env);
-        return env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, spaces, withTargetUnit);
+        let result = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, spaces, withTargetUnit);
+        let allies = Array.from(result);
+        env.debug(`${unit.nameWithGroup}の周囲${spaces}マスの味方: ${allies.map(u => u.nameWithGroup).join(', ')}`);
+        return allies;
     }
 }
 
@@ -1412,7 +1415,16 @@ class InflictsAllStatsMinusNOnTargetDuringCombatNode extends InflictsStatsMinusO
 }
 
 const INFLICTS_ALL_STATS_MINUS_N_ON_TARGET_DURING_COMBAT_NODE =
-        n => new InflictsAllStatsMinusNOnTargetDuringCombatNode(n);
+    n => X_NUM_NODE(
+        new InflictsStatsMinusOnTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE),
+        NumberNode.makeNumberNodeFrom(n),
+    );
+
+const INFLICTS_ALL_STATS_MINUS_N_ON_FOE_DURING_COMBAT_NODE =
+    n => X_NUM_NODE(
+        new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE),
+        NumberNode.makeNumberNodeFrom(n),
+    );
 
 class TargetsMaxHpNode extends NumberNode {
     static {
@@ -4011,7 +4023,7 @@ class TargetsTitleSetNode extends SetNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.getTitleSet();
-        env.debug(`${unit.nameWithGroup}の出典の種類: [${[...result].join(", ")}]`);
+        env.debug(`${unit.nameWithGroup}の出典の種類: {${[...result].join(", ")}}`);
         return result;
     }
 }
