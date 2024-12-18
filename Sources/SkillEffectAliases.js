@@ -5,7 +5,7 @@ const TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE = SUB_NODE(new FoesMaxHpNode(
 
 const PERCENTAGE_NODE = (percentage, num) => MULT_TRUNC_NODE(percentage / 100.0, num);
 
-const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpaces(5);
+const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpacesNode(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
     new TargetsAndThoseAlliesWithinNSpacesNode(2, TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE);
 const TARGETS_CLOSEST_FOES_NODE = new TargetsClosestFoesNode();
@@ -193,6 +193,7 @@ const IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE = new IsTargetBeastOrDragonTypeNode();
 
 const IS_TARGET_INFANTRY_NODE = new IsTargetInfantryNode();
 const IS_TARGET_ARMOR_NODE = new IsTargetArmorNode();
+const IS_FOE_INFANTRY_NODE = new IsFoeInfantryNode();
 
 /**
  * 戦闘中に奥義が発動できない
@@ -264,6 +265,31 @@ function setTwinSave(skillId, isMelee, grantsNode) {
                 new AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode(1),
                 // and restores 7 HP to unit when unit deals damage to foe during combat (triggers even if 0 damage is dealt).
                 new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(7),
+            ),
+        ),
+    );
+}
+
+function setBriarSave(skillId, isMelee, grantsNode) {
+    // If foe with Range = 2 initiates combat against an ally within 2 spaces of unit, triggers【Savior】on unit.
+    SAVE_SKILL_SET.add(skillId);
+    if (isMelee) {
+        CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
+    } else {
+        CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
+    }
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+        new SkillEffectNode(
+            // If foe's Range = 2,
+            IF_NODE(isMelee ? FOES_RANGE_IS_1_NODE : FOES_RANGE_IS_2_NODE,
+                // grants Atk/Def+4 to unit and
+                grantsNode,
+                // reduces damage from foe's first attack by 5 during combat
+                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(5),
+                // and unit's next attack deals damage = 40% of foe's attack damage prior to reductions
+                // (resets at end of combat; only highest value applied; does not stack).
+                TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE(40),
             ),
         ),
     );
@@ -404,6 +430,8 @@ function setPathfinder(skillId) {
 
 const IS_TARGET_SKILL_OWNER_NODE = new IsTargetSkillOwnerNode();
 const UNITS_ON_MAP_NODE = new UnitsOnMapNode();
+const SKILL_OWNERS_ALLIES_ON_MAP_NODE = FILTER_UNITS_NODE(UNITS_ON_MAP_NODE, ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE)
+const SKILL_OWNERS_FOES_ON_MAP_NODE = FILTER_UNITS_NODE(UNITS_ON_MAP_NODE, NOT_NODE(ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE))
 const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
 const FILTER_MAP_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
 const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);
@@ -555,3 +583,101 @@ function setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillI
 function setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId) {
     CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
 }
+
+/**
+ * the number of foes that have already performed an action
+ */
+const NUM_OF_TARGETS_FOES_THAT_HAVE_ALREADY_PERFORMED_ACTION =
+    COUNT_IF_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE, HAS_TARGET_PERFORMED_ACTION_NODE);
+
+/**
+ * grants "effective against all weapon types" to unit during combat.
+ */
+const GRANTS_EFFECTIVE_AGAINST_ALL_WEAPON_TYPES_TO_UNIT_DURING_COMBAT = new SkillEffectNode(
+    new EffectiveAgainstNode(EffectiveType.Dragon),
+    new EffectiveAgainstNode(EffectiveType.Beast),
+    new EffectiveAgainstNode(EffectiveType.Tome),
+    new EffectiveAgainstNode(EffectiveType.Sword),
+    new EffectiveAgainstNode(EffectiveType.Lance),
+    new EffectiveAgainstNode(EffectiveType.Axe),
+    new EffectiveAgainstNode(EffectiveType.ColorlessBow),
+    new EffectiveAgainstNode(EffectiveType.Staff),
+    new EffectiveAgainstNode(EffectiveType.Dagger),
+    new EffectiveAgainstNode(EffectiveType.Bow),
+);
+
+// TODO: リファクタリング
+/**
+ * @param {number|string} skillId
+ * @param {[number, number, number, number]} buffs
+ * @param {number} minHeal
+ * @param {number} ratio
+ * @param {number[]} statusEffects
+ * @param {BoolNode} canRallyForciblyNode
+ */
+function setRallyHealSkill(skillId, buffs,
+                           minHeal = 8, ratio = 0.5, statusEffects = [],
+                           canRallyForciblyNode = FALSE_NODE) {
+    PRECOMBAT_HEAL_THRESHOLD_MAP.set(skillId, 10);
+    getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap.set(skillId, _ => AssistType.Heal);
+    // このスキルは「応援」として扱われる
+    RALLY_HEAL_SKILL_SET.add(skillId);
+    // TODO: 検証する。とりあえずプレーヤーなら強制的に応援できる。
+    canRallyForciblyByPlayerFuncMap.set(skillId, _ => true);
+    // 対象を攻撃のx%回復（最低minHeal）し、
+    calcHealAmountFuncMap.set(skillId,
+        function (supporterUnit, supportTargetUnit) {
+            return MathUtil.ensureMin(Math.trunc(supporterUnit.getAtkInPrecombat() * ratio), minHeal);
+        }
+    );
+    // 対象にbuff
+    RALLY_BUFF_AMOUNT_MAP.set(skillId, buffs);
+    canAddStatusEffectByRallyFuncMap.set(skillId,
+        function (supporterUnit, targetUnit) {
+            return statusEffects.some(e => !targetUnit.hasStatusEffect(e));
+        }
+    );
+    canRallyForciblyFuncMap.set(skillId,
+        function (unit) {
+            let env = new NodeEnv().setBattleMap(g_appData.map).setTarget(unit).setSkillOwner(unit)
+                .setSkillOwner(unit).setName('強制応援可能判定').setLogLevel(getSkillLogLevel());
+            return canRallyForciblyNode.evaluate(env);
+        }
+    );
+    // （このスキル使用時の奥義発動カウント変動量は常に0、経験値、SPも入手できない）
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
+}
+
+function setSpikedWall(skillId, debuffAmounts, statuses) {
+    // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
+    // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
+    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Atk/Def-4 on foe,
+        new InflictsStatsMinusOnFoeDuringCombatNode(...debuffAmounts),
+        new AppliesSkillEffectsAfterStatusFixedNode(
+            // deals damage = 15% of the greater of unit's Def or Res (excluding area-of-effect Specials),
+            new UnitDealsDamageExcludingAoeSpecialsNode(
+                MULT_TRUNC_NODE(0.15, MAX_NODE(...statuses)),
+            ),
+        ),
+        // reduces damage from foe's first attack by 7
+        new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+        // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+        // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+    ));
+}
+
+/**
+ * total of the number of distinct game titles among allies
+ */
+const TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE =
+    units => SET_SIZE_NODE(MAP_UNION_UNITS_NODE(units, TARGETS_TITLE_SET_NODE));
+
+/**
+ * number of distinct game titles among allies within 3 spaces of unit
+ */
+const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE =
+        n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));

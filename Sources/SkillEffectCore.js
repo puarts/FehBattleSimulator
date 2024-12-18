@@ -106,7 +106,7 @@ class SkillEffectHooks {
         if (prefix === 'e') {
             name = ObjectUtil.getKeyName(EmblemHero, suffix);
         } else if (prefix === 'se') {
-            name = ObjectUtil.getKeyName(StatusEffectType, suffix);
+            name = getStatusEffectName(suffix);
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }
@@ -140,6 +140,10 @@ class SkillEffectHooks {
      */
     evaluateMaxWithUnit(unit, env) {
         return Math.max(...this.evaluateWithUnit(unit, env));
+    }
+
+    evaluateSumWithUnit(unit, env) {
+        return Math.add(...this.evaluateWithUnit(unit, env)) ?? 0;
     }
 
     /**
@@ -584,6 +588,8 @@ class EnsureMaxNode extends NumberOperationNode {
         return result;
     }
 }
+
+const ENSURE_MAX_NODE = (child, max) => new EnsureMaxNode(child, max);
 
 class EnsureMinMaxNode extends NumberOperationNode {
     #min = Number.MIN_SAFE_INTEGER;

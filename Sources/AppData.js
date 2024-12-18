@@ -1762,8 +1762,8 @@ class AppData extends UnitManager {
             + ValueDelimiter + this.currentTurn
             + ValueDelimiter + this.battileItemsToString()
             + ValueDelimiter + boolToInt(this.isCombatOccuredInCurrentTurn)
-            + ValueDelimiter + this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Enemy]
+            + ValueDelimiter + this.globalBattleContext.removedUnitCountsInCombat[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.removedUnitCountsInCombat[UnitGroupType.Enemy]
             + ValueDelimiter + this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally]
             + ValueDelimiter + this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy]
             + ValueDelimiter + boolToInt(this.globalBattleContext.isAllyPhaseEnded)
@@ -1778,6 +1778,8 @@ class AppData extends UnitManager {
             + ValueDelimiter + this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally]
             + ValueDelimiter + this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy]
             + ValueDelimiter + this.globalBattleContext.numOfCombatOnCurrentTurn
+            + ValueDelimiter + this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy]
             ;
     }
 
@@ -1806,8 +1808,8 @@ class AppData extends UnitManager {
         if (Number.isInteger(Number(values[i]))) { this.currentTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.setBattleItemsFromString(values[i]); ++i; }
         if (values[i] !== undefined) { this.isCombatOccuredInCurrentTurn = intToBool(Number(values[i])); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.RemovedUnitCountsInCombat[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountsInCombat[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountsInCombat[UnitGroupType.Enemy] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.isAllyPhaseEnded = intToBool(Number(values[i])); ++i; }
@@ -1822,6 +1824,8 @@ class AppData extends UnitManager {
         if (values[i] !== undefined) { this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.numOfCombatOnCurrentTurn = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy] = Number(values[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {

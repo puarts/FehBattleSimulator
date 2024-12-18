@@ -1,4 +1,458 @@
 // noinspection JSUnusedLocalSymbols
+// 比翼リュール
+{
+    let skillId = Hero.DuoAlear;
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(skillId,
+        new SkillEffectNode(
+            new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
+                NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+                new GrantsStatusEffectsOnTargetOnMapNode(
+                    StatusEffectType.NeutralizesFoesBonusesDuringCombat,
+                    StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent
+                ),
+            ),
+        ),
+    );
+
+    RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.add(skillId);
+}
+
+// 神竜の結束
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.DivinelyInspiring)
+    // 【Divinely Inspiring】
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        X_NUM_NODE(
+            // Grants bonus to unit's Atk/Spd/Def/Res = X × 3
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(MULT_NODE(READ_NUM_NODE, 3)),
+            // grants Special cooldown count-X to unit before foe's first attack,
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode(READ_NUM_NODE),
+            // and when unit deals damage to foe during combat,
+            // restores X × 4 HP to unit during combat.
+            new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(MULT_NODE(READ_NUM_NODE, 4)),
+            // (X = number of allies with the Divinely Inspiring effect within 3 spaces of unit,
+            // excluding unit; max 2),
+            ENSURE_MAX_NODE(
+                COUNT_IF_UNITS_NODE(
+                    TARGETS_ALLIES_WITHIN_N_SPACES_NODE(3),
+                    HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.DivinelyInspiring),
+                ),
+                2,
+            )
+        ),
+    ));
+}
+
+// 冬の双神竜の体術
+{
+    let skillId = Weapon.WinteryArts;
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit attacks twice (even if foe initiates combat, unit attacks twice).
+    // If foe's Range = 2,
+    // calculates damage using the lower of foe's Def or Res.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(
+                // grants【Divinely Inspiring】
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.DivinelyInspiring),
+            ),
+            // to unit and allies within 2 spaces of unit for 1 turn.
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // inflicts penalty on foe's Atk/Spd/Def/Res = number of distinct game titles among allies within 3 spaces of unit × 3 + 4 (max 10),
+            INFLICTS_ALL_STATS_MINUS_N_ON_FOE_DURING_COMBAT_NODE(
+                ENSURE_MAX_NODE(
+                    ADD_NODE(
+                        MULT_NODE(NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE(3), 3),
+                        4,
+                    ),
+                    10
+                ),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage
+                new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                // and reduces damage from foe's first attack by X during combat
+                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+                new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(READ_NUM_NODE),
+                // (X = 5 × the total of the number of distinct game titles among allies,
+                // excluding unit,
+                // and the number of engaged allies,
+                // excluding unit; max 15; excluding area-of-effect Specials),
+                ENSURE_MAX_NODE(
+                    MULT_NODE(
+                        5,
+                        ADD_NODE(
+                            TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(
+                                TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE
+                            ),
+                            COUNT_IF_UNITS_NODE(TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE, IS_TARGET_ENGAGED_NODE),
+                        )
+                    ),
+                    15
+                ),
+            ),
+        ),
+    ));
+}
+
+// 光輝く理力
+{
+    let skillId = PassiveC.TwinklingAnima;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
+                // grants Atk/Spd+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Canto (１)】,
+                // and the following status
+                // to unit and allies within 3 spaces of unit for 1 turn:
+                // "neutralizes penalties on unit during combat."
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Canto1, StatusEffectType.NeutralizesPenalties),
+            ),
+        ),
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(3, TRUE_NODE,
+                // inflicts Spd/Res-7,
+                new InflictsStatsMinusOnTargetOnMapNode(0, 7, 0, 7),
+                // 【Panic】,
+                // and【Discord】
+                new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Panic, StatusEffectType.Discord),
+                // on closest foes and any foe within 3 spaces of those foes through their next actions.
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd+5 to unit,
+            new GrantsStatsPlusToTargetDuringCombatNode(5, 5, 0, 0),
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat
+            // (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
+// アイスロック+
+{
+    let skillId = Support.IceLockPlus;
+    ASSIST_RANGE_MAP.set(skillId, 2);
+    // This skill is treated as a Rally Assist skill.
+    // Restores HP = 40% of unit's Atk (min: 6 HP) to target ally and grants Def/Res+6 to target ally for 1 turn,
+    // and also,
+    setRallyHealSkill(skillId, [0, 0, 6, 6], 6, 0.4, [],
+        new IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode());
+
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // if there is no【Divine Vein (Ice)】 currently applied by unit or allies,
+        IF_NODE(IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE,
+            // applies 【Divine Vein (Ice)】to spaces 2 spaces away from target after movement for 1 turn
+            new AppliesDivineVeinNode(
+                DivineVeinType.Ice,
+                AND_NODE(
+                    new IsSpacesNSpacesAwayFromAssistedNode(2),
+                    // (excludes spaces occupied by a foe,
+                    IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                    // destructible terrain other than【Divine Vein (Ice)】, and
+                    IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE,
+                    // TODO: ワープができるコンテンツが来たら実装する
+                    // warp spaces in Rival Domains).
+                ),
+            ),
+        ),
+    ));
+
+    AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If used on turn 2 onward,
+        IF_NODE(GTE_NODE(CURRENT_TURN_NODE, 2),
+            // also grants another action to unit and inflicts "restricts movement to 1 space" on unit and Pair Up cohort through their next action.
+            // (Effects that can trigger on turn 2 onward will not trigger again for 2 turns after triggering;
+            // using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
+            TARGETS_REST_SUPPORT_SKILL_AVAILABLE_TURN_NODE(2,
+                GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+                new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.Gravity),
+            ),
+        ),
+    ));
+}
+
+// 雪だるまの雪杖
+{
+    let skillId = Weapon.SnowmanStaff;
+    // Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1). Foe cannot counterattack.
+    // TODO: 修正する
+    resetMaxSpecialCountFuncMap.set(skillId,
+        function () {
+            return -1;
+        }
+    );
+    // Unit can move to a space within 2 spaces of any ally within 2 spaces of unit.
+    setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, 2, 2);
+
+    // If a Rally or movement Assist skill is used by unit,
+    let nodeFunc = () => new SkillEffectNode(
+        new TargetsOncePerTurnAssistEffectNode(`${skillId}-奥義発動カウント-1`,
+            new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(3), TRUE_NODE,
+                // Special cooldown count-1 to unit,
+                new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
+            )
+        ),
+        new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(3), TRUE_NODE,
+            // grants【Foe Penalty Doubler】and
+            // target ally,
+            new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.FoePenaltyDoubler),
+            // and allies within 3 spaces of target ally after movement (Special cooldown count-1 effect granted only once per turn).
+        )
+    );
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Spd = 6 + 20% of unit's Spd at start of combat,
+                new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(6, PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            ),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and deals damage = 20% of unit's Spd during combat
+            // (excluding area-of-effect Specials; if the "calculates damage from staff like other weapons" effect is not active, damage from staff is calculated after combat damage is added).
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+    ));
+}
+
+// 罠解除・周到
+{
+    let skillId = PassiveB.FullDisarm;
+    // While attacking in Aether Raids,
+    // if unit ends movement on a space with a Bolt Trap or a Heavy Trap, cancels trap's effect;
+    // if unit ends movement on a space with a Hex Trap, reduces trap's trigger condition by 10 HP.
+    DISARM_TRAP_SKILL_SET.add(skillId);
+    DISARM_HEX_TRAP_SKILL_SET.add(skillId);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        X_NUM_NODE(
+            // Inflicts Spd/Def-X on foe
+            new InflictsStatsMinusOnFoeDuringCombatNode(0, READ_NUM_NODE, READ_NUM_NODE, 0),
+            // (X = total number of【Bonus】effects active on unit, excluding stat bonuses,
+            // and【Penalty】effects active on foe, excluding stat penalties,
+            // × 2,
+            // + 4; max 12),
+            new EnsureMaxNode(
+                ADD_NODE(MULT_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 2), 4),
+                12,
+            ),
+        ),
+        // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+    ));
+}
+
+// 真連閃
+{
+    let skillId = PassiveA.SwiftIce;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd/Def/Res+8 to unit,
+            GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 30%
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(30),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+
+            new AppliesSkillEffectsAfterStatusFixedNode(
+                // If unit initiates combat against a non-dragon,
+                // non-beast infantry foe and unit's Spd ≥ foe's Spd+20,
+                IF_NODE(
+                    AND_NODE(
+                        DOES_UNIT_INITIATE_COMBAT_NODE,
+                        AND_NODE(NOT_NODE(IS_FOE_BEAST_OR_DRAGON_TYPE_NODE), IS_FOE_INFANTRY_NODE),
+                        GTE_NODE(UNITS_SPD_DURING_COMBAT_NODE, ADD_NODE(FOES_SPD_DURING_COMBAT_NODE, 20))
+                    ),
+                    // grants "effective against all weapon types" to unit during combat. Otherwise,
+                    GRANTS_EFFECTIVE_AGAINST_ALL_WEAPON_TYPES_TO_UNIT_DURING_COMBAT,
+                ),
+                // if unit initiates combat and unit's Spd ≥ foe's Spd+5,
+                IF_NODE(
+                    AND_NODE(
+                        DOES_UNIT_INITIATE_COMBAT_NODE,
+                        NOT_NODE(AND_NODE(NOT_NODE(IS_FOE_BEAST_OR_DRAGON_TYPE_NODE), IS_FOE_INFANTRY_NODE)),
+                        GTE_NODE(UNITS_SPD_DURING_COMBAT_NODE, ADD_NODE(FOES_SPD_DURING_COMBAT_NODE, 5))
+                    ),
+                    // grants "effective against all weapon types" to unit during combat.
+                    GRANTS_EFFECTIVE_AGAINST_ALL_WEAPON_TYPES_TO_UNIT_DURING_COMBAT,
+                ),
+            ),
+        ),
+    ));
+}
+
+// 冬の修羅の手甲刃
+{
+    let skillId = Weapon.RedFistBlades;
+    // Accelerates Special trigger (cooldown count-1). Unit attacks twice (even if foe initiates combat, unit attacks twice).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Atk/Spd+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Incited】,
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Incited, StatusEffectType.SpecialCooldownChargePlusOnePerAttack),
+                // and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
+            )
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res = number of foes within 3 rows or 3 columns centered on unit × 3,
+            // + 5 (max 14),
+            new GrantsAllStatsPlusNToTargetDuringCombatNode(
+                new EnsureMaxNode(
+                    ADD_NODE(MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14,
+                ),
+            ),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and reduces damage from foe's first attack by 7 during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+        ),
+    ));
+}
+
+// 鉛色の残夢
+{
+    let skillId = PassiveA.LeadenRegrets;
+    // If unit can transform,
+    // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
+    // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+    setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId);
+
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met, unit transforms.
+    setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe initiates combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, DOES_FOE_INITIATE_COMBAT_NODE),
+            // inflicts Atk/Def-10 on foe,
+            new InflictsStatsMinusOnFoeDuringCombatNode(10, 0, 10, 0),
+            // reduces damage from foe's follow-up attack by 80%
+            new ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode(80),
+            // ("follow-up attack" normally means only the second strike; for effects that grant "unit attacks twice," it means the third and fourth strikes),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat,
+        IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+            // after combat,
+            // the closest foes within 4 spaces of target who have yet to act have their actions end immediately.
+            FOR_EACH_UNIT_NODE(
+                FOES_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE(4, FALSE_NODE, NOT_NODE(HAS_TARGET_PERFORMED_ACTION_NODE)),
+                ENDS_TARGET_IMMEDIATELY_BY_SKILL_NODE,
+            ),
+        ),
+    ));
+}
+
+// 冬氷の魔拳
+{
+    let skillId = Weapon.IcyRavager;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // At start of turn, and at start of enemy phase (except for in Summoner Duels),
+    let nodeFunc = () => new SkillEffectNode(
+        // if Special cooldown count is at its maximum value,
+        IF_NODE(IS_TARGETS_SPECIAL_COOLDOWN_COUNT_AT_ITS_MAX_AT_START_OF_TURN_NODE,
+            // grants Special cooldown count-1.
+            new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_NOT_SUMMONER_DUELS_MODE_NODE,
+            nodeFunc(),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // inflicts penalty on foe's Atk/Def = 20% of unit's Def at start of combat + 6,
+            X_NUM_NODE(
+                new InflictsStatsMinusOnFoeDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_DEF_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage
+                new UnitDealsDamageExcludingAoeSpecialsNode(READ_NUM_NODE),
+                // reduces damage from foe's attacks by X (excluding area-of-effect Specials),
+                new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
+
+                // (X = total value of the number of foes defeated by unit's team on the current turn
+                // and the number of foes that have already performed an action, x 3, + 10; max 19;
+                // for "current turn." player phase and enemy phase are counted separately; excluding area-of-effect Specials),
+                new EnsureMaxNode(
+                    ADD_NODE(
+                        MULT_NODE(
+                            ADD_NODE(
+                                NUM_OF_TARGETS_FOES_DEFEATED_BY_TARGET_TEAM_ON_CURRENT_TURN_NODE,
+                                NUM_OF_TARGETS_FOES_THAT_HAVE_ALREADY_PERFORMED_ACTION
+                            ),
+                            3,
+                        ),
+                        10,
+                    ),
+                    19,
+                ),
+            ),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and also,
+            // and if unit's Special cooldown count is at its maximum value after combat,
+            // grants Special cooldown count-1 to unit after combat.
+            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+        )
+    ));
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // grants Atk+2,
+    // and unit can counterattack regardless of foe's range.
+    setBeastSkill(skillId, BeastCommonSkillType.Armor);
+}
+
 // 鍛錬の鼓動・謀策
 {
     let skillId = PassiveC.PulseUpPloy;
@@ -1410,28 +1864,11 @@
     ));
 }
 
-// 攻撃守備の刃壁
+// 刃壁
 {
-    let skillId = PassiveB.ADSpikedWall;
-    // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
-    // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
-    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // Inflicts Atk/Def-4 on foe,
-        new InflictsStatsMinusOnFoeDuringCombatNode(4, 0, 4, 0),
-        new AppliesSkillEffectsAfterStatusFixedNode(
-            // deals damage = 15% of the greater of unit's Def or Res (excluding area-of-effect Specials),
-            new UnitDealsDamageExcludingAoeSpecialsNode(
-                MULT_TRUNC_NODE(0.15, MAX_NODE(UNITS_DEF_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE)),
-            ),
-        ),
-        // reduces damage from foe's first attack by 7
-        new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
-        // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-        // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
-        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
-    ));
+    // 攻撃守備の刃壁
+    setSpikedWall(PassiveB.ADSpikedWall, [4, 0, 4, 0], [UNITS_DEF_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE]);
+    setSpikedWall(PassiveB.SRSpikedWall, [0, 4, 0, 4], [UNITS_SPD_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE]);
 }
 
 // 巨岩
@@ -2425,12 +2862,6 @@
     )
 }
 
-// 護り手・遠・双
-{
-    setTwinSave(PassiveC.ARTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
-    setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
-}
-
 // 神魔の双竜の竜石
 {
     let skillId = Weapon.OpposingStones;
@@ -2509,6 +2940,17 @@
     setTwinSave(PassiveC.ADTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
     // 盾の護り手・近・双
     setTwinSave(PassiveC.DRTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4));
+}
+
+// 護り手・遠・双
+{
+    setTwinSave(PassiveC.ARTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
+    setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
+}
+
+// 護り手・遠・茨
+{
+    setBriarSave(PassiveC.ADBriarFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
 }
 
 // 竜の堅鱗
@@ -4088,7 +4530,7 @@
                         NUM_OF_PENALTY_ON_UNIT_EXCLUDING_STAT_NODE), 2), 5),
             ),
             // reduces damage from foe's first attack during combat by 40%,
-            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(40),
+            new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(40),
             // and also,
             // if【Bonus】is active on unit,
             IF_NODE(IS_BONUS_ACTIVE_ON_UNIT_NODE,

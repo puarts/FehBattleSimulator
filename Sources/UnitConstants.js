@@ -70,7 +70,11 @@ const Hero = {
     DuoFjorm: 1169,
     HarmonizedNagi: 1181,
     DuoLucina: 1193,
+    DuoAlear: 1214,
 };
+
+const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
+const RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET = new Set();
 
 const IvStateOptions = [
     {id: StatusType.None, text: "なし"},
@@ -285,6 +289,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.FutureWitness, ["FutureWitness.webp", "未来を知るもの", "未来を知るもの"]],
     [StatusEffectType.Dosage, ["Dosage.webp", "毒も薬に、薬も毒に", "毒も薬に、薬も毒に"]],
     [StatusEffectType.Empathy, ["Empathy.webp", "多感", "多感"]],
+    [StatusEffectType.DivinelyInspiring, ["DivinelyInspiring.webp", "神竜の結束", "神竜の結束（全ステn*3、敵の最初の攻撃前に自身の奥義発動カウント-n、 nは最大2）"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
@@ -298,6 +303,9 @@ function statusEffectTypeToIconFilePath(value) {
 }
 
 function getStatusEffectName(effect) {
+    if (typeof effect === "string") {
+        effect = Number(effect) || -1;
+    }
     if (STATUS_EFFECT_INFO_MAP.has(effect)) {
         return STATUS_EFFECT_INFO_MAP.get(effect)[1];
     }

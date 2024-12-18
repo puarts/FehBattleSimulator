@@ -1971,6 +1971,12 @@ const Weapon = {
     PursualAxePlus: 3090, // 追撃の斧+
     FellowshipBlade: 3091, // 盟友との絆の剣
     OdrOfCreation: 3095, // 創世の文字の力
+
+    // クリスマス
+    IcyRavager: 3099, // 冬氷の魔拳
+    RedFistBlades: 3102, // 冬の修羅の手甲刃
+    SnowmanStaff: 3105, // 雪だるまの雪杖
+    WinteryArts: 3108, // 冬の双神竜の体術
 };
 
 const Support = {
@@ -2081,6 +2087,7 @@ const Support = {
     Nudge: 1738, // プッシュ
 
     MagicShieldPlus: 2839, // マジックシールド+
+    IceLockPlus: 3106, // アイスロック+
 };
 
 const Special = {
@@ -2484,6 +2491,8 @@ const PassiveA = {
     SlyMirror: 3074, // 鬼神明鏡の掩撃
 
     // 専用A
+    SwiftIce: 3103, // 真連閃
+    LeadenRegrets: 3100, // 鉛色の残夢
     OathOfOstia: 3092, // オスティアの血盟
     DivineToxin: 3080, // 神獣の猛毒
     ObsidianTactics: 2946, // 黒曜石の教え
@@ -2885,6 +2894,7 @@ const PassiveB = {
     Wanakaijo3: 858, // 罠解除3
     DisarmTrap4: 2572, // 罠解除4
     PotentDisarm: 2904, // 罠解除・神速
+    FullDisarm: 3104, // 罠解除・周到
 
     RunaBracelet: 667, // 月の腕輪
     LunarBrace2: 1947, // 月の腕輪・承
@@ -2971,6 +2981,7 @@ const PassiveB = {
     SpdResDiscord: 3040, // 速さ魔防の不和
 
     ADSpikedWall: 3062, // 攻撃守備の刃壁
+    SRSpikedWall: 3109, // 速さ魔防の刃壁
 
     SpdDefDetect: 3065, // 速さ守備の看破
 
@@ -3447,11 +3458,14 @@ const PassiveC = {
     ARTwinFSave: 3034, // 兜の護り手・遠・双
     ADTwinFSave: 3082, // 鎧の護り手・遠・双
 
+    ADBriarFSave: 3101, // 鎧の護り手・遠・茨
+
     Barricade: 3086, // 縄張り・守護
 
     LookoutForce: 3089, // 露払い・不屈
 
     // 専用C
+    TwinklingAnima: 3107, // 光輝く理力
     DivineTalon: 3054, // 神獣の鋭爪
     ConnectedWorld: 3028, // 人と神が繋がる世界
     Paranoia: 2987, // 被害妄想

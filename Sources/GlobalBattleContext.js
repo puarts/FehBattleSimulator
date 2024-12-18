@@ -32,9 +32,14 @@ class GlobalBattleContext {
         this.reservedIsAnotherActionByAssistActivatedInCurrentTurn = [false, false];
 
         // 戦闘でHP0になって退場になったユニットの数
-        this.RemovedUnitCountsInCombat = {};
-        this.RemovedUnitCountsInCombat[UnitGroupType.Ally] = 0;
-        this.RemovedUnitCountsInCombat[UnitGroupType.Enemy] = 0;
+        this.removedUnitCountsInCombat = {};
+        this.removedUnitCountsInCombat[UnitGroupType.Ally] = 0;
+        this.removedUnitCountsInCombat[UnitGroupType.Enemy] = 0;
+
+        // 現在ターン（敵味方別）で戦闘でHP0になって退場になったユニットの数
+        this.removedUnitCountInCombatInCurrentTurnsPhase = {};
+        this.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally] = 0;
+        this.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy] = 0;
 
         // シーズン設定
         this.isLightSeason = true;
@@ -253,5 +258,16 @@ class GlobalBattleContext {
             this.isAnotherActionByAssistActivatedInCurrentTurn[group] = true;
             this.reservedIsAnotherActionByAssistActivatedInCurrentTurn[group] = false;
         }
+    }
+
+    incrementRemovedUnitCount(groupId) {
+        this.removedUnitCountsInCombat[groupId]++;
+        this.removedUnitCountInCombatInCurrentTurnsPhase[groupId]++;
+    }
+
+    initContextInCurrentTurnsPhase(groupId) {
+        this.isAnotherActionByAssistActivatedInCurrentTurn[groupId] = false;
+        this.numOfCombatOnCurrentTurn = 0;
+        this.removedUnitCountInCombatInCurrentTurnsPhase[groupId] = 0;
     }
 }
