@@ -1030,6 +1030,8 @@
     // ターン開始時、竜、獣以外の味方と隣接していない場合
     // 化身状態になる（そうでない場合、化身状態を解除）
     // 化身状態なら、攻撃＋2、かつ敵から攻撃された時、距離に関係なく反撃する
+    setBeastSkill(skillId, BeastCommonSkillType.Armor);
+
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // ターン開始時、自身のHPが25%以上なら、
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
