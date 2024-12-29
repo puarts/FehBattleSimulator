@@ -293,7 +293,7 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                     } else {
                         let cellId = getCellId(tile.posX, tile.posY);
                         let cell = document.getElementById(cellId);
-                        if (tile.isUnitPlacable(unit)) {
+                        if (tile.isUnitPlacable(unit) && !unit.isCannotMoveStyleActive()) {
                             Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
                                     node.classList.remove('map-hidden');
                                 }
