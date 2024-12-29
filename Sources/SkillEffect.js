@@ -1931,6 +1931,22 @@ class IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode extends BoolNode {
 
 const IF_TARGET_HAS_NOT_BEEN_TARGET_OF_ASSIST_DURING_CURRENT_TURN_NODE = new IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode();
 
+class IfTargetsSpecialIsReadyOrHasTriggeredDuringCombatNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.canActivateOrActivatedSpecial();
+        env.debug(`${unit.nameWithGroup}が奥義発動可能もしくは発動済みであるか: ${result}`);
+        return result;
+    }
+}
+
+const IF_TARGETS_SPECIAL_IS_READY_OR_HAS_TRIGGERED_DURING_COMBAT_NODE =
+    new IfTargetsSpecialIsReadyOrHasTriggeredDuringCombatNode();
+
 const IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE = new class extends BoolNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;

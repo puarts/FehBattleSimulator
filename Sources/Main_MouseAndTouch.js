@@ -281,23 +281,25 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                 }
-                for (let tile of unit.movableTilesIgnoringWarpBubble) {
-                    if (unit.movableTiles.includes(tile)) {
-                        let color = "#cbd6ee";
-                        color = "#0066ff" + alpha;
-                        if (tile.getMoveWeight(unit, false) === ObstructTile) {
-                            // color = "#cccc00" + alpha;
-                            color = "#88ffff" + alpha;
-                        }
-                        updateCellBgColor(tile.posX, tile.posY, color);
-                    } else {
-                        let cellId = getCellId(tile.posX, tile.posY);
-                        let cell = document.getElementById(cellId);
-                        if (tile.isUnitPlacable(unit) && !unit.isCannotMoveStyleActive()) {
-                            Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
-                                    node.classList.remove('map-hidden');
-                                }
-                            );
+                if (!unit.isCannotMoveStyleActive()) {
+                    for (let tile of unit.movableTilesIgnoringWarpBubble) {
+                        if (unit.movableTiles.includes(tile)) {
+                            let color = "#cbd6ee";
+                            color = "#0066ff" + alpha;
+                            if (tile.getMoveWeight(unit, false) === ObstructTile) {
+                                // color = "#cccc00" + alpha;
+                                color = "#88ffff" + alpha;
+                            }
+                            updateCellBgColor(tile.posX, tile.posY, color);
+                        } else {
+                            let cellId = getCellId(tile.posX, tile.posY);
+                            let cell = document.getElementById(cellId);
+                            if (tile.isUnitPlacable(unit)) {
+                                Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
+                                        node.classList.remove('map-hidden');
+                                    }
+                                );
+                            }
                         }
                     }
                 }

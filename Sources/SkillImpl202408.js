@@ -1,5 +1,48 @@
 // noinspection JSUnusedLocalSymbols
 // TODO: 攻撃範囲を設定
+// 流星群
+{
+    let skillId = Special.AstraStorm;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    setSpecialCount(2);
+
+    // Boosts damage by 40% of unit's Spd when Special triggers.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(0.4, UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        TARGET_APPLIES_SKILL_EFFECTS_PER_ATTACK_NODE(
+            // If unit's Special is ready or has triggered during this combat,
+            IF_NODE(IF_TARGETS_SPECIAL_IS_READY_OR_HAS_TRIGGERED_DURING_COMBAT_NODE,
+                // 【Potent Follow X%】 has triggered, and X ≤ 99, then X = 100.
+                POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE(100),
+            ),
+        ),
+    ));
+
+    // Unit can use the following【Style】:
+    // ――――― Astra Storm Style ―――――
+    // Unit can attack foes within 6 spaces of unit and 3 rows or 3 columns centered on unit regardless of unit's range.
+    // Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 2,
+    // foe can counterattack regardless of unit's range, or foe's Range is the same as the distance between unit and foe.
+    // Unit cannot move or attack structures, after-combat movement effects do not occur,
+    // and remaining movement granted from Canto is treated as 0. Skill effect's Range is treated as 2,
+    // including by skill effects determined by attack Range, like Pavise and Aegis.
+    // This Style can be used only once per turn.
+    // ――――――――――――――――――――
+    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.ASTRA_STORM);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.ASTRA_STORM);
+    CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
+        SPACES_OF_TARGET_NODE(AND_NODE(
+            IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(6),
+            IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3))
+        ),
+    );
+}
+
 // 紋章士リン
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
@@ -5680,7 +5723,7 @@
                     UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
                     // 自分の最初の追撃前に奥義発動カウント-1、かつ
                     UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE,
-                    new UnitAppliesSkillEffectsPerAttack(
+                    new TargetAppliesSkillEffectsPerAttackNode(
                         // 自身のHPが99%以下で
                         new IfNode(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                             // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
@@ -5713,7 +5756,7 @@
                 NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
                 // 自分の最初の攻撃前に奥義発動カウント-1、
                 UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
-                new UnitAppliesSkillEffectsPerAttack(
+                new TargetAppliesSkillEffectsPerAttackNode(
                     // 自身のHPが99%以下で
                     new IfNode(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                         // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
