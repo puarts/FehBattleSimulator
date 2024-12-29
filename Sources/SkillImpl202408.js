@@ -1,4 +1,13 @@
 // noinspection JSUnusedLocalSymbols
+// 初撃の鼓動
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.PreemptPulse);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants Special cooldown count-1 to unit before unit's first attack during combat.
+        new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+    ));
+}
+
 // 草原の公女の弓
 {
     let skillId = Weapon.LadysBow;
