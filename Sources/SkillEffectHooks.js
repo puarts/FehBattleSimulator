@@ -281,3 +281,17 @@ const AOE_SPECIAL_SPACES_HOOKS = new SkillEffectHooks();
 /**
  * @type {SkillEffectHooks<NumberNode, NodeEnv>} */
 const CALC_HEAL_AMOUNT_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
+const CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const CAN_ACTIVATE_STYLE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>}
+ */
+const STYLE_ACTIVATED_HOOKS = new SkillEffectHooks();

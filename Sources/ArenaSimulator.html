@@ -661,6 +661,47 @@
                                                     v-model="audioManager.isBgmEnabled" @change="bgmEnabledChanged">
                                                 <label for="enableSound" class="fehButton"
                                                     style="background-image: url('/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
+
+                                                <span v-if="(getAttacker()?.isDuoAllyHero) && g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
+                                                    <input type="button"
+                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
+                                                           class="fehButton"
+                                                           @click="g_app.activateDuoOrHarmonizedSkill(getAttacker());">
+                                                    </span>
+                                                <span v-if="(getAttacker()?.isDuoAllyHero) && !g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
+                                                    <input type="button" v-if="getAttacker()?.isDuoAllyHero " disabled
+                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
+                                                           class="fehButtonDisabled">
+                                                </span>
+
+                                                <span v-if="(getAttacker()?.isHarmonicAllyHero) && g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
+                                                    <input type="button"
+                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
+                                                           class="fehButton"
+                                                           @click="g_app.activateDuoOrHarmonizedSkill(getAttacker());">
+                                                </span>
+                                                <span v-if="(getAttacker()?.isHarmonicAllyHero) && !g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
+                                                    <input type="button" v-if="getAttacker()?.isHarmonicAllyHero " disabled
+                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
+                                                           class="fehButtonDisabled">
+                                                </span>
+
+                                                <span v-if="getCurrentUnit()?.canActivateStyle()">
+                                                    <input type="button"
+                                                           class="fehButton map-control-button map-activate-style-button"
+                                                           @click="g_app.activateStyleSkill(getCurrentUnit());">
+                                                </span>
+                                                <span v-if="getCurrentUnit()?.canDeactivateStyle()">
+                                                    <input type="button"
+                                                           class="fehButton map-control-button map-deactivate-style-button"
+                                                           @click="g_app.deactivateStyleSkill(getCurrentUnit());">
+                                                </span>
+                                                <span v-if="getCurrentUnit()?.hasAvailableStyleButCannotActivate()">
+                                                    <input type="button"
+                                                           disabled
+                                                           class="fehButtonDisabled map-control-button map-activate-style-button"
+                                                    >
+                                                </span>
                                             </td>
                                         </tr>
                                     </table>
@@ -2154,27 +2195,45 @@
                         <input v-if="g_appData.isDebugMenuEnabled" type="button" value="未実装スキルをログ表示" @click="g_app.outputSkillsNotImplemented();" >
                     </div>
                     <div style="padding:5px">
-                        <span v-if="(value.isDuoHero) && value.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
+                        <span v-if="value.isDuoAllyHero && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
                             <input type="button"
-                                style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
-                                class="fehButton"
-                                 @click="g_app.activateDuoOrHarmonizedSkill(value);">
+                                   style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
+                                   class="fehButton"
+                                   @click="g_app.activateDuoOrHarmonizedSkill(value);">
                         </span>
-                        <span v-if="(value.isDuoHero) && value.groupId == UnitGroupType.Ally && !g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
-                            <input type="button" v-if="value.isDuoHero " disabled
-                                style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
-                                class="fehButtonDisabled">
+                        <span v-if="value.isDuoAllyHero && !g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
+                            <input type="button" v-if="value.isDuoAllyHero " disabled
+                                   style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
+                                   class="fehButtonDisabled">
                         </span>
-                        <span v-if="(value.isHarmonicHero) && value.groupId == UnitGroupType.Ally && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
+
+                        <span v-if="value.isHarmonicAllyHero && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
                             <input type="button"
-                                style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
-                                class="fehButton"
-                                 @click="g_app.activateDuoOrHarmonizedSkill(value);">
+                                   style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
+                                   class="fehButton"
+                                   @click="g_app.activateDuoOrHarmonizedSkill(value);">
                         </span>
-                        <span v-if="(value.isHarmonicHero) && value.groupId == UnitGroupType.Ally && !g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
-                            <input type="button" v-if="value.isHarmonicHero" disabled
-                                style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
-                                class="fehButtonDisabled">
+                        <span v-if="value.isHarmonicAllyHero && !g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
+                            <input type="button" v-if="value.isHarmonicAllyHero" disabled
+                                   style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
+                                   class="fehButtonDisabled">
+                        </span>
+
+                        <span v-if="value.canActivateStyle()">
+                            <input type="button"
+                                   class="fehButton map-control-button map-activate-style-button"
+                                   @click="g_app.activateStyleSkill(value);">
+                        </span>
+                        <span v-if="value.canDeactivateStyle()">
+                            <input type="button"
+                                   class="fehButton map-control-button map-deactivate-style-button"
+                                   @click="g_app.deactivateStyleSkill(value);">
+                        </span>
+                        <span v-if="value.hasAvailableStyleButCannotActivate()">
+                            <input type="button"
+                                   disabled
+                                   class="fehButtonDisabled map-control-button map-activate-style-button"
+                            >
                         </span>
                     </div>
                     <fieldset v-if="g_appData.gameMode == GameMode.Arena"  style="font-size:12px;">

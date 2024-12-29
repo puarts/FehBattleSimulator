@@ -1,4 +1,30 @@
 // noinspection JSUnusedLocalSymbols
+// TODO: 攻撃範囲を設定
+// 紋章士リン
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
+    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.EMBLEM_LYN);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(GTE_NODE(CURRENT_TURN_NODE, 2), EQ_NODE(TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE, 0)),
+    );
+    STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
+    ));
+    CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.EMBLEM_LYN);
+    CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
+        SPACES_OF_TARGET_NODE(AND_NODE(
+            IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(5),
+            IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3))
+        ),
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_NODE(new TargetsMaxSpecialCountNode(), 4),
+        ),
+    ));
+}
+
 // 比翼リュール
 {
     let skillId = Hero.DuoAlear;
@@ -446,8 +472,8 @@
 
     // At start of turn,
     // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
-    // unit transforms (otherwise,
-    // unit reverts). If unit transforms,
+    // unit transforms (otherwise, unit reverts).
+    // If unit transforms,
     // grants Atk+2,
     // and unit can counterattack regardless of foe's range.
     setBeastSkill(skillId, BeastCommonSkillType.Armor);

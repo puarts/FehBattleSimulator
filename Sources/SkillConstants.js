@@ -3628,6 +3628,7 @@ const EmblemHero = {
     Ike: 1105,
     Celica: 1139,
     Sigurd: 1177,
+    Lyn: 1216,
 };
 
 // エンゲージしたときの奥義アイコン
@@ -3639,6 +3640,8 @@ EngagedSpecialIcon[EmblemHero.Marth] = `${g_engagedSpecialIconRoot}Marth_Of_Begi
 EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_debugEngagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Lyn] = `${g_imageRootPath}Special.png`;
+// EngagedSpecialIcon[EmblemHero.Lyn] = `${g_debugEngagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
 // https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
 
 const EffectiveType = {
@@ -3675,6 +3678,23 @@ const ColorType = {
 const NoneValue = -1;
 
 const NoneOption = { id: NoneValue, text: "なし" };
+
+const STYLE_TYPE = {
+    NONE: -1,
+    ASTRA_STORM: 0,
+    EMBLEM_LYN: 1,
+}
+
+/**
+ * skill id => style type
+ * @type {Map<number|string, number>}
+ */
+const SKILL_STYLE_MAP = new Map();
+
+/**
+ * @type {Set<number>}
+ */
+const CANNOT_MOVE_STYLE_SET = new Set();
 
 ///
 /// Functions

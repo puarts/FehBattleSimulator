@@ -71,7 +71,52 @@ const Hero = {
     HarmonizedNagi: 1181,
     DuoLucina: 1193,
     DuoAlear: 1214,
+    // Duoの場合はDUO_HERO_SETにも追加する
 };
+
+const DUO_HERO_SET = new Set([
+    Hero.HaloweenHector,
+    Hero.NewYearAlfonse,
+    Hero.ValentineAlm,
+    Hero.SpringIdunn,
+    Hero.YoungPalla,
+    Hero.BridalMicaiah,
+    Hero.SummerByleth,
+    Hero.DuoEphraim,
+    Hero.DuoSigurd,
+    Hero.DuoLyn,
+    Hero.DuoAltina,
+    Hero.DuoPeony,
+    Hero.DuoLif,
+    Hero.DuoEirika,
+    Hero.DuoHilda,
+    Hero.DuoHinoka,
+    Hero.DuoSothis,
+    Hero.DuoCorrin,
+    Hero.DuoDagr,
+    Hero.DuoChrom,
+    Hero.DuoIke,
+    Hero.DuoThorr,
+    Hero.DuoNina,
+    Hero.DuoDuma,
+    Hero.DuoLaegijarn,
+    Hero.DuoAskr,
+    Hero.DuoElise,
+    Hero.DuoMark,
+    Hero.DuoShamir,
+    Hero.DuoYmir,
+    Hero.DuoKagero,
+    Hero.DuoSanaki,
+    Hero.DuoByleth,
+    Hero.DuoSeidr,
+    Hero.DuoLyon,
+    Hero.DuoRobin,
+    Hero.DuoSharena,
+    Hero.DuoGullveig,
+    Hero.DuoFjorm,
+    Hero.DuoLucina,
+    Hero.DuoAlear
+]);
 
 const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
 const RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET = new Set();

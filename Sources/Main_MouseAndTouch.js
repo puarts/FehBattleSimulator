@@ -225,7 +225,10 @@ function touchEndEvent(event) {
     }
 }
 
-function findBestActionTile(targetTile, spaces) {
+function findBestActionTile(targetTile, spaces, unit) {
+    if (unit.isCannotMoveStyleActive()) {
+        return unit.placedTile;
+    }
     for (let i = g_dragoverTileHistory.length - 1; i >= 0; --i) {
         let tile = g_dragoverTileHistory.data[i];
         let distance = tile.calculateDistance(targetTile);
@@ -260,10 +263,23 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                 }
                 let currentTile = g_currentTile;
                 const alpha = "a0";
-                for (let tile of unit.attackableTiles) {
+                if (unit.groupId === UnitGroupType.Ally) {
+                    let tiles = unit.isCannotMoveStyleActive() ?
+                        unit.attackableTilesInCannotMoveStyle : unit.attackableTiles;
                     let color = "#feccc5";
                     color = "#ff8888" + alpha;
-                    updateCellBgColor(tile.posX, tile.posY, color);
+                    for (let tile of tiles) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    }
+                } else {
+                    let color = "#feccc5";
+                    color = "#ff8888" + alpha;
+                    for (let tile of unit.attackableTiles) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    }
+                    for (let tile of unit.attackableTilesInCannotMoveStyle) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    }
                 }
                 for (let tile of unit.movableTilesIgnoringWarpBubble) {
                     if (unit.movableTiles.includes(tile)) {
@@ -349,7 +365,7 @@ function dragoverImplForTargetTile(unit, targetTile) {
             unitPlacedOnTargetTile != null &&
             unit.groupId !== unitPlacedOnTargetTile.groupId;
         if (isThereEnemyOnTile) {
-            let attackTile = findBestActionTile(targetTile, unit.attackRange);
+            let attackTile = findBestActionTile(targetTile, unit.attackRange, unit);
             g_attackTile = attackTile;
             // 再計算のチェックのためサマリーを計算するタイルを保存しておく
             g_dragoverTargetTileForCalcSummary = targetTile;
@@ -361,7 +377,7 @@ function dragoverImplForTargetTile(unit, targetTile) {
 }
 
 function getBestActionTile(unit, targetTile, spaces) {
-    let moveTile = findBestActionTile(targetTile, spaces);
+    let moveTile = findBestActionTile(targetTile, spaces, unit);
     if (moveTile == null) {
         // マウスオーバーした座標から決められなかった場合はユニットから一番近い攻撃可能なタイル
         let tiles = g_appData.map.enumerateTilesInSpecifiedDistanceFrom(targetTile, spaces);
@@ -439,6 +455,8 @@ function dropToUnitImpl(unit, dropTargetId) {
         let [x, y] = g_appData.map.getPosFromCellId(dropTargetId);
         let targetTile = g_appData.map.getTile(x, y);
         if (targetTile === unit.placedTile) {
+            unit.deactivateStyle();
+            updateAllUi();
             return;
         }
 

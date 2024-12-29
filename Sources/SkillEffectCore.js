@@ -154,6 +154,22 @@ class SkillEffectHooks {
     evaluateStatsSumWithUnit(unit, env) {
         return this.evaluateWithUnit(unit, env).reduce((a, b) => ArrayUtil.add(a, b), [0, 0, 0, 0]);
     }
+
+    /**
+     * @param {Unit} unit
+     * @param {E} env
+     */
+    evaluateConcatWithUnit(unit, env) {
+        return IterUtil.concat(...this.evaluateWithUnit(unit, env));
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {E} env
+     */
+    evaluateConcatUniqueWithUnit(unit, env) {
+        return IterUtil.unique(...this.evaluateWithUnit(unit, env));
+    }
 }
 
 class SkillEffectNode {

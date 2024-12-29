@@ -855,6 +855,9 @@ class BattleSimulatorBase {
                 }
                 return 'ー';
             },
+            getCurrentUnit() {
+                return g_appData.currentUnit;
+            },
             onDivineVeinImageVisibilityChanged() {
                 updateMap();
             },
@@ -1211,7 +1214,7 @@ class BattleSimulatorBase {
         if (!duoUnit) {
             return false;
         }
-        if (!duoUnit.isDuoHero && !duoUnit.isHarmonicHero) {
+        if (!duoUnit.isDuoAllyHero && !duoUnit.isHarmonicAllyHero) {
             return false;
         }
 
@@ -1254,7 +1257,7 @@ class BattleSimulatorBase {
                 break;
         }
 
-        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoHero || x.isHarmonicHero)) {
+        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoAllyHero || x.isHarmonicAllyHero)) {
             for (let st of this.__enumerateDefenseStructuresOnMap()) {
                 if (st instanceof DefHiyokuNoTorikago) {
                     let limitTurn = st.amount;
@@ -1280,9 +1283,33 @@ class BattleSimulatorBase {
         return duoUnit.duoOrHarmonizedSkillActivationCount < activatableCount;
     }
 
+    canActivateStyleSkill(unit) {
+        if (unit) {
+            return unit.canActivateStyle();
+        }
+        return false;
+    }
+
+    canDeactivateStyleSkill(unit) {
+        return unit.canDeactivateStyle();
+    }
+
     activateDuoOrHarmonizedSkill(duoUnit) {
         this.__enqueueDuoSkillCommand(duoUnit);
         this.executePerActionCommand();
+    }
+
+    /**
+     * @param {Unit} unit
+     */
+    activateStyleSkill(unit) {
+        unit.activateStyle();
+        updateAllUi();
+    }
+
+    deactivateStyleSkill(unit) {
+        unit.deactivateStyle();
+        updateAllUi();
     }
 
     __addStatusEffectToSameOriginUnits(duoUnit, statusEffect) {
@@ -3666,6 +3693,9 @@ class BattleSimulatorBase {
         defUnit.isAttackedDone = true;
         atkUnit.isCombatDone = true;
         defUnit.isCombatDone = true;
+        if (atkUnit.isStyleActive) {
+            atkUnit.isStyleActivatedInThisTurn = true;
+        }
 
         // this.clearSimpleLog();
         this.writeSimpleLogLine(this.damageCalc.simpleLog);
@@ -3673,8 +3703,15 @@ class BattleSimulatorBase {
 
         // 切り込みなどの移動系スキル
         let isMoveSkillEnabled = defUnit === result.defUnit;
-        if (isMoveSkillEnabled && atkUnit.isAlive) {
+        if (isMoveSkillEnabled && atkUnit.isAlive && !atkUnit.isCannotMoveStyleActive()) {
             this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
+        }
+
+        if (atkUnit.isStyleActive) {
+            let env = new NodeEnv().setTarget(atkUnit).setSkillOwner(atkUnit);
+            env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
+            STYLE_ACTIVATED_HOOKS.evaluateWithUnit(atkUnit, env);
+            atkUnit.deactivateStyle();
         }
 
         // battleContextが必要なスキル発動後に追跡対象を更新する(追跡対象更新時にbattleContextが初期化されるため)
@@ -4575,11 +4612,17 @@ class BattleSimulatorBase {
             this.#resetDuoOrHarmonizedSkill(unit);
 
             // "「その後」以降の効果は、その効果が発動後3ターンの間発動しない"処理
+            if (unit.restWeaponSkillAvailableTurn >= 1) {
+                unit.restWeaponSkillAvailableTurn--;
+            }
             if (unit.restSupportSkillAvailableTurn >= 1) {
                 unit.restSupportSkillAvailableTurn--;
             }
             if (unit.restPassiveBSkillAvailableTurn >= 1) {
                 unit.restPassiveBSkillAvailableTurn--;
+            }
+            if (unit.restStyleSkillAvailableTurn >= 1) {
+                unit.restStyleSkillAvailableTurn--;
             }
         }
     }
@@ -7730,7 +7773,7 @@ class BattleSimulatorBase {
         this.__enqueueCommandImpl(command);
     }
 
-    __createAttackCommand(attackerUnit, targetUnit, tile, commandType = CommandType.Normal) {
+    __createAttackCommand(attackerUnit, targetUnit, tile, usesStyle = false, commandType = CommandType.Normal) {
         let serial = null;
         if (this.vm.isCommandUndoable) {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
@@ -7751,7 +7794,11 @@ class BattleSimulatorBase {
             } else {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);
             }
+            if (usesStyle) {
+                attackerUnit.activateStyle();
+            }
             self.updateDamageCalculation(attackerUnit, targetUnit, tile);
+            attackerUnit.deactivateStyle();
         };
         return this.__createCommand(
             `${attackerUnit.id}-a-${targetUnit.id}-${tile.id}`,
@@ -7766,18 +7813,19 @@ class BattleSimulatorBase {
      * @param {Unit} attackerUnit
      * @param {Unit} targetUnit
      * @param {Tile} tile
+     * @param usesStyle
      * @returns {*[]}
      * @private
      */
-    __createAttackCommands(attackerUnit, targetUnit, tile) {
+    __createAttackCommands(attackerUnit, targetUnit, tile, usesStyle = false) {
         let commands = [];
         attackerUnit.setStartTile();
         commands.push(this.__createMoveCommand(attackerUnit, tile, false, CommandType.Begin));
-        commands.push(this.__createAttackCommand(attackerUnit, targetUnit, tile, CommandType.End));
+        commands.push(this.__createAttackCommand(attackerUnit, targetUnit, tile, usesStyle, CommandType.End));
         return commands;
     }
 
-    __enqueueAttackCommand(attackerUnit, targetUnit, tile) {
+    __enqueueAttackCommand(attackerUnit, targetUnit, tile, usesStyle = false) {
         let commands = this.__createAttackCommands(attackerUnit, targetUnit, tile);
         this.__enqueueCommandsImpl(commands);
     }
@@ -8172,6 +8220,9 @@ class BattleSimulatorBase {
                 this.writeWarningLine(`${bestAttacker.getNameWithGroup()}の攻撃順はスロット順で変わる可能性があります。`);
             }
 
+            if (bestAttacker.actionContext.findAttackableUnitInfo(target)?.usesStyle) {
+                bestAttacker.activateStyle();
+            }
             this.__enqueueAttackCommand(bestAttacker, target, tile);
             isActionActivated = true;
         }
@@ -8762,6 +8813,25 @@ class BattleSimulatorBase {
 
                 if (tile === unit.placedTile || tile.isUnitPlacable(unit)) {
                     info.tiles.push(tile);
+                }
+            }
+        }
+        // スタイル時
+        if (unit.canActivateStyle() && unit.hasCannotMoveStyle()) {
+            let env = new BattleMapEnv(this.map, unit);
+            let tiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
+            for (let tile of tiles) {
+                let placedUnit = tile.placedUnit;
+                if (placedUnit) {
+                    if (unit.groupId !== placedUnit.groupId) {
+                        let info = unit.actionContext.findAttackableUnitInfo(placedUnit);
+                        if (info == null) {
+                            info = new AttackableUnitInfo(placedUnit);
+                            unit.actionContext.attackableUnitInfos.push(info);
+                        }
+                        info.usesStyle = true;
+                        info.tiles.push(unit.placedTile);
+                    }
                 }
             }
         }

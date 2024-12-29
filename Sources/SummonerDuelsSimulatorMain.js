@@ -8,19 +8,18 @@ class SummonerDuelsSimulator extends BattleSimulatorBase {
     }
 
     simulateBeginningOfTurn() {
-        if (g_appData.currentTurn == this.vm.maxTurn) {
+        if (g_appData.currentTurn === this.vm.maxTurn) {
             return;
         }
         let self = this;
         this.__enqueueCommand("ターン開始", function () {
             ++g_appData.globalBattleContext.currentTurn;
-            if (g_appData.currentTurn == 1) {
+            if (g_appData.currentTurn === 1) {
                 // 戦闘開始
                 for (let unit of g_appData.units) {
                     unit.resetAllState();
                 }
-            }
-            else {
+            } else {
                 self.data.globalBattleContext.addSummonerDuelsCaptureScore(
                     self.__getUnitsOnPointArea(UnitGroupType.Ally),
                     self.__getUnitsOnPointArea(UnitGroupType.Enemy));
