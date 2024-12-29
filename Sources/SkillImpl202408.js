@@ -1,5 +1,45 @@
 // noinspection JSUnusedLocalSymbols
-// TODO: 攻撃範囲を設定
+// 草原の公女の弓
+{
+    let skillId = Weapon.LadysBow;
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Atk/Spd+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Desperation】,
+                // and 【Preempt Pulse】
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Desperation, StatusEffectType.PreemptPulse),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants bonus to unit's Atk/Spd = 6 + 20% of unit's Spd at start of combat,
+            X_NUM_NODE(
+                new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(6, PERCENTAGE_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
+            // deals +7 damage (excluding area-of-effect Specials),
+            new TargetDealsDamageExcludingAoeSpecialsNode(7),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and also,
+            // if decreasing the Spd difference necessary to make a follow-up attack by 25 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
+            // triggers【Potent Follow X%】 during combat (if unit cannot perform follow-up and attack twice,
+            // X = 80; otherwise, X = 40).
+            APPLY_POTENT_EFFECT_NODE,
+        ),
+    ));
+}
+
 // 流星群
 {
     let skillId = Special.AstraStorm;
@@ -123,7 +163,7 @@
         // At start of turn,
         // if unit is within 2 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
-            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
                 // grants【Divinely Inspiring】
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.DivinelyInspiring),
             ),

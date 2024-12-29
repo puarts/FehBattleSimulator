@@ -2849,6 +2849,8 @@ class AppliesPotentEffectNode extends FromNumbersNode {
     }
 }
 
+const APPLY_POTENT_EFFECT_NODE = new AppliesPotentEffectNode();
+
 // Tileへの効果 START
 
 /**

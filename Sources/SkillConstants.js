@@ -1977,6 +1977,9 @@ const Weapon = {
     RedFistBlades: 3102, // 冬の修羅の手甲刃
     SnowmanStaff: 3105, // 雪だるまの雪杖
     WinteryArts: 3108, // 冬の双神竜の体術
+
+    // 紋章士リン
+    LadysBow: 3111, // 草原の公女の弓
 };
 
 const Support = {

@@ -335,6 +335,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Dosage, ["Dosage.webp", "毒も薬に、薬も毒に", "毒も薬に、薬も毒に"]],
     [StatusEffectType.Empathy, ["Empathy.webp", "多感", "多感"]],
     [StatusEffectType.DivinelyInspiring, ["DivinelyInspiring.webp", "神竜の結束", "神竜の結束（全ステn*3、敵の最初の攻撃前に自身の奥義発動カウント-n、 nは最大2）"]],
+    [StatusEffectType.PreemptPulse, ["PreemptPulse.webp", "初撃の鼓動", "初撃の鼓動（自分の最初の攻撃前に奥義-1）"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
