@@ -1,4 +1,34 @@
 // noinspection JSUnusedLocalSymbols
+// 速さの吸収4
+{
+    let skillId = PassiveB.Speedtaker4;
+    // (This skill grants max of【Great Talent】+20.)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn, grants Spd【Great Talent】+1 to unit.
+        new GrantsGreatTalentsPlusToTargetNode(
+            StatsNode.makeStatsNodeFrom(0, 1, 0, 0),
+            StatsNode.makeStatsNodeFrom(20, 20, 20, 20),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Spd/Def-4 on foe,
+        new InflictsStatsMinusOnFoeDuringCombatNode(0, 4, 4, 0),
+        // unit deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+        // neutralizes unit's penalties to Spd,
+        new NeutralizesPenaltiesToTargetsStatsNode(false, true, false, false),
+        // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+    ));
+    AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // After combat, if unit attacked, grants Spd【Great Talent】+4 to unit.
+        new GrantsGreatTalentsPlusToTargetNode(
+            StatsNode.makeStatsNodeFrom(0, 4, 0, 0),
+            StatsNode.makeStatsNodeFrom(20, 20, 20, 20),
+        ),
+    ));
+}
+
 // 初撃の鼓動
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.PreemptPulse);

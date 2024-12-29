@@ -2989,6 +2989,8 @@ const PassiveB = {
 
     SpdDefDetect: 3065, // 速さ守備の看破
 
+    Speedtaker4: 3113, // 速さの吸収4
+
     // 専用B
     FontOfWisdom: 3096, // 知の源
     DarkPerfume: 3088, // 暗香疎影

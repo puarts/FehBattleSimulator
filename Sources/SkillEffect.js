@@ -4154,6 +4154,21 @@ class SetTargetRestStyleSkillAvailableTurnNode extends FromNumberNode {
 
 const SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE = (n) => new SetTargetRestStyleSkillAvailableTurnNode(n);
 
+class HasTargetAttackedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isAttackDone;
+        env.debug(`${unit.nameWithGroup}はこのターン攻撃を行ったか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_ATTACKED_NODE = new HasTargetAttackedNode();
+
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {
         return LoggerBase.LOG_LEVEL.OFF;
