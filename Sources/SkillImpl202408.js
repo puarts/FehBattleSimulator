@@ -1,4 +1,152 @@
 // noinspection JSUnusedLocalSymbols
+// 速さの吸収4
+{
+    let skillId = PassiveB.Speedtaker4;
+    // (This skill grants max of【Great Talent】+20.)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn, grants Spd【Great Talent】+1 to unit.
+        new GrantsGreatTalentsPlusToTargetNode(
+            StatsNode.makeStatsNodeFrom(0, 1, 0, 0),
+            StatsNode.makeStatsNodeFrom(20, 20, 20, 20),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Spd/Def-4 on foe,
+        new InflictsStatsMinusOnFoeDuringCombatNode(0, 4, 4, 0),
+        // unit deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+        // neutralizes unit's penalties to Spd,
+        new NeutralizesPenaltiesToTargetsStatsNode(false, true, false, false),
+        // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+    ));
+    AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // After combat, if unit attacked, grants Spd【Great Talent】+4 to unit.
+        new GrantsGreatTalentsPlusToTargetNode(
+            StatsNode.makeStatsNodeFrom(0, 4, 0, 0),
+            StatsNode.makeStatsNodeFrom(20, 20, 20, 20),
+        ),
+    ));
+}
+
+// 初撃の鼓動
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.PreemptPulse);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants Special cooldown count-1 to unit before unit's first attack during combat.
+        new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+    ));
+}
+
+// 草原の公女の弓
+{
+    let skillId = Weapon.LadysBow;
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
+                // grants Atk/Spd+6,
+                new GrantsStatsPlusAtStartOfTurnNode(6, 6, 0, 0),
+                // 【Desperation】,
+                // and 【Preempt Pulse】
+                new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Desperation, StatusEffectType.PreemptPulse),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants bonus to unit's Atk/Spd = 6 + 20% of unit's Spd at start of combat,
+            X_NUM_NODE(
+                new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(6, PERCENTAGE_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            ),
+            // deals +7 damage (excluding area-of-effect Specials),
+            new TargetDealsDamageExcludingAoeSpecialsNode(7),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and also,
+            // if decreasing the Spd difference necessary to make a follow-up attack by 25 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
+            // triggers【Potent Follow X%】 during combat (if unit cannot perform follow-up and attack twice,
+            // X = 80; otherwise, X = 40).
+            APPLY_POTENT_EFFECT_NODE,
+        ),
+    ));
+}
+
+// 流星群
+{
+    let skillId = Special.AstraStorm;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    setSpecialCount(2);
+
+    // Boosts damage by 40% of unit's Spd when Special triggers.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_TRUNC_NODE(0.4, UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        TARGET_APPLIES_SKILL_EFFECTS_PER_ATTACK_NODE(
+            // If unit's Special is ready or has triggered during this combat,
+            IF_NODE(IF_TARGETS_SPECIAL_IS_READY_OR_HAS_TRIGGERED_DURING_COMBAT_NODE,
+                // 【Potent Follow X%】 has triggered, and X ≤ 99, then X = 100.
+                POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE(100),
+            ),
+        ),
+    ));
+
+    // Unit can use the following【Style】:
+    // ――――― Astra Storm Style ―――――
+    // Unit can attack foes within 6 spaces of unit and 3 rows or 3 columns centered on unit regardless of unit's range.
+    // Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 2,
+    // foe can counterattack regardless of unit's range, or foe's Range is the same as the distance between unit and foe.
+    // Unit cannot move or attack structures, after-combat movement effects do not occur,
+    // and remaining movement granted from Canto is treated as 0. Skill effect's Range is treated as 2,
+    // including by skill effects determined by attack Range, like Pavise and Aegis.
+    // This Style can be used only once per turn.
+    // ――――――――――――――――――――
+    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.ASTRA_STORM);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.ASTRA_STORM);
+    CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
+        SPACES_OF_TARGET_NODE(AND_NODE(
+            IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(6),
+            IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3))
+        ),
+    );
+}
+
+// 紋章士リン
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
+    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.EMBLEM_LYN);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(GTE_NODE(CURRENT_TURN_NODE, 2), EQ_NODE(TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE, 0)),
+    );
+    STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
+    ));
+    CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.EMBLEM_LYN);
+    CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
+        SPACES_OF_TARGET_NODE(AND_NODE(
+            IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(5),
+            IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3))
+        ),
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        new BoostsDamageWhenSpecialTriggersNode(
+            MULT_NODE(new TargetsMaxSpecialCountNode(), 4),
+        ),
+    ));
+}
+
 // 比翼リュール
 {
     let skillId = Hero.DuoAlear;
@@ -54,7 +202,7 @@
         // At start of turn,
         // if unit is within 2 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
-            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(
+            new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
                 // grants【Divinely Inspiring】
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.DivinelyInspiring),
             ),
@@ -446,8 +594,8 @@
 
     // At start of turn,
     // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
-    // unit transforms (otherwise,
-    // unit reverts). If unit transforms,
+    // unit transforms (otherwise, unit reverts).
+    // If unit transforms,
     // grants Atk+2,
     // and unit can counterattack regardless of foe's range.
     setBeastSkill(skillId, BeastCommonSkillType.Armor);
@@ -1030,6 +1178,8 @@
     // ターン開始時、竜、獣以外の味方と隣接していない場合
     // 化身状態になる（そうでない場合、化身状態を解除）
     // 化身状態なら、攻撃＋2、かつ敵から攻撃された時、距離に関係なく反撃する
+    setBeastSkill(skillId, BeastCommonSkillType.Armor);
+
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // ターン開始時、自身のHPが25%以上なら、
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
@@ -5652,7 +5802,7 @@
                     UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
                     // 自分の最初の追撃前に奥義発動カウント-1、かつ
                     UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK_NODE,
-                    new UnitAppliesSkillEffectsPerAttack(
+                    new TargetAppliesSkillEffectsPerAttackNode(
                         // 自身のHPが99%以下で
                         new IfNode(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                             // 奥義発動時、戦闘中、自分の奥義によるダメージ+10
@@ -5685,7 +5835,7 @@
                 NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE,
                 // 自分の最初の攻撃前に奥義発動カウント-1、
                 UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
-                new UnitAppliesSkillEffectsPerAttack(
+                new TargetAppliesSkillEffectsPerAttackNode(
                     // 自身のHPが99%以下で
                     new IfNode(IS_UNITS_HP_LTE_99_PERCENT_IN_COMBAT_NODE,
                         // 奥義発動時、戦闘中、自分の奥義によるダメージ+10

@@ -431,6 +431,9 @@ class DamageCalculatorWrapper {
         let target = isTargetFoe ? "敵" : "周囲";
         env.setName(`範囲奥義前(${target})`).setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.evaluateWithUnit(atkUnit, env);
+        if (atkUnit.isCannotMoveStyleActive()) {
+            atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
+        }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Queensblade:
@@ -14227,8 +14230,18 @@ class DamageCalculatorWrapper {
     }
 
     canCounterAttack(atkUnit, defUnit) {
-        return this.__examinesCanCounterattackBasically(atkUnit, defUnit) &&
-            !this.__canDisableCounterAttack(atkUnit, defUnit);
+        let canCounterBasically = false;
+        if (atkUnit.isCannotMoveStyleActive()) {
+            // 条件A: 敵が2距離の重装
+            if (defUnit.moveType === MoveType.Armor && defUnit.isRangedWeaponType()) canCounterBasically = true;
+            // 条件B: 敵が全距離反撃を持つ
+            if (defUnit.battleContext.canCounterattackToAllDistance) canCounterBasically = true;
+            // 条件C: 敵の射程が自分と敵の距離と同じ
+            if (defUnit.attackRange === atkUnit.distance(defUnit)) canCounterBasically = true;
+        } else {
+            canCounterBasically = this.__examinesCanCounterattackBasically(atkUnit, defUnit);
+        }
+        return canCounterBasically && !this.__canDisableCounterAttack(atkUnit, defUnit);
     }
 
     // 反撃不可ならばtrueを反撃不可を無効にするならfalseを返す

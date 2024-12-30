@@ -1487,11 +1487,11 @@ class IterUtil {
 
     /**
      * @template T
-     * @param {Iterable<T>} iterable
-     * @returns {Iterable<T>}
+     * @param {...Iterable<T>} iterables
+     * @returns {Set<T>}
      */
-    static unique(iterable) {
-        return new Set(Array.from(iterable));
+    static unique(...iterables) {
+        return new Set(this.concat(...iterables));
     }
 }
 

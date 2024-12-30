@@ -945,6 +945,11 @@ class PostCombatSkillHander {
         for (let func of attackUnit.battleContext.applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncs) {
             func(attackUnit, attackTargetUnit);
         }
+
+        let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit);
+        env.setName('戦闘後(攻撃していれば)').setLogLevel(getSkillLogLevel());
+        AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS.evaluateWithUnit(attackUnit, env);
+
         for (let skillId of attackUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap);
             func?.call(this, attackUnit, attackTargetUnit);

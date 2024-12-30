@@ -1290,6 +1290,7 @@ const StatusEffectType = {
     Dosage: 73, // 毒も薬に、薬も毒に
     Empathy: 74, // 多感
     DivinelyInspiring: 75, // 神竜の結束
+    PreemptPulse: 76, // 初撃の鼓動
     // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };

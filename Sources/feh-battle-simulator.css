@@ -348,3 +348,23 @@ td.enemy {
 .map-status-icon {
     width: 15px;
 }
+
+.fehButton.map-control-button {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.fehButtonDisabled.map-control-button {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.map-activate-style-button {
+    background-image: url(/AetherRaidTacticsBoard/images/ActivateStyle.webp);
+}
+
+.map-deactivate-style-button {
+    background-image: url(/AetherRaidTacticsBoard/images/DeactivateStyle.webp);
+}

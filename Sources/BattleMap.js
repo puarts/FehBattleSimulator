@@ -1895,8 +1895,7 @@ class BattleMap {
     * enumerateRangedSpecialTiles(targetTile, atkUnit) {
         let env = new BattleMapEnv(this, atkUnit).setTile(targetTile);
         env.setName('範囲奥義の範囲取得時').setLogLevel(getSkillLogLevel());
-        let tileGenerators = AOE_SPECIAL_SPACES_HOOKS.evaluateWithUnit(atkUnit, env);
-        yield* IterUtil.concat(...tileGenerators);
+        yield* AOE_SPECIAL_SPACES_HOOKS.evaluateConcatUniqueWithUnit(atkUnit, env);
         for (let tile of this.__enumerateRangedSpecialTiles(targetTile, atkUnit.special)) {
             if (tile != null) {
                 yield tile;
@@ -2044,7 +2043,7 @@ class BattleMap {
 
         let env = new BattleMapEnv(this, unit);
         env.setName('ワープ').setLogLevel(getSkillLogLevel());
-        yield* IterUtil.concat(...UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(unit, env));
+        yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
 
         for (let skillId of unit.enumerateSkills()) {
             yield* getSkillFunc(skillId, enumerateTeleportTilesForUnitFuncMap)?.call(this, unit) ?? [];
@@ -2054,7 +2053,7 @@ class BattleMap {
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
             let env = new BattleMapEnv(this, unit).setTarget(ally);
             env.setName('ワープ(周囲)').setLogLevel(getSkillLogLevel());
-            yield* IterUtil.concat(...ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateWithUnit(ally, env));
+            yield* ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(ally, env);
 
             for (let skillId of ally.enumerateSkills()) {
                 yield* getSkillFunc(skillId, enumerateTeleportTilesForAllyFuncMap)?.call(this, unit, ally) ?? [];
@@ -2358,6 +2357,9 @@ class BattleMap {
 
                 for (let skillId of enemyUnit.enumerateSkills()) {
                     let canWarp = getSkillFunc(skillId, canWarpFuncMap)?.call(this, targetTile, warpUnit, enemyUnit) ?? true;
+                    if (warpUnit.isCannotMoveStyleActive()) {
+                        canWarp = false;
+                    }
                     if (!canWarp) {
                         return false;
                     }
@@ -2569,12 +2571,25 @@ class BattleMap {
                 }
             }
         }
+        if (unit.canActivateStyle()) {
+            let env = new BattleMapEnv(this, unit);
+            env.setName("脅威度判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            let tiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
+            for (let tile of tiles) {
+                unit.groupId === UnitGroupType.Ally ? tile.increaseDangerLevel() : tile.increaseAllyDangerLevel();
+            }
+        }
     }
 
+    /**
+     * 移動可能なタイルと攻撃可能なタイルをアップデートする
+     * @param {Unit} unit
+     */
     updateMovableAndAttackableTilesForUnit(unit) {
         unit.movableTiles = [];
         unit.movableTilesIgnoringWarpBubble = [];
         unit.attackableTiles = [];
+        unit.attackableTilesInCannotMoveStyle = [];
         unit.assistableTiles = [];
         unit.teleportOnlyTiles = [];
 
@@ -2583,6 +2598,10 @@ class BattleMap {
         unit.movableTilesIgnoringWarpBubble = Array.from(this.enumerateMovableTiles(unit, false));
         unit.canWarpForcibly = false;
         // ユニットの移動可能範囲、攻撃可能範囲を更新
+        this._updateTiles(unit, tilesWithoutTeleport);
+    }
+
+    _updateTiles(unit, tilesWithoutTeleport) {
         for (let tile of this.enumerateMovableTiles(unit, false)) {
             if (unit.movableTiles.includes(tile)) {
                 continue;
@@ -2593,9 +2612,46 @@ class BattleMap {
                 unit.teleportOnlyTiles.push(tile);
             }
             if (unit.hasWeapon) {
-                for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
-                    if (!unit.attackableTiles.includes(attackableTile)) {
-                        unit.attackableTiles.push(attackableTile);
+                let isAllySide = g_appData?.gameMode !== GameMode.SummonerDuels &&
+                    unit.groupId === UnitGroupType.Ally;
+                if (isAllySide) {
+                    // プレーヤーサイド
+                    // 通常・スタイルで分けてタイルを更新
+                    if (unit.isCannotMoveStyleActive()) {
+                        let env = new BattleMapEnv(this, unit).setTile(unit.placedTile);
+                        env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                        let attackableTiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
+                        for (let attackableTile of attackableTiles) {
+                            if (!unit.attackableTilesInCannotMoveStyle.includes(attackableTile)) {
+                                unit.attackableTilesInCannotMoveStyle.push(attackableTile);
+                            }
+                        }
+                    } else {
+                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
+                            if (!unit.attackableTiles.includes(attackableTile)) {
+                                unit.attackableTiles.push(attackableTile);
+                            }
+                        }
+                    }
+                } else {
+                    // 敵サイド
+                    // 通常・スタイル両方のタイルを更新
+                    // 通常時
+                    for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
+                        if (!unit.attackableTiles.includes(attackableTile)) {
+                            unit.attackableTiles.push(attackableTile);
+                        }
+                    }
+                    // スタイル時
+                    if (unit.hasCannotMoveStyle() && unit.canActivateStyle()) {
+                        let env = new BattleMapEnv(this, unit).setTile(unit.placedTile);
+                        env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                        let attackableTiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
+                        for (let attackableTile of attackableTiles) {
+                            if (!unit.attackableTilesInCannotMoveStyle.includes(attackableTile)) {
+                                unit.attackableTilesInCannotMoveStyle.push(attackableTile);
+                            }
+                        }
                     }
                 }
             }
@@ -2646,12 +2702,22 @@ class BattleMap {
                 for (let tile of unit.attackableTiles) {
                     tile.isAttackableForEnemy = true;
                 }
+                for (let tile of unit.attackableTilesInCannotMoveStyle) {
+                    tile.isAttackableForEnemy = true;
+                }
             } else {
                 for (let tile of unit.movableTiles) {
                     tile.isMovableForAlly = true;
                 }
                 for (let tile of unit.attackableTiles) {
                     tile.isAttackableForAlly = true;
+                }
+                // unitが味方の場合は処理を変える
+                if (g_appData.gameMode === GameMode.SummonerDuels ||
+                    unit.isCannotMoveStyleActive()) {
+                    for (let tile of unit.attackableTilesInCannotMoveStyle) {
+                        tile.isAttackableForAlly = true;
+                    }
                 }
             }
         }
@@ -2893,6 +2959,7 @@ class BattleMap {
         }
         if (this.showEnemyAttackRange) {
             const alpha = "40";
+            // 攻撃範囲
             if (tile.isAttackableForEnemy) {
                 cell.borderStyle = "solid";
                 // cell.borderColor = "#e92";
@@ -2900,6 +2967,7 @@ class BattleMap {
                 cell.borderColor = "#f00";
                 cell.bgColor = "#ff8888" + alpha;
             }
+            // 移動範囲
             if (tile.isMovableForEnemy) {
                 // cell.borderColor = enemyMovableTileColor;
                 // cell.bgColor = "#ebb";
@@ -3090,7 +3158,8 @@ class BattleMap {
                 unit.isDebuffed ||
                 unit.restWeaponSkillAvailableTurn > 0 ||
                 unit.restSupportSkillAvailableTurn > 0 ||
-                unit.restPassiveBSkillAvailableTurn > 0) {
+                unit.restPassiveBSkillAvailableTurn > 0 ||
+                unit.restStyleSkillAvailableTurn > 0) {
                 let span = document.createElement('span');
                 span.classList.add('map-buff-debuff-area', '.map-text-shadow');
                 if (unit.isBuffed) {
@@ -3107,6 +3176,9 @@ class BattleMap {
                 }
                 if (unit.restPassiveBSkillAvailableTurn > 0) {
                     this.#addRestTurnsIcon(span, unit.passiveBInfo.iconPath, unit.restPassiveBSkillAvailableTurn);
+                }
+                if (unit.restStyleSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, `${g_debugImageRootPath}ActivateStyle.webp`, unit.restStyleSkillAvailableTurn);
                 }
                 cell.innerText += span.outerHTML;
             }

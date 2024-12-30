@@ -122,6 +122,11 @@ const AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS = new SkillEffectHooks();
 const AFTER_COMBAT_NEVERTHELESS_HOOKS = new SkillEffectHooks();
 
 /**
+ * 戦闘後(攻撃していれば)
+ * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
+const AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘ステータス決定後のバフ
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
@@ -281,3 +286,17 @@ const AOE_SPECIAL_SPACES_HOOKS = new SkillEffectHooks();
 /**
  * @type {SkillEffectHooks<NumberNode, NodeEnv>} */
 const CALC_HEAL_AMOUNT_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
+const CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const CAN_ACTIVATE_STYLE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>}
+ */
+const STYLE_ACTIVATED_HOOKS = new SkillEffectHooks();

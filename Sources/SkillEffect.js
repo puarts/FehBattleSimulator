@@ -523,6 +523,16 @@ class UniteSpacesIfNode extends SpacesNode {
     }
 }
 
+class IntersectSpacesNode extends SpacesNode {
+    constructor(...children) {
+        super(...children);
+    }
+
+    evaluate(env) {
+        return SetUtil.intersection(...this.evaluateChildren(env).map(s => new Set(s)));
+    }
+}
+
 class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -541,6 +551,31 @@ class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
         return result;
     }
 }
+
+class SpacesOfTargetNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(predNode) {
+        super();
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let tileSet = new Set();
+        for (let tile of env.battleMap.enumerateTiles()) {
+            if (!tileSet.has(tile) &&
+                this._predNode.evaluate(env.copy().setTarget(unit).setTile(tile))) {
+                tileSet.add(tile);
+            }
+        }
+        return tileSet;
+    }
+}
+
+const SPACES_OF_TARGET_NODE = (predNode) => new SpacesOfTargetNode(predNode);
 
 class IsThereUnitOnMapNode extends BoolNode {
     static {
@@ -1896,6 +1931,22 @@ class IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode extends BoolNode {
 
 const IF_TARGET_HAS_NOT_BEEN_TARGET_OF_ASSIST_DURING_CURRENT_TURN_NODE = new IfTargetHasNotBeenTargetOfAssistDuringCurrentTurnNode();
 
+class IfTargetsSpecialIsReadyOrHasTriggeredDuringCombatNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.canActivateOrActivatedSpecial();
+        env.debug(`${unit.nameWithGroup}が奥義発動可能もしくは発動済みであるか: ${result}`);
+        return result;
+    }
+}
+
+const IF_TARGETS_SPECIAL_IS_READY_OR_HAS_TRIGGERED_DURING_COMBAT_NODE =
+    new IfTargetsSpecialIsReadyOrHasTriggeredDuringCombatNode();
+
 const IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE = new class extends BoolNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
@@ -2798,6 +2849,8 @@ class AppliesPotentEffectNode extends FromNumbersNode {
     }
 }
 
+const APPLY_POTENT_EFFECT_NODE = new AppliesPotentEffectNode();
+
 // Tileへの効果 START
 
 /**
@@ -2808,7 +2861,7 @@ class IsInRangeNNode extends BoolNode {
      * @param {number|NumberNode} n
      * @param {BoolNode} predNode
      */
-    constructor(n, predNode) {
+    constructor(n, predNode = TRUE_NODE) {
         super();
         this._nNode = NumberNode.makeNumberNodeFrom(n);
         this._predNode = predNode;
@@ -2858,12 +2911,39 @@ class IsSpaceWithinNSpacesOfTargetNode extends IsInRangeNNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let spaces = this._nNode.evaluate(env);
-        let result = env.tile.calculateDistanceToUnit(unit) <= spaces;
-        env.debug(`${env.tile}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
+        let n = this._nNode.evaluate(env);
+        let result = env.tile.calculateDistance(unit.placedTile) <= n;
+        env.debug(`${env.tile.toString()}は${unit.nameWithGroup}の${n}マス以内であるか: ${result}`);
         return result;
     }
 }
+
+const IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE = n => new IsSpaceWithinNSpacesOfTargetNode(n);
+
+class IsSpaceWithinNRowsOrMColumnsCenteredOnTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n, m = n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._mNode = NumberNode.makeNumberNodeFrom(m);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let m = this._mNode.evaluate(env);
+        let tile = env.tile;
+        let result = unit.isPosIsInNRowsOrMColumns(tile.posX, tile.posY, n, m);
+        env.debug(`${env.tile.toString()}は${unit.nameWithGroup}(${unit.placedTile})の${n}x${m}の範囲内にあるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE =
+    (n, m) => new IsSpaceWithinNRowsOrMColumnsCenteredOnTargetNode(n, m);
 
 class IsSpaceWithinNSpacesOfSkillOwnerNode extends IsSpaceWithinNSpacesOfTargetNode {
     static {
@@ -4044,6 +4124,50 @@ class IsTargetEngagedNode extends BoolNode {
 }
 
 const IS_TARGET_ENGAGED_NODE = new IsTargetEngagedNode();
+
+class TargetRestStyleSkillAvailableTurnNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.restStyleSkillAvailableTurn;
+        env.debug(`${unit.nameWithGroup}はスタイル再発動まで後${result}ターン`);
+        return result;
+    }
+}
+
+const TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE = new TargetRestStyleSkillAvailableTurnNode();
+
+class SetTargetRestStyleSkillAvailableTurnNode extends FromNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.restStyleSkillAvailableTurn = this.evaluateChildren(env);
+        env.debug(`${unit.nameWithGroup}はスタイル再発動まで後${result}ターン`);
+    }
+}
+
+const SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE = (n) => new SetTargetRestStyleSkillAvailableTurnNode(n);
+
+class HasTargetAttackedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isAttackDone;
+        env.debug(`${unit.nameWithGroup}はこのターン攻撃を行ったか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_ATTACKED_NODE = new HasTargetAttackedNode();
 
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {

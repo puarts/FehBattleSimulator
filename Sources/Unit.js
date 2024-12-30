@@ -36,6 +36,9 @@ class AttackableUnitInfo {
 
         /** @type {DamageCalcResult[]} **/
         this.combatResultDetails = [];
+
+        /** @type {boolean} **/
+        this.usesStyle = false;
     }
 
     toString() {
@@ -690,6 +693,7 @@ class Unit extends BattleMapElement {
         this.movableTiles = [];
         this.movableTilesIgnoringWarpBubble = [];
         this.attackableTiles = [];
+        this.attackableTilesInCannotMoveStyle = [];
         this.assistableTiles = [];
         this.teleportOnlyTiles = [];
         this.precombatSpecialTiles = [];
@@ -733,6 +737,7 @@ class Unit extends BattleMapElement {
         this.restWeaponSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restSupportSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restPassiveBSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
+        this.restStyleSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
 
         this.nameWithGroup = "";
         this.__updateNameWithGroup();
@@ -743,6 +748,9 @@ class Unit extends BattleMapElement {
         this.canWarpForcibly = false;
 
         this.anotherActionTurnForCallingCircle = -1;
+
+        this._isStyleActive = false;
+        this.isStyleActivatedInThisTurn = false;
     }
 
     /**
@@ -1049,10 +1057,26 @@ class Unit extends BattleMapElement {
         return false;
     }
 
-    /// 攻撃可能なユニットを列挙します。
+    /**
+     * 攻撃可能なユニットを列挙します。
+     * スタイル時は含みません。
+     */
     * enumerateAttackableUnits() {
         for (let tile of this.attackableTiles) {
-            if (tile.placedUnit != null && tile.placedUnit.groupId !== this.groupId) {
+            let existsEnemyOnTile = tile.placedUnit != null && this.isDifferentGroup(tile.placedUnit);
+            if (existsEnemyOnTile) {
+                yield tile.placedUnit;
+            }
+        }
+    }
+
+    /**
+     * スタイル時の攻撃可能なユニットを列挙します。
+     */
+    * enumerateAttackableUnitsInCannotMoveStyle() {
+        for (let tile of this.attackableTilesInCannotMoveStyle) {
+            let existsEnemyOnTile = tile.placedUnit != null && this.isDifferentGroup(tile.placedUnit);
+            if (existsEnemyOnTile) {
                 yield tile.placedUnit;
             }
         }
@@ -1370,6 +1394,9 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForCantoRefresh)
             + ValueDelimiter + JSON.stringify(Array.from(this.oneTimeActionPerTurnActivatedSet))
             + ValueDelimiter + this.anotherActionTurnForCallingCircle
+            + ValueDelimiter + this.restStyleSkillAvailableTurn
+            + ValueDelimiter + boolToInt(this.isStyleActive)
+            + ValueDelimiter + boolToInt(this.isStyleActivatedInThisTurn)
             ;
     }
 
@@ -1514,6 +1541,9 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForCantoRefresh = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.oneTimeActionPerTurnActivatedSet = new Set(JSON.parse(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.anotherActionTurnForCallingCircle = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restStyleSkillAvailableTurn = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.isStyleActive = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isStyleActivatedInThisTurn = intToBool(Number(values[i])); ++i; }
     }
 
 
@@ -2053,18 +2083,15 @@ class Unit extends BattleMapElement {
         return [this.atkSpur, this.spdSpur, this.defSpur, this.resSpur];
     }
 
-    get isHarmonicHero() {
-        return this.heroInfo != null
-            && (
-                this.heroIndex === Hero.SummerMia
-                || this.heroIndex === Hero.PirateVeronica
-                || this.heroIndex === Hero.HaloweenTiki
-            );
+    get isHarmonicAllyHero() {
+        let isInHero = Object.values(Hero).includes(this.heroIndex);
+        let isDuo = DUO_HERO_SET.has(this.heroIndex);
+        return this.heroInfo != null && isInHero && !isDuo && this.groupId === UnitGroupType.Ally;
     }
 
-    get isDuoHero() {
-        let isDuo = Object.values(Hero).includes(this.heroIndex);
-        return this.heroInfo != null && isDuo;
+    get isDuoAllyHero() {
+        let isDuo = DUO_HERO_SET.has(this.heroIndex);
+        return this.heroInfo != null && isDuo && this.groupId === UnitGroupType.Ally;
     }
 
     /**
@@ -2570,6 +2597,7 @@ class Unit extends BattleMapElement {
         this.isEnemyActionTriggered = this.groupId !== UnitGroupType.Enemy;
         this.forceResetGreatTalents();
         this.anotherActionTurnForCallingCircle = -1;
+        this.deactivateStyle();
     }
 
     resetSpurs() {
@@ -2695,6 +2723,7 @@ class Unit extends BattleMapElement {
         this.isAnotherActionInPostCombatActivated = false;
         this.isOneTimeActionActivatedForCantoRefresh = false;
         this.oneTimeActionPerTurnActivatedSet = new Set();
+        this.deactivateStyle();
     }
 
     setOnetimeActionActivated() {
@@ -2737,9 +2766,12 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
         this.isAttackDone = false;
         this.isAttackedDone = false;
+        // TODO: リセットの場所がここで良いか検証する
+        this.isStyleActivatedInThisTurn = false;
         this.neutralizeBuffsAtStartOfAction();
         this.setMoveCountFromMoveType();
         this.neutralizePositiveStatusEffectsAtStartOfTurn();
+        this.deactivateStyle();
     }
 
     // 行動終了状態にする
@@ -3421,6 +3453,9 @@ class Unit extends BattleMapElement {
     get moveCount() {
         if (this.isCantoActivated()) {
             return this.moveCountForCanto;
+        }
+        if (this.isCannotMoveStyleActive()) {
+            return 0;
         }
         if (this.hasStatusEffect(StatusEffectType.Gravity)) {
             return 1;
@@ -5764,7 +5799,11 @@ class Unit extends BattleMapElement {
         }
     }
 
-    /// 実際に攻撃可能なユニットとタイルを列挙します。
+    /**
+     * 実際に攻撃可能なユニットとタイルを列挙します。
+     * スタイル変更時も含みます。
+     * TODO: スタイル変更フラグを渡せるようにする
+     */
     * enumerateActuallyAttackableUnitAndTiles() {
         for (let unit of this.enumerateAttackableUnits()) {
             for (let tile of this.enumerateMovableTiles(false)) {
@@ -5773,6 +5812,9 @@ class Unit extends BattleMapElement {
                     yield [unit, tile];
                 }
             }
+        }
+        for (let unit of this.enumerateAttackableUnitsInCannotMoveStyle()) {
+            yield [unit, this.placedTile];
         }
     }
 
@@ -5960,10 +6002,13 @@ class Unit extends BattleMapElement {
      * @param {number} y
      */
     isInRectangle(unit, x, y) {
+        return this.isPosInRectangle(unit.posX, unit.posY, x, y);
+    }
+
+    isPosInRectangle(posX, posY, x, y) {
         let xOffset = (x - 1) / 2;
         let yOffset = (y - 1) / 2;
-        return (unit.posX - xOffset <= this.posX && this.posX <= unit.posX + xOffset)
-            && (unit.posY - yOffset <= this.posY && this.posY <= unit.posY + yOffset);
+        return Math.abs(posX - this.posX) <= xOffset && Math.abs(posY - this.posY) <= yOffset;
     }
 
     /**
@@ -5985,6 +6030,11 @@ class Unit extends BattleMapElement {
         return dist <= spaces;
     }
 
+    isPosIsInNRowsOrMColumns(posX, posY, x, y) {
+        let xOffset = (x - 1) / 2;
+        let yOffset = (y - 1) / 2;
+        return Math.abs(posX - this.posX) <= xOffset || Math.abs(posY - this.posY) <= yOffset;
+    }
 
     /**
      * ユニットが待ち伏せや攻め立てなどの攻撃順変更効果を無効化できるかどうかを判定します。
@@ -6327,6 +6377,120 @@ class Unit extends BattleMapElement {
             return map.get(origin);
         }
         return origin;
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    get isStyleActive() {
+        return this._isStyleActive;
+    }
+
+    /**
+     * @param {boolean} value
+     */
+    set isStyleActive(value) {
+        this._isStyleActive = value;
+    }
+
+    /**
+     * 発動可能なスタイルを返す。スタイルが複数ある場合はSTYLE_TYPE.NONEを返す。
+     * @returns {number}
+     */
+    getAvailableStyle() {
+        let skills = this.getStyles();
+        if (skills.length === 1) {
+            return skills[0];
+        }
+        return STYLE_TYPE.NONE;
+    }
+
+    /**
+     * 現在アクティブになっているスタイルを返す。
+     * スタイルがない時またはスタイルがアクティブになっていない時STYLE_TYPE.NONEを返す。
+     * @returns {number}
+     */
+    getCurrentStyle() {
+        return this.isStyleActive ? this.getAvailableStyle() : STYLE_TYPE.NONE;
+    }
+
+    /**
+     * 所有スキルにある全てのスタイルを返す。
+     * @returns {number[]}
+     */
+    getStyles() {
+        let styles = [];
+        for (let skillId of this.enumerateSkills()) {
+            if (SKILL_STYLE_MAP.has(skillId)) {
+                styles.push(SKILL_STYLE_MAP.get(skillId));
+            }
+        }
+        return styles;
+    }
+
+    hasAvailableStyle() {
+        return this.getAvailableStyle() !== STYLE_TYPE.NONE;
+    }
+
+    /**
+     * @param {...number} styles
+     * @returns {boolean}
+     */
+    isAnyStyleActive(...styles) {
+        return styles.includes(this.getCurrentStyle());
+    }
+
+    activateStyle() {
+        if (this.hasAvailableStyle()) {
+            this._isStyleActive = true;
+        }
+    }
+
+    deactivateStyle() {
+        this._isStyleActive = false;
+    }
+
+    isCannotMoveStyleActive() {
+        return this.isAnyStyleActive(...CANNOT_MOVE_STYLE_SET);
+    }
+
+    /**
+     * 利用可能なスタイルがただ1つ存在して発動状態にできる（現在未発動）。
+     * @returns {boolean}
+     */
+    canActivateStyle() {
+        if (this.hasAvailableStyleButCannotActivate()) {
+            return false;
+        }
+        return this.hasAvailableStyle() && !this.isStyleActive;
+    }
+
+    /**
+     * 利用可能なスタイルがただ1つ存在して未発動状態にできる（現在発動中）。
+     * @returns {boolean}
+     */
+    canDeactivateStyle() {
+        if (this.hasAvailableStyleButCannotActivate()) {
+            return false;
+        }
+        return this.hasAvailableStyle() && this.isStyleActive;
+    }
+
+    hasAvailableStyleButCannotActivate() {
+        if (!this.hasAvailableStyle() || this.isStyleActive) {
+            return false;
+        }
+        if (this.isStyleActivatedInThisTurn) {
+            return true;
+        }
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this);
+        env.setName("スタイル発動可能判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        // env.setName("スタイル発動可能判定").setLogLevel(getSkillLogLevel());
+        return !CAN_ACTIVATE_STYLE_HOOKS.evaluateSomeWithUnit(this, env);
+    }
+
+    hasCannotMoveStyle() {
+        return this.hasAvailableStyle() && CANNOT_MOVE_STYLE_SET.has(this.getAvailableStyle());
     }
 }
 

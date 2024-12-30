@@ -1977,6 +1977,9 @@ const Weapon = {
     RedFistBlades: 3102, // 冬の修羅の手甲刃
     SnowmanStaff: 3105, // 雪だるまの雪杖
     WinteryArts: 3108, // 冬の双神竜の体術
+
+    // 紋章士リン
+    LadysBow: 3111, // 草原の公女の弓
 };
 
 const Support = {
@@ -2211,6 +2214,7 @@ const Special = {
     Boulder: 3061, // 巨岩
 
     // 専用奥義
+    AstraStorm: 3112, // 流星群
     GiftForMagic: 3073, // 天与の魔才
     RequiemPrayer: 3039, // 鎮魂の願い
     Override: 3024, // オーバードライヴ
@@ -2985,6 +2989,8 @@ const PassiveB = {
 
     SpdDefDetect: 3065, // 速さ守備の看破
 
+    Speedtaker4: 3113, // 速さの吸収4
+
     // 専用B
     FontOfWisdom: 3096, // 知の源
     DarkPerfume: 3088, // 暗香疎影
@@ -3628,6 +3634,7 @@ const EmblemHero = {
     Ike: 1105,
     Celica: 1139,
     Sigurd: 1177,
+    Lyn: 1216,
 };
 
 // エンゲージしたときの奥義アイコン
@@ -3639,6 +3646,8 @@ EngagedSpecialIcon[EmblemHero.Marth] = `${g_engagedSpecialIconRoot}Marth_Of_Begi
 EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_debugEngagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Lyn] = `${g_imageRootPath}Special.png`;
+// EngagedSpecialIcon[EmblemHero.Lyn] = `${g_debugEngagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
 // https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
 
 const EffectiveType = {
@@ -3675,6 +3684,23 @@ const ColorType = {
 const NoneValue = -1;
 
 const NoneOption = { id: NoneValue, text: "なし" };
+
+const STYLE_TYPE = {
+    NONE: -1,
+    ASTRA_STORM: 0,
+    EMBLEM_LYN: 1,
+}
+
+/**
+ * skill id => style type
+ * @type {Map<number|string, number>}
+ */
+const SKILL_STYLE_MAP = new Map();
+
+/**
+ * @type {Set<number>}
+ */
+const CANNOT_MOVE_STYLE_SET = new Set();
 
 ///
 /// Functions

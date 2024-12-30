@@ -1620,17 +1620,24 @@ class AppliesSkillEffectsAfterStatusFixedNode extends SkillEffectNode {
     }
 }
 
-class UnitAppliesSkillEffectsPerAttack extends SkillEffectNode {
+class TargetAppliesSkillEffectsPerAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     /**
      * @param {DamageCalculatorEnv|NodeEnv} env
      */
     evaluate(env) {
+        let unit = this.getUnit(env);
         let node = new SkillEffectNode(...this.getChildren());
-        let unit = env.unitDuringCombat;
         env.debug(`${unit.nameWithGroup}の攻撃ごとのスキル効果を設定`);
         unit.battleContext.applySkillEffectPerAttackNodes.push(node);
     }
 }
+
+const TARGET_APPLIES_SKILL_EFFECTS_PER_ATTACK_NODE =
+    (...nodes) => new TargetAppliesSkillEffectsPerAttackNode(...nodes);
 
 /**
  * grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack).
@@ -1732,3 +1739,34 @@ class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTarget
         env.debug(`${unit.nameWithGroup}は付与される弱化を無効化: [${result}]`);
     }
 }
+
+class PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {boolean|BoolNode} isPerAttack
+     */
+    constructor(n, isPerAttack = FALSE_NODE) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._isPerAttackNode = BoolNode.makeBoolNodeFrom(isPerAttack);
+    }
+
+    evaluate(env) {
+        /** @type {Unit} */
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        if (this._isPerAttackNode.evaluate(env)) {
+            unit.battleContext.potentOverwriteRatioPerAttack = n / 100.0;
+        } else {
+            unit.battleContext.potentOverwriteRatio = n / 100.0;
+        }
+        env.debug(`${unit.nameWithGroup}は神速追撃発動時に神速追撃${n}%とする`);
+    }
+}
+
+const POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE =
+        n => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(n);

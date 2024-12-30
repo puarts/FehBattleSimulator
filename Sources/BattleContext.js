@@ -475,7 +475,8 @@ class BattleContext {
         this.potentRatios = [];
 
         // 神速追撃上書き
-        this.potentOverwriteRatio = null;
+        this._potentOverwriteRatio = null;
+        this._potentOverwriteRatioPerAttack = null;
 
         // 戦闘中に一度しか発動しない奥義のスキル効果が発動したか
         this.isOneTimeSpecialSkillEffectActivatedDuringCombat = false;
@@ -551,6 +552,7 @@ class BattleContext {
         this.#specialAddDamagePerAttack = 0;
         this.damageReductionRatiosBySpecialPerAttack = [];
         this.reductionRatiosOfDamageReductionRatioExceptSpecialPerAttack = [];
+        this._potentOverwriteRatioPerAttack = null;
     }
 
     invalidateFollowupAttackSkills() {
@@ -1057,5 +1059,21 @@ class BattleContext {
     addAdditionalNTimesDamageReductionRatiosByNonDefenderSpecialCount(value) {
         this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount =
             Math.max(this.#additionalNTimesDamageReductionRatiosByNonDefenderSpecialCount, value);
+    }
+
+    overwritesPotentRatio() {
+        return this._potentOverwriteRatio !== null || this._potentOverwriteRatioPerAttack !== null;
+    }
+
+    getMaxPotentOverwriteRatio() {
+        return Math.max(this._potentOverwriteRatio, this._potentOverwriteRatioPerAttack);
+    }
+
+    set potentOverwriteRatio(value) {
+        this._potentOverwriteRatio = value;
+    }
+
+    set potentOverwriteRatioPerAttack(value) {
+        this._potentOverwriteRatioPerAttack = value;
     }
 }
