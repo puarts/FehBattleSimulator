@@ -3648,6 +3648,7 @@ EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Ec
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_debugEngagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_imageRootPath}Special.png`;
 // EngagedSpecialIcon[EmblemHero.Lyn] = `${g_debugEngagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
+// 紋章士アイコン
 // https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
 
 const EffectiveType = {
