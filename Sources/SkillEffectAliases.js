@@ -249,18 +249,22 @@ const IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT = 
 const DEF_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_DEF_DURING_COMBAT_NODE, FOES_DEF_DURING_COMBAT_NODE);
 const RES_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_RES_DURING_COMBAT_NODE, FOES_RES_DURING_COMBAT_NODE);
 
-/**
- * @param skillId
- * @param {boolean} isMelee
- * @param {SkillEffectNode} grantsNode
- */
-function setTwinSave(skillId, isMelee, grantsNode) {
+function setSaveSkill(skillId, isMelee) {
     SAVE_SKILL_SET.add(skillId);
     if (isMelee) {
         CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
     } else {
         CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
     }
+}
+
+/**
+ * @param skillId
+ * @param {boolean} isMelee
+ * @param {SkillEffectNode} grantsNode
+ */
+function setTwinSave(skillId, isMelee, grantsNode) {
+    setSaveSkill(skillId, isMelee);
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
@@ -278,12 +282,8 @@ function setTwinSave(skillId, isMelee, grantsNode) {
 
 function setBriarSave(skillId, isMelee, grantsNode) {
     // If foe with Range = 2 initiates combat against an ally within 2 spaces of unit, triggers【Savior】on unit.
-    SAVE_SKILL_SET.add(skillId);
-    if (isMelee) {
-        CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
-    } else {
-        CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
-    }
+    setSaveSkill(skillId, isMelee);
+
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // If foe's Range = 2,

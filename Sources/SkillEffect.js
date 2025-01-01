@@ -1325,6 +1325,9 @@ class GrantsStatsPlusToTargetDuringCombatNode extends FromPositiveStatsNode {
     }
 }
 
+const GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE =
+    (atk, spd, def, res) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res);
+
 class GrantsStatsPlusToUnitDuringCombatNode extends GrantsStatsPlusToTargetDuringCombatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);

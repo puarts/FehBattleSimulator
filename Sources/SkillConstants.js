@@ -3476,6 +3476,8 @@ const PassiveC = {
 
     Barricade: 3086, // 縄張り・守護
 
+    HigherGround: 3119, // 縄張り・護り手・遠
+
     LookoutForce: 3089, // 露払い・不屈
 
     // 専用C

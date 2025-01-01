@@ -1,4 +1,27 @@
 // スキル実装
+// 縄張り・護り手・遠
+{
+    let skillId = PassiveC.HigherGround;
+    // If foe with Range = 2 initiates combat against an ally within 2 spaces of unit, triggers 【Savior】on unit.
+    setSaveSkill(skillId, false);
+    UNIT_CANNOT_WARP_INTO_SPACES_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // Foes with Range = 1 cannot warp into spaces within 3 spaces of unit and
+            AND_NODE(new IsTargetMeleeWeaponNode(), IS_SPACE_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
+            // foes with Range = 2 cannot warp into spaces within 4 spaces of unit
+            AND_NODE(new IsTargetRangedWeaponNode(), IS_SPACE_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE),
+            // (in either case, does not affect foes with Pass skills or warp effects from structures, like camps and fortresses in Rival Domains).
+        ),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe's Range = 2,
+        IF_NODE(FOES_RANGE_IS_2_NODE,
+            // grants Def/Res+4 to unit during combat.
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(0, 0, 4, 4),
+        ),
+    ));
+}
+
 // 巳年の毒の牙
 {
     let skillId = Weapon.NewYearFang;
