@@ -2988,6 +2988,7 @@ const PassiveB = {
 
     DragonsScales: 3031, // 竜の堅鱗
 
+    AtkResDiscord: 3121, // 攻撃魔防の不和
     SpdResDiscord: 3040, // 速さ魔防の不和
 
     ADSpikedWall: 3062, // 攻撃守備の刃壁

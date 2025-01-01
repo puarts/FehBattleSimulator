@@ -2546,9 +2546,11 @@
     ));
 }
 
-// 速さ魔防の不和
-{
-    let skillId = PassiveB.SpdResDiscord;
+/**
+ * @param skillId
+ * @param {[number, number, number, number]} statsRatios
+ */
+function setDiscord(skillId, statsRatios) {
     // Spd/Res Discord
     // At start of player phase or enemy phase,
     let nodeFunc = () => new SkillEffectNode(
@@ -2561,17 +2563,18 @@
                 IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
 
             // inflicts Spd/Res-6 and [Discord]
-            new InflictsStatsMinusOnTargetOnMapNode(0, 6, 0, 6),
+            new InflictsStatsMinusOnTargetOnMapNode(...statsRatios.map(x => x * 6)),
             new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Discord),
         ),
     );
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
 
+    // noinspection JSCheckFunctionSignatures
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         new NumThatIsNode(
             // Inflicts penalty on foe's Spd/Res during combat
-            new InflictsStatsMinusOnFoeDuringCombatNode(0, READ_NUM_NODE, 0, READ_NUM_NODE),
+            new InflictsStatsMinusOnFoeDuringCombatNode(...statsRatios.map(x => MULT_NODE(x, READ_NUM_NODE))),
             // = number of foes inflicted with (Discord) within 2 spaces of target,
             // including target, x 2, + 4 (max 10) and
             new EnsureMaxNode(
@@ -2591,6 +2594,12 @@
         // deals damage = 15% of unit's Res (excluding area-of-effect Specials).
         DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, UNITS_RES_DURING_COMBAT_NODE),
     ));
+}
+
+// 不和
+{
+    setDiscord(PassiveB.AtkResDiscord, [1, 0, 0, 1]);
+    setDiscord(PassiveB.SpdResDiscord, [0, 1, 0, 1]);
 }
 
 // 鎮魂の願い
