@@ -1482,6 +1482,9 @@ class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTarget
     }
 }
 
+const INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE =
+    (atk, spd, def, res) => new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, res);
+
 const INFLICTS_ALL_STATS_MINUS_4_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 4, 4);
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 5);
 

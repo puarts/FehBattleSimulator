@@ -1,3 +1,33 @@
+// スキル実装
+// 天届く翼
+{
+    let skillId = PassiveB.HeavenlyWings;
+    // Enables【Canto (Dist. +1; Max ４)】.
+    enablesCantoDist(skillId, 1, 4);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            X_NUM_NODE(
+                // inflicts penalty to foe's Atk/Spd/Def = 5 + number of spaces from start position to end position of whoever initiated combat × 3 (max 14),
+                INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, 0),
+                ENSURE_MAX_NODE(
+                    ADD_NODE(
+                        5,
+                        MULT_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 3)),
+                    14,
+                )
+            ),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // grants Special cooldown charge +1 to unit per attack (only highest value applied; does not stack),
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+            // and grants Special cooldown count-1 to unit before unit's first attack during combat.
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
+        ),
+    ));
+}
+
 // 巳年の神蛇の剣
 {
     let skillId = Weapon.SnakingSword;

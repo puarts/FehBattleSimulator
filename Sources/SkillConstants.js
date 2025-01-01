@@ -2995,6 +2995,7 @@ const PassiveB = {
     Speedtaker4: 3113, // 速さの吸収4
 
     // 専用B
+    HeavenlyWings: 3115, // 天届く翼
     FontOfWisdom: 3096, // 知の源
     DarkPerfume: 3088, // 暗香疎影
     YggdrasillsAlter: 3085, // 世界樹の半身
