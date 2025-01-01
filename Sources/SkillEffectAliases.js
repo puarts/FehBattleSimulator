@@ -30,6 +30,12 @@ const NUM_OF_TARGETS_FOES_ON_MAP_WITH_STATUS_EFFECT_ACTIVE_NODE = (e) =>
     new CountIfUnitsNode(TARGETS_FOES_NODE, new HasTargetStatusEffectNode(e))
 
 /**
+ * foes that are within 2 spaces of another foe
+ */
+const TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE =
+    n => FILTER_UNITS_NODE(TARGETS_FOES_NODE, IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE(n))
+
+/**
  * 生の息吹4のようなHP回復効果。
  * @param {number|NumberNode} hpPercentage
  * @param {number|NumberNode} maxHpPercentage

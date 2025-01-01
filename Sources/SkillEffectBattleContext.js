@@ -744,6 +744,9 @@ class UnitDealsDamageExcludingAoeSpecialsNode extends TargetDealsDamageExcluding
     }
 }
 
+const UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE =
+    (value) => new UnitDealsDamageExcludingAoeSpecialsNode(value);
+
 class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
     getDescription(n) {
         return `与えるダメージ+${n}(戦闘前)`;
@@ -914,6 +917,9 @@ class ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode extends 
         env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージ-${n}: ${reduction - n} => ${reduction}`);
     }
 }
+
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE =
+    n => new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(n);
 
 class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumberNode {
     getDescription(n) {
@@ -1118,6 +1124,9 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
         env.debug(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
     }
 }
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
+    n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
 
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
     static {

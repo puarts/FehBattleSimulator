@@ -2937,6 +2937,7 @@ class IsTargetWithinNSpacesOfTargetsAllyNode extends IsInRangeNNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
+const IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE = n => new IsTargetWithinNSpacesOfTargetsAllyNode(n, TRUE_NODE);
 const IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(3, TRUE_NODE);
 
@@ -3540,6 +3541,9 @@ class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     }
 }
 
+const INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE =
+    (atk, spd, def, res) => new InflictsStatsMinusAtStartOfTurnNode(atk, spd, def, res);
+
 class InflictsStatsMinusAfterCombatNode extends InflictsStatsMinusAtStartOfTurnNode {
 }
 
@@ -3591,6 +3595,9 @@ class GrantsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAtStartOfTur
 
 class InflictsStatusEffectsAtStartOfTurnNode extends GrantsStatusEffectsAtStartOfTurnNode {
 }
+
+const INFLICTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE =
+    (...effects) => new InflictsStatusEffectsAtStartOfTurnNode(...effects);
 
 class InflictsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAfterCombatNode {
 }

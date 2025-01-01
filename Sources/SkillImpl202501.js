@@ -1,4 +1,49 @@
 // スキル実装
+// 新年開く刃の爪
+{
+    let skillId = Weapon.NewYearTalon;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // on foes that are within 2 spaces of another foe through their next actions.
+        FOR_EACH_UNIT_NODE(TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE(2),
+            // inflicts Spd/Def-7,【Exposure】, and 【Sabotage】
+            INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(0, 7, 7, 0),
+            INFLICTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE(StatusEffectType.Exposure, StatusEffectType.Sabotage),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat + 5,
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ADD_NODE(PERCENTAGE_NODE(15, UNITS_SPD_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            // unit deals +X damage
+            // (X = number of Bonus effects, excluding stat bonuses,
+            // and number of Penalty effects, excluding stat penalties,
+            // active on foe and foes within 2 spaces of that foe × 3; excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(
+                MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
+            ),
+
+            // reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // and grants Special cooldown count-1 to unit before unit's first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise, unit reverts). If unit transforms,
+    // unit can move 1 extra space (that turn only; does not stack) and grants Atk+2 to unit.
+    setBeastSkill(skillId, BeastCommonSkillType.Flying);
+}
+
 // 天届く翼
 {
     let skillId = PassiveB.HeavenlyWings;
