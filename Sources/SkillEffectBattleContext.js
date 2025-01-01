@@ -796,6 +796,9 @@ class ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode extends ApplyingNum
     }
 }
 
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE =
+    n => new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(n);
+
 class ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode extends ApplyingNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -935,6 +938,9 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumber
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValueOfSpecialAttack}`);
     }
 }
+
+const REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE =
+    n => new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(n);
 
 class ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode extends ApplyingNumberNode {
     getDescription(n) {

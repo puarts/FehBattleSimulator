@@ -1062,19 +1062,17 @@
             // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
             // deals damage = 30% of foe's max HP (excluding area-of-effect Specials; excluding certain foes, such as Røkkr),
-            new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(30, new FoesMaxHpNode())),
-            new NumThatIsNode(
-                new SkillEffectNode(
-                    // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
-                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
-                    // and also,
-                    // when foe's attack triggers foe's Special,
-                    // reduces damage from foe's attacks by an additional X
-                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(READ_NUM_NODE),
-                ),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(30, new FoesMaxHpNode())),
+            X_NUM_NODE(
+                // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(READ_NUM_NODE),
+                // and also,
+                // when foe's attack triggers foe's Special,
+                // reduces damage from foe's attacks by an additional X
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(READ_NUM_NODE),
                 // (excluding area-of-effect Specials; X = total damage dealt to foe; min 10; max 20).
-                new EnsureMinMaxNode(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
-            )
+                ENSURE_MIN_MAX_NODE(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
+            ),
         ),
     ));
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(

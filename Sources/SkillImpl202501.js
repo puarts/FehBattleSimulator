@@ -1,4 +1,74 @@
 // スキル実装
+// 巳年の毒の牙
+{
+    let skillId = Weapon.NewYearFang;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE(2),
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Def/Res+6,【Hexblade】,
+                // and "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% during combat (excluding area-of-effect Specials)"
+                GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(0, 0, 6, 6),
+                INFLICTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE(
+                    StatusEffectType.Hexblade,
+                    StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent
+                ),
+            ),
+        )
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            // deals damage to foe = 25% of foe's max HP as combat begins
+            new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
+            // (activates only when unit can attack in combat;
+            // only highest value applied;
+            // does not stack with other "deals X damage as combat begins" effects;
+            // effects that reduce damage during combat do not apply;
+            // will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
+        ),
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            X_NUM_NODE(
+                // inflicts penalty on foe's Atk/Def = 6 + 20% of unit's Def at start of combat,
+                INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(6, PERCENTAGE_NODE(20, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+            ),
+            // any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat
+            new AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode(1),
+            // (excludes boosted Special effects from engaging; only highest value applied; does not stack),
+
+            // deals damage = 30% of foe's max HP (excluding area-of-effect Specials; excluding certain foes, such as Røkkr),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(30, new FoesMaxHpNode())),
+            X_NUM_NODE(
+                // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(READ_NUM_NODE),
+                // and also,
+                // when foe's attack triggers foe's Special,
+                // reduces damage from foe's attacks by an additional X
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(READ_NUM_NODE),
+                // (excluding area-of-effect Specials; X = total damage dealt to foe; min 10; max 20).
+                ENSURE_MIN_MAX_NODE(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
+            ),
+        ),
+    ));
+
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
+    // unit transforms (otherwise,
+    // unit reverts). If unit transforms,
+    // grants Atk+2,
+    // and unit can counterattack regardless of foe's range.
+    setBeastSkill(skillId, BeastCommonSkillType.Armor);
+}
+
 // 獣影・強襲
 {
     let skillId = PassiveB.BestialAssault;

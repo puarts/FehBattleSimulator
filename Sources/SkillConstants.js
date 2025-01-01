@@ -1984,6 +1984,7 @@ const Weapon = {
     // 正月
     SnakingSword: 3114, // 巳年の神蛇の剣
     NewYearTalon: 3116, // 新年開く刃の爪
+    NewYearFang: 3118, // 巳年の毒の牙
 };
 
 const Support = {

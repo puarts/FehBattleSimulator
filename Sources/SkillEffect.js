@@ -2741,6 +2741,9 @@ class ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode extends ForEachTarget
     }
 }
 
+const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE =
+    (...children) => new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE, ...children);
+
 class ForEachTargetAndFoeWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
     getUnits(env) {
         return super.getUnits(env.copy().setTarget(env.foeDuringCombat));
@@ -3518,6 +3521,9 @@ class GrantsStatsPlusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
         unit.reserveToApplyBuffs(...amounts);
     }
 }
+
+const GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE =
+    (atk, spd, def, res) => new GrantsStatsPlusAtStartOfTurnNode(atk, spd, def, res);
 
 class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
     static {
