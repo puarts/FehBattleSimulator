@@ -670,7 +670,7 @@ class TargetGroupNode extends NumberNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.groupId;
-        env.debug(`${unit.nameWithGroup}は${groupIdToString(result)}`);
+        env.debug(`${unit.nameWithGroup}は${groupIdToString(result)}軍`);
         return result;
     }
 }
