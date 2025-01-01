@@ -1620,6 +1620,9 @@ class AppliesSkillEffectsAfterStatusFixedNode extends SkillEffectNode {
     }
 }
 
+const APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE =
+    (...nodes) => new AppliesSkillEffectsAfterStatusFixedNode(...nodes);
+
 class TargetAppliesSkillEffectsPerAttackNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

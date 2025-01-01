@@ -1980,6 +1980,9 @@ const Weapon = {
 
     // 紋章士リン
     LadysBow: 3111, // 草原の公女の弓
+
+    // 正月
+    SnakingSword: 3114, // 巳年の神蛇の剣
 };
 
 const Support = {

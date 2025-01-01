@@ -504,6 +504,8 @@ class UniteSpacesNode extends SpacesNode {
     }
 }
 
+const UNITE_SPACES_NODE = (...children) => new UniteSpacesNode(...children);
+
 class UniteSpacesIfNode extends SpacesNode {
     constructor(pred, ...children) {
         super(...children);
@@ -522,6 +524,8 @@ class UniteSpacesIfNode extends SpacesNode {
         }
     }
 }
+
+const UNITE_SPACES_IF_NODE = (pred, ...children) => new UniteSpacesIfNode(pred, ...children);
 
 class IntersectSpacesNode extends SpacesNode {
     constructor(...children) {
@@ -576,6 +580,29 @@ class SpacesOfTargetNode extends SpacesNode {
 }
 
 const SPACES_OF_TARGET_NODE = (predNode) => new SpacesOfTargetNode(predNode);
+
+class TargetsPlacedSpaceNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let tile = unit.placedTile;
+        env.debug(`${unit.nameWithGroup}の配置されているマス: ${tile}`);
+        return [tile];
+    }
+}
+
+const TARGETS_PLACED_SPACE_NODE = new TargetsPlacedSpaceNode();
+
+class SkillOwnersPlacedSpaceNode extends TargetsPlacedSpaceNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const SKILL_OWNERS_PLACED_SPACE_NODE = new SkillOwnersPlacedSpaceNode();
 
 class IsThereUnitOnMapNode extends BoolNode {
     static {
@@ -1160,17 +1187,31 @@ class IsStatusEffectActiveOnUnitNode extends BoolNode {
     }
 }
 
-const HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new class extends BoolNode {
+class HasTargetEnteredCombatDuringCurrentTurnNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     /**
      * @param {BattleSimulatorBaseEnv|NodeEnv} env
      */
     evaluate(env) {
-        let unit = env.target;
+        let unit = this.getUnit(env);
         let result = unit.isCombatDone;
         env.debug(`${unit.nameWithGroup}が現在ターン中に自分が戦闘を行なっているか: ${result}`);
         return result;
     }
-}();
+}
+
+const HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new HasTargetEnteredCombatDuringCurrentTurnNode();
+
+class HasSkillOwnerEnteredCombatDuringCurrentTurnNode extends HasTargetEnteredCombatDuringCurrentTurnNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const HAS_SKILL_OWNER_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new HasSkillOwnerEnteredCombatDuringCurrentTurnNode();
 
 /**
  * target's attack can trigger foe's Special
@@ -1314,6 +1355,8 @@ class GrantsAllStatsPlusNToUnitDuringCombatNode extends GrantsAllStatsPlusNToTar
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
     }
 }
+
+const GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE = n => new GrantsAllStatsPlusNToUnitDuringCombatNode(n);
 
 const GRANTS_ALL_STATS_PLUS_4_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(5);
@@ -1888,7 +1931,7 @@ class ApplyingNumberToEachStatNode extends FromNumbersNode {
     }
 }
 
-class IfTargetHasUsedAssistDuringCurrentTurnNode extends BoolNode {
+class HasTargetUsedAssistDuringCurrentTurnNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetValueMixin);
     }
@@ -1899,6 +1942,16 @@ class IfTargetHasUsedAssistDuringCurrentTurnNode extends BoolNode {
         return unit.isSupportDone;
     }
 }
+
+const HAS_TARGET_USED_ASSIST_DURING_CURRENT_TURN_NODE = new HasTargetUsedAssistDuringCurrentTurnNode();
+
+class HasSkillOwnerUsedAssistDuringCurrentTurnNode extends HasTargetUsedAssistDuringCurrentTurnNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const HAS_SKILL_OWNER_USED_ASSIST_DURING_CURRENT_TURN_NODE = new HasSkillOwnerUsedAssistDuringCurrentTurnNode();
 
 /**
  * If unit has not used or been the target of an Assist skill during the current turn,
@@ -3367,17 +3420,19 @@ class ForEachAllyForSpacesNode extends ForEachTargetForSpacesNode {
     }
 }
 
-class SpacesWithinNSpacesNode extends SpacesNode {
+class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
     /**
      * @param {number|NumberNode} n
+     * @param {SpacesNode} spacesNode
      */
-    constructor(n) {
+    constructor(n, spacesNode) {
         super();
         this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._spacesNode = spacesNode;
     }
 
     /**
@@ -3387,8 +3442,19 @@ class SpacesWithinNSpacesNode extends SpacesNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this._nNode.evaluate(env);
-        env.debug(`${env.skillOwner.nameWithGroup}は${unit.nameWithGroup}の周囲${n}マスに移動可能`);
-        return env.battleMap.__enumeratePlacableTilesWithinSpecifiedSpaces(unit.placedTile, env.skillOwner, n);
+        let resultSet = new Set();
+        for (let tile of this._spacesNode.evaluate(env)) {
+            let tileSet = new Set(env.battleMap.__enumeratePlacableTilesWithinSpecifiedSpaces(tile, unit, n));
+            env.debug(`${unit.nameWithGroup}が移動可能な${tile.toPlacedUnitString()}の周囲${n}以内のマス: ${SetUtil.toString(tileSet)}`);
+            resultSet = SetUtil.union(resultSet, tileSet);
+        }
+        return resultSet;
+    }
+}
+
+class SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode extends TargetsPlacableSpacesWithinNSpacesFromSpaceNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 

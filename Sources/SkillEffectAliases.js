@@ -322,6 +322,14 @@ const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percenta
         new TargetDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(percentage / 100, statNode)),
     );
 
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_PERCENTAGE_OF_TARGETS_STAT_DURING_COMBAT_INCLUDING_TWICE_NODE =
+    (percentage, statNode) =>
+        APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+            // and reduces damage from foe's first attack by 20% of unit's Spd during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(
+                PERCENTAGE_NODE(percentage, statNode)),
+        );
+
 /**
  * @param {number|string} skillId
  * @param {number} beastCommonSkillType
@@ -351,22 +359,16 @@ const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = (...nodes) =>
 function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, n, m) {
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
         new ForEachAllyForSpacesNode(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
-            new SpacesWithinNSpacesNode(n),
+            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(n, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 }
 
-/**
- * Allies within n spaces of unit can move to any space within m spaces of unit.
- */
-const ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT = (n, m) =>
-    new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
-        new SpacesWithinNSpacesNode(m),
-    );
-
 function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, n, m) {
     ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
-        ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT(n, m)
+        new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
+            new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(m, SKILL_OWNERS_PLACED_SPACE_NODE),
+        )
     );
 }
 
@@ -680,4 +682,4 @@ const TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE =
  * number of distinct game titles among allies within 3 spaces of unit
  */
 const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE =
-        n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));
+    n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));

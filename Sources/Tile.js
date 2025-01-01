@@ -129,6 +129,15 @@ class Tile extends BattleMapElement {
         return `Tile(${this.posX}, ${this.posY})`;
     }
 
+    toPlacedUnitString() {
+        let unit = this.placedUnit;
+        if (unit == null) {
+            return this.toString();
+        } else {
+            return `${unit.nameWithGroup}(${this.posX}, ${this.posY})`;
+        }
+    }
+
     isInXRange(fromX, toX) {
         return fromX <= this.posX && this.posX <= toX;
     }
