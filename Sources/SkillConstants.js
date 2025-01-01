@@ -2995,6 +2995,8 @@ const PassiveB = {
 
     Speedtaker4: 3113, // 速さの吸収4
 
+    BestialAssault: 3117, // 獣影・強襲
+
     // 専用B
     HeavenlyWings: 3115, // 天届く翼
     FontOfWisdom: 3096, // 知の源
