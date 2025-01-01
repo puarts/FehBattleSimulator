@@ -161,6 +161,7 @@
     // その味方を行動可能な状態にする
     // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
     // （1ターンに1回のみ）
+    setDivineNectarAnotherActionSkill(skillId);
 
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
@@ -174,7 +175,6 @@
             }
         }
     );
-    DIVINE_NECTAR_SKILL_SET.add(skillId);
 }
 
 // 堅牢城塞
@@ -5792,7 +5792,7 @@
 
 // 2種類封じ3
 {
-    let setSkill = (skillId,spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
+    let setSkill = (skillId, spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 // 戦闘中、敵の速さ、魔防一3、

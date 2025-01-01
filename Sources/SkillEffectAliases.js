@@ -68,6 +68,26 @@ const RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE =
         ),
     );
 
+function setDivineNectarAnotherActionSkill(skillId) {
+    // 自分を除く【神獣の蜜】が付与されている味方が応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、
+    // その味方を行動可能な状態にする
+    // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
+    // （1ターンに1回のみ）
+    let nodeFunc = () => new SkillEffectNode(
+        IF_NODE(AND_NODE(
+                new HasAssistTargetingStatusEffectNode(StatusEffectType.DivineNectar),
+                ARE_SKILL_OWNER_AND_ASSIST_TARGETING_IN_SAME_GROUP_NODE
+            ),
+            // if another effect that grants action to ally has been activated at the same time, this effect is also considered to have been triggered
+            IF_NODE(NOT_NODE(IS_ANOTHER_ACTION_BY_ASSIST_ACTIVATED_IN_CURRENT_TURN_ON_SKILL_OWNER_TEAM_NODE),
+                GRANTS_ANOTHER_ACTION_TO_ASSIST_TARGETING_ON_ASSIST_NODE,
+            ),
+        ),
+    );
+    AFTER_RALLY_ENDED_BY_OTHER_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_OTHER_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+}
+
 /**
  * 生命
  * @param grantsNode

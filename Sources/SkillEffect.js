@@ -37,6 +37,12 @@ const GetAssistTargetsAllyMixin = {
     },
 }
 
+const GetAssistTargetingMixin = {
+    getUnit(env) {
+        return env.assistTargeting;
+    },
+}
+
 const GetValueMixin = Object.assign({}, GetUnitMixin, {
     evaluate(env) {
         let unit = this.getUnit(env);
@@ -659,6 +665,30 @@ const ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE = new class extends BoolNode {
         return env.target.isPartner(env.skillOwner);
     }
 }();
+
+class AreTargetAndAssistTargetingInSameGroupNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let targeting = env.assistTargeting;
+        let result = unit.isSameGroup(targeting);
+        env.debug(`${unit.nameWithGroup}と${targeting.nameWithGroup}は同じ軍であるか: ${result}`);
+        return result;
+    }
+}
+
+const ARE_TARGET_AND_ASSIST_TARGETING_IN_SAME_GROUP_NODE = new AreTargetAndAssistTargetingInSameGroupNode();
+
+class AreSkillOwnerAndAssistTargetingInSameGroupNode extends AreTargetAndAssistTargetingInSameGroupNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+}
+
+const ARE_SKILL_OWNER_AND_ASSIST_TARGETING_IN_SAME_GROUP_NODE = new AreSkillOwnerAndAssistTargetingInSameGroupNode();
 
 // TODO: リファクタリング
 class IsThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
@@ -2164,6 +2194,12 @@ const HAS_TARGET_STATUS_EFFECT_NODE = n => new HasTargetStatusEffectNode(n);
 class HasFoeStatusEffectNode extends HasTargetStatusEffectNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+class HasAssistTargetingStatusEffectNode extends HasTargetStatusEffectNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetingMixin);
     }
 }
 
@@ -3741,7 +3777,7 @@ class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
     }
 }
 
-class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
+class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -3757,7 +3793,15 @@ class GrantsAnotherActionOnAssistNode extends SkillEffectNode {
     }
 }
 
-const GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE = new GrantsAnotherActionOnAssistNode();
+const GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE = new GrantsAnotherActionToTargetOnAssistNode();
+
+class GrantsAnotherActionToAssistTargetingOnAssistNode extends GrantsAnotherActionToTargetOnAssistNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetingMixin);
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_TO_ASSIST_TARGETING_ON_ASSIST_NODE = new GrantsAnotherActionToAssistTargetingOnAssistNode();
 
 class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
     evaluate(env) {
@@ -4253,6 +4297,31 @@ class HasTargetAttackedNode extends BoolNode {
 }
 
 const HAS_TARGET_ATTACKED_NODE = new HasTargetAttackedNode();
+
+class IsAnotherActionByAssistActivatedInCurrentTurnOnTargetsTeamNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = g_appData.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[unit.groupId];
+        env.debug(`${unit.nameWithGroup}の軍はこのターンすでにアシストによる再行動を発動済みか？: ${result}`);
+        return result;
+    }
+}
+
+const IS_ANOTHER_ACTION_BY_ASSIST_ACTIVATED_IN_CURRENT_TURN_ON_TARGETS_TEAM_NODE =
+    new IsAnotherActionByAssistActivatedInCurrentTurnOnTargetsTeamNode();
+
+class IsAnotherActionByAssistActivatedInCurrentTurnOnSkillOwnerTeamNode extends IsAnotherActionByAssistActivatedInCurrentTurnOnTargetsTeamNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const IS_ANOTHER_ACTION_BY_ASSIST_ACTIVATED_IN_CURRENT_TURN_ON_SKILL_OWNER_TEAM_NODE =
+    new IsAnotherActionByAssistActivatedInCurrentTurnOnSkillOwnerTeamNode();
 
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {

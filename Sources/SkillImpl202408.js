@@ -1969,7 +1969,7 @@
     ));
 
     // and grants another action to unit (once per turn).
-    AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionOnAssistNode());
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionToTargetOnAssistNode());
 }
 
 // 聖王国の父娘の忍弓
@@ -3814,9 +3814,9 @@
     AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, () => node);
 
     // If a Rally or movement Assist skill is used by unit, grants another action to unit (once per turn).
-    let anotherActionNode = new GrantsAnotherActionOnAssistNode();
+    let anotherActionNode = new GrantsAnotherActionToTargetOnAssistNode();
     AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
-    AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or is within 2 spaces of an ally,
