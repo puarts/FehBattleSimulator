@@ -1,4 +1,24 @@
 // スキル実装
+// 比翼ヘイズルーン
+{
+    let skillId = Hero.DuoHeidrun;
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(skillId,
+        new SkillEffectNode(
+            // Grants Special cooldown count-1 to unit and allies within 3 rows or 3 columns centered on unit.
+            FOR_EACH_UNIT_NODE(
+                FILTER_UNITS_NODE(TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE,
+                    IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE),
+                new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
+            ),
+            // Applies【Divine Vein (Green)】on spaces within 3 rows or 3 columns centered on unit for 2 turns.
+            FOR_EACH_SPACES_NODE(
+                SPACES_ON_MAP_NODE(IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3)),
+                new ApplyDivineVeinNode(DivineVeinType.Green, TARGET_GROUP_NODE, 2),
+            ),
+        ),
+    );
+}
+
 // 神獣の蜜・魔道
 {
     let skillId = PassiveC.NectarsMagic;

@@ -192,6 +192,7 @@ class TargetsAlliesOnMapNode extends UnitsNode {
 }
 
 const TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE = new TargetsAlliesOnMapNode();
+const TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode(TRUE_NODE);
 
 class TargetsFoesOnMapNode extends UnitsNode {
     static {
@@ -561,6 +562,20 @@ class IntersectSpacesNode extends SpacesNode {
     }
 }
 
+class SpacesOnMapNode extends SpacesNode {
+    constructor(predNode) {
+        super();
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        let map = env.battleMap;
+        return IterUtil.filter(map.enumerateTiles(), t => this._predNode.evaluate(env.copy().setTile(t)));
+    }
+}
+
+const SPACES_ON_MAP_NODE = (predNode) => new SpacesOnMapNode(predNode);
+
 class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -659,6 +674,8 @@ class TargetGroupNode extends NumberNode {
         return result;
     }
 }
+
+const TARGET_GROUP_NODE = new TargetGroupNode();
 
 const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode {
     evaluate(env) {
@@ -3064,6 +3081,15 @@ class IsSpaceWithinNRowsOrMColumnsCenteredOnTargetNode extends BoolNode {
 const IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE =
     (n, m) => new IsSpaceWithinNRowsOrMColumnsCenteredOnTargetNode(n, m);
 
+class IsSpaceWithinNRowsOrMColumnsCenteredOnSkillOwnerNode extends IsSpaceWithinNRowsOrMColumnsCenteredOnTargetNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
+    (n, m) => new IsSpaceWithinNRowsOrMColumnsCenteredOnSkillOwnerNode(n, m);
+
 class IsSpaceWithinNSpacesOfSkillOwnerNode extends IsSpaceWithinNSpacesOfTargetNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
@@ -3457,11 +3483,14 @@ class ForEachSpacesNode extends ForEachNode {
     evaluate(env) {
         for (let space of this._spacesNode.evaluate(env)) {
             if (this._predNode.evaluate(env.copy().setTile(space))) {
-                this.evaluateChildren(env.copy().setTile(space))
+                this.evaluateChildren(env.copy().setTile(space));
             }
         }
     }
 }
+
+const FOR_EACH_SPACES_NODE =
+    (spacesNode, ...nodes) => new ForEachSpacesNode(spacesNode, TRUE_NODE, ...nodes);
 
 class ForEachTargetForSpacesNode extends SpacesNode {
     static {

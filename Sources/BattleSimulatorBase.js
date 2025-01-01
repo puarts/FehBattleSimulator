@@ -1355,7 +1355,7 @@ class BattleSimulatorBase {
         if (!this.canActivateDuoSkillOrHarmonizedSkill(duoUnit)) {
             return;
         }
-        let env = new EnumerationEnv(g_appData, duoUnit);
+        let env = new EnumerationEnv(g_appData, duoUnit).setBattleMap(this.map);
         env.setName('比翼双界スキル').setLogLevel(getSkillLogLevel());
         WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
@@ -1842,6 +1842,8 @@ class BattleSimulatorBase {
         for (let unit of this.enumerateUnitsOnMap()) {
             unit.applyReservedState(false);
         }
+        this.map.applyReservedDivineVein();
+
         duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn = true;
         ++duoUnit.duoOrHarmonizedSkillActivationCount;
         updateAllUi();

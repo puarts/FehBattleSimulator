@@ -71,6 +71,7 @@ const Hero = {
     HarmonizedNagi: 1181,
     DuoLucina: 1193,
     DuoAlear: 1214,
+    DuoHeidrun: 1220,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -115,7 +116,8 @@ const DUO_HERO_SET = new Set([
     Hero.DuoGullveig,
     Hero.DuoFjorm,
     Hero.DuoLucina,
-    Hero.DuoAlear
+    Hero.DuoAlear,
+    Hero.DuoHeidrun,
 ]);
 
 const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
