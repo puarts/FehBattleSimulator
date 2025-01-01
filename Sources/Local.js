@@ -12,4 +12,5 @@ const SKILL_IMPL_FILES = [
     "SkillEffectAliases.js",
     "SkillImpl.js",
     "SkillImpl202408.js",
+    "SkillImpl202501.js",
 ];

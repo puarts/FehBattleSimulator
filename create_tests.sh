@@ -36,6 +36,7 @@ SOURCE_FILE_NAMES=(
     SkillEffectAliases
     SkillImpl
     SkillImpl202408
+    SkillImpl202501
     TestUtilities
     )
 TEST_UTIL_FILE_NAMES=(
