@@ -1,4 +1,45 @@
 // スキル実装
+// 神獣の蜜・魔道
+{
+    let skillId = PassiveC.NectarsMagic;
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants 【Divine Nectar】
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.DivineNectar),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    // If a Rally or movement Assist skill (like Reposition, Shove, Pivot, etc.) is used by an ally with the【Divine Nectar】effect active (excluding unit), grants another action to that ally (once per turn; if another effect that grants action to ally has been activated at the same time, this effect is also considered to have been triggered).
+    setDivineNectarAnotherActionSkill(skillId);
+
+    // If unit initiates combat and unit has an area-of-effect Special equipped, grants Special cooldown count-1 to unit before Special triggers before combat.
+    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, HAS_TARGET_AOE_SPECIAL_NODE),
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(1),
+        ),
+    ))
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Def/Res+5 to unit during combat,
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(5, 0, 5, 5),
+            // and also,
+            // if unit's attack can trigger unit's Special (excluding area-of-effect Specials),
+            // grants Special cooldown count-1 to unit before unit's first attack during combat.
+            IF_NODE(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            ),
+        ),
+    ));
+}
+
 // 新年の双神獣の祭器
 {
     let skillId = Weapon.NewYearTreats;

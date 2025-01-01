@@ -1293,6 +1293,8 @@ class HasTargetAoeSpecialNode extends BoolNode {
     }
 }
 
+const HAS_TARGET_AOE_SPECIAL_NODE = new HasTargetAoeSpecialNode();
+
 const CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE = new class extends CanTargetsAttackTriggerTargetsSpecialNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
