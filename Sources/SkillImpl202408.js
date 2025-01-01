@@ -353,7 +353,7 @@
 
     // If a Rally or movement Assist skill is used by unit,
     let nodeFunc = () => new SkillEffectNode(
-        new TargetsOncePerTurnAssistEffectNode(`${skillId}-奥義発動カウント-1`,
+        new TargetsOncePerTurnSkillEffectNode(`${skillId}-奥義発動カウント-1`,
             new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(3), TRUE_NODE,
                 // Special cooldown count-1 to unit,
                 new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
@@ -1957,7 +1957,7 @@
     SWAP_ASSIST_SET.add(skillId);
 
     AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        new TargetsOncePerTurnAssistEffectNode(`${skillId}-周囲への効果`,
+        new TargetsOncePerTurnSkillEffectNode(`${skillId}-周囲への効果`,
             new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2), TRUE_NODE,
                 // Grants 【Future Witness】and【Null Follow-Up】to allies within 2 spaces of both unit and target after movement for 1 turn (including unit and target),
                 new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.FutureWitness),

@@ -1,4 +1,54 @@
 // スキル実装
+// 新年の双神獣の祭器
+{
+    let skillId = Weapon.NewYearTreats;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // If a Rally or movement Assist skill (like Reposition, Shove, Pivot, etc.) is used by an ally with the【Divine Nectar】effect active (excluding unit),
+    let nodeFunc = () => new SkillEffectNode(
+        IF_NODE(AND_NODE(
+                new HasAssistTargetingStatusEffectNode(StatusEffectType.DivineNectar),
+                ARE_SKILL_OWNER_AND_ASSIST_TARGETING_IN_SAME_GROUP_NODE
+            ),
+            new TargetsOncePerTurnSkillEffectNode(`${skillId}-奥義カウント-1`,
+                // to unit and that ally (once per turn).
+                FOR_EACH_UNIT_NODE(UnitsNode.makeFromUnits(TARGET_NODE, ASSIST_TARGETING_NODE),
+                    // grants Atk/Res+6 and 【Charge】to unit and that ally for 1 turn and grants Special cooldown count-1
+                    GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(0, 0, 6, 6),
+                    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Charge),
+                    new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
+                ),
+            ),
+        ),
+    );
+    AFTER_RALLY_ENDED_BY_OTHER_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_OTHER_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Def/Res = 20% of unit's Res at start of combat + 5,
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            // deals damage = 20% of unit's Res (including when dealing damage with an area-of-effect Special),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+    // deals damage = 20% of unit's Res (including when dealing damage with an area-of-effect Special),
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            UNIT_DEALS_DAMAGE_AT_AOE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE)),
+        ),
+    ));
+}
+
 // 縄張り・護り手・遠
 {
     let skillId = PassiveC.HigherGround;

@@ -119,6 +119,14 @@ const FOE_NODE = new class extends TargetNode {
     }
 }
 
+class AssistTargetingNode extends TargetNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetingMixin);
+    }
+}
+
+const ASSIST_TARGETING_NODE = new AssistTargetingNode();
+
 /**
  * @abstract
  */
@@ -140,10 +148,20 @@ class UnitsNode extends SkillEffectNode {
     }
 
     /**
+     * @param {...UnitNode} units
+     * @return {UnitsNode}
+     */
+    static makeFromUnits(...units) {
+        return new class extends UnitsNode {
+        }(...units);
+    }
+
+    /**
      * @param {NodeEnv} env
      * @returns {Iterable<Unit>}
      */
     evaluate(env) {
+        return super.evaluate(env);
     }
 }
 
@@ -3564,6 +3582,40 @@ class GrantsStatsPlusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
 const GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE =
     (atk, spd, def, res) => new GrantsStatsPlusAtStartOfTurnNode(atk, spd, def, res);
 
+class GrantsStatsPlusToTargetOnMapNode extends ApplyingNumberToEachStatNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let amounts = this.evaluateChildren(env);
+        env.debug(`${unit.nameWithGroup}にバフ予約: [${amounts}]`);
+        unit.reserveToApplyBuffs(...amounts);
+    }
+}
+
+const GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE =
+    (atk, spd, def, res) => new GrantsStatsPlusToTargetOnMapNode(atk, spd, def, res);
+
+class GrantsStatsPlusToSkillOwnerOnMapNode extends GrantsStatsPlusToTargetOnMapNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const GRANTS_STATS_PLUS_TO_SKILL_OWNER_ON_MAP_NODE =
+    (atk, spd, def, res) => new GrantsStatsPlusToSkillOwnerOnMapNode(atk, spd, def, res);
+
+class GrantsStatsPlusToAssistTargetingOnMapNode extends GrantsStatsPlusToTargetOnMapNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetingMixin);
+    }
+}
+
+const GRANTS_STATS_PLUS_TO_ASSIST_TARGETING_ON_MAP_NODE =
+    (atk, spd, def, res) => new GrantsStatsPlusToAssistTargetingOnMapNode(atk, spd, def, res);
+
 class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -3605,6 +3657,9 @@ class GrantsStatusEffectsOnTargetOnMapNode extends FromNumbersNode {
         });
     }
 }
+
+const GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE =
+    (...statusEffects) => new GrantsStatusEffectsOnTargetOnMapNode(...statusEffects);
 
 class InflictsStatusEffectsOnTargetOnMapNode extends GrantsStatusEffectsOnTargetOnMapNode {
 }
@@ -4139,7 +4194,7 @@ class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
     }
 }
 
-class TargetsOncePerTurnAssistEffectNode extends SkillEffectNode {
+class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }

@@ -762,6 +762,9 @@ class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
     }
 }
 
+const UNIT_DEALS_DAMAGE_BEFORE_COMBAT_NODE = n => new UnitDealsDamageBeforeCombatNode(n);
+const UNIT_DEALS_DAMAGE_AT_AOE = n => new UnitDealsDamageBeforeCombatNode(n);
+
 class ReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     getDescription(n) {
         return `受けるダメージ-${n}（範囲奥義を除く）`;
