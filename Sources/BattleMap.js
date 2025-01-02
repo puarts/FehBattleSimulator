@@ -2041,8 +2041,10 @@ class BattleMap {
             }
         }
 
+        // unitがunitのスキルによりワープ
         let env = new BattleMapEnv(this, unit);
-        env.setName('ワープ').setLogLevel(getSkillLogLevel());
+        // env.setName('ワープ').setLogLevel(getSkillLogLevel());
+        env.setName('ワープ').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
         yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
 
         for (let skillId of unit.enumerateSkills()) {
@@ -2050,9 +2052,11 @@ class BattleMap {
             yield* this.#enumerateTeleportTilesForUnit(skillId, unit);
         }
 
+        // unitがallyのスキルによりワープ
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-            let env = new BattleMapEnv(this, unit).setTarget(ally);
-            env.setName('ワープ(周囲)').setLogLevel(getSkillLogLevel());
+            let env = new BattleMapEnv(this, unit).setSkillOwner(ally);
+            // env.setName('ワープ(周囲)').setLogLevel(getSkillLogLevel());
+            env.setName('ワープ(周囲)').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
             yield* ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(ally, env);
 
             for (let skillId of ally.enumerateSkills()) {
@@ -2323,6 +2327,7 @@ class BattleMap {
     }
 
     /**
+     * fromTileからdistanceマス以内のunitが配置可能なタイルを列挙する。
      * @param  {Tile} fromTile
      * @param  {Unit} unit
      * @param  {Number} distance

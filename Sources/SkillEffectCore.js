@@ -634,6 +634,8 @@ class EnsureMinMaxNode extends NumberOperationNode {
     }
 }
 
+const ENSURE_MIN_MAX_NODE = (child, min, max) => new EnsureMinMaxNode(child, min, max);
+
 class AddNode extends NumberOperationNode {
     /**
      * @override

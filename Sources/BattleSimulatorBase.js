@@ -1355,7 +1355,7 @@ class BattleSimulatorBase {
         if (!this.canActivateDuoSkillOrHarmonizedSkill(duoUnit)) {
             return;
         }
-        let env = new EnumerationEnv(g_appData, duoUnit);
+        let env = new EnumerationEnv(g_appData, duoUnit).setBattleMap(this.map);
         env.setName('比翼双界スキル').setLogLevel(getSkillLogLevel());
         WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
         switch (duoUnit.heroIndex) {
@@ -1842,6 +1842,8 @@ class BattleSimulatorBase {
         for (let unit of this.enumerateUnitsOnMap()) {
             unit.applyReservedState(false);
         }
+        this.map.applyReservedDivineVein();
+
         duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn = true;
         ++duoUnit.duoOrHarmonizedSkillActivationCount;
         updateAllUi();
@@ -9396,36 +9398,6 @@ class BattleSimulatorBase {
         }
     }
 
-    applyDivineNectarSkills(assistUnit, targetUnit) {
-        // 自分を除く【神獣の蜜】が付与されている味方が応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、
-        if (assistUnit.hasStatusEffect(StatusEffectType.DivineNectar)) {
-            for (let skillId of assistUnit.enumerateSkills()) {
-                if (DIVINE_NECTAR_SKILL_SET.has(skillId)) {
-                    return;
-                }
-            }
-            let found = false;
-            let units = this.enumerateUnitsInTheSameGroupOnMap(assistUnit);
-            for (let unit of units) {
-                for (let skillId of unit.enumerateSkills()) {
-                    if (DIVINE_NECTAR_SKILL_SET.has(skillId)) {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            if (found) {
-                // その味方を行動可能な状態にする
-                // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
-                // （1ターンに1回のみ）
-                if (assistUnit.isActionDone &&
-                    !g_appData.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[assistUnit.groupId]) {
-                    assistUnit.grantsAnotherActionOnAssist();
-                }
-            }
-        }
-    }
-
     #applyMovementAssistSkill(skillId, assistUnit, targetUnit) {
         switch (skillId) {
             case Weapon.RetainersReport:
@@ -10459,15 +10431,31 @@ class BattleSimulatorBase {
                 let env = new BattleSimulatorBaseEnv(this, supporterUnit);
                 env.setName('応援を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
                 AFTER_RALLY_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
-                // 神獣の蜜
-                this.applyDivineNectarSkills(supporterUnit, targetUnit);
+
+                // 他者
+                for (let unit of this.enumerateUnitsOnMap()) {
+                    if (unit === supporterUnit) {
+                        continue;
+                    }
+                    let env = new BattleSimulatorBaseEnv(this, unit);
+                    env.setName('他者が応援を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                    AFTER_RALLY_ENDED_BY_OTHER_UNIT_HOOKS.evaluateWithUnit(unit, env);
+                }
             }
             if (supporterUnit.hasMoveAssist) {
                 let env = new BattleSimulatorBaseEnv(this, supporterUnit);
                 env.setName('移動補助を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
-                AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
-                // 神獣の蜜
-                this.applyDivineNectarSkills(supporterUnit, targetUnit);
+                AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
+
+                // 他者
+                for (let unit of this.enumerateUnitsOnMap()) {
+                    if (unit === supporterUnit) {
+                        continue;
+                    }
+                    let env = new BattleSimulatorBaseEnv(this, unit);
+                    env.setName('他者が移動補助を使用した後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
+                    AFTER_MOVEMENT_ASSIST_ENDED_BY_OTHER_UNIT_HOOKS.evaluateWithUnit(unit, env);
+                }
             }
             for (let skillId of supporterUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForSupporterFuncMap);
@@ -10484,7 +10472,7 @@ class BattleSimulatorBase {
             if (targetUnit.hasMoveAssist) {
                 let env = new BattleSimulatorBaseEnv(this, targetUnit);
                 env.setName('移動補助を使用された後').setLogLevel(getSkillLogLevel()).setAssistUnits(supporterUnit, targetUnit);
-                AFTER_MOVEMENT_ENDED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+                AFTER_MOVEMENT_ASSIST_ENDED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
             }
             for (let skillId of targetUnit.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySupportSkillForTargetUnitFuncMap);

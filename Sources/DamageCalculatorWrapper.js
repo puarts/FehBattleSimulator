@@ -14230,18 +14230,8 @@ class DamageCalculatorWrapper {
     }
 
     canCounterAttack(atkUnit, defUnit) {
-        let canCounterBasically = false;
-        if (atkUnit.isCannotMoveStyleActive()) {
-            // 条件A: 敵が2距離の重装
-            if (defUnit.moveType === MoveType.Armor && defUnit.isRangedWeaponType()) canCounterBasically = true;
-            // 条件B: 敵が全距離反撃を持つ
-            if (defUnit.battleContext.canCounterattackToAllDistance) canCounterBasically = true;
-            // 条件C: 敵の射程が自分と敵の距離と同じ
-            if (defUnit.attackRange === atkUnit.distance(defUnit)) canCounterBasically = true;
-        } else {
-            canCounterBasically = this.__examinesCanCounterattackBasically(atkUnit, defUnit);
-        }
-        return canCounterBasically && !this.__canDisableCounterAttack(atkUnit, defUnit);
+        return this.__examinesCanCounterattackBasically(atkUnit, defUnit)
+            && !this.__canDisableCounterAttack(atkUnit, defUnit);
     }
 
     // 反撃不可ならばtrueを反撃不可を無効にするならfalseを返す
@@ -14475,10 +14465,20 @@ class DamageCalculatorWrapper {
             return true;
         }
 
-        if (atkUnit.attackRange === defUnit.attackRange) {
-            return true;
+        if (atkUnit.isCannotMoveStyleActive()) {
+            // 条件A: 敵が2距離の重装
+            if (defUnit.moveType === MoveType.Armor && defUnit.isRangedWeaponType()) return true;
+            // 条件B: 敵が全距離反撃を持つ
+            if (defUnit.battleContext.canCounterattackToAllDistance) return true;
+            // 条件C: 敵の射程が自分と敵の距離と同じ
+            if (defUnit.attackRange === atkUnit.distance(defUnit)) return true;
+        } else {
+            if (atkUnit.attackRange === defUnit.attackRange) {
+                return true;
+            }
         }
 
+        // 相手の武器種による全距離反撃
         if (atkUnit.isRangedWeaponType()) {
             for (let skillId of defUnit.enumerateSkills()) {
                 switch (skillId) {
@@ -14499,8 +14499,7 @@ class DamageCalculatorWrapper {
                         break;
                 }
             }
-        }
-        else if (atkUnit.isMeleeWeaponType()) {
+        } else if (atkUnit.isMeleeWeaponType()) {
             for (let skillId of defUnit.enumerateSkills()) {
                 switch (skillId) {
                     case PassiveA.CloseCounter:

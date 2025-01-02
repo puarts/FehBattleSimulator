@@ -30,6 +30,12 @@ const NUM_OF_TARGETS_FOES_ON_MAP_WITH_STATUS_EFFECT_ACTIVE_NODE = (e) =>
     new CountIfUnitsNode(TARGETS_FOES_NODE, new HasTargetStatusEffectNode(e))
 
 /**
+ * foes that are within 2 spaces of another foe
+ */
+const TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE =
+    n => FILTER_UNITS_NODE(TARGETS_FOES_NODE, IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE(n))
+
+/**
  * 生の息吹4のようなHP回復効果。
  * @param {number|NumberNode} hpPercentage
  * @param {number|NumberNode} maxHpPercentage
@@ -61,6 +67,26 @@ const RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE =
             ),
         ),
     );
+
+function setDivineNectarAnotherActionSkill(skillId) {
+    // 自分を除く【神獣の蜜】が付与されている味方が応援、移動系補助（体当たり、引き戻し、回り込み等）を使用した時、
+    // その味方を行動可能な状態にする
+    // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
+    // （1ターンに1回のみ）
+    let nodeFunc = () => new SkillEffectNode(
+        IF_NODE(AND_NODE(
+                new HasAssistTargetingStatusEffectNode(StatusEffectType.DivineNectar),
+                ARE_SKILL_OWNER_AND_ASSIST_TARGETING_IN_SAME_GROUP_NODE
+            ),
+            // if another effect that grants action to ally has been activated at the same time, this effect is also considered to have been triggered
+            IF_NODE(NOT_NODE(IS_ANOTHER_ACTION_BY_ASSIST_ACTIVATED_IN_CURRENT_TURN_ON_SKILL_OWNER_TEAM_NODE),
+                GRANTS_ANOTHER_ACTION_TO_ASSIST_TARGETING_ON_ASSIST_NODE,
+            ),
+        ),
+    );
+    AFTER_RALLY_ENDED_BY_OTHER_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_OTHER_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+}
 
 /**
  * 生命
@@ -243,18 +269,22 @@ const IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT = 
 const DEF_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_DEF_DURING_COMBAT_NODE, FOES_DEF_DURING_COMBAT_NODE);
 const RES_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_RES_DURING_COMBAT_NODE, FOES_RES_DURING_COMBAT_NODE);
 
-/**
- * @param skillId
- * @param {boolean} isMelee
- * @param {SkillEffectNode} grantsNode
- */
-function setTwinSave(skillId, isMelee, grantsNode) {
+function setSaveSkill(skillId, isMelee) {
     SAVE_SKILL_SET.add(skillId);
     if (isMelee) {
         CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
     } else {
         CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
     }
+}
+
+/**
+ * @param skillId
+ * @param {boolean} isMelee
+ * @param {SkillEffectNode} grantsNode
+ */
+function setTwinSave(skillId, isMelee, grantsNode) {
+    setSaveSkill(skillId, isMelee);
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
@@ -272,12 +302,8 @@ function setTwinSave(skillId, isMelee, grantsNode) {
 
 function setBriarSave(skillId, isMelee, grantsNode) {
     // If foe with Range = 2 initiates combat against an ally within 2 spaces of unit, triggers【Savior】on unit.
-    SAVE_SKILL_SET.add(skillId);
-    if (isMelee) {
-        CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
-    } else {
-        CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
-    }
+    setSaveSkill(skillId, isMelee);
+
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // If foe's Range = 2,
@@ -322,6 +348,14 @@ const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percenta
         new TargetDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(percentage / 100, statNode)),
     );
 
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_PERCENTAGE_OF_TARGETS_STAT_DURING_COMBAT_INCLUDING_TWICE_NODE =
+    (percentage, statNode) =>
+        APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+            // and reduces damage from foe's first attack by 20% of unit's Spd during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(
+                PERCENTAGE_NODE(percentage, statNode)),
+        );
+
 /**
  * @param {number|string} skillId
  * @param {number} beastCommonSkillType
@@ -351,22 +385,16 @@ const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = (...nodes) =>
 function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, n, m) {
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
         new ForEachAllyForSpacesNode(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
-            new SpacesWithinNSpacesNode(n),
+            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(n, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 }
 
-/**
- * Allies within n spaces of unit can move to any space within m spaces of unit.
- */
-const ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT = (n, m) =>
-    new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
-        new SpacesWithinNSpacesNode(m),
-    );
-
 function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, n, m) {
     ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
-        ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT(n, m)
+        new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
+            new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(m, SKILL_OWNERS_PLACED_SPACE_NODE),
+        )
     );
 }
 
@@ -680,4 +708,4 @@ const TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE =
  * number of distinct game titles among allies within 3 spaces of unit
  */
 const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE =
-        n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));
+    n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));

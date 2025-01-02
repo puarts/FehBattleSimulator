@@ -1980,6 +1980,12 @@ const Weapon = {
 
     // 紋章士リン
     LadysBow: 3111, // 草原の公女の弓
+
+    // 正月
+    SnakingSword: 3114, // 巳年の神蛇の剣
+    NewYearTalon: 3116, // 新年開く刃の爪
+    NewYearFang: 3118, // 巳年の毒の牙
+    NewYearTreats: 3120, // 新年の双神獣の祭器
 };
 
 const Support = {
@@ -2982,6 +2988,7 @@ const PassiveB = {
 
     DragonsScales: 3031, // 竜の堅鱗
 
+    AtkResDiscord: 3121, // 攻撃魔防の不和
     SpdResDiscord: 3040, // 速さ魔防の不和
 
     ADSpikedWall: 3062, // 攻撃守備の刃壁
@@ -2991,7 +2998,10 @@ const PassiveB = {
 
     Speedtaker4: 3113, // 速さの吸収4
 
+    BestialAssault: 3117, // 獣影・強襲
+
     // 専用B
+    HeavenlyWings: 3115, // 天届く翼
     FontOfWisdom: 3096, // 知の源
     DarkPerfume: 3088, // 暗香疎影
     YggdrasillsAlter: 3085, // 世界樹の半身
@@ -3468,9 +3478,12 @@ const PassiveC = {
 
     Barricade: 3086, // 縄張り・守護
 
+    HigherGround: 3119, // 縄張り・護り手・遠
+
     LookoutForce: 3089, // 露払い・不屈
 
     // 専用C
+    NectarsMagic: 3122, // 神獣の蜜・魔道
     TwinklingAnima: 3107, // 光輝く理力
     DivineTalon: 3054, // 神獣の鋭爪
     ConnectedWorld: 3028, // 人と神が繋がる世界
@@ -3648,6 +3661,7 @@ EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Ec
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_debugEngagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_imageRootPath}Special.png`;
 // EngagedSpecialIcon[EmblemHero.Lyn] = `${g_debugEngagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
+// 紋章士アイコン
 // https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
 
 const EffectiveType = {

@@ -353,7 +353,7 @@
 
     // If a Rally or movement Assist skill is used by unit,
     let nodeFunc = () => new SkillEffectNode(
-        new TargetsOncePerTurnAssistEffectNode(`${skillId}-奥義発動カウント-1`,
+        new TargetsOncePerTurnSkillEffectNode(`${skillId}-奥義発動カウント-1`,
             new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(3), TRUE_NODE,
                 // Special cooldown count-1 to unit,
                 new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(1),
@@ -1062,19 +1062,17 @@
             // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
             // deals damage = 30% of foe's max HP (excluding area-of-effect Specials; excluding certain foes, such as Røkkr),
-            new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(30, new FoesMaxHpNode())),
-            new NumThatIsNode(
-                new SkillEffectNode(
-                    // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
-                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(READ_NUM_NODE),
-                    // and also,
-                    // when foe's attack triggers foe's Special,
-                    // reduces damage from foe's attacks by an additional X
-                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(READ_NUM_NODE),
-                ),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(30, new FoesMaxHpNode())),
+            X_NUM_NODE(
+                // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(READ_NUM_NODE),
+                // and also,
+                // when foe's attack triggers foe's Special,
+                // reduces damage from foe's attacks by an additional X
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(READ_NUM_NODE),
                 // (excluding area-of-effect Specials; X = total damage dealt to foe; min 10; max 20).
-                new EnsureMinMaxNode(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
-            )
+                ENSURE_MIN_MAX_NODE(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
+            ),
         ),
     ));
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -1260,9 +1258,7 @@
 {
     let skillId = PassiveC.WorldbreakerPlus;
     // 周囲2マス以内の味方は、自身の周囲2マス以内に移動可能
-    ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
-        ALLIES_WITHIN_N_SPACES_OF_UNIT_CAN_MOVE_TO_ANY_SPACE_WITHIN_M_SPACES_OF_UNIT(2, 2),
-    )
+    setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, 2, 2);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // 戦闘中、攻撃、守備、魔防＋5、自身の奥義発動カウント変動量＋1 （同系統効果複数時、最大值適用）、 自分の最初の攻撃前に奥義発動カウントー2
         new GrantsStatsPlusToTargetDuringCombatNode(5, 0, 5, 5),
@@ -1961,7 +1957,7 @@
     SWAP_ASSIST_SET.add(skillId);
 
     AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        new TargetsOncePerTurnAssistEffectNode(`${skillId}-周囲への効果`,
+        new TargetsOncePerTurnSkillEffectNode(`${skillId}-周囲への効果`,
             new ForEachUnitNode(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2), TRUE_NODE,
                 // Grants 【Future Witness】and【Null Follow-Up】to allies within 2 spaces of both unit and target after movement for 1 turn (including unit and target),
                 new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.FutureWitness),
@@ -1973,7 +1969,7 @@
     ));
 
     // and grants another action to unit (once per turn).
-    AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionOnAssistNode());
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionToTargetOnAssistNode());
 }
 
 // 聖王国の父娘の忍弓
@@ -2438,7 +2434,7 @@
     let skillId = Support.RepositionGait;
     // Target ally moves to opposite side of unit.
     // If unit uses an Assist skill on the current turn, enables【Canto (１)】.
-    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => new IfTargetHasUsedAssistDuringCurrentTurnNode());
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => new HasTargetUsedAssistDuringCurrentTurnNode());
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(1));
 }
 
@@ -2550,9 +2546,11 @@
     ));
 }
 
-// 速さ魔防の不和
-{
-    let skillId = PassiveB.SpdResDiscord;
+/**
+ * @param skillId
+ * @param {[number, number, number, number]} statsRatios
+ */
+function setDiscord(skillId, statsRatios) {
     // Spd/Res Discord
     // At start of player phase or enemy phase,
     let nodeFunc = () => new SkillEffectNode(
@@ -2565,17 +2563,18 @@
                 IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
 
             // inflicts Spd/Res-6 and [Discord]
-            new InflictsStatsMinusOnTargetOnMapNode(0, 6, 0, 6),
+            new InflictsStatsMinusOnTargetOnMapNode(...statsRatios.map(x => x * 6)),
             new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Discord),
         ),
     );
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
 
+    // noinspection JSCheckFunctionSignatures
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         new NumThatIsNode(
             // Inflicts penalty on foe's Spd/Res during combat
-            new InflictsStatsMinusOnFoeDuringCombatNode(0, READ_NUM_NODE, 0, READ_NUM_NODE),
+            new InflictsStatsMinusOnFoeDuringCombatNode(...statsRatios.map(x => MULT_NODE(x, READ_NUM_NODE))),
             // = number of foes inflicted with (Discord) within 2 spaces of target,
             // including target, x 2, + 4 (max 10) and
             new EnsureMaxNode(
@@ -2595,6 +2594,12 @@
         // deals damage = 15% of unit's Res (excluding area-of-effect Specials).
         DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, UNITS_RES_DURING_COMBAT_NODE),
     ));
+}
+
+// 不和
+{
+    setDiscord(PassiveB.AtkResDiscord, [1, 0, 0, 1]);
+    setDiscord(PassiveB.SpdResDiscord, [0, 1, 0, 1]);
 }
 
 // 鎮魂の願い
@@ -3818,9 +3823,9 @@
     AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, () => node);
 
     // If a Rally or movement Assist skill is used by unit, grants another action to unit (once per turn).
-    let anotherActionNode = new GrantsAnotherActionOnAssistNode();
+    let anotherActionNode = new GrantsAnotherActionToTargetOnAssistNode();
     AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
-    AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or is within 2 spaces of an ally,
@@ -4977,11 +4982,11 @@
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
         // Unit can move to a space within 2 spaces of any ally that has entered combat during the current turn.
         new ForEachAllyForSpacesNode(new HasTargetEnteredCombatDuringTheCurrentTurnNode,
-            new SpacesWithinNSpacesNode(2),
+            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
         ),
         // Unit can move to a space within 2 spaces of any ally within 2 spaces.
         new ForEachAllyForSpacesNode(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
-            new SpacesWithinNSpacesNode(2),
+            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 

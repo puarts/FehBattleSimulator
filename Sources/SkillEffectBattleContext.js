@@ -744,6 +744,9 @@ class UnitDealsDamageExcludingAoeSpecialsNode extends TargetDealsDamageExcluding
     }
 }
 
+const UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE =
+    (value) => new UnitDealsDamageExcludingAoeSpecialsNode(value);
+
 class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
     getDescription(n) {
         return `与えるダメージ+${n}(戦闘前)`;
@@ -758,6 +761,9 @@ class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.additionalDamageInPrecombat}`);
     }
 }
+
+const UNIT_DEALS_DAMAGE_BEFORE_COMBAT_NODE = n => new UnitDealsDamageBeforeCombatNode(n);
+const UNIT_DEALS_DAMAGE_AT_AOE = n => new UnitDealsDamageBeforeCombatNode(n);
 
 class ReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     getDescription(n) {
@@ -792,6 +798,9 @@ class ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode extends ApplyingNum
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValue}`);
     }
 }
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE =
+    n => new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(n);
 
 class ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode extends ApplyingNumberNode {
     static {
@@ -915,6 +924,9 @@ class ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode extends 
     }
 }
 
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE =
+    n => new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(n);
+
 class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumberNode {
     getDescription(n) {
         return `敵の奥義による攻撃の時、受けるダメージ-${n}（範囲奥義を除く）`;
@@ -929,6 +941,9 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumber
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValueOfSpecialAttack}`);
     }
 }
+
+const REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE =
+    n => new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(n);
 
 class ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode extends ApplyingNumberNode {
     getDescription(n) {
@@ -1118,6 +1133,9 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
         env.debug(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
     }
 }
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
+    n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
 
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
@@ -1619,6 +1637,9 @@ class AppliesSkillEffectsAfterStatusFixedNode extends SkillEffectNode {
         env.unitDuringCombat.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes.push(node);
     }
 }
+
+const APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE =
+    (...nodes) => new AppliesSkillEffectsAfterStatusFixedNode(...nodes);
 
 class TargetAppliesSkillEffectsPerAttackNode extends SkillEffectNode {
     static {

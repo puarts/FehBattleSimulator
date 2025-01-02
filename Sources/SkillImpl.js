@@ -161,6 +161,7 @@
     // その味方を行動可能な状態にする
     // （同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
     // （1ターンに1回のみ）
+    setDivineNectarAnotherActionSkill(skillId);
 
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
@@ -174,7 +175,6 @@
             }
         }
     );
-    DIVINE_NECTAR_SKILL_SET.add(skillId);
 }
 
 // 堅牢城塞
@@ -2033,7 +2033,8 @@
     applySkillEffectFromAlliesFuncMap.set(skillId,
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
             // 「戦闘開始時、自身のHPが25%以上の時の自分」と「自身を中心とした縦3列と横3列の味方」は、
-            if (allyUnit.isInCrossWithOffset(targetUnit, 1)) {
+            if ((targetUnit === allyUnit && targetUnit.restHpPercentage >= 25) ||
+                (targetUnit !== allyUnit && allyUnit.isInCrossWithOffset(targetUnit, 1))) {
                 // - 戦闘中、奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を（奥義発動カウント最大値x30＋10）％無効（最大100%、無効にする数値は端数切捨て）（範囲奥義を除く）、かつ、
                 let ratio = MathUtil.ensureMax(targetUnit.maxSpecialCount * 0.3 + 0.1, 1);
                 targetUnit.battleContext.addReductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation(ratio);
@@ -5791,7 +5792,7 @@
 
 // 2種類封じ3
 {
-    let setSkill = (skillId,spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
+    let setSkill = (skillId, spurIndices, spurAmount = 3, spurMax = 6, debuffAmount = 6) => {
         applySkillEffectForUnitFuncMap.set(skillId,
             function (targetUnit, enemyUnit, calcPotentialDamage) {
                 // 戦闘中、敵の速さ、魔防一3、

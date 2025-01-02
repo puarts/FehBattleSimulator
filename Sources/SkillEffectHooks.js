@@ -213,14 +213,24 @@ const AFTER_RALLY_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();
 const AFTER_RALLY_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
 
 /**
+ * 自分以外の誰かが応援を使用して行動を終えた後（敵味方問わず）
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_RALLY_ENDED_BY_OTHER_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
  * 移動補助を使用して行動を終えた後
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
-const AFTER_MOVEMENT_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();
+const AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * 移動補助を使用されて行動を終えた後
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
-const AFTER_MOVEMENT_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
+const AFTER_MOVEMENT_ASSIST_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
+
+/**
+ * 自分以外の誰かが移動補助を使用して行動を終えた後（敵味方問わず）
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_MOVEMENT_ASSIST_ENDED_BY_OTHER_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * TODO: rename

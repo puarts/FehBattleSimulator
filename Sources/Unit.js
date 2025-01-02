@@ -2460,9 +2460,17 @@ class Unit extends BattleMapElement {
         return dist === 1;
     }
 
+    /**
+     * 実際の射程を取得（リンのスタイルの場合2）。
+     * @param attackTargetUnit
+     * @returns {*|number}
+     */
     getActualAttackRange(attackTargetUnit) {
         if (this.isCantoActivated()) {
             return 0;
+        }
+        if (this.isCannotMoveStyleActive()) {
+            return 2;
         }
 
         return calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);

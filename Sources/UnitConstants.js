@@ -71,6 +71,7 @@ const Hero = {
     HarmonizedNagi: 1181,
     DuoLucina: 1193,
     DuoAlear: 1214,
+    DuoHeidrun: 1220,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -115,7 +116,8 @@ const DUO_HERO_SET = new Set([
     Hero.DuoGullveig,
     Hero.DuoFjorm,
     Hero.DuoLucina,
-    Hero.DuoAlear
+    Hero.DuoAlear,
+    Hero.DuoHeidrun,
 ]);
 
 const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
@@ -316,7 +318,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Schism, ["Schism.webp", "連携阻害", "連携阻害"]],
     [StatusEffectType.NeutralizeUnitSurvivesWith1HP, ["NeutralizeUnitSurvivesWith1HP.webp", "奥義以外の祈り無効", "奥義以外の祈り無効"]],
     [StatusEffectType.TimesGate, ["TimesGate.webp", "時の門", "時の門"]],
-    [StatusEffectType.Incited, ["Incited.webp", "時の門", "時の門"]],
+    [StatusEffectType.Incited, ["Incited.webp", "奮激", "奮激"]],
     [StatusEffectType.ReducesDamageFromFirstAttackBy40Percent, ["ReduceFirstAttackDamage.webp", "自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減", "自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減"]],
     [StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent, ["ReduceReduceDamageByX.webp", "「ダメージを〇〇%軽減」を半分無効", "「ダメージを〇〇%軽減」を半分無効"]],
     [StatusEffectType.TimesGrip, ["TimesGrip.webp", "時の陥穽", "時の陥穽"]],
