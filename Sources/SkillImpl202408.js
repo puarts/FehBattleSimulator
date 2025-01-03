@@ -2210,9 +2210,9 @@
         // If unit initiates combat or if foe's HP ≥ 75% at start of combat,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
             // grants bonus to unit's Atk/Spd during combat = 6 + 20% of unit's Spd at start of combat.
-            new NumThatIsNode(
+            X_NUM_NODE(
                 new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
-                ADD_NODE(6, MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+                ADD_NODE(6, MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
             ),
         )
     ));
