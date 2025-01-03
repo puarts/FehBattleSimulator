@@ -2795,10 +2795,6 @@ class Unit extends BattleMapElement {
         }
         this.neutralizeDebuffsAtEndOfAction();
         this.neutralizeNegativeStatusEffectsAtEndOfAction();
-        if (g_appData.currentTurn === this.anotherActionTurnForCallingCircle) {
-            this.anotherActionTurnForCallingCircle = -1;
-            this.isActionDone = false;
-        }
     }
 
     endActionBySkillEffect() {
@@ -6342,12 +6338,21 @@ class Unit extends BattleMapElement {
     }
 
     grantAnotherActionOnAssistIfPossible() {
-        if (!this.isOneTimeActionActivatedForSupport) {
+        if (!this.isOneTimeActionActivatedForSupport &&
+            this.isActionDone) {
             this.isOneTimeActionActivatedForSupport = true;
             this.grantsAnotherActionOnAssist();
             return true;
         }
         return false;
+    }
+
+    grantAnotherActionByCallingCircleIfPossible(currentTurn) {
+        if (currentTurn === this.anotherActionTurnForCallingCircle &&
+            this.isActionDone) {
+            this.anotherActionTurnForCallingCircle = -1;
+            this.isActionDone = false;
+        }
     }
 
     hasEmblemHero() {

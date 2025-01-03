@@ -3914,6 +3914,9 @@ class BattleSimulatorBase {
             }
         }
 
+        // 魔法陣の増援による再行動
+        atkUnit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
+
         if (this.data.gameMode === GameMode.SummonerDuels) {
             this.data.globalBattleContext.addSummonerDuelsKoScore(atkUnit, defUnit);
         }
