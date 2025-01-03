@@ -1397,6 +1397,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restStyleSkillAvailableTurn
             + ValueDelimiter + boolToInt(this.isStyleActive)
             + ValueDelimiter + boolToInt(this.isStyleActivatedInThisTurn)
+            + ValueDelimiter + boolToInt(this.isAttackedDone)
             ;
     }
 
@@ -1544,6 +1545,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.restStyleSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isStyleActive = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isStyleActivatedInThisTurn = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isAttackedDone = intToBool(Number(values[i])); ++i; }
     }
 
 
