@@ -3510,7 +3510,7 @@ function setDiscord(skillId, statsRatios) {
             // grants Special cooldown count-X to unit before unit's first attack during combat
             new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(
                 // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
-                COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
+                COND_OP(GTE_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
             ),
         ),
     ));
@@ -3538,7 +3538,7 @@ function setDiscord(skillId, statsRatios) {
                     // grants Special cooldown count-X to unit before Special triggers before combat (excluding Rokkr area-of-effect Specials);
                     new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(READ_NUM_NODE),
                     // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
-                    COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
+                    COND_OP(GTE_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
                 ),
             ),
         ),
