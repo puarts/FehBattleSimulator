@@ -6349,7 +6349,10 @@ class Unit extends BattleMapElement {
         return false;
     }
 
-    grantAnotherActionByCallingCircleIfPossible(currentTurn) {
+    grantAnotherActionByCallingCircleIfPossible(currentTurn = null) {
+        if (currentTurn === null) {
+            currentTurn = g_appData.currentTurn;
+        }
         if (currentTurn === this.anotherActionTurnForCallingCircle &&
             this.isActionDone) {
             this.anotherActionTurnForCallingCircle = -1;

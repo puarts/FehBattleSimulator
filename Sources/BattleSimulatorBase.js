@@ -7278,6 +7278,7 @@ class BattleSimulatorBase {
                 let env = new BattleSimulatorBaseEnv(this, unit);
                 env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(getSkillLogLevel());
                 AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
+                unit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
             }
@@ -7761,6 +7762,7 @@ class BattleSimulatorBase {
             let env = new BattleSimulatorBaseEnv(this, unit);
             env.setName('奥義以外の再行動時[移動]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
+            unit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
             self.__goToNextPhaseIfPossible(unit.groupId);
         };
         return this.__createCommand(
@@ -10492,6 +10494,7 @@ class BattleSimulatorBase {
             let env = new BattleSimulatorBaseEnv(this, supporterUnit);
             env.setName('奥義以外の再行動時[補助]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(supporterUnit, env);
+            supporterUnit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
 
             // 再移動の評価
             let activated = this.__activateCantoIfPossible(supporterUnit);
@@ -10969,6 +10972,7 @@ class BattleSimulatorBase {
         let env = new BattleSimulatorBaseEnv(this, unit);
         env.setName('奥義以外の再行動時[破壊]').setLogLevel(getSkillLogLevel());
         AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
+        unit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
     }
 
     __goToNextPhaseIfPossible(groupId) {
