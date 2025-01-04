@@ -80,7 +80,9 @@ class NodeEnv {
     battleMap = null;
     /** @type {number[]} */
     #numValues = [];
-    /** @type {boolean|null} */
+    /**
+     * TODO: 削除する
+     * @type {boolean|null} */
     isStatusFixedNullable = null;
 
     #logLevel = LoggerBase.LOG_LEVEL.OFF;
