@@ -27,7 +27,7 @@ class NodeEnv {
         APPLYING_SPECIAL: null,
         APPLYING_REF_MIT: null,
         AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED: null,
-        // TODO: result = self._damageCalc.calcCombatResult(atkUnit, defUnit, damageType);　の後のフェーズも設定する
+        // TODO: result = self._damageCalc.calcCombatResult(atkUnit, defUnit, damageType);の後のフェーズも設定する
     };
 
     static {
