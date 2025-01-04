@@ -157,17 +157,23 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
 
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is transformed or unit's HP ≥ 25% at start of combat,
         IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
-            // deals damage to foe = 25% of foe's max HP as combat begins
-            new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
+            IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+                // deals damage to foe = 25% of foe's max HP as combat begins
+                // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
+                new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
+            ),
             // (activates only when unit can attack in combat;
             // only highest value applied;
             // does not stack with other "deals X damage as combat begins" effects;
             // effects that reduce damage during combat do not apply;
             // will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
         ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is transformed or unit's HP ≥ 25% at start of combat,
         IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
             X_NUM_NODE(

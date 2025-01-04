@@ -1044,14 +1044,24 @@
     // At start of turn, if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally, unit transforms (otherwise, unit reverts). If unit transforms, grants Atk+2, and unit can counterattack regardless of foe's range.
     setBeastSkill(skillId, BeastCommonSkillType.Armor);
 
+    // TODO: 反撃可能判定後フックを作成するか検討する
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+                // deals damage to foe = 25% of foe's max HP as combat begins
+                // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
+                new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
+            ),
+            // (activates only when unit can attack in combat;
+            // only highest value applied;
+            // does not stack with other "deals X damage as combat begins" effects;
+            // effects that reduce damage during combat do not apply;
+            // will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
+        ),
+    ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // If unit is transformed or unit's HP ≥ 25% at start of combat,
-        IF_NODE(OR_NODE(new IsTargetTransformedNode(), IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
-            // deals damage to foe = 25% of foe's max HP as combat begins
-            // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
-            new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
-        ),
         // If unit is transformed or unit's HP ≥ 25% at start of combat,
         IF_NODE(OR_NODE(new IsTargetTransformedNode(), IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
             new NumThatIsNode(
