@@ -46,7 +46,7 @@ const GetAssistTargetingMixin = {
 const GetValueMixin = Object.assign({}, GetUnitMixin, {
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = this.getValue(unit);
+        let result = this.getValue(unit, env);
         env.debug(`${unit.nameWithGroup}${this.debugMessage}: ${result}`);
         return result;
     },

@@ -104,7 +104,7 @@ class SkillEffectHooks {
         }
         let name;
         if (prefix === 'e') {
-            name = ObjectUtil.getKeyName(EmblemHero, suffix);
+            name = ObjectUtil.getKeyName(EmblemHero, Number(suffix));
         } else if (prefix === 'se') {
             name = getStatusEffectName(suffix);
         } else {

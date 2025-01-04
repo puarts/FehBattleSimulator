@@ -1555,7 +1555,10 @@ class TargetCanAttackDuringCombatNode extends BoolNode {
 
     debugMessage = "は攻撃可能か";
 
-    getValue(unit) {
+    getValue(unit, env) {
+        if (!env.isAfterCombatPhase(NodeEnv.COMBAT_PHASE.APPLYING_CAN_COUNTER)) {
+            env.error(`反撃可能判定が終わっていません(current phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, 1)})`);
+        }
         return unit.battleContext.canAttackInCombat();
     }
 }
