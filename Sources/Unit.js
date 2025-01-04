@@ -644,7 +644,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForCantoRefresh = false;
 
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
-        this.isOncePerMapSpecialActivated = false;
+        this.hasOncePerMapSpecialActivated = false;
 
         // 比翼スキルを使用したか
         this.duoOrHarmonizedSkillActivationCount = 0;
@@ -1370,7 +1370,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForDeepStar)
             + ValueDelimiter + this.restMoveCount
-            + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
+            + ValueDelimiter + boolToInt(this.hasOncePerMapSpecialActivated)
             + ValueDelimiter + boolToInt(this.isAttackDone)
             + ValueDelimiter + boolToInt(this.isCantoActivating)
             + ValueDelimiter + this.fromPosX
@@ -1518,7 +1518,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForDeepStar = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restMoveCount = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.hasOncePerMapSpecialActivated = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isAttackDone = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isCantoActivating = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.fromPosX = Number(values[i]); ++i; }
@@ -6286,7 +6286,7 @@ class Unit extends BattleMapElement {
     canActivateOrActivatedSpecial() {
         let hasSpecial = this.special !== Special.None;
         let canActivateSpecial = hasSpecial && this.tmpSpecialCount === 0;
-        return canActivateSpecial || this.battleContext.isSpecialActivated;
+        return canActivateSpecial || this.battleContext.hasSpecialActivated;
     }
 
     static canActivateOrActivatedSpecialEither(targetUnit, enemyUnit) {

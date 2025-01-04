@@ -8426,7 +8426,7 @@ class BattleSimulatorBase {
         this.writeDebugLogLine(attacker.getNameWithGroup() + "が" + target.getNameWithGroup()
             + "に攻撃時のダメージ率" + attackEvalContext.damageRatio
         );
-        attackEvalContext.isSpecialChargeIncreased = target.battleContext.isSpecialActivated;
+        attackEvalContext.isSpecialChargeIncreased = target.battleContext.hasSpecialActivated;
 
         let couldAttackerAttack = result.atkUnit_actualTotalAttackCount > 0;
         attackEvalContext.isDebufferTier1 = couldAttackerAttack && isDebufferTier1(attacker, target) && this.__canDebuff2PointsOfDefOrRes(attacker, target);

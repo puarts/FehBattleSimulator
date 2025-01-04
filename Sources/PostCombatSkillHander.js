@@ -755,7 +755,7 @@ class PostCombatSkillHander {
                 case PassiveB.OgiNoRasen3:
                 case PassiveB.SpecialSpiral4:
                 case Weapon.MakenMistoruthin:
-                    if (targetUnit.battleContext.isSpecialActivated) {
+                    if (targetUnit.battleContext.hasSpecialActivated) {
                         targetUnit.reserveToReduceSpecialCount(2);
                     }
                     break;
@@ -1341,7 +1341,7 @@ class PostCombatSkillHander {
     }
 
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
-        if (attackUnit.battleContext.isNonSpecialMiracleAndHealAcitivated) {
+        if (attackUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated) {
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
             attackUnit.reserveHeal(99);
         }
@@ -1353,16 +1353,16 @@ class PostCombatSkillHander {
             func?.call(this, attackUnit, attackTargetUnit, attackCount);
             switch (skillId) {
                 case Special.LifeUnending:
-                    if (attackUnit.battleContext.isSpecialMiracleAndHealAcitivated) {
-                        if (!attackUnit.isOncePerMapSpecialActivated) {
-                            attackUnit.isOncePerMapSpecialActivated = true;
+                    if (attackUnit.battleContext.hasSpecialMiracleAndHealActivated) {
+                        if (!attackUnit.hasOncePerMapSpecialActivated) {
+                            attackUnit.hasOncePerMapSpecialActivated = true;
                             attackUnit.reserveHeal(99);
                         }
                     }
                     break;
                 case Special.HolyKnightAura:
                 case Special.ChivalricAura:
-                    if (attackUnit.battleContext.isSpecialActivated) {
+                    if (attackUnit.battleContext.hasSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
                             unit.reserveToApplyBuffs(6, 0, 0, 0);
                             unit.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
@@ -1370,7 +1370,7 @@ class PostCombatSkillHander {
                     }
                     break;
                 case Special.ShiningEmblem:
-                    if (attackUnit.battleContext.isSpecialActivated) {
+                    if (attackUnit.battleContext.hasSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
                             unit.reserveToApplyAllBuffs(6);
                         }
@@ -1378,14 +1378,14 @@ class PostCombatSkillHander {
                     break;
                 case Special.HerosBlood:
                 case Special.HonoNoMonsyo:
-                    if (attackUnit.battleContext.isSpecialActivated) {
+                    if (attackUnit.battleContext.hasSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
                             unit.reserveToApplyAllBuffs(4);
                         }
                     }
                     break;
                 case Special.RighteousWind:
-                    if (attackUnit.battleContext.isSpecialActivated) {
+                    if (attackUnit.battleContext.hasSpecialActivated) {
                         for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
                             unit.reserveHeal(10);
                         }

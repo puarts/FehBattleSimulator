@@ -2640,7 +2640,7 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.HelsReaper] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
                 // 1戦闘1回まで
-                if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                if (defUnit.battleContext.hasNonSpecialMiracleActivated) {
                     return false;
                 }
                 if (!isWeaponTypeTome(atkUnit.weaponType) &&
@@ -4724,7 +4724,7 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
                 targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
                     // 1戦闘1回まで
-                    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                    if (defUnit.battleContext.hasNonSpecialMiracleActivated) {
                         return false;
                     }
                     if (defUnit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType)) {
@@ -5193,7 +5193,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(6, 6, 0, 0);
                 targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
                     // 1戦闘1回まで
-                    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                    if (defUnit.battleContext.hasNonSpecialMiracleActivated) {
                         return false;
                     }
                     return defUnit.restHpPercentage >= 25;
@@ -6443,7 +6443,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
                 targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
                     // 1戦闘1回まで
-                    return !defUnit.battleContext.isNonSpecialMiracleActivated;
+                    return !defUnit.battleContext.hasNonSpecialMiracleActivated;
                 });
             }
         };
@@ -6559,7 +6559,7 @@ class DamageCalculatorWrapper {
                         if (enemyUnit.battleContext.initiatesCombat &&
                             this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                             targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
-                                if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                                if (defUnit.battleContext.hasNonSpecialMiracleActivated) {
                                     return false;
                                 }
                                 return defUnit.restHpPercentage >= 50;
@@ -15268,16 +15268,16 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.addSpecialAddDamage(Math.trunc(totalRes * 0.4));
             targetUnit.battleContext.canActivateNonSpecialOneTimePerMapMiracleFuncs.push((defUnit, atkUnit) => {
                 let isSpecialCharged = defUnit.isSpecialCharged || atkUnit.isSpecialCharged;
-                let isSpecialActivated = defUnit.battleContext.isSpecialActivated || atkUnit.battleContext.isSpecialActivated;
-                let condA = isSpecialCharged || isSpecialActivated;
+                let hasSpecialActivated = defUnit.battleContext.hasSpecialActivated || atkUnit.battleContext.hasSpecialActivated;
+                let condA = isSpecialCharged || hasSpecialActivated;
                 let condB = defUnit.battleContext.initiatesCombat || isRangedWeaponType(atkUnit.weaponType);
                 // 1回発動したかどうかはコンテキストかユニットの両方を見る必要がある
                 // ユニットが保持する値はリアルタイムに保持されずにDamageTypeがActualDamageの時に戦闘後にユニットにコピーされる
-                let isOncePerMapSpecialActivated =
-                    defUnit.isOncePerMapSpecialActivated ||
-                    defUnit.battleContext.isOncePerMapSpecialActivated;
+                let hasOncePerMapSpecialActivated =
+                    defUnit.hasOncePerMapSpecialActivated ||
+                    defUnit.battleContext.hasOncePerMapSpecialActivated;
                 let condSatisfied = condA || condB;
-                return condSatisfied && !isOncePerMapSpecialActivated;
+                return condSatisfied && !hasOncePerMapSpecialActivated;
             });
         }
 

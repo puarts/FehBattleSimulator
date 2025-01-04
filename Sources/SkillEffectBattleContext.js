@@ -295,7 +295,7 @@ class IsTargetsSpecialTriggeredNode extends BoolNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = unit.battleContext.isSpecialActivated;
+        let result = unit.battleContext.hasSpecialActivated;
         env.debug(`${unit.nameWithGroup}は奥義を発動したか: ${result}`)
         return result;
     }

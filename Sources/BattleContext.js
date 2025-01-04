@@ -86,7 +86,7 @@ class BattleContext {
         this.cooldownCountForDefense = 1;
 
         // 戦闘中に奥義が発動されたかどうか
-        this.isSpecialActivated = false;
+        this.hasSpecialActivated = false;
         this.specialActivatedCount = 0;
         this.isPreCombatSpecialActivated = false;
 
@@ -373,11 +373,8 @@ class BattleContext {
         this.preventedDefenderSpecial = false;
         this.preventedDefenderSpecialPerAttack = false;
 
-        // 奥義以外の祈りが発動したかどうか
-        this.isNonSpecialMiracleActivated = false;
-
         // 1マップで1回の奥義効果が発動したかどうか
-        this.isOncePerMapSpecialActivated = false;
+        this.hasOncePerMapSpecialActivated = false;
 
         // 武器スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.weaponSkillCondSatisfied = false;
@@ -398,31 +395,28 @@ class BattleContext {
         this.canActivateNonSpecialMiracle = false;
 
         // 奥義以外の祈りが発動したかどうか
-        this.isNonSpecialMiracleActivated = false;
+        this.hasNonSpecialMiracleActivated = false;
 
         // 奥義による祈りが発動したかどうか
-        this.isSpecialMiracleActivated = false;
+        this.hasSpecialMiracleActivated = false;
 
         // 奥義以外の祈り(1マップ1回)
         this.canActivateNonSpecialOneTimePerMapMiracle = false;
 
         // 奥義以外の祈りが発動したかどうか(1マップ1回)
-        this.isNonSpecialOneTimePerMapMiracleAcitivated = false;
+        this.hasNonSpecialOneTimePerMapMiracleAcitivated = false;
 
         // 奥義以外の祈り+HP99回復
         this.canActivateNonSpecialMiracleAndHeal = false;
 
         // 奥義以外の祈り+HP99回復が発動したかどうか
-        this.isNonSpecialMiracleAndHealAcitivated = false;
+        this.hasNonSpecialMiracleAndHealAcitivated = false;
 
         // 奥義による祈り+HP99回復が発動したかどうか
-        this.isSpecialMiracleAndHealAcitivated = false;
-
-        // 奥義による祈りが発動したかどうか
-        this.isSpecialMiracleAcitivated = false;
+        this.hasSpecialMiracleAndHealActivated = false;
 
         // 奥義による祈りが発動したかどうか(1マップ1回)
-        this.isSpecialOneTimePerMapMiracleAcitivated = false;
+        this.hasSpecialOneTimePerMapMiracleAcitivated = false;
 
         // 範囲奥義を発動できない
         this.cannotTriggerPrecombatSpecial = false;
@@ -1075,5 +1069,11 @@ class BattleContext {
 
     set potentOverwriteRatioPerAttack(value) {
         this._potentOverwriteRatioPerAttack = value;
+    }
+
+    hasAnyNonSpecialMiracleActivated() {
+        return this.hasNonSpecialMiracleActivated
+            || this.hasNonSpecialOneTimePerMapMiracleAcitivated
+            || this.hasNonSpecialMiracleAndHealAcitivated;
     }
 }

@@ -1725,7 +1725,7 @@
     applyHighPriorityAnotherActionSkillEffectFuncMap.set(skillId,
         function (atkUnit, defUnit, tileToAttack) {
             if (atkUnit.battleContext.initiatesCombat &&
-                atkUnit.battleContext.isSpecialActivated &&
+                atkUnit.battleContext.hasSpecialActivated &&
                 atkUnit.isAlive &&
                 !atkUnit.isOneTimeActionActivatedForSpecial &&
                 atkUnit.isActionDone) {
@@ -2704,7 +2704,7 @@
             targetUnit.battleContext.damageReductionRatiosBySpecialPerAttack.push(ratio);
             // 戦闘中、奥義発動可能状態の時、
             // または、戦闘中、奥義を発動済みの時、
-            if (targetUnit.isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+            if (targetUnit.isSpecialCharged || targetUnit.battleContext.hasSpecialActivated) {
                 if (!targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat) {
                     targetUnit.battleContext.isOneTimeSpecialSkillEffectActivatedDuringCombat = true;
                     // * 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）
@@ -2726,7 +2726,7 @@
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 奥義を発動した戦闘後、
-            if (targetUnit.battleContext.isSpecialActivated) {
+            if (targetUnit.battleContext.hasSpecialActivated) {
                 // * 敵のマスとその周囲2マスのマスに【天脈・水】を付与（1ターン）
                 let targetTile = enemyUnit.placedTile;
                 for (let tile of this.map.enumerateTilesWithinSpecifiedDistance(targetTile, 2)) {
@@ -4125,7 +4125,7 @@
     applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit, attackCount) {
             // 奥義を発動した戦闘後、
-            if (attackUnit.battleContext.isSpecialActivated) {
+            if (attackUnit.battleContext.hasSpecialActivated) {
                 // 自分と全味方の
                 for (let targetUnit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
                     // 攻撃、守備+6、
@@ -4787,7 +4787,7 @@
                 // 秘奥共通効果
                 if (targetUnit.battleContext.passiveASkillCondSatisfied) {
                     let isSpecialCharged = targetUnit.hasSpecial && targetUnit.tmpSpecialCount === 0;
-                    if (isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                    if (isSpecialCharged || targetUnit.battleContext.hasSpecialActivated) {
                         targetUnit.battleContext.additionalDamagePerAttack += 5;
                         if (canHeal) {
                             targetUnit.battleContext.healedHpByAttackPerAttack += 7;
@@ -5214,7 +5214,7 @@
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 戦闘(または戦闘前)で奥義を発動した場合、戦闘後、奥義発動カウント-2
-            if (targetUnit.battleContext.isSpecialActivated) {
+            if (targetUnit.battleContext.hasSpecialActivated) {
                 targetUnit.reserveToReduceSpecialCount(2);
             }
         }
@@ -5236,7 +5236,7 @@
     );
     applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit) {
-            if (attackUnit.battleContext.isSpecialActivated) {
+            if (attackUnit.battleContext.hasSpecialActivated) {
                 attackUnit.reserveToReduceSpecialCount(1);
             }
         }
@@ -5649,7 +5649,7 @@
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             // 戦闘で奥義を発動した場合、戦闘後、
-            if (targetUnit.battleContext.isSpecialActivated) {
+            if (targetUnit.battleContext.hasSpecialActivated) {
                 // 自身を中心とした縦3列と横3列にいる敵に
                 /** @type {Generator<Unit>} */
                 let enemies = this.enumerateUnitsInDifferentGroupOnMap(targetUnit);
@@ -5853,7 +5853,7 @@
 
     applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit) {
-            if (attackUnit.battleContext.isSpecialActivated) {
+            if (attackUnit.battleContext.hasSpecialActivated) {
                 // 奥義を発動した戦闘後、自分と全味方のHP20回復（一つの戦闘で複数回発動時、回復効果は重複しない）
                 // （その戦闘で自分のHPが0になっても効果は発動）、
                 let units = this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true);
@@ -7028,7 +7028,7 @@
 
     applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit) {
-            if (attackUnit.battleContext.isSpecialActivated) {
+            if (attackUnit.battleContext.hasSpecialActivated) {
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
                 for (let unit of units) {
                     unit.reserveToApplyDebuffs(-6, -6, 0, 0);
@@ -7060,7 +7060,7 @@
 
     applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit) {
-            if (attackUnit.battleContext.isSpecialActivated) {
+            if (attackUnit.battleContext.hasSpecialActivated) {
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
                 for (let unit of units) {
                     unit.reserveToIncreaseSpecialCount(1);
@@ -7092,7 +7092,7 @@
 
     applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit) {
-            if (attackUnit.battleContext.isSpecialActivated) {
+            if (attackUnit.battleContext.hasSpecialActivated) {
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
                 for (let unit of units) {
                     unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
@@ -7151,10 +7151,10 @@
             let canActivateSpecial =
                 defUnit.tmpSpecialCount === 0 ||
                 atkUnit.tmpSpecialCount === 0;
-            let isSpecialActivated =
-                defUnit.battleContext.isSpecialActivated ||
-                atkUnit.battleContext.isSpecialActivated;
-            if (canActivateSpecial || isSpecialActivated) {
+            let hasSpecialActivated =
+                defUnit.battleContext.hasSpecialActivated ||
+                atkUnit.battleContext.hasSpecialActivated;
+            if (canActivateSpecial || hasSpecialActivated) {
                 // 40%軽減
                 if (defUnit.getEvalResInCombat(atkUnit) >= atkUnit.getEvalResInCombat(defUnit) - 4) {
                     defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
@@ -7207,7 +7207,7 @@
                 // <錬成効果>
                 targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
                     // 1戦闘1回まで
-                    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+                    if (defUnit.battleContext.hasNonSpecialMiracleActivated) {
                         return false;
                     }
                     return defUnit.battleContext.restHpPercentage >= 50;
@@ -7406,7 +7406,7 @@
 
     applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit) {
-            if (attackUnit.battleContext.isSpecialActivated) {
+            if (attackUnit.battleContext.hasSpecialActivated) {
                 let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
                 for (let unit of units) {
                     unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
@@ -8287,7 +8287,7 @@
     applySkillEffectsPerAttackFuncMap.set(skillId,
         function (targetUnit, enemyUnit, canActivateAttackerSpecial) {
             if (targetUnit.tmpSpecialCount === 0 ||
-                targetUnit.battleContext.isSpecialActivated) {
+                targetUnit.battleContext.hasSpecialActivated) {
                 targetUnit.battleContext.potentOverwriteRatio = 1.0;
             }
         }
@@ -9410,7 +9410,7 @@
 
     applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
         function (attackUnit, attackTargetUnit, attackCount) {
-            if (attackUnit.battleContext.isSpecialActivated) {
+            if (attackUnit.battleContext.hasSpecialActivated) {
                 let ax = attackUnit.posX;
                 let ay = attackUnit.posY;
                 for (let unit of this.enumerateUnitsInTheSameGroupOnMap(attackUnit, true)) {
@@ -10744,7 +10744,7 @@
     );
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
-            if (targetUnit.battleContext.isSpecialActivated) {
+            if (targetUnit.battleContext.hasSpecialActivated) {
                 targetUnit.reserveToReduceSpecialCount(2);
             }
         }
@@ -10996,7 +10996,7 @@
     applyHighPriorityAnotherActionSkillEffectFuncMap.set(skillId,
         function (atkUnit, defUnit, tileToAttack) {
             if (atkUnit.battleContext.initiatesCombat &&
-                atkUnit.battleContext.isSpecialActivated &&
+                atkUnit.battleContext.hasSpecialActivated &&
                 atkUnit.isAlive &&
                 !atkUnit.isOneTimeActionActivatedForSpecial &&
                 atkUnit.isActionDone) {
@@ -11122,7 +11122,7 @@
     applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
             if (targetUnit.battleContext.initiatesCombat &&
-                targetUnit.battleContext.isSpecialActivated &&
+                targetUnit.battleContext.hasSpecialActivated &&
                 targetUnit.isAlive) {
                 let maxHP = 0;
                 let units = [];

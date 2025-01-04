@@ -905,7 +905,7 @@ test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
     defUnit.healFull();
 
     let result = test_calcDamage(atkUnit, defUnit, false);
-    expect(atkUnit.battleContext.isSpecialActivated).toBe(true);
+    expect(atkUnit.battleContext.hasSpecialActivated).toBe(true);
     expect(result.preCombatDamage).toBe(1);
   }
 }));

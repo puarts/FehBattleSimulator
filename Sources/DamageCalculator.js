@@ -252,8 +252,8 @@ class DamageCalculator {
 
         // 1マップ1回の効果が発動したかどうかをBattleContextからUnitに保存する
         if (damageType === DamageType.ActualDamage) {
-            atkUnit.isOncePerMapSpecialActivated |= atkUnit.battleContext.isOncePerMapSpecialActivated;
-            defUnit.isOncePerMapSpecialActivated |= defUnit.battleContext.isOncePerMapSpecialActivated;
+            atkUnit.hasOncePerMapSpecialActivated |= atkUnit.battleContext.hasOncePerMapSpecialActivated;
+            defUnit.hasOncePerMapSpecialActivated |= defUnit.battleContext.hasOncePerMapSpecialActivated;
         }
 
         result.atkUnit_specialCount = atkUnit.tmpSpecialCount;
@@ -1030,7 +1030,7 @@ class DamageCalculator {
             this.writeDebugLog("戦闘前ダメージ計算..");
         }
 
-        atkUnit.battleContext.isSpecialActivated = true;
+        atkUnit.battleContext.hasSpecialActivated = true;
         atkUnit.battleContext.isPreCombatSpecialActivated = true;
         let totalDamageWithOverkill = this.calcPrecombatSpecialDamage(atkUnit, defUnit);
         let totalDamage = Math.min(totalDamageWithOverkill, defUnit.restHp - 1);
@@ -1252,7 +1252,7 @@ class DamageCalculator {
                 atkUnit.battleContext.getSpecialAddDamagePerAttack() +
                 atkUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
             if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
-                atkUnit.battleContext.isSpecialActivated = true;
+                atkUnit.battleContext.hasSpecialActivated = true;
                 atkUnit.battleContext.specialActivatedCount++;
 
                 DamageCalculator.#applySkillEffectsOnSpecial(atkUnit, defUnit);
@@ -1379,7 +1379,7 @@ class DamageCalculator {
         let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
         // 奥義以外による祈り
         let canActivateNonSpecialMiracle = this.__canActivateNonSpecialMiracle(defUnit, atkUnit);
-        // 奥義による祈り(1マップ1回)
+        // 奥義による祈り(1マップ1回。現時点では存在しない)
         let canActivateSpecialOneTimePerMapMiracle = this.__canActivateSpecialOneTimePerMapMiracle(defUnit, atkUnit);
         // 奥義以外による祈り(1マップ1回)
         let canActivateNonSpecialOneTimePerMapMiracle = this.__canActivateNonSpecialOneTimePerMapMiracle(defUnit, atkUnit);
@@ -1445,27 +1445,27 @@ class DamageCalculator {
             }
             if (canActivateNonSpecialMiracleAndHeal) {
                 logMiracle(`奥義以外の祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
-                defUnit.battleContext.isNonSpecialMiracleAndHealAcitivated = true;
+                defUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated = true;
             } else if (canActivateNonSpecialMiracle) {
                 logMiracle(`奥義以外の祈り発動、${defUnit.getNameWithGroup()}はHP1残る`);
-                defUnit.battleContext.isNonSpecialMiracleActivated = true;
+                defUnit.battleContext.hasNonSpecialMiracleActivated = true;
             } else if (canActivateNonSpecialOneTimePerMapMiracle) {
                 logMiracle(`奥義以外の祈り発動(1マップ1回)、${defUnit.getNameWithGroup()}はHP1残る`);
                 // TODO: リファクタリング(現状使用していない)
-                defUnit.battleContext.isNonSpecialOneTimePerMapMiracleAcitivated = true;
+                defUnit.battleContext.hasNonSpecialOneTimePerMapMiracleAcitivated = true;
                 // TODO: リファクタリング
-                defUnit.battleContext.isOncePerMapSpecialActivated = true;
+                defUnit.battleContext.hasOncePerMapSpecialActivated = true;
                 // 1マップ1回でない奥義以外の祈りも発動したとみなす
-                defUnit.battleContext.isNonSpecialMiracleActivated = true;
+                defUnit.battleContext.hasNonSpecialMiracleActivated = true;
             } else if (canActivateSpecialMiracleAndHeal) {
                 logMiracle(`奥義による祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
-                defUnit.battleContext.isSpecialMiracleAndHealAcitivated = true;
+                defUnit.battleContext.hasSpecialMiracleAndHealAcitivated = true;
             } else if (canActivateSpecialMiracle) {
                 logMiracle(`奥義による祈り発動、${defUnit.getNameWithGroup()}はHP1残る`);
-                defUnit.battleContext.isSpecialMiracleActivated = true;
+                defUnit.battleContext.hasSpecialMiracleActivated = true;
             } else if (canActivateSpecialOneTimePerMapMiracle) {
                 logMiracle(`奥義による祈り発動(1マップ1回)、${defUnit.getNameWithGroup()}はHP1残る`);
-                defUnit.battleContext.isSpecialOneTimePerMapMiracleAcitivated = true;
+                defUnit.battleContext.hasSpecialOneTimePerMapMiracleAcitivated = true;
             }
 
             // 祈りの軽減分も軽減ダメージに含める
@@ -1479,12 +1479,12 @@ class DamageCalculator {
 
             totalDamage += defUnit.restHp - totalDamage - 1;
 
-            let isActivatedAnySpecialMiracles =
-                defUnit.battleContext.isSpecialMiracleActivated ||
-                defUnit.battleContext.isSpecialOneTimePerMapMiracleAcitivated ||
-                defUnit.battleContext.isSpecialMiracleAndHealAcitivated;
-            if (isActivatedAnySpecialMiracles) {
-                defUnit.battleContext.isSpecialActivated = true;
+            let hasActivatedAnySpecialMiracles =
+                defUnit.battleContext.hasSpecialMiracleActivated ||
+                defUnit.battleContext.hasSpecialOneTimePerMapMiracleAcitivated ||
+                defUnit.battleContext.hasSpecialMiracleAndHealAcitivated;
+            if (hasActivatedAnySpecialMiracles) {
+                defUnit.battleContext.hasSpecialActivated = true;
                 this.__restoreMaxSpecialCount(defUnit);
             }
         } else {
@@ -1541,7 +1541,7 @@ class DamageCalculator {
 
             // 攻撃を受ける際に発動する奥義発動可能時に奥義を発動する処理
             if (isDefenderSpecialActivated) {
-                defUnit.battleContext.isSpecialActivated = true;
+                defUnit.battleContext.hasSpecialActivated = true;
                 defUnit.battleContext.specialActivatedCount++;
                 damageReductionValues.push(defUnit.battleContext.damageReductionValueAfterSpecialTriggerTwice);
                 // ダメージ軽減
@@ -1777,7 +1777,7 @@ class DamageCalculator {
                 case Weapon.GustyWarBow:
                     if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let isSpecialCharged = targetUnit.hasSpecial && targetUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                        if (isSpecialCharged || targetUnit.battleContext.hasSpecialActivated) {
                             targetUnit.battleContext.additionalDamagePerAttack += 7;
                         }
                     }
@@ -1791,7 +1791,7 @@ class DamageCalculator {
                 case Weapon.Sekuvaveku:
                     if (targetUnit.isWeaponRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
                         let isSpecialCharged = targetUnit.hasSpecial && targetUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                        if (isSpecialCharged || targetUnit.battleContext.hasSpecialActivated) {
                             targetUnit.battleContext.additionalDamagePerAttack += 5;
                             targetUnit.battleContext.healedHpByAttackPerAttack += 7;
                         }
@@ -1800,7 +1800,7 @@ class DamageCalculator {
                 case Special.GodlikeReflexes:
                     if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) - 4) {
                         let isSpecialCharged = targetUnit.hasSpecial && targetUnit.tmpSpecialCount === 0;
-                        if (isSpecialCharged || targetUnit.battleContext.isSpecialActivated) {
+                        if (isSpecialCharged || targetUnit.battleContext.hasSpecialActivated) {
                             targetUnit.battleContext.additionalDamagePerAttack += Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.15);
                         }
                     }
@@ -1878,8 +1878,8 @@ class DamageCalculator {
      * @return {boolean}
      */
     __canActivateNonSpecialMiracle(unit, atkUnit) {
-        if (unit.battleContext.isNonSpecialMiracleActivated ||
-            unit.battleContext.isNonSpecialMiracleNeutralized ||
+        if (unit.battleContext.hasAnyNonSpecialMiracleActivated()) return false;
+        if (unit.battleContext.isNonSpecialMiracleNeutralized ||
             atkUnit.battleContext.neutralizesNonSpecialMiracle) {
             return false;
         }
@@ -1918,6 +1918,7 @@ class DamageCalculator {
      * @return {boolean}
      */
     __canActivateNonSpecialOneTimePerMapMiracle(unit, atkUnit) {
+        if (unit.battleContext.hasAnyNonSpecialMiracleActivated()) return false;
         for (let func of unit.battleContext.canActivateNonSpecialOneTimePerMapMiracleFuncs) {
             if (func(unit, atkUnit)) {
                 return true;
@@ -1951,6 +1952,7 @@ class DamageCalculator {
      * @return {boolean}
      */
     __canActivateNonSpecialMiracleAndHeal(unit, atkUnit) {
+        if (unit.battleContext.hasAnyNonSpecialMiracleActivated()) return false;
         return unit.battleContext.canActivateNonSpecialMiracleAndHeal;
     }
 
