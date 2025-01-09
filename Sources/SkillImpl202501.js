@@ -1,4 +1,36 @@
 // スキル実装
+{
+    let skillId = PassiveB.Prescience2;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // ターン開始時、敵軍内で最も攻撃、速さ、守備、魔防が高い敵と、その周囲2マス以内にいる敵それぞれについて、その能力値ー7（敵の次回行動終了まで）
+        FOR_EACH_UNIT_NODE(
+            SKILL_OWNERS_FOES_HAVE_HIGHEST_AND_THOSE_ALLIES_WITHIN_N_SPACES_ON_MAP(2, TARGETS_EVAL_ATK_ON_MAP),
+            new INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(7, 0, 0, 0),
+        ),
+        // ターン開始時、敵軍内で最も攻撃、速さ、守備、魔防が高い敵それぞれについて、【混乱】、【パニック】を付与（敵の次回行動終了まで）
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘中、敵の攻撃、速さ、魔防-5、さらに、敵の速さ、魔防が減少減少値は、敵とその周囲2マス以内にいる敵のうち弱化の合計値が最も高い値、自分が受けた攻撃のダメージを30%軽減（範囲奥義を除く）、自身の奥義発動カウント変動量ーを無効
+    ));
+}
+
+{
+    let skillId = Weapon.SnakingBowPlus;
+    // Effective against flying foes.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // and deals damage= 10% of unit's Atk during combat (excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(10, UNITS_ATK_DURING_COMBAT_NODE)),
+            // and also,
+            // when unit's Special triggers, neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills (excluding area-of-effect Specials).
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        ),
+    ));
+}
+
 // 比翼ヘイズルーン
 {
     let skillId = Hero.DuoHeidrun;

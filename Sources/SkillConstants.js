@@ -3619,6 +3619,19 @@ const Captain = {
     Dauntless: 2181, // 剛毅果断
 };
 
+// Skills
+Weapon.SnakingBowPlus = 3124; // 巳年の弓+
+PassiveB.Prescience2 = 3125; // 未来を知る力・承
+Special.LifeUnending2 = 3126; // 永遠を生きる…・承
+Weapon.StaffOfYngvi = 3127; // ユングヴィの聖杖
+PassiveA.SwayAtkRes = 3128; // 攻撃魔防の布教
+Weapon.RampartBow = 3129; // 弓騎士の守城弓
+PassiveC.InciteSpdDef = 3130; // 速さ守備の奮激
+Weapon.HelpingDaggerPlus = 3131; // 合力の暗器+
+Weapon.DivineYewfelle = 3132; // 神弓イチイバル
+PassiveA.PerfectAtkSpd = 3133; // 攻撃速さの完全
+PassiveB.IRemember = 3134; // 記憶が蘇る…
+PassiveX.TempoEcho = 3135; // 響・拍節
 const AssistType = {
     None: 0,
     Refresh: 1,
