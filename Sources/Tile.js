@@ -455,13 +455,6 @@ class Tile extends BattleMapElement {
             return 0;
         }
 
-        // 再移動中は侵入コストが1より大きいマスには入れない
-        if (unit.isCantoActivating) {
-            if (this._moveWeights[unit.moveType] > 1) {
-                return CanNotReachTile;
-            }
-        }
-
         if (this.__isForestType() && unit.moveType === MoveType.Infantry &&
             unit.moveCount === 1 && !unit.isCantoActivating) {
             // 歩行に1マス移動制限がかかっている場合は森地形のウェイトは通常地形と同じ
