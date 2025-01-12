@@ -11010,7 +11010,7 @@ class BattleSimulatorBase {
         }
     }
 
-    selectItem(targetId, add = false) {
+    selectItem(targetId, add = false, button = 0) {
         this.showItemInfo(targetId);
 
         let tabIndex = this.convertItemIndexToTabIndex(this.vm.currentItemIndex);
@@ -11021,6 +11021,17 @@ class BattleSimulatorBase {
             g_appData.selectCurrentItem();
         }
         g_appData.__showStatusToAttackerInfo();
+
+        // 右クリックならスタイル切り替え
+        if (this.currentUnit && button === 2) {
+            if (this.currentUnit.canActivateStyle()) {
+                this.currentUnit.activateStyle();
+                updateAllUi();
+            } else if (this.currentUnit.canDeactivateStyle()){
+                this.currentUnit.deactivateStyle();
+                updateAllUi();
+            }
+        }
     }
     selectItemToggle(targetId) {
         let item = g_appData.findItemById(targetId);

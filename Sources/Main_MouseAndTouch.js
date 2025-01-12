@@ -29,12 +29,12 @@ let g_dragoverTargetTileForCalcSummary = null;
 
 let g_doubleClickChecker = new DoubleClickChecker();
 
-function selectItemById(id, add = false, toggle = false) {
+function selectItemById(id, add = false, toggle = false, button = 0) {
     if (toggle) {
         g_app.selectItemToggle(id);
     }
     else {
-        g_app.selectItem(id, add);
+        g_app.selectItem(id, add, button);
     }
 
     // 選択アイテムのタイルを更新
@@ -49,7 +49,7 @@ function findParentTdElement(elem) {
     return currentNode;
 }
 
-function __selectItemById(id) {
+function __selectItemById(id, button = 0) {
     if (g_keyboardManager.isShiftKeyPressing) {
         selectItemById(id, true, false);
     }
@@ -57,24 +57,28 @@ function __selectItemById(id) {
         selectItemById(id, false, true);
     }
     else {
-        selectItemById(id);
+        selectItemById(id, false, false, button);
     }
 }
 
 function onItemSelected(event) {
     console.log("onItemSelected");
-    g_doubleClickChecker.notifyClick();
+    let button = event.button;
+    // 左クリックならダブルクリック判定をする
+    if (button === 0) {
+        g_doubleClickChecker.notifyClick();
+    }
 
     let targetElem = event.target;
     if (targetElem.id == undefined || targetElem.id == "") {
         let tdElem = findParentTdElement(targetElem);
         if (tdElem != null) {
             // タイルが選択された
-            __selectItemById(tdElem.id);
+            __selectItemById(tdElem.id, button);
         }
     }
     else {
-        __selectItemById(targetElem.id);
+        __selectItemById(targetElem.id, button);
     }
 
     if (g_doubleClickChecker.isDoubleClicked()) {
