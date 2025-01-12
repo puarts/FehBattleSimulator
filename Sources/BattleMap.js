@@ -2581,7 +2581,9 @@ class BattleMap {
             env.setName("脅威度判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
             let tiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
             for (let tile of tiles) {
-                unit.groupId === UnitGroupType.Ally ? tile.increaseDangerLevel() : tile.increaseAllyDangerLevel();
+                if (!doneTiles.includes(tile)) {
+                    unit.groupId === UnitGroupType.Ally ? tile.increaseDangerLevel() : tile.increaseAllyDangerLevel();
+                }
             }
         }
     }
