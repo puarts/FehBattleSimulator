@@ -1403,7 +1403,7 @@ class SkillInfo {
         this.attackCount = atkCount;
         this.counterattackCount = counteratkCount;
         this.canCounterattackToAllDistance = canCounterattackToAllDistance;
-        this.isSacredSealAvailable = isSacredSealAvailable;
+        this.isSacredSealAvailable = isSacredSealAvailable || g_appData.isDevelopmentMode;
         this.disableCounterattack = disableCounterattack;
         this.wrathfulStaff = wrathfulStaff;
         this.assistType = assistType;
