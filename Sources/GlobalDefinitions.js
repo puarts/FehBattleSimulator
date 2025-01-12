@@ -24,3 +24,13 @@ const G_SKILL_LOG_LEVEL = 1;
 
 const g_debugImageRootPath = g_imageRootPath;
 const g_debugSkillIconRootPath = g_skillIconRootPath;
+
+const G_DEV_SKILL_NUM = 10;
+const G_WEAPON_ID_BASE = 100_000;
+const G_ASSIST_ID_BASE = 110_000;
+const G_SPECIAL_ID_BASE = 120_000;
+const G_PASSIVE_A_ID_BASE = 130_000;
+const G_PASSIVE_B_ID_BASE = 140_000;
+const G_PASSIVE_C_ID_BASE = 150_000;
+const G_PASSIVE_S_ID_BASE = 160_000;
+const G_PASSIVE_X_ID_BASE = 170_000;

@@ -3632,6 +3632,37 @@ Weapon.DivineYewfelle = 3132; // 神弓イチイバル
 PassiveA.PerfectAtkSpd = 3133; // 攻撃速さの完全
 PassiveB.IRemember = 3134; // 記憶が蘇る…
 PassiveX.TempoEcho = 3135; // 響・拍節
+
+// Debug Skills
+Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
+Support.DevAssist1 = G_ASSIST_ID_BASE + 1;
+Special.DevSpecial1 = G_SPECIAL_ID_BASE + 1;
+Special.DevSpecial2 = G_SPECIAL_ID_BASE + 2;
+Special.DevSpecial3 = G_SPECIAL_ID_BASE + 3;
+Special.DevSpecial4 = G_SPECIAL_ID_BASE + 4;
+Special.DevSpecial5 = G_SPECIAL_ID_BASE + 5;
+PassiveA.DevPassiveA1 = G_PASSIVE_A_ID_BASE + 1;
+PassiveB.DevPassiveB1 = G_PASSIVE_B_ID_BASE + 1;
+PassiveC.DevPassiveC1 = G_PASSIVE_C_ID_BASE + 1;
+PassiveS.DevPassiveS1 = G_PASSIVE_S_ID_BASE + 1;
+PassiveX.DevPassiveX1 = G_PASSIVE_X_ID_BASE + 1;
+
+// for (let i = 1; i <= G_DEV_SKILL_NUM; i++) {
+//     for (let weaponKey of Object.keys(WeaponType)) {
+//         if (WeaponType[weaponKey] < 0) {
+//             continue;
+//         }
+//         Weapon[`dev${weaponKey}${i}`] = G_WEAPON_ID_BASE + WeaponType[weaponKey] * 100 + i;
+//     }
+//     Support[`devSupportA${i}`] = G_ASSIST_ID_BASE + i;
+//     Special[`devSpecial${i}`] = G_SPECIAL_ID_BASE + i;
+//     PassiveA[`devSupportA${i}`] = G_PASSIVE_A_ID_BASE + i;
+//     PassiveB[`devSupportB${i}`] = G_PASSIVE_B_ID_BASE + i;
+//     PassiveC[`devSupportC${i}`] = G_PASSIVE_C_ID_BASE + i;
+//     PassiveS[`devSupportS${i}`] = G_PASSIVE_S_ID_BASE + i;
+//     PassiveX[`devSupportX${i}`] = G_PASSIVE_X_ID_BASE + i;
+// }
+
 const AssistType = {
     None: 0,
     Refresh: 1,
