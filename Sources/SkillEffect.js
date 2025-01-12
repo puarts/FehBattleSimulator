@@ -2631,6 +2631,22 @@ class RestoreTargetsHpOnMapNode extends FromPositiveNumberNode {
     }
 }
 
+class RestoreTargetsHpNeutralizesDeepWoundsOnMapNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.reserveHealNeutralizesDeepWounds(n);
+        env.debug(`${unit.nameWithGroup}はHPが${n}回復予約(回復不可無効)`);
+    }
+}
+
+const RESTORE_TARGETS_HP_NEUTRALIZES_DEEP_WOUNDS_ON_MAP_NODE =
+        n => new RestoreTargetsHpNeutralizesDeepWoundsOnMapNode(n);
+
 class RestoreTargetHpNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -3835,6 +3851,9 @@ class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPosit
 class GrantsSpecialCooldownCountMinusOnTargetOnMapNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE =
+    n => new GrantsSpecialCooldownCountMinusOnTargetOnMapNode(n);
+
 class GrantsSpecialCooldownCountMinusOnTargetAfterCombatNode extends GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode {
 }
 
@@ -4336,6 +4355,36 @@ class TargetsRestSupportSkillAvailableTurnNode extends SkillEffectNode {
 
 const TARGETS_REST_SUPPORT_SKILL_AVAILABLE_TURN_NODE =
     (n, ...nodes) => new TargetsRestSupportSkillAvailableTurnNode(n, ...nodes);
+
+class TargetsRestSpecialSkillAvailableTurnNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(n, ...nodes) {
+        super(...nodes);
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = env.target;
+        let n = this._nNode.evaluate(env);
+        if (unit.restSpecialSkillAvailableTurn === 0) {
+            env.debug(`${unit.nameWithGroup}の奥義スキル効果が発動`);
+            this.evaluateChildren(env);
+            unit.restSpecialSkillAvailableTurn = n;
+        } else {
+            env.debug(`${unit.nameWithGroup}の奥義スキル効果発動可能ターンまであと${unit.restSpecialSkillAvailableTurn}ターン`);
+        }
+    }
+}
+
+const TARGETS_REST_SPECIAL_SKILL_AVAILABLE_TURN_NODE =
+    (n, ...nodes) => new TargetsRestSpecialSkillAvailableTurnNode(n, ...nodes);
 
 class HasTargetPerformedActionNode extends BoolNode {
     static {

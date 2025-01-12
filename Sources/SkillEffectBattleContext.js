@@ -911,6 +911,19 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode e
     }
 }
 
+class ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTwiceNode extends ApplyingNumberNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.addDamageReductionRatioOfFirstAttacksBySpecial(percentage / 100);
+        let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttacksBySpecial();
+        env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減（奥義扱い）: ratios [${ratios}]`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_BY_SPECIAL_DURING_COMBAT_INCLUDING_TWICE_NODE =
+    n => new ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTwiceNode(n);
+
 /**
  * reduces damage from foe's first attack by X during combat
  */
@@ -1405,6 +1418,9 @@ class TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttack
         env.debug(`${unit.nameWithGroup}は敵の最初の攻撃で軽減した値を、自身の次の攻撃のダメージに+`);
     }
 }
+
+const TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE =
+    new TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode();
 
 /**
  * 最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)

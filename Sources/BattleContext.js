@@ -29,6 +29,11 @@ class BattleContext {
      */
     #damageReductionRatiosOfFirstAttacks = [];
     /**
+     * 最初に受けた攻撃と2回攻撃の奥義扱いによるダメージ軽減(大盾などの奥義軽減とはおそらく異なる(連盾などで複製発動しない、守備奥義無効でも軽減される))
+     * @type {Number[]}
+     */
+    #damageReductionRatiosOfFirstAttacksBySpecial = [];
+    /**
      * 連撃のダメージ軽減
      * @type {Number[]}
      */
@@ -73,6 +78,7 @@ class BattleContext {
         this.#reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation = [];
         this.#damageReductionRatiosOfFirstAttack = [];
         this.#damageReductionRatiosOfFirstAttacks = [];
+        this.#damageReductionRatiosOfFirstAttacksBySpecial = [];
         this.#damageReductionRatiosOfConsecutiveAttacks = [];
         this.#damageReductionRatiosOfFollowupAttack = [];
         this.#damageReductionRatiosByChainGuard = [];
@@ -1020,6 +1026,14 @@ class BattleContext {
 
     getDamageReductionRatiosOfFirstAttacks() {
         return this.#damageReductionRatiosOfFirstAttacks;
+    }
+
+    addDamageReductionRatioOfFirstAttacksBySpecial(ratio) {
+        this.#damageReductionRatiosOfFirstAttacksBySpecial.push(ratio);
+    }
+
+    getDamageReductionRatiosOfFirstAttacksBySpecial() {
+        return this.#damageReductionRatiosOfFirstAttacksBySpecial;
     }
 
     addDamageReductionRatioOfConsecutiveAttacks(ratio) {

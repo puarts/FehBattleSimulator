@@ -1,4 +1,39 @@
 // スキル実装
+// TODO: 攻撃魔防の秘奥聖印
+{
+    let skillId = Special.LifeUnending2;
+    DEFENSE_SPECIAL_SET.add(skillId);
+    setSpecialCount(5);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At the start of turn 1, grants Special cooldown count-5 to unit.
+        IF_NODE(EQ_NODE(CURRENT_TURN_NODE, 1),
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(5),
+        ),
+    ));
+
+    // When Special triggers, if unit's HP > 1 and foe would reduce unit's HP to 0, unit survives with 1 HP.
+    MIRACLE_AND_HEAL_SPECIAL_SET.add(skillId);
+
+    // 奥義を発動した戦闘後、HP99回復(この効果は【回復不可】を無効、発動後、2ターンの間発動しない)
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Reduces damage from foe's first attack by 40% during combat
+        // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+        REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_BY_SPECIAL_DURING_COMBAT_INCLUDING_TWICE_NODE(40),
+        // and unit's next attack deals damage = total damage reduced from foe's first attack (by any source, including other skills; resets at end of combat).
+        TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
+    ));
+
+    // After combat, if unit's Special triggered,
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_UNITS_SPECIAL_TRIGGERED,
+            // restores 99 HP (neutralizes the effects of【Deep Wounds】and will not trigger again for 2 turns after triggering).
+            TARGETS_REST_SPECIAL_SKILL_AVAILABLE_TURN_NODE(2,
+                RESTORE_TARGETS_HP_NEUTRALIZES_DEEP_WOUNDS_ON_MAP_NODE(99),
+            ),
+        ),
+    ));
+}
+
 {
     let skillId = PassiveB.Prescience2;
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(

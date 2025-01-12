@@ -463,6 +463,10 @@ const DEFENSE_SPECIAL_SET = new Set([
     Special.Miracle,
 ]);
 
+const MIRACLE_AND_HEAL_SPECIAL_SET = new Set([
+    Special.LifeUnending,
+]);
+
 /**
  * 防御系の奥義かどうかを判定します。
  */
@@ -1403,7 +1407,7 @@ class SkillInfo {
         this.attackCount = atkCount;
         this.counterattackCount = counteratkCount;
         this.canCounterattackToAllDistance = canCounterattackToAllDistance;
-        this.isSacredSealAvailable = isSacredSealAvailable || g_appData.isDevelopmentMode;
+        this.isSacredSealAvailable = isSacredSealAvailable;
         this.disableCounterattack = disableCounterattack;
         this.wrathfulStaff = wrathfulStaff;
         this.assistType = assistType;
@@ -1422,6 +1426,9 @@ class SkillInfo {
             if (g_appData.isDebugMenuEnabled) {
                 this.hasSpecialWeaponRefinement = true;
                 this.hasStatusWeaponRefinement = true;
+            }
+            if (g_appData.isDevelopmentMode) {
+                this.isSacredSealAvailable = true;
             }
         }
 

@@ -3163,6 +3163,7 @@ class BattleMap {
                 unit.isDebuffed ||
                 unit.restWeaponSkillAvailableTurn > 0 ||
                 unit.restSupportSkillAvailableTurn > 0 ||
+                unit.restSpecialSkillAvailableTurn > 0 ||
                 unit.restPassiveBSkillAvailableTurn > 0 ||
                 unit.restStyleSkillAvailableTurn > 0) {
                 let span = document.createElement('span');
@@ -3178,6 +3179,9 @@ class BattleMap {
                 }
                 if (unit.restSupportSkillAvailableTurn > 0) {
                     this.#addRestTurnsIcon(span, `${g_imageRootPath}Support.png`, unit.restSupportSkillAvailableTurn);
+                }
+                if (unit.restSpecialSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, `${g_imageRootPath}Special.png`, unit.restSpecialSkillAvailableTurn);
                 }
                 if (unit.restPassiveBSkillAvailableTurn > 0) {
                     this.#addRestTurnsIcon(span, unit.passiveBInfo.iconPath, unit.restPassiveBSkillAvailableTurn);

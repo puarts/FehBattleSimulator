@@ -455,6 +455,7 @@ class Unit extends BattleMapElement {
         this.restHp = 1; // ダメージ計算で使うHP
         this.reservedDamage = 0;
         this.reservedHeal = 0;
+        this.reservedHealNeutralizesDeepWounds = 0;
         this.reservedStatusEffects = [];
         this.reservedStatusEffectSetToNeutralize = new Set();
         this.reservedStatusEffectCountInOrder = 0;
@@ -736,6 +737,7 @@ class Unit extends BattleMapElement {
 
         this.restWeaponSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restSupportSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
+        this.restSpecialSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restPassiveBSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restStyleSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
 
@@ -1398,6 +1400,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isStyleActive)
             + ValueDelimiter + boolToInt(this.isStyleActivatedInThisTurn)
             + ValueDelimiter + boolToInt(this.isAttackedDone)
+            + ValueDelimiter + this.restSpecialSkillAvailableTurn
             ;
     }
 
@@ -1546,6 +1549,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isStyleActive = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isStyleActivatedInThisTurn = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isAttackedDone = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restSpecialSkillAvailableTurn = Number(values[i]); ++i; }
     }
 
 
@@ -3090,6 +3094,7 @@ class Unit extends BattleMapElement {
     initReservedHp() {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
+        this.reservedHealNeutralizesDeepWounds = 0;
     }
 
     initReservedStatusEffects() {
@@ -3199,6 +3204,7 @@ class Unit extends BattleMapElement {
         let healHp = this.reservedHeal;
         let reducedHeal = this.hasDeepWounds() ? healHp : 0;
         healHp -= reducedHeal;
+        healHp += this.reservedHealNeutralizesDeepWounds;
         let damageHp = this.hasStatusEffect(StatusEffectType.EnGarde) ? 0 : this.reservedDamage;
         this.hp = Number(this.hp) - damageHp + healHp;
         this.modifyHp(leavesOneHp);
@@ -3223,6 +3229,10 @@ class Unit extends BattleMapElement {
 
     reserveHeal(healAmount) {
         this.reservedHeal += healAmount;
+    }
+
+    reserveHealNeutralizesDeepWounds(healAmount) {
+        this.reservedHealNeutralizesDeepWounds += healAmount;
     }
 
     modifyHp(leavesOneHp = false) {

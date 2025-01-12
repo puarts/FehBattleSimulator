@@ -1222,6 +1222,8 @@ class DamageCalculator {
             // それ以外の奥義扱いのダメージ軽減
             let damageReductionRatiosByNonDefenderSpecial = [];
 
+            this.#getDamageReductionRatiosBySpecial(damageReductionRatiosByNonDefenderSpecial, defUnit, context);
+
             // 攻撃ごとに変化する可能性がある奥義によるダメージ軽減
             this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
 
@@ -1351,6 +1353,17 @@ class DamageCalculator {
         }
 
         return totalDamage;
+    }
+
+    #getDamageReductionRatiosBySpecial(damageReductionRatiosByNonDefenderSpecial, defUnit, context) {
+        if (context.isFollowupOrPotentFollowupAttack()) {
+            // 追撃
+            // damageReductionRatiosByNonDefenderSpecial.push(...defUnit.battleContext.getDamageReductionRatiosOfFollowupAttackBySpecial());
+        } else {
+            // 最初の攻撃と2回攻撃
+            let ratios = defUnit.battleContext.getDamageReductionRatiosOfFirstAttacksBySpecial();
+            damageReductionRatiosByNonDefenderSpecial.push(...ratios);
+        }
     }
 
     static #applySkillEffectsOnSpecial(atkUnit, defUnit) {
@@ -1935,13 +1948,9 @@ class DamageCalculator {
      * @return {boolean}
      */
     __canActivateSpecialMiracleAndHeal(unit, atkUnit) {
-        switch (unit.special) {
-            case Special.LifeUnending:
-                if (unit.battleContext.preventedDefenderSpecial) return false;
-                if (unit.tmpSpecialCount === 0) return true;
-                break;
-        }
-        return false;
+        if (unit.battleContext.preventedDefenderSpecial) return false;
+        if (unit.tmpSpecialCount !== 0) return false;
+        return MIRACLE_AND_HEAL_SPECIAL_SET.has(unit.special);
     }
 
     /**
