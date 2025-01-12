@@ -1380,7 +1380,6 @@ class DamageCalculatorWrapper {
                         atkUnit.battleContext.isDesperationActivatable = true;
                     }
                     break;
-                case Weapon.NewDawn:
                 case Weapon.Thunderbrand:
                     if (defUnit.battleContext.restHpPercentage >= 50) {
                         atkUnit.battleContext.isDesperationActivatable = true;
@@ -6472,13 +6471,6 @@ class DamageCalculatorWrapper {
             enemyUnit.resSpur -= 5;
             if (targetUnit.battleContext.initiatesCombat || enemyUnit.isRangedWeaponType()) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.NewDawn] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.atkSpur += 6;
-                targetUnit.resSpur += 6;
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.MaritaNoKen] = (targetUnit, enemyUnit, calcPotentialDamage) => {

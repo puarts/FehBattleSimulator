@@ -1,6 +1,65 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = getNormalSkillId(Weapon.NewDawn);
+    // Effective against armored and cavalry foes. Grants Atk+3.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or if unit is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Res+6 during combat and unit makes a guaranteed follow-up attack.
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 0, 6),
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+        // If unit's HP ≤ 50% and unit initiates combat,
+        IF_NODE(AND_NODE(IS_UNITS_HP_LTE_50_PERCENT_AT_START_OF_COMBAT_NODE, DOES_UNIT_INITIATE_COMBAT_NODE),
+            // unit can make a follow-up attack before foe can counterattack.
+            UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.NewDawn);
+    // 重装、騎馬特効
+    // 攻撃+3
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // 戦闘中、攻撃、魔防+6、
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 0, 6),
+            // 速さ、守備+5、さらに、
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(0, 5, 5, 0),
+            // 攻撃、速さ、守備、魔防が戦闘開始時の魔防の10%だけ増加、
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                PERCENTAGE_NODE(10, UNITS_DEF_AT_START_OF_COMBAT_NODE),
+            ),
+            // 絶対追撃
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // 自分から攻撃した時、追撃可能なら自分の攻撃の直後に追撃を行う
+            UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.NewDawn);
+    // 奥義が発動しやすい(発動カウント-1)
+    ACCELERATES_SPECIAL_TRIGGER_SET.add(skillId);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘開始時、自身のHPが25%以上なら、
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // 戦闘中、攻撃、速さ、守備、魔防+5、
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // 攻撃、魔防の弱化を無効、
+            new NeutralizesPenaltiesToUnitsStatsNode(true, false, false, true),
+            // ダメージ+魔防の20％(範囲奥義を除く)、
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+            // 敵の奥義以外のスキルによる「ダメージを○○％軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
     let skillId = PassiveX.TempoEcho;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Neutralizes effects that grant "Special cooldown charge +X" to foe or

@@ -5674,6 +5674,9 @@ class Unit extends BattleMapElement {
             specialCountMax += this.weaponInfo.cooldownCount;
         }
         for (let skillId of this.enumerateSkills()) {
+            if (ACCELERATES_SPECIAL_TRIGGER_SET.has(skillId)) {
+                specialCountMax -= 1;
+            }
             specialCountMax += getSkillFunc(skillId, resetMaxSpecialCountFuncMap)?.call(this) ?? 0;
             switch (skillId) {
                 case Weapon.CrimeanScepter:

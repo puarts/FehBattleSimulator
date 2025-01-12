@@ -3760,6 +3760,8 @@ const SKILL_STYLE_MAP = new Map();
  */
 const CANNOT_MOVE_STYLE_SET = new Set();
 
+const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
+
 ///
 /// Functions
 ///

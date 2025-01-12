@@ -205,6 +205,17 @@ class IsUnitsHpGteNPercentAtStartOfTurnNode extends PercentageCondNode {
 
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = new IsUnitsHpGteNPercentAtStartOfTurnNode(25);
 
+class IsUnitsHpLteNPercentAtStartOfTurnNode extends PercentageCondNode {
+    evaluate(env) {
+        let unit = env.targetUnit;
+        let hpPercentage = unit.restHpPercentageAtBeginningOfTurn;
+        env.debug(`${unit.nameWithGroup}のHPが${this._percentage}%以下であるか: ${hpPercentage}%(HP:${unit.battleContext.restHp}) >= ${this._percentage}%`);
+        return hpPercentage <= this._percentage;
+    }
+}
+
+const IS_UNITS_HP_LTE_50_PERCENT_AT_START_OF_TURN_NODE = new IsUnitsHpLteNPercentAtStartOfTurnNode(50);
+
 class IsUnitsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
@@ -215,6 +226,18 @@ class IsUnitsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
 }
 
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpGteNPercentAtStartOfCombatNode(25);
+
+class IsUnitsHpLteNPercentAtStartOfCombatNode extends PercentageCondNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let hpPercentage = unit.battleContext.restHpPercentage;
+        env.debug(`${unit.nameWithGroup}のHPが${this._percentage}%以下であるか: ${hpPercentage}%(HP:${unit.battleContext.restHp}) >= ${this._percentage}%`);
+        return hpPercentage <= this._percentage;
+    }
+}
+
+const IS_UNITS_HP_LTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpLteNPercentAtStartOfCombatNode(25);
+const IS_UNITS_HP_LTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpLteNPercentAtStartOfCombatNode(50);
 
 class IsUnitsHpLteNPercentInCombatNode extends PercentageCondNode {
     evaluate(env) {
