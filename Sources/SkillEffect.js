@@ -1484,6 +1484,59 @@ class MultStatsNode extends StatsNode {
 
 const MULT_STATS_NODE = (...statsNodes) => new MultStatsNode(...statsNodes);
 
+class StatNode extends NumberNode {
+    /**
+     * @param {StatsNode} statsNode
+     * @param {number|NumberNode} index
+     */
+    constructor(statsNode, index) {
+        super();
+        this._statsNode = statsNode;
+        this._indexNode = NumberNode.makeNumberNodeFrom(index);
+    }
+
+    evaluate(env) {
+        return this._statsNode.evaluate(env)[this._indexNode.evaluate(env)];
+    }
+}
+
+const STAT_NODE = (statsNode, index) => new StatNode(statsNode, index);
+
+class StatsFromStatNode extends StatsNode {
+    constructor(stat, index) {
+        super()
+        this._statNode = NumberNode.makeNumberNodeFrom(stat);
+        this._indexNode = NumberNode.makeNumberNodeFrom(index);
+    }
+
+    evaluate(env) {
+        let stats = [0, 0, 0, 0];
+        stats[this._indexNode.evaluate(env)] = this._statNode.evaluate(env);
+        return stats;
+    }
+}
+
+const STATS_FROM_STAT_NODE = (stat, index) => new StatsFromStatNode(stat, index);
+
+class ForEachStatIndexNode extends SkillEffectNode {
+    /**
+     * @param {SkillEffectNode} nodes
+     */
+    constructor(...nodes) {
+        super(...nodes);
+    }
+
+    evaluate(env) {
+        for (let i = 0; i < 4; i++) {
+            env.storeValue(i);
+            super.evaluate(env);
+            env.popValue();
+        }
+    }
+}
+
+const FOR_EACH_STAT_INDEX_NODE = (...nodes) => new ForEachStatIndexNode(...nodes);
+
 class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -2687,13 +2740,16 @@ class TargetsAndThoseAlliesWithinNSpacesNode extends UnitsNode {
     evaluate(env) {
         let n = this._nNode.evaluate(env);
         let units = this._unitsNode.evaluate(env);
-        let results = [];
+        let results = new Set();
         for (let unit of units) {
-            env.trace2(`${unit.nameWithGroup}の周囲${n}マスの味方を選択`);
             let allies = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n, true);
-            results.push(allies);
+            let allyArray = Array.from(allies);
+            env.trace2(`${unit.nameWithGroup}と周囲${n}マスの同軍: ${allyArray.map(u => u.nameWithGroup).join(", ")}`);
+            allyArray.forEach(u => results.add(u));
+            // results.push(allies);
         }
-        return IterUtil.concat(...results);
+        env.trace2(`${Array.from(units).map(u => u.nameWithGroup).join(", ")}とその周囲${n}マスの同軍: ${Array.from(results).map(u => u.nameWithGroup).join(", ")}`);
+        return results;
     }
 }
 

@@ -117,6 +117,7 @@ const TARGETS_SPD_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Spd);
 const TARGETS_DEF_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Def);
 const TARGETS_RES_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Res);
 
+const TARGETS_EVAL_STAT_ON_MAP = index => new TargetsEvalStatsOnMapNode(index);
 const TARGETS_EVAL_ATK_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Atk);
 const TARGETS_EVAL_SPD_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Spd);
 const TARGETS_EVAL_DEF_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Def);

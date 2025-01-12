@@ -3,14 +3,33 @@
     let skillId = PassiveB.Prescience2;
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // ターン開始時、敵軍内で最も攻撃、速さ、守備、魔防が高い敵と、その周囲2マス以内にいる敵それぞれについて、その能力値ー7（敵の次回行動終了まで）
-        FOR_EACH_UNIT_NODE(
-            SKILL_OWNERS_FOES_HAVE_HIGHEST_AND_THOSE_ALLIES_WITHIN_N_SPACES_ON_MAP(2, TARGETS_EVAL_ATK_ON_MAP),
-            new INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(7, 0, 0, 0),
+        FOR_EACH_STAT_INDEX_NODE(
+            FOR_EACH_UNIT_NODE(
+                SKILL_OWNERS_FOES_HAVE_HIGHEST_AND_THOSE_ALLIES_WITHIN_N_SPACES_ON_MAP(2,
+                    TARGETS_EVAL_STAT_ON_MAP(READ_NUM_NODE)),
+                INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(STATS_FROM_STAT_NODE(7, READ_NUM_NODE)),
+            ),
         ),
         // ターン開始時、敵軍内で最も攻撃、速さ、守備、魔防が高い敵それぞれについて、【混乱】、【パニック】を付与（敵の次回行動終了まで）
+        FOR_EACH_STAT_INDEX_NODE(
+            FOR_EACH_UNIT_NODE(SKILL_OWNERS_FOES_HAVE_HIGHEST_VALUE_ON_MAP(TARGETS_EVAL_STAT_ON_MAP(READ_NUM_NODE)),
+                INFLICTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE(StatusEffectType.Sabotage, StatusEffectType.Panic),
+            ),
+        ),
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // 戦闘中、敵の攻撃、速さ、魔防-5、さらに、敵の速さ、魔防が減少減少値は、敵とその周囲2マス以内にいる敵のうち弱化の合計値が最も高い値、自分が受けた攻撃のダメージを30%軽減（範囲奥義を除く）、自身の奥義発動カウント変動量ーを無効
+        // 戦闘中、敵の攻撃、速さ、魔防-5、さらに、
+        INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(5, 5, 0, 5),
+        X_NUM_NODE(
+            // 敵の速さ、魔防が減少
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, READ_NUM_NODE, 0, READ_NUM_NODE),
+            // 減少値は、敵とその周囲2マス以内にいる敵のうち弱化の合計値が最も高い値、
+            highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(2),
+        ),
+        // 自分が受けた攻撃のダメージを30%軽減（範囲奥義を除く）、
+        new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),
+        // 自身の奥義発動カウント変動量ーを無効
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
     ));
 }
 

@@ -864,14 +864,20 @@ class StoreNumNode extends FromNumberNode {
 }
 
 class ReadNumNode extends NumberNode {
+    constructor(n = 0) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
     evaluate(env) {
-        let result = env.readValue();
-        env.trace(`read value: ${result}`);
+        let n = this._nNode.evaluate(env);
+        let result = env.readValueAt(n);
+        env.trace(`read value[${n}]: ${result}`);
         return result;
     }
 }
 
 const READ_NUM_NODE = new ReadNumNode();
+const READ_NUM_AT_NODE = n => new ReadNumNode(n);
 
 class NumThatIsNode extends SkillEffectNode {
     /**

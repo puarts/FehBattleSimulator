@@ -359,6 +359,14 @@ class NodeEnv {
         return this.#numValues[this.#numValues.length - 1];
     }
 
+    readValueAt(index) {
+        return this.#numValues[this.#numValues.length - index - 1];
+    }
+
+    readAllValues() {
+        return this.#numValues;
+    }
+
     /**
      * @returns {number}
      */
