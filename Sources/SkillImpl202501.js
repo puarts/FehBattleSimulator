@@ -1,6 +1,33 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = PassiveA.PerfectAtkSpd;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's HP ≥ 25% at start of combat or unit is within 3 spaces of an ally,
+        IF_NODE(
+            OR_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants Atk/Spd+7 to unit during combat,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(7, 7, 0, 0),
+            // and also,
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                // if unit's Spd > foe's Spd,
+                IF_NODE(GT_NODE(UNITS_EVAL_SPD_DURING_COMBAT_NODE, FOES_EVAL_SPD_DURING_COMBAT_NODE),
+                    // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+                    NULL_UNIT_FOLLOW_UP_NODE,
+                ),
+            ),
+        ),
+        // If unit's HP ≥ 25% at start of combat and unit is within 3 spaces of an ally,
+        IF_NODE(
+            OR_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants an additional Atk/Spd+3 to unit during combat.
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(3, 3, 0, 0),
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.DivineYewfelle;
     // Accelerates Special trigger (cooldown count-1). Effective against flying foes.
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
