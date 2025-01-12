@@ -1702,7 +1702,7 @@
                 // deals damage = 15% of unit's Atk (including when dealing damage with an area-of-effect Special),
                 new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
                 // reduces damage from foe's attacks by 15% of unit's Atk (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
-                new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
+                new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
             ),
             // and grants Special cooldown count-1 to unit before unit's first attack during combat.
             new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
