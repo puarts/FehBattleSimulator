@@ -1,6 +1,53 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = Weapon.DivineYewfelle;
+    // Accelerates Special trigger (cooldown count-1). Effective against flying foes.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces for 1 turn:
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Atk/Spd+6,
+                GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 6, 0, 0),
+                // 【Incited】,
+                // and the following status
+                // "Unit can move to a space adjacent to any ally within 2 spaces."
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Incited, StatusEffectType.AirOrders),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Spd = 6 + 20% of unit's Spd at start of combat,
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(6, PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
+                // (X =
+                // total number of
+                // 【Bonus】effects active on unit, excluding stat bonuses, and
+                // 【Penalty】effects active on foe, excluding stat penalties,
+                // × 5; max 25; excluding area-of-effect Specials),
+                ENSURE_MAX_NODE(
+                    MULT_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+                    25,
+                ),
+            ),
+            // grants Special cooldown count-2 to unit before unit's first follow-up attack,
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode(2),
+            // and disables skills of all foes excluding foe in combat during combat.
+            UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.HelpingDaggerPlus;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of combat,
