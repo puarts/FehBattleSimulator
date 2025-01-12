@@ -60,7 +60,7 @@
                 // reduces damage from foe's first attack by 20% of the greater of unit's Def or Res during combat
                 // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
                 REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
-                    MAX_NODE(UNITS_DEF_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE),
+                    PERCENTAGE_NODE(20, MAX_NODE(UNITS_DEF_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE)),
                 ),
             ),
         ),
