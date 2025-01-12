@@ -1350,7 +1350,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.spdDebuff
             + ValueDelimiter + this.defDebuff
             + ValueDelimiter + this.resDebuff
-            + ValueDelimiter + this.moveCount
+            + ValueDelimiter + this._moveCount
             + ValueDelimiter + this.specialCount
             + ValueDelimiter + this.statusEffectsToString()
             + ValueDelimiter + boolToInt(this.isTransformed)
@@ -1586,7 +1586,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.spdDebuff
             + ValueDelimiter + this.defDebuff
             + ValueDelimiter + this.resDebuff
-            + ValueDelimiter + this.moveCount
+            + ValueDelimiter + this._moveCount
             + ValueDelimiter + this.specialCount
             + ValueDelimiter + this.statusEffectsToString()
             + ValueDelimiter + this.partnerHeroIndex
