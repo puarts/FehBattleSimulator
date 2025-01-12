@@ -114,26 +114,26 @@ const BOOST_3_NODE =
     );
 
 /// ステータス
-const TARGETS_ATK_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Atk);
-const TARGETS_SPD_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Spd);
-const TARGETS_DEF_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Def);
-const TARGETS_RES_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Res);
+const TARGETS_ATK_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Atk);
+const TARGETS_SPD_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Spd);
+const TARGETS_DEF_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Def);
+const TARGETS_RES_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Res);
 
-const TARGETS_EVAL_STAT_ON_MAP = index => new TargetsEvalStatsOnMapNode(index);
-const TARGETS_EVAL_ATK_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Atk);
-const TARGETS_EVAL_SPD_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Spd);
-const TARGETS_EVAL_DEF_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Def);
-const TARGETS_EVAL_RES_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Res);
+const TARGETS_EVAL_STAT_ON_MAP = index => new TargetsEvalStatOnMapNode(index);
+const TARGETS_EVAL_ATK_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Atk);
+const TARGETS_EVAL_SPD_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Spd);
+const TARGETS_EVAL_DEF_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Def);
+const TARGETS_EVAL_RES_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Res);
 
-const SKILL_OWNERS_ATK_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Atk);
-const SKILL_OWNERS_SPD_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Spd);
-const SKILL_OWNERS_DEF_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Def);
-const SKILL_OWNERS_RES_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Res);
+const SKILL_OWNERS_ATK_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Atk);
+const SKILL_OWNERS_SPD_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Spd);
+const SKILL_OWNERS_DEF_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Def);
+const SKILL_OWNERS_RES_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Res);
 
-const SKILL_OWNERS_EVAL_ATK_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Atk);
-const SKILL_OWNERS_EVAL_SPD_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Spd);
-const SKILL_OWNERS_EVAL_DEF_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Def);
-const SKILL_OWNERS_EVAL_RES_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Res);
+const SKILL_OWNERS_EVAL_ATK_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Atk);
+const SKILL_OWNERS_EVAL_SPD_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Spd);
+const SKILL_OWNERS_EVAL_DEF_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Def);
+const SKILL_OWNERS_EVAL_RES_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Res);
 
 /// 戦闘開始時ステータスの比較
 const UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE =
@@ -502,6 +502,13 @@ const HIGHEST_PENALTIES_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_S
         new HighestValueOnEachStatAmongUnitsNode(
             new TargetsAndThoseAlliesWithinNSpacesNode(n, FOE_NODE),
             TARGETS_PENALTIES_NODE
+        );
+
+const HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n) =>
+        new HighestValueOnEachStatAmongUnitsNode(
+            new TargetsAlliesWithinNSpacesNode(n),
+            TARGETS_STATS_ON_MAP_NODE,
         );
 
 const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);

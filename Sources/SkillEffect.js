@@ -1460,6 +1460,39 @@ const GRANTS_ATK_SPD_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUn
 const GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUnitDuringCombatNode(6, 6, 0, 0)
 const GRANTS_ATK_SPD_PLUS_7_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUnitDuringCombatNode(7, 7, 0, 0)
 
+class TargetsStatsAreHighestStatsFromNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {StatsNode} statsNode
+     * @param {[boolean|BoolNode, boolean|BoolNode, boolean|BoolNode, boolean|BoolNode]} statsFlags
+     */
+    constructor(statsNode, statsFlags) {
+        super();
+        this._statsNode = statsNode;
+        this._statsFlags = statsFlags.map(x => BoolNode.makeBoolNodeFrom(x));
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let [atk, spd, def, res] = this._statsNode.evaluate(env);
+        let [atkFlag, spdFlag, defFlag, resFlag] =
+            this._statsFlags.map(x => x.evaluate(env));
+        let stats = [atk, spd, def, res];
+        let flags = [atkFlag, spdFlag, defFlag, resFlag];
+        env.debug(`${unit.nameWithGroup}は高い方の値をステータスに設定(ユニット: [${unit.getStatusesInPrecombat()}], 値: [${stats}], 差: [${ArrayUtil.sub(stats, unit.getStatusesInPrecombat())}], 対象ステータス: [${flags}])`);
+        if (atkFlag) unit.atkSpur += atk - unit.getAtkInPrecombat();
+        if (spdFlag) unit.spdSpur += spd - unit.getSpdInPrecombat();
+        if (defFlag) unit.defSpur += def - unit.getDefInPrecombat();
+        if (resFlag) unit.resSpur += res - unit.getResInPrecombat();
+    }
+}
+
+const TARGETS_STATS_ARE_HIGHEST_STATS_FROM_NODE =
+    statsNode => new TargetsStatsAreHighestStatsFromNode(statsNode, [true, true, true, true]);
+
 /**
  * @abstract
  */
@@ -1709,7 +1742,7 @@ class GetStatNode extends NumberNode {
     }
 }
 
-class TargetsStatsOnMapNode extends GetStatNode {
+class TargetsStatOnMapNode extends GetStatNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1721,7 +1754,7 @@ class TargetsStatsOnMapNode extends GetStatNode {
     }
 }
 
-class TargetsEvalStatsOnMapNode extends GetStatNode {
+class TargetsEvalStatOnMapNode extends GetStatNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1733,7 +1766,7 @@ class TargetsEvalStatsOnMapNode extends GetStatNode {
     }
 }
 
-class TargetsStatsAtStartOfTurnNode extends GetStatNode {
+class TargetsStatAtStartOfTurnNode extends GetStatNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1745,19 +1778,19 @@ class TargetsStatsAtStartOfTurnNode extends GetStatNode {
     }
 }
 
-class SkillOwnersStatsOnMapNode extends TargetsStatsOnMapNode {
+class SkillOwnersStatOnMapNode extends TargetsStatOnMapNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
-class SkillOwnersEvalStatsOnMapNode extends TargetsEvalStatsOnMapNode {
+class SkillOwnersEvalStatOnMapNode extends TargetsEvalStatOnMapNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
-class UnitsStatsAtStartOfCombatNode extends GetStatNode {
+class UnitsStatAtStartOfCombatNode extends GetStatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
     }
@@ -1769,13 +1802,13 @@ class UnitsStatsAtStartOfCombatNode extends GetStatNode {
     }
 }
 
-class FoesStatsAtStartOfCombatNode extends UnitsStatsAtStartOfCombatNode {
+class FoesStatAtStartOfCombatNode extends UnitsStatAtStartOfCombatNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
-class UnitsEvalStatsAtStartOfCombatNode extends UnitsStatsAtStartOfCombatNode {
+class UnitsEvalStatAtStartOfCombatNode extends UnitsStatAtStartOfCombatNode {
     statsDescription = "戦闘開始時の比較時";
 
     getStats(env) {
@@ -1783,33 +1816,33 @@ class UnitsEvalStatsAtStartOfCombatNode extends UnitsStatsAtStartOfCombatNode {
     }
 }
 
-class FoesEvalStatsAtStartOfCombatNode extends UnitsEvalStatsAtStartOfCombatNode {
+class FoesEvalStatAtStartOfCombatNode extends UnitsEvalStatAtStartOfCombatNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
 // noinspection JSUnusedGlobalSymbols
-const UNITS_ATK_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STATUS_INDEX.Atk);
-const UNITS_SPD_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STATUS_INDEX.Spd);
+const UNITS_ATK_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Atk);
+const UNITS_SPD_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Spd);
 // noinspection JSUnusedGlobalSymbols
-const UNITS_DEF_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STATUS_INDEX.Def);
-const UNITS_RES_AT_START_OF_COMBAT_NODE = new UnitsStatsAtStartOfCombatNode(STATUS_INDEX.Res);
+const UNITS_DEF_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Def);
+const UNITS_RES_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Res);
 
-const FOES_ATK_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Atk);
-const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Spd);
-const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Def);
-const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatsAtStartOfCombatNode(STATUS_INDEX.Res);
+const FOES_ATK_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Atk);
+const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Spd);
+const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Def);
+const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Res);
 
-const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Atk);
-const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Spd);
-const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Def);
-const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = new UnitsEvalStatsAtStartOfCombatNode(STATUS_INDEX.Res);
+const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
+const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Spd);
+const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Def);
+const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Res);
 
-const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = new FoesEvalStatsAtStartOfCombatNode(STATUS_INDEX.Atk);
-const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = new FoesEvalStatsAtStartOfCombatNode(STATUS_INDEX.Spd);
-const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = new FoesEvalStatsAtStartOfCombatNode(STATUS_INDEX.Def);
-const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = new FoesEvalStatsAtStartOfCombatNode(STATUS_INDEX.Res);
+const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
+const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Spd);
+const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Def);
+const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Res);
 
 class TargetsStatsDuringCombat extends PositiveNumberNode {
     static {
@@ -1916,6 +1949,21 @@ const FOES_EVAL_SPD_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATU
 const FOES_EVAL_DEF_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Def);
 // noinspection JSUnusedGlobalSymbols
 const FOES_EVAL_RES_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Res);
+
+class TargetsStatsOnMapNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getStatusesInPrecombat();
+        env.debug(`${unit.nameWithGroup}のマップでのステータス: [${result}]`);
+        return result;
+    }
+}
+
+const TARGETS_STATS_ON_MAP_NODE= new TargetsStatsOnMapNode();
 
 /**
  * @abstract
@@ -2665,7 +2713,7 @@ class RestoreTargetsHpNeutralizesDeepWoundsOnMapNode extends FromPositiveNumberN
 }
 
 const RESTORE_TARGETS_HP_NEUTRALIZES_DEEP_WOUNDS_ON_MAP_NODE =
-        n => new RestoreTargetsHpNeutralizesDeepWoundsOnMapNode(n);
+    n => new RestoreTargetsHpNeutralizesDeepWoundsOnMapNode(n);
 
 class RestoreTargetHpNode extends FromPositiveNumberNode {
     static {
@@ -2909,8 +2957,17 @@ class ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode extends ForEachTarget
     }
 }
 
+class ForEachTargetAndTargetsAllyWithin3SpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
+    constructor(predNode, ...children) {
+        super(3, predNode, ...children);
+    }
+}
+
 const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE =
     (...children) => new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE, ...children);
+
+const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_3_SPACES_OF_TARGET_NODE =
+    (...children) => new ForEachTargetAndTargetsAllyWithin3SpacesOfTargetNode(TRUE_NODE, ...children);
 
 class ForEachTargetAndFoeWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
     getUnits(env) {

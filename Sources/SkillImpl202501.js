@@ -1,6 +1,77 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = getNormalSkillId(Weapon.JokersWild);
+    // Grants HP+5.
+    // Unit's Atk/Spd/Def/Res = highest respective stat from among allies within 2 spaces during combat.
+    // (Calculates each stat bonus independently at start of combat. If unit's stat is highest, unit's stat will decrease.)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            TARGETS_STATS_ARE_HIGHEST_STATS_FROM_NODE(
+                HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.JokersWild);
+    // Grants HP+5.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Unit can counterattack regardless of foe's range.
+        TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+5,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = highest respective stat from among allies within 3 spaces - unit's stat values (calculates each stat bonus independently at start of combat; if unit's stat is highest,
+            // unit's stat will decrease),
+            IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+                TARGETS_STATS_ARE_HIGHEST_STATS_FROM_NODE(
+                    HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE(3),
+                ),
+            ),
+            // and deals damage = 20% of unit's Spd during combat (excluding area-of-effect Specials)."
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.JokersWild);
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // to allies within 3 spaces of unit for 1 turn.
+        FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_3_SPACES_OF_TARGET_NODE(
+            // grants Atk/Spd/Def/Res+6,【Hexblade】, and【Null Panic】
+            GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 6, 6, 6),
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Hexblade, StatusEffectType.NullPanic),
+        )
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+5 and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                // reduces damage from foe's first attack by 20% of the greater of unit's Def or Res during combat
+                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                    MAX_NODE(UNITS_DEF_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE),
+                ),
+            ),
+        ),
+        // and also,
+        // if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5,
+        // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
+        INFLICTS_SPECIAL_COOLDOWN_COUNT_1_ON_FOE_BEFORE_FOES_FIRST_ATTACK_DURING_COMBAT_BY_DRAGON_NODE,
+    ));
+}
+
+{
     let skillId = getNormalSkillId(Weapon.DazzlingBreath);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(

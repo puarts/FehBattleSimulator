@@ -4412,7 +4412,7 @@ function setDiscord(skillId, statsRatios) {
         IF_NODE(NOT_NODE(new IsThereUnitOnMapNode(new AreTargetAndSkillOwnerPartnersNode())),
             // at start of turn,
             // grants "neutralizes 'effective against dragons' bonuses" to ally with the highest Res among allies within 3 spaces of unit for 1 turn.
-            new ForEachAllyWithHighestValueWithinNSpacesNode(3, TRUE_NODE, new TargetsStatsAtStartOfTurnNode(STATUS_INDEX.Res),
+            new ForEachAllyWithHighestValueWithinNSpacesNode(3, TRUE_NODE, new TargetsStatAtStartOfTurnNode(STATUS_INDEX.Res),
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.ShieldDragon),
             ),
         ),
