@@ -2650,7 +2650,9 @@ class BattleMap {
                         }
                     }
                     // スタイル時
-                    if (unit.hasCannotMoveStyle() && unit.canActivateStyle()) {
+                    // スタイル可能もしくはスタイル中
+                    if ((unit.hasCannotMoveStyle() && unit.canActivateStyle()) ||
+                        unit.isCannotMoveStyleActive()) {
                         let env = new BattleMapEnv(this, unit).setTile(unit.placedTile);
                         env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
                         let attackableTiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
