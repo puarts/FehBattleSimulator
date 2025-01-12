@@ -7576,14 +7576,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.TomeOfStorms] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 5;
-                targetUnit.spdSpur += 5;
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Thunderbrand] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.restHpPercentage >= 50) {
                 targetUnit.atkSpur += 5;
