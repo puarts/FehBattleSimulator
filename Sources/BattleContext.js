@@ -142,6 +142,7 @@ class BattleContext {
 
         // 神罰の杖
         this.wrathfulStaff = false;
+        this.isNeutralizedWrathfulStaff = false;
 
         // 戦闘中自身の弱化を無効化
         this.invalidatesOwnAtkDebuff = false;
@@ -1089,5 +1090,14 @@ class BattleContext {
         return this.hasNonSpecialMiracleActivated
             || this.hasNonSpecialOneTimePerMapMiracleAcitivated
             || this.hasNonSpecialMiracleAndHealAcitivated;
+    }
+
+    /**
+     * 神罰が発動できるか(無効も考慮)
+     * @returns {boolean}
+     */
+    canActivateWrathfulStaff() {
+        if (this.isNeutralizedWrathfulStaff) return false;
+        return this.wrathfulStaff;
     }
 }

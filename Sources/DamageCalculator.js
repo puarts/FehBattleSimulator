@@ -742,9 +742,12 @@ class DamageCalculator {
         }
 
         let damageReduceRatio = 1.0;
-        let reduceDamageHalf = !atkUnit.battleContext.wrathfulStaff && atkUnit.weaponType === WeaponType.Staff;
-        if (reduceDamageHalf) {
-            damageReduceRatio *= 0.5;
+
+        // 神罰の杖
+        if (atkUnit.weaponType === WeaponType.Staff) {
+            if (!atkUnit.battleContext.canActivateWrathfulStaff()) {
+                damageReduceRatio *= 0.5;
+            }
         }
 
         let finalAtk = totalAtk;

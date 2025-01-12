@@ -1,6 +1,10 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    setSway(PassiveA.SwayAtkRes, [READ_NUM_NODE, 0, 0, READ_NUM_NODE]);
+}
+
+{
     let skillId = Weapon.StaffOfYngvi;
     // Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1).
     // Foe cannot counterattack.

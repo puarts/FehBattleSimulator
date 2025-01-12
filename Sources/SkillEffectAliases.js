@@ -715,3 +715,22 @@ const TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE =
  */
 const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE =
     n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));
+
+/**
+ * @param skillId
+ * @param {NumberNode[]} statsNodes
+ */
+function setSway(skillId, statsNodes) {
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 3 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Res during combat = 8 + number of allies within 3 spaces of unit × 2 (max 12),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(...statsNodes),
+                ENSURE_MAX_NODE(ADD_NODE(8, MULT_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 2)), 12),
+            ),
+            // and calculates damage from staff like other weapons.
+            CALCULATES_TARGETS_DAMAGE_FROM_STAFF_LIKE_OTHER_WEAPONS_NODE,
+        ),
+    ));
+}

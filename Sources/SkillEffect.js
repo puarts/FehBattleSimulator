@@ -791,6 +791,8 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
     }
 }
 
+const NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(3);
+
 class NumOfFoesAlliesWithinNSpacesNode extends NumOfTargetsAlliesWithinNSpacesNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);

@@ -10828,7 +10828,7 @@ class DamageCalculatorWrapper {
      */
     __setWrathfulStaff(atkUnit, defUnit) {
         if (defUnit.canInvalidateWrathfulStaff()) {
-            return;
+            atkUnit.battleContext.isNeutralizedWrathfulStaff = true;
         }
 
         let atkWeaponInfo = atkUnit.weaponInfo;

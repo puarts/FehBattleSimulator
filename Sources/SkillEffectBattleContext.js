@@ -1810,3 +1810,18 @@ class PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode extends SkillEffe
 
 const POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE =
         n => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(n);
+
+class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.wrathfulStaff = true;
+        env.debug(`${unit.nameWithGroup}は他の武器同様のダメージ計算になる`);
+    }
+}
+
+const CALCULATES_TARGETS_DAMAGE_FROM_STAFF_LIKE_OTHER_WEAPONS_NODE =
+    new CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode();
