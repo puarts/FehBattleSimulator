@@ -3762,6 +3762,12 @@ const CANNOT_MOVE_STYLE_SET = new Set();
 
 const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
 
+/**
+ * 範囲奥義も含む低い方計算無効
+ * @type {Set<any>}
+ */
+const DISABLES_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SET = new Set();
+
 ///
 /// Functions
 ///

@@ -708,6 +708,9 @@ class DamageCalculatorWrapper {
             return true;
         }
         for (let skillId of targetUnit.enumerateSkills()) {
+            if (DISABLES_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SET.has(skillId)) {
+                return true;
+            }
             switch (skillId) {
                 case PassiveA.RareTalent:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -7483,14 +7486,6 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.defSpur += 4;
                 targetUnit.resSpur += 4;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.IndignantBow] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
-                targetUnit.atkSpur += 6;
-                enemyUnit.atkSpur -= 6;
-                targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                targetUnit.battleContext.invalidatesAtkBuff = true;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Grafcalibur] = (targetUnit) => {

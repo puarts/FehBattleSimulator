@@ -687,10 +687,11 @@ class DamageCalculator {
 
         let totalAtk = atkUnit.getAtkInCombat(defUnit);
         let specialTotalAtk = atkUnit.getAtkInCombat(defUnit);
-        if (atkUnit.battleContext.usesDefInsteadOfAtkWhenSpecial) {
+        let statusIndexWhenSpecial = atkUnit.battleContext.statIndexInsteadOfAtkWhenSpecial;
+        if (statusIndexWhenSpecial !== STATUS_INDEX.None) {
             // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
             let ratio = atkUnit.battleContext.ratioForUsingAnotherStatWhenSpecial;
-            specialTotalAtk = Math.trunc(atkUnit.getDefInCombat(defUnit) * ratio);
+            specialTotalAtk = Math.trunc(atkUnit.getStatusesInCombat(defUnit)[statusIndexWhenSpecial] * ratio);
         }
 
         let atkCountPerCombat = atkUnit.battleContext.getAttackCount(context.isCounterattack);

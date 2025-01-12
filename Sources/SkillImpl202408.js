@@ -3933,7 +3933,7 @@ function setDiscord(skillId, statsRatios) {
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
-        new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkNode(150),
+        new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(STATUS_INDEX.Def, 150),
     ));
 
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(

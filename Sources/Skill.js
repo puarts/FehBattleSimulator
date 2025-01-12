@@ -1565,10 +1565,18 @@ const DISARM_HEX_TRAP_SKILL_SET = new Set([
 ]);
 
 const STATUS_INDEX = {
+    None: -1,
     Atk: 0,
     Spd: 1,
     Def: 2,
     Res: 3,
+}
+
+function getStatusName(index) {
+    if (index === STATUS_INDEX.None) {
+        return "ー";
+    }
+    return ["攻撃", "速さ", "守備", "魔防"][index];
 }
 
 // TODO: リファクタリングする(適切な場所に移動する。引数の型を確定する)

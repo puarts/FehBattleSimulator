@@ -1,6 +1,85 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = getNormalSkillId(Weapon.IndignantBow);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, EQ_NODE(FOES_HP_PERCENTAGE_AT_START_OF_COMBAT_NODE, 100)),
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 0, 0),
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(6, 0, 0, 0),
+            new NeutralizesPenaltiesToUnitsStatsNode(true, false, false, false),
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(true, false, false, false),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.IndignantBow);
+    // Disables foe's skills that "calculate damage using the lower of foe's Def or Res" (including area-of-effect Specials).
+    DISABLES_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SET.add(skillId);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // grants Atk/Def/Res+6 and Spd+5 to unit,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 6, 6),
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(0, 5, 0, 0),
+            // neutralizes unit's penalties to Atk/Spd/Res
+            new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
+            // and foe's bonuses to Atk/Spd (from skills like Fortify, Rally, etc.),
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(true, true, false, false),
+            // and deals damage = 20% of unit's Res during combat (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+            // and also,
+            // when unit's Special triggers,
+            // calculates damage using 150% of unit's Res instead of the value of unit's Atk (excluding area-of-effect Specials).
+            new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(STATUS_INDEX.Res, 150),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.IndignantBow);
+    // Accelerates Special trigger (cooldown count-1).
+    ACCELERATES_SPECIAL_TRIGGER_SET.add(skillId);
+    // For allies within 3 spaces of unit,
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Res+5,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 5, 0, 99),
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // neutralizes effects that inflict "Special cooldown charge -X" on ally,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and reduces damage from foe's first attack by 7 during their combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // grants Special cooldown count-1 to unit before unit's first attack,
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            // and reduces damage from foe's attacks by 10 during combat (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(10),
+            // and also,
+            // when foe's attack triggers foe's Special,
+            // reduces damage from foe's attacks by an additional 10 (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials).
+            new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(10),
+        ),
+    ));
+    BEFORE_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // and reduces damage from foe's attacks by 10 during combat (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+        new ReducesDamageBeforeCombatNode(10),
+        // when foe's attack triggers foe's Special,
+        // reduces damage from foe's attacks by an additional 10 (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials).
+        new ReducesDamageBeforeCombatNode(10),
+    ));
+}
+
+{
     let skillId = getNormalSkillId(Weapon.JokersWild);
     // Grants HP+5.
     // Unit's Atk/Spd/Def/Res = highest respective stat from among allies within 2 spaces during combat.

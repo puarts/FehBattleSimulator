@@ -1733,17 +1733,24 @@ const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NOD
 /**
  * calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
  */
-class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkNode extends FromPositiveNumberNode {
+class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
+    constructor(index, percentage) {
+        super();
+        this._indexNode = NumberNode.makeNumberNodeFrom(index);
+        this._percentageNode = NumberNode.makeNumberNodeFrom(percentage);
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
-        let percentage = this.evaluateChildren(env);
-        unit.battleContext.usesDefInsteadOfAtkWhenSpecial = true;
+        let index = this._indexNode.evaluate(env);
+        let percentage = this._percentageNode.evaluate(env);
+        unit.battleContext.statIndexInsteadOfAtkWhenSpecial = index;
         unit.battleContext.ratioForUsingAnotherStatWhenSpecial = percentage / 100.0;
-        env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに守備の値を使用(${percentage}%)`);
+        env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに${getStatusName(index)}の値を使用(${percentage}%)`);
     }
 }
 
