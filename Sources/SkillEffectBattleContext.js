@@ -1272,6 +1272,8 @@ class CanTargetActivateNonSpecialMiracleNode extends BoolNode {
     }
 }
 
+const CAN_TARGET_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = n => new CanTargetActivateNonSpecialMiracleNode(n);
+
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 
 /**

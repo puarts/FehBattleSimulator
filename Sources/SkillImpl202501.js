@@ -1,8 +1,46 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = PassiveB.IRemember;
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // on closest foes and foes within 2 spaces of those foes through their next actions.
+            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+                // inflicts Spd/Def-7,
+                INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(0, 7, 7, 0),
+                // 【Panic】, and【Sabotage】
+                INFLICTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE(StatusEffectType.Panic, StatusEffectType.Sabotage),
+            ),
+        ),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // inflicts Spd/Def-5 on foe and
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 5, 5, 0),
+            // deals damage = 20% of unit's Spd during combat (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and also,
+            // if unit's HP > 1 and foe would reduce unit's HP to 0,
+            // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
+            CAN_TARGET_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(0),
+        ),
+
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
     let skillId = PassiveA.PerfectAtkSpd;
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's HP ≥ 25% at start of combat or unit is within 3 spaces of an ally,
         IF_NODE(
