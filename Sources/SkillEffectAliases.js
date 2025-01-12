@@ -686,7 +686,9 @@ function setSpikedWall(skillId, debuffAmounts, statuses) {
     // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
+        EQ_NODE(new TargetsRangeNode(), 2),
+    )
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts Atk/Def-4 on foe,
         new InflictsStatsMinusOnFoeDuringCombatNode(...debuffAmounts),
@@ -734,3 +736,27 @@ function setSway(skillId, statsNodes) {
         ),
     ));
 }
+
+function setCannotMoveThroughSpacesSkill(skillId) {
+    // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
+    // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
+    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+}
+
+/**
+ * 魔防+5比較の竜眼
+ * @type {AppliesSkillEffectsAfterStatusFixedNode}
+ */
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_1_ON_FOE_BEFORE_FOES_FIRST_ATTACK_DURING_COMBAT_BY_DRAGON_NODE =
+    APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+        // if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5,
+        IF_NODE(
+            AND_NODE(
+                CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(5, FOES_EVAL_RES_DURING_COMBAT_NODE))
+            ),
+            // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+        ),
+    );

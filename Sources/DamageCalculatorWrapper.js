@@ -6278,15 +6278,6 @@ class DamageCalculatorWrapper {
                 }
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.DazzlingBreath] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                enemyUnit.addAllSpur(-5);
-                enemyUnit.battleContext.followupAttackPriorityDecrement--;
-                if (this.__isThereAllyIn2Spaces(targetUnit)) {
-                    targetUnit.battleContext.reducesCooldownCount = true;
-                }
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.SpendyScimitar] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 let amount = targetUnit.dragonflower >= 1 ? 6 : 4;
