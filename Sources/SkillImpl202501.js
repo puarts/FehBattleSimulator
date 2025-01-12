@@ -1,6 +1,59 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = Weapon.RampartBow;
+    // Accelerates Special trigger (cooldown count-1). Effective against flying foes.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // on closest foes and foes within 2 spaces of those foes through their next actions.
+            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+                // inflicts Spd/Def-7,
+                INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(0, 7, 7, 0),
+                // 【Exposure】, and【Deep Wounds】
+                INFLICTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE(StatusEffectType.Exposure, StatusEffectType.DeepWounds),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res = number of foes within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ENSURE_MAX_NODE(
+                    ADD_NODE(
+                        MULT_NODE(
+                            NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+                            3,
+                        ),
+                        5,
+                    ),
+                    14,
+                ),
+            ),
+            // neutralizes unit's penalties,
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+            // deals +X damage
+            // (X = number of foes within 3 spaces of target, including target, × 8; max 32; excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(
+                ENSURE_MAX_NODE(
+                    MULT_NODE(
+                        NUM_OF_TARGETS_FOES_WITHIN_3_SPACES_OF_TARGET_NODE,
+                        8,
+                    ),
+                    32
+                ),
+            ),
+            // and reduces damage from foe's first attack by 7 during combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+        ),
+    ));
+}
+
+{
     setSway(PassiveA.SwayAtkRes, [READ_NUM_NODE, 0, 0, READ_NUM_NODE]);
 }
 

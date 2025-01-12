@@ -824,6 +824,8 @@ class NumOfTargetsFoesWithinNSpacesOfTargetNode extends NumberNode {
     }
 }
 
+const NUM_OF_TARGETS_FOES_WITHIN_3_SPACES_OF_TARGET_NODE = new NumOfTargetsFoesWithinNSpacesOfTargetNode(3);
+
 class NumOfFoesWithinNRowsOrNColumnsCenteredOnUnitNode extends NumberNode {
     #n;
 
