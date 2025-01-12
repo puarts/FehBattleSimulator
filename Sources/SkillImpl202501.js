@@ -1,6 +1,34 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = Weapon.HelpingDaggerPlus;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants Atk/Spd+5 to unit,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 5, 0, 0),
+            X_NUM_NODE(
+                // grants Atk/Spd+X × 5 to unit
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(MULT_NODE(READ_NUM_NODE, 5), MULT_NODE(READ_NUM_NODE, 5), 0, 0),
+                // (X = the number of allies with Atk ≥ 55 within 3 rows or 3 columns centered on unit + the number of allies with Spd ≥ 40 in the same area; max 3),
+                ENSURE_MAX_NODE(
+                    COUNT_IF_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE,
+                        AND_NODE(
+                            IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+                            OR_NODE(GTE_NODE(TARGETS_EVAL_ATK_ON_MAP, 55), GTE_NODE(TARGETS_EVAL_SPD_ON_MAP, 40))
+                        )
+                    ),
+                    3,
+                ),
+            ),
+            // and grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack).
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.RampartBow;
     // Accelerates Special trigger (cooldown count-1). Effective against flying foes.
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
