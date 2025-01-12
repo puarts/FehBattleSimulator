@@ -43,6 +43,12 @@ const GetAssistTargetingMixin = {
     },
 }
 
+const GetAssistTargetMixin = {
+    getUnit(env) {
+        return env.assistTarget;
+    },
+}
+
 const GetValueMixin = Object.assign({}, GetUnitMixin, {
     evaluate(env) {
         let unit = this.getUnit(env);
@@ -126,6 +132,14 @@ class AssistTargetingNode extends TargetNode {
 }
 
 const ASSIST_TARGETING_NODE = new AssistTargetingNode();
+
+class AssistTargetNode extends TargetNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetMixin);
+    }
+}
+
+const ASSIST_TARGET_NODE = new AssistTargetNode();
 
 /**
  * @abstract
@@ -370,6 +384,8 @@ class UniteUnitsNode extends UnitsNode {
         return IterUtil.concat(...this.evaluateChildren(env));
     }
 }
+
+const UNITE_UNITS_NODE = (...unitsNode) => new UniteUnitsNode(...unitsNode);
 
 /**
  * @template T
@@ -3111,6 +3127,7 @@ class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
 const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
 const IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(4, TRUE_NODE);
+const IS_TARGET_WITHIN_5_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(5, TRUE_NODE);
 
 class IsSpaceWithinNSpacesOfTargetNode extends IsInRangeNNode {
     static {
