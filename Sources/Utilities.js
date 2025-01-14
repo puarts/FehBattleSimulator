@@ -13,7 +13,7 @@ class ObjectUtil {
     }
 
     static getKeyName(object, value) {
-        return Object.keys(object).find(key => object[key].toString() === value);
+        return Object.keys(object).find(key => object[key] === value);
     }
 }
 

@@ -29,6 +29,11 @@ class BattleContext {
      */
     #damageReductionRatiosOfFirstAttacks = [];
     /**
+     * 最初に受けた攻撃と2回攻撃の奥義扱いによるダメージ軽減(大盾などの奥義軽減とはおそらく異なる(連盾などで複製発動しない、守備奥義無効でも軽減される))
+     * @type {Number[]}
+     */
+    #damageReductionRatiosOfFirstAttacksBySpecial = [];
+    /**
      * 連撃のダメージ軽減
      * @type {Number[]}
      */
@@ -73,6 +78,7 @@ class BattleContext {
         this.#reductionRatiosOfDamageReductionRatioExceptSpecialOnSpecialActivation = [];
         this.#damageReductionRatiosOfFirstAttack = [];
         this.#damageReductionRatiosOfFirstAttacks = [];
+        this.#damageReductionRatiosOfFirstAttacksBySpecial = [];
         this.#damageReductionRatiosOfConsecutiveAttacks = [];
         this.#damageReductionRatiosOfFollowupAttack = [];
         this.#damageReductionRatiosByChainGuard = [];
@@ -86,7 +92,7 @@ class BattleContext {
         this.cooldownCountForDefense = 1;
 
         // 戦闘中に奥義が発動されたかどうか
-        this.isSpecialActivated = false;
+        this.hasSpecialActivated = false;
         this.specialActivatedCount = 0;
         this.isPreCombatSpecialActivated = false;
 
@@ -136,6 +142,7 @@ class BattleContext {
 
         // 神罰の杖
         this.wrathfulStaff = false;
+        this.isNeutralizedWrathfulStaff = false;
 
         // 戦闘中自身の弱化を無効化
         this.invalidatesOwnAtkDebuff = false;
@@ -373,11 +380,8 @@ class BattleContext {
         this.preventedDefenderSpecial = false;
         this.preventedDefenderSpecialPerAttack = false;
 
-        // 奥義以外の祈りが発動したかどうか
-        this.isNonSpecialMiracleActivated = false;
-
         // 1マップで1回の奥義効果が発動したかどうか
-        this.isOncePerMapSpecialActivated = false;
+        this.hasOncePerMapSpecialActivated = false;
 
         // 武器スキルの条件を満たしたかどうか(__init__applySkillEffectForUnitFuncDictで判定することを想定)
         this.weaponSkillCondSatisfied = false;
@@ -398,31 +402,28 @@ class BattleContext {
         this.canActivateNonSpecialMiracle = false;
 
         // 奥義以外の祈りが発動したかどうか
-        this.isNonSpecialMiracleActivated = false;
+        this.hasNonSpecialMiracleActivated = false;
 
         // 奥義による祈りが発動したかどうか
-        this.isSpecialMiracleActivated = false;
+        this.hasSpecialMiracleActivated = false;
 
         // 奥義以外の祈り(1マップ1回)
         this.canActivateNonSpecialOneTimePerMapMiracle = false;
 
         // 奥義以外の祈りが発動したかどうか(1マップ1回)
-        this.isNonSpecialOneTimePerMapMiracleAcitivated = false;
+        this.hasNonSpecialOneTimePerMapMiracleAcitivated = false;
 
         // 奥義以外の祈り+HP99回復
         this.canActivateNonSpecialMiracleAndHeal = false;
 
         // 奥義以外の祈り+HP99回復が発動したかどうか
-        this.isNonSpecialMiracleAndHealAcitivated = false;
+        this.hasNonSpecialMiracleAndHealAcitivated = false;
 
         // 奥義による祈り+HP99回復が発動したかどうか
-        this.isSpecialMiracleAndHealAcitivated = false;
-
-        // 奥義による祈りが発動したかどうか
-        this.isSpecialMiracleAcitivated = false;
+        this.hasSpecialMiracleAndHealActivated = false;
 
         // 奥義による祈りが発動したかどうか(1マップ1回)
-        this.isSpecialOneTimePerMapMiracleAcitivated = false;
+        this.hasSpecialOneTimePerMapMiracleAcitivated = false;
 
         // 範囲奥義を発動できない
         this.cannotTriggerPrecombatSpecial = false;
@@ -488,7 +489,7 @@ class BattleContext {
         this.canUnitDisableSkillsThatChangeAttackPriority = false;
 
         // 奥義の際に攻撃の代わりに他のステータスを利用
-        this.usesDefInsteadOfAtkWhenSpecial = false;
+        this.statIndexInsteadOfAtkWhenSpecial = STATUS_INDEX.None;
         this.ratioForUsingAnotherStatWhenSpecial = 0;
 
         // 奥義によるダメージを与えた敵の数
@@ -1028,6 +1029,14 @@ class BattleContext {
         return this.#damageReductionRatiosOfFirstAttacks;
     }
 
+    addDamageReductionRatioOfFirstAttacksBySpecial(ratio) {
+        this.#damageReductionRatiosOfFirstAttacksBySpecial.push(ratio);
+    }
+
+    getDamageReductionRatiosOfFirstAttacksBySpecial() {
+        return this.#damageReductionRatiosOfFirstAttacksBySpecial;
+    }
+
     addDamageReductionRatioOfConsecutiveAttacks(ratio) {
         this.#damageReductionRatiosOfConsecutiveAttacks.push(ratio);
     }
@@ -1075,5 +1084,20 @@ class BattleContext {
 
     set potentOverwriteRatioPerAttack(value) {
         this._potentOverwriteRatioPerAttack = value;
+    }
+
+    hasAnyNonSpecialMiracleActivated() {
+        return this.hasNonSpecialMiracleActivated
+            || this.hasNonSpecialOneTimePerMapMiracleAcitivated
+            || this.hasNonSpecialMiracleAndHealAcitivated;
+    }
+
+    /**
+     * 神罰が発動できるか(無効も考慮)
+     * @returns {boolean}
+     */
+    canActivateWrathfulStaff() {
+        if (this.isNeutralizedWrathfulStaff) return false;
+        return this.wrathfulStaff;
     }
 }

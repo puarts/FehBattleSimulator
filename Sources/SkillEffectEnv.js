@@ -7,8 +7,39 @@ class NodeEnv {
         AFTER_COMBAT: 'AFTER_COMBAT',
     });
 
+    // 戦闘中のフェーズ
+    static COMBAT_PHASE = {
+        NULL_PHASE: null,
+        AT_START_OF_COMBAT: null,
+        APPLYING_OTHER_UNITS_SKILL: null,
+        APPLYING_OTHER_UNITS_SKILL_AFTER_FEUD: null,
+        APPLYING_EFFECTIVE: null,
+        APPLYING_COUNTER_ALL_DISTANCE: null,
+        APPLYING_STATUS_SKILL_AFTER_STATUS_FIXED: null,
+        APPLYING_SKILL_AFTER_STATUS_FIXED: null,
+        APPLYING_ATTACK_COUNT: null,
+        AFTER_APPLYING_ATTACK_COUNT: null,
+        APPLYING_CAN_COUNTER: null,
+        APPLYING_CAN_FOLLOW_UP: null,
+        APPLYING_POTENT: null,
+        AFTER_FOLLOWUP_CONFIGURED: null,
+        APPLYING_NEUTRALIZATION_SKILL: null,
+        APPLYING_SPECIAL: null,
+        APPLYING_REF_MIT: null,
+        AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED: null,
+        // TODO: result = self._damageCalc.calcCombatResult(atkUnit, defUnit, damageType);の後のフェーズも設定する
+    };
+
+    static {
+        Object.keys(this.COMBAT_PHASE).forEach((key, index) => {
+            this.COMBAT_PHASE[key] = index; // 定義順に番号をセット
+        });
+    }
+
     /** @type {string} */
     phase = NodeEnv.PHASE.NULL_PHASE;
+    /** @type {number} */
+    _combatPhase = NodeEnv.COMBAT_PHASE.NULL_PHASE;
     /** @type {Unit} */
     #skillOwner = null;
     /** @type {Unit} */
@@ -49,7 +80,9 @@ class NodeEnv {
     battleMap = null;
     /** @type {number[]} */
     #numValues = [];
-    /** @type {boolean|null} */
+    /**
+     * TODO: 削除する
+     * @type {boolean|null} */
     isStatusFixedNullable = null;
 
     #logLevel = LoggerBase.LOG_LEVEL.OFF;
@@ -326,6 +359,14 @@ class NodeEnv {
         return this.#numValues[this.#numValues.length - 1];
     }
 
+    readValueAt(index) {
+        return this.#numValues[this.#numValues.length - index - 1];
+    }
+
+    readAllValues() {
+        return this.#numValues;
+    }
+
     /**
      * @returns {number}
      */
@@ -347,6 +388,23 @@ class NodeEnv {
             return false;
         }
         return !this.isStatusFixedNullable;
+    }
+
+    get combatPhase() {
+        return this._combatPhase;
+    }
+
+    setCombatPhase(phase) {
+        this._combatPhase = phase;
+        return this;
+    }
+
+    isAfterCombatPhase(phase) {
+        return this.combatPhase > phase;
+    }
+
+    isAtOrAfterCombatPhase(phase) {
+        return this.combatPhase >= phase;
     }
 
     /**

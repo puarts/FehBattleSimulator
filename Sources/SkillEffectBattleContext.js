@@ -205,6 +205,17 @@ class IsUnitsHpGteNPercentAtStartOfTurnNode extends PercentageCondNode {
 
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = new IsUnitsHpGteNPercentAtStartOfTurnNode(25);
 
+class IsUnitsHpLteNPercentAtStartOfTurnNode extends PercentageCondNode {
+    evaluate(env) {
+        let unit = env.targetUnit;
+        let hpPercentage = unit.restHpPercentageAtBeginningOfTurn;
+        env.debug(`${unit.nameWithGroup}のHPが${this._percentage}%以下であるか: ${hpPercentage}%(HP:${unit.battleContext.restHp}) >= ${this._percentage}%`);
+        return hpPercentage <= this._percentage;
+    }
+}
+
+const IS_UNITS_HP_LTE_50_PERCENT_AT_START_OF_TURN_NODE = new IsUnitsHpLteNPercentAtStartOfTurnNode(50);
+
 class IsUnitsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
@@ -215,6 +226,18 @@ class IsUnitsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
 }
 
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpGteNPercentAtStartOfCombatNode(25);
+
+class IsUnitsHpLteNPercentAtStartOfCombatNode extends PercentageCondNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let hpPercentage = unit.battleContext.restHpPercentage;
+        env.debug(`${unit.nameWithGroup}のHPが${this._percentage}%以下であるか: ${hpPercentage}%(HP:${unit.battleContext.restHp}) >= ${this._percentage}%`);
+        return hpPercentage <= this._percentage;
+    }
+}
+
+const IS_UNITS_HP_LTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpLteNPercentAtStartOfCombatNode(25);
+const IS_UNITS_HP_LTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpLteNPercentAtStartOfCombatNode(50);
 
 class IsUnitsHpLteNPercentInCombatNode extends PercentageCondNode {
     evaluate(env) {
@@ -295,7 +318,7 @@ class IsTargetsSpecialTriggeredNode extends BoolNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = unit.battleContext.isSpecialActivated;
+        let result = unit.battleContext.hasSpecialActivated;
         env.debug(`${unit.nameWithGroup}は奥義を発動したか: ${result}`)
         return result;
     }
@@ -588,7 +611,8 @@ class NeutralizesFoesBonusesToStatsDuringCombatNode extends SetBoolToEachStatusN
     evaluate(env) {
         let values = this.getValues();
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は相手の強化を無効: [${values}]`);
+        let foe = env.getFoeDuringCombatOf(unit);
+        env.debug(`${unit.nameWithGroup}は相手(${foe.nameWithGroup})の強化を無効: [${values}]`);
         unit.battleContext.invalidateBuffs(...values);
     }
 }
@@ -910,6 +934,19 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode e
         env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
+
+class ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTwiceNode extends ApplyingNumberNode {
+    evaluate(env) {
+        let unit = env.unitDuringCombat;
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.addDamageReductionRatioOfFirstAttacksBySpecial(percentage / 100);
+        let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttacksBySpecial();
+        env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減（奥義扱い）: ratios [${ratios}]`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_BY_SPECIAL_DURING_COMBAT_INCLUDING_TWICE_NODE =
+    n => new ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTwiceNode(n);
 
 /**
  * reduces damage from foe's first attack by X during combat
@@ -1259,6 +1296,8 @@ class CanTargetActivateNonSpecialMiracleNode extends BoolNode {
     }
 }
 
+const CAN_TARGET_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = n => new CanTargetActivateNonSpecialMiracleNode(n);
+
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 
 /**
@@ -1405,6 +1444,9 @@ class TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttack
         env.debug(`${unit.nameWithGroup}は敵の最初の攻撃で軽減した値を、自身の次の攻撃のダメージに+`);
     }
 }
+
+const TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE =
+    new TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode();
 
 /**
  * 最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)
@@ -1555,7 +1597,10 @@ class TargetCanAttackDuringCombatNode extends BoolNode {
 
     debugMessage = "は攻撃可能か";
 
-    getValue(unit) {
+    getValue(unit, env) {
+        if (!env.isAfterCombatPhase(NodeEnv.COMBAT_PHASE.APPLYING_CAN_COUNTER)) {
+            env.error(`反撃可能判定が終わっていません(current phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, 1)})`);
+        }
         return unit.battleContext.canAttackInCombat();
     }
 }
@@ -1688,17 +1733,24 @@ const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NOD
 /**
  * calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
  */
-class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkNode extends FromPositiveNumberNode {
+class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
+    constructor(index, percentage) {
+        super();
+        this._indexNode = NumberNode.makeNumberNodeFrom(index);
+        this._percentageNode = NumberNode.makeNumberNodeFrom(percentage);
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
-        let percentage = this.evaluateChildren(env);
-        unit.battleContext.usesDefInsteadOfAtkWhenSpecial = true;
+        let index = this._indexNode.evaluate(env);
+        let percentage = this._percentageNode.evaluate(env);
+        unit.battleContext.statIndexInsteadOfAtkWhenSpecial = index;
         unit.battleContext.ratioForUsingAnotherStatWhenSpecial = percentage / 100.0;
-        env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに守備の値を使用(${percentage}%)`);
+        env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに${getStatusName(index)}の値を使用(${percentage}%)`);
     }
 }
 
@@ -1791,3 +1843,18 @@ class PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode extends SkillEffe
 
 const POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE =
         n => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(n);
+
+class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.wrathfulStaff = true;
+        env.debug(`${unit.nameWithGroup}は他の武器同様のダメージ計算になる`);
+    }
+}
+
+const CALCULATES_TARGETS_DAMAGE_FROM_STAFF_LIKE_OTHER_WEAPONS_NODE =
+    new CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode();

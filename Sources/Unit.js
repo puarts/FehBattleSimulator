@@ -455,6 +455,7 @@ class Unit extends BattleMapElement {
         this.restHp = 1; // ダメージ計算で使うHP
         this.reservedDamage = 0;
         this.reservedHeal = 0;
+        this.reservedHealNeutralizesDeepWounds = 0;
         this.reservedStatusEffects = [];
         this.reservedStatusEffectSetToNeutralize = new Set();
         this.reservedStatusEffectCountInOrder = 0;
@@ -644,7 +645,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForCantoRefresh = false;
 
         // 奥義に含まれるマップに1回の効果が発動したかを記憶しておく
-        this.isOncePerMapSpecialActivated = false;
+        this.hasOncePerMapSpecialActivated = false;
 
         // 比翼スキルを使用したか
         this.duoOrHarmonizedSkillActivationCount = 0;
@@ -736,6 +737,7 @@ class Unit extends BattleMapElement {
 
         this.restWeaponSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restSupportSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
+        this.restSpecialSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restPassiveBSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
         this.restStyleSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
 
@@ -1348,7 +1350,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.spdDebuff
             + ValueDelimiter + this.defDebuff
             + ValueDelimiter + this.resDebuff
-            + ValueDelimiter + this.moveCount
+            + ValueDelimiter + this._moveCount
             + ValueDelimiter + this.specialCount
             + ValueDelimiter + this.statusEffectsToString()
             + ValueDelimiter + boolToInt(this.isTransformed)
@@ -1370,7 +1372,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForFallenStar)
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForDeepStar)
             + ValueDelimiter + this.restMoveCount
-            + ValueDelimiter + boolToInt(this.isOncePerMapSpecialActivated)
+            + ValueDelimiter + boolToInt(this.hasOncePerMapSpecialActivated)
             + ValueDelimiter + boolToInt(this.isAttackDone)
             + ValueDelimiter + boolToInt(this.isCantoActivating)
             + ValueDelimiter + this.fromPosX
@@ -1397,6 +1399,8 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restStyleSkillAvailableTurn
             + ValueDelimiter + boolToInt(this.isStyleActive)
             + ValueDelimiter + boolToInt(this.isStyleActivatedInThisTurn)
+            + ValueDelimiter + boolToInt(this.isAttackedDone)
+            + ValueDelimiter + this.restSpecialSkillAvailableTurn
             ;
     }
 
@@ -1517,7 +1521,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForFallenStar = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForDeepStar = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restMoveCount = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.isOncePerMapSpecialActivated = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.hasOncePerMapSpecialActivated = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isAttackDone = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isCantoActivating = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.fromPosX = Number(values[i]); ++i; }
@@ -1544,6 +1548,8 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.restStyleSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isStyleActive = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isStyleActivatedInThisTurn = intToBool(Number(values[i])); ++i; }
+        if (values[i] !== undefined) { this.isAttackedDone = intToBool(Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.restSpecialSkillAvailableTurn = Number(values[i]); ++i; }
     }
 
 
@@ -1580,7 +1586,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.spdDebuff
             + ValueDelimiter + this.defDebuff
             + ValueDelimiter + this.resDebuff
-            + ValueDelimiter + this.moveCount
+            + ValueDelimiter + this._moveCount
             + ValueDelimiter + this.specialCount
             + ValueDelimiter + this.statusEffectsToString()
             + ValueDelimiter + this.partnerHeroIndex
@@ -2795,10 +2801,6 @@ class Unit extends BattleMapElement {
         }
         this.neutralizeDebuffsAtEndOfAction();
         this.neutralizeNegativeStatusEffectsAtEndOfAction();
-        if (g_appData.currentTurn === this.anotherActionTurnForCallingCircle) {
-            this.anotherActionTurnForCallingCircle = -1;
-            this.isActionDone = false;
-        }
     }
 
     endActionBySkillEffect() {
@@ -3092,6 +3094,7 @@ class Unit extends BattleMapElement {
     initReservedHp() {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
+        this.reservedHealNeutralizesDeepWounds = 0;
     }
 
     initReservedStatusEffects() {
@@ -3201,6 +3204,7 @@ class Unit extends BattleMapElement {
         let healHp = this.reservedHeal;
         let reducedHeal = this.hasDeepWounds() ? healHp : 0;
         healHp -= reducedHeal;
+        healHp += this.reservedHealNeutralizesDeepWounds;
         let damageHp = this.hasStatusEffect(StatusEffectType.EnGarde) ? 0 : this.reservedDamage;
         this.hp = Number(this.hp) - damageHp + healHp;
         this.modifyHp(leavesOneHp);
@@ -3225,6 +3229,10 @@ class Unit extends BattleMapElement {
 
     reserveHeal(healAmount) {
         this.reservedHeal += healAmount;
+    }
+
+    reserveHealNeutralizesDeepWounds(healAmount) {
+        this.reservedHealNeutralizesDeepWounds += healAmount;
     }
 
     modifyHp(leavesOneHp = false) {
@@ -5506,6 +5514,14 @@ class Unit extends BattleMapElement {
 
         this.updateStatusBySkillsExceptWeapon();
 
+        for (let skillId of this.enumerateSkills()) {
+            this.maxHpWithSkillsWithoutAdd += HP_WITH_SKILLS_MAP.get(skillId) ?? 0;
+            this.atkWithSkills += ATK_WITH_SKILLS_MAP.get(skillId) ?? 0;
+            this.spdWithSkills += SPD_WITH_SKILLS_MAP.get(skillId) ?? 0;
+            this.defWithSkills += DEF_WITH_SKILLS_MAP.get(skillId) ?? 0;
+            this.resWithSkills += RES_WITH_SKILLS_MAP.get(skillId) ?? 0;
+        }
+
         switch (this.weapon) {
             case Weapon.DaichiBoshiNoBreath:
                 if (this.isWeaponSpecialRefined) {
@@ -5666,6 +5682,9 @@ class Unit extends BattleMapElement {
             specialCountMax += this.weaponInfo.cooldownCount;
         }
         for (let skillId of this.enumerateSkills()) {
+            if (ACCELERATES_SPECIAL_TRIGGER_SET.has(skillId)) {
+                specialCountMax -= 1;
+            }
             specialCountMax += getSkillFunc(skillId, resetMaxSpecialCountFuncMap)?.call(this) ?? 0;
             switch (skillId) {
                 case Weapon.CrimeanScepter:
@@ -6288,7 +6307,7 @@ class Unit extends BattleMapElement {
     canActivateOrActivatedSpecial() {
         let hasSpecial = this.special !== Special.None;
         let canActivateSpecial = hasSpecial && this.tmpSpecialCount === 0;
-        return canActivateSpecial || this.battleContext.isSpecialActivated;
+        return canActivateSpecial || this.battleContext.hasSpecialActivated;
     }
 
     static canActivateOrActivatedSpecialEither(targetUnit, enemyUnit) {
@@ -6342,12 +6361,24 @@ class Unit extends BattleMapElement {
     }
 
     grantAnotherActionOnAssistIfPossible() {
-        if (!this.isOneTimeActionActivatedForSupport) {
+        if (!this.isOneTimeActionActivatedForSupport &&
+            this.isActionDone) {
             this.isOneTimeActionActivatedForSupport = true;
             this.grantsAnotherActionOnAssist();
             return true;
         }
         return false;
+    }
+
+    grantAnotherActionByCallingCircleIfPossible(currentTurn = null) {
+        if (currentTurn === null) {
+            currentTurn = g_appData.currentTurn;
+        }
+        if (currentTurn === this.anotherActionTurnForCallingCircle &&
+            this.isActionDone) {
+            this.anotherActionTurnForCallingCircle = -1;
+            this.isActionDone = false;
+        }
     }
 
     hasEmblemHero() {

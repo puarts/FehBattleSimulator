@@ -7,7 +7,6 @@ const Hero = {
     SpringIdunn: 500,
     YoungPalla: 511,
     BridalMicaiah: 522,
-    Mila: 524,
     SummerMia: 534,
     Thief: 547,
     RedThief: 548,

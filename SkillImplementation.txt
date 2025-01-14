@@ -754,7 +754,7 @@ __init__applySpecialSkillEffect() {}
 applyAttackSkillEffectAfterCombatFuncMap.set(skillId,
     function (attackUnit, attackTargetUnit) {
         // 奥義をは発動した場合
-        if (attackUnit.battleContext.isSpecialActivated) {
+        if (attackUnit.battleContext.hasSpecialActivated) {
             attackUnit.specialCount -= N;
         }
     }
@@ -957,7 +957,7 @@ if (targetUnit.isSpecialCountMax) {
 }
 
 戦闘中、奥義発動可能状態の時、または、この戦闘(戦闘前、戦闘中)で奥義を発動済みの時(戦闘前奥義が含まれるのか注意すること)
-atkUnit.isSpecialCharged || atkUnit.isSpecialActivated
+atkUnit.isSpecialCharged || atkUnit.hasSpecialActivated
 
 自分の最初の攻撃前に自身の奥義発動カウント-N(符号に注意Nは自然数)
 targetUnit.battleContext.specialCountReductionBeforeFirstAttack += N;
@@ -1186,7 +1186,7 @@ targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivat
 [螺旋効果]
 applySkillEffectAfterCombatForUnitFuncMap.set(skillId,
     function(targetUnit, enemyUnit) {
-        if (targetUnit.battleContext.isSpecialActivated) {
+        if (targetUnit.battleContext.hasSpecialActivated) {
             targetUnit.specialCount -= 2;
         }
     }
@@ -1357,7 +1357,7 @@ targetUnit.battleContext.reducedRatioForNextAttack = Math.max(0.3, targetUnit.ba
 ダメージをHPが1残るように軽減(奥義以外の祈り)
 targetUnit.battleContext.canActivateNonSpecialMiracleFuncs.push((defUnit, atkUnit) => {
     // 1戦闘1回まで
-    if (defUnit.battleContext.isNonSpecialMiracleActivated) {
+    if (defUnit.battleContext.hasNonSpecialMiracleActivated) {
         return false;
     }
     return defUnit.battleContext.restHpPercentage >= 50;
@@ -1384,7 +1384,7 @@ __applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTar
 // 攻撃を受けた際に発動する奥義の場合はapplySkillEffectAfterCombatNeverthelessDeadForUnitFuncMapを使用する
 applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap.set(skillId,
     function (attackUnit, attackTargetUnit) {
-        if (attackUnit.battleContext.isSpecialActivated) {
+        if (attackUnit.battleContext.hasSpecialActivated) {
             /** @type {[Unit]} */
             let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(attackTargetUnit, 2, true);
             for (let unit of units) {

@@ -730,7 +730,7 @@ describe('Test for additional damage calculation', () => {
     {
       const result = test_calcDamage(atkUnit, defUnit, false);
 
-      expect(atkUnit.battleContext.wrathfulStaff).toBe(true);
+      expect(atkUnit.battleContext.canActivateWrathfulStaff()).toBe(true);
 
       // trunc(50 * 0.15) = 7 になるはず
       expect(result.atkUnit_normalAttackDamage).toBe(7);
@@ -745,7 +745,7 @@ describe('Test for additional damage calculation', () => {
 
       const result = test_calcDamage(atkUnit, defUnit, false);
 
-      expect(atkUnit.battleContext.wrathfulStaff).toBe(false);
+      expect(atkUnit.battleContext.canActivateWrathfulStaff()).toBe(false);
       expect(result.atkUnit_normalAttackDamage).toBe(3);
       expect(result.atkUnit_totalAttackCount).toBe(2);
       expect(result.damageHistory[0].damageDealt).toBe(3);
@@ -905,7 +905,7 @@ test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
     defUnit.healFull();
 
     let result = test_calcDamage(atkUnit, defUnit, false);
-    expect(atkUnit.battleContext.isSpecialActivated).toBe(true);
+    expect(atkUnit.battleContext.hasSpecialActivated).toBe(true);
     expect(result.preCombatDamage).toBe(1);
   }
 }));

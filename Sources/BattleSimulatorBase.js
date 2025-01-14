@@ -3914,6 +3914,9 @@ class BattleSimulatorBase {
             }
         }
 
+        // 魔法陣の増援による再行動
+        atkUnit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
+
         if (this.data.gameMode === GameMode.SummonerDuels) {
             this.data.globalBattleContext.addSummonerDuelsKoScore(atkUnit, defUnit);
         }
@@ -7275,6 +7278,7 @@ class BattleSimulatorBase {
                 let env = new BattleSimulatorBaseEnv(this, unit);
                 env.setName('奥義以外の再行動時[補助+罠]').setLogLevel(getSkillLogLevel());
                 AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
+                unit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
                 // 移動時に罠を踏んで動けなくなるケース
                 return;
             }
@@ -7758,6 +7762,7 @@ class BattleSimulatorBase {
             let env = new BattleSimulatorBaseEnv(this, unit);
             env.setName('奥義以外の再行動時[移動]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
+            unit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
             self.__goToNextPhaseIfPossible(unit.groupId);
         };
         return this.__createCommand(
@@ -8421,7 +8426,7 @@ class BattleSimulatorBase {
         this.writeDebugLogLine(attacker.getNameWithGroup() + "が" + target.getNameWithGroup()
             + "に攻撃時のダメージ率" + attackEvalContext.damageRatio
         );
-        attackEvalContext.isSpecialChargeIncreased = target.battleContext.isSpecialActivated;
+        attackEvalContext.isSpecialChargeIncreased = target.battleContext.hasSpecialActivated;
 
         let couldAttackerAttack = result.atkUnit_actualTotalAttackCount > 0;
         attackEvalContext.isDebufferTier1 = couldAttackerAttack && isDebufferTier1(attacker, target) && this.__canDebuff2PointsOfDefOrRes(attacker, target);
@@ -10489,6 +10494,7 @@ class BattleSimulatorBase {
             let env = new BattleSimulatorBaseEnv(this, supporterUnit);
             env.setName('奥義以外の再行動時[補助]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(supporterUnit, env);
+            supporterUnit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
 
             // 再移動の評価
             let activated = this.__activateCantoIfPossible(supporterUnit);
@@ -10966,6 +10972,7 @@ class BattleSimulatorBase {
         let env = new BattleSimulatorBaseEnv(this, unit);
         env.setName('奥義以外の再行動時[破壊]').setLogLevel(getSkillLogLevel());
         AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
+        unit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
     }
 
     __goToNextPhaseIfPossible(groupId) {
@@ -11003,7 +11010,7 @@ class BattleSimulatorBase {
         }
     }
 
-    selectItem(targetId, add = false) {
+    selectItem(targetId, add = false, button = 0) {
         this.showItemInfo(targetId);
 
         let tabIndex = this.convertItemIndexToTabIndex(this.vm.currentItemIndex);
@@ -11014,6 +11021,17 @@ class BattleSimulatorBase {
             g_appData.selectCurrentItem();
         }
         g_appData.__showStatusToAttackerInfo();
+
+        // 右クリックならスタイル切り替え
+        if (this.currentUnit && button === 2) {
+            if (this.currentUnit.canActivateStyle()) {
+                this.currentUnit.activateStyle();
+                updateAllUi();
+            } else if (this.currentUnit.canDeactivateStyle()){
+                this.currentUnit.deactivateStyle();
+                updateAllUi();
+            }
+        }
     }
     selectItemToggle(targetId) {
         let item = g_appData.findItemById(targetId);

@@ -752,7 +752,7 @@
             // inflicts Atk/Def-10 on foe,
             new InflictsStatsMinusOnFoeDuringCombatNode(10, 0, 10, 0),
             // grants Special cooldown count-2 to unit before foe's first attack,
-            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstFollowUpAttackDuringCombatNode(2),
+            new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode(2),
             // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
         ),
@@ -1044,14 +1044,24 @@
     // At start of turn, if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally, unit transforms (otherwise, unit reverts). If unit transforms, grants Atk+2, and unit can counterattack regardless of foe's range.
     setBeastSkill(skillId, BeastCommonSkillType.Armor);
 
+    // TODO: 反撃可能判定後フックを作成するか検討する
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+                // deals damage to foe = 25% of foe's max HP as combat begins
+                // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
+                new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
+            ),
+            // (activates only when unit can attack in combat;
+            // only highest value applied;
+            // does not stack with other "deals X damage as combat begins" effects;
+            // effects that reduce damage during combat do not apply;
+            // will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
+        ),
+    ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // If unit is transformed or unit's HP ≥ 25% at start of combat,
-        IF_NODE(OR_NODE(new IsTargetTransformedNode(), IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
-            // deals damage to foe = 25% of foe's max HP as combat begins
-            // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
-            new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
-        ),
         // If unit is transformed or unit's HP ≥ 25% at start of combat,
         IF_NODE(OR_NODE(new IsTargetTransformedNode(), IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
             new NumThatIsNode(
@@ -1692,7 +1702,7 @@
                 // deals damage = 15% of unit's Atk (including when dealing damage with an area-of-effect Special),
                 new UnitDealsDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
                 // reduces damage from foe's attacks by 15% of unit's Atk (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
-                new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
+                new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
             ),
             // and grants Special cooldown count-1 to unit before unit's first attack during combat.
             new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(1),
@@ -2210,9 +2220,9 @@
         // If unit initiates combat or if foe's HP ≥ 75% at start of combat,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
             // grants bonus to unit's Atk/Spd during combat = 6 + 20% of unit's Spd at start of combat.
-            new NumThatIsNode(
+            X_NUM_NODE(
                 new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
-                ADD_NODE(6, MULT_TRUNC_NODE(0.2, UNITS_SPD_DURING_COMBAT_NODE)),
+                ADD_NODE(6, MULT_TRUNC_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
             ),
         )
     ));
@@ -3510,7 +3520,7 @@ function setDiscord(skillId, statsRatios) {
             // grants Special cooldown count-X to unit before unit's first attack during combat
             new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(
                 // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
-                COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
+                COND_OP(GTE_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
             ),
         ),
     ));
@@ -3538,7 +3548,7 @@ function setDiscord(skillId, statsRatios) {
                     // grants Special cooldown count-X to unit before Special triggers before combat (excluding Rokkr area-of-effect Specials);
                     new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(READ_NUM_NODE),
                     // (if number of spaces from start position to end position > 3, X = 2; otherwise, X = 1).
-                    COND_OP(GT_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
+                    COND_OP(GTE_NODE(new NumOfTargetsMovingSpacesNode(), 3), 2, 1),
                 ),
             ),
         ),
@@ -3923,7 +3933,7 @@ function setDiscord(skillId, statsRatios) {
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
-        new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkNode(150),
+        new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(STATUS_INDEX.Def, 150),
     ));
 
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -4402,7 +4412,7 @@ function setDiscord(skillId, statsRatios) {
         IF_NODE(NOT_NODE(new IsThereUnitOnMapNode(new AreTargetAndSkillOwnerPartnersNode())),
             // at start of turn,
             // grants "neutralizes 'effective against dragons' bonuses" to ally with the highest Res among allies within 3 spaces of unit for 1 turn.
-            new ForEachAllyWithHighestValueWithinNSpacesNode(3, TRUE_NODE, new TargetsStatsAtStartOfTurnNode(STATUS_INDEX.Res),
+            new ForEachAllyWithHighestValueWithinNSpacesNode(3, TRUE_NODE, new TargetsStatAtStartOfTurnNode(STATUS_INDEX.Res),
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.ShieldDragon),
             ),
         ),

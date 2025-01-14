@@ -2605,7 +2605,7 @@ const PassiveA = {
     AtkResFinish3: 2599, // 攻撃魔防の秘奥3
     AtkResFinish4: 2173, // 攻撃魔防の秘奥4
 
-    // SpdDefFinish3: 9999, // 速さ守備の秘奥3
+    SpdDefFinish3: 3049, // 速さ守備の秘奥3
     SpdDefFinish4: 3012, // 速さ守備の秘奥4
 
     SpdResFinish3: 2318, // 速さ魔防の秘奥3
@@ -3619,6 +3619,53 @@ const Captain = {
     Dauntless: 2181, // 剛毅果断
 };
 
+// Skills
+Weapon.SnakingBowPlus = 3124; // 巳年の弓+
+PassiveB.Prescience2 = 3125; // 未来を知る力・承
+Special.LifeUnending2 = 3126; // 永遠を生きる…・承
+Weapon.StaffOfYngvi = 3127; // ユングヴィの聖杖
+PassiveA.SwayAtkRes = 3128; // 攻撃魔防の布教
+Weapon.RampartBow = 3129; // 弓騎士の守城弓
+PassiveC.InciteSpdDef = 3130; // 速さ守備の奮激
+Weapon.HelpingDaggerPlus = 3131; // 合力の暗器+
+Weapon.DivineYewfelle = 3132; // 神弓イチイバル
+PassiveA.PerfectAtkSpd = 3133; // 攻撃速さの完全
+PassiveB.IRemember = 3134; // 記憶が蘇る…
+PassiveX.TempoEcho = 3135; // 響・拍節
+Weapon.FimbulvetrMorn = 3138; // 造物フィンブル
+Weapon.GoddessAxe = 1643; // 女神の斧
+
+// Debug Skills
+Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
+Weapon.DevBlueTome1 = G_WEAPON_ID_BASE + WeaponType.BlueTome * 100 + 1;
+Support.DevAssist1 = G_ASSIST_ID_BASE + 1;
+Special.DevSpecial1 = G_SPECIAL_ID_BASE + 1;
+Special.DevSpecial2 = G_SPECIAL_ID_BASE + 2;
+Special.DevSpecial3 = G_SPECIAL_ID_BASE + 3;
+Special.DevSpecial4 = G_SPECIAL_ID_BASE + 4;
+Special.DevSpecial5 = G_SPECIAL_ID_BASE + 5;
+PassiveA.DevPassiveA1 = G_PASSIVE_A_ID_BASE + 1;
+PassiveB.DevPassiveB1 = G_PASSIVE_B_ID_BASE + 1;
+PassiveC.DevPassiveC1 = G_PASSIVE_C_ID_BASE + 1;
+PassiveS.DevPassiveS1 = G_PASSIVE_S_ID_BASE + 1;
+PassiveX.DevPassiveX1 = G_PASSIVE_X_ID_BASE + 1;
+
+// for (let i = 1; i <= G_DEV_SKILL_NUM; i++) {
+//     for (let weaponKey of Object.keys(WeaponType)) {
+//         if (WeaponType[weaponKey] < 0) {
+//             continue;
+//         }
+//         Weapon[`dev${weaponKey}${i}`] = G_WEAPON_ID_BASE + WeaponType[weaponKey] * 100 + i;
+//     }
+//     Support[`devSupportA${i}`] = G_ASSIST_ID_BASE + i;
+//     Special[`devSpecial${i}`] = G_SPECIAL_ID_BASE + i;
+//     PassiveA[`devSupportA${i}`] = G_PASSIVE_A_ID_BASE + i;
+//     PassiveB[`devSupportB${i}`] = G_PASSIVE_B_ID_BASE + i;
+//     PassiveC[`devSupportC${i}`] = G_PASSIVE_C_ID_BASE + i;
+//     PassiveS[`devSupportS${i}`] = G_PASSIVE_S_ID_BASE + i;
+//     PassiveX[`devSupportX${i}`] = G_PASSIVE_X_ID_BASE + i;
+// }
+
 const AssistType = {
     None: 0,
     Refresh: 1,
@@ -3658,9 +3705,9 @@ const g_debugEngagedSpecialIconRoot = `${g_debugSkillIconRootPath}EngagedSpecial
 EngagedSpecialIcon[EmblemHero.Marth] = `${g_engagedSpecialIconRoot}Marth_Of_Beginnings_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_debugEngagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Lyn] = `${g_imageRootPath}Special.png`;
-// EngagedSpecialIcon[EmblemHero.Lyn] = `${g_debugEngagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Lyn] = `${g_debugEngagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
+// EngagedSpecialIcon[EmblemHero.XXX] = `${g_imageRootPath}Special.png`;
 // 紋章士アイコン
 // https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
 
@@ -3715,6 +3762,20 @@ const SKILL_STYLE_MAP = new Map();
  * @type {Set<number>}
  */
 const CANNOT_MOVE_STYLE_SET = new Set();
+
+const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
+
+/**
+ * 範囲奥義も含む低い方計算無効
+ * @type {Set<any>}
+ */
+const DISABLES_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SET = new Set();
+
+const HP_WITH_SKILLS_MAP = new Map();
+const ATK_WITH_SKILLS_MAP = new Map();
+const SPD_WITH_SKILLS_MAP = new Map();
+const DEF_WITH_SKILLS_MAP = new Map();
+const RES_WITH_SKILLS_MAP = new Map();
 
 ///
 /// Functions

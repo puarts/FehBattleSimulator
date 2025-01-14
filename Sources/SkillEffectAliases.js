@@ -1,6 +1,11 @@
+const IS_THERE_PARTNER_ON_MAP_NODE =
+    IS_THERE_UNIT_ON_MAP_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE);
+
 /**
  * total damage dealt to foe
  */
+const ASSIST_TARGETING_AND_TARGET_NODE = UnitsNode.makeFromUnits(ASSIST_TARGETING_NODE, ASSIST_TARGET_NODE);
+
 const TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE = SUB_NODE(new FoesMaxHpNode(), new FoesHpDuringCombatNode());
 
 const PERCENTAGE_NODE = (percentage, num) => MULT_TRUNC_NODE(percentage / 100.0, num);
@@ -112,25 +117,26 @@ const BOOST_3_NODE =
     );
 
 /// ステータス
-const TARGETS_ATK_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Atk);
-const TARGETS_SPD_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Spd);
-const TARGETS_DEF_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Def);
-const TARGETS_RES_ON_MAP = new TargetsStatsOnMapNode(STATUS_INDEX.Res);
+const TARGETS_ATK_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Atk);
+const TARGETS_SPD_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Spd);
+const TARGETS_DEF_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Def);
+const TARGETS_RES_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Res);
 
-const TARGETS_EVAL_ATK_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Atk);
-const TARGETS_EVAL_SPD_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Spd);
-const TARGETS_EVAL_DEF_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Def);
-const TARGETS_EVAL_RES_ON_MAP = new TargetsEvalStatsOnMapNode(STATUS_INDEX.Res);
+const TARGETS_EVAL_STAT_ON_MAP = index => new TargetsEvalStatOnMapNode(index);
+const TARGETS_EVAL_ATK_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Atk);
+const TARGETS_EVAL_SPD_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Spd);
+const TARGETS_EVAL_DEF_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Def);
+const TARGETS_EVAL_RES_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Res);
 
-const SKILL_OWNERS_ATK_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Atk);
-const SKILL_OWNERS_SPD_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Spd);
-const SKILL_OWNERS_DEF_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Def);
-const SKILL_OWNERS_RES_ON_MAP = new SkillOwnersStatsOnMapNode(STATUS_INDEX.Res);
+const SKILL_OWNERS_ATK_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Atk);
+const SKILL_OWNERS_SPD_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Spd);
+const SKILL_OWNERS_DEF_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Def);
+const SKILL_OWNERS_RES_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Res);
 
-const SKILL_OWNERS_EVAL_ATK_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Atk);
-const SKILL_OWNERS_EVAL_SPD_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Spd);
-const SKILL_OWNERS_EVAL_DEF_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Def);
-const SKILL_OWNERS_EVAL_RES_ON_MAP = new SkillOwnersEvalStatsOnMapNode(STATUS_INDEX.Res);
+const SKILL_OWNERS_EVAL_ATK_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Atk);
+const SKILL_OWNERS_EVAL_SPD_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Spd);
+const SKILL_OWNERS_EVAL_DEF_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Def);
+const SKILL_OWNERS_EVAL_RES_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Res);
 
 /// 戦闘開始時ステータスの比較
 const UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE =
@@ -460,6 +466,9 @@ const IS_TARGET_SKILL_OWNER_NODE = new IsTargetSkillOwnerNode();
 const UNITS_ON_MAP_NODE = new UnitsOnMapNode();
 const SKILL_OWNERS_ALLIES_ON_MAP_NODE = FILTER_UNITS_NODE(UNITS_ON_MAP_NODE, ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE)
 const SKILL_OWNERS_FOES_ON_MAP_NODE = FILTER_UNITS_NODE(UNITS_ON_MAP_NODE, NOT_NODE(ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE))
+const SKILL_OWNERS_FOES_HAVE_HIGHEST_VALUE_ON_MAP = func => MAX_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE, func);
+const SKILL_OWNERS_FOES_HAVE_HIGHEST_AND_THOSE_ALLIES_WITHIN_N_SPACES_ON_MAP = (n, func) =>
+    new TargetsAndThoseAlliesWithinNSpacesNode(n, SKILL_OWNERS_FOES_HAVE_HIGHEST_VALUE_ON_MAP(func));
 const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
 const FILTER_MAP_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
 const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);
@@ -498,11 +507,22 @@ const HIGHEST_PENALTIES_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_S
             TARGETS_PENALTIES_NODE
         );
 
+const HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n) =>
+        new HighestValueOnEachStatAmongUnitsNode(
+            new TargetsAlliesWithinNSpacesNode(n),
+            TARGETS_STATS_ON_MAP_NODE,
+        );
+
 const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
 
-const MAX_UNITS_NODE = (unitsNode, predNode) => new MaxUnitsNode(unitsNode, predNode);
+const MAX_UNITS_NODE = (unitsNode, funcNode) => new MaxUnitsNode(unitsNode, funcNode);
 
 const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_DEF_ON_MAP);
+
+const HIGHEST_ATK_ALLIES_WITHIN_N_SPACES_NODE =
+        n => MAX_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n), TARGETS_ATK_ON_MAP);
+const HIGHEST_ATK_ALLIES_WITHIN_2_SPACES_NODE = HIGHEST_ATK_ALLIES_WITHIN_N_SPACES_NODE(2);
 
 const IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE =
     OR_NODE(new IsBonusActiveOnTargetNode(), new IsPenaltyActiveOnTargetNode());
@@ -680,7 +700,9 @@ function setSpikedWall(skillId, debuffAmounts, statuses) {
     // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
+        EQ_NODE(new TargetsRangeNode(), 2),
+    )
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts Atk/Def-4 on foe,
         new InflictsStatsMinusOnFoeDuringCombatNode(...debuffAmounts),
@@ -709,3 +731,46 @@ const TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE =
  */
 const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE =
     n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));
+
+/**
+ * @param skillId
+ * @param {NumberNode[]} statsNodes
+ */
+function setSway(skillId, statsNodes) {
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 3 spaces of an ally,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Res during combat = 8 + number of allies within 3 spaces of unit × 2 (max 12),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(...statsNodes),
+                ENSURE_MAX_NODE(ADD_NODE(8, MULT_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 2)), 12),
+            ),
+            // and calculates damage from staff like other weapons.
+            CALCULATES_TARGETS_DAMAGE_FROM_STAFF_LIKE_OTHER_WEAPONS_NODE,
+        ),
+    ));
+}
+
+function setCannotMoveThroughSpacesSkill(skillId) {
+    // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
+    // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
+    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+}
+
+/**
+ * 魔防+5比較の竜眼
+ * @type {AppliesSkillEffectsAfterStatusFixedNode}
+ */
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_1_ON_FOE_BEFORE_FOES_FIRST_ATTACK_DURING_COMBAT_BY_DRAGON_NODE =
+    APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+        // if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5,
+        IF_NODE(
+            AND_NODE(
+                CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(5, FOES_EVAL_RES_DURING_COMBAT_NODE))
+            ),
+            // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+        ),
+    );

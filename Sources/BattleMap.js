@@ -2581,7 +2581,9 @@ class BattleMap {
             env.setName("脅威度判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
             let tiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
             for (let tile of tiles) {
-                unit.groupId === UnitGroupType.Ally ? tile.increaseDangerLevel() : tile.increaseAllyDangerLevel();
+                if (!doneTiles.includes(tile)) {
+                    unit.groupId === UnitGroupType.Ally ? tile.increaseDangerLevel() : tile.increaseAllyDangerLevel();
+                }
             }
         }
     }
@@ -2648,7 +2650,9 @@ class BattleMap {
                         }
                     }
                     // スタイル時
-                    if (unit.hasCannotMoveStyle() && unit.canActivateStyle()) {
+                    // スタイル可能もしくはスタイル中
+                    if ((unit.hasCannotMoveStyle() && unit.canActivateStyle()) ||
+                        unit.isCannotMoveStyleActive()) {
                         let env = new BattleMapEnv(this, unit).setTile(unit.placedTile);
                         env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
                         let attackableTiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
@@ -3163,6 +3167,7 @@ class BattleMap {
                 unit.isDebuffed ||
                 unit.restWeaponSkillAvailableTurn > 0 ||
                 unit.restSupportSkillAvailableTurn > 0 ||
+                unit.restSpecialSkillAvailableTurn > 0 ||
                 unit.restPassiveBSkillAvailableTurn > 0 ||
                 unit.restStyleSkillAvailableTurn > 0) {
                 let span = document.createElement('span');
@@ -3178,6 +3183,9 @@ class BattleMap {
                 }
                 if (unit.restSupportSkillAvailableTurn > 0) {
                     this.#addRestTurnsIcon(span, `${g_imageRootPath}Support.png`, unit.restSupportSkillAvailableTurn);
+                }
+                if (unit.restSpecialSkillAvailableTurn > 0) {
+                    this.#addRestTurnsIcon(span, `${g_imageRootPath}Special.png`, unit.restSpecialSkillAvailableTurn);
                 }
                 if (unit.restPassiveBSkillAvailableTurn > 0) {
                     this.#addRestTurnsIcon(span, unit.passiveBInfo.iconPath, unit.restPassiveBSkillAvailableTurn);
