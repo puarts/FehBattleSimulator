@@ -1,6 +1,36 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    // let skillId = getNormalSkillId(Weapon.GoddessAxe);
+}
+{
+    let skillId = getRefinementSkillId(Weapon.GoddessAxe);
+    HP_WITH_SKILLS_MAP.set(skillId, 5);
+    ATK_WITH_SKILLS_MAP.set(skillId, 6);
+    DEF_WITH_SKILLS_MAP.set(skillId, 1);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.GoddessAxe);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // 戦闘中、攻撃、守備+6、
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 6, 0),
+            // ダメージ+守備の15%(範囲奥義を除く)、
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, UNITS_DEF_DURING_COMBAT_NODE),
+            // 自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)、
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+            // 戦闘後、7回復
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.FimbulvetrMorn;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of combat,

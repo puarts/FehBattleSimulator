@@ -3633,6 +3633,7 @@ PassiveA.PerfectAtkSpd = 3133; // 攻撃速さの完全
 PassiveB.IRemember = 3134; // 記憶が蘇る…
 PassiveX.TempoEcho = 3135; // 響・拍節
 Weapon.FimbulvetrMorn = 3138; // 造物フィンブル
+Weapon.GoddessAxe = 1643; // 女神の斧
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -3769,6 +3770,12 @@ const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
  * @type {Set<any>}
  */
 const DISABLES_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SET = new Set();
+
+const HP_WITH_SKILLS_MAP = new Map();
+const ATK_WITH_SKILLS_MAP = new Map();
+const SPD_WITH_SKILLS_MAP = new Map();
+const DEF_WITH_SKILLS_MAP = new Map();
+const RES_WITH_SKILLS_MAP = new Map();
 
 ///
 /// Functions
