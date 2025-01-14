@@ -1,6 +1,67 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = Weapon.FimbulvetrMorn;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // inflicts Atk/Res-6 on foe during combat,
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(6, 0, 0, 6),
+            // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+            // reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // and inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.FimbulvetrMorn);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            IF_NODE(IS_THERE_PARTNER_ON_MAP_NODE,
+                FOR_EACH_UNIT_NODE(
+                    // (if support partner is on player team,
+                    // targets any support partner within 2 spaces of unit; otherwise,
+                    UNITE_UNITS_NODE(UnitsNode.makeFromUnit(TARGET_NODE),
+                        FILTER_UNITS_NODE(
+                            TARGETS_ALLIES_WITHIN_2_SPACES_NODE(),
+                            ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE)),
+                    // grants Atk/Res+6,【Essence Drain】,
+                    // and 【Bonus Doubler】to unit and target allies for 1 turn
+                    GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 0, 0, 6),
+                    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.EssenceDrain, StatusEffectType.BonusDoubler),
+                ),
+            ),
+            IF_NODE(NOT_NODE(IS_THERE_PARTNER_ON_MAP_NODE),
+                FOR_EACH_UNIT_NODE(
+                    // targets ally with the highest Atk within 2 spaces of unit).
+                    UNITE_UNITS_NODE(UnitsNode.makeFromUnit(TARGET_NODE), HIGHEST_ATK_ALLIES_WITHIN_2_SPACES_NODE),
+                    GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 0, 0, 6),
+                    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.EssenceDrain, StatusEffectType.BonusDoubler),
+                ),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // inflicts Atk/Res-6 on foe during combat,
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(6, 0, 0, 6),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
     let skillId = getNormalSkillId(Weapon.TomeOfStorms);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE,

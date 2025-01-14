@@ -2574,16 +2574,36 @@ class BeginningOfTurnSkillHandler {
                 }
                 break;
             }
-            case PassiveC.HoneArmor: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Armor, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
-            case PassiveC.HoneCavalry: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Cavalry, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
-            case PassiveC.HoneFlyier: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Flying, x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
-            case PassiveC.HoneDragons: this.__applyHoneSkill(skillOwner, x => isWeaponTypeBreath(x.weaponType), x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
-            case PassiveC.HoneBeasts: this.__applyHoneSkill(skillOwner, x => isWeaponTypeBeast(x.weaponType), x => { x.applyAtkBuff(6); x.applySpdBuff(6); }); break;
-            case PassiveC.FortifyArmor: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Armor, x => { x.applyDefBuff(6); x.applyResBuff(6); }); break;
-            case PassiveC.FortifyCavalry: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Cavalry, x => { x.applyDefBuff(6); x.applyResBuff(6); }); break;
-            case PassiveC.FortifyFlyier: this.__applyHoneSkill(skillOwner, x => x.moveType == MoveType.Flying, x => { x.applyDefBuff(6); x.applyResBuff(6); }); break;
-            case PassiveC.FortifyDragons: this.__applyHoneSkill(skillOwner, x => isWeaponTypeBreath(x.weaponType), x => { x.applyDefBuff(6); x.applyResBuff(6); }); break;
-            case PassiveC.FortifyBeasts: this.__applyHoneSkill(skillOwner, x => isWeaponTypeBeast(x.weaponType), x => { x.applyDefBuff(6); x.applyResBuff(6); }); break;
+            case PassiveC.HoneArmor:
+                this.__applyHoneSkill(skillOwner, x => x.moveType === MoveType.Armor, x => x.reserveToApplyBuffs(6, 6, 0, 0));
+                break;
+            case PassiveC.HoneCavalry:
+                this.__applyHoneSkill(skillOwner, x => x.moveType === MoveType.Cavalry, x => x.reserveToApplyBuffs(6, 6, 0, 0));
+                break;
+            case PassiveC.HoneFlyier:
+                this.__applyHoneSkill(skillOwner, x => x.moveType === MoveType.Flying, x => x.reserveToApplyBuffs(6, 6, 0, 0));
+                break;
+            case PassiveC.HoneDragons:
+                this.__applyHoneSkill(skillOwner, x => isWeaponTypeBreath(x.weaponType), x => x.reserveToApplyBuffs(6, 6, 0, 0));
+                break;
+            case PassiveC.HoneBeasts:
+                this.__applyHoneSkill(skillOwner, x => isWeaponTypeBeast(x.weaponType), x => x.reserveToApplyBuffs(6, 6, 0, 0));
+                break;
+            case PassiveC.FortifyArmor:
+                this.__applyHoneSkill(skillOwner, x => x.moveType === MoveType.Armor, x => x.reserveToApplyBuffs(0, 0, 6, 6));
+                break;
+            case PassiveC.FortifyCavalry:
+                this.__applyHoneSkill(skillOwner, x => x.moveType === MoveType.Cavalry, x => x.reserveToApplyBuffs(0, 0, 6, 6));
+                break;
+            case PassiveC.FortifyFlyier:
+                this.__applyHoneSkill(skillOwner, x => x.moveType === MoveType.Flying, x => x.reserveToApplyBuffs(0, 0, 6, 6));
+                break;
+            case PassiveC.FortifyDragons:
+                this.__applyHoneSkill(skillOwner, x => isWeaponTypeBreath(x.weaponType), x => x.reserveToApplyBuffs(0, 0, 6, 6));
+                break;
+            case PassiveC.FortifyBeasts:
+                this.__applyHoneSkill(skillOwner, x => isWeaponTypeBeast(x.weaponType), x => x.reserveToApplyBuffs(0, 0, 6, 6));
+                break;
             case Weapon.KyomeiOra:
                 this.__applyHoneSkill(skillOwner,
                     x => x.isMeleeWeaponType(),

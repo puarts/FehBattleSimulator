@@ -250,6 +250,7 @@ class TargetsAlliesWithinNSpacesNode extends UnitsNode {
 }
 
 const TARGETS_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(n, includesTarget);
+const TARGETS_ALLIES_WITHIN_2_SPACES_NODE = (includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(2, includesTarget);
 
 class FoesAlliesWithinNSpacesNode extends TargetsAlliesWithinNSpacesNode {
     static {
@@ -677,6 +678,8 @@ class IsThereUnitOnMapNode extends BoolNode {
         return result;
     }
 }
+
+const IS_THERE_UNIT_ON_MAP_NODE = (predNode, ...children) => new IsThereUnitOnMapNode(predNode, ...children);
 
 class TargetGroupNode extends NumberNode {
     static {

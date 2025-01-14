@@ -3632,9 +3632,11 @@ Weapon.DivineYewfelle = 3132; // 神弓イチイバル
 PassiveA.PerfectAtkSpd = 3133; // 攻撃速さの完全
 PassiveB.IRemember = 3134; // 記憶が蘇る…
 PassiveX.TempoEcho = 3135; // 響・拍節
+Weapon.FimbulvetrMorn = 3138; // 造物フィンブル
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
+Weapon.DevBlueTome1 = G_WEAPON_ID_BASE + WeaponType.BlueTome * 100 + 1;
 Support.DevAssist1 = G_ASSIST_ID_BASE + 1;
 Special.DevSpecial1 = G_SPECIAL_ID_BASE + 1;
 Special.DevSpecial2 = G_SPECIAL_ID_BASE + 2;
