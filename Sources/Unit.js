@@ -5515,7 +5515,7 @@ class Unit extends BattleMapElement {
         this.updateStatusBySkillsExceptWeapon();
 
         for (let skillId of this.enumerateSkills()) {
-            this.maxHpWithSkills += HP_WITH_SKILLS_MAP.get(skillId) ?? 0;
+            this.maxHpWithSkillsWithoutAdd += HP_WITH_SKILLS_MAP.get(skillId) ?? 0;
             this.atkWithSkills += ATK_WITH_SKILLS_MAP.get(skillId) ?? 0;
             this.spdWithSkills += SPD_WITH_SKILLS_MAP.get(skillId) ?? 0;
             this.defWithSkills += DEF_WITH_SKILLS_MAP.get(skillId) ?? 0;
