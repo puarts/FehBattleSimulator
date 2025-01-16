@@ -3659,6 +3659,7 @@ Special.DevSpecial4 = G_SPECIAL_ID_BASE + 4;
 Special.DevSpecial5 = G_SPECIAL_ID_BASE + 5;
 PassiveA.DevPassiveA1 = G_PASSIVE_A_ID_BASE + 1;
 PassiveB.DevPassiveB1 = G_PASSIVE_B_ID_BASE + 1;
+PassiveB.DevPassiveB2 = G_PASSIVE_B_ID_BASE + 2;
 PassiveC.DevPassiveC1 = G_PASSIVE_C_ID_BASE + 1;
 PassiveS.DevPassiveS1 = G_PASSIVE_S_ID_BASE + 1;
 PassiveX.DevPassiveX1 = G_PASSIVE_X_ID_BASE + 1;
