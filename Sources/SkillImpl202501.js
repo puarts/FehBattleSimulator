@@ -1,6 +1,32 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = PassiveC.DevPassiveC1;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's Special cooldown count is at its maximum value,
+        // grants Special cooldown count-1 to unit.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        X_NUM_NODE(
+            // Grants bonus to unit's Atk/Spd during combat =
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+            // unit's maximum Special cooldown count value + 2,
+            ADD_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 2),
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // and also,
+        // if unit's Special cooldown count is at its maximum value after combat,
+        // grants Special cooldown count-1 to unit.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+    ));
+}
+
+{
     let skillId = PassiveB.DevPassiveB1;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts Atk/Spd-4 on foe during combat.
