@@ -337,6 +337,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Empathy, ["Empathy.webp", "多感", "多感"]],
     [StatusEffectType.DivinelyInspiring, ["DivinelyInspiring.webp", "神竜の結束", "神竜の結束（全ステn*3、敵の最初の攻撃前に自身の奥義発動カウント-n、 nは最大2）"]],
     [StatusEffectType.PreemptPulse, ["PreemptPulse.webp", "初撃の鼓動", "初撃の鼓動（自分の最初の攻撃前に奥義-1）"]],
+    [StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat, ["IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat.webp", "戦闘中、敵の追撃の速さ条件+10", "戦闘中、敵の追撃の速さ条件+10"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

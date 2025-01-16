@@ -1,6 +1,52 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = getStatusEffectSkillId(StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        INCREASES_SPD_DIFF_NECESSARY_FOR_FOES_FOLLOW_UP_NODE(10),
+    ));
+}
+
+{
+    let skillId = Weapon.DevLance1;
+    // Accelerates Special trigger (cooldown count-1).
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Spd/Def+6,
+                GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(0, 6, 6, 0),
+                // "increases Spd difference necessary for foe to make a follow-up attack by 10 during combat," and [Null Panic)
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat,
+                    StatusEffectType.NullPanic),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res = number of allies within 3 spaces of unit x 3, + 5 (max 14),
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 3), 5), 14),
+            ),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // reduces damage from foe's attacks by 20% of unit's Spd (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS_NODE(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
     // let skillId = getNormalSkillId(Weapon.GoddessAxe);
 }
 {

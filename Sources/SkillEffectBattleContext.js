@@ -568,6 +568,8 @@ class IncreasesSpdDiffNecessaryForFoesFollowUpNode extends FromPositiveNumberNod
     }
 }
 
+const INCREASES_SPD_DIFF_NECESSARY_FOR_FOES_FOLLOW_UP_NODE = n => new IncreasesSpdDiffNecessaryForFoesFollowUpNode(n);
+
 /**
  * decreases Spd difference necessary for unit to make a follow-up attack by X during combat
  */

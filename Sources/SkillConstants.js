@@ -3647,6 +3647,7 @@ Weapon.JehannaLancePlus = 3148; // ジャハナの槍+
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
+Weapon.DevLance1 = G_WEAPON_ID_BASE + WeaponType.Lance * 100 + 1;
 Weapon.DevBlueTome1 = G_WEAPON_ID_BASE + WeaponType.BlueTome * 100 + 1;
 Support.DevAssist1 = G_ASSIST_ID_BASE + 1;
 Special.DevSpecial1 = G_SPECIAL_ID_BASE + 1;
