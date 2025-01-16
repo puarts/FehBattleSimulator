@@ -1608,6 +1608,11 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
             + ValueDelimiter + this.anotherActionTurnForCallingCircle
             + ValueDelimiter + this.reinforcementMerge
+            + ValueDelimiter + this.hpAdd
+            + ValueDelimiter + this.atkAdd
+            + ValueDelimiter + this.spdAdd
+            + ValueDelimiter + this.defAdd
+            + ValueDelimiter + this.resAdd
             ;
     }
 
@@ -1672,6 +1677,11 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = toBoolean(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.anotherActionTurnForCallingCircle = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.reinforcementMerge = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.hpAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.atkAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.spdAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.defAdd = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.resAdd = Number(values[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか

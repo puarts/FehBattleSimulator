@@ -1039,8 +1039,10 @@ class AppData extends UnitManager {
             || unit.groupId == UnitGroupType.Ally) {
             // 双界の敵以外は成長率を操作することはないのでリセット
             unit.updatePureGrowthRate();
-            unit.resetStatusAdd();
             unit.resetStatusMult();
+            if (initEditableAttrs) {
+                unit.resetStatusAdd();
+            }
         }
 
         // 神装英雄じゃない場合は神装補正をリセット
