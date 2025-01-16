@@ -782,7 +782,9 @@ const LTE_NODE = (...node) => new LteNode(...node);
 class EqNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
-        return left === right;
+        let result = left === right;
+        env.trace(`[EqNode] ${left} === ${right}: ${result}`);
+        return result;
     }
 }
 

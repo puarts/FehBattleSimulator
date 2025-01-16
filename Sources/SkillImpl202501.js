@@ -1,6 +1,82 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = Weapon.DevAxe1;
+    // Accelerates Special trigger (cooldown count-1).
+    // Enables [Canto (2)] .
+    enablesCantoN(skillId, 2);
+
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants Atk/Spd/Def/Res+4 to allies within 3 rows or 3 columns centered on unit during combat.
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(4),
+        ),
+    ));
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For target ally within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // if Savior is not triggered,
+            IF_NODE(NOT_NODE(IS_SAVIOR_TRIGGERED_NODE),
+                // (If support partner is on player team, targets any support partner;
+                // otherwise, targets ally with the highest max HP on player team, excluding unit.)
+                // that ally attacks twice during their combat.
+                COND_OP(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
+                    IF_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,
+                        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+                    ),
+                    IF_NODE(EQ_NODE(TARGETS_MAX_HP_NODE, HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES),
+                        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+                    ),
+                ),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If target ally is within 3 rows or 3 columns centered on unit,
+        // unit attacks twice during combat.
+        COND_OP(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
+            IF_NODE(
+                IS_THERE_TARGETS_ALLY_ON_MAP_NODE(
+                    AND_NODE(
+                        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+                        ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE)),
+                TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+            ),
+            IF_NODE(
+                IS_THERE_TARGETS_ALLY_ON_MAP_NODE(
+                    AND_NODE(
+                        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+                        EQ_NODE(TARGETS_MAX_HP_NODE, HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES)),
+                    ),
+                TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+            ),
+        ),
+
+        // If unit initiates combat or if an ally is within 3 rows or 3 columns centered on unit,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
+            // grants bonus to unit's Atk/Spd/Def/Res =
+            // number of allies within 3 rows or 3 columns centered on unit x 3, + 5 (max 14),
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ENSURE_MAX_NODE(
+                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5), 14),
+            ),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // reduces damage from foe's first attack by 20% of unit's Spd,
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_PERCENTAGE_OF_TARGETS_STAT_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.DevDagger1;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.
@@ -291,7 +367,7 @@
         // At start of turn,
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
-            IF_NODE(IS_THERE_PARTNER_ON_MAP_NODE,
+            IF_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
                 FOR_EACH_UNIT_NODE(
                     // (if support partner is on player team,
                     // targets any support partner within 2 spaces of unit; otherwise,
@@ -305,7 +381,7 @@
                     GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.EssenceDrain, StatusEffectType.BonusDoubler),
                 ),
             ),
-            IF_NODE(NOT_NODE(IS_THERE_PARTNER_ON_MAP_NODE),
+            IF_NODE(NOT_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE),
                 FOR_EACH_UNIT_NODE(
                     // targets ally with the highest Atk within 2 spaces of unit).
                     UNITE_UNITS_NODE(UnitsNode.makeFromUnit(TARGET_NODE), HIGHEST_ATK_ALLIES_WITHIN_2_SPACES_NODE),

@@ -1170,15 +1170,31 @@ const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE = new class exte
 /**
  * Unit attacks twice (even if foe initiates combat, unit attacks twice).
  */
-const TARGET_ATTACKS_TWICE_NODE = new class extends SkillEffectNode {
+class TargetAttacksTwiceEvenIfTargetsFoeInitiatesCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は2回攻撃): ${unit.battleContext.attackCount} => 2`);
+        env.debug(`${unit.nameWithGroup}は2回攻撃（受けの時も2回攻撃）`);
+        unit.battleContext.attackCount = 2;
+        unit.battleContext.counterattackCount = 2;
+    }
+}
+
+const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE
+    = new TargetAttacksTwiceEvenIfTargetsFoeInitiatesCombatNode();
+
+const TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
+    evaluate(env) {
+        let unit = env.target;
+        env.debug(`${unit.nameWithGroup}は攻撃時に2回攻撃: ${unit.battleContext.attackCount} => 2`);
         unit.battleContext.attackCount = 2;
     }
 }();
 
-const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
+const TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
         env.debug(`${unit.nameWithGroup}は受け時に2回攻撃): ${unit.battleContext.counterattackCount} => ${2}`);
@@ -1923,3 +1939,18 @@ class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
 
 const CALCULATES_TARGETS_DAMAGE_FROM_STAFF_LIKE_OTHER_WEAPONS_NODE =
     new CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode();
+
+class IsSaviorTriggeredNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.isSaviorActivated;
+        env.debug(`${unit.nameWithGroup}は護り手を発動中か: ${result}`);
+        return result;
+    }
+}
+
+const IS_SAVIOR_TRIGGERED_NODE = new IsSaviorTriggeredNode();

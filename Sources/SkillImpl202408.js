@@ -1992,8 +1992,8 @@
     // Effective against flying foes.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Unit attacks twice (even if foe initiates combat, unit attacks twice).
-        TARGET_ATTACKS_TWICE_NODE,
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
         // If unit initiates combat or is within 2 spaces of an ally,
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat + 5,
@@ -2069,8 +2069,8 @@
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Unit attacks twice (even if foe initiates combat, unit attacks twice).
-        TARGET_ATTACKS_TWICE_NODE,
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
         // If unit initiates combat or is within 2 spaces of an ally,
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Def at start of combat + 5,
@@ -2154,8 +2154,8 @@
     ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        TARGET_ATTACKS_TWICE_NODE,
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
         // If unit initiates combat or is within 3 spaces of an ally,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat + 5,
@@ -2215,7 +2215,7 @@
         // If unit initiates combat,
         IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
             // unit attacks twice,
-            TARGET_ATTACKS_TWICE_NODE,
+            TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
             // and unit can make a follow-up attack before foe can counterattack.
             UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
         ),
@@ -5351,8 +5351,8 @@ function setDiscord(skillId, statsRatios) {
     // TODO: 攻撃回数設定時のHOOKSを作成するか検討する
     AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Unit attacks twice (even if foe initiates combat, unit attacks twice).
-        TARGET_ATTACKS_TWICE_NODE,
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
     ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
