@@ -585,11 +585,14 @@
             ),
             // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
             NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
-            // and also,
-            // and if unit's Special cooldown count is at its maximum value after combat,
-            // grants Special cooldown count-1 to unit after combat.
-            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
         )
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // and also,
+        // and if unit's Special cooldown count is at its maximum value after combat,
+        // grants Special cooldown count-1 to unit after combat.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
     ));
 
     // At start of turn,
