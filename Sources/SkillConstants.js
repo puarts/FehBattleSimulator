@@ -3634,6 +3634,16 @@ PassiveB.IRemember = 3134; // 記憶が蘇る…
 PassiveX.TempoEcho = 3135; // 響・拍節
 Weapon.FimbulvetrMorn = 3138; // 造物フィンブル
 Weapon.GoddessAxe = 1643; // 女神の斧
+Weapon.SwirlingLance = 3139; // 砂塵貫く蒼き剛槍
+Special.AethersPath = 3140; // 蒼炎の天空
+PassiveB.LaguzLoyalty = 3141; // 不動・刹那
+PassiveC.TimePulseEdge = 3142; // 始まりの鼓動・刃
+Weapon.SwirlingScimitar = 3143; // 砂塵に舞う曲刀
+PassiveB.ASSpikedWall = 3144; // 攻撃速さの刃壁
+Weapon.JehannaDaggerPlus = 3145; // ジャハナの暗器+
+Weapon.LaconicAxe = 3146; // 寡黙な女傭兵の閃斧
+PassiveB.AssaultForce = 3147; // 強襲・不屈
+Weapon.JehannaLancePlus = 3148; // ジャハナの槍+
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
