@@ -1976,11 +1976,11 @@
                             </td>
                             <td v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
                                 <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
-                                    @click="value.resetStatusMult();g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
+                                    @click="value.resetStatusMult();g_appData.__updateStatusBySkillsAndMergeForAllHeroes();">
                             </td>
                             <td>
                                 <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
-                                    @click="value.resetStatusAdd();g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
+                                    @click="value.resetStatusAdd();g_appData.__updateStatusBySkillsAndMergeForAllHeroes();">
                             </td>
                             <td></td>
                             <td v-bind:style="g_app.vm.debugMenuStyle">
