@@ -1,6 +1,44 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = Special.DevSpecial3;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    setSpecialCount(4);
+
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // boosts damage by 75% of the greater of foe's Spd or Def and
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            MULT_TRUNC_NODE(0.75, MAX_NODE(UNITS_SPD_DURING_COMBAT_NODE, UNITS_DEF_DURING_COMBAT_NODE)),
+        ),
+        // restores 50% of unit's maximum HP.
+        RESTORES_X_PERCENTAGE_OF_TARGETS_MAXIMUM_HP_NODE(50),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Neutralizes effects that inflict "Special cooldown charge -X" on unit,
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        // reduces the effect of [Deep Wounds) by 50%,
+        REDUCES_EFFECT_OF_DEEP_WOUNDS_ON_TARGET_BY_X_PERCENT_DURING_COMBAT_NODE(50),
+        // neutralizes effects that prevent unit's counterattacks,
+        NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
+    ));
+
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        X_NUM_NODE(
+            // and reduces damage from attacks by X% during combat
+            REDUCES_DAMAGE_FROM_ATTACKS_DURING_COMBAT_BY_X_PERCENT_AS_SPECIAL_SKILL_EFFECT_PER_ATTACK_NODE(READ_NUM_NODE),
+            // (X = 50 - current Special cooldown count value x 10,
+            // but if unit's Special triggered during this combat, X = 50).
+            COND_OP(NOT_NODE(IS_UNITS_SPECIAL_TRIGGERED),
+                SUB_NODE(50, MULT_NODE(UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT, 10)),
+                50
+            ),
+        ),
+    ));
+}
+
+{
     let skillId = getStatusEffectSkillId(StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         INCREASES_SPD_DIFF_NECESSARY_FOR_FOES_FOLLOW_UP_NODE(10),

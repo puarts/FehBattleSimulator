@@ -735,6 +735,23 @@ class BoostsDamageWhenSpecialTriggersNode extends FromPositiveNumberNode {
     }
 }
 
+const BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE = n => new BoostsDamageWhenSpecialTriggersNode(n);
+
+class RestoresXPercentageOfTargetsMaximumHpNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.maxHpRatioToHealBySpecial = percentage / 100;
+        env.debug(`${unit.nameWithGroup}は自分の最大HPの${percentage}を回復`);
+    }
+}
+
+const RESTORES_X_PERCENTAGE_OF_TARGETS_MAXIMUM_HP_NODE = n => new RestoresXPercentageOfTargetsMaximumHpNode(n);
+
 // noinspection JSUnusedGlobalSymbols
 class UnitDealsDamageNode extends ApplyingNumberNode {
     evaluate(env) {
@@ -896,6 +913,9 @@ class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends From
     }
 }
 
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
+    n => new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(n);
+
 /**
  * reduces damage from foe's first attack by X% during combat
  */
@@ -1019,6 +1039,9 @@ class ReducesDamageFromAttacksDuringCombatByXPercentAsSpecialSkillEffectPerAttac
         env.debug(`${unit.nameWithGroup}はこの攻撃の際にダメージを${n}%軽減(奥義扱い): ratios [${unit.battleContext.damageReductionRatiosBySpecialPerAttack}]`);
     }
 }
+
+const REDUCES_DAMAGE_FROM_ATTACKS_DURING_COMBAT_BY_X_PERCENT_AS_SPECIAL_SKILL_EFFECT_PER_ATTACK_NODE =
+    n => new ReducesDamageFromAttacksDuringCombatByXPercentAsSpecialSkillEffectPerAttackNode(n);
 
 class RestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
     getDescription(n) {
@@ -1366,6 +1389,9 @@ class NeutralizesEffectsThatPreventTargetsCounterattacksDuringCombatNode extends
     }
 }
 
+const NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE =
+    new NeutralizesEffectsThatPreventTargetsCounterattacksDuringCombatNode();
+
 /**
  * when unit deals damage to foe during combat, restores 7 HP to unit (triggers even if 0 damage is dealt).
  */
@@ -1503,6 +1529,9 @@ class ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode extends FromPo
         env.debug(`${unit.nameWithGroup}は自身の【回復不可】を${x}%無効`);
     }
 }
+
+const REDUCES_EFFECT_OF_DEEP_WOUNDS_ON_TARGET_BY_X_PERCENT_DURING_COMBAT_NODE =
+        n => new ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode(n);
 
 class AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode extends FromPositiveNumberNode {
     static {
