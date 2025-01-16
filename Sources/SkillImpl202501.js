@@ -1,6 +1,41 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = PassiveB.DevPassiveB1;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Atk/Spd-4 on foe during combat.
+        INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(4, 4, 0, 0),
+        // If unit's max Special cooldown count value ≥ 3 and unit's attack can trigger unit's Special,
+        // or if foe's attack can trigger unit's Special,
+        IF_NODE(
+            OR_NODE(
+                AND_NODE(
+                    GTE_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 3),
+                    CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE
+                ),
+                CAN_TARGETS_FOES_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE
+            ),
+            // reduces the percentage of unit's non-Special "reduce damage by X%" skills by 50%
+            // (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // reduces damage from foe's attacks by 20% of unit's Spd (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS_NODE(
+                20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and grants Special cooldown count-2 to unit before foe's first attack during combat,
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE(2),
+            // and also,
+            // if foe initiates combat,
+            IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+                // decreases Spd difference necessary for unit to make a follow-up attack by 10 and
+                DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE(10),
+                // unit deals +7 damage during combat (excluding area-of-effect Specials).
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(7),
+            ),
+        ),
+    ));
+}
+
+{
     let skillId = Special.DevSpecial3;
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     setSpecialCount(4);

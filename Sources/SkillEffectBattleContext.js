@@ -582,6 +582,9 @@ class DecreasesSpdDiffNecessaryForUnitFollowUpNode extends FromPositiveNumberNod
     }
 }
 
+const DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE
+    = n => new DecreasesSpdDiffNecessaryForUnitFollowUpNode(n);
+
 /**
  * neutralizes penalties to unit's Atk/Spd
  */
@@ -1067,18 +1070,46 @@ const WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECT
     }
 }();
 
-class ReducesPercentageOfNonSpecialDamageReductionByNPercentDuringCombatNode extends FromNumberNode {
+class ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode extends FromNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let percentage = this.evaluateChildren(env);
-        let unit = env.unitDuringCombat;
+        let unit = this.getUnit(env);
         let ratios = unit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
         ratios.push(percentage / 100);
         env.debug(`${unit.nameWithGroup}はダメージ軽減を${percentage}%無効。ratios: [${ratios}]`);
     }
 }
 
+const REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
+    = new ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode(50);
+
+class ReducesPercentageOfUnitsFoesNonSpecialDamageReductionByNPercentDuringCombatNode extends ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+
+const REDUCES_PERCENTAGE_OF_UNITS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
+    = new ReducesPercentageOfUnitsFoesNonSpecialDamageReductionByNPercentDuringCombatNode(50);
 const REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
-    = new ReducesPercentageOfNonSpecialDamageReductionByNPercentDuringCombatNode(50);
+    = REDUCES_PERCENTAGE_OF_UNITS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE;
+
+class ReducesPercentageOfFoesFoesNonSpecialDamageReductionByNPercentDuringCombatNode extends ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const REDUCES_PERCENTAGE_OF_FOES_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
+    = new ReducesPercentageOfFoesFoesNonSpecialDamageReductionByNPercentDuringCombatNode(50);
+// 敵の敵は分かりにくいので
+const REDUCES_PERCENTAGE_OF_UNITS_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
+    = REDUCES_PERCENTAGE_OF_FOES_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE;
 
 const NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -1236,6 +1267,9 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuring
         env.debug(`${unit.nameWithGroup}は相手の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
     }
 }
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE
+    = n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode(n);
 
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
@@ -1531,7 +1565,7 @@ class ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode extends FromPo
 }
 
 const REDUCES_EFFECT_OF_DEEP_WOUNDS_ON_TARGET_BY_X_PERCENT_DURING_COMBAT_NODE =
-        n => new ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode(n);
+    n => new ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode(n);
 
 class AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode extends FromPositiveNumberNode {
     static {
@@ -1873,7 +1907,7 @@ class PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode extends SkillEffe
 }
 
 const POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE =
-        n => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(n);
+    n => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(n);
 
 class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
     static {

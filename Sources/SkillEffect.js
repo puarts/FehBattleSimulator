@@ -1363,6 +1363,8 @@ class CanTargetsFoesAttackTriggerTargetsSpecialNode extends BoolNode {
     }
 }
 
+const CAN_TARGETS_FOES_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE = new CanTargetsFoesAttackTriggerTargetsSpecialNode();
+
 /**
  * TODO: FromNumberNodeに統合する
  * @abstract
@@ -2328,6 +2330,8 @@ class TargetsMaxSpecialCountNode extends PositiveNumberNode {
         return result;
     }
 }
+
+const TARGETS_MAX_SPECIAL_COUNT_NODE = new TargetsMaxSpecialCountNode();
 
 class HasTargetStatusEffectNode extends BoolNode {
     static {
