@@ -1,6 +1,47 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = Weapon.DevDagger1;
+    // If a skill compares unit's Spd to a foe's or ally's Spd,
+    // treats unit's Spd as if granted +7.
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 7, 0, 0));
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => new SkillEffectNode(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Atk/Spd+6,
+                GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 6, 0, 0),
+                // (Dodge),
+                // and
+                // "neutralizes penalties on unit during combat"
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Dodge, StatusEffectType.NeutralizesPenalties),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants Atk/Spd/Def/Res+5 to unit and
+            GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 7 during combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // and unit's next attack deals damage = total
+            // damage reduced from foe's first attack (by any source,
+            // including other skills). Resets at end of combat.
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
+            // Effect: (Dagger 7)
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.DevSword1;
     // Accelerates Special trigger (cooldown count-1).
 
@@ -19,7 +60,7 @@
                 // [Dodge],
                 // and
                 // "neutralizes penalties on unit during combat"
-                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Dosage, StatusEffectType.NeutralizesPenalties),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Dodge, StatusEffectType.NeutralizesPenalties),
             ),
         ),
     );
