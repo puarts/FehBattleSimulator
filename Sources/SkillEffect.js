@@ -2381,6 +2381,8 @@ class NumOfTargetsDragonflowersNode extends PositiveNumberNode {
     }
 }
 
+const NUM_OF_TARGETS_DRAGONFLOWERS_NODE = new NumOfTargetsDragonflowersNode();
+
 class TargetsMoveTypeNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
