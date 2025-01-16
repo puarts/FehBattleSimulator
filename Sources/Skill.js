@@ -832,6 +832,7 @@ function canRallyForcibly(skill, unit) {
                 return true;
             }
             break;
+        case Weapon.EverlivingBreath:
         case PassiveB.AtkFeint3:
         case PassiveB.SpdFeint3:
         case PassiveB.DefFeint3:
