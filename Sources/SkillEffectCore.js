@@ -143,7 +143,7 @@ class SkillEffectHooks {
     }
 
     evaluateSumWithUnit(unit, env) {
-        return Math.add(...this.evaluateWithUnit(unit, env)) ?? 0;
+        return ArrayUtil.sum(this.evaluateWithUnit(unit, env)) ?? 0;
     }
 
     /**
