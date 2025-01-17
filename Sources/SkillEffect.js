@@ -3157,6 +3157,8 @@ class ForEachUnitFromSameTitlesNode extends ForEachNode {
     }
 }
 
+const FOR_EACH_UNIT_FROM_SAME_TITLES_NODE = (...nodes) => new ForEachUnitFromSameTitlesNode(...nodes);
+
 class AppliesPotentEffectNode extends FromNumbersNode {
     /**
      * @param {number|NumberNode} ratio

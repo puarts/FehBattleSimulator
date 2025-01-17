@@ -1,6 +1,28 @@
 // スキル実装
 // TODO: 攻撃魔防の秘奥聖印
 {
+    let skillId = Hero.HarmonizedMarisa;
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(skillId,
+        new SkillEffectNode(
+            // Grants "unit can move 1 extra space" to unit (that turn only; does not stack).
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.MobilityIncreased),
+            // to unit and allies from the same titles as unit for 1 turn.
+            FOR_EACH_UNIT_FROM_SAME_TITLES_NODE(
+                // Grants [Resonance: Blades) and "unit cannot be slowed by terrain (does not apply to impassable terrain)"
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.ResonantBlades, StatusEffectType.UnitCannotBeSlowedByTerrain),
+            ),
+        ),
+    );
+
+    // Once used,
+    // Harmonized Skill cannot be activated again right away. At start of every third turn,
+    // if Harmonized Skill has already been used,
+    // unit can use Harmonized Skill again.
+    RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.add(skillId);
+}
+
+{
     let skillId = PassiveB.DevPassiveB2;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or is within 2 spaces of an ally,

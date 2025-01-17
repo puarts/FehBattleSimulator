@@ -71,6 +71,7 @@ const Hero = {
     DuoLucina: 1193,
     DuoAlear: 1214,
     DuoHeidrun: 1220,
+    HarmonizedMarisa: 1230,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
