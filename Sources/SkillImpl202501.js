@@ -258,7 +258,7 @@
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // boosts damage by 75% of the greater of foe's Spd or Def and
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
-            MULT_TRUNC_NODE(0.75, MAX_NODE(UNITS_SPD_DURING_COMBAT_NODE, UNITS_DEF_DURING_COMBAT_NODE)),
+            PERCENTAGE_NODE(75, MAX_NODE(FOES_SPD_DURING_COMBAT_NODE, FOES_DEF_DURING_COMBAT_NODE)),
         ),
         // restores 50% of unit's maximum HP.
         RESTORES_X_PERCENTAGE_OF_TARGETS_MAXIMUM_HP_NODE(50),
