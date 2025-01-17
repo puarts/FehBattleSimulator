@@ -23,7 +23,7 @@
 }
 
 {
-    let skillId = PassiveB.DevPassiveB2;
+    let skillId = PassiveB.AssaultForce;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or is within 2 spaces of an ally,
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
@@ -42,7 +42,7 @@
 }
 
 {
-    let skillId = Weapon.DevAxe1;
+    let skillId = Weapon.LaconicAxe;
     // Accelerates Special trigger (cooldown count-1).
     // Enables [Canto (2)] .
     enablesCantoN(skillId, 2);
@@ -118,7 +118,7 @@
 }
 
 {
-    let skillId = Weapon.DevDagger1;
+    let skillId = Weapon.JehannaDaggerPlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.
     AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 7, 0, 0));
@@ -159,7 +159,7 @@
 }
 
 {
-    let skillId = Weapon.DevSword1;
+    let skillId = Weapon.SwirlingScimitar;
     // Accelerates Special trigger (cooldown count-1).
 
     // If a skill compares unit's Spd to a foe's or ally's Spd,
@@ -211,7 +211,7 @@
 }
 
 {
-    let skillId = PassiveC.DevPassiveC1;
+    let skillId = PassiveC.TimePulseEdge;
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // if unit's Special cooldown count is at its maximum value,
@@ -237,7 +237,7 @@
 }
 
 {
-    let skillId = PassiveB.DevPassiveB1;
+    let skillId = PassiveB.LaguzLoyalty;
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts Atk/Spd-4 on foe during combat.
         INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(4, 4, 0, 0),
@@ -272,7 +272,7 @@
 }
 
 {
-    let skillId = Special.DevSpecial3;
+    let skillId = Special.AethersPath;
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     setSpecialCount(4);
 
@@ -317,7 +317,7 @@
 }
 
 {
-    let skillId = Weapon.DevLance1;
+    let skillId = Weapon.SwirlingLance;
     // Accelerates Special trigger (cooldown count-1).
 
     // At start of player phase or enemy phase,
