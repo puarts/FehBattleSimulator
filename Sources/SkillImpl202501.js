@@ -1,5 +1,4 @@
 // スキル実装
-// TODO: 攻撃魔防の秘奥聖印
 {
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
