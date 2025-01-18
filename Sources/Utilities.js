@@ -1681,6 +1681,10 @@ class ArrayUtil {
     static apply(array1, array2, func) {
         return array1.map((value, index) => func(value, array2[index]));
     }
+
+    static sum(array) {
+        return array.reduce((a, b) => a + b, 0);
+    }
 }
 
 /**

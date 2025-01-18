@@ -680,6 +680,10 @@ class BattleSimulatorBase {
             },
             developModeChanged: function () {
                 LocalStorageUtil.setNumber('isDevelopmentMode', appData.isDevelopmentMode ? 1 : 0);
+                const userConfirmed = window.confirm("設定を完全に反映するためにはリロードが必要です。今すぐリロードしますか？");
+                if (userConfirmed) {
+                    window.location.reload();
+                }
             },
             actionDoneChanged: function () {
                 updateAllUi();

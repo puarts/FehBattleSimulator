@@ -682,7 +682,7 @@
                                                 </span>
                                                 <span v-if="(getAttacker()?.isHarmonicAllyHero) && !g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
                                                     <input type="button" v-if="getAttacker()?.isHarmonicAllyHero " disabled
-                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
+                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
                                                            class="fehButtonDisabled">
                                                 </span>
 
@@ -1923,11 +1923,11 @@
                             </td>
                             <td v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
                                 <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
-                                    @click="value.resetStatusMult();g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
+                                       @click="value.resetStatusMult();g_appData.__updateStatusBySkillsAndMergeForAllHeroes();">
                             </td>
                             <td>
                                 <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
-                                    @click="value.resetStatusAdd();g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
+                                       @click="value.resetStatusAdd();g_appData.__updateStatusBySkillsAndMergeForAllHeroes();">
                             </td>
                             <td></td>
                             <td v-bind:style="g_app.vm.debugMenuStyle">

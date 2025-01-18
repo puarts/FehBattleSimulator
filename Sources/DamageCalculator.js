@@ -2035,7 +2035,7 @@ class DamageCalculator {
             this.writeDebugLog(`軽減前ダメージ: ${damage}`);
             this.writeDebugLog(`ダメージ軽減率(奥義以外): [${damageReductionRatiosAfterNeutralization}]`);
             this.writeDebugLog(`ダメージ軽減率(守備奥義): [${damageReductionRatiosByDefenderSpecial}]`);
-            this.writeDebugLog(`ダメージ軽減率(奥義): [${damageReductionRatiosByNonDefenderSpecial}]`);
+            this.writeDebugLog(`ダメージ軽減率(奥義扱い): [${damageReductionRatiosByNonDefenderSpecial}]`);
             this.writeDebugLog(`最終ダメージ率: ${floorNumberWithFloatError(damageRatio * 100)}%`);
             this.writeDebugLog(`最終ダメージ軽減率: ${floorNumberWithFloatError(reduceRatio * 100)}%`);
             this.writeDebugLog(`固定ダメージ軽減値: -${damageReductionValue}`);

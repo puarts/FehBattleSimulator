@@ -437,6 +437,8 @@ class MapUnitsToNumNode extends NumbersNode {
     }
 }
 
+const MAP_UNITS_TO_NUM_NODE = (unitsNode, funcNode) => new MapUnitsToNumNode(unitsNode, funcNode);
+
 class FilterUnitsNode extends UnitsNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -696,9 +698,12 @@ class TargetGroupNode extends NumberNode {
 
 const TARGET_GROUP_NODE = new TargetGroupNode();
 
+/**
+ * ターゲットとスキル所有者が同じ場合はfalse
+ */
 const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode {
     evaluate(env) {
-        return env.target.groupId === env.skillOwner.groupId;
+        return env.target.groupId === env.skillOwner.groupId && env.target !== env.skillOwner;
     }
 }();
 
@@ -743,6 +748,32 @@ class AreSkillOwnerAndAssistTargetingInSameGroupNode extends AreTargetAndAssistT
 }
 
 const ARE_SKILL_OWNER_AND_ASSIST_TARGETING_IN_SAME_GROUP_NODE = new AreSkillOwnerAndAssistTargetingInSameGroupNode();
+
+class IsThereTargetsAllyOnMapNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(predNode) {
+        super();
+        this._predNode = predNode;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let allies = env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit);
+        for (let ally of allies) {
+            if (this._predNode.evaluate(env.copy().setTarget(ally))) {
+                env.debug(`${ally.nameWithGroup}は条件を満たす`);
+                return true;
+            }
+        }
+        env.debug('条件を満たす味方は存在しない');
+        return false;
+    }
+}
+
+const IS_THERE_TARGETS_ALLY_ON_MAP_NODE = (predNode) => new IsThereTargetsAllyOnMapNode(predNode);
 
 // TODO: リファクタリング
 class IsThereAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
@@ -1363,6 +1394,8 @@ class CanTargetsFoesAttackTriggerTargetsSpecialNode extends BoolNode {
     }
 }
 
+const CAN_TARGETS_FOES_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE = new CanTargetsFoesAttackTriggerTargetsSpecialNode();
+
 /**
  * TODO: FromNumberNodeに統合する
  * @abstract
@@ -1442,6 +1475,8 @@ class GrantsAllStatsPlusNToTargetDuringCombatNode extends GrantsStatsPlusToTarge
         env.popValue();
     }
 }
+
+const GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE = (n) => new GrantsAllStatsPlusNToTargetDuringCombatNode(n);
 
 class GrantsAllStatsPlusNToUnitDuringCombatNode extends GrantsAllStatsPlusNToTargetDuringCombatNode {
     static {
@@ -1699,6 +1734,8 @@ class TargetsMaxHpNode extends NumberNode {
     }
 }
 
+const TARGETS_MAX_HP_NODE = new TargetsMaxHpNode();
+
 class FoesMaxHpNode extends TargetsMaxHpNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -1710,6 +1747,8 @@ class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
         Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
+
+const SKILL_OWNER_MAX_HP_NODE = new SkillOwnerMaxHpNode();
 
 /**
  * @abstract
@@ -2329,6 +2368,8 @@ class TargetsMaxSpecialCountNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_MAX_SPECIAL_COUNT_NODE = new TargetsMaxSpecialCountNode();
+
 class HasTargetStatusEffectNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2376,6 +2417,8 @@ class NumOfTargetsDragonflowersNode extends PositiveNumberNode {
         return result;
     }
 }
+
+const NUM_OF_TARGETS_DRAGONFLOWERS_NODE = new NumOfTargetsDragonflowersNode();
 
 class TargetsMoveTypeNode extends PositiveNumberNode {
     static {
@@ -3113,6 +3156,8 @@ class ForEachUnitFromSameTitlesNode extends ForEachNode {
         return env.unitManager.enumerateAlliesThatHaveSameOrigin(this.getUnit(env));
     }
 }
+
+const FOR_EACH_UNIT_FROM_SAME_TITLES_NODE = (...nodes) => new ForEachUnitFromSameTitlesNode(...nodes);
 
 class AppliesPotentEffectNode extends FromNumbersNode {
     /**

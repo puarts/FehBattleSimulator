@@ -143,7 +143,7 @@ class SkillEffectHooks {
     }
 
     evaluateSumWithUnit(unit, env) {
-        return Math.add(...this.evaluateWithUnit(unit, env)) ?? 0;
+        return ArrayUtil.sum(this.evaluateWithUnit(unit, env)) ?? 0;
     }
 
     /**
@@ -782,7 +782,9 @@ const LTE_NODE = (...node) => new LteNode(...node);
 class EqNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
-        return left === right;
+        let result = left === right;
+        env.trace(`[EqNode] ${left} === ${right}: ${result}`);
+        return result;
     }
 }
 

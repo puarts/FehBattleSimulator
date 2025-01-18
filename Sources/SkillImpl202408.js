@@ -585,11 +585,14 @@
             ),
             // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
             NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
-            // and also,
-            // and if unit's Special cooldown count is at its maximum value after combat,
-            // grants Special cooldown count-1 to unit after combat.
-            IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
         )
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // and also,
+        // and if unit's Special cooldown count is at its maximum value after combat,
+        // grants Special cooldown count-1 to unit after combat.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
     ));
 
     // At start of turn,
@@ -1989,8 +1992,8 @@
     // Effective against flying foes.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Unit attacks twice (even if foe initiates combat, unit attacks twice).
-        TARGET_ATTACKS_TWICE_NODE,
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
         // If unit initiates combat or is within 2 spaces of an ally,
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat + 5,
@@ -2022,7 +2025,7 @@
 
 // 刃壁
 {
-    // 攻撃守備の刃壁
+    setSpikedWall(PassiveB.ASSpikedWall, [4, 4, 0, 0], [UNITS_ATK_DURING_COMBAT_NODE]);
     setSpikedWall(PassiveB.ADSpikedWall, [4, 0, 4, 0], [UNITS_DEF_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE]);
     setSpikedWall(PassiveB.SRSpikedWall, [0, 4, 0, 4], [UNITS_SPD_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE]);
 }
@@ -2066,8 +2069,8 @@
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Unit attacks twice (even if foe initiates combat, unit attacks twice).
-        TARGET_ATTACKS_TWICE_NODE,
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
         // If unit initiates combat or is within 2 spaces of an ally,
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Def at start of combat + 5,
@@ -2151,8 +2154,8 @@
     ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        TARGET_ATTACKS_TWICE_NODE,
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
         // If unit initiates combat or is within 3 spaces of an ally,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
             // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's Spd at start of combat + 5,
@@ -2212,7 +2215,7 @@
         // If unit initiates combat,
         IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
             // unit attacks twice,
-            TARGET_ATTACKS_TWICE_NODE,
+            TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
             // and unit can make a follow-up attack before foe can counterattack.
             UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
         ),
@@ -5348,8 +5351,8 @@ function setDiscord(skillId, statsRatios) {
     // TODO: 攻撃回数設定時のHOOKSを作成するか検討する
     AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Unit attacks twice (even if foe initiates combat, unit attacks twice).
-        TARGET_ATTACKS_TWICE_NODE,
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
     ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
