@@ -3,8 +3,16 @@
 
 class DoubleClickChecker {
     constructor() {
+        this.init();
+    }
+
+    init() {
         this._firstClickTime = 0;
         this._diffMillisec = 0;
+    }
+
+    reset() {
+        this.init();
     }
 
     notifyClick() {
@@ -65,23 +73,25 @@ function onItemSelected(event) {
     console.log("onItemSelected");
     let button = event.button;
     // 左クリックならダブルクリック判定をする
-    if (button === 0) {
+    let isLeftClick = button === 0;
+    if (isLeftClick) {
         g_doubleClickChecker.notifyClick();
+    } else {
+        g_doubleClickChecker.reset();
     }
 
     let targetElem = event.target;
-    if (targetElem.id == undefined || targetElem.id == "") {
+    if (targetElem.id === undefined || targetElem.id === "") {
         let tdElem = findParentTdElement(targetElem);
         if (tdElem != null) {
             // タイルが選択された
             __selectItemById(tdElem.id, button);
         }
-    }
-    else {
+    } else {
         __selectItemById(targetElem.id, button);
     }
 
-    if (g_doubleClickChecker.isDoubleClicked()) {
+    if (isLeftClick && g_doubleClickChecker.isDoubleClicked()) {
         for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit && !x.isActionDone)) {
             g_app.executeEndActionCommand(unit);
         }
