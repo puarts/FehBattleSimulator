@@ -1063,6 +1063,12 @@ class DamageCalculator {
         if (defUnit.battleContext.isOnDefensiveTile) {
             tmpMit = tmpMit + floorNumberWithFloatError(tmpMit * 0.3);
         }
+        if (g_appData.gameMode === GameMode.SummonerDuels ||
+            g_appData.isSummonerDualCalcEnabled) {
+            if (atkUnit.attackRange === 2 && defUnit.attackRange === 1) {
+                tmpMit += 7;
+            }
+        }
 
         let statusDiff = Math.max(0, atkUnit.getAtkInPrecombat() - tmpMit);
         let rangedSpecialDamage =

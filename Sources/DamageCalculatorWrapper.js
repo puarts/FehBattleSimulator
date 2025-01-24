@@ -2435,8 +2435,9 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.invalidateAllOwnDebuffs();
         }
 
-        if (gameMode == GameMode.SummonerDuels) {
-            if (targetUnit.attackRange == 1 && enemyUnit.attackRange == 2
+        if (gameMode === GameMode.SummonerDuels ||
+            g_appData.isSummonerDualCalcEnabled) {
+            if (targetUnit.attackRange === 1 && enemyUnit.attackRange === 2
                 && !targetUnit.battleContext.isSaviorActivated
             ) {
                 // 英雄決闘では射程1ボーナスで射程2と闘う時、守備、魔防+7される(護り手発動時は除外)

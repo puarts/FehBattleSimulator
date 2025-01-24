@@ -296,6 +296,7 @@ class AppData extends UnitManager {
         this.isDevelopmentMode = LocalStorageUtil.getNumber('isDevelopmentMode', 0) === 1;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
+        this.isSummonerDualCalcEnabled = false;
 
         this.skillLogLevel = LocalStorageUtil.getNumber('skillLogLevel', LoggerBase.LOG_LEVEL.OFF);
         this.skillLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LOG_LEVEL);
