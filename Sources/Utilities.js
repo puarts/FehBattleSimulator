@@ -229,6 +229,24 @@ class LocalStorageUtil {
         return value !== null ? parseFloat(value) : defaultValue;
     }
 
+    static getBoolean(key, defaultValue = false) {
+        const value = localStorage.getItem(key);
+        return value !== null ? value === 'true' : defaultValue;
+    }
+
+    static setBoolean(key, value) {
+        localStorage.setItem(key, value ? 'true' : 'false');
+    }
+
+    static getJson(key, defaultValue = null) {
+        const value = localStorage.getItem(key);
+        return value !== null ? JSON.parse(value) : defaultValue;
+    }
+
+    static setJson(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+    }
+
     /**
      * ローカルストレージから数値を削除します。
      * @param {string} key - 削除するためのキー。

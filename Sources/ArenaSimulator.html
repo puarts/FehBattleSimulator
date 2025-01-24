@@ -1418,6 +1418,81 @@
                 @click="examinesAttackableEnemies">
             <br />
         </div>
+        <div id="saveUnitDialog" class="unit-dialog">
+            <div class="input-box">
+                <input class="text-input" type="text" id="saveUnitNameInput" placeholder="名前を入力"
+                       @keydown.enter="g_appData.saveCurrentUnit()" aria-label="ユニット名">
+                <button class="save-box-button" @click="g_appData.saveCurrentUnit()">
+                    <i class="fa-solid fa-save" title="保存"></i>
+                </button>
+            </div>
+            <div class="action-container">
+                <button class="icon-button load-button" @click="g_appData.restoreUnit()">
+                    <i class="fa-solid fa-rotate-left" title="元に戻す"></i>
+                </button>
+            </div>
+            <h3>保存ユニット一覧</h3>
+            <div class="action-container">
+                <button v-if="!isEditingSavedUnits" class="icon-button upload-button" @click="g_appData.enableEditingSavedUnits()">
+                    <i class="fa-solid fa-edit" title="編集"></i>
+                </button>
+                <button v-if="isEditingSavedUnits" class="icon-button save-button" @click="g_appData.saveChangesSavedUnits()">
+                    <i class="fa-solid fa-save" title="保存"></i>
+                </button>
+                <button class="icon-button download-button" @click="g_appData.downloadSavedUnits()">
+                    <i class="fa-solid fa-download" title="ダウンロード"></i>
+                </button>
+                <input type="file" id="uploadSavedUnits" style="display: none;" @change="g_appData.uploadSavedUnits()"/>
+                <input type="file" id="uploadAndReplaceSavedUnits" style="display: none;" @change="g_appData.uploadSavedUnits(true)"/>
+                <button class="icon-button upload-button" @click="g_appData.selectUploadFile()">
+                    <i class="fa-solid fa-upload" title="アップロード（追加）"></i>
+                </button>
+                <button class="icon-button upload-and-replace-button" @click="g_appData.selectUploadFile(true)">
+                    <i class="fa-solid fa-upload" title="アップロード（置き換え）"></i>
+                </button>
+                <div class="action-item-right">
+                    <input id="confirmDeleteSavedUnit" type="checkbox" v-model="confirmDeleteSavedUnit">
+                    <label for="confirmDeleteSavedUnit">削除確認</label>
+                </div>
+            </div>
+            <table class="unit-dialog">
+                <thead>
+                <tr>
+                    <th class="col-type"></th>
+                    <th>名前</th>
+                    <th class="col-load"></th>
+                    <th class="col-delete"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(unitObj, index) in savedUnits" :key="index"
+                    draggable="true"
+                    @dragstart="g_appData.savedUnitListDragStart(index)"
+                    @dragover.prevent
+                    @drop="g_appData.savedUnitListDrop(index)">
+                    <td>
+                        <img class="unit-dialog-icon" :src="`${weaponTypeIconPath(unitObj.weaponType)}`" alt="武器種">
+                        <img class="unit-dialog-icon" :src="`${moveTypeIconPath(unitObj.moveType)}`" alt="移動タイプ">
+                    </td>
+                    <td>
+                        <span v-if="!g_appData.isEditingSavedUnits">{{ unitObj.name }}</span>
+                        <input class="edit-input" v-if="g_appData.isEditingSavedUnits" v-model="unitObj.name" type="text"
+                               @keydown.enter="g_appData.saveChangesSavedUnits()" />
+                    </td>
+                    <td class="col-load">
+                        <button class="icon-button load-button" @click="g_appData.loadUnit(unitObj)">
+                            <i class="fa-solid fa-file-import" title="読み込む"></i>
+                        </button>
+                    </td>
+                    <td class="col-delete">
+                        <button class="icon-button delete-button" @click="g_appData.deleteUnit(index)">
+                            <i class="fa-solid fa-trash-can" title="削除"></i>
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
         <div v-bind:style="debugMenuStyle">
             <textarea style="height: 150px;width:300px;" v-bind:value="ocrResult"></textarea><br />
             <!-- <canvas id="trimmedImage" style="width:1080;height:1920" class="img-canvas"></canvas> -->
@@ -1534,8 +1609,12 @@
             <tr>
                 <td>
                     <div style="float:right">
-                    <input type="button" class="buttonUi" style="width:80px" @click="g_appData.copyCurrentUnit()" value="コピー" >
-                    <input type="button" class="buttonUi" style="width:80px" @click="g_appData.pasteToCurrentUnit();" value="ペースト" >
+                        <input type="button" class="buttonUi" style="width:95px" @click="showSaveUnitDialog()"
+                               value="保存・読み込み">
+                        <input type="button" class="buttonUi" style="width:80px" @click="g_appData.copyCurrentUnit()"
+                               value="コピー">
+                        <input type="button" class="buttonUi" style="width:80px"
+                               @click="g_appData.pasteToCurrentUnit();" value="ペースト">
                     </div>
                 </td>
             </tr>
@@ -2370,6 +2449,9 @@
             loadLazyTemplateImages();
             g_app.loadImageAnalysisLibraries();
         }
+        function showDialog(id) {
+            $(id).dialog('open');
+        }
         function showSettingDialog() {
             $('#settingDialog').dialog('open');
         }
@@ -2379,6 +2461,11 @@
         }
         function showImportDialog() {
             $('#importDialog').dialog('open');
+        }
+        function showSaveUnitDialog() {
+            showDialog('#saveUnitDialog');
+            g_appData.storeUnit();
+            $('#saveUnitNameInput').val(g_appData.currentUnit.name);
         }
         function createDialog(elem, title, width = 370, height = 500, positionOf = "#unitSettings") {
             elem.dialog({
@@ -2473,6 +2560,7 @@
             createDialog($("#settingDialog"), "詳細設定", 370, 370, "#mapArea");
             createDialog($("#exportDialog"), "設定のエクスポート", 370, 420, "#mapArea");
             createDialog($("#importDialog"), "設定のインポート", 370, 420, "#mapArea");
+            createDialog($("#saveUnitDialog"), "ユニットの保存・読み込み", 500, 600);
         }
         function copyMapSourceCodeToClipboard() {
             var textarea = $("#mapSourceCode")[0];
@@ -2580,6 +2668,8 @@
 
     <!-- クッキー(実際は使ってないので消してもいいかも) -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script> -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <!-- 文字列圧縮 -->
     <script async src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>

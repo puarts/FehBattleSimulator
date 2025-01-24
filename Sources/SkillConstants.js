@@ -47,6 +47,78 @@ const WeaponType = {
     All: 30,
 };
 
+function weaponTypeIconPath(weaponType) {
+    switch (weaponType) {
+        case WeaponType.Sword:
+            return `${g_iconRootPath}Red_Sword.png`;
+        case WeaponType.Lance:
+            return `${g_iconRootPath}Blue_Lance.png`;
+        case WeaponType.Axe:
+            return `${g_iconRootPath}Green_Axe.png`;
+        case WeaponType.RedTome:
+            return `${g_iconRootPath}Red_Tome.png`;
+        case WeaponType.BlueTome:
+            return `${g_iconRootPath}Blue_Tome.png`;
+        case WeaponType.GreenTome:
+            return `${g_iconRootPath}Green_Tome.png`;
+        case WeaponType.RedBow:
+            return `${g_iconRootPath}Red_Bow.png`;
+        case WeaponType.BlueBow:
+            return `${g_iconRootPath}Blue_Bow.png`;
+        case WeaponType.GreenBow:
+            return `${g_iconRootPath}Green_Bow.png`;
+        case WeaponType.ColorlessBow:
+            return `${g_iconRootPath}Gray_Bow.png`;
+        case WeaponType.RedDagger:
+            return `${g_iconRootPath}Red_Dagger.png`;
+        case WeaponType.BlueDagger:
+            return `${g_iconRootPath}Blue_Dagger.png`;
+        case WeaponType.GreenDagger:
+            return `${g_iconRootPath}Green_Dagger.png`;
+        case WeaponType.ColorlessDagger:
+            return `${g_iconRootPath}Gray_Dagger.png`;
+        case WeaponType.Staff:
+            return `${g_iconRootPath}Gray_Staff.png`;
+        case WeaponType.RedBreath:
+            return `${g_iconRootPath}Red_Breath.png`;
+        case WeaponType.BlueBreath:
+            return `${g_iconRootPath}Blue_Breath.png`;
+        case WeaponType.GreenBreath:
+            return `${g_iconRootPath}Green_Breath.png`;
+        case WeaponType.ColorlessBreath:
+            return `${g_iconRootPath}Gray_Breath.png`;
+        case WeaponType.RedBeast:
+            return `${g_iconRootPath}Red_Beast.png`;
+        case WeaponType.BlueBeast:
+            return `${g_iconRootPath}Blue_Beast.png`;
+        case WeaponType.GreenBeast:
+            return `${g_iconRootPath}Green_Beast.png`;
+        case WeaponType.ColorlessBeast:
+            return `${g_iconRootPath}Gray_Beast.png`;
+        case WeaponType.ColorlessTome:
+            return `${g_iconRootPath}Gray_Tome.png`;
+
+        // グループ
+        // case WeaponType.Breath:
+        //     return `${g_iconRootPath}Breath.png`;
+        // case WeaponType.Beast:
+        //     return `${g_iconRootPath}Beast.png`;
+        // case WeaponType.Tome:
+        //     return `${g_iconRootPath}Tome.png`;
+        // case WeaponType.Bow:
+        //     return `${g_iconRootPath}Bow.png`;
+        // case WeaponType.Dagger:
+        //     return `${g_iconRootPath}Dagger.png`;
+        // case WeaponType.ExceptStaff:
+        //     return `${g_iconRootPath}Except_Staff.png`;
+        // case WeaponType.All:
+        //     return `${g_iconRootPath}All.png`;
+
+        // default:
+        //     return `${g_iconRootPath}Default.png`;
+    }
+}
+
 const WeaponRefinementType = {
     None: -1,
     Hp5_Atk2: 0,
