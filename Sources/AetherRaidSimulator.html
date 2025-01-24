@@ -1489,6 +1489,9 @@
             <canvas id="ocrInputImage10"></canvas>
             <canvas id="ocrInputImage12"></canvas>
 
+            <canvas id="ocrInputImageForWeaponIcon"></canvas>
+            <canvas id="ocrInputImageForEngageIcon"></canvas>
+
             <span v-for="imgFile in templateWeaponRefinementImageFiles">
                 <img src="/images/dummy.png" v-bind:data-src="g_corsImageRootPath + 'Templates/' + imgFile.fileName"
                     v-bind:id="imgFile.fileName" class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
@@ -1508,6 +1511,10 @@
             <span v-for="imgFile in arenaMapImageFiles">
                 <img src="/images/dummy.png" v-bind:data-src="g_corsImageRootPath + 'Maps/' + imgFile.fileName"
                     class="lazyTemplateImageForArena" v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
+            </span>
+            <span v-for="imgFile in templateEngageSpecialIconFiles">
+                <img src="/images/dummy.png" v-bind:data-src="`${g_corsImageRootPath}images/FehSkillIcons/EngagedSpecial/${imgFile.fileName}`"
+                     v-bind:id="imgFile.fileName" class="lazyTemplateImage" v-bind:alt="imgFile.fileName"/>
             </span>
         </div>
     </div>

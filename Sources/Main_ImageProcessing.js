@@ -421,6 +421,74 @@ class ImageProcessor {
         g_appData.__updateStatusBySkillsAndMerges(unit);
     }
 
+    matchImages(sourceCanvas, imageFiles, ratio = 1.0, threshold = 0.5) {
+        g_app.writeDebugLogLine(`sourceCanvas.width = ${sourceCanvas.width}, sourceCanvas.height = ${sourceCanvas.height}`);
+        let targetCanvasId = 'ocrInputImageForWeaponIcon';
+        let tempCanvasId = 'ocrInputImageForEngageIcon';
+        let outputCanvas = document.getElementById(targetCanvasId); // 既存のcanvas要素
+        cropCanvas(sourceCanvas, outputCanvas,
+            0.575 - 0.06, 0.646 + 0.038, 0.32 / (5.0), 0.19 / 5,
+        );
+        let src = cv.imread(outputCanvas);
+        let mask = new cv.Mat();
+        let dst = new cv.Mat();
+        let method = cv.TM_CCOEFF_NORMED;
+        let values = [];
+        for (let imageFile of imageFiles) {
+            let engageIconElement = document.getElementById(tempCanvasId); // 既存のcanvas要素
+            try {
+                cv.imshow(engageIconElement, cv.imread(imageFile.fileName)); // OpenCV.jsのimshowを使って表示
+            } catch (e) {
+                continue;
+            }
+
+            let templ = cv.imread(imageFile.fileName);
+
+            // src のサイズを取得
+            let srcWidth = src.cols;
+            let srcHeight = src.rows;
+
+            // templ を src のサイズの 100% に近づける
+            let scaleFactor = Math.min(srcWidth / templ.cols, srcHeight / templ.rows) * ratio;
+            let newWidth = Math.round(templ.cols * scaleFactor);
+            let newHeight = Math.round(templ.rows * scaleFactor);
+
+            let resizedTemplate = new cv.Mat();
+            cv.resize(templ, resizedTemplate, new cv.Size(newWidth, newHeight), 0, 0, cv.INTER_LINEAR);
+            cv.imshow(engageIconElement, resizedTemplate); // OpenCV.jsのimshowを使って表示
+
+            // テンプレートマッチングを実行
+            // let result = new cv.Mat();
+            // cv.matchTemplate(src, resizedTemplate, dst, cv.TM_CCOEFF_NORMED);
+
+            cv.matchTemplate(
+                src,
+                resizedTemplate,
+                // templ,
+                dst,
+                method,
+                mask);
+
+            templ.delete();
+            let result = cv.minMaxLoc(dst, new cv.Mat());
+            let maxCorrPoint = result.maxLoc;
+            let maxCorrValue = dst.floatAt(maxCorrPoint.y, maxCorrPoint.x);
+            if (maxCorrValue > threshold) {
+                values.push([imageFile.id, maxCorrValue]);
+                cv.imshow(outputCanvas, src);
+            }
+        }
+        src.delete();
+        dst.delete();
+        mask.delete();
+
+        values.sort((a, b) => {
+            return b[1] - a[1];
+        });
+
+        return values;
+    }
+
     setUnitBlessingByImage(unit, sourceCanvas, canvas) {
         let self = g_app;
         if (!unit.canGrantBlessing) {
@@ -718,8 +786,11 @@ class ImageProcessor {
                 }).then(() => {
                     app.writeProgress(`祝福抽出(${unit.id})`);
                     self.setUnitBlessingByImage(unit, sourceCanvas, ocrInputCanvas1);
-                    updateAllUi();
                     app.clearOcrProgress();
+                    let result = self.matchImages(sourceCanvas, g_app.vm.templateEngageSpecialIconFiles, 1, 0.25);
+                    unit.emblemHeroIndex = result.length > 0 ? Number(result[0][0]) : EmblemHero.None;
+                    app.clearOcrProgress();
+                    updateAllUi();
                 }).then(() => {
                     // 凸数抽出
                     unit.merge = 0;

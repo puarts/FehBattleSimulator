@@ -467,6 +467,11 @@ class AppData extends UnitManager {
             { id: WeaponRefinementType.DazzlingStaff, fileName: "WeaponRefine_DazzlingStaff.png" },
         ];
 
+        this.templateEngageSpecialIconFiles =
+            Object.entries(EngagedSpecialIcon).map(([key, value]) => {
+                return {id: key, fileName: value.split('/').pop()};
+            }).filter(x => Number(x.id) !== EmblemHero.None);
+
         this.mapImageFiles = AetherRaidMapImageFiles;
         this.arenaMapImageFiles = ArenaMapImageFiles;
 
