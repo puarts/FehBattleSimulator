@@ -745,7 +745,9 @@ class ImageProcessor {
             // 文字認識用に2値化
             app.vm.ocrProgress = `画像の2値化(${unit.id})..`;
             manipurateHsv(sourceCanvas, binarizedCanvas,
-                (h, s, v) => { return s > 40 || v < 140; }, true);
+                (h, s, v) => {
+                    return s > 40 || v < 140;
+                }, true);
 
             // const ocrInputCanvas = ocrCanvases[0];
             // const ocrInputCanvas1 = ocrCanvases[1];
@@ -784,40 +786,60 @@ class ImageProcessor {
                     console.log(ocrResult);
                     self.extractHeroName(unit, ocrResult);
                 }).then(() => {
-                    app.writeProgress(`祝福抽出(${unit.id})`);
-                    self.setUnitBlessingByImage(unit, sourceCanvas, ocrInputCanvas1);
-                    app.clearOcrProgress();
-                    let result = self.matchImages(sourceCanvas, g_app.vm.templateEngageSpecialIconFiles, 1, 0.25);
-                    unit.emblemHeroIndex = result.length > 0 ? Number(result[0][0]) : EmblemHero.None;
-                    app.clearOcrProgress();
-                    updateAllUi();
-                }).then(() => {
-                    // 凸数抽出
-                    unit.merge = 0;
+                app.writeProgress(`祝福抽出(${unit.id})`);
+                self.setUnitBlessingByImage(unit, sourceCanvas, ocrInputCanvas1);
+                app.clearOcrProgress();
+                let result = self.matchImages(sourceCanvas, g_app.vm.templateEngageSpecialIconFiles, 1, 0.25);
+                unit.emblemHeroIndex = result.length > 0 ? Number(result[0][0]) : EmblemHero.None;
+                app.clearOcrProgress();
+                updateAllUi();
+            }).then(() => {
+                // 凸数抽出
+                unit.merge = 0;
+                cropAndBinarizeImageAndOcr(
+                    ocrInputCanvas2, sourceCanvas,
+                    0.252, 0.577, 0.06, 0.038, 130,
+                    p => g_app.ocrProgress(p, `凸数抽出(${unit.id})`),
+                    ocrResult => {
+                        app.clearOcrProgress();
+                        console.log(ocrResult);
+                        g_appData.ocrResult += "凸数: " + ocrResult.text + "\n";
+                        var filtered = convertOcrResultToArray(ocrResult.text);
+                        let partialName = getMaxLengthElem(filtered);
+                        if (Number.isInteger(Number(partialName))) {
+                            unit.merge = Number(partialName);
+                            g_appData.__updateStatusBySkillsAndMerges(unit);
+                        }
+                    },
+                    'eng',
+                    "0123456789"
+                ).then(() => {
+                    unit.dragonflower = 0;
+                    // 花凸数抽出
                     cropAndBinarizeImageAndOcr(
-                        ocrInputCanvas2, sourceCanvas,
-                        0.252, 0.577, 0.06, 0.038, 130,
-                        p => g_app.ocrProgress(p, `凸数抽出(${unit.id})`),
+                        ocrInputCanvas3, binarizedCanvas,
+                        0.541, 0.58, 0.06, 0.03, -1,
+                        p => g_app.ocrProgress(p, `花凸数抽出(${unit.id})`),
                         ocrResult => {
                             app.clearOcrProgress();
                             console.log(ocrResult);
-                            g_appData.ocrResult += "凸数: " + ocrResult.text + "\n";
+                            g_appData.ocrResult += "花凸数: " + ocrResult.text + "\n";
                             var filtered = convertOcrResultToArray(ocrResult.text);
                             let partialName = getMaxLengthElem(filtered);
-                            if (Number.isInteger(Number(partialName))) {
-                                unit.merge = Number(partialName);
+                            let dragonflower = Number(partialName);
+                            if (Number.isInteger(dragonflower) && dragonflower > 0) {
+                                unit.dragonflower = dragonflower;
                                 g_appData.__updateStatusBySkillsAndMerges(unit);
                             }
                         },
-                        'eng',
-                        "0123456789"
+                        'eng'
+                        // ,"0123456789"
                     ).then(() => {
-                        unit.dragonflower = 0;
-                        // 花凸数抽出
+                        // アクセサリー未装備の時は花凸の位置がずれるのでもう一度OCR
                         cropAndBinarizeImageAndOcr(
-                            ocrInputCanvas3, binarizedCanvas,
-                            0.541, 0.58, 0.06, 0.03, -1,
-                            p => g_app.ocrProgress(p, `花凸数抽出(${unit.id})`),
+                            ocrInputCanvas11, binarizedCanvas,
+                            0.506, 0.58, 0.06, 0.03, -1,
+                            p => app.ocrProgress(p, `花凸数抽出(${unit.id})`),
                             ocrResult => {
                                 app.clearOcrProgress();
                                 console.log(ocrResult);
@@ -825,7 +847,7 @@ class ImageProcessor {
                                 var filtered = convertOcrResultToArray(ocrResult.text);
                                 let partialName = getMaxLengthElem(filtered);
                                 let dragonflower = Number(partialName);
-                                if (Number.isInteger(dragonflower) && dragonflower > 0) {
+                                if (Number.isInteger(dragonflower) && dragonflower > unit.dragonflower) {
                                     unit.dragonflower = dragonflower;
                                     g_appData.__updateStatusBySkillsAndMerges(unit);
                                 }
@@ -833,164 +855,143 @@ class ImageProcessor {
                             'eng'
                             // ,"0123456789"
                         ).then(() => {
-                            // アクセサリー未装備の時は花凸の位置がずれるのでもう一度OCR
-                            cropAndBinarizeImageAndOcr(
-                                ocrInputCanvas11, binarizedCanvas,
-                                0.506, 0.58, 0.06, 0.03, -1,
-                                p => app.ocrProgress(p, `花凸数抽出(${unit.id})`),
-                                ocrResult => {
-                                    app.clearOcrProgress();
-                                    console.log(ocrResult);
-                                    g_appData.ocrResult += "花凸数: " + ocrResult.text + "\n";
-                                    var filtered = convertOcrResultToArray(ocrResult.text);
-                                    let partialName = getMaxLengthElem(filtered);
-                                    let dragonflower = Number(partialName);
-                                    if (Number.isInteger(dragonflower) && dragonflower > unit.dragonflower) {
-                                        unit.dragonflower = dragonflower;
-                                        g_appData.__updateStatusBySkillsAndMerges(unit);
-                                    }
+                            // 得意個体
+                            cropAndPostProcessAndOcr(
+                                ocrInputCanvas4, sourceCanvas,
+                                0.14, 0.615, 0.10, 0.205,
+                                (srcCanvas) => {
+                                    manipurateHsv(srcCanvas, srcCanvas,
+                                        (hue, saturation, brightness) => saturation < 50
+                                            || brightness < 160
+                                            || (hue < 20 || 30 < hue), true);
+                                    let ctx = srcCanvas.getContext("2d");
+                                    let dst = ctx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
+                                    return dst;
                                 },
-                                'eng'
-                                // ,"0123456789"
+                                p => g_app.ocrProgress(p, `得意個体抽出(${unit.id})`),
+                                ocrResult => {
+                                    self.extractAsset(unit, ocrResult);
+                                },
+                                'jpn',
+                                "HP攻撃速さ守備魔防"
                             ).then(() => {
-                                // 得意個体
+                                // 苦手個体
                                 cropAndPostProcessAndOcr(
-                                    ocrInputCanvas4, sourceCanvas,
+                                    ocrInputCanvas5, sourceCanvas,
                                     0.14, 0.615, 0.10, 0.205,
                                     (srcCanvas) => {
                                         manipurateHsv(srcCanvas, srcCanvas,
-                                            (hue, saturation, brightness) => saturation < 50
-                                                || brightness < 160
-                                                || (hue < 20 || 30 < hue), true);
+                                            (hue, saturation, brightness) => brightness < 100
+                                                || (hue < 120 || 160 < hue), true);
                                         let ctx = srcCanvas.getContext("2d");
                                         let dst = ctx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
                                         return dst;
                                     },
-                                    p => g_app.ocrProgress(p, `得意個体抽出(${unit.id})`),
+                                    p => g_app.ocrProgress(p, `苦手個体抽出(${unit.id})`),
                                     ocrResult => {
-                                        self.extractAsset(unit, ocrResult);
+                                        self.extractFlaw(unit, ocrResult);
                                     },
                                     'jpn',
                                     "HP攻撃速さ守備魔防"
                                 ).then(() => {
-                                    // 苦手個体
+                                    unit.clearSkills();
+
+                                    // 武器抽出
                                     cropAndPostProcessAndOcr(
-                                        ocrInputCanvas5, sourceCanvas,
-                                        0.14, 0.615, 0.10, 0.205,
+                                        ocrInputCanvas6, sourceCanvas,
+                                        0.575,
+                                        0.614,
+                                        0.32,
+                                        0.03,
                                         (srcCanvas) => {
                                             manipurateHsv(srcCanvas, srcCanvas,
-                                                (hue, saturation, brightness) => brightness < 100
-                                                    || (hue < 120 || 160 < hue), true);
+                                                (hue, saturation, brightness) => brightness < 140
+                                                    || 110 < hue && hue < 160, true);
                                             let ctx = srcCanvas.getContext("2d");
                                             let dst = ctx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
                                             return dst;
                                         },
-                                        p => g_app.ocrProgress(p, `苦手個体抽出(${unit.id})`),
+                                        p => g_app.ocrProgress(p, `武器抽出(${unit.id})`),
                                         ocrResult => {
-                                            self.extractFlaw(unit, ocrResult);
+                                            self.extractWeapon(unit, ocrResult);
                                         },
-                                        'jpn',
-                                        "HP攻撃速さ守備魔防"
+                                        "jpn",
+                                        // ホワイトリスト有効にするとスマホ版でtesseractが固まる
+                                        app.vm.useWhitelistForOcr ? app.weaponSkillCharWhiteList : ""
                                     ).then(() => {
-                                        unit.clearSkills();
-
-                                        // 武器抽出
+                                        // 武器錬成抽出
                                         cropAndPostProcessAndOcr(
-                                            ocrInputCanvas6, sourceCanvas,
-                                            0.575,
-                                            0.614,
-                                            0.32,
-                                            0.03,
+                                            ocrInputCanvas7, sourceCanvas,
+                                            0.575, 0.614, 0.32, 0.03,
                                             (srcCanvas) => {
                                                 manipurateHsv(srcCanvas, srcCanvas,
-                                                    (hue, saturation, brightness) => brightness < 140
-                                                        || 110 < hue && hue < 160, true);
+                                                    (hue, saturation, brightness) => saturation < 40, true);
                                                 let ctx = srcCanvas.getContext("2d");
                                                 let dst = ctx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
                                                 return dst;
                                             },
-                                            p => g_app.ocrProgress(p, `武器抽出(${unit.id})`),
+                                            p => g_app.ocrProgress(p, `武器錬成抽出(${unit.id})`),
                                             ocrResult => {
-                                                self.extractWeapon(unit, ocrResult);
+                                                app.clearOcrProgress();
+                                                var filtered = convertOcrResultToArray(ocrResult.text);
+                                                let partialName = getMaxLengthElem(filtered);
+                                                console.log(filtered);
+                                                unit.weaponRefinement = WeaponRefinementType.None;
+                                                if (partialName == null) {
+                                                    // 武器錬成あり
+                                                    self.setWeaponRefinementTypeByImage(unit, sourceCanvas, ocrInputCanvas8);
+                                                }
                                             },
                                             "jpn",
-                                            // ホワイトリスト有効にするとスマホ版でtesseractが固まる
                                             app.vm.useWhitelistForOcr ? app.weaponSkillCharWhiteList : ""
                                         ).then(() => {
-                                            // 武器錬成抽出
-                                            cropAndPostProcessAndOcr(
-                                                ocrInputCanvas7, sourceCanvas,
-                                                0.575, 0.614, 0.32, 0.03,
-                                                (srcCanvas) => {
-                                                    manipurateHsv(srcCanvas, srcCanvas,
-                                                        (hue, saturation, brightness) => saturation < 40, true);
-                                                    let ctx = srcCanvas.getContext("2d");
-                                                    let dst = ctx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
-                                                    return dst;
-                                                },
-                                                p => g_app.ocrProgress(p, `武器錬成抽出(${unit.id})`),
+                                            // 武器、S以外のスキル名抽出
+                                            // TODO: 二値化処理を修正する
+                                            // 奥義のエンゲージにより二値化で文字が消えてしまうようになったのでとりあえずカラーのまま認識させる
+                                            cropAndBinarizeImageAndOcr(
+                                                // ocrInputCanvas9, binarizedCanvas,
+                                                ocrInputCanvas9, sourceCanvas,
+                                                0.575, 0.646, 0.32, 0.19,
+                                                -1,
+                                                p => g_app.ocrProgress(p, `スキル抽出(${unit.id})`),
                                                 ocrResult => {
-                                                    app.clearOcrProgress();
-                                                    var filtered = convertOcrResultToArray(ocrResult.text);
-                                                    let partialName = getMaxLengthElem(filtered);
-                                                    console.log(filtered);
-                                                    unit.weaponRefinement = WeaponRefinementType.None;
-                                                    if (partialName == null) {
-                                                        // 武器錬成あり
-                                                        self.setWeaponRefinementTypeByImage(unit, sourceCanvas, ocrInputCanvas8);
-                                                    }
+                                                    self.extractSkills(unit, ocrResult);
                                                 },
                                                 "jpn",
-                                                app.vm.useWhitelistForOcr ? app.weaponSkillCharWhiteList : ""
+                                                app.vm.useWhitelistForOcr ?
+                                                    app.supportSkillCharWhiteList +
+                                                    app.specialSkillCharWhiteList +
+                                                    app.passiveSkillCharWhiteList : "",
+                                                app.passiveSkillCharBlackList
                                             ).then(() => {
-                                                // 武器、S以外のスキル名抽出
-                                                // TODO: 二値化処理を修正する
-                                                // 奥義のエンゲージにより二値化で文字が消えてしまうようになったのでとりあえずカラーのまま認識させる
                                                 cropAndBinarizeImageAndOcr(
-                                                    // ocrInputCanvas9, binarizedCanvas,
-                                                    ocrInputCanvas9, sourceCanvas,
-                                                    0.575, 0.646, 0.32, 0.19,
-                                                    -1,
-                                                    p => g_app.ocrProgress(p, `スキル抽出(${unit.id})`),
+                                                    ocrInputCanvas10, binarizedCanvas,
+                                                    0.575, 0.840, 0.32, 0.03, -1,
+                                                    p => g_app.ocrProgress(p, `聖印抽出(${unit.id})`),
                                                     ocrResult => {
-                                                        self.extractSkills(unit, ocrResult);
+                                                        self.extractSacredSeal(unit, ocrResult);
                                                     },
                                                     "jpn",
                                                     app.vm.useWhitelistForOcr ?
-                                                        app.supportSkillCharWhiteList +
-                                                        app.specialSkillCharWhiteList +
                                                         app.passiveSkillCharWhiteList : "",
-                                                    app.passiveSkillCharBlackList
+                                                    app.passiveSkillCharBlackList,
                                                 ).then(() => {
                                                     cropAndBinarizeImageAndOcr(
-                                                        ocrInputCanvas10, binarizedCanvas,
-                                                        0.575, 0.840, 0.32, 0.03, -1,
-                                                        p => g_app.ocrProgress(p, `聖印抽出(${unit.id})`),
+                                                        ocrInputCanvas12, binarizedCanvas,
+                                                        0.575, 0.874, 0.32, 0.03, -1,
+                                                        p => g_app.ocrProgress(p, `響心抽出(${unit.id})`),
                                                         ocrResult => {
-                                                            self.extractSacredSeal(unit, ocrResult);
+                                                            self.extractAttunedSkill(unit, ocrResult);
                                                         },
                                                         "jpn",
                                                         app.vm.useWhitelistForOcr ?
                                                             app.passiveSkillCharWhiteList : "",
-                                                        app.passiveSkillCharBlackList,
+                                                        app.passiveSkillCharBlackList
                                                     ).then(() => {
-                                                        cropAndBinarizeImageAndOcr(
-                                                            ocrInputCanvas12, binarizedCanvas,
-                                                            0.575, 0.874, 0.32, 0.03, -1,
-                                                            p => g_app.ocrProgress(p, `響心抽出(${unit.id})`),
-                                                            ocrResult => {
-                                                                self.extractAttunedSkill(unit, ocrResult);
-                                                            },
-                                                            "jpn",
-                                                            app.vm.useWhitelistForOcr ?
-                                                                app.passiveSkillCharWhiteList : "",
-                                                            app.passiveSkillCharBlackList
-                                                        ).then(() => {
-                                                            // 最後にユニットをリセット
-                                                            g_appData.__updateStatusBySkillsAndMerges(unit, false);
-                                                            unit.resetMaxSpecialCount();
-                                                        })
-                                                    });
+                                                        // 最後にユニットをリセット
+                                                        g_appData.__updateStatusBySkillsAndMerges(unit, false);
+                                                        unit.resetMaxSpecialCount();
+                                                    })
                                                 });
                                             });
                                         });
@@ -1000,6 +1001,7 @@ class ImageProcessor {
                         });
                     });
                 });
+            });
         });
     }
 
