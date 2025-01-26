@@ -319,7 +319,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.NeutralizeUnitSurvivesWith1HP, ["NeutralizeUnitSurvivesWith1HP.webp", "奥義以外の祈り無効", "奥義以外の祈り無効"]],
     [StatusEffectType.TimesGate, ["TimesGate.webp", "時の門", "時の門"]],
     [StatusEffectType.Incited, ["Incited.webp", "奮激", "奮激"]],
-    [StatusEffectType.ReducesDamageFromFirstAttackBy40Percent, ["ReduceFirstAttackDamage.webp", "自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減", "自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減"]],
+    [StatusEffectType.ReducesDamageFromFirstAttackBy40Percent, ["ReduceFirstAttackDamage.webp", "自分から攻撃した時、最初に受けた攻撃のダメージを40%軽減", "自分から攻撃時、最初のダメージ40%軽減"]],
     [StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent, ["ReduceReduceDamageByX.webp", "「ダメージを〇〇%軽減」を半分無効", "「ダメージを〇〇%軽減」を半分無効"]],
     [StatusEffectType.TimesGrip, ["TimesGrip.webp", "時の陥穽", "時の陥穽"]],
     [StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately, ["AfterStartOfTurnSkillsTriggerActionEndsImmediately.webp", "ターン開始後スキル発動後、即座に行動終了", "ターン開始後スキル発動後、即座に行動終了"]],
@@ -336,8 +336,8 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.FutureWitness, ["FutureWitness.webp", "未来を知るもの", "未来を知るもの"]],
     [StatusEffectType.Dosage, ["Dosage.webp", "毒も薬に、薬も毒に", "毒も薬に、薬も毒に"]],
     [StatusEffectType.Empathy, ["Empathy.webp", "多感", "多感"]],
-    [StatusEffectType.DivinelyInspiring, ["DivinelyInspiring.webp", "神竜の結束", "神竜の結束（全ステn*3、敵の最初の攻撃前に自身の奥義発動カウント-n、 nは最大2）"]],
-    [StatusEffectType.PreemptPulse, ["PreemptPulse.webp", "初撃の鼓動", "初撃の鼓動（自分の最初の攻撃前に奥義-1）"]],
+    [StatusEffectType.DivinelyInspiring, ["DivinelyInspiring.webp", "神竜の結束", "神竜の結束: 最大でステ6、敵攻撃前に奥義-2、8回復"]],
+    [StatusEffectType.PreemptPulse, ["PreemptPulse.webp", "初撃の鼓動", "初撃の鼓動: 自分の最初の攻撃前に奥義-1"]],
     [StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat, ["IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat.webp", "戦闘中、敵の追撃の速さ条件+10", "戦闘中、敵の追撃の速さ条件+10"]],
 ]);
 
