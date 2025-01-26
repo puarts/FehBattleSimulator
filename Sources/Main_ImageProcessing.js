@@ -734,6 +734,8 @@ class ImageProcessor {
         let originalUnitName = unit.nameWithGroup;
         console.log(`${originalUnitName}の画像認識を開始`);
         unit.resetSkillsForSettingByImage();
+        unit.isAidesEssenceUsed = false;
+        unit.summonerLevel = SummonerLevel.None;
         let app = g_app;
         let self = this;
         app.vm.ocrProgress = `画像の読み込み(${unit.id})..`;
