@@ -821,7 +821,7 @@ function manipurateHsv(
     hsvMat.delete();
 }
 
-function cropAndPostProcessAndOcr(
+async function cropAndPostProcessAndOcr(
     destCanvas,
     srcImageOrCanvas,
     offsetPercentageX,
@@ -859,7 +859,16 @@ function cropAndPostProcessAndOcr(
         blacklist);
 }
 
-function executeTesseractRecognize(
+/**
+ * @param source
+ * @param ocrProgressFunc
+ * @param ocrResultFunc
+ * @param ocrLang
+ * @param whitelist
+ * @param blacklist
+ * @returns {Promise<*>}
+ */
+async function executeTesseractRecognize(
     source,
     ocrProgressFunc,
     ocrResultFunc,
@@ -867,15 +876,17 @@ function executeTesseractRecognize(
     whitelist = "",
     blacklist = ""
 ) {
-    return Tesseract
-        .recognize(source, {
-            lang: ocrLang,
-            tessedit_pageseg_mode: "RAW_LINE",
-            tessedit_char_whitelist: whitelist,
-            tessedit_char_blacklist: blacklist,
-        })
-        .progress(ocrProgressFunc)
-        .then(ocrResultFunc);
+    const promise = Tesseract.recognize(source, {
+        lang: ocrLang,
+        tessedit_pageseg_mode: "RAW_LINE",
+        tessedit_char_whitelist: whitelist,
+        tessedit_char_blacklist: blacklist,
+    });
+
+    promise.progress(ocrProgressFunc);
+
+    const result = await promise;
+    return ocrResultFunc(result);
 
     // return Tesseract.recognize(
     //     source,
@@ -928,7 +939,22 @@ function executeTesseractRecognize(
     // await tesseractRecognize(dst, lang, { lang: ocrLang, tessedit_pageseg_mode: "RAW_LINE", tessedit_char_whitelist: whitelist });
 }
 
-function cropAndBinarizeImageAndOcr(
+/**
+ * @param destCanvas
+ * @param srcImageOrCanvas
+ * @param offsetPercentageX
+ * @param offsetPercentageY
+ * @param widthPercentage
+ * @param heightPercentage
+ * @param binarizeThreshold
+ * @param ocrProgressFunc
+ * @param ocrResultFunc
+ * @param ocrLang
+ * @param whitelist
+ * @param blacklist
+ * @returns {Promise<*>}
+ */
+async function cropAndBinarizeImageAndOcr(
     destCanvas,
     srcImageOrCanvas,
     offsetPercentageX,
@@ -1048,6 +1074,13 @@ function getMaxLengthElem2(elems) {
     return [maxElem, maxElem2];
 }
 
+/**
+ * 指定されたURLから画像を非同期に読み込みます。
+ *
+ * @param {string} src - 画像のURLまたはファイルパス
+ * @returns {Promise<HTMLImageElement>} 画像の読み込みが成功した場合、読み込まれた画像を含む Promise を返します。
+ * @throws {Error} 画像の読み込み中にエラーが発生した場合、エラーを含む Promise が返されます。
+ */
 function loadImage(src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
@@ -1057,6 +1090,14 @@ function loadImage(src) {
     });
 }
 
+/**
+ * 指定されたファイルを非同期に読み込みます。
+ * ファイルの内容をデータURL形式で返します。
+ *
+ * @param {Blob} file - 読み込むファイルオブジェクト
+ * @returns {Promise} ファイルの読み込みが成功した場合、読み込まれたファイルデータを含む Promise を返します。
+ * @throws {Error} ファイルの読み込み中にエラーが発生した場合、エラーを含む Promise が返されます。
+ */
 function loadFile(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1066,12 +1107,23 @@ function loadFile(file) {
     });
 }
 
-function loadAndProcessImage(file, processFunc) {
-    loadFile(file)
-        .then((evt) => loadImage(evt.target.result)
-            .then(image => {
-                processFunc(image);
-            }));
+/**
+ * ファイルを読み込み、その内容を画像として処理します。
+ * 読み込んだ画像を指定された関数で処理します。
+ *
+ * @param {Blob} file - 読み込むファイルオブジェクト
+ * @param {function} processFunc - 画像を処理するためのコールバック関数。画像が読み込まれた後に呼び出されます。
+ * @return {Promise}
+ * この関数は、読み込まれた画像を引数として受け取ります。
+ */
+async function loadAndProcessImage(file, processFunc) {
+    try {
+        const evt = await loadFile(file);  // loadFileが完了するまで待機
+        const image = await loadImage(evt.target.result);  // loadImageが完了するまで待機
+        return processFunc(image);  // 画像処理関数を呼び出す
+    } catch (error) {
+        console.error("Error loading or processing image:", error);
+    }
 }
 
 function matTypeToString(mat) {
