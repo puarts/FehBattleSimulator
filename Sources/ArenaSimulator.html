@@ -2033,15 +2033,17 @@
                                         <img v-bind:src="statusEffectTypeToIconFilePath(statusEffect)" style="width:15px;background-color: #FFCCCC" v-bind:title="getStatusEffectName(statusEffect)" v-bind:alt="getStatusEffectName(statusEffect)" />
                                     </span>
                                     </div>
-                                    <input type="button" value="全て付与"
+                                    <input type="button" class="buttonUi" value="全て付与"
                                            @click="g_app.vm.addAllPositiveStatusEffects();g_app.vm.addAllNegativeStatusEffects()" >
-                                    <input type="button" value="全て解除"
+                                    <input type="button" class="buttonUi" value="全て解除"
                                            @click="g_app.vm.clearAllPositiveStatusEffects();g_app.vm.clearAllNegativeStatusEffects()" >
                                     <div class="normal">
                                         <details>
                                             <summary>有利なステータス詳細</summary>
-                                            <input type="button" value="全て付与" @click="g_app.vm.addAllPositiveStatusEffects()" >
-                                            <input type="button" value="全て解除" @click="g_app.vm.clearAllPositiveStatusEffects()" >
+                                            <input type="button" class="buttonUi" value="全て付与"
+                                                   @click="g_app.vm.addAllPositiveStatusEffects()" >
+                                            <input type="button" class="buttonUi" value="全て解除"
+                                                   @click="g_app.vm.clearAllPositiveStatusEffects()" >
                                             <div v-for="statusEffect in getPositiveStatusEffectTypes()">
                                                 <input v-bind:id='"statusEffect"+statusEffect' type="checkbox"
                                                        :checked="value.hasStatusEffect(statusEffect)"
@@ -2053,8 +2055,10 @@
                                         </details>
                                         <details>
                                             <summary>不利なステータス詳細</summary>
-                                            <input type="button" value="全て付与" @click="g_app.vm.addAllNegativeStatusEffects()" >
-                                            <input type="button" value="全て解除" @click="g_app.vm.clearAllNegativeStatusEffects()" >
+                                            <input type="button" class="buttonUi" value="全て付与"
+                                                   @click="g_app.vm.addAllNegativeStatusEffects()" >
+                                            <input type="button" class="buttonUi" value="全て解除"
+                                                   @click="g_app.vm.clearAllNegativeStatusEffects()" >
                                             <div v-for="statusEffect in getNegativeStatusEffectTypesInOrder()">
                                                 <input v-bind:id='"statusEffect"+statusEffect' type="checkbox"
                                                        :checked="value.hasStatusEffect(statusEffect)"
