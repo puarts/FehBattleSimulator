@@ -809,6 +809,30 @@ class ImageProcessor {
                 app.clearOcrProgress();
                 updateAllUi();
 
+                // エンゲージ凸数抽出
+                unit.emblemHeroMerge = 0;
+                promise = cropAndBinarizeImageAndOcr(
+                    document.getElementById("ocrInputImageForEmblemMerge"), sourceCanvas,
+                    0.575 - 0.04, 0.646 + 0.060, 0.32 / (6.8), 0.19 / 8.8, 160,
+                    // 0.252, 0.577, 0.06, 0.038, 130,
+                    p => g_app.ocrProgress(p, `エンゲージ凸数抽出(${unit.id})`),
+                    ocrResult => {
+                        app.clearOcrProgress();
+                        console.log(ocrResult);
+                        g_appData.ocrResult += `エンゲージ凸数: ${ocrResult.text}\n`;
+                        var filtered = convertOcrResultToArray(ocrResult.text);
+                        let partialName = getMaxLengthElem(filtered);
+                        let number = Number(partialName);
+                        if (Number.isInteger(number)) {
+                            unit.emblemHeroMerge = number > 10 ? number % 10 : number;
+                            g_appData.__updateStatusBySkillsAndMerges(unit);
+                        }
+                    },
+                    'eng',
+                    "+0123456789"
+                );
+                promises.push(promise);
+
                 // 凸数抽出
                 unit.merge = 0;
                 promise = cropAndBinarizeImageAndOcr(
