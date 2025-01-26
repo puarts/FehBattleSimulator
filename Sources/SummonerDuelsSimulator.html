@@ -2859,6 +2859,19 @@
                 importUrl(location.search);
 
             });
+
+            // ローカル開発環境の場合適切な位置までスクロールさせる
+            if (isLocal) {
+                const targetElement = document.getElementById('app');
+
+                // targetElementが存在する場合にスクロール
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth', // スムーズスクロール
+                        block: 'start'      // 要素の上端をスクロール位置に合わせる
+                    });
+                }
+            }
         });
         // window.addEventListener('load', (event) => {
         // });
