@@ -806,6 +806,8 @@ class ImageProcessor {
                 app.writeProgress(`祝福抽出(${unit.id})`);
                 self.setUnitBlessingByImage(unit, sourceCanvas, ocrInputCanvas1);
                 app.clearOcrProgress();
+
+                // エンゲージ抽出
                 let result = self.matchImages(sourceCanvas, g_app.vm.templateEngageSpecialIconFiles, 1, 0.25);
                 unit.emblemHeroIndex = result.length > 0 ? Number(result[0][0]) : EmblemHero.None;
                 app.clearOcrProgress();
@@ -827,6 +829,9 @@ class ImageProcessor {
                         let number = Number(partialName);
                         if (Number.isInteger(number)) {
                             unit.emblemHeroMerge = number > 10 ? number % 10 : number;
+                            if (unit.emblemHeroIndex === EmblemHero.None) {
+                                unit.emblemHeroMerge = 0;
+                            }
                             g_appData.__updateStatusBySkillsAndMerges(unit);
                         }
                     },
