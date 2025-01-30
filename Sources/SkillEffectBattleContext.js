@@ -1636,7 +1636,7 @@ class DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefO
 
 // Unit or BattleContextに値を設定 END
 
-class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
+class CanTargetMakeFollowUpIncludingPotentNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetValueMixin);
     }
@@ -1648,7 +1648,7 @@ class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
     }
 }
 
-const CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetCanMakeFollowUpIncludingPotentNode();
+const CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetMakeFollowUpIncludingPotentNode();
 
 // TODO: 命名規則を統一させる
 class IfTargetTriggersAttacksTwiceNode extends BoolNode {
@@ -1955,3 +1955,18 @@ class IsSaviorTriggeredNode extends BoolNode {
 }
 
 const IS_SAVIOR_TRIGGERED_NODE = new IsSaviorTriggeredNode();
+
+class TargetCanCounterattackBeforeTargetsFoesFirstAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.isVantageActivatable = true;
+        env.debug(`${unit.nameWithGroup}は敵から攻撃された時、先制攻撃`);
+    }
+}
+
+const TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE =
+    new TargetCanCounterattackBeforeTargetsFoesFirstAttackNode()

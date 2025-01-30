@@ -3716,6 +3716,12 @@ Weapon.JehannaDaggerPlus = 3145; // ジャハナの暗器+
 Weapon.LaconicAxe = 3146; // 寡黙な女傭兵の閃斧
 PassiveB.AssaultForce = 3147; // 強襲・不屈
 Weapon.JehannaLancePlus = 3148; // ジャハナの槍+
+Weapon.BlessedAureola = 3149; // 八神アーリアル
+Special.FrostMoon = 3150; // 氷輪
+PassiveA.BeyondReason = 3151; // 人の理を外れし者
+Weapon.SwordOfIsaach = 3152; // イザークの守護剣
+Special.CrusadersAstra = 3153; // 剣聖の流星雨
+PassiveC.BrutalTempest = 3154; // 迅雷風烈・鬼没
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

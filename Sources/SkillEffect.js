@@ -1348,6 +1348,8 @@ class CanTargetsAttackTriggerTargetsSpecialNode extends BoolNode {
     }
 }
 
+const CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE = new CanTargetsAttackTriggerTargetsSpecialNode();
+
 /**
  * if unit has an area-of-effect Special equipped,
  */
@@ -2451,6 +2453,45 @@ class FoesRangeNode extends TargetsRangeNode {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
+
+class TargetsWeaponTypeNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.weaponType;
+        env.debug(`${unit.nameWithGroup}の武器タイプ: ${ObjectUtil.getKeyName(WeaponType, result)}`);
+        return result;
+    }
+}
+
+const TARGETS_WEAPON_TYPE_NODE = new TargetsWeaponTypeNode();
+
+class IsTargetTomeTypeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = isWeaponTypeTome(unit.weaponType);
+        env.debug(`${unit.nameWithGroup}は魔法であるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_TOME_TYPE_NODE = new IsTargetTomeTypeNode();
+const DOES_TARGET_USE_MAGIC_NODE = IS_TARGET_TOME_TYPE_NODE;
+
+class DoesFoeUseMagicNode extends IsTargetTomeTypeNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const DOES_FOE_USE_MAGIC_NODE =  new DoesFoeUseMagicNode();
 
 class IsTargetBeastOrDragonTypeNode extends BoolNode {
     static {

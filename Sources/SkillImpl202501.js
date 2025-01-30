@@ -1,5 +1,70 @@
 // スキル実装
 {
+    let skillId = Weapon.BlessedAureola;
+    // Blessed Aureola
+    // Mt: 14
+    // Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against magic foes.
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // grants Atk/Def/Res+5 during combat,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 0, 5, 5),
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_OTHER_SKILLS_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // and also,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // if ally's attack can trigger ally's Special,
+            IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
+                // grants Special cooldown count-1 to ally before their first attack during combat,
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+                // and also,
+                // if ally cannot perform a follow-up attack and attack twice,
+                IF_NODE(AND_NODE(
+                        NOT_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE),
+                        NOT_NODE(IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE)),
+                    // grants Special cooldown count-1 to ally before their first attack during combat.
+                    GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+                ),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If there is an ally within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Def/Res =
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                // 20% of unit's
+                // Res at start of combat + 5,
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+            // reduces damage from foe's attacks by 20% of unit's Res (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS_NODE(
+                20, UNITS_RES_DURING_COMBAT_NODE),
+            // and grants Special cooldown count-1 to unit before unit's first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+        // If there is an ally within 3 rows or 3 columns centered on unit and foe uses magic,
+        IF_NODE(AND_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, DOES_FOE_USE_MAGIC_NODE),
+            // grants Atk+10 to unit during combat,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(10, 0, 0, 0),
+            // and also,
+            // if foe initiates combat,
+            IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+                // unit can counterattack before foe's first attack.
+                TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE
+            ),
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.
@@ -129,7 +194,7 @@
                     AND_NODE(
                         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
                         EQ_NODE(TARGETS_MAX_HP_NODE, HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES)),
-                    ),
+                ),
                 TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
             ),
         ),
