@@ -65,6 +65,31 @@
 }
 
 {
+    let skillId = Special.FrostMoon;
+    // Frost Moon
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    setSpecialCount(skillId, 4);
+
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // boosts damage by 70% of unit's Res and neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills.
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            PERCENTAGE_NODE(75, UNITS_RES_DURING_COMBAT_NODE),
+        ),
+        NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_FOES_NON_SPECIAL_NODE,
+    ));
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit cannot perform a follow-up attack and attack twice,
+        IF_NODE(AND_NODE(
+                NOT_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE),
+                NOT_NODE(IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE)),
+            // grants Special cooldown count-1 to unit before unit's first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.
