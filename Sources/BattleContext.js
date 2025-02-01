@@ -1100,4 +1100,8 @@ class BattleContext {
         if (this.isNeutralizedWrathfulStaff) return false;
         return this.wrathfulStaff;
     }
+
+    getMaxPotentRatio() {
+        return ArrayUtil.max(this.potentRatios);
+    }
 }

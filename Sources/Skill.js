@@ -1296,6 +1296,7 @@ const StatusEffectType = {
     DivinelyInspiring: 75, // 神竜の結束
     PreemptPulse: 76, // 初撃の鼓動
     IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat: 77, // 戦闘中、敵の追撃の速さ条件+10
+    PotentFollow: 78,
     // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };

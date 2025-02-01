@@ -1530,12 +1530,11 @@ class DamageCalculator {
         let potentRatio = 1;
         if (context.isPotentFollowupAttack) {
             if (!atkUnit.battleContext.overwritesPotentRatio()) {
-                for (let ratio of atkUnit.battleContext.potentRatios) {
-                    let oldRatio = potentRatio;
-                    potentRatio *= ratio;
-                    this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
-                    this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
-                }
+                let ratio = atkUnit.battleContext.getMaxPotentRatio();
+                let oldRatio = potentRatio;
+                potentRatio *= ratio;
+                this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
+                this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
             } else {
                 let ratio = atkUnit.battleContext.getMaxPotentOverwriteRatio();
                 this.writeDebugLog(`神速追撃上書き値による軽減。ratios: ${atkUnit.battleContext.potentRatios} → ratio: ${ratio}`);

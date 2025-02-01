@@ -137,6 +137,66 @@
 }
 
 {
+    let skillId = Weapon.SwordOfIsaach;
+    // Sword of Isaach
+    // Mt: 16
+    // Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants Atk/Spd+6,
+            GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 6, 0, 0),
+            // [Potent Follow],
+            // and "neutralizes foe's bonuses during combat" to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                StatusEffectType.PotentFollow,
+                StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + 15% of unit's Spd at start of combat,
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ADD_NODE(5, PERCENTAGE_NODE(15, UNITS_SPD_AT_START_OF_COMBAT_NODE))
+            ),
+            // and also,
+            // if [Potent Follow X%) has triggered and X ≤ 99, then X = 100,
+            POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE(100),
+            X_NUM_NODE(
+                // unit deals +Y x 5 damage
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // and reduces damage from foe's first attack by Y x 3 during combat
+                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // and also,
+                // when foe's attack triggers foe's Special,
+                // reduces damage by Y x 3 (excluding area-of-effect Specials).
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+
+                // (Y = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5; excluding area-of-effect Specials),
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+            // At start of combat,
+            // if unit's HP ≥ 25%,
+            // restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.PotentFollow);
+    WHEN_APPLIES_POTENT_EFFECTS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        APPLY_POTENT_EFFECT_NODE,
+    ))
+}
+
+{
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.
