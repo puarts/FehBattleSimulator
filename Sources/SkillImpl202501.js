@@ -234,10 +234,24 @@
     ));
 }
 
-// Brutal Tempest
-// Enables (Canto (Dist. +7; Max 4)) .
-// At start of turn, unit can move 1 extra space (that turn only; does not stack).
-// Grants bonus to unit's Atk/Spd/Def/Res during combat = number of spaces from start position to end position of whoever initiated combat (max 3).
+{
+    let skillId = PassiveC.BrutalTempest;
+    // Brutal Tempest
+    // Enables (Canto (Dist. +1; Max 4)) .
+    enablesCantoDist(skillId, 1, 4);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // unit can move 1 extra space (that turn only; does not stack).
+        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.MobilityIncreased),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants bonus to unit's Atk/Spd/Def/Res during combat = number of spaces from start position to end position of whoever initiated combat (max 3).
+        GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
+            ENSURE_MAX_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 3),
+        ),
+    ));
+}
+
 {
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
