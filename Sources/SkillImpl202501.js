@@ -90,6 +90,53 @@
 }
 
 {
+    let skillId = PassiveA.BeyondReason;
+    // Beyond Reason
+    // Grants Atk/Def/Res+ 10.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Def/Res = A + B
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                // (A = 2 x number of Penalty) effects active on foe and foes within 3 rows or 3 columns centered on that foe,
+                // excluding stat penalties; max 12;
+                ENSURE_MAX_NODE(
+                    MULT_NODE(
+                        2,
+                        NUM_OF_PENALTY_ON_FOE_AND_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_THAT_FOE_EXCLUDING_STAT_NODE(3),
+                    ),
+                    12)
+            ),
+
+            // B = 2 x current penalty
+            // on unit's respective stats; calculates each stat penalty independently),
+            FOR_EACH_TARGET_STAT_INDEX_NODE([STATUS_INDEX.Atk, STATUS_INDEX.Def, STATUS_INDEX.Res],
+                GRANTS_STAT_PLUS_TO_TARGET_DURING_COMBAT_NODE(
+                    MULT_NODE(2, GET_STAT_AT_NODE(TARGETS_PENALTIES_NODE, READ_NUM_NODE)),
+                    READ_NUM_NODE
+                ),
+            ),
+            // neutralizes foe's bonuses to Atk/Res,
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(true, false, false, true),
+            // and
+            // restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // and reduces damage from foe's first attack by X% during combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes;
+            // if foe can make a follow-up attack, X = 80; otherwise, X = 40),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                COND_OP(CAN_TARGETS_FOE_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, 80, 40),
+            ),
+        ),
+    ))
+}
+
+{
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.

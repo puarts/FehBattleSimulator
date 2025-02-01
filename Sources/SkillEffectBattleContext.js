@@ -702,6 +702,21 @@ const NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumbe
     }
 }();
 
+class NumOfPenaltiesOnTargetExcludingStatNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getNegativeStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の不利な状態の数: ${result}`);
+        return result;
+    }
+}
+
+const NUM_OF_PENALTIES_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfPenaltiesOnTargetExcludingStatNode();
+
 const NUM_OF_PENALTY_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
@@ -959,6 +974,9 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode e
         env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
+
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_INCLUDING_TWICE_NODE =
+    n => new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(n);
 
 class ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTwiceNode extends ApplyingNumberNode {
     evaluate(env) {
@@ -1638,17 +1656,29 @@ class DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefO
 
 class CanTargetMakeFollowUpIncludingPotentNode extends BoolNode {
     static {
-        Object.assign(this.prototype, GetValueMixin);
+        Object.assign(this.prototype, GetUnitMixin);
     }
 
-    debugMessage = "は追撃可能か";
-
-    getValue(unit) {
-        return unit.battleContext.canFollowupAttackIncludingPotent();
+    evaluate(env) {
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.AFTER_FOLLOWUP_CONFIGURED)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        }
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canFollowupAttackIncludingPotent();
+        env.debug(`${unit.nameWithGroup}は追撃可能か: ${result}`);
+        return result;
     }
 }
 
 const CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetMakeFollowUpIncludingPotentNode();
+
+class CanTargetsFoeMakeFollowUpIncludingPotentNode extends CanTargetMakeFollowUpIncludingPotentNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const CAN_TARGETS_FOE_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetsFoeMakeFollowUpIncludingPotentNode();
 
 // TODO: 命名規則を統一させる
 class IfTargetTriggersAttacksTwiceNode extends BoolNode {

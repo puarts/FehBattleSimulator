@@ -208,6 +208,14 @@ class TargetsAlliesOnMapNode extends UnitsNode {
 const TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE = new TargetsAlliesOnMapNode();
 const TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode(TRUE_NODE);
 
+class FoesAlliesOnMapNode extends TargetsAlliesOnMapNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOE_AND_FOES_ALLIES_ON_MAP_NODE = new FoesAlliesOnMapNode(TRUE_NODE);
+
 class TargetsFoesOnMapNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1436,6 +1444,33 @@ class FromPositiveStatsNode extends FromPositiveNumbersNode {
 
 // Grants Plus
 
+class GrantsStatPlusToTargetDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n, statIndex) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+        this._statIndex = NumberNode.makeNumberNodeFrom(statIndex);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._n.evaluate(env);
+        let index = this._statIndex.evaluate(env);
+        let ratios = [0, 0, 0, 0];
+        ratios[index] = 1;
+        let beforeSpurs = unit.getSpurs();
+        let spurs = ratios.map(r => r * n);
+        env.debug(`${unit.nameWithGroup}は戦闘中、${getStatusName(index)}+${n}: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+        unit.addSpurs(...spurs);
+    }
+}
+
+const GRANTS_STAT_PLUS_TO_TARGET_DURING_COMBAT_NODE =
+    (n, index) => new GrantsStatPlusToTargetDuringCombatNode(n, index);
+
 class GrantsStatsPlusToTargetDuringCombatNode extends FromPositiveStatsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1577,7 +1612,7 @@ class MultStatsNode extends StatsNode {
 
 const MULT_STATS_NODE = (...statsNodes) => new MultStatsNode(...statsNodes);
 
-class StatNode extends NumberNode {
+class GetStatAtNode extends NumberNode {
     /**
      * @param {StatsNode} statsNode
      * @param {number|NumberNode} index
@@ -1589,11 +1624,15 @@ class StatNode extends NumberNode {
     }
 
     evaluate(env) {
-        return this._statsNode.evaluate(env)[this._indexNode.evaluate(env)];
+        let stats = this._statsNode.evaluate(env);
+        let index = this._indexNode.evaluate(env);
+        let result = stats[index];
+        env.debug(`ステータス = ${result}: [${stats}][${index}]`);
+        return result;
     }
 }
 
-const STAT_NODE = (statsNode, index) => new StatNode(statsNode, index);
+const GET_STAT_AT_NODE = (statsNode, index) => new GetStatAtNode(statsNode, index);
 
 class StatsFromStatNode extends StatsNode {
     constructor(stat, index) {
@@ -1613,14 +1652,23 @@ const STATS_FROM_STAT_NODE = (stat, index) => new StatsFromStatNode(stat, index)
 
 class ForEachStatIndexNode extends SkillEffectNode {
     /**
+     * @param {(number|NumberNode)[]} targetIndicesNodes
      * @param {SkillEffectNode} nodes
      */
-    constructor(...nodes) {
+    constructor(targetIndicesNodes, ...nodes) {
         super(...nodes);
+        this._targetIndicesNodes = targetIndicesNodes.map(x => NumberNode.makeNumberNodeFrom(x));
     }
 
     evaluate(env) {
+        let targetIndices = this._targetIndicesNodes.map(x => x.evaluate(env));
+        env.debug(`対象のステータス${targetIndices.map(x => getStatusName(x))}それぞれについて`);
         for (let i = 0; i < 4; i++) {
+            if (!targetIndices.includes(i)) {
+                env.debug(`${getStatusName(i)}は対象ではない`);
+                continue;
+            }
+            env.debug(`${getStatusName(i)}について`);
             env.storeValue(i);
             super.evaluate(env);
             env.popValue();
@@ -1628,7 +1676,12 @@ class ForEachStatIndexNode extends SkillEffectNode {
     }
 }
 
-const FOR_EACH_STAT_INDEX_NODE = (...nodes) => new ForEachStatIndexNode(...nodes);
+const FOR_EACH_STAT_INDEX_NODE =
+    (...nodes) => new ForEachStatIndexNode(
+        [STATUS_INDEX.Atk, STATUS_INDEX.Spd, STATUS_INDEX.Res, STATUS_INDEX.Def], ...nodes);
+
+const FOR_EACH_TARGET_STAT_INDEX_NODE =
+    (targetIndices, ...nodes) => new ForEachStatIndexNode(targetIndices, ...nodes);
 
 class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
     /**
@@ -2007,7 +2060,7 @@ class TargetsStatsOnMapNode extends StatsNode {
     }
 }
 
-const TARGETS_STATS_ON_MAP_NODE= new TargetsStatsOnMapNode();
+const TARGETS_STATS_ON_MAP_NODE = new TargetsStatsOnMapNode();
 
 /**
  * @abstract
@@ -2491,7 +2544,7 @@ class DoesFoeUseMagicNode extends IsTargetTomeTypeNode {
     }
 }
 
-const DOES_FOE_USE_MAGIC_NODE =  new DoesFoeUseMagicNode();
+const DOES_FOE_USE_MAGIC_NODE = new DoesFoeUseMagicNode();
 
 class IsTargetBeastOrDragonTypeNode extends BoolNode {
     static {
@@ -2665,7 +2718,7 @@ class TargetsPenaltiesNode extends StatsNode {
         /** @type {Unit} */
         let unit = this.getUnit(env);
         let result = unit.getDebuffTotals(unit !== env.foeDuringCombat).map(v => -v);
-        env.debug(`${unit.nameWithGroup}の弱化は${result}`);
+        env.debug(`${unit.nameWithGroup}の弱化は[${result}]`);
         return result;
     }
 }
@@ -3097,6 +3150,25 @@ class IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode extends BoolNode {
 
 const IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
     new IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode(3);
+
+class IsTargetWithinNRowsOrNColumnsCenteredOnFoeNode extends IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.foeDuringCombat;
+        let n = this.evaluateChildren(env);
+        let result = unit.isInCrossWithOffset(foe, Math.trunc(n / 2));
+        env.debug(`${foe.nameWithGroup}の縦${n}列と横${n}列の範囲に${unit.nameWithGroup}がいるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_FOE_NODE = n => new IsTargetWithinNRowsOrNColumnsCenteredOnFoeNode(n);
+const IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_FOE_NODE =
+    IS_TARGET_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_FOE_NODE(3);
 
 // TODO: リファクタリング
 class ForEachAllyWithHighestValueWithinNSpacesNode extends ForEachUnitOnMapNode {
