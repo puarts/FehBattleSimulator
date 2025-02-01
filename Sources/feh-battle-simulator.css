@@ -534,12 +534,12 @@ td.enemy {
 }
 
 .delete-button {
-    color: #ff5555;    /* アイコンの色を赤に設定 */
-    font-size: 18px;   /* アイコンのサイズ */
+    color: #ff5555; /* アイコンの色を赤に設定 */
+    font-size: 18px; /* アイコンのサイズ */
 }
 
 .delete-button:hover {
-    color: #cc0000;    /* ホバー時に暗い赤にする */
+    color: #cc0000; /* ホバー時に暗い赤にする */
 }
 
 .action-container {
@@ -550,4 +550,20 @@ td.enemy {
 
 .action-item-right {
     margin-left: auto; /* 最後の要素を右寄せ */
+}
+
+.status-effect-description-label {
+    /*display: block; !* インライン要素なのでブロック要素に *!*/
+    display: inline-block;
+    width: 280px; /* ラベルの幅を固定 */
+    /*word-wrap: break-word; !* 長い単語を折り返す *!*/
+    /*overflow-wrap: break-word;*/
+
+    white-space: nowrap; /* 改行を防ぐ */
+    overflow: hidden; /* はみ出した部分を隠す */
+    text-overflow: ellipsis; /* 省略記号（...）を表示 */
+}
+
+.status-effect-description {
+    color: grey;
 }

@@ -2155,8 +2155,11 @@
                                                        :checked="value.hasStatusEffect(statusEffect)"
                                                        @change="g_app.vm.statusEffectChanged(statusEffect)"
                                                 />
-                                                <label class="normal"
-                                                       v-bind:for='"statusEffect"+statusEffect'>{{ getStatusDescription(statusEffect) }}</label>
+                                                <label class="normal status-effect-description-label"
+                                                       :title="`【${getStatusEffectName(statusEffect)}】${getStatusDescription(statusEffect)}`"
+                                                       v-bind:for='"statusEffect"+statusEffect'>
+                                                    【{{ getStatusEffectName(statusEffect)}}】<span class="status-effect-description">{{ getStatusDescription(statusEffect) }}</span>
+                                                </label>
                                             </div>
                                         </details>
                                         <details>
@@ -2170,8 +2173,11 @@
                                                        :checked="value.hasStatusEffect(statusEffect)"
                                                        @change="g_app.vm.statusEffectChanged(statusEffect)"
                                                 />
-                                                <label class="normal"
-                                                       v-bind:for='"statusEffect"+statusEffect'>{{ getStatusDescription(statusEffect) }}</label>
+                                                <label class="normal status-effect-description-label"
+                                                       :title="`【${getStatusEffectName(statusEffect)}】${getStatusDescription(statusEffect)}`"
+                                                       v-bind:for='"statusEffect"+statusEffect'>
+                                                    【{{ getStatusEffectName(statusEffect)}}】<span class="status-effect-description">{{ getStatusDescription(statusEffect) }}</span>
+                                                </label>
                                             </div>
                                         </details>
                                     </div>
