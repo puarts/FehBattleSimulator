@@ -197,6 +197,48 @@
 }
 
 {
+    let skillId = Special.CrusadersAstra;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    setSpecialCount(skillId, 2);
+    // Crusader's Astra
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // boosts damage by 40% of unit's Spa and
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            PERCENTAGE_NODE(40, UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+        // neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills.
+        WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants Special cooldown count-1 to unit before unit's first attack and
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        // before each of unit's follow-up attacks during combat,
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_EACH_OF_TARGETS_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE(1),
+        // and also,
+    ));
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // when unit's Special is triggered during a follow-up attack,
+        IF_NODE(AND_NODE(CAN_ACTIVATE_ATTACKER_SPECIAL_NODE),
+            // prevents foe's Specials that are triggered by unit's attack.
+            PREVENTS_TARGETS_FOES_SPECIALS_THAT_ARE_TRIGGERED_BY_TARGETS_ATTACK_NODE,
+        ),
+    ));
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(
+            // If unit's or foe's Special is ready or triggered before or during this combat,
+            IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
+// Brutal Tempest
+// Enables (Canto (Dist. +7; Max 4)) .
+// At start of turn, unit can move 1 extra space (that turn only; does not stack).
+// Grants bonus to unit's Atk/Spd/Def/Res during combat = number of spaces from start position to end position of whoever initiated combat (max 3).
+{
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.

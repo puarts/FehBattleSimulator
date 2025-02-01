@@ -521,6 +521,39 @@ const FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL = new class extends SkillEffectNode {
     }
 }();
 
+class TargetCannotTriggerDefenderSpecialPerAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.preventedDefenderSpecialPerAttack = true;
+        env.debug(`${unit.nameWithGroup}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
+    }
+}
+
+const TARGET_CANNOT_TRIGGER_DEFENDER_SPECIAL_PER_ATTACK_NODE =
+    new TargetCannotTriggerDefenderSpecialPerAttackNode();
+
+class TargetsFoeCannotTriggerDefenderSpecialPerAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = env.getFoeDuringCombatOf(this.getUnit(env));
+        unit.battleContext.preventedDefenderSpecialPerAttack = true;
+        env.debug(`${unit.nameWithGroup}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
+    }
+}
+
+const TARGETS_FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL_PER_ATTACK_NODE =
+    new TargetsFoeCannotTriggerDefenderSpecialPerAttackNode();
+
+const PREVENTS_TARGETS_FOES_SPECIALS_THAT_ARE_TRIGGERED_BY_TARGETS_ATTACK_NODE =
+    TARGETS_FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL_PER_ATTACK_NODE;
+
 const UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
@@ -1264,6 +1297,22 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
 const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
     n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
 
+class GrantsSpecialCooldownCountMinusNToTargetBeforeEachOfTargetsFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let result =unit.battleContext.specialCountReductionBeforeEachFollowupAttack += n;
+        env.debug(`${unit.nameWithGroup}は自分の各追撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+    }
+}
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_EACH_OF_TARGETS_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE =
+    n => new GrantsSpecialCooldownCountMinusNToTargetBeforeEachOfTargetsFollowUpAttackDuringCombatNode(n);
+
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1272,7 +1321,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDu
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.specialCountReductionBeforeFollowupAttack += n;
+        unit.battleContext.specialCountReductionBeforeFirstFollowupAttack += n;
         let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
         env.debug(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} => ${reduction}`);
     }

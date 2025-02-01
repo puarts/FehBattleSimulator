@@ -989,25 +989,40 @@ class DamageCalculator {
             defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
         }
         // 最初の追撃前の効果
-        if (context.isFirstFollowupAttack(atkUnit)) {
+        // if (context.isFirstFollowupAttack(atkUnit)) {
+        if (context.isFollowupOrPotentFollowupAttack()) {
             // atkUnitの奥義カウント変動
-            let totalCount = atkUnit.tmpSpecialCount
-                + atkUnit.battleContext.getSpecialCountReductionBeforeFollowupAttack();
-            if (atkUnit.battleContext.isChangedSpecialCountBeforeFollowupAttack()) {
-                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: <span style="color: #ff00ff">${totalCount}</span> = ${atkUnit.tmpSpecialCount} -
-                                    ${atkUnit.battleContext.specialCountReductionBeforeFollowupAttack} + 
-                                    ${atkUnit.battleContext.specialCountIncreaseBeforeFollowupAttack}`
+            let atkCount = atkUnit.tmpSpecialCount;
+            let atkIncrease = 0;
+            let atkReduction = 0;
+            atkReduction += atkUnit.battleContext.specialCountReductionBeforeEachFollowupAttack;
+            if (context.isFirstFollowupAttack(atkUnit)) {
+                atkIncrease += atkUnit.battleContext.getSpecialCountIncreaseBeforeFirstFollowupAttack();
+                atkReduction += atkUnit.battleContext.getSpecialCountReductionBeforeFirstFollowupAttack();
+            }
+            atkCount += atkIncrease;
+            atkCount -= atkReduction;
+            if (atkIncrease !== 0 || atkReduction !== 0) {
+                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: 
+                                    <span class="special-count">${atkCount}</span> = 
+                                    ${atkUnit.tmpSpecialCount} - ${atkReduction} + ${atkIncrease}`
                 );
             }
-            atkUnit.tmpSpecialCount = Math.min(Math.max(0, totalCount), atkUnit.maxSpecialCount);
-            
+            atkUnit.tmpSpecialCount = Math.min(Math.max(0, atkCount), atkUnit.maxSpecialCount);
+
             // defUnitの奥義カウント変動
-            let defCount = defUnit.tmpSpecialCount +
-                defUnit.battleContext.getSpecialCountChangeAmountBeforeFirstFollowUpAttackByEnemy();
-            let isNotChanged = defCount === defUnit.tmpSpecialCount;
-            if (isNotChanged) {
-                this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の追撃の前の奥義カウント: <span style="color: #ff00ff">${defCount}</span> = ${defUnit.tmpSpecialCount} -
-                                    ${defUnit.battleContext.specialCountReductionBeforeFirstFollowUpAttackByEnemy}`
+            let defCount = defUnit.tmpSpecialCount;
+            let defIncrease = 0;
+            let defReduction = 0;
+            if (context.isFirstFollowupAttack(atkUnit)) {
+                defReduction += defUnit.battleContext.getSpecialCountReductionBeforeFirstFollowUpAttackByEnemy();
+            }
+            defCount += defIncrease;
+            defCount -= defReduction;
+            if (defIncrease !== 0 || defReduction !== 0) {
+                this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の追撃の前の奥義カウント: 
+                                    <span class="special-count">${defCount}</span> = 
+                                    ${defUnit.tmpSpecialCount} - ${defReduction} + ${defIncrease}`
                 );
             }
             defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
@@ -1788,7 +1803,7 @@ class DamageCalculator {
      * @param {DamageCalcContext} context
      */
     __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
-        let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit);
+        let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit, canActivateAttackerSpecial, context);
         env.setName('攻撃開始時').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
         AT_START_OF_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);

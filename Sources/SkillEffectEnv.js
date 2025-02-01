@@ -68,6 +68,10 @@ class NodeEnv {
     damageCalculatorWrapper = null;
     /** @type {DamageCalculator} */
     damageCalculator = null;
+    /** @type {boolean} */
+    canActivateAttackerSpecial = false;
+    /** @type {DamageCalcContext} */
+    damageCalcContext = null;
     /** @type {BattleSimulatorBase} */
     battleSimulatorBase = null;
     /** @type {PostCombatSkillHander} */
@@ -156,6 +160,16 @@ class NodeEnv {
     setDamageCalculator(damageCalculator) {
         this.damageCalculator = damageCalculator;
         this.unitManager = damageCalculator.unitManager;
+        return this;
+    }
+
+    setCanActivateAttackerSpecial(canActivateAttackerSpecial) {
+        this.canActivateAttackerSpecial = canActivateAttackerSpecial;
+        return this;
+    }
+
+    setDamageCalcContext(context) {
+        this.damageCalcContext = context;
         return this;
     }
 
@@ -552,11 +566,15 @@ class DamageCalculatorEnv extends NodeEnv {
      * @param {DamageCalculator} damageCalculator
      * @param {Unit} targetUnit
      * @param {Unit} enemyUnit
+     * @param {boolean} canActivateAttackerSpecial
+     * @param {DamageCalcContext} damageCalcContext
      */
-    constructor(damageCalculator, targetUnit, enemyUnit) {
+    constructor(damageCalculator, targetUnit, enemyUnit, canActivateAttackerSpecial, damageCalcContext) {
         super();
         this.setDamageCalculator(damageCalculator);
         this.setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit);
+        this.setDamageCalcContext(damageCalcContext);
+        this.setCanActivateAttackerSpecial(canActivateAttackerSpecial);
     }
 }
 

@@ -4759,3 +4759,15 @@ function getSkillLogLevel() {
     }
     return g_appData?.skillLogLevel ?? LoggerBase.LOG_LEVEL.OFF;
 }
+
+class CanActivateAttackerSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        env.debug(`アタッカーは奥義を発動することができるか: ${env.canActivateAttackerSpecial}`);
+        return env.canActivateAttackerSpecial;
+    }
+}
+
+const CAN_ACTIVATE_ATTACKER_SPECIAL_NODE = new CanActivateAttackerSpecialNode();
