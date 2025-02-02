@@ -828,7 +828,8 @@ class ImageProcessor {
                         let partialName = getMaxLengthElem(filtered);
                         let number = Number(partialName);
                         if (Number.isInteger(number)) {
-                            unit.emblemHeroMerge = number > 10 ? number % 10 : number;
+                            // TODO: 認識精度を上げる
+                            // unit.emblemHeroMerge = number > 10 ? number % 10 : number;
                             if (unit.emblemHeroIndex === EmblemHero.None) {
                                 unit.emblemHeroMerge = 0;
                             }
