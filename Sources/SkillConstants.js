@@ -3722,6 +3722,7 @@ PassiveA.BeyondReason = 3151; // 人の理を外れし者
 Weapon.SwordOfIsaach = 3152; // イザークの守護剣
 Special.CrusadersAstra = 3153; // 剣聖の流星雨
 PassiveC.BrutalTempest = 3154; // 迅雷風烈・鬼没
+Weapon.Spear = 3155; // スレンドスピア
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

@@ -1,5 +1,44 @@
 // スキル実装
 {
+    let skillId = Weapon.Spear;
+    // Grants Atk+3. Unit can counterattack regardless of foe's range.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants the following effects to unit and allies within 2 spaces of unit for 1 turn
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // : Atk/Def+6,
+                GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(6, 0, 6, 0),
+                // "neutralizes 'effective against flying' bonuses," and "neutralizes foe's bonuses during combat."
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.ShieldFlying,
+                    StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res =
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                // number of foes within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+                ENSURE_MAX_NODE(
+                    ADD_NODE(MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14
+                ),
+            ),
+            // deals damage = 10% of unit's Atk (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(10, UNITS_ATK_DURING_COMBAT_NODE),
+            // and reduces damage from foe's attacks by 10% of unit's Atk during combat (excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS_NODE(
+                10, UNITS_ATK_DURING_COMBAT_NODE),
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.BlessedAureola;
     // Blessed Aureola
     // Mt: 14
