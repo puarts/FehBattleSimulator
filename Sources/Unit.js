@@ -562,6 +562,7 @@ class Unit extends BattleMapElement {
 
         this.isBonusChar = false;
 
+        // お供
         this.isAidesEssenceUsed = false;
 
         this.#statusEffects = [];

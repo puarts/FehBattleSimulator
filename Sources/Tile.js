@@ -782,28 +782,34 @@ class Tile extends BattleMapElement {
      * 4. 右のマス
      *
      * 配置できないマス
-     * 1. 未作動の罠、ダミー罠
+     * 1. 未作動の罠、ダミー罠（味方限定）
      * 2. 通過不可なマス
      * @param {Unit|null} unit 全てのマスが配布不可能の時nullを返す
      * @param {OfCallingCircle|DefCallingCircle} callingCircle
+     * @param {boolean} isAlly
      */
-    findTileForCallingCircle(unit,  callingCircle) {
+    findTileForCallingCircle(unit,  callingCircle, isAlly = true) {
         if (!callingCircle.placedTile.placedUnit) {
             return callingCircle.placedTile;
         }
-        let tile = this._findTileForCallingCircle(unit, callingCircle.placedTile);
-        if (tile) return tile;
-        return this._findTileForCallingCircle(unit, callingCircle.placedTile, false);
+        if (isAlly) {
+            let tile = this._findTileForCallingCircle(unit, callingCircle.placedTile);
+            if (tile) return tile;
+            return this._findTileForCallingCircle(unit, callingCircle.placedTile, false);
+        } else {
+            return this._findTileForCallingCircle(unit, callingCircle.placedTile, false, false);
+        }
     }
 
     /**
      * @param {Unit} unit
      * @param {Tile} callingTile
      * @param {boolean} placableOnly
+     * @param {boolean} isAlly
      * @returns {Tile|null}
      * @private
      */
-    _findTileForCallingCircle(unit, callingTile, placableOnly = true) {
+    _findTileForCallingCircle(unit, callingTile, placableOnly = true, isAlly = true) {
         // 開始地点が空いていないマスなら、それを返す
         if (callingTile.isUnitPlacable(unit)) {
             return callingTile;
@@ -817,14 +823,19 @@ class Tile extends BattleMapElement {
 
         while (queue.length > 0) {
             const currentTile = queue.shift();
-            let sortedNeighborTiles = this._sortNeighborTiles(currentTile.neighbors, unit);
+            let sortedNeighborTiles = this._sortNeighborTiles(currentTile.neighbors);
             // 各方向を確認
             for (let neighborTile of sortedNeighborTiles) {
                 // グリッド範囲内かつ未訪問の場合
                 if (!visited.has(neighborTile)) {
-                    // ユニットが配置可能かつ罠（偽含む）でもない
-                    if (neighborTile.isUnitPlacableForUnit(unit) &&
-                        !(neighborTile.obj instanceof TrapBase)) {
+                    // ユニットが配置可能かつ味方の場合罠（偽含む）でもない
+                    let isPlacable = neighborTile.isUnitPlacableForUnit(unit);
+                    // 味方は罠のマスに出現できない
+                    if (isAlly) {
+                        // 罠ではないという条件を追加
+                        isPlacable &= !(neighborTile.obj instanceof TrapBase);
+                    }
+                    if (isPlacable) {
                         if (unit.groupId === UnitGroupType.Ally && !(neighborTile.obj instanceof DefCallingCircle)) {
                             return neighborTile;
                         } else if (unit.groupId === UnitGroupType.Enemy && !(neighborTile.obj instanceof OfCallingCircle)) {
@@ -848,25 +859,15 @@ class Tile extends BattleMapElement {
 
     /**
      * @param {Tile[]} neighborTiles
-     * @param {Unit} unit
      * @return {Tile[]}
      * @private
      */
-    _sortNeighborTiles(neighborTiles, unit) {
-        if (unit.groupId === UnitGroupType.Ally) {
-            return neighborTiles.sort((a, b) => {
-                // y が低いほど優先順位が高い（yの昇順）
-                // y が同じ場合、x が高いほど優先順位が高い（xの降順）
-                return a.posY !== b.posY ? a.posY - b.posY : b.posX - a.posX;
-            });
-        } else {
-            // TODO: 敵の増援実装時に条件について確認する
-            return neighborTiles.sort((a, b) => {
-                // y が高いほど優先順位が高い
-                // y が同じ場合、x が低いほど優先順位が高い
-                return a.posY !== b.posY ? b.posY - a.posY : a.posX - b.posX;
-            });
-        }
+    _sortNeighborTiles(neighborTiles) {
+        return neighborTiles.sort((a, b) => {
+            // y が低いほど優先順位が高い（yの昇順）
+            // y が同じ場合、x が高いほど優先順位が高い（xの降順）
+            return a.posY !== b.posY ? a.posY - b.posY : b.posX - a.posX;
+        });
     }
 
     existsEnemyUnit(moveUnit) {

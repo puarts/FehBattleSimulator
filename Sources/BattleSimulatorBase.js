@@ -4518,9 +4518,15 @@ class BattleSimulatorBase {
         this.__initializeTilesPerTurn(this.map._tiles, group);
 
         // 増援処理
-        let reinforcementUnit = this._callReinforcement(group);
-        if (reinforcementUnit?.isOnMap) {
-            targetUnits.push(reinforcementUnit);
+        if (group === UnitGroupType.Ally) {
+            let reinforcementUnit = this._callReinforcement(UnitGroupType.Ally);
+            if (reinforcementUnit?.isOnMap) {
+                targetUnits.push(reinforcementUnit);
+            }
+            let reinforcementEnemy = this._callReinforcement(UnitGroupType.Enemy);
+            if (reinforcementEnemy?.isOnMap) {
+                enemyTurnSkillTargetUnits.push(reinforcementEnemy);
+            }
         }
 
         if (this.data.gameMode !== GameMode.SummonerDuels) {
@@ -4558,29 +4564,32 @@ class BattleSimulatorBase {
         let reinforcementUnit = null;
         if (this.data.gameMode === GameMode.AetherRaid &&
             g_appData.currentTurn === 3) {
-            let isAllyPhase = group === UnitGroupType.Ally;
-            let units = isAllyPhase ? this.enumerateAllyUnits() : this.enumerateEnemyUnits();
+            let isAlly = group === UnitGroupType.Ally;
+            let units = isAlly ? this.enumerateAllyUnits() : this.enumerateEnemyUnits();
             let existsMythicHeroForReinforcement = false;
             let isReinforcementSlotUnitCallable = false;
             for (let unit of units) {
                 if (g_appData.isReinforcementSlotUnit(unit)) {
                     reinforcementUnit = unit;
                     for (let season of g_appData.enumerateCurrentSeasons()) {
-                        if (isAllyPhase && isAetherRaidEnemySeason(season)) continue;
-                        if (!isAllyPhase && isAetherRaidAllySeason(season)) continue;
+                        if (isAlly && isAetherRaidEnemySeason(season)) continue;
+                        if (!isAlly && isAetherRaidAllySeason(season)) continue;
                         if (unit.canCallAsReinforcement(season)) {
                             isReinforcementSlotUnitCallable = true;
                         }
                     }
                 }
-                if (unit.hasReinforcementAbility(g_appData.enumerateCurrentSeasons(), isAllyPhase)) {
+                if (unit.hasReinforcementAbility(g_appData.enumerateCurrentSeasons(), isAlly)) {
                     existsMythicHeroForReinforcement = true;
                 }
             }
             if (existsMythicHeroForReinforcement &&
                 isReinforcementSlotUnitCallable) {
                 for (let tile of g_appData.map.enumerateTiles()) {
-                    if (isAllyPhase && tile.obj instanceof OfCallingCircle) {
+                    if (isAlly && tile.obj instanceof OfCallingCircle) {
+                        this.executeStructure(tile.obj);
+                    }
+                    if (!isAlly && tile.obj instanceof DefCallingCircle) {
                         this.executeStructure(tile.obj);
                     }
                 }
@@ -9130,7 +9139,11 @@ class BattleSimulatorBase {
         else if (structure instanceof DefCallingCircle) {
             let unit = g_appData.getReinforcementSlotUnitOnTrash(UnitGroupType.Enemy);
             if (unit !== null) {
-                moveUnitToMap(unit, structure.posX, structure.posY, false, false);
+                let circleTile = structure.placedTile;
+                let tile = circleTile.findTileForCallingCircle(unit, structure, false);
+                if (tile) {
+                    moveUnitToMap(unit, tile.posX, tile.posY, false, false);
+                }
             }
         }
         else {

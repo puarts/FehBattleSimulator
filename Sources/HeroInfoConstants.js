@@ -22,6 +22,22 @@ const MoveType = {
     Armor: 3,
 };
 
+function moveTypeIconPath(moveType) {
+    switch (moveType) {
+        case MoveType.Infantry:
+            return `${g_imageRootPath}MoveType_Infantry.png`;
+        case MoveType.Flying:
+            return `${g_imageRootPath}MoveType_Flying.png`;
+        case MoveType.Cavalry:
+            return `${g_imageRootPath}MoveType_Cavarly.png`;
+        case MoveType.Armor:
+            return `${g_imageRootPath}MoveType_Armor.png`;
+    }
+    throw new Error(
+        `moveTypeIconPath: invalid moveType ${moveType}`
+    )
+}
+
 const SeasonType = {
     None: -1,
     Light: 0,

@@ -1,5 +1,296 @@
 // スキル実装
-// TODO: 攻撃魔防の秘奥聖印
+{
+    let skillId = Weapon.Spear;
+    // Grants Atk+3. Unit can counterattack regardless of foe's range.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants the following effects to unit and allies within 2 spaces of unit for 1 turn
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // : Atk/Def+6,
+                GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(6, 0, 6, 0),
+                // "neutralizes 'effective against flying' bonuses," and "neutralizes foe's bonuses during combat."
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.ShieldFlying,
+                    StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res =
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                // number of foes within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+                ENSURE_MAX_NODE(
+                    ADD_NODE(MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14
+                ),
+            ),
+            // deals damage = 10% of unit's Atk (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(10, UNITS_ATK_DURING_COMBAT_NODE),
+            // and reduces damage from foe's attacks by 10% of unit's Atk during combat (excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS_NODE(
+                10, UNITS_ATK_DURING_COMBAT_NODE),
+        ),
+    ));
+}
+
+{
+    let skillId = Weapon.BlessedAureola;
+    // Blessed Aureola
+    // Mt: 14
+    // Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against magic foes.
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // grants Atk/Def/Res+5 during combat,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 0, 5, 5),
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_OTHER_SKILLS_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // and also,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // if ally's attack can trigger ally's Special,
+            IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
+                // grants Special cooldown count-1 to ally before their first attack during combat,
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+                // and also,
+                // if ally cannot perform a follow-up attack and attack twice,
+                IF_NODE(AND_NODE(
+                        NOT_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE),
+                        NOT_NODE(IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE)),
+                    // grants Special cooldown count-1 to ally before their first attack during combat.
+                    GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+                ),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If there is an ally within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Def/Res =
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                // 20% of unit's
+                // Res at start of combat + 5,
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+            // reduces damage from foe's attacks by 20% of unit's Res (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS_NODE(
+                20, UNITS_RES_DURING_COMBAT_NODE),
+            // and grants Special cooldown count-1 to unit before unit's first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+        // If there is an ally within 3 rows or 3 columns centered on unit and foe uses magic,
+        IF_NODE(AND_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, DOES_FOE_USE_MAGIC_NODE),
+            // grants Atk+10 to unit during combat,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(10, 0, 0, 0),
+            // and also,
+            // if foe initiates combat,
+            IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+                // unit can counterattack before foe's first attack.
+                TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE
+            ),
+        ),
+    ));
+}
+
+{
+    let skillId = Special.FrostMoon;
+    // Frost Moon
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    setSpecialCount(skillId, 4);
+
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // boosts damage by 70% of unit's Res and neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills.
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            PERCENTAGE_NODE(75, UNITS_RES_DURING_COMBAT_NODE),
+        ),
+        NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_FOES_NON_SPECIAL_NODE,
+    ));
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit cannot perform a follow-up attack and attack twice,
+        IF_NODE(AND_NODE(
+                NOT_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE),
+                NOT_NODE(IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE)),
+            // grants Special cooldown count-1 to unit before unit's first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+}
+
+{
+    let skillId = PassiveA.BeyondReason;
+    // Beyond Reason
+    // Grants Atk/Def/Res+ 10.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Def/Res = A + B
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                // (A = 2 x number of Penalty) effects active on foe and foes within 3 rows or 3 columns centered on that foe,
+                // excluding stat penalties; max 12;
+                ENSURE_MAX_NODE(
+                    MULT_NODE(
+                        2,
+                        NUM_OF_PENALTY_ON_FOE_AND_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_THAT_FOE_EXCLUDING_STAT_NODE(3),
+                    ),
+                    12)
+            ),
+
+            // B = 2 x current penalty
+            // on unit's respective stats; calculates each stat penalty independently),
+            FOR_EACH_TARGET_STAT_INDEX_NODE([STATUS_INDEX.Atk, STATUS_INDEX.Def, STATUS_INDEX.Res],
+                GRANTS_STAT_PLUS_TO_TARGET_DURING_COMBAT_NODE(
+                    MULT_NODE(2, GET_STAT_AT_NODE(TARGETS_PENALTIES_NODE, READ_NUM_NODE)),
+                    READ_NUM_NODE
+                ),
+            ),
+            // neutralizes foe's bonuses to Atk/Res,
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(true, false, false, true),
+            // and
+            // restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            // and reduces damage from foe's first attack by X% during combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes;
+            // if foe can make a follow-up attack, X = 80; otherwise, X = 40),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                COND_OP(CAN_TARGETS_FOE_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, 80, 40),
+            ),
+        ),
+    ))
+}
+
+{
+    let skillId = Weapon.SwordOfIsaach;
+    // Sword of Isaach
+    // Mt: 16
+    // Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants Atk/Spd+6,
+            GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 6, 0, 0),
+            // [Potent Follow],
+            // and "neutralizes foe's bonuses during combat" to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                StatusEffectType.PotentFollow,
+                StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res = 5 + 15% of unit's Spd at start of combat,
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ADD_NODE(5, PERCENTAGE_NODE(15, UNITS_SPD_AT_START_OF_COMBAT_NODE))
+            ),
+            // and also,
+            // if [Potent Follow X%) has triggered and X ≤ 99, then X = 100,
+            POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE(100),
+            X_NUM_NODE(
+                // unit deals +Y x 5 damage
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // and reduces damage from foe's first attack by Y x 3 during combat
+                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // and also,
+                // when foe's attack triggers foe's Special,
+                // reduces damage by Y x 3 (excluding area-of-effect Specials).
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+
+                // (Y = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5; excluding area-of-effect Specials),
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+            // At start of combat,
+            // if unit's HP ≥ 25%,
+            // restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.PotentFollow);
+    WHEN_APPLIES_POTENT_EFFECTS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        APPLY_POTENT_EFFECT_NODE,
+    ))
+}
+
+{
+    let skillId = Special.CrusadersAstra;
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    setSpecialCount(skillId, 2);
+    // Crusader's Astra
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // boosts damage by 40% of unit's Spa and
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            PERCENTAGE_NODE(40, UNITS_SPD_DURING_COMBAT_NODE),
+        ),
+        // neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills.
+        WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants Special cooldown count-1 to unit before unit's first attack and
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        // before each of unit's follow-up attacks during combat,
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_EACH_OF_TARGETS_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE(1),
+        // and also,
+    ));
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // when unit's Special is triggered during a follow-up attack,
+        IF_NODE(AND_NODE(CAN_ACTIVATE_ATTACKER_SPECIAL_NODE),
+            // prevents foe's Specials that are triggered by unit's attack.
+            PREVENTS_TARGETS_FOES_SPECIALS_THAT_ARE_TRIGGERED_BY_TARGETS_ATTACK_NODE,
+        ),
+    ));
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(
+            // If unit's or foe's Special is ready or triggered before or during this combat,
+            IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
+
+{
+    let skillId = PassiveC.BrutalTempest;
+    // Brutal Tempest
+    // Enables (Canto (Dist. +1; Max 4)) .
+    enablesCantoDist(skillId, 1, 4);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // unit can move 1 extra space (that turn only; does not stack).
+        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.MobilityIncreased),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Grants bonus to unit's Atk/Spd/Def/Res during combat = number of spaces from start position to end position of whoever initiated combat (max 3).
+        GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
+            ENSURE_MAX_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 3),
+        ),
+    ));
+}
+
 {
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
@@ -130,7 +421,7 @@
                     AND_NODE(
                         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
                         EQ_NODE(TARGETS_MAX_HP_NODE, HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES)),
-                    ),
+                ),
                 TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
             ),
         ),

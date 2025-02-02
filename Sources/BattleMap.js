@@ -291,7 +291,7 @@ function initializeImageFileList(sourceDict, destArray) {
     for (let key in sourceDict) {
         let value = sourceDict[key];
         destArray.push({
-            id: key,
+            id: Number(key),
             fileName: value
         });
     }

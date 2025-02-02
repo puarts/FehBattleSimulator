@@ -5504,7 +5504,7 @@ function setDiscord(skillId, statsRatios) {
             // if unit can make a follow-up attack or if unit triggers the "unit attacks twice" effect, X = 10; otherwise, X = 20).
             MULT_TRUNC_NODE(
                 COND_OP(
-                    OR_NODE(CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
+                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
                     0.1,
                     0.2,
                 ),
@@ -5515,7 +5515,7 @@ function setDiscord(skillId, statsRatios) {
         new ReducesDamageExcludingAoeSpecialsNode(
             MULT_TRUNC_NODE(
                 COND_OP(
-                    OR_NODE(CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
+                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
                     0.1,
                     0.2,
                 ),

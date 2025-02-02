@@ -9,6 +9,7 @@ const g_corsImageRootPath = "../images/"; // CORS制約を回避するため画�
 const g_audioRootPath = g_siteRootPath + "AetherRaidTacticsBoard/audio/";
 const g_heroIconRootPath = g_siteRootPath + "images/FehHeroThumbs/";
 const g_skillIconRootPath = g_siteRootPath + "images/FehSkillIcons/";
+const g_iconRootPath = g_siteRootPath + "FehTools/FehIconMaker/images/";
 const TurnSettingCookiePrefix = "turn_";
 const UnitCookiePrefix = "unit_";
 const StructureCookiePrefix = "st_";

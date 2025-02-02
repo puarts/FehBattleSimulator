@@ -521,6 +521,39 @@ const FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL = new class extends SkillEffectNode {
     }
 }();
 
+class TargetCannotTriggerDefenderSpecialPerAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.preventedDefenderSpecialPerAttack = true;
+        env.debug(`${unit.nameWithGroup}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
+    }
+}
+
+const TARGET_CANNOT_TRIGGER_DEFENDER_SPECIAL_PER_ATTACK_NODE =
+    new TargetCannotTriggerDefenderSpecialPerAttackNode();
+
+class TargetsFoeCannotTriggerDefenderSpecialPerAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = env.getFoeDuringCombatOf(this.getUnit(env));
+        unit.battleContext.preventedDefenderSpecialPerAttack = true;
+        env.debug(`${unit.nameWithGroup}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
+    }
+}
+
+const TARGETS_FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL_PER_ATTACK_NODE =
+    new TargetsFoeCannotTriggerDefenderSpecialPerAttackNode();
+
+const PREVENTS_TARGETS_FOES_SPECIALS_THAT_ARE_TRIGGERED_BY_TARGETS_ATTACK_NODE =
+    TARGETS_FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL_PER_ATTACK_NODE;
+
 const UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
@@ -701,6 +734,21 @@ const NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumbe
         return result;
     }
 }();
+
+class NumOfPenaltiesOnTargetExcludingStatNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getNegativeStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の不利な状態の数: ${result}`);
+        return result;
+    }
+}
+
+const NUM_OF_PENALTIES_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfPenaltiesOnTargetExcludingStatNode();
 
 const NUM_OF_PENALTY_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
@@ -959,6 +1007,9 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode e
         env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
+
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_INCLUDING_TWICE_NODE =
+    n => new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(n);
 
 class ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTwiceNode extends ApplyingNumberNode {
     evaluate(env) {
@@ -1246,6 +1297,22 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
 const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
     n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
 
+class GrantsSpecialCooldownCountMinusNToTargetBeforeEachOfTargetsFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let result =unit.battleContext.specialCountReductionBeforeEachFollowupAttack += n;
+        env.debug(`${unit.nameWithGroup}は自分の各追撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+    }
+}
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_EACH_OF_TARGETS_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE =
+    n => new GrantsSpecialCooldownCountMinusNToTargetBeforeEachOfTargetsFollowUpAttackDuringCombatNode(n);
+
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1254,7 +1321,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDu
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.specialCountReductionBeforeFollowupAttack += n;
+        unit.battleContext.specialCountReductionBeforeFirstFollowupAttack += n;
         let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
         env.debug(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} => ${reduction}`);
     }
@@ -1636,19 +1703,31 @@ class DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefO
 
 // Unit or BattleContextに値を設定 END
 
-class CanTargetCanMakeFollowUpIncludingPotentNode extends BoolNode {
+class CanTargetMakeFollowUpIncludingPotentNode extends BoolNode {
     static {
-        Object.assign(this.prototype, GetValueMixin);
+        Object.assign(this.prototype, GetUnitMixin);
     }
 
-    debugMessage = "は追撃可能か";
-
-    getValue(unit) {
-        return unit.battleContext.canFollowupAttackIncludingPotent();
+    evaluate(env) {
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.AFTER_FOLLOWUP_CONFIGURED)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        }
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canFollowupAttackIncludingPotent();
+        env.debug(`${unit.nameWithGroup}は追撃可能か: ${result}`);
+        return result;
     }
 }
 
-const CAN_TARGET_CAN_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetCanMakeFollowUpIncludingPotentNode();
+const CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetMakeFollowUpIncludingPotentNode();
+
+class CanTargetsFoeMakeFollowUpIncludingPotentNode extends CanTargetMakeFollowUpIncludingPotentNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const CAN_TARGETS_FOE_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetsFoeMakeFollowUpIncludingPotentNode();
 
 // TODO: 命名規則を統一させる
 class IfTargetTriggersAttacksTwiceNode extends BoolNode {
@@ -1679,7 +1758,8 @@ class TargetCanAttackDuringCombatNode extends BoolNode {
     debugMessage = "は攻撃可能か";
 
     getValue(unit, env) {
-        if (!env.isAfterCombatPhase(NodeEnv.COMBAT_PHASE.APPLYING_CAN_COUNTER)) {
+        if (env.combatPhase !== NodeEnv.COMBAT_PHASE.NULL_PHASE &&
+            !env.isAfterCombatPhase(NodeEnv.COMBAT_PHASE.APPLYING_CAN_COUNTER)) {
             env.error(`反撃可能判定が終わっていません(current phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, 1)})`);
         }
         return unit.battleContext.canAttackInCombat();
@@ -1954,3 +2034,18 @@ class IsSaviorTriggeredNode extends BoolNode {
 }
 
 const IS_SAVIOR_TRIGGERED_NODE = new IsSaviorTriggeredNode();
+
+class TargetCanCounterattackBeforeTargetsFoesFirstAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.isVantageActivatable = true;
+        env.debug(`${unit.nameWithGroup}は敵から攻撃された時、先制攻撃`);
+    }
+}
+
+const TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE =
+    new TargetCanCounterattackBeforeTargetsFoesFirstAttackNode()

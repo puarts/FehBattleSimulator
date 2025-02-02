@@ -362,7 +362,7 @@
             // 自分の最初の攻撃前に奥義発動カウントー1、
             targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
             // 自分の最初の追撃前に奥義発動カウントー1、
-            targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += 1;
+            targetUnit.battleContext.specialCountReductionBeforeFirstFollowupAttack += 1;
             // 自身の奥義発動カウント変動量ーを無効
             targetUnit.battleContext.neutralizesReducesCooldownCount();
         }
@@ -1327,7 +1327,7 @@
                     //     - 自分の最初の攻撃前に奥義発動カウントーA、
                     targetUnit.battleContext.specialCountReductionBeforeFirstAttack += a;
                     //     - 自分の最初の追撃前に奥義発動カウントーB
-                    targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += b;
+                    targetUnit.battleContext.specialCountReductionBeforeFirstFollowupAttack += b;
                     //     - （〇は、自身を中心とした縦3列と横3列にいる「攻撃が55以上の味方の数」と「速さが40以上の味方の数」の合計値）
                 }
             }
@@ -1659,7 +1659,7 @@
                 // - 敵の速さ、魔防の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）、
                 targetUnit.battleContext.invalidateBuffs(false, true, false, true);
                 // - 自分の最初の追撃前に自身の奥義発動カウントー1、
-                targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += 1;
+                targetUnit.battleContext.specialCountReductionBeforeFirstFollowupAttack += 1;
             }
             // かつ自分から攻撃した時、
             if (targetUnit.battleContext.initiatesCombat) {
@@ -5902,7 +5902,7 @@
                 // 戦闘中、自分の最初の攻撃前に奥義発動カウントー1、自分の最初の追撃前に奥義発動カウントー1
                 if (isNormalAttackSpecial(targetUnit.special)) {
                     targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
-                    targetUnit.battleContext.specialCountReductionBeforeFollowupAttack += 1;
+                    targetUnit.battleContext.specialCountReductionBeforeFirstFollowupAttack += 1;
                 }
             }
         }

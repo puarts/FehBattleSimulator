@@ -234,7 +234,10 @@ class BattleContext {
         this.specialCountReductionBeforeFirstAttack = 0;
 
         // 最初の追撃前の奥義発動カウント減少値(減少値を正の値で保持する)
-        this.specialCountReductionBeforeFollowupAttack = 0;
+        this.specialCountReductionBeforeFirstFollowupAttack = 0;
+
+        // 各追撃前の奥義発動カウント減少値(減少値を正の値で保持する)
+        this.specialCountReductionBeforeEachFollowupAttack = 0;
 
         // 攻撃ごとに変化する可能性がある最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttackPerAttack = 0;
@@ -762,16 +765,16 @@ class BattleContext {
         return increase - reduction;
     }
 
-    getSpecialCountChangeAmountBeforeFirstFollowUpAttackByEnemy() {
-        let increase = 0;
-        let reduction = this.specialCountReductionBeforeFirstFollowUpAttackByEnemy;
-        return increase - reduction;
+    getSpecialCountReductionBeforeFirstFollowUpAttackByEnemy() {
+        return this.specialCountReductionBeforeFirstFollowUpAttackByEnemy;
     }
 
-    getSpecialCountReductionBeforeFollowupAttack() {
-        let increase = this.specialCountIncreaseBeforeFollowupAttack;
-        let reduction = this.specialCountReductionBeforeFollowupAttack;
-        return increase - reduction;
+    getSpecialCountIncreaseBeforeFirstFollowupAttack() {
+        return this.specialCountIncreaseBeforeFollowupAttack;
+    }
+
+    getSpecialCountReductionBeforeFirstFollowupAttack() {
+        return this.specialCountReductionBeforeFirstFollowupAttack;
     }
 
     isChangedSpecialCountBeforeFirstAttack() {
@@ -782,10 +785,6 @@ class BattleContext {
 
     isChangedSpecialCountBeforeFirstAttackByEnemy() {
         return this.specialCountReductionBeforeFirstAttackByEnemy !== 0;
-    }
-
-    isChangedSpecialCountBeforeFollowupAttack() {
-        return this.specialCountReductionBeforeFollowupAttack !== 0;
     }
 
     getAttackCount(isCounterAttack) {
@@ -1099,5 +1098,9 @@ class BattleContext {
     canActivateWrathfulStaff() {
         if (this.isNeutralizedWrathfulStaff) return false;
         return this.wrathfulStaff;
+    }
+
+    getMaxPotentRatio() {
+        return ArrayUtil.max(this.potentRatios);
     }
 }

@@ -1333,11 +1333,15 @@ function __resetBattleMapPlacementForArena(map, type, withUnits) {
             return;
     }
 }
+
 /**
  * @param  {BattleMap} map
- * @param  {MapType} type
+ * @param  {number} type
  */
 function __resetBattleMapPlacementForAetherRaid(map, type) {
+    if (typeof type !== "number") {
+        type = Number(type);
+    }
     for (let breakableWall of map._breakableWalls) {
         breakableWall.reset();
     }
