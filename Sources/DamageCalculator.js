@@ -671,7 +671,8 @@ class DamageCalculator {
     __calcCombatDamage(atkUnit, defUnit, context) {
         if (this.isLogEnabled) {
             this.__logAttackerAndAttackee(atkUnit, defUnit, context);
-            let message = `[${context.getAttackTypeString()}]`;
+            let className = atkUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
+            let message = `<span class="${className}">【${context.getAttackTypeString()}】</span>`;
             this.writeSimpleLog("");
             this.writeSimpleLog(message);
             this.writeDebugLog(message);
@@ -965,12 +966,14 @@ class DamageCalculator {
      * @param {DamageCalcContext} context
      */
     #applySpecialCountChangesBeforeAttack(atkUnit, defUnit, context) {
+        let atkLogClass = atkUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
+        let defLogClass = defUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
         if (context.isFirstAttack(atkUnit)) {
             // atkUnitの奥義カウント変動
             let atkCount = atkUnit.tmpSpecialCount +
                 atkUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttack();
             if (atkUnit.battleContext.isChangedSpecialCountBeforeFirstAttack()) {
-                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の攻撃の前の奥義カウント: <span style="color: #ff00ff">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
+                this.writeSimpleLog(`<span class="${atkLogClass}">奥義カウント</span>: <span class="log-special">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
                                     ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
                                     ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
                                     ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
@@ -981,7 +984,7 @@ class DamageCalculator {
             let defCount = defUnit.tmpSpecialCount +
                 defUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttackByEnemy();
             if (defUnit.battleContext.isChangedSpecialCountBeforeFirstAttackByEnemy()) {
-                this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の攻撃の前の奥義カウント: <span style="color: #ff00ff">${defCount}</span> = ${defUnit.tmpSpecialCount} -
+                this.writeSimpleLog(`<span class="${defLogClass}">奥義カウント</span>: <span class="log-special">${defCount}</span> = ${defUnit.tmpSpecialCount} -
                                     ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy} +
                                     ${defUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`
                 );
@@ -1003,8 +1006,8 @@ class DamageCalculator {
             atkCount += atkIncrease;
             atkCount -= atkReduction;
             if (atkIncrease !== 0 || atkReduction !== 0) {
-                this.writeSimpleLog(`${atkUnit.nameWithGroup}の最初の追撃の前の奥義カウント: 
-                                    <span class="special-count">${atkCount}</span> = 
+                this.writeSimpleLog(`<span class="${atkLogClass}">奥義カウント</span>: 
+                                    <span class="log-special">${atkCount}</span> = 
                                     ${atkUnit.tmpSpecialCount} - ${atkReduction} + ${atkIncrease}`
                 );
             }
@@ -1020,8 +1023,8 @@ class DamageCalculator {
             defCount += defIncrease;
             defCount -= defReduction;
             if (defIncrease !== 0 || defReduction !== 0) {
-                this.writeSimpleLog(`${defUnit.nameWithGroup}の最初の敵の追撃の前の奥義カウント: 
-                                    <span class="special-count">${defCount}</span> = 
+                this.writeSimpleLog(`<span class="${defLogClass}">奥義カウント</span>: 
+                                    <span class="log-special">${defCount}</span> = 
                                     ${defUnit.tmpSpecialCount} - ${defReduction} + ${defIncrease}`
                 );
             }
@@ -1311,7 +1314,8 @@ class DamageCalculator {
                 if (this.isLogEnabled) this.writeLog(`<span style="color: #ff00ff">奥義</span>によるダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
                 let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
-                this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/><span style="color: #ff00ff">奥義</span>ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
+                // this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/><span style="color: #ff00ff">奥義</span>ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
+                this.writeSimpleLog(`<span class="log-special">奥義</span>ダメージ<span class="log-damage"">${currentDamage}</span>`);
                 this.__restoreMaxSpecialCount(atkUnit);
                 // 奥義発動直後のスキル効果（奥義カウント変動など）
                 this.applySkillEffectAfterSpecialActivated(atkUnit, defUnit, context);
@@ -1351,7 +1355,8 @@ class DamageCalculator {
                 if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
                 let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
                 let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
-                this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/>通常攻撃ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
+                // this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/>通常攻撃ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
+                this.writeSimpleLog(`通常攻撃ダメージ<span class="log-damage">${currentDamage}</span>`);
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
             }
 
@@ -1549,14 +1554,14 @@ class DamageCalculator {
                 let oldRatio = potentRatio;
                 potentRatio *= ratio;
                 this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
-                this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
+                this.writeSimpleLog(`<span class="log-gray">【神速追撃:ダメージ${ratio * 100}%】</span>`)
             } else {
                 let ratio = atkUnit.battleContext.getMaxPotentOverwriteRatio();
                 this.writeDebugLog(`神速追撃上書き値による軽減。ratios: ${atkUnit.battleContext.potentRatios} → ratio: ${ratio}`);
                 let oldRatio = potentRatio;
                 potentRatio *= ratio;
                 this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
-                this.writeSimpleLog(`神速追撃:ダメージ${ratio * 100}%`)
+                this.writeSimpleLog(`<span class="log-gray">【神速追撃:ダメージ${ratio * 100}%】</span>`)
             }
         }
         return potentRatio;
@@ -2058,7 +2063,7 @@ class DamageCalculator {
             this.writeDebugLog(`ダメージ軽減率(奥義扱い): [${damageReductionRatiosByNonDefenderSpecial}]`);
             this.writeDebugLog(`最終ダメージ率: ${floorNumberWithFloatError(damageRatio * 100)}%`);
             this.writeDebugLog(`最終ダメージ軽減率: ${floorNumberWithFloatError(reduceRatio * 100)}%`);
-            this.writeDebugLog(`固定ダメージ軽減値: -${damageReductionValue}`);
+            this.writeDebugLog(`固定ダメージ軽減値: -${damageReductionValue} ([${damageReductionValues}])`);
             this.writeDebugLog(`神速追撃ダメージ倍率: ${floorNumberWithFloatError(potentRatio * 100)}%`);
             this.writeDebugLog(`ダメージ計算: (${damage} - trunc(${damage} * ${roundFloat(reduceRatio)})) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
             this.writeDebugLog(`ダメージ変化: ${damage}→${currentDamage} (${damage - currentDamage}軽減)`);

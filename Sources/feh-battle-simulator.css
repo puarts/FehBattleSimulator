@@ -48,6 +48,26 @@
     color: #bbbbbb;
 }
 
+.log-ally {
+    color: #0033ff;
+}
+
+.log-enemy {
+    color: #ff3300;
+}
+
+.log-special {
+    color: #ff00ff;
+}
+
+.log-damage {
+    color: #ff0000;
+}
+
+.log-gray {
+    color: #888888;
+}
+
 /* Summary */
 .summary-text-shadow {
     text-shadow: #444 1px 1px 0px,
@@ -566,8 +586,4 @@ td.enemy {
 
 .status-effect-description {
     color: grey;
-}
-
-.special-count {
-    color: #ff00ff
 }
