@@ -1638,16 +1638,22 @@
 
             // deals damage = 30% of foe's max HP (excluding area-of-effect Specials; excluding certain foes, such as Røkkr),
             UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(30, new FoesMaxHpNode())),
+        ),
+    ));
+
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
             X_NUM_NODE(
                 // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
-                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(READ_NUM_NODE),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_PER_ATTACK_NODE(READ_NUM_NODE),
                 // and also,
                 // when foe's attack triggers foe's Special,
                 // reduces damage from foe's attacks by an additional X
-                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(READ_NUM_NODE),
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_PER_ATTACK_NODE(READ_NUM_NODE),
                 // (excluding area-of-effect Specials; X = total damage dealt to foe; min 10; max 20).
                 ENSURE_MIN_MAX_NODE(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
-            ),
+            )
         ),
     ));
 

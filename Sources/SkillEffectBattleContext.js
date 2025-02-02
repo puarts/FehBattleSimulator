@@ -913,6 +913,9 @@ class ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode extends Ap
     }
 }
 
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_PER_ATTACK_NODE =
+    n => new ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode(n);
+
 class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
     getDescription(n) {
         return `受けるダメージ-${n}(戦闘前)`;
@@ -1070,6 +1073,9 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode extends Apply
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${result - n} => ${result}`);
     }
 }
+
+const REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_PER_ATTACK_NODE =
+    n => new ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode(n);
 
 class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends ApplyingNumberNode {
     evaluate(env) {
