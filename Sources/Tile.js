@@ -793,10 +793,12 @@ class Tile extends BattleMapElement {
             return callingCircle.placedTile;
         }
         if (isAlly) {
-            let tile = this._findTileForCallingCircle(unit, callingCircle.placedTile);
+            let tile = this._findTileForCallingCircle(unit, callingCircle.placedTile, true, true);
             if (tile) return tile;
-            return this._findTileForCallingCircle(unit, callingCircle.placedTile, false);
+            return this._findTileForCallingCircle(unit, callingCircle.placedTile, false, true);
         } else {
+            let tile = this._findTileForCallingCircle(unit, callingCircle.placedTile, true, false);
+            if (tile) return tile;
             return this._findTileForCallingCircle(unit, callingCircle.placedTile, false, false);
         }
     }
