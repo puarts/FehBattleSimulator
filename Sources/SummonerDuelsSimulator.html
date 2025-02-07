@@ -2150,7 +2150,7 @@
                                                    @click="g_app.vm.addAllPositiveStatusEffects()" >
                                             <input type="button" class="buttonUi" value="全て解除"
                                                    @click="g_app.vm.clearAllPositiveStatusEffects()" >
-                                            <div v-for="statusEffect in getPositiveStatusEffectTypes()">
+                                            <div v-for="statusEffect in getPositiveStatusEffectTypesInOrder()">
                                                 <input v-bind:id='"statusEffect"+statusEffect' type="checkbox"
                                                        :checked="value.hasStatusEffect(statusEffect)"
                                                        @change="g_app.vm.statusEffectChanged(statusEffect)"
