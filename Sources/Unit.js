@@ -855,7 +855,7 @@ class Unit extends BattleMapElement {
                 this.moveCountForCanto = this.calcMoveCountForCanto();
                 if (this.isRangedWeaponType()) {
                     this.endAction();
-                    this.applyEndActionSkills();
+                    this.applyEndActionSkills(true);
                     this.deactivateCanto();
                 }
             }
@@ -2839,6 +2839,7 @@ class Unit extends BattleMapElement {
     }
 
     applyEndActionSkills() {
+    applyEndActionSkills(isCantoEndAction = false) {
         // ユニットが死んだ場合は発動しないはず
         // TODO: 今後死後に発動する効果を持つスキルが実装されたら修正する
         if (this.isDead) {
@@ -2853,9 +2854,12 @@ class Unit extends BattleMapElement {
         }
 
         let env = new NodeEnv().setTarget(this).setSkillOwner(this).setUnitManager(g_appData)
-            .setBattleMap(g_appData.map);
+            .setBattleMap(g_appData.map).setIsCantoEndAction(isCantoEndAction);
         env.setName('行動後or再移動後').setLogLevel(getSkillLogLevel());
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
+        if (isCantoEndAction) {
+            AFTER_CANTO_HOOKS.evaluateWithUnit(this, env)
+        }
         for (let unit of g_appData.enumerateAllUnitsOnMap()) {
             unit.applyReservedState(false);
         }

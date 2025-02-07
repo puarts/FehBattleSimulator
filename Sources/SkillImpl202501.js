@@ -1,5 +1,174 @@
 // スキル実装
 {
+    let skillId = Weapon.EaglesHeart;
+    // Eagle's Heart
+    // Mt: 16
+    // Rng: 1
+    // Enables /Canto (Rem. +1; Min 2)) .
+    enablesCantoRemPlusMin(skillId, 1, 2);
+    // Accelerates Special trigger (cooldown count-1).
+
+    grantsAnotherActionAfterCanto(skillId);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or the number of allies adjacent to unit ≤ 1,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE, 1)),
+            X_NUM_NODE(
+                // inflicts penalty on foe's Atk/Def = 20% of unit's Def at start of combat + 6,
+                INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_DEF_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            X_NUM_NODE(
+                // unit deals +X x 5 damage
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // and reduces damage from foe's attacks by X x 3 during combat (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // and also,
+                // reduces damage by an additional X × 3 when foe's attack triggers foe's Special (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // (X = number of Bonus effects active on unit,
+                // excluding stat bonuses + number of Penalty effects active on foe,
+                // excluding stat penalties; max 5; excluding area-of-effect Specials),
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+            // grants Special cooldown count-1 to unit before unit's first attack during combat,
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
+// Eagle's Heart
+// Mt: 16
+// Rng: 1
+// Enables /Canto (Rem. +7; Min 2)) .
+// Accelerates Special trigger (cooldown count-1).
+// After Canto,
+// if unit entered combat on the current turn,
+// grants another action to unit,
+// and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+// If unit initiates combat or the number of allies adjacent to unit ≤ 1,
+// inflicts penalty on foe's Atk/Def = 20% of unit's Def at start of combat + 6,
+// unit deals +X x 5
+// damage (X = number of Bonus effects active on unit,
+// excluding stat bonuses + number of Penalty effects active on foe,
+// excluding stat penalties; max 5; excluding area-of-effect Specials),
+// and reduces damage from foe's attacks by X x 3 during combat (excluding area-of-effect Specials),
+// and also,
+// reduces damage by an additional X × 3 when foe's attack triggers foe's Special (excluding area-of-effect Specials),
+// grants Special cooldown count-1 to unit before unit's first attack during combat,
+// and restores 7 HP to unit after combat.
+
+// Sly Sturdy Blow
+// If unit initiates combat, grants Atk+8 and Def+ 10 to unit and unit makes a guaranteed follow-up attack during combat, and also, if number of (Bonus) effects active on unit ≥ 2, excluding stat bonuses, or if number of (Penalty) effects active on foe ≥ 2, excluding stat penalties, unit deals +5 damage during combat (including when dealing damage with an area-of-effect Special; excluding Rokkr area-of-effect Specials).
+
+// Sly Sturdy Blow
+// If unit initiates combat, grants Atk+8 and Def+ 10 to unit and unit makes a guaranteed follow-up attack during combat, and also, if number of (Bonus) effects active on unit ≥ 2, excluding stat bonuses, or if number of (Penalty) effects active on foe ≥ 2, excluding stat penalties, unit deals +5 damage during combat (including when dealing damage with an area-of-effect Special; excluding Rokkr area-of-effect Specials).
+
+// Pure Storm
+// At start of turn and after unit acts (if Canto triggers, after Canto), inflicts Atk/Def-7, (Exposure), and (Sabotage) on closest foes and foes within 2 spaces of those foes through their next actions.
+// If target has entered combat aside from this combat on the current turn and unit initiates combat, target cannot trigger their Special during combat.
+// If unit initiates combat or the number of allies adjacent to unit ≤ 1, inflicts Atk/Def-5 on foe, deals damage = 20% of unit's Def (excluding area-of-effect Specials), and reduces the percentage of foe's non-Special
+// "reduces damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+// If unit initiates combat and number of allies adjacent to unit ≤ 1 after combat, grants another action to unit (once per turn; if a skill effect moves unit after combat, this effect occurs based on unit's final placement after that movement).
+
+// JAC Assault Rush
+// At start of turn, if unit's HP = 100% or any foe is within 3
+// columns or 3 rows centered on unit, grants Atk+6, "unit can move 1 extra space (that turn only, does not stack)," and [Chargel to unit for 1 turn.
+// If unit initiates combat, grants Atk+5 to unit and grants Special cooldown count-1 to unit before unit's first attack during combat.
+
+// Lion's Heart
+// Mt: 16
+// Rng: 1
+// Enables [Canto (Rem. +1; Min 2)) •
+// Accelerates Special trigger (cooldown count-1).
+// After Canto, if unit entered combat on the current turn, grants another action to unit, and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+// At start of turn, if unit is within 2 spaces of an ally, grants
+// "unit can move 1 extra space" to unit (that turn only; does not stack), and grants the following statuses on unit and allies within 2 spaces of unit for 1 turn: "neutralizes penalties on unit during combat" and "Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack)."
+// If unit initiates combat or is within 2 spaces of an ally,
+// grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's
+// Spd at start of combat + 5, unit deals +X x 5 damage (X = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5; excluding area-of-effect Specials), and reduces damage from foe's first attack by X x 3 during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes), and also, reduces damage by an additional X x 3 when foe's attack triggers foe's Special (excluding area-of-effect Specials), and restores 7 HP to unit after combat.
+
+// Haze Slice
+// 3
+// Boosts damage by 35% of unit's Atk when Special triggers.
+// If unit initiates combat, grants Special cooldown count-1 to unit before unit's first attack and reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials).
+
+// Pure Atrocity
+// If unit initiates combat or is within 2 spaces of an ally,
+// inflicts Spd/Def-5 on foe, deals damage = 25% of unit's
+// Atk (excluding area-of-effect Specials), grants Special cooldown count-1 to unit before unit's first attack, neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks, and reduces the percentage of foe's non-Special
+// "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+// After combat, if unit attacked, neutralizes two (Bonus) effects on target and any foe within 2 spaces of target, excluding stat bonuses (does not apply to (Bonus) effects that are applied at the same time; neutralizes the first applicable (Bonus) effects on foe's list of active effects), and applies (Divine Vein (Haze)] on target's space and on each space within 2 spaces of target's space for 1 turn.
+
+// Deer's Heart
+// Mt: 14
+// Rng:2
+// Eff:
+// Enables /Canto (Rem.; Min 1)) .
+// Accelerates Special trigger (cooldown count-1).
+// Effective against flying foes.
+// Re
+// After Canto (including cases where action is ended due to Canto Control), if unit entered combat on the current turn, grants another action to unit, and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+// At start of turn, if unit is within 2 spaces of an ally, grants [Null Follow-Up) and (Preempt Pulse) to unit and allies within 2 spaces of unit for 1 turn.
+// If unit initiates combat or is within 2 spaces of an ally,
+// grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's
+// Spd at start of combat + 5, neutralizes foe's bonuses to
+// Spd/Def, deals +X x 5 damage (X = number of Bonus
+// effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5; excluding area-of-effect Specials), and neutralizes effects that inflict "Special cooldown charge
+// -X" on unit during combat, and restores 7 HP to unit after combat.
+
+// Pure Starfall
+// If unit initiates combat or if [Deep Star) is active on unit, inflicts Spd/Def-5 on foe, unit deals +X damage (X = 20% of unit's Spd; excluding area-of-effect Specials), reduces damage from foe's first attack by X ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes), and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials), and also, if foe's attack can trigger foe's Special, inflicts Special cooldown count+ 1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
+// If unit initiates combat, reduces damage from foe's first attack by 80% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+// If unit initiates combat, grants (Deep Star) and [Vantage) to unit and inflicts [Gravity) on target and foes within 1 space of target after combat.
+
+// A/S Incite Hone
+// At start of turn, if unit is within 2 spaces of an ally, grants Atk/Spd+6 and (Incited) to unit and allies within 2 spaces of unit for 1 turn.
+// Grants bonus to unit's Atk/Spd during combat = number
+// of allies on the map with the (Incited) effect + 2 (excluding unit; max 5).
+
+// Devoted Breath
+// Mt: 16
+// Rng: 1
+// Accelerates Special trigger (cooldown count-1).
+// Neutralizes "effective against dragons" bonuses.
+// If foe's Range = 2, calculates damage using the lower of foe's
+// Def or Res.
+// For allies within 3 spaces of unit, grants Def/Res+5 and reduces damage from foe's first attack by 7 during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice,
+// " it means the first and second
+// strikes).
+// For allies within 3 spaces of unit, if foe initiates combat, ally's HP > 1, and foe would reduce ally's HP to 0 during combat, ally survives with 1 HP (once per turn; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce unit's HP to 0; when any other such effect triggers, this effect will trigger too).
+// If foe initiates combat or foe's HP ≥ 75% at start of combat,
+// grants bonus to unit's Atk/Def/Res = 20% of unit's Res at
+// start of combat + 5, unit deals +X damage (X = number of
+// allies within 3 spaces of unit × 5; max 15; if unit triggers Savior, value is treated as 15; excluding area-of-effect Specials), reduces damage from foe's attacks by X (excluding area-of-effect Specials), unit makes a guaranteed follow-up attack, and reduces the percentage of foe's non-Special
+// "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials), and also, if unit's HP > 1 and foe would reduce unit's HP to 0, unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
+
+// Pure Dragon Wall
+// If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
+// If unit's Res > foe's Res, reduces damage from attacks during combat and from area-of-effect Specials (excluding Rokkr area-of-effect Specials) by the following percentage: if it is unit's first combat initiated by unit or first combat initiated by foe in player phase or enemy phase, percentage = difference between stats × 6 (max 60%); otherwise, percentage = difference between stats × 4 (max 40%).
+// Inflicts Atk/Def/Res-5 on foe, deals damage = X% of unit's
+// Res (if it is unit's first combat initiated by unit or first combat
+// initiated by foe in player phase or enemy phase, X = 30;
+// otherwise, X = 20; including from area-of-effect Specials;
+// excluding Rokkr area-of-effect Specials), reduces damage from foe's attacks by X% of unit's Res (including from area-of-effect Specials; excluding Rokkr area-of-effect Specials), and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also, if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5, inflicts Special cooldown count+1 on foe (cannot exceed the foe's maximum Special cooldown) and grants Special cooldown count-1 to unit before foe's first attack during combat.
+// At start of turn and after combat, if dragon or beast ally is on player team or if unit is within 2 spaces of an ally, restores 10 HP to unit.
+
+// C Lower Ground
+// Foes with Range = 1 cannot warp into spaces within 3 spaces
+// of unit and foes with Range = 2 cannot warp into spaces
+// within 4 spaces of unit (in either case, does not affect foes with Pass skills or warp effects from structures, like camps and fortresses in Rival Domains).
+// If foe with Range = 1 initiates combat against an ally within 2
+// spaces of unit, triggers (Savior) on unit.
+// If foe's Range = 1, grants Def/Res+4 to unit during combat.
+
+// Duo Skill
+// Grants the following status to unit and allies within 2 spaces of unit for 1 turn: "neutralizes foe's bonuses during combat."
+// Applies (Divine Vein (Stone)) to unit's space and spaces within 2 spaces of unit for 2 turns.
+
+{
     let skillId = Weapon.Spear;
     // Grants Atk+3. Unit can counterattack regardless of foe's range.
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(

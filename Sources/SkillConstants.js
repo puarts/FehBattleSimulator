@@ -3723,6 +3723,19 @@ Weapon.SwordOfIsaach = 3152; // イザークの守護剣
 Special.CrusadersAstra = 3153; // 剣聖の流星雨
 PassiveC.BrutalTempest = 3154; // 迅雷風烈・鬼没
 Weapon.Spear = 3155; // スレンドスピア
+Weapon.EaglesHeart = 3160; // 黒鷲の愛の斧
+PassiveA.SlySturdyBlow = 3161; // 鬼神金剛の掩撃
+PassiveB.PureStorm = 3162; // 正真狂嵐
+PassiveC.AssaultRush = 3163; // 一斉突撃・突貫
+Weapon.LionsHeart = 3164; // 青獅子の愛の剣
+Special.HazeSlice = 3165; // 霞切り
+PassiveB.PureAtrocity = 3166; // 正真無惨
+Weapon.DeersHeart = 3167; // 金鹿の愛の弓
+PassiveB.PureStarfall = 3168; // 正真落星
+PassiveC.ASInciteHone = 3169; // 攻速鼓舞・奮激
+Weapon.DevotedBreath = 3170; // 永き愛のブレス
+PassiveB.PureDragonWall = 3171; // 正真竜鱗障壁
+PassiveC.LowerGround = 3172; // 縄張り・護り手・近
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

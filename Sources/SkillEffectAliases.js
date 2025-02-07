@@ -347,6 +347,11 @@ function enablesCantoRemPlus(skillId, n) {
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoRemNode(n));
 }
 
+function enablesCantoRemPlusMin(skillId, n, min) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => ENSURE_MIN_NODE(new CantoRemNode(n), 2));
+}
+
 /**
  * Enables【Canto (Dist. +1; Max ４)】.
  */
@@ -799,3 +804,22 @@ const INFLICTS_SPECIAL_COOLDOWN_COUNT_1_ON_FOE_BEFORE_FOES_FIRST_ATTACK_DURING_C
             INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
         ),
     );
+
+function grantsAnotherActionAfterCanto(skillId) {
+    // After Canto,
+    AFTER_CANTO_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // if unit entered combat on the current turn,
+        IF_NODE(HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+            // grants another action to unit,
+            TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
+                `${skillId}-再移動後再起動`,
+                // and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+                // TODO: 移動中に行動終了した = 罠を踏んだの全体が崩れた時に修正する
+                IF_NODE(NOT_NODE(IS_TARGET_ACTION_DONE_DURING_MOVE_COMMAND_NODE),
+                    GRANTS_ANOTHER_ACTION_TO_TARGET_ON_MAP_NODE,
+                    RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE,
+                ),
+            ),
+        ),
+    ));
+}

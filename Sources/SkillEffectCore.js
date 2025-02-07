@@ -580,6 +580,33 @@ class NumberOperationNode extends NumberNode {
     }
 }
 
+class EnsureMinNode extends NumberOperationNode {
+    #minNode;
+
+    /**
+     * @param {number|NumberNode} child
+     * @param {number|NumberNode} min
+     */
+    constructor(child, min) {
+        super(child);
+        this.#minNode = NumberNode.makeNumberNodeFrom(min);
+    }
+
+    evaluateChildren(env) {
+        return super.evaluateChildren(env)[0];
+    }
+
+    evaluate(env) {
+        let value = this.evaluateChildren(env);
+        let min = this.#minNode.evaluate(env);
+        let result = MathUtil.ensureMin(value, min);
+        env?.trace(`[EnsureMinNode] (value: ${value}, min: ${min}) => ${result}`);
+        return result;
+    }
+}
+
+const ENSURE_MIN_NODE = (child, min) => new EnsureMinNode(child, min);
+
 class EnsureMaxNode extends NumberOperationNode {
     #maxNode;
 

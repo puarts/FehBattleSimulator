@@ -7227,6 +7227,7 @@ class BattleSimulatorBase {
             }
 
             self.endUnitActionAndGainPhaseIfPossible(unit);
+            let isCantoActivating = unit.isCantoActivating;
             unit.deactivateCanto();
             unit.applyEndActionSkills();
             // 同時タイミングに付与された天脈を消滅させる
@@ -7719,6 +7720,7 @@ class BattleSimulatorBase {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let func = function () {
+            let isCantoEndAction = unit.isCantoActivating;
             unit.isActionDoneDuringMoveCommand = false;
             if (enableSoundEffect) {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
@@ -7754,10 +7756,9 @@ class BattleSimulatorBase {
                 }
                 self.updateAllUnitSpur();
             }
-
             if (unit.isActionDone) {
                 unit.isActionDoneDuringMoveCommand = true;
-                unit.applyEndActionSkills();
+                unit.applyEndActionSkills(isCantoEndAction);
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
             }
@@ -7765,7 +7766,7 @@ class BattleSimulatorBase {
             if (!unit.isActionDone && endAction) {
                 unit.endAction();
                 unit.deactivateCanto();
-                unit.applyEndActionSkills();
+                unit.applyEndActionSkills(isCantoEndAction);
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
             }

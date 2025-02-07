@@ -833,6 +833,8 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
     }
 }
 
+const NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(1);
+const NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(2);
 const NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(3);
 
 class NumOfFoesAlliesWithinNSpacesNode extends NumOfTargetsAlliesWithinNSpacesNode {
@@ -4165,6 +4167,8 @@ class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
     }
 }
 
+const GRANTS_ANOTHER_ACTION_TO_TARGET_ON_MAP_NODE = new GrantsAnotherActionToTargetOnMapNode();
+
 class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -4176,6 +4180,8 @@ class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
         unit.reEnablesCantoOnMap();
     }
 }
+
+const RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE = new ReEnablesCantoToTargetOnMapNode();
 
 class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
     static {
@@ -4557,13 +4563,16 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
         let unit = this.getUnit(env);
         if (!unit.oneTimeActionPerTurnActivatedSet.has(this._id)) {
             unit.oneTimeActionPerTurnActivatedSet.add(this._id);
-            env.debug(`${unit.nameWithGroup}は1ターン1回の補助効果（${this._id}）をこのターン初めて発動`);
+            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）をこのターン初めて発動`);
             return this.evaluateChildren(env);
         } else {
-            env.debug(`${unit.nameWithGroup}は1ターン1回の補助効果（${this._id}）を発動済み`);
+            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）を発動済み`);
         }
     }
 }
+
+const TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE = (id, ...nodes) =>
+    new TargetsOncePerTurnSkillEffectNode(id, ...nodes);
 
 class TargetsRestSupportSkillAvailableTurnNode extends SkillEffectNode {
     static {
@@ -4771,3 +4780,18 @@ class CanActivateAttackerSpecialNode extends BoolNode {
 }
 
 const CAN_ACTIVATE_ATTACKER_SPECIAL_NODE = new CanActivateAttackerSpecialNode();
+
+class IsTargetActionDoneDuringMoveCommandNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isActionDoneDuringMoveCommand;
+        env.debug(`${unit.nameWithGroup}はこの移動中行動終了したか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_ACTION_DONE_DURING_MOVE_COMMAND_NODE = new IsTargetActionDoneDuringMoveCommandNode();
