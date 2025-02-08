@@ -325,8 +325,22 @@
 }
 
 // Duo Skill
-// Grants the following status to unit and allies within 2 spaces of unit for 1 turn: "neutralizes foe's bonuses during combat."
-// Applies (Divine Vein (Stone)) to unit's space and spaces within 2 spaces of unit for 2 turns.
+{
+    let skillId = Hero.DuoRhea;
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(skillId,
+        new SkillEffectNode(
+            // Grants the following status to unit and allies within 2 spaces of unit for 1 turn:
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // "neutralizes foe's bonuses during combat."
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            ),
+            // Applies (Divine Vein (Stone)) to unit's space and spaces within 2 spaces of unit for 2 turns.
+            FOR_EACH_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Stone, TARGET_GROUP_NODE, 1),
+            ),
+        ),
+    );
+}
 
 {
     let skillId = Weapon.Spear;

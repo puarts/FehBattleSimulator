@@ -622,6 +622,8 @@ class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
     }
 }
 
+const SPACES_WITHIN_N_SPACES_OF_TARGET_NODE = n => new SpacesWithinNSpacesOfTargetNode(n);
+
 class SpacesOfTargetNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -3786,6 +3788,8 @@ class ApplyDivineVeinNode extends SkillEffectNode {
         tile.reserveDivineVein(divineVein, groupId, turns);
     }
 }
+
+const APPLY_DIVINE_VEIN_NODE = (divineVein, group, turns) => new ApplyDivineVeinNode(divineVein, group, turns);
 
 // Tileへの効果 END
 
