@@ -235,6 +235,8 @@ class SkillEffectNode {
     }
 }
 
+const SKILL_EFFECT_NODE = (...nodes) => new SkillEffectNode(...nodes);
+
 /**
  * @abstract
  */
@@ -504,11 +506,14 @@ class NotNode extends BoolNode {
      * @param {boolean|BoolNode} value
      */
     constructor(value) {
-        super(BoolNode.makeBoolNodeFrom(value));
+        super();
+        this._boolNode = BoolNode.makeBoolNodeFrom(value);
     }
 
     evaluate(env) {
-        return !this.evaluateChildren(env)[0];
+        let result = !this._boolNode.evaluate(env);
+        env.trace(`[NotNode] ${result}`);
+        return result;
     }
 }
 
@@ -849,6 +854,39 @@ class IfNode extends SkillEffectNode {
 const IF_NODE = (condNode, ...stmtNodes) => new IfNode(condNode, ...stmtNodes);
 
 const UNLESS_NODE = (condNode, ...stmtNodes) => IF_NODE(NOT_NODE(condNode), ...stmtNodes);
+
+class IfElseNode extends SkillEffectNode {
+    /** @type {BoolNode} */
+    #condNode;
+
+    /**
+     * @param {BoolNode} condNode
+     * @param {number|NumberNode} trueNode
+     * @param {number|NumberNode} falseNode
+     */
+    constructor(condNode, trueNode, falseNode) {
+        super(NumberNode.makeNumberNodeFrom(trueNode), NumberNode.makeNumberNodeFrom(falseNode));
+        this.#condNode = condNode;
+    }
+
+    /**
+     * @returns {NumberNode[]}
+     */
+    getChildren() {
+        return super.getChildren();
+    }
+
+    evaluate(env) {
+        let condResult = this.#condNode.evaluate(env);
+        let index = condResult ? 0 : 1;
+        env?.trace(`[IfThenElseNode] 条件を評価: ${condResult}`)
+        let evalNode = condResult ? 'IF' : 'ELSE';
+        env?.trace(`[IfThenElseNode] ${evalNode}を評価`);
+        this.getChildren()[index].evaluate(env);
+    }
+}
+
+const IF_ELSE_NODE = (condNode, trueNode, falseNode) => new IfElseNode(condNode, trueNode, falseNode);
 
 class TernaryConditionalNumberNode extends NumberNode {
     /** @type {BoolNode} */

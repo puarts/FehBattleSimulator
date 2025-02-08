@@ -2871,6 +2871,8 @@ class RestoreTargetHpNode extends FromPositiveNumberNode {
     }
 }
 
+const RESTORE_TARGET_HP_NODE = n => new RestoreTargetHpNode(n);
+
 class ForEachNode extends SkillEffectNode {
 }
 
@@ -4736,6 +4738,21 @@ class HasTargetAttackedNode extends BoolNode {
 }
 
 const HAS_TARGET_ATTACKED_NODE = new HasTargetAttackedNode();
+
+class HasTargetBeenAttackedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isAttackedDone;
+        env.debug(`${unit.nameWithGroup}はこのターン攻撃をされたか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_BEEN_ATTACKED_NODE = new HasTargetBeenAttackedNode();
 
 class IsAnotherActionByAssistActivatedInCurrentTurnOnTargetsTeamNode extends BoolNode {
     static {

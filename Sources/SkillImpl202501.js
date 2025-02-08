@@ -194,15 +194,111 @@
     ));
 }
 
-// Pure Dragon Wall
-// If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
-// If unit's Res > foe's Res, reduces damage from attacks during combat and from area-of-effect Specials (excluding Rokkr area-of-effect Specials) by the following percentage: if it is unit's first combat initiated by unit or first combat initiated by foe in player phase or enemy phase, percentage = difference between stats × 6 (max 60%); otherwise, percentage = difference between stats × 4 (max 40%).
-// Inflicts Atk/Def/Res-5 on foe, deals damage = X% of unit's
-// Res (if it is unit's first combat initiated by unit or first combat
-// initiated by foe in player phase or enemy phase, X = 30;
-// otherwise, X = 20; including from area-of-effect Specials;
-// excluding Rokkr area-of-effect Specials), reduces damage from foe's attacks by X% of unit's Res (including from area-of-effect Specials; excluding Rokkr area-of-effect Specials), and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also, if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5, inflicts Special cooldown count+1 on foe (cannot exceed the foe's maximum Special cooldown) and grants Special cooldown count-1 to unit before foe's first attack during combat.
-// At start of turn and after combat, if dragon or beast ally is on player team or if unit is within 2 spaces of an ally, restores 10 HP to unit.
+{
+    let skillId = PassiveB.PureDragonWall;
+    // Pure Dragon Wall
+    // If a skill compares unit's Res to a foe's or ally's Res,
+    // treats unit's Res as if granted +5.
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 0, 0, 5));
+
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's Res > foe's Res,
+        IF_NODE(UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE,
+            // reduces damage from attacks during combat and from area-of-effect Specials
+            REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(
+                COND_OP(
+                    // (excluding Rokkr area-of-effect Specials) by the following percentage:
+                    // if it is unit's first combat initiated by unit or first combat initiated by foe in player phase or enemy phase,
+                    IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE,
+                    // percentage = difference between stats × 6 (max 60%); otherwise,
+                    // percentage = difference between stats × 4 (max 40%).
+                    ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE, 6), 60),
+                    ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE, 4), 40),
+                ),
+            ),
+        ),
+        X_NUM_NODE(
+            // deals damage = X% of unit's Res
+            UNIT_DEALS_DAMAGE_BEFORE_COMBAT_NODE(PERCENTAGE_NODE(READ_NUM_NODE, UNITS_RES_AT_START_OF_COMBAT_NODE)),
+            // reduces damage from foe's attacks by X% of unit's Res (including from area-of-effect Specials; excluding Rokkr area-of-effect Specials),
+            REDUCES_DAMAGE_BEFORE_COMBAT_NODE(PERCENTAGE_NODE(READ_NUM_NODE, UNITS_RES_AT_START_OF_COMBAT_NODE)),
+            // (if it is unit's first combat initiated by unit or first combat
+            // initiated by foe in player phase or enemy phase, X = 30; otherwise, X = 20;
+            // including from area-of-effect Specials; excluding Rokkr area-of-effect Specials),
+            COND_OP(
+                IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE,
+                30, 20
+            )
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's Res > foe's Res,
+        APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+            IF_NODE(UNITS_RES_GT_FOES_RES_DURING_COMBAT_NODE,
+                // reduces damage from attacks during combat and from area-of-effect Specials
+                // (excluding Rokkr area-of-effect Specials) by the following percentage:
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(
+                    COND_OP(
+                        // if it is unit's first combat initiated by unit or first combat initiated by foe in player phase or enemy phase,
+                        IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE,
+                        // percentage = difference between stats × 6 (max 60%); otherwise,
+                        // percentage = difference between stats × 4 (max 40%).
+                        ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 6), 60),
+                        ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 4), 40),
+                    ),
+                ),
+            ),
+        ),
+        // Inflicts Atk/Def/Res-5 on foe,
+        INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(5, 0, 5, 5),
+        APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+            IF_ELSE_NODE(
+                IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE,
+                SKILL_EFFECT_NODE(
+                    // deals damage = X% of unit's Res
+                    UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(30, UNITS_RES_DURING_COMBAT_NODE)),
+                    // reduces damage from foe's attacks by X% of unit's Res (including from area-of-effect Specials; excluding Rokkr area-of-effect Specials),
+                    REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(30, UNITS_RES_DURING_COMBAT_NODE)),
+                ),
+                SKILL_EFFECT_NODE(
+                    // deals damage = X% of unit's Res
+                    UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(20, UNITS_RES_DURING_COMBAT_NODE)),
+                    // reduces damage from foe's attacks by X% of unit's Res (including from area-of-effect Specials; excluding Rokkr area-of-effect Specials),
+                    REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(20, UNITS_RES_DURING_COMBAT_NODE)),
+                ),
+            ),
+        ),
+        // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat,
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        // and also,
+        APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+            // if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5,
+            IF_NODE(
+                AND_NODE(
+                    CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                    GTE_NODE(UNITS_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_RES_DURING_COMBAT_NODE, 5))
+                ),
+                // inflicts Special cooldown count+1 on foe (cannot exceed the foe's maximum Special cooldown) and
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                // grants Special cooldown count-1 to unit before foe's first attack during combat.
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            ),
+        ),
+    ));
+    // At start of turn and after combat,
+    let nodeFunc = () => new SkillEffectNode(
+        // if dragon or beast ally is on player team or if unit is within 2 spaces of an ally,
+        IF_NODE(OR_NODE(
+            GT_NODE(COUNT_IF_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE), 0),
+            IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // restores 10 HP to unit.
+            RESTORE_TARGET_HP_NODE(10),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_COMBAT_HOOKS.addSkill(skillId, nodeFunc);
+}
 
 // C Lower Ground
 // Foes with Range = 1 cannot warp into spaces within 3 spaces

@@ -874,6 +874,8 @@ class ReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     }
 }
 
+const REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE = n => new ReducesDamageExcludingAoeSpecialsNode(n);
+
 class ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode extends ApplyingNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -931,6 +933,8 @@ class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
     }
 }
 
+const REDUCES_DAMAGE_BEFORE_COMBAT_NODE = n => new ReducesDamageBeforeCombatNode(n);
+
 class ReducesDamageByAoeNode extends ReducesDamageBeforeCombatNode {
 }
 
@@ -949,6 +953,8 @@ class ReducesDamageFromAoeSpecialsByXPercentNode extends ApplyingNumberNode {
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${unit.battleContext.damageReductionRatioForPrecombat}`);
     }
 }
+
+const REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE = x => new ReducesDamageFromAoeSpecialsByXPercentNode(x);
 
 /**
  * reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials),
