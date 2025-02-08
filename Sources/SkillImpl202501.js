@@ -82,10 +82,31 @@
     ));
 }
 
-// JAC Assault Rush
-// At start of turn, if unit's HP = 100% or any foe is within 3
-// columns or 3 rows centered on unit, grants Atk+6, "unit can move 1 extra space (that turn only, does not stack)," and [Chargel to unit for 1 turn.
-// If unit initiates combat, grants Atk+5 to unit and grants Special cooldown count-1 to unit before unit's first attack during combat.
+// Assault Rush
+{
+    let skillId = PassiveC.AssaultRush;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit's HP = 100% or any foe is within 3 columns or 3 rows centered on unit,
+        IF_NODE(OR_NODE(IS_UNITS_HP_GTE_100_PERCENT_AT_START_OF_TURN_NODE, IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_FOE_NODE),
+            // grants Atk+6,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 0, 0),
+            // "unit can move 1 extra space (that turn only, does not stack)," and
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.MobilityIncreased),
+            // [Chargel to unit for 1 turn.
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Charge),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // grants Atk+5 to unit and
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 0, 0, 0),
+            // grants Special cooldown count-1 to unit before unit's first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+}
 
 // Lion's Heart
 // Mt: 16

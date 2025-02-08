@@ -204,6 +204,7 @@ class IsUnitsHpGteNPercentAtStartOfTurnNode extends PercentageCondNode {
 }
 
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = new IsUnitsHpGteNPercentAtStartOfTurnNode(25);
+const IS_UNITS_HP_GTE_100_PERCENT_AT_START_OF_TURN_NODE = new IsUnitsHpGteNPercentAtStartOfTurnNode(100);
 
 class IsUnitsHpLteNPercentAtStartOfTurnNode extends PercentageCondNode {
     evaluate(env) {
