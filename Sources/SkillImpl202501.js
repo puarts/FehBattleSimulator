@@ -39,33 +39,6 @@
     ));
 }
 
-// Eagle's Heart
-// Mt: 16
-// Rng: 1
-// Enables /Canto (Rem. +7; Min 2)) .
-// Accelerates Special trigger (cooldown count-1).
-// After Canto,
-// if unit entered combat on the current turn,
-// grants another action to unit,
-// and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
-// If unit initiates combat or the number of allies adjacent to unit ≤ 1,
-// inflicts penalty on foe's Atk/Def = 20% of unit's Def at start of combat + 6,
-// unit deals +X x 5
-// damage (X = number of Bonus effects active on unit,
-// excluding stat bonuses + number of Penalty effects active on foe,
-// excluding stat penalties; max 5; excluding area-of-effect Specials),
-// and reduces damage from foe's attacks by X x 3 during combat (excluding area-of-effect Specials),
-// and also,
-// reduces damage by an additional X × 3 when foe's attack triggers foe's Special (excluding area-of-effect Specials),
-// grants Special cooldown count-1 to unit before unit's first attack during combat,
-// and restores 7 HP to unit after combat.
-
-// Sly Sturdy Blow
-// If unit initiates combat, grants Atk+8 and Def+ 10 to unit and unit makes a guaranteed follow-up attack during combat, and also, if number of (Bonus) effects active on unit ≥ 2, excluding stat bonuses, or if number of (Penalty) effects active on foe ≥ 2, excluding stat penalties, unit deals +5 damage during combat (including when dealing damage with an area-of-effect Special; excluding Rokkr area-of-effect Specials).
-
-// Sly Sturdy Blow
-// If unit initiates combat, grants Atk+8 and Def+ 10 to unit and unit makes a guaranteed follow-up attack during combat, and also, if number of (Bonus) effects active on unit ≥ 2, excluding stat bonuses, or if number of (Penalty) effects active on foe ≥ 2, excluding stat penalties, unit deals +5 damage during combat (including when dealing damage with an area-of-effect Special; excluding Rokkr area-of-effect Specials).
-
 // Pure Storm
 // At start of turn and after unit acts (if Canto triggers, after Canto), inflicts Atk/Def-7, (Exposure), and (Sabotage) on closest foes and foes within 2 spaces of those foes through their next actions.
 // If target has entered combat aside from this combat on the current turn and unit initiates combat, target cannot trigger their Special during combat.

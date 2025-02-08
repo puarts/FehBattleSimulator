@@ -2172,6 +2172,8 @@
 {
     // 鬼神飛燕の掩撃
     setSlyEffect(PassiveA.SlySwiftSparrow, 8, 8, 0, 0);
+    // 鬼神金剛の掩撃
+    setSlyEffect(PassiveA.SlySturdyBlow, 8, 0, 10, 0);
     // 鬼神明鏡の掩撃
     setSlyEffect(PassiveA.SlyMirror, 8, 0, 0, 10);
 }
