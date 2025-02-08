@@ -40,11 +40,47 @@
 }
 
 // Pure Storm
-// At start of turn and after unit acts (if Canto triggers, after Canto), inflicts Atk/Def-7, (Exposure), and (Sabotage) on closest foes and foes within 2 spaces of those foes through their next actions.
-// If target has entered combat aside from this combat on the current turn and unit initiates combat, target cannot trigger their Special during combat.
-// If unit initiates combat or the number of allies adjacent to unit ≤ 1, inflicts Atk/Def-5 on foe, deals damage = 20% of unit's Def (excluding area-of-effect Specials), and reduces the percentage of foe's non-Special
-// "reduces damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
-// If unit initiates combat and number of allies adjacent to unit ≤ 1 after combat, grants another action to unit (once per turn; if a skill effect moves unit after combat, this effect occurs based on unit's final placement after that movement).
+{
+    let skillId = PassiveB.PureStorm;
+    // At start of turn and after unit acts (if Canto triggers, after Canto),
+    let nodeFunc = () => SKILL_EFFECT_NODE(
+        // on closest foes and foes within 2 spaces of those foes through their next actions.
+        FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            // inflicts Atk/Def-7,
+            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(7, 0, 7, 0),
+            // (Exposure), and (Sabotage)
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Exposure, StatusEffectType.Sabotage),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If target has entered combat aside from this combat on the current turn and unit initiates combat,
+        IF_NODE(AND_NODE(HAS_FOE_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE, DOES_UNIT_INITIATE_COMBAT_NODE),
+            // target cannot trigger their Special during combat.
+            FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE,
+        ),
+        // If unit initiates combat or the number of allies adjacent to unit ≤ 1,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE, 1)),
+            // inflicts Atk/Def-5 on foe,
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(5, 0, 5, 0),
+            // deals damage = 20% of unit's Def (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_DEF_DURING_COMBAT_NODE),
+            // and reduces the percentage of foe's non-Special "reduces damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+    AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat and number of allies adjacent to unit ≤ 1 after combat,
+        IF_NODE(OR_NODE(DOES_TARGET_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE, 1)),
+            // grants another action to unit
+            GRANTS_ANOTHER_ACTION_NODE,
+            // (once per turn; if a skill effect moves unit after combat,
+            // this effect occurs based on unit's final placement after that movement).
+        ),
+    ));
+}
 
 // JAC Assault Rush
 // At start of turn, if unit's HP = 100% or any foe is within 3
@@ -259,8 +295,8 @@
     let nodeFunc = () => new SkillEffectNode(
         // if dragon or beast ally is on player team or if unit is within 2 spaces of an ally,
         IF_NODE(OR_NODE(
-            GT_NODE(COUNT_IF_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE), 0),
-            IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+                GT_NODE(COUNT_IF_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE), 0),
+                IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
             // restores 10 HP to unit.
             RESTORE_TARGET_HP_NODE(10),
         ),

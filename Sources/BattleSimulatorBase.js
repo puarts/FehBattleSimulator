@@ -7229,10 +7229,10 @@ class BattleSimulatorBase {
                 self.writeLogLine(unit.getNameWithGroup() + "は行動終了");
             }
 
-            self.endUnitActionAndGainPhaseIfPossible(unit);
             let isCantoActivating = unit.isCantoActivating;
+            self.endUnitActionAndGainPhaseIfPossible(unit);
             unit.deactivateCanto();
-            unit.applyEndActionSkills();
+            unit.applyEndActionSkills(isCantoActivating);
             // 同時タイミングに付与された天脈を消滅させる
             g_appData.map.applyReservedDivineVein();
         }, serial);

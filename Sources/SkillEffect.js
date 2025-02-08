@@ -1336,6 +1336,14 @@ class HasTargetEnteredCombatDuringCurrentTurnNode extends BoolNode {
 
 const HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new HasTargetEnteredCombatDuringCurrentTurnNode();
 
+class HasFoeEnteredCombatDuringCurrentTurnNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const HAS_FOE_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new HasFoeEnteredCombatDuringCurrentTurnNode();
+
 class HasSkillOwnerEnteredCombatDuringCurrentTurnNode extends HasTargetEnteredCombatDuringCurrentTurnNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
@@ -3981,6 +3989,9 @@ class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
     }
 }
 
+const INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE =
+    (...stats) => new InflictsStatsMinusOnTargetOnMapNode(...stats);
+
 class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     evaluate(env) {
         let unit = env.target;
@@ -4015,6 +4026,8 @@ const GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE =
 
 class InflictsStatusEffectsOnTargetOnMapNode extends GrantsStatusEffectsOnTargetOnMapNode {
 }
+
+const INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE = (...es) => new InflictsStatusEffectsOnTargetOnMapNode(...es);
 
 // TODO: rename
 class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
@@ -4162,6 +4175,8 @@ class GrantsAnotherActionNode extends SkillEffectNode {
         }
     }
 }
+
+const GRANTS_ANOTHER_ACTION_NODE = new GrantsAnotherActionNode();
 
 class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
     static {
@@ -4796,6 +4811,7 @@ class CanActivateAttackerSpecialNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         env.debug(`アタッカーは奥義を発動することができるか: ${env.canActivateAttackerSpecial}`);
         return env.canActivateAttackerSpecial;
