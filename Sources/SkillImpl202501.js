@@ -109,16 +109,64 @@
 }
 
 // Lion's Heart
-// Mt: 16
-// Rng: 1
-// Enables [Canto (Rem. +1; Min 2)) •
-// Accelerates Special trigger (cooldown count-1).
-// After Canto, if unit entered combat on the current turn, grants another action to unit, and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
-// At start of turn, if unit is within 2 spaces of an ally, grants
-// "unit can move 1 extra space" to unit (that turn only; does not stack), and grants the following statuses on unit and allies within 2 spaces of unit for 1 turn: "neutralizes penalties on unit during combat" and "Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack)."
-// If unit initiates combat or is within 2 spaces of an ally,
-// grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's
-// Spd at start of combat + 5, unit deals +X x 5 damage (X = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5; excluding area-of-effect Specials), and reduces damage from foe's first attack by X x 3 during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes), and also, reduces damage by an additional X x 3 when foe's attack triggers foe's Special (excluding area-of-effect Specials), and restores 7 HP to unit after combat.
+{
+    let skillId = Weapon.LionsHeart;
+    // Mt: 16
+    // Rng: 1
+    // Enables [Canto (Rem. +1; Min 2)) •
+    enablesCantoRemPlusMin(skillId, 1, 2);
+    // Accelerates Special trigger (cooldown count-1).
+
+    // After Canto,
+    // if unit entered combat on the current turn,
+    // grants another action to unit,
+    // and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+    grantsAnotherActionAfterCanto(skillId);
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants "unit can move 1 extra space" to unit (that turn only; does not stack),
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.MobilityIncreased),
+            // and grants the following statuses
+            // on unit and allies within 2 spaces of unit for 1 turn:
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // "neutralizes penalties on unit during combat" and
+                // "Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack)."
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.NeutralizesPenalties,
+                    StatusEffectType.SpecialCooldownChargePlusOnePerAttack),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's
+            // Spd at start of combat + 5,
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ADD_NODE(PERCENTAGE_NODE(15, UNITS_SPD_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            X_NUM_NODE(
+                // unit deals +X x 5 damage
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // and reduces damage from foe's first attack by X x 3 during combat
+                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // and also,
+                // reduces damage by an additional X x 3 when foe's attack triggers foe's Special (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+
+                // (X = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe,
+                // excluding stat penalties; max 5; excluding area-of-effect Specials),
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
 
 // Haze Slice
 // 3
