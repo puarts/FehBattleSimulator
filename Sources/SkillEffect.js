@@ -2503,6 +2503,8 @@ class TargetsRangeNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_RANGE_NODE = new TargetsRangeNode();
+
 class FoesRangeNode extends TargetsRangeNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);

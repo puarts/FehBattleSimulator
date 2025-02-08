@@ -279,10 +279,6 @@
                     CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                     GTE_NODE(UNITS_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_RES_DURING_COMBAT_NODE, 5))
                 ),
-                // inflicts Special cooldown count+1 on foe (cannot exceed the foe's maximum Special cooldown) and
-                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
-                // grants Special cooldown count-1 to unit before foe's first attack during combat.
-                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE(1),
             ),
         ),
     ));
@@ -300,13 +296,33 @@
     AFTER_COMBAT_HOOKS.addSkill(skillId, nodeFunc);
 }
 
-// C Lower Ground
-// Foes with Range = 1 cannot warp into spaces within 3 spaces
-// of unit and foes with Range = 2 cannot warp into spaces
-// within 4 spaces of unit (in either case, does not affect foes with Pass skills or warp effects from structures, like camps and fortresses in Rival Domains).
-// If foe with Range = 1 initiates combat against an ally within 2
-// spaces of unit, triggers (Savior) on unit.
-// If foe's Range = 1, grants Def/Res+4 to unit during combat.
+{
+    let skillId = PassiveC.LowerGround;
+    // C Lower Ground
+
+    // If foe with Range = 1 initiates combat against an ally within 2
+    // spaces of unit,
+    // triggers (Savior) on unit.
+    setSaveSkill(skillId, true);
+    // Foes with Range = 1 cannot warp into spaces within 3 spaces of unit and
+    // foes with Range = 2 cannot warp into spaces
+    // within 4 spaces of unit (in either case, does not affect foes with Pass skills or warp effects from structures,
+    // like camps and fortresses in Rival Domains).
+    UNIT_CANNOT_WARP_INTO_SPACES_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            AND_NODE(new IsTargetMeleeWeaponNode(), IS_SPACE_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
+            AND_NODE(new IsTargetRangedWeaponNode(), IS_SPACE_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE),
+        ),
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe's Range = 1,
+        IF_NODE(EQ_NODE(TARGETS_RANGE_NODE, 1),
+            // grants Def/Res+4 to unit during combat.
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(0, 0, 4, 4),
+        ),
+    ));
+}
 
 // Duo Skill
 // Grants the following status to unit and allies within 2 spaces of unit for 1 turn: "neutralizes foe's bonuses during combat."
