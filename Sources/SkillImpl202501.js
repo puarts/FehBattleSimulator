@@ -169,9 +169,24 @@
 }
 
 // Haze Slice
-// 3
-// Boosts damage by 35% of unit's Atk when Special triggers.
-// If unit initiates combat, grants Special cooldown count-1 to unit before unit's first attack and reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials).
+{
+    let skillId = Special.HazeSlice;
+    // 3
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Boosts damage by 35% of unit's Atk when Special triggers.
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(35, UNITS_ATK_DURING_COMBAT_NODE)),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // grants Special cooldown count-1 to unit before unit's first attack and
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            // reduces damage from foe's attacks by 40% during combat
+            // (excluding area-of-effect Specials).
+            REDUCE_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(40),
+        ),
+    ));
+}
 
 // Pure Atrocity
 // If unit initiates combat or is within 2 spaces of an ally,

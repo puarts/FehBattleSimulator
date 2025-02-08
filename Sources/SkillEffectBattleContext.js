@@ -977,6 +977,23 @@ class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends From
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(n);
 
+class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.damageReductionRatiosByNonDefenderSpecial.push(percentage / 100);
+        let ratios = unit.battleContext.damageReductionRatiosByNonDefenderSpecial;
+        env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${percentage}%軽減（奥義扱い）: ratios [${ratios}]`);
+    }
+}
+
+const REDUCE_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE =
+        n => new ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode(n);
+
 /**
  * reduces damage from foe's first attack by X% during combat
  */
