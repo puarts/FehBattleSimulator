@@ -4795,3 +4795,23 @@ class IsTargetActionDoneDuringMoveCommandNode extends BoolNode {
 }
 
 const IS_TARGET_ACTION_DONE_DURING_MOVE_COMMAND_NODE = new IsTargetActionDoneDuringMoveCommandNode();
+
+class IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let dcw = env.damageCalculatorWrapper;
+        if (!dcw) {
+            env.error('DamageCalculatorWrapperがありません。');
+        }
+        let result = dcw.globalBattleContext.isMiracleWithoutSpecialActivatedInCurrentTurn(unit.groupId);
+        env.debug(`${unit.nameWithGroup}の軍の奥義以外の祈りがこのターン発動したか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGETS_TEAMS_MIRACLE_WITHOUT_SPECIAL_ACTIVATED_ON_CURRENT_TURN_NODE =
+    new IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode();

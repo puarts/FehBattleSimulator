@@ -1475,17 +1475,16 @@ class DamageCalculator {
         let isRestHpGreaterOne = defUnit.restHp - totalDamage > 1;
         let isDeadWithoutMiracle = defUnit.restHp - totalDamage - currentDamage <= 0;
 
-        // 奥義/奥義以外による祈りの判定(ナンナなどの防御奥義不可はこの時点で既に考慮されている)
         if (canActivateAnyMiracles &&
             isRestHpGreaterOne &&
             isDeadWithoutMiracle) {
-            // どの祈りが発動するのか判定する
             let logMiracle = message => {
                 if (this.isLogEnabled) {
                     this.writeLog(message);
                     this.writeSimpleLog(message);
                 }
             }
+            // どの祈りが発動するのか判定する
             if (canActivateNonSpecialMiracleAndHeal) {
                 logMiracle(`奥義以外の祈り+戦闘後99回復効果発動、${defUnit.getNameWithGroup()}はHP1残る`);
                 defUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated = true;

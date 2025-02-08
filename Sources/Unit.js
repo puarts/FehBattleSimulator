@@ -2838,7 +2838,6 @@ class Unit extends BattleMapElement {
         this.endAction();
     }
 
-    applyEndActionSkills() {
     applyEndActionSkills(isCantoEndAction = false) {
         // ユニットが死んだ場合は発動しないはず
         // TODO: 今後死後に発動する効果を持つスキルが実装されたら修正する
@@ -5974,13 +5973,11 @@ class Unit extends BattleMapElement {
             if (this.hasStatusEffect(StatusEffectType.ShieldFlying)) {
                 return true;
             }
-        } else if (effective === EffectiveType.Armor
-        ) {
+        } else if (effective === EffectiveType.Armor) {
             if (this.hasStatusEffect(StatusEffectType.ShieldArmor)) {
                 return true;
             }
-        } else if (effective === EffectiveType.Dragon
-        ) {
+        } else if (effective === EffectiveType.Dragon) {
             if (this.hasStatusEffect(StatusEffectType.ShieldDragon)) {
                 return true;
             }
@@ -5991,6 +5988,8 @@ class Unit extends BattleMapElement {
                 return true;
             }
         }
+
+        if (this.battleContext.invalidatedEffectives.includes(effective)) return true;
 
         switch (this.weapon) {
             case Weapon.Marute:

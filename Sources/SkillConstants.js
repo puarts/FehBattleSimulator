@@ -3839,6 +3839,24 @@ const EffectiveType = {
     Bow: 13,
 }
 
+const EFFECTIVE_TYPE_NAMES = new Map([
+    [EffectiveType.None, "-"],
+    [EffectiveType.Armor, "重装"],
+    [EffectiveType.Infantry, "歩行"],
+    [EffectiveType.Cavalry, "騎馬"],
+    [EffectiveType.Flying, "飛行"],
+    [EffectiveType.Dragon, "竜"],
+    [EffectiveType.Beast, "獣"],
+    [EffectiveType.Tome, "魔法"],
+    [EffectiveType.Sword, "剣"],
+    [EffectiveType.Lance, "槍"],
+    [EffectiveType.Axe, "斧"],
+    [EffectiveType.ColorlessBow, "無色弓"],
+    [EffectiveType.Staff, "杖"],
+    [EffectiveType.Dagger, "暗器"],
+    [EffectiveType.Bow, "弓"],
+]);
+
 const ColorType = {
     Unknown: -1,
     Red: 0,

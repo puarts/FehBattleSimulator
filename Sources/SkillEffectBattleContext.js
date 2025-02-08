@@ -1423,7 +1423,7 @@ class GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNod
     }
 }
 
-class CanTargetActivateNonSpecialMiracleNode extends BoolNode {
+class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1444,7 +1444,7 @@ class CanTargetActivateNonSpecialMiracleNode extends BoolNode {
     }
 }
 
-const CAN_TARGET_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = n => new CanTargetActivateNonSpecialMiracleNode(n);
+const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = n => new TargetCanActivateNonSpecialMiracleNode(n);
 
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 
@@ -2026,7 +2026,7 @@ class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
 const CALCULATES_TARGETS_DAMAGE_FROM_STAFF_LIKE_OTHER_WEAPONS_NODE =
     new CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode();
 
-class IsSaviorTriggeredNode extends BoolNode {
+class IsTargetsSaviorTriggeredNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2039,7 +2039,7 @@ class IsSaviorTriggeredNode extends BoolNode {
     }
 }
 
-const IS_SAVIOR_TRIGGERED_NODE = new IsSaviorTriggeredNode();
+const IS_TARGETS_SAVIOR_TRIGGERED_NODE = new IsTargetsSaviorTriggeredNode();
 
 class TargetCanCounterattackBeforeTargetsFoesFirstAttackNode extends SkillEffectNode {
     static {
@@ -2055,3 +2055,18 @@ class TargetCanCounterattackBeforeTargetsFoesFirstAttackNode extends SkillEffect
 
 const TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE =
     new TargetCanCounterattackBeforeTargetsFoesFirstAttackNode()
+
+class TargetNeutralizesEffectiveAgainstXNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let e = this.evaluateChildren(env);
+        unit.battleContext.invalidatedEffectives.push(e);
+        env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(e)}特攻を無効`);
+    }
+}
+
+const TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE = e => new TargetNeutralizesEffectiveAgainstXNode(e);

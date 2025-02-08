@@ -4503,6 +4503,9 @@ class BattleSimulatorBase {
      * @param  {UnitGroupType} group - グループ。どちらのターン開始時かを渡す。決闘の場合は引数を指定しない。
      */
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
+        if (group === UnitGroupType.Ally) {
+            g_appData.globalBattleContext.initContextInCurrentTurn();
+        }
         g_appData.isCombatOccuredInCurrentTurn = false;
         g_appData.globalBattleContext.initContextInCurrentTurnsPhase(group);
 

@@ -129,22 +129,70 @@
 // Grants bonus to unit's Atk/Spd during combat = number
 // of allies on the map with the (Incited) effect + 2 (excluding unit; max 5).
 
-// Devoted Breath
-// Mt: 16
-// Rng: 1
-// Accelerates Special trigger (cooldown count-1).
-// Neutralizes "effective against dragons" bonuses.
-// If foe's Range = 2, calculates damage using the lower of foe's
-// Def or Res.
-// For allies within 3 spaces of unit, grants Def/Res+5 and reduces damage from foe's first attack by 7 during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice,
-// " it means the first and second
-// strikes).
-// For allies within 3 spaces of unit, if foe initiates combat, ally's HP > 1, and foe would reduce ally's HP to 0 during combat, ally survives with 1 HP (once per turn; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce unit's HP to 0; when any other such effect triggers, this effect will trigger too).
-// If foe initiates combat or foe's HP ≥ 75% at start of combat,
-// grants bonus to unit's Atk/Def/Res = 20% of unit's Res at
-// start of combat + 5, unit deals +X damage (X = number of
-// allies within 3 spaces of unit × 5; max 15; if unit triggers Savior, value is treated as 15; excluding area-of-effect Specials), reduces damage from foe's attacks by X (excluding area-of-effect Specials), unit makes a guaranteed follow-up attack, and reduces the percentage of foe's non-Special
-// "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials), and also, if unit's HP > 1 and foe would reduce unit's HP to 0, unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
+{
+    let skillId = Weapon.DevotedBreath;
+    // Devoted Breath
+    // Mt: 16
+    // Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+    // If foe's Range = 2, calculates damage using the lower of foe's Def or Res.
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // grants Def/Res+5 and reduces damage from foe's first attack by 7 during combat
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(0, 0, 5, 5),
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // For allies within 3 spaces of unit,
+        // grants Def/Res+5 and reduces damage from foe's first attack by 7 during combat
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // reduces damage from foe's first attack by 7 during combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice,
+            // " it means the first and second strikes).
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+        ),
+        // For allies within 3 spaces of unit, if foe initiates combat, ally's HP > 1,
+        // and foe would reduce ally's HP to 0 during combat, ally survives with 1 HP
+        // (once per turn; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce unit's HP to 0; when any other such effect triggers,
+        // this effect will trigger too).
+        TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_ONCE_PER_TURN_NODE,
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Neutralizes "effective against dragons" bonuses.
+        TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE(EffectiveType.Dragon),
+        // If foe initiates combat or foe's HP ≥ 75% at start of combat,
+        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Def/Res =
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
+                // 20% of unit's Res at start of combat + 5,
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
+                // reduces damage from foe's attacks by X (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(READ_NUM_NODE),
+                // (X = number of allies within 3 spaces of unit × 5; max 15; if unit triggers Savior,
+                // value is treated as 15; excluding area-of-effect Specials),
+                COND_OP(IS_TARGETS_SAVIOR_TRIGGERED_NODE,
+                    15,
+                    ENSURE_MAX_NODE(MULT_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 5), 15)
+                ),
+            ),
+            // unit makes a guaranteed follow-up attack,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and also,
+            // if unit's HP > 1 and foe would reduce unit's HP to 0,
+            // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
+            TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(0),
+        ),
+    ));
+}
 
 // Pure Dragon Wall
 // If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
@@ -558,7 +606,7 @@
         // For target ally within 3 rows or 3 columns centered on unit,
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // if Savior is not triggered,
-            IF_NODE(NOT_NODE(IS_SAVIOR_TRIGGERED_NODE),
+            IF_NODE(NOT_NODE(IS_TARGETS_SAVIOR_TRIGGERED_NODE),
                 // (If support partner is on player team, targets any support partner;
                 // otherwise, targets ally with the highest max HP on player team, excluding unit.)
                 // that ally attacks twice during their combat.
@@ -1323,7 +1371,7 @@
             // and also,
             // if unit's HP > 1 and foe would reduce unit's HP to 0,
             // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
-            CAN_TARGET_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(0),
+            TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(0),
         ),
 
         // If unit initiates combat or is within 2 spaces of an ally,

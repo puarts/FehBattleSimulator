@@ -56,6 +56,10 @@ class GlobalBattleContext {
         this.miracleAndHealWithoutSpecialActivationCount = {};
         this.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
         this.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
+        // 現在ターンで祈りが発動した回数
+        this.miracleWithoutSpecialActivationCountInCurrentTurn = {};
+        this.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally] = 0;
+        this.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy] = 0;
 
         // 現在ターンで行われた戦闘の回数
         // 自軍・敵軍は別カウントなのでこの変数1つで管理する
@@ -269,5 +273,14 @@ class GlobalBattleContext {
         this.isAnotherActionByAssistActivatedInCurrentTurn[groupId] = false;
         this.numOfCombatOnCurrentTurn = 0;
         this.removedUnitCountInCombatInCurrentTurnsPhase[groupId] = 0;
+    }
+
+    initContextInCurrentTurn() {
+        this.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally] = 0;
+        this.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy] = 0;
+    }
+
+    isMiracleWithoutSpecialActivatedInCurrentTurn(groupId) {
+        return this.miracleWithoutSpecialActivationCountInCurrentTurn[groupId] >= 1;
     }
 }

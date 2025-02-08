@@ -1864,7 +1864,7 @@
             // and also,
             // if unit's HP > 1 and foe would reduce unit's HP to 0,
             // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
-            new CanTargetActivateNonSpecialMiracleNode(100),
+            new TargetCanActivateNonSpecialMiracleNode(100),
         )
     ));
 }
@@ -3668,7 +3668,7 @@ function setDiscord(skillId, statsRatios) {
             // and also,
             // if unit's HP > 1 and foe would reduce unit's HP to 0,
             // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
-            new CanTargetActivateNonSpecialMiracleNode(0),
+            new TargetCanActivateNonSpecialMiracleNode(0),
             // If foe initiates combat or foe's HP ≥ 75% at start of combat,
             IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 // restores 7 HP to unit after combat.
@@ -4756,7 +4756,7 @@ function setDiscord(skillId, statsRatios) {
                 // and foe would reduce unit’s HP to 0,
                 // unit survives with 1 HP.
                 // (Once per combat. Does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0.)
-                new CanTargetActivateNonSpecialMiracleNode(0),
+                new TargetCanActivateNonSpecialMiracleNode(0),
             )
         ),
     ));

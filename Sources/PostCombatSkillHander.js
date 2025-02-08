@@ -1342,7 +1342,8 @@ class PostCombatSkillHander {
 
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
         if (attackUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated) {
-            g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
+            this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
+            this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
             attackUnit.reserveHeal(99);
         }
         let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit);

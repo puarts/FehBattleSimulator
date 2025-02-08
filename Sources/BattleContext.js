@@ -498,6 +498,9 @@ class BattleContext {
         // 奥義によるダメージを与えた敵の数
         this.damageCountOfSpecialAtTheSameTime = 0;
 
+        // 特攻無効
+        this.invalidatedEffectives = [];
+
         //
         // フック関数
         // 固定ダメージ
