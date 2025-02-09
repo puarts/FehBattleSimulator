@@ -364,7 +364,7 @@ class PostCombatSkillHander {
                     break;
             }
         }
-        let env = new AfterCombatEnv(this, targetUnit, enemyUnit);
+        let env = new AfterCombatEnv(this, targetUnit, enemyUnit, this.map);
         env.setName('戦闘後').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {

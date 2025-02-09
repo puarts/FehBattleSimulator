@@ -192,11 +192,43 @@
 }
 
 // Pure Atrocity
-// If unit initiates combat or is within 2 spaces of an ally,
-// inflicts Spd/Def-5 on foe, deals damage = 25% of unit's
-// Atk (excluding area-of-effect Specials), grants Special cooldown count-1 to unit before unit's first attack, neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks, and reduces the percentage of foe's non-Special
-// "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
-// After combat, if unit attacked, neutralizes two (Bonus) effects on target and any foe within 2 spaces of target, excluding stat bonuses (does not apply to (Bonus) effects that are applied at the same time; neutralizes the first applicable (Bonus) effects on foe's list of active effects), and applies (Divine Vein (Haze)] on target's space and on each space within 2 spaces of target's space for 1 turn.
+{
+    let skillId = PassiveB.PureAtrocity;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // inflicts Spd/Def-5 on foe,
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 5, 5, 0),
+            // deals damage = 25% of unit's Atk (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(25, UNITS_ATK_DURING_COMBAT_NODE),
+            // grants Special cooldown count-1 to unit before unit's first attack,
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and reduces the percentage of foe's non-Special
+            // "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // After combat,
+        // if unit attacked,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // on target and any foe within 2 spaces of target,
+            FOR_EACH_FOE_AND_FOES_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(2, TRUE_NODE,
+                // neutralizes two (Bonus) effects
+                // excluding stat bonuses (does not apply to (Bonus) effects that are applied at the same time; neutralizes the first applicable (Bonus) effects on foe's list of active effects),
+                NEUTRALIZES_TARGETS_N_BONUS_EFFECTS_NODE(2),
+            ),
+            // and applies (Divine Vein (Haze)] on target's space and on each space within 2 spaces of target's space for 1 turn.
+            FOR_EACH_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_FOE_NODE(2),
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Haze, TARGET_GROUP_NODE, 1),
+            ),
+        ),
+    ));
+}
 
 // Deer's Heart
 // Mt: 14
@@ -205,23 +237,44 @@
 // Enables /Canto (Rem.; Min 1)) .
 // Accelerates Special trigger (cooldown count-1).
 // Effective against flying foes.
-// Re
-// After Canto (including cases where action is ended due to Canto Control), if unit entered combat on the current turn, grants another action to unit, and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
-// At start of turn, if unit is within 2 spaces of an ally, grants [Null Follow-Up) and (Preempt Pulse) to unit and allies within 2 spaces of unit for 1 turn.
+// Re After Canto (including cases where action is ended due to Canto Control),
+// if unit entered combat on the current turn,
+// grants another action to unit,
+// and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+// At start of turn,
+// if unit is within 2 spaces of an ally,
+// grants [Null Follow-Up) and (Preempt Pulse) to unit and allies within 2 spaces of unit for 1 turn.
 // If unit initiates combat or is within 2 spaces of an ally,
 // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's
-// Spd at start of combat + 5, neutralizes foe's bonuses to
-// Spd/Def, deals +X x 5 damage (X = number of Bonus
-// effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5; excluding area-of-effect Specials), and neutralizes effects that inflict "Special cooldown charge
-// -X" on unit during combat, and restores 7 HP to unit after combat.
+// Spd at start of combat + 5,
+// neutralizes foe's bonuses to
+// Spd/Def,
+// deals +X x 5 damage (X = number of Bonus
+// effects active on unit,
+// excluding stat bonuses + number of Penalty effects active on foe,
+// excluding stat penalties; max 5; excluding area-of-effect Specials),
+// and neutralizes effects that inflict "Special cooldown charge
+// -X" on unit during combat,
+// and restores 7 HP to unit after combat.
 
 // Pure Starfall
-// If unit initiates combat or if [Deep Star) is active on unit, inflicts Spd/Def-5 on foe, unit deals +X damage (X = 20% of unit's Spd; excluding area-of-effect Specials), reduces damage from foe's first attack by X ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes), and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials), and also, if foe's attack can trigger foe's Special, inflicts Special cooldown count+ 1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
-// If unit initiates combat, reduces damage from foe's first attack by 80% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
-// If unit initiates combat, grants (Deep Star) and [Vantage) to unit and inflicts [Gravity) on target and foes within 1 space of target after combat.
+// If unit initiates combat or if [Deep Star) is active on unit,
+// inflicts Spd/Def-5 on foe,
+// unit deals +X damage (X = 20% of unit's Spd; excluding area-of-effect Specials),
+// reduces damage from foe's first attack by X ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+// and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
+// and also,
+// if foe's attack can trigger foe's Special,
+// inflicts Special cooldown count+ 1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
+// If unit initiates combat,
+// reduces damage from foe's first attack by 80% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+// If unit initiates combat,
+// grants (Deep Star) and [Vantage) to unit and inflicts [Gravity) on target and foes within 1 space of target after combat.
 
 // A/S Incite Hone
-// At start of turn, if unit is within 2 spaces of an ally, grants Atk/Spd+6 and (Incited) to unit and allies within 2 spaces of unit for 1 turn.
+// At start of turn,
+// if unit is within 2 spaces of an ally,
+// grants Atk/Spd+6 and (Incited) to unit and allies within 2 spaces of unit for 1 turn.
 // Grants bonus to unit's Atk/Spd during combat = number
 // of allies on the map with the (Incited) effect + 2 (excluding unit; max 5).
 

@@ -458,7 +458,8 @@ class Unit extends BattleMapElement {
         this.reservedHealNeutralizesDeepWounds = 0;
         this.reservedStatusEffects = [];
         this.reservedStatusEffectSetToNeutralize = new Set();
-        this.reservedStatusEffectCountInOrder = 0;
+        this.reservedNegativeStatusEffectCountInOrder = 0;
+        this.reservedPositiveStatusEffectCountInOrder = 0;
         this.reservedAtkBuff = 0;
         this.reservedSpdBuff = 0;
         this.reservedDefBuff = 0;
@@ -2288,6 +2289,7 @@ class Unit extends BattleMapElement {
      */
     neutralizeStatusEffect(statusEffect) {
         let removed = this.removeStatusEffects(statusEffect);
+        // 連携阻害が解除された場合以下の3ステータスも解除する
         if (statusEffect === StatusEffectType.Schism && removed) {
             this.neutralizePositiveStatusEffect(StatusEffectType.TriangleAttack);
             this.neutralizePositiveStatusEffect(StatusEffectType.DualStrike);
@@ -2309,16 +2311,25 @@ class Unit extends BattleMapElement {
         this.neutralizeStatusEffects([...this.reservedStatusEffectSetToNeutralize]);
         this.reservedStatusEffectSetToNeutralize.clear();
 
-        // TODO: 予約解除の順序を検証する
-        let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
-        let effects = this.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
-        for (let i = 0; i < this.reservedStatusEffectCountInOrder; i++) {
-            if (effects.length >= i + 1) {
-                this.reservedStatusEffectSetToNeutralize.add(effects[i]);
-                this.neutralizeStatusEffect(effects[i]);
+        // 不利な状態を上から解除
+        let negativeOrder = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let negativeEffects = this.getNegativeStatusEffects().sort((a, b) => negativeOrder(a) - negativeOrder(b));
+        for (let i = 0; i < this.reservedNegativeStatusEffectCountInOrder; i++) {
+            if (negativeEffects.length >= i + 1) {
+                this.reservedStatusEffectSetToNeutralize.add(negativeEffects[i]);
             }
         }
-        this.reservedStatusEffectCountInOrder = 0;
+        this.reservedNegativeStatusEffectCountInOrder = 0;
+
+        // 有利な状態を上から解除
+        let positiveOrder = k => POSITIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let positiveEffects = this.getPositiveStatusEffects().sort((a, b) => positiveOrder(a) - positiveOrder(b));
+        for (let i = 0; i < this.reservedPositiveStatusEffectCountInOrder; i++) {
+            if (positiveEffects.length >= i + 1) {
+                this.reservedStatusEffectSetToNeutralize.add(positiveEffects[i]);
+            }
+        }
+        this.reservedPositiveStatusEffectCountInOrder = 0;
     }
 
     neutralizeNegativeStatusEffects() {

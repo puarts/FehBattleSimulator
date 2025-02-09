@@ -2247,7 +2247,7 @@
                 let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
                 let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
                 this.writeDebugLog(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
-                unit.reservedStatusEffectCountInOrder += 2;
+                unit.reservedNegativeStatusEffectCountInOrder += 2;
             }
         }
     );

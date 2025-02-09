@@ -624,6 +624,14 @@ class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
 
 const SPACES_WITHIN_N_SPACES_OF_TARGET_NODE = n => new SpacesWithinNSpacesOfTargetNode(n);
 
+class SpacesWithinNSpacesOfFoeNode extends SpacesWithinNSpacesOfTargetNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const SPACES_WITHIN_N_SPACES_OF_FOE_NODE = n => new SpacesWithinNSpacesOfFoeNode(n);
+
 class SpacesOfTargetNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1142,12 +1150,14 @@ class AfterCombatEnv extends NodeEnv {
      * @param {PostCombatSkillHander} handler
      * @param {Unit} targetUnit
      * @param {Unit} enemyUnit
+     * @param {BattleMap} battleMap
      */
-    constructor(handler, targetUnit, enemyUnit) {
+    constructor(handler, targetUnit, enemyUnit, battleMap) {
         super();
         this.phase = NodeEnv.PHASE.AFTER_COMBAT;
         this.setPostCombatHandler(handler);
         this.setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit);
+        this.setBattleMap(battleMap);
     }
 }
 
@@ -3081,6 +3091,10 @@ class ForEachTargetsFoeWithinNSpacesOfTargetNode extends ForEachUnitOnMapNode {
 }
 
 class ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode extends ForEachUnitAndAllyNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     /** @type {NumberNode} */
     _nNode;
 
@@ -3095,7 +3109,7 @@ class ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode extends ForEachUnitAn
     }
 
     getUnits(env) {
-        let unit = env.target;
+        let unit = this.getUnit(env);
         let spaces = this._nNode.evaluate(env);
         let units = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, spaces, true);
         let unitArray = GeneratorUtil.toArray(units);
@@ -3124,6 +3138,15 @@ const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE =
 
 const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_3_SPACES_OF_TARGET_NODE =
     (...children) => new ForEachTargetAndTargetsAllyWithin3SpacesOfTargetNode(TRUE_NODE, ...children);
+
+class ForEachFoeAndFoesAllyWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOR_EACH_FOE_AND_FOES_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE =
+    (n, pred, ...nodes) => new ForEachFoeAndFoesAllyWithinNSpacesOfTargetNode(n, pred, ...nodes);
 
 class ForEachTargetAndFoeWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
     getUnits(env) {
@@ -4563,10 +4586,29 @@ class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
         env.debug(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
 
         let n = this.evaluateChildren(env);
-        let result = unit.reservedStatusEffectCountInOrder += n;
+        let result = unit.reservedNegativeStatusEffectCountInOrder += n;
         env.debug(`${unit.nameWithGroup}は不利な状態を上位${n}個解除: ${result - n} -> ${result}`);
     }
 }
+
+class NeutralizesTargetsNBonusEffectsNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let getValue = k => POSITIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let effects = unit.getPositiveStatusEffects().sort((a, b) => getValue(a) - getValue(b));
+        env.debug(`${unit.nameWithGroup}の現在の有利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
+
+        let n = this.evaluateChildren(env);
+        let result = unit.reservedPositiveStatusEffectCountInOrder += n;
+        env.debug(`${unit.nameWithGroup}は有利な状態を上位${n}個解除: ${result - n} -> ${result}`);
+    }
+}
+
+const NEUTRALIZES_TARGETS_N_BONUS_EFFECTS_NODE = n => new NeutralizesTargetsNBonusEffectsNode(n);
 
 class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
     static {
