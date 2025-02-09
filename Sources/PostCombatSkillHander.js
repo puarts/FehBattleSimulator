@@ -160,7 +160,6 @@ class PostCombatSkillHander {
                 }
                 unit.applyReservedState(false);
             }
-            unit.initReservedState();
         }
 
         // 戦闘後のタイミング終了

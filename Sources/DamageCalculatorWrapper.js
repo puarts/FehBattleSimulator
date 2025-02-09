@@ -169,6 +169,9 @@ class DamageCalculatorWrapper {
      */
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
         this.#initBattleContext(atkUnit, defUnit);
+        atkUnit.initReservedState();
+        defUnit.initReservedState();
+
         atkUnit.precombatContext.initContext();
         defUnit.precombatContext.initContext();
 
@@ -310,6 +313,8 @@ class DamageCalculatorWrapper {
         }), () => {
             this.logger.trace2(`[マス移動後] ${atkUnit.getLocationStr(tileToAttack)}`);
             this.#initBattleContext(atkUnit, defUnit);
+            atkUnit.initReservedState();
+            defUnit.initReservedState();
             if (damageType === DamageType.EstimatedDamage) {
                 this.__applySkillEffectsBeforeCombat(atkUnit, defUnit, DamageType.ActualDamage, false);
                 this.__applySkillEffectsBeforeCombat(defUnit, atkUnit, DamageType.ActualDamage, false);

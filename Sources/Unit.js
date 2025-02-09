@@ -3114,6 +3114,7 @@ class Unit extends BattleMapElement {
         this.initReservedHp();
         this.initReservedStatusEffects();
         this.initReservedDebuffs();
+        this.clearReservedGreatTalents();
     }
 
     initReservedHp() {
