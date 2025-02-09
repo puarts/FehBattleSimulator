@@ -334,11 +334,36 @@
 }
 
 // A/S Incite Hone
-// At start of turn,
-// if unit is within 2 spaces of an ally,
-// grants Atk/Spd+6 and (Incited) to unit and allies within 2 spaces of unit for 1 turn.
-// Grants bonus to unit's Atk/Spd during combat = number
-// of allies on the map with the (Incited) effect + 2 (excluding unit; max 5).
+{
+    let skillId = PassiveC.ASInciteHone;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Atk/Spd+6 and (Incited)
+                GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 6, 0, 0),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Incited),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        X_NUM_NODE(
+            // Grants bonus to unit's Atk/Spd during combat = number
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+            // of allies on the map with the (Incited) effect + 2 (excluding unit; max 5).
+            ENSURE_MAX_NODE(
+                ADD_NODE(
+                    COUNT_IF_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE,
+                        HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Incited)),
+                    2
+                ),
+                5
+            )
+        )
+    ));
+}
 
 {
     let skillId = Weapon.DevotedBreath;
