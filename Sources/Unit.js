@@ -2316,7 +2316,7 @@ class Unit extends BattleMapElement {
         let negativeEffects = this.getNegativeStatusEffects().sort((a, b) => negativeOrder(a) - negativeOrder(b));
         for (let i = 0; i < this.reservedNegativeStatusEffectCountInOrder; i++) {
             if (negativeEffects.length >= i + 1) {
-                this.reservedStatusEffectSetToNeutralize.add(negativeEffects[i]);
+                this.neutralizeStatusEffect(negativeEffects[i]);
             }
         }
         this.reservedNegativeStatusEffectCountInOrder = 0;
@@ -2326,7 +2326,7 @@ class Unit extends BattleMapElement {
         let positiveEffects = this.getPositiveStatusEffects().sort((a, b) => positiveOrder(a) - positiveOrder(b));
         for (let i = 0; i < this.reservedPositiveStatusEffectCountInOrder; i++) {
             if (positiveEffects.length >= i + 1) {
-                this.reservedStatusEffectSetToNeutralize.add(positiveEffects[i]);
+                this.neutralizeStatusEffect(positiveEffects[i]);
             }
         }
         this.reservedPositiveStatusEffectCountInOrder = 0;
@@ -3124,6 +3124,9 @@ class Unit extends BattleMapElement {
 
     initReservedStatusEffects() {
         this.reservedStatusEffects = [];
+        this.reservedStatusEffectSetToNeutralize = new Set();
+        this.reservedPositiveStatusEffectCountInOrder = 0;
+        this.reservedNegativeStatusEffectCountInOrder = 0;
     }
 
     initReservedDebuffs() {
