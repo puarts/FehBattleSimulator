@@ -287,18 +287,51 @@
 }
 
 // Pure Starfall
-// If unit initiates combat or if [Deep Star) is active on unit,
-// inflicts Spd/Def-5 on foe,
-// unit deals +X damage (X = 20% of unit's Spd; excluding area-of-effect Specials),
-// reduces damage from foe's first attack by X ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-// and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
-// and also,
-// if foe's attack can trigger foe's Special,
-// inflicts Special cooldown count+ 1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
-// If unit initiates combat,
-// reduces damage from foe's first attack by 80% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
-// If unit initiates combat,
-// grants (Deep Star) and [Vantage) to unit and inflicts [Gravity) on target and foes within 1 space of target after combat.
+{
+    let skillId = PassiveB.PureStarfall;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or if [Deep Star) is active on unit,
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.DeepStar)),
+            // inflicts Spd/Def-5 on foe,
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 5, 5, 0),
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                // unit deals +X damage (X = 20% of unit's Spd; excluding area-of-effect Specials),
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(
+                    PERCENTAGE_NODE(20, UNITS_SPD_DURING_COMBAT_NODE)),
+                // reduces damage from foe's first attack by X ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                    PERCENTAGE_NODE(20, UNITS_SPD_DURING_COMBAT_NODE)),
+            ),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // and also,
+            // if foe's attack can trigger foe's Special,
+            IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                // inflicts Special cooldown count+ 1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+            ),
+        ),
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // reduces damage from foe's first attack by 80% during combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_INCLUDING_TWICE_NODE(80),
+        ),
+    ));
+
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // grants (Deep Star) and [Vantage) to unit and
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.DeepStar, StatusEffectType.Vantage),
+            // on target and foes within 1 space of target after combat.
+            FOR_EACH_FOE_AND_FOES_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(1, TRUE_NODE,
+                // inflicts [Gravity)
+                INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Gravity),
+            ),
+        ),
+    ));
+}
 
 // A/S Incite Hone
 // At start of turn,
