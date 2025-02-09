@@ -364,7 +364,7 @@ function enablesCantoRemPlus(skillId, n) {
 
 function enablesCantoRemPlusMin(skillId, n, min) {
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => ENSURE_MIN_NODE(new CantoRemNode(n), 2));
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => ENSURE_MIN_NODE(new CantoRemNode(n), min));
 }
 
 /**
