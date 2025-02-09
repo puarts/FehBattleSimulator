@@ -171,6 +171,9 @@
 // Haze Slice
 {
     let skillId = Special.HazeSlice;
+    setSpecialCount(skillId, 3);
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
     // 3
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Boosts damage by 35% of unit's Atk when Special triggers.
