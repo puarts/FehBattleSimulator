@@ -231,31 +231,60 @@
 }
 
 // Deer's Heart
-// Mt: 14
-// Rng:2
-// Eff:
-// Enables /Canto (Rem.; Min 1)) .
-// Accelerates Special trigger (cooldown count-1).
-// Effective against flying foes.
-// Re After Canto (including cases where action is ended due to Canto Control),
-// if unit entered combat on the current turn,
-// grants another action to unit,
-// and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
-// At start of turn,
-// if unit is within 2 spaces of an ally,
-// grants [Null Follow-Up) and (Preempt Pulse) to unit and allies within 2 spaces of unit for 1 turn.
-// If unit initiates combat or is within 2 spaces of an ally,
-// grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's
-// Spd at start of combat + 5,
-// neutralizes foe's bonuses to
-// Spd/Def,
-// deals +X x 5 damage (X = number of Bonus
-// effects active on unit,
-// excluding stat bonuses + number of Penalty effects active on foe,
-// excluding stat penalties; max 5; excluding area-of-effect Specials),
-// and neutralizes effects that inflict "Special cooldown charge
-// -X" on unit during combat,
-// and restores 7 HP to unit after combat.
+{
+    let skillId = Weapon.DeersHeart;
+    // Mt: 14
+    // Rng:2
+    // Eff:
+    // Enables /Canto (Rem.; Min 1)) .
+    enablesCantoRemPlusMin(skillId, 0, 1);
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+
+    // Re After Canto (including cases where action is ended due to Canto Control),
+    // if unit entered combat on the current turn,
+    // grants another action to unit,
+    // and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+    grantsAnotherActionAfterCanto(skillId);
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants [Null Follow-Up) and (Preempt Pulse)
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.NullFollowUp, StatusEffectType.PreemptPulse),
+            ),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res = 15% of unit's
+            // Spd at start of combat + 5,
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ADD_NODE(PERCENTAGE_NODE(15, UNITS_SPD_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            // neutralizes foe's bonuses to Spd/Def,
+            new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, true, false),
+            X_NUM_NODE(
+                // deals +X x 5 damage
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // (X = number of Bonus effects active on unit,
+                // excluding stat bonuses + number of Penalty effects active on foe,
+                // excluding stat penalties; max 5; excluding area-of-effect Specials),
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+            // and neutralizes effects that inflict "Special cooldown charge
+            // -X" on unit during combat,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
 
 // Pure Starfall
 // If unit initiates combat or if [Deep Star) is active on unit,
