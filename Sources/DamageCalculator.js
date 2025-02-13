@@ -1312,10 +1312,7 @@ class DamageCalculator {
                     activatesDefenderSpecial, context
                 );
                 if (this.isLogEnabled) this.writeLog(`<span style="color: #ff00ff">奥義</span>によるダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
-                let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
-                let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
-                // this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/><span style="color: #ff00ff">奥義</span>ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
-                this.writeSimpleLog(`<span class="log-special">奥義</span>ダメージ<span class="log-damage"">${currentDamage}</span>`);
+                this.writeSimpleLog(`<span class="log-damage"">${currentDamage}</span>（<span class="log-special">奥義</span>ダメージ）`);
                 this.__restoreMaxSpecialCount(atkUnit);
                 // 奥義発動直後のスキル効果（奥義カウント変動など）
                 this.applySkillEffectAfterSpecialActivated(atkUnit, defUnit, context);
@@ -1353,10 +1350,7 @@ class DamageCalculator {
                     activatesDefenderSpecial, context
                 );
                 if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
-                let atkColor = atkUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
-                let defColor = defUnit.groupId === UnitGroupType.Ally ? "blue" : "red";
-                // this.writeSimpleLog(`<span style="color: ${atkColor};">${atkUnit.getNameWithGroup()}</span>→<span style="color: ${defColor};">${defUnit.getNameWithGroup()}</span><br/>通常攻撃ダメージ<span style="color: #ff0000;">${currentDamage}</span>`);
-                this.writeSimpleLog(`通常攻撃ダメージ<span class="log-damage">${currentDamage}</span>`);
+                this.writeSimpleLog(`<span class="log-damage">${currentDamage}</span>（通常攻撃ダメージ）`);
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
             }
 
@@ -1560,7 +1554,7 @@ class DamageCalculator {
                 let oldRatio = potentRatio;
                 potentRatio *= ratio;
                 this.writeDebugLog(`神速追撃による軽減。ratio: ${ratio}, damage ratio: ${oldRatio} → ${potentRatio}`);
-                this.writeSimpleLog(`<span class="log-gray">【神速追撃:ダメージ${ratio * 100}%】</span>`)
+                this.writeSimpleLog(`<span class="log-gray">【神速追撃:ダメージ${ratio * 100}%】（上書き）</span>`)
             }
         }
         return potentRatio;
