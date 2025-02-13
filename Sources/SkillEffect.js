@@ -739,7 +739,9 @@ const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode
 
 const ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE = new class extends BoolNode {
     evaluate(env) {
-        return env.target.isPartner(env.skillOwner);
+        let result = env.target.isPartner(env.skillOwner);
+        env.debug(`${env.target.nameWithGroup}と${env.skillOwner.nameWithGroup}は支援を結んでいるか: ${result}`);
+        return result;
     }
 }();
 
