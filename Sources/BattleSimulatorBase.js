@@ -9135,21 +9135,25 @@ class BattleSimulatorBase {
         else if (structure instanceof OfCallingCircle) {
             let unit = g_appData.getReinforcementSlotUnitOnTrash(UnitGroupType.Ally);
             if (unit !== null) {
-                let circleTile = structure.placedTile;
-                let tile = circleTile.findTileForCallingCircle(unit, structure);
+                let tile = this.map.findTileForCallingCircle(unit, structure);
                 if (tile) {
                     moveUnitToMap(unit, tile.posX, tile.posY, false, false);
                     unit.anotherActionTurnForCallingCircle = g_appData.currentTurn;
+                    this.writeSimpleLogLine(`${unit.nameWithGroup}が増援として${tile.positionToString()}に出現`);
+                } else {
+                    this.writeSimpleLogLine('マスが埋まっているので増援は出現しない');
                 }
             }
         }
         else if (structure instanceof DefCallingCircle) {
             let unit = g_appData.getReinforcementSlotUnitOnTrash(UnitGroupType.Enemy);
             if (unit !== null) {
-                let circleTile = structure.placedTile;
-                let tile = circleTile.findTileForCallingCircle(unit, structure, false);
+                let tile = this.map.findTileForCallingCircle(unit, structure, false);
                 if (tile) {
                     moveUnitToMap(unit, tile.posX, tile.posY, false, false);
+                    this.writeSimpleLogLine(`${unit.nameWithGroup}が増援として${tile.positionToString()}に出現`);
+                } else {
+                    this.writeSimpleLogLine('マスが埋まっているので増援は出現しない');
                 }
             }
         }
