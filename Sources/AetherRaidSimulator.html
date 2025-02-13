@@ -1795,19 +1795,23 @@
                                 </span>
                                 <br />
                                 <span v-if="value.groupId == UnitGroupType.Ally">
-                                    <label class="normal" >支援: </label>
-                                    <select2 :options="g_app.vm.heroOptions" v-model="value.partnerHeroIndex" class="hero"
-                                        @input="g_app.updateAllUnitSpur();g_app.updatePartner(value)">
+                                    <label class="normal">支援: </label>
+                                    <select2 :options="g_app.vm.heroOptions" v-model="value.partnerHeroIndex"
+                                             class="hero"
+                                             @input="g_app.updateAllUnitSpur();g_app.updatePartner(value)">
                                     </select2>
-                                    <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle" >({{value.partnerHeroIndex}})</span>
+                                    <span class="debugInfo"
+                                          v-bind:style="g_app.vm.debugMenuStyle">({{value.partnerHeroIndex}})</span>
 
-                                    <label class="normal" >レベル</label>
-                                    <select v-model="value.partnerLevel" @change="g_app.updateAllUnitSpur()">
-                                        <option v-for="option in g_appData.partnerLevelOptions" v-bind:value="option.id">
+                                    <label class="normal">レベル</label>
+                                    <select v-model="value.partnerLevel"
+                                            @change="g_app.updateAllUnitSpur();g_app.updatePartner(value)">
+                                        <option v-for="option in g_appData.partnerLevelOptions"
+                                                v-bind:value="option.id">
                                             {{ option.text }}
                                         </option>
                                     </select>
-                                    <br />
+                                    <br/>
                                 </span>
 
                                 <label class="normal">紋章士: </label>

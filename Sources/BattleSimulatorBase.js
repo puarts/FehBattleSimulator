@@ -4391,13 +4391,16 @@ class BattleSimulatorBase {
             if (unit.heroIndex === targetUnit.heroIndex) {
                 // 他のインデックスが等しいユニットにも支援を設定する
                 unit.partnerHeroIndex = targetUnit.partnerHeroIndex;
+                unit.partnerLevel = targetUnit.partnerLevel;
             } else if (unit.heroIndex === targetUnit.partnerHeroIndex) {
                 // 自分の支援相手に自分を設定する
                 unit.partnerHeroIndex = targetUnit.heroIndex;
+                unit.partnerLevel = targetUnit.partnerLevel;
             } else {
                 if (unit.partnerHeroIndex === targetUnit.partnerHeroIndex) {
                     // 他のユニットが同じユニットを支援相手にしていた場合に支援を外す
                     unit.partnerHeroIndex = -1;
+                    unit.partnerLevel = PartnerLevel.None;
                 }
             }
         }
