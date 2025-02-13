@@ -381,18 +381,22 @@
     ));
     FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 3 spaces of unit,
-        // grants Def/Res+5 and reduces damage from foe's first attack by 7 during combat
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // reduces damage from foe's first attack by 7 during combat
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice,
             // " it means the first and second strikes).
             REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
         ),
-        // For allies within 3 spaces of unit, if foe initiates combat, ally's HP > 1,
-        // and foe would reduce ally's HP to 0 during combat, ally survives with 1 HP
-        // (once per turn; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce unit's HP to 0; when any other such effect triggers,
-        // this effect will trigger too).
-        TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_ONCE_PER_TURN_NODE,
+        // For allies within 3 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+            // if foe initiates combat, ally's HP > 1,
+            IF_NODE(NOT_NODE(DOES_TARGET_INITIATE_COMBAT_NODE),
+                // and foe would reduce ally's HP to 0 during combat, ally survives with 1 HP
+                // (once per turn; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce unit's HP to 0; when any other such effect triggers,
+                // this effect will trigger too).
+                TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_ONCE_PER_TURN_NODE,
+            ),
+        ),
     ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
