@@ -2249,7 +2249,7 @@
 {
     let skillId = PassiveB.BestialAssault;
     // Enables【Canto (Rem. +1; Min ２)】while transformed.
-    enablesCantoRemPlus(skillId, 1, 2);
+    enablesCantoRemPlusMin(skillId, 1, 2);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is transformed or unit's HP ≥ 25% at start of combat,
         IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
