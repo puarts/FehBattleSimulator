@@ -841,7 +841,7 @@
     ));
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // when unit's Special is triggered during a follow-up attack,
-        IF_NODE(AND_NODE(CAN_ACTIVATE_ATTACKER_SPECIAL_NODE),
+        IF_NODE(AND_NODE(CAN_ACTIVATE_ATTACKER_SPECIAL_NODE, IS_TARGETS_FOLLOW_UP_OR_POTENT_FOLLOW_UP_ATTACK_NODE),
             // prevents foe's Specials that are triggered by unit's attack.
             PREVENTS_TARGETS_FOES_SPECIALS_THAT_ARE_TRIGGERED_BY_TARGETS_ATTACK_NODE,
         ),

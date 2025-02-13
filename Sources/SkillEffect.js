@@ -4898,3 +4898,23 @@ class IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode extends Bool
 
 const IS_TARGETS_TEAMS_MIRACLE_WITHOUT_SPECIAL_ACTIVATED_ON_CURRENT_TURN_NODE =
     new IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode();
+
+class IsTargetsFollowUpOrPotentFollowUpAttackNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let context = env.damageCalcContext;
+        if (context) {
+            let result = context.isFollowupOrPotentFollowupAttack();
+            env.debug(`${unit.nameWithGroup}の追撃か: ${result}`);
+            return result;
+        } else {
+            env.error('コンテキストがありません。');
+        }
+    }
+}
+
+const IS_TARGETS_FOLLOW_UP_OR_POTENT_FOLLOW_UP_ATTACK_NODE = new IsTargetsFollowUpOrPotentFollowUpAttackNode();
