@@ -572,7 +572,7 @@
             ),
             // Applies (Divine Vein (Stone)) to unit's space and spaces within 2 spaces of unit for 2 turns.
             FOR_EACH_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
-                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Stone, TARGET_GROUP_NODE, 1),
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Stone, TARGET_GROUP_NODE, 2),
             ),
         ),
     );
