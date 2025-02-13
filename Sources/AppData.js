@@ -1269,8 +1269,8 @@ class AppData extends UnitManager {
                 {
                     if (this.isReinforcementSlotUnit(targetUnit)) {
                         // 増援は神階でも補正を受ける
-                        // シーズン一致しか増援に出せないのでシーズンチェックは不要
-                        return true;
+                        return this.examinesIsCurrentSeason(targetUnit.grantedBlessing) ||
+                            this.examinesIsCurrentSeason(targetUnit.providableBlessingSeason);
                     }
                     if (targetUnit.grantedBlessing === SeasonType.None &&
                         targetUnit.providableBlessingSeason === SeasonType.None) {
