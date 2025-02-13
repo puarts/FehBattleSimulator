@@ -976,7 +976,7 @@
                 // (If support partner is on player team, targets any support partner;
                 // otherwise, targets ally with the highest max HP on player team, excluding unit.)
                 // that ally attacks twice during their combat.
-                COND_OP(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
+                IF_ELSE_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
                     IF_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,
                         TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
                     ),
