@@ -64,7 +64,7 @@
             // grants bonus to unit's Atk/Spd = 6 + 20% of unit's Spd at start of combat,
             X_NUM_NODE(
                 new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
-                ADD_NODE(6, PERCENTAGE_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+                ADD_NODE(6, PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
             ),
             // deals +7 damage (excluding area-of-effect Specials),
             new TargetDealsDamageExcludingAoeSpecialsNode(7),

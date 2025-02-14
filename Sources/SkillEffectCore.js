@@ -282,6 +282,22 @@ class PositiveNumberNode extends NumberNode {
     }
 }
 
+class IntPercentageNumberNode extends NumberNode {
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+    evaluate(env) {
+        let n = this._nNode.evaluate(env);
+        if (!Number.isInteger(n)) {
+            env.error(`Not a integer: ${n}`);
+        }
+        return n;
+    }
+}
+
+const INT_PERCENTAGE_NUMBER_NODE = n => new IntPercentageNumberNode(n);
+
 /**
  * @abstract
  */
