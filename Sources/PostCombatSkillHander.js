@@ -1345,8 +1345,12 @@ class PostCombatSkillHander {
             this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
             this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
             attackUnit.reserveHeal(99);
+        } else if (attackUnit.battleContext.hasNonSpecialMiracleActivated) {
+            this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
+        } else if (attackUnit.battleContext.hasNonSpecialOneTimePerMapMiracleAcitivated) {
+            this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
         }
-        let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit);
+        let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit, this.map);
         env.setName('戦闘後(死んでも発動)').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_NEVERTHELESS_HOOKS.evaluateWithUnit(attackUnit, env);
         for (let skillId of attackUnit.enumerateSkills()) {
