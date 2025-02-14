@@ -70,8 +70,8 @@ function __selectItemById(id, button = 0) {
 }
 
 function onItemSelected(event) {
-    console.log("onItemSelected");
     let button = event.button;
+    console.log(`onItemSelected(${button})`);
     // 左クリックならダブルクリック判定をする
     let isLeftClick = button === 0;
     if (isLeftClick) {
