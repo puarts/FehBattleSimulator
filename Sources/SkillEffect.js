@@ -2672,11 +2672,15 @@ class IsTargetRangedWeaponNode extends BoolNode {
     }
 }
 
+const IS_TARGET_RANGED_WEAPON_NODE = new IsTargetRangedWeaponNode();
+
 class IsFoeRangedWeaponNode extends IsTargetRangedWeaponNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
+
+const IS_FOE_RANGED_WEAPON_NODE = new IsFoeRangedWeaponNode();
 
 class IsTarget2SpacesFromTargetsFoeNode extends BoolNode {
     static {

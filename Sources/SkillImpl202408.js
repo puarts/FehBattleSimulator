@@ -4254,7 +4254,7 @@ function setDiscord(skillId, statsRatios) {
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // When Special triggers,
         // if foe is 2 spaces from unit,
-        IF_NODE(new IsTarget2SpacesFromTargetsFoeNode(),
+        IF_NODE(IS_FOE_RANGED_WEAPON_NODE,
             // reduces damage from foe's attacks by 40%.
             new WhenSpecialTriggersReducesDamageFromTargetsFoesAttacksByNPercentNode(40),
         ),
