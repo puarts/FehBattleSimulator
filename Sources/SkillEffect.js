@@ -95,6 +95,21 @@ class DebugEnvNode extends SkillEffectNode {
     }
 }
 
+const DEBUG_ENV_NODE = new DebugEnvNode();
+
+class PrintDebugNode extends SkillEffectNode {
+    constructor(message) {
+        super();
+        this._message = message;
+    }
+
+    evaluate(env) {
+        console.log(`debug message: ${this._message}`);
+    }
+}
+
+const PRINT_DEBUG_NODE = message => new PrintDebugNode(message);
+
 /**
  * @abstract
  */
