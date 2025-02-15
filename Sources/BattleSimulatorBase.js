@@ -3289,36 +3289,36 @@ class BattleSimulatorBase {
 
     writeSimpleLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.simpleLog += `<span class="log-info log-simple">${log}</span><br/>`;
+        this.vm.simpleLog += `<div class="log-info log-simple">${log}</div>`;
     }
 
     writeErrorLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.ERROR)) return;
-        let error = `<span class="log-error">${log}</span><br/>`;
+        let error = `<div class="log-error">${log}</div>`;
         this.vm.damageCalcLog += error;
         this.writeSimpleLogLine(error);
     }
 
     writeWarningLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.WARN)) return;
-        let warning = `<span class="log-warn">${log}</span><br/>`;
+        let warning = `<div class="log-warn">${log}</div>`;
         this.vm.damageCalcLog += warning;
         this.writeSimpleLogLine(warning);
     }
 
     writeLog(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.damageCalcLog += `<span class="log-info">${log}</span>`;
+        this.vm.damageCalcLog += `<div class="log-info">${log}</div>`;
     }
 
     writeLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.damageCalcLog += `<span class="log-info">${log}</span><br/>`;
+        this.vm.damageCalcLog += `<div class="log-info">${log}</div>`;
     }
 
     writeDebugLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.DEBUG)) return;
-        this.vm.damageCalcLog += `<span class="log-debug">${log}</span><br/>`;
+        this.vm.damageCalcLog += `<div class="log-debug">${log}</div>`;
     }
 
     #shouldLog(level) {
@@ -7873,14 +7873,14 @@ class BattleSimulatorBase {
             label,
             function (input) {
                 if (self.isCommandLogEnabled) {
-                    self.writeSimpleLogLine("「" + input[0] + "」を実行");
+                    self.writeSimpleLogLine(`<div class="log-action-header">「${input[0]}」を実行</div>`);
                 }
                 input[1]();
             },
             function (input) {
                 if (input[1] != null) {
                     if (self.isCommandLogEnabled) {
-                        self.writeSimpleLogLine("「" + input[0] + "」を元に戻す");
+                        self.writeSimpleLogLine(`<div class="log-action-header">「${input[0]}」を元に戻す</div>`);
                     }
                     importPerTurnSetting(input[1], false);
                 }
@@ -9139,9 +9139,9 @@ class BattleSimulatorBase {
                 if (tile) {
                     moveUnitToMap(unit, tile.posX, tile.posY, false, false);
                     unit.anotherActionTurnForCallingCircle = g_appData.currentTurn;
-                    this.writeSimpleLogLine(`${unit.nameWithGroup}が増援として${tile.positionToString()}に出現`);
+                    this.writeSimpleLogLine(`<div class="log-action-header">${unit.nameWithGroup}が増援として${tile.positionToString()}に出現</div>`);
                 } else {
-                    this.writeSimpleLogLine('マスが埋まっているので増援は出現しない');
+                    this.writeSimpleLogLine('<div class="log-action-header">マスが埋まっているので増援は出現しない<div');
                 }
             }
         }
@@ -11621,7 +11621,7 @@ function loadSettings() {
     g_app.updateAllUnitSpur();
 
     let turnText = g_appData.currentTurn === 0 ? "戦闘開始前" : "ターン" + g_appData.currentTurn;
-    g_app.writeSimpleLogLine(turnText + "の設定を読み込みました。");
+    g_app.writeSimpleLogLine(`<div class="log-action-header">${turnText}の設定を読み込みました。</div>`);
     g_appData.commandQueuePerAction.clear();
     __updateChaseTargetTilesForAllUnits();
     updateAllUi();
@@ -11654,7 +11654,7 @@ function saveSettings() {
     console.log("saving..");
     g_appData.settings.saveSettings();
     console.log("current cookie:" + document.cookie);
-    g_app.writeSimpleLogLine("ターン" + g_appData.currentTurn + "の設定を保存しました。");
+    g_app.writeSimpleLogLine(`<div class="log-action-header">ターン${g_appData.currentTurn}の設定を保存しました。</div>`);
 }
 
 function exportPerTurnSettingAsString(

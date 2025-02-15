@@ -744,6 +744,7 @@ class Unit extends BattleMapElement {
         this.restStyleSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
 
         this.nameWithGroup = "";
+        this.groupName = "";
         this.__updateNameWithGroup();
 
         // TODO: リファクタリングする
@@ -800,6 +801,7 @@ class Unit extends BattleMapElement {
 
     __updateNameWithGroup() {
         this.nameWithGroup = this.name + "(" + groupIdToString(this.groupId) + ")";
+        this.groupName = groupIdToString(this.groupId);
     }
 
     saveCurrentHpAndSpecialCount() {

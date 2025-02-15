@@ -484,8 +484,6 @@ function dropToUnitImpl(unit, dropTargetId) {
             // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
             let bestTile = getBestActionTile(unit, targetTile, unit.attackRange);
             if (bestTile != null && !unit.isCantoActivating) {
-            // if (bestTile != null) {
-                g_app.writeSimpleLogLine("attack!");
                 g_app.__enqueueAttackCommand(unit, unitPlacedOnTargetTile, bestTile);
                 g_appData.isEnemyActionTriggered = true;
                 unit.isEnemyActionTriggered = true;

@@ -201,7 +201,7 @@ class HtmlLogger extends LoggerBase {
     }
 
     get simpleLog() {
-        return this._simpleLog.substring(0, this._simpleLog.length - "<br/>".length);
+        return this._simpleLog.substring(0, this._simpleLog.length);
     }
 
     clearLog() {
@@ -211,42 +211,42 @@ class HtmlLogger extends LoggerBase {
 
     writeSimpleLog(log) {
         if (!this._shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this._simpleLog += `${log}<br/>`;
+        this._simpleLog += `<div class="log-info">${log}</div>`;
     }
 
     writeLog(log) {
         if (!this._shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this._log += `<span class="log-info">${log}</span><br/>`;
+        this._log += `<div class="log-info">${log}</div>`;
     }
 
     writeDebugLog(log) {
         if (!this._shouldLog(LoggerBase.LOG_LEVEL.DEBUG)) return;
-        this._log += `<span class="log-debug">${log}</span><br/>`;
+        this._log += `<div class="log-debug">${log}</div>`;
     }
 
     trace(log) {
         if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE)) return;
-        this._log += `<span class="log-trace">${log}</span><br/>`;
+        this._log += `<div class="log-trace">${log}</div>`;
     }
 
     trace2(log) {
         if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE2)) return;
-        this._log += `<span class="log-trace2">${log}</span><br/>`;
+        this._log += `<div class="log-trace2">${log}</div>`;
     }
 
     trace3(log) {
         if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE3)) return;
-        this._log += `<span class="log-trace3">${log}</span><br/>`;
+        this._log += `<div class="log-trace3">${log}</div>`;
     }
 
     trace4(log) {
         if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE4)) return;
-        this._log += `<span class="log-trace4">${log}</span><br/>`;
+        this._log += `<div class="log-trace4">${log}</div>`;
     }
 
     trace5(log) {
         if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE5)) return;
-        this._log += `<span class="log-trace5">${log}</span><br/>`;
+        this._log += `<div class="log-trace5">${log}</div>`;
     }
 }
 

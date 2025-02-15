@@ -2236,7 +2236,6 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.damageAfterBeginningOfCombat += 7;
             let logMessage = `天脈・炎により${targetUnit.getNameWithGroup()}に${7}ダメージ`;
             this.__writeDamageCalcDebugLog(logMessage);
-            this._damageCalc.writeSimpleLog(logMessage);
         }
         // スキル
         for (let skillId of targetUnit.enumerateSkills()) {
