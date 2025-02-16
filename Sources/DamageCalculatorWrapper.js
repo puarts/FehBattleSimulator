@@ -5323,11 +5323,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.addSpurs(-5, -5, -5, 0);
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.EbonBolverk] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.addAllSpur(5);
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.WhitecapBowPlus] = (targetUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.addSpurs(5, 5, 0, 0);
@@ -6161,22 +6156,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveC.OpeningRetainer] = (targetUnit) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.atkSpur += 4;
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.HornOfOpening] = (targetUnit, enemyUnit) => {
-            let count = 0;
-            for (let unit of self.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3)) {
-                count++;
-            }
-            if (count >= 1) {
-                targetUnit.atkSpur += 6;
-                enemyUnit.atkSpur -= 6;
-            }
-            if (count >= 2) {
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
-            }
-            if (count >= 3) {
-                enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveC.Worldbreaker] = (targetUnit) => {
@@ -7264,14 +7243,6 @@ class DamageCalculatorWrapper {
             enemyUnit.spdSpur -= 3;
             enemyUnit.resSpur -= 3;
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.BowOfFrelia] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-                targetUnit.battleContext.additionalDamageOfSpecial += 7;
-                targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfGrado] = (targetUnit, enemyUnit) => {
             if (!targetUnit.battleContext.initiatesCombat
                 || enemyUnit.battleContext.restHpPercentage === 100
@@ -7494,12 +7465,6 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.isSaviorActivated) {
                 targetUnit.defSpur += 4;
                 targetUnit.resSpur += 4;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.Grafcalibur] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.invalidateAllBuffs();
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.Forusethi] = (targetUnit, enemyUnit) => {
@@ -11432,17 +11397,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.FrostfireBreath:
-                    if (targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                        targetUnit.atkSpur += 6;
-                        targetUnit.spdSpur += 6;
-                        targetUnit.atkSpur += Math.floor((
-                            targetUnit.getDefBuffInCombat(enemyUnit) +
-                            targetUnit.getResBuffInCombat(enemyUnit)
-                        ) * 1.5);
-                    }
-                    break;
-
                 case Weapon.SneeringAxe:
                     {
                         let atkBuff = enemyUnit.getAtkBuffInCombat(targetUnit);

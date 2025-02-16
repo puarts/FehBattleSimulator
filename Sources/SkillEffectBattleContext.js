@@ -1111,6 +1111,9 @@ class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends Applying
     }
 }
 
+const DEALS_DAMAGE_WHEN_TRIGGERING_SPECIAL_DURING_COMBAT_PER_ATTACK_NODE =
+        n => new DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(n);
+
 /**
  * [Special]
  * Reduces damage from attacks during combat by percentage = N
@@ -1357,6 +1360,9 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDu
     }
 }
 
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE =
+    n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode(n);
+
 // 自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
 class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode {
     static {
@@ -1542,7 +1548,7 @@ const NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE
 /**
  * when unit deals damage to foe during combat, restores 7 HP to unit (triggers even if 0 damage is dealt).
  */
-class WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode extends FromPositiveNumberNode {
+class WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1554,6 +1560,9 @@ class WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode extends FromPosit
         env.debug(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
     }
 }
+
+const WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_TO_TARGET_NODE =
+    n => new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(n);
 
 class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode extends SkillEffectNode {
     static {

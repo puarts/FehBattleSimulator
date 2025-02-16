@@ -193,6 +193,11 @@ const DIFFERENCE_BETWEEN_RES_STATS_NODE =
     SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
 /// 強化(バフ)
+const TARGET_ATK_BONUS_NODE = new TargetsBonusNode(STATUS_INDEX.Atk);
+const TARGET_SPD_BONUS_NODE = new TargetsBonusNode(STATUS_INDEX.Spd);
+const TARGET_DEF_BONUS_NODE = new TargetsBonusNode(STATUS_INDEX.Def);
+const TARGET_RES_BONUS_NODE = new TargetsBonusNode(STATUS_INDEX.Res);
+
 const FOES_ATK_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Atk);
 const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
 const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
@@ -328,7 +333,7 @@ function setTwinSave(skillId, isMelee, grantsNode) {
                 // any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
                 new AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode(1),
                 // and restores 7 HP to unit when unit deals damage to foe during combat (triggers even if 0 damage is dealt).
-                new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(7),
+                new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(7),
             ),
         ),
     );
@@ -530,6 +535,11 @@ const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n) =>
     MAX_NODE(new MapUnitsToNumNode(
         new TargetsAndThoseAlliesWithinNSpacesNode(n, TARGET_NODE),
         TARGETS_TOTAL_BONUSES_NODE));
+
+const HIGHEST_TOTAL_BONUSES_TO_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n, valueNode) =>
+    MAX_NODE(new MapUnitsToNumNode(
+        new TargetsAndThoseAlliesWithinNSpacesNode(n, TARGET_NODE),
+        valueNode));
 
 const TARGETS_BONUSES_NODE = new TargetsBonusesNode();
 const HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =

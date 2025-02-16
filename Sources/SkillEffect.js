@@ -1309,6 +1309,8 @@ class IsBonusActiveOnTargetNode extends BoolNode {
     }
 }
 
+const IS_BONUS_ACTIVE_ON_TARGET_NODE = new IsBonusActiveOnTargetNode();
+
 /**
  * 【Bonus】is active on unit
  */
@@ -3919,6 +3921,9 @@ class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
         return resultSet;
     }
 }
+
+const TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
+    (n, spacesNode) => new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
 class SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode extends TargetsPlacableSpacesWithinNSpacesFromSpaceNode {
     static {

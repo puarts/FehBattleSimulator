@@ -3736,6 +3736,10 @@ PassiveC.ASInciteHone = 3169; // 攻速鼓舞・奮激
 Weapon.DevotedBreath = 3170; // 永き愛のブレス
 PassiveB.PureDragonWall = 3171; // 正真竜鱗障壁
 PassiveC.LowerGround = 3172; // 縄張り・護り手・近
+PassiveB.Chivalry2 = 3158; // 騎士道・承
+PassiveC.OpeningRetainerPlus = 3159; // 開神の眷属・神
+Weapon.DarkMonograph = 3173; // 闇魔道の研究書
+Weapon.AerialLongsword = 3174; // 四天馬筆頭の長剣
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

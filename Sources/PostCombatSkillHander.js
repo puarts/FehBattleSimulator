@@ -468,11 +468,6 @@ class PostCombatSkillHander {
                 case PassiveB.SpdResBulwark3:
                     targetUnit.reserveHeal(7);
                     break;
-                case Weapon.EbonBolverk:
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                        targetUnit.reserveHeal(7);
-                    }
-                    break;
                 case Weapon.MorphFimbulvetr:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                         for (let unit of this.__findNearestAllies(targetUnit)) {

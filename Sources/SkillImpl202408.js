@@ -177,7 +177,7 @@
             new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode(READ_NUM_NODE),
             // and when unit deals damage to foe during combat,
             // restores X × 4 HP to unit during combat.
-            new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(MULT_NODE(READ_NUM_NODE, 4)),
+            new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(MULT_NODE(READ_NUM_NODE, 4)),
             // (X = number of allies with the Divinely Inspiring effect within 3 spaces of unit,
             // excluding unit; max 2),
             ENSURE_MAX_NODE(
@@ -4307,7 +4307,7 @@ function setDiscord(skillId, statsRatios) {
             // and also,
             // when unit deals damage to foe during combat,
             // restores 7 HP to unit (triggers even if 0 damage is dealt). 
-            new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(7),
+            new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(7),
             // If foe with Range = 2 initiates combat,
             IF_NODE(AND_NODE(DOES_FOE_INITIATE_COMBAT_NODE, EQ_NODE(new FoesRangeNode(), 2)),
                 // neutralizes effects that prevent unit's counterattacks during combat.
