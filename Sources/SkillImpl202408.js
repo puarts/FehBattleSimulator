@@ -64,7 +64,7 @@
             // grants bonus to unit's Atk/Spd = 6 + 20% of unit's Spd at start of combat,
             X_NUM_NODE(
                 new GrantsStatsPlusToTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
-                ADD_NODE(6, PERCENTAGE_NODE(0.2, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
+                ADD_NODE(6, PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE)),
             ),
             // deals +7 damage (excluding area-of-effect Specials),
             new TargetDealsDamageExcludingAoeSpecialsNode(7),
@@ -177,7 +177,7 @@
             new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode(READ_NUM_NODE),
             // and when unit deals damage to foe during combat,
             // restores X × 4 HP to unit during combat.
-            new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(MULT_NODE(READ_NUM_NODE, 4)),
+            new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(MULT_NODE(READ_NUM_NODE, 4)),
             // (X = number of allies with the Divinely Inspiring effect within 3 spaces of unit,
             // excluding unit; max 2),
             ENSURE_MAX_NODE(
@@ -1076,32 +1076,21 @@
             REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
             // deals damage = 30% of foe's max HP (excluding area-of-effect Specials; excluding certain foes, such as Røkkr),
             UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(30, new FoesMaxHpNode())),
+        ),
+    ));
+
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
             X_NUM_NODE(
                 // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
-                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(READ_NUM_NODE),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_PER_ATTACK_NODE(READ_NUM_NODE),
                 // and also,
                 // when foe's attack triggers foe's Special,
                 // reduces damage from foe's attacks by an additional X
-                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(READ_NUM_NODE),
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_PER_ATTACK_NODE(READ_NUM_NODE),
                 // (excluding area-of-effect Specials; X = total damage dealt to foe; min 10; max 20).
                 ENSURE_MIN_MAX_NODE(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
-            ),
-        ),
-    ));
-    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // If unit is transformed or unit's HP ≥ 25% at start of combat,
-        IF_NODE(OR_NODE(new IsTargetTransformedNode(), IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
-            new NumThatIsNode(
-                new SkillEffectNode(
-                    // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials),
-                    new ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode(READ_NUM_NODE),
-                    // and also,
-                    // when foe's attack triggers foe's Special,
-                    // reduces damage from foe's attacks by an additional X
-                    new ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode(READ_NUM_NODE),
-                ),
-                // (excluding area-of-effect Specials; X = total damage dealt to foe; min 10; max 20).
-                new EnsureMinMaxNode(TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE, 10, 20),
             )
         ),
     ));
@@ -1875,7 +1864,7 @@
             // and also,
             // if unit's HP > 1 and foe would reduce unit's HP to 0,
             // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
-            new CanTargetActivateNonSpecialMiracleNode(100),
+            new TargetCanActivateNonSpecialMiracleNode(100),
         )
     ));
 }
@@ -2183,6 +2172,8 @@
 {
     // 鬼神飛燕の掩撃
     setSlyEffect(PassiveA.SlySwiftSparrow, 8, 8, 0, 0);
+    // 鬼神金剛の掩撃
+    setSlyEffect(PassiveA.SlySturdyBlow, 8, 0, 10, 0);
     // 鬼神明鏡の掩撃
     setSlyEffect(PassiveA.SlyMirror, 8, 0, 0, 10);
 }
@@ -3679,7 +3670,7 @@ function setDiscord(skillId, statsRatios) {
             // and also,
             // if unit's HP > 1 and foe would reduce unit's HP to 0,
             // unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
-            new CanTargetActivateNonSpecialMiracleNode(0),
+            new TargetCanActivateNonSpecialMiracleNode(0),
             // If foe initiates combat or foe's HP ≥ 75% at start of combat,
             IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
                 // restores 7 HP to unit after combat.
@@ -4263,7 +4254,7 @@ function setDiscord(skillId, statsRatios) {
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // When Special triggers,
         // if foe is 2 spaces from unit,
-        IF_NODE(new IsTarget2SpacesFromTargetsFoeNode(),
+        IF_NODE(IS_FOE_RANGED_WEAPON_NODE,
             // reduces damage from foe's attacks by 40%.
             new WhenSpecialTriggersReducesDamageFromTargetsFoesAttacksByNPercentNode(40),
         ),
@@ -4316,7 +4307,7 @@ function setDiscord(skillId, statsRatios) {
             // and also,
             // when unit deals damage to foe during combat,
             // restores 7 HP to unit (triggers even if 0 damage is dealt). 
-            new WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode(7),
+            new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(7),
             // If foe with Range = 2 initiates combat,
             IF_NODE(AND_NODE(DOES_FOE_INITIATE_COMBAT_NODE, EQ_NODE(new FoesRangeNode(), 2)),
                 // neutralizes effects that prevent unit's counterattacks during combat.
@@ -4767,7 +4758,7 @@ function setDiscord(skillId, statsRatios) {
                 // and foe would reduce unit’s HP to 0,
                 // unit survives with 1 HP.
                 // (Once per combat. Does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0.)
-                new CanTargetActivateNonSpecialMiracleNode(0),
+                new TargetCanActivateNonSpecialMiracleNode(0),
             )
         ),
     ));

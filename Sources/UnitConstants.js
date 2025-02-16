@@ -72,6 +72,7 @@ const Hero = {
     DuoAlear: 1214,
     DuoHeidrun: 1220,
     HarmonizedMarisa: 1230,
+    DuoRhea: 1237,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -118,6 +119,7 @@ const DUO_HERO_SET = new Set([
     Hero.DuoLucina,
     Hero.DuoAlear,
     Hero.DuoHeidrun,
+    Hero.DuoRhea,
 ]);
 
 const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
@@ -248,9 +250,18 @@ function getNegativeStatusEffectTypes() {
     return Object.values(StatusEffectType).filter(value => value >= 0 && isNegativeStatusEffect(value));
 }
 
+function sortPositiveStatusEffectTypes(types) {
+    let getValue = k => POSITIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+    return types.sort((a, b) => getValue(a) - getValue(b));
+}
+
 function sortNegativeStatusEffectTypes(types) {
     let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
     return types.sort((a, b) => getValue(a) - getValue(b));
+}
+
+function getPositiveStatusEffectTypesInOrder() {
+    return sortPositiveStatusEffectTypes(getPositiveStatusEffectTypes());
 }
 
 function getNegativeStatusEffectTypesInOrder() {

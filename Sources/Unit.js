@@ -458,7 +458,8 @@ class Unit extends BattleMapElement {
         this.reservedHealNeutralizesDeepWounds = 0;
         this.reservedStatusEffects = [];
         this.reservedStatusEffectSetToNeutralize = new Set();
-        this.reservedStatusEffectCountInOrder = 0;
+        this.reservedNegativeStatusEffectCountInOrder = 0;
+        this.reservedPositiveStatusEffectCountInOrder = 0;
         this.reservedAtkBuff = 0;
         this.reservedSpdBuff = 0;
         this.reservedDefBuff = 0;
@@ -743,6 +744,7 @@ class Unit extends BattleMapElement {
         this.restStyleSkillAvailableTurn = 0; // 「その後」以降の効果は、その効果が発動後Nターンの間発動しない
 
         this.nameWithGroup = "";
+        this.groupName = "";
         this.__updateNameWithGroup();
 
         // TODO: リファクタリングする
@@ -799,6 +801,7 @@ class Unit extends BattleMapElement {
 
     __updateNameWithGroup() {
         this.nameWithGroup = this.name + "(" + groupIdToString(this.groupId) + ")";
+        this.groupName = groupIdToString(this.groupId);
     }
 
     saveCurrentHpAndSpecialCount() {
@@ -855,7 +858,7 @@ class Unit extends BattleMapElement {
                 this.moveCountForCanto = this.calcMoveCountForCanto();
                 if (this.isRangedWeaponType()) {
                     this.endAction();
-                    this.applyEndActionSkills();
+                    this.applyEndActionSkills(true);
                     this.deactivateCanto();
                 }
             }
@@ -2288,6 +2291,7 @@ class Unit extends BattleMapElement {
      */
     neutralizeStatusEffect(statusEffect) {
         let removed = this.removeStatusEffects(statusEffect);
+        // 連携阻害が解除された場合以下の3ステータスも解除する
         if (statusEffect === StatusEffectType.Schism && removed) {
             this.neutralizePositiveStatusEffect(StatusEffectType.TriangleAttack);
             this.neutralizePositiveStatusEffect(StatusEffectType.DualStrike);
@@ -2309,16 +2313,25 @@ class Unit extends BattleMapElement {
         this.neutralizeStatusEffects([...this.reservedStatusEffectSetToNeutralize]);
         this.reservedStatusEffectSetToNeutralize.clear();
 
-        // TODO: 予約解除の順序を検証する
-        let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
-        let effects = this.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
-        for (let i = 0; i < this.reservedStatusEffectCountInOrder; i++) {
-            if (effects.length >= i + 1) {
-                this.reservedStatusEffectSetToNeutralize.add(effects[i]);
-                this.neutralizeStatusEffect(effects[i]);
+        // 不利な状態を上から解除
+        let negativeOrder = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let negativeEffects = this.getNegativeStatusEffects().sort((a, b) => negativeOrder(a) - negativeOrder(b));
+        for (let i = 0; i < this.reservedNegativeStatusEffectCountInOrder; i++) {
+            if (negativeEffects.length >= i + 1) {
+                this.neutralizeStatusEffect(negativeEffects[i]);
             }
         }
-        this.reservedStatusEffectCountInOrder = 0;
+        this.reservedNegativeStatusEffectCountInOrder = 0;
+
+        // 有利な状態を上から解除
+        let positiveOrder = k => POSITIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let positiveEffects = this.getPositiveStatusEffects().sort((a, b) => positiveOrder(a) - positiveOrder(b));
+        for (let i = 0; i < this.reservedPositiveStatusEffectCountInOrder; i++) {
+            if (positiveEffects.length >= i + 1) {
+                this.neutralizeStatusEffect(positiveEffects[i]);
+            }
+        }
+        this.reservedPositiveStatusEffectCountInOrder = 0;
     }
 
     neutralizeNegativeStatusEffects() {
@@ -2838,7 +2851,7 @@ class Unit extends BattleMapElement {
         this.endAction();
     }
 
-    applyEndActionSkills() {
+    applyEndActionSkills(isCantoEndAction = false) {
         // ユニットが死んだ場合は発動しないはず
         // TODO: 今後死後に発動する効果を持つスキルが実装されたら修正する
         if (this.isDead) {
@@ -2853,9 +2866,12 @@ class Unit extends BattleMapElement {
         }
 
         let env = new NodeEnv().setTarget(this).setSkillOwner(this).setUnitManager(g_appData)
-            .setBattleMap(g_appData.map);
+            .setBattleMap(g_appData.map).setIsCantoEndAction(isCantoEndAction);
         env.setName('行動後or再移動後').setLogLevel(getSkillLogLevel());
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
+        if (isCantoEndAction) {
+            AFTER_CANTO_HOOKS.evaluateWithUnit(this, env)
+        }
         for (let unit of g_appData.enumerateAllUnitsOnMap()) {
             unit.applyReservedState(false);
         }
@@ -3100,6 +3116,7 @@ class Unit extends BattleMapElement {
         this.initReservedHp();
         this.initReservedStatusEffects();
         this.initReservedDebuffs();
+        this.clearReservedGreatTalents();
     }
 
     initReservedHp() {
@@ -3110,6 +3127,9 @@ class Unit extends BattleMapElement {
 
     initReservedStatusEffects() {
         this.reservedStatusEffects = [];
+        this.reservedStatusEffectSetToNeutralize = new Set();
+        this.reservedPositiveStatusEffectCountInOrder = 0;
+        this.reservedNegativeStatusEffectCountInOrder = 0;
     }
 
     initReservedDebuffs() {
@@ -5970,13 +5990,11 @@ class Unit extends BattleMapElement {
             if (this.hasStatusEffect(StatusEffectType.ShieldFlying)) {
                 return true;
             }
-        } else if (effective === EffectiveType.Armor
-        ) {
+        } else if (effective === EffectiveType.Armor) {
             if (this.hasStatusEffect(StatusEffectType.ShieldArmor)) {
                 return true;
             }
-        } else if (effective === EffectiveType.Dragon
-        ) {
+        } else if (effective === EffectiveType.Dragon) {
             if (this.hasStatusEffect(StatusEffectType.ShieldDragon)) {
                 return true;
             }
@@ -5987,6 +6005,8 @@ class Unit extends BattleMapElement {
                 return true;
             }
         }
+
+        if (this.battleContext.invalidatedEffectives.includes(effective)) return true;
 
         switch (this.weapon) {
             case Weapon.Marute:

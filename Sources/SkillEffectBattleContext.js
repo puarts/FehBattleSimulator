@@ -204,6 +204,7 @@ class IsUnitsHpGteNPercentAtStartOfTurnNode extends PercentageCondNode {
 }
 
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = new IsUnitsHpGteNPercentAtStartOfTurnNode(25);
+const IS_UNITS_HP_GTE_100_PERCENT_AT_START_OF_TURN_NODE = new IsUnitsHpGteNPercentAtStartOfTurnNode(100);
 
 class IsUnitsHpLteNPercentAtStartOfTurnNode extends PercentageCondNode {
     evaluate(env) {
@@ -874,6 +875,8 @@ class ReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     }
 }
 
+const REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE = n => new ReducesDamageExcludingAoeSpecialsNode(n);
+
 class ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode extends ApplyingNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -913,6 +916,9 @@ class ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode extends Ap
     }
 }
 
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_PER_ATTACK_NODE =
+    n => new ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode(n);
+
 class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
     getDescription(n) {
         return `受けるダメージ-${n}(戦闘前)`;
@@ -927,6 +933,8 @@ class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
         env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionForPrecombat}`);
     }
 }
+
+const REDUCES_DAMAGE_BEFORE_COMBAT_NODE = n => new ReducesDamageBeforeCombatNode(n);
 
 class ReducesDamageByAoeNode extends ReducesDamageBeforeCombatNode {
 }
@@ -947,6 +955,8 @@ class ReducesDamageFromAoeSpecialsByXPercentNode extends ApplyingNumberNode {
     }
 }
 
+const REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE = x => new ReducesDamageFromAoeSpecialsByXPercentNode(x);
+
 /**
  * reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials),
  */
@@ -966,6 +976,23 @@ class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends From
 
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(n);
+
+class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.damageReductionRatiosByNonDefenderSpecial.push(percentage / 100);
+        let ratios = unit.battleContext.damageReductionRatiosByNonDefenderSpecial;
+        env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${percentage}%軽減（奥義扱い）: ratios [${ratios}]`);
+    }
+}
+
+const REDUCE_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE =
+        n => new ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode(n);
 
 /**
  * reduces damage from foe's first attack by X% during combat
@@ -1071,6 +1098,9 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode extends Apply
     }
 }
 
+const REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_PER_ATTACK_NODE =
+    n => new ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode(n);
+
 class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends ApplyingNumberNode {
     evaluate(env) {
         let n = this.evaluateChildren(env);
@@ -1080,6 +1110,9 @@ class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends Applying
         env.debug(`${unit.nameWithGroup}は戦闘中、自分の奥義によるダメージ+${n}: ${damage - n} => ${damage}`);
     }
 }
+
+const DEALS_DAMAGE_WHEN_TRIGGERING_SPECIAL_DURING_COMBAT_PER_ATTACK_NODE =
+        n => new DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(n);
 
 /**
  * [Special]
@@ -1327,6 +1360,9 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDu
     }
 }
 
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE =
+    n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode(n);
+
 // 自分の最初の追撃前に奥義発動カウント-N(符号に注意Nは自然数)
 class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstFollowUpAttackNode extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDuringCombatNode {
     static {
@@ -1417,7 +1453,7 @@ class GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNod
     }
 }
 
-class CanTargetActivateNonSpecialMiracleNode extends BoolNode {
+class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1438,7 +1474,7 @@ class CanTargetActivateNonSpecialMiracleNode extends BoolNode {
     }
 }
 
-const CAN_TARGET_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = n => new CanTargetActivateNonSpecialMiracleNode(n);
+const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = n => new TargetCanActivateNonSpecialMiracleNode(n);
 
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 
@@ -1512,7 +1548,7 @@ const NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE
 /**
  * when unit deals damage to foe during combat, restores 7 HP to unit (triggers even if 0 damage is dealt).
  */
-class WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode extends FromPositiveNumberNode {
+class WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1524,6 +1560,9 @@ class WhenTargetDealsDamageDuringCombatRestoresNHPToTargetNode extends FromPosit
         env.debug(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
     }
 }
+
+const WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_TO_TARGET_NODE =
+    n => new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(n);
 
 class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode extends SkillEffectNode {
     static {
@@ -2020,7 +2059,7 @@ class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
 const CALCULATES_TARGETS_DAMAGE_FROM_STAFF_LIKE_OTHER_WEAPONS_NODE =
     new CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode();
 
-class IsSaviorTriggeredNode extends BoolNode {
+class IsTargetsSaviorTriggeredNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2033,7 +2072,7 @@ class IsSaviorTriggeredNode extends BoolNode {
     }
 }
 
-const IS_SAVIOR_TRIGGERED_NODE = new IsSaviorTriggeredNode();
+const IS_TARGETS_SAVIOR_TRIGGERED_NODE = new IsTargetsSaviorTriggeredNode();
 
 class TargetCanCounterattackBeforeTargetsFoesFirstAttackNode extends SkillEffectNode {
     static {
@@ -2049,3 +2088,18 @@ class TargetCanCounterattackBeforeTargetsFoesFirstAttackNode extends SkillEffect
 
 const TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE =
     new TargetCanCounterattackBeforeTargetsFoesFirstAttackNode()
+
+class TargetNeutralizesEffectiveAgainstXNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let e = this.evaluateChildren(env);
+        unit.battleContext.invalidatedEffectives.push(e);
+        env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(e)}特攻を無効`);
+    }
+}
+
+const TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE = e => new TargetNeutralizesEffectiveAgainstXNode(e);

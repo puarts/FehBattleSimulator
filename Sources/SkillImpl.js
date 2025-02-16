@@ -2247,7 +2247,7 @@
                 let getValue = k => NEGATIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
                 let effects = unit.getNegativeStatusEffects().sort((a, b) => getValue(a) - getValue(b));
                 this.writeDebugLog(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
-                unit.reservedStatusEffectCountInOrder += 2;
+                unit.reservedNegativeStatusEffectCountInOrder += 2;
             }
         }
     );
@@ -11849,7 +11849,6 @@
                 enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
                 let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に<span style="color: #ff0000">${7}</span>ダメージ`;
                 this.__writeDamageCalcDebugLog(logMessage);
-                this._damageCalc.writeSimpleLog(logMessage);
             }
         }
     );
@@ -11884,7 +11883,6 @@
                 enemyUnit.battleContext.damageAfterBeginningOfCombat += 7;
                 let logMessage = `${targetUnit.passiveAInfo.name}により${enemyUnit.getNameWithGroup()}に<span style="color: #ff0000">${7}</span>ダメージ`;
                 this.__writeDamageCalcDebugLog(logMessage);
-                this._damageCalc.writeSimpleLog(logMessage);
             }
         }
     );
@@ -12415,7 +12413,6 @@
                 targetUnit.battleContext.damageAfterBeginningOfCombat += 5;
                 let logMessage = `${enemyAllyUnit.nameWithGroup}のスキル(${skillId})により${targetUnit.getNameWithGroup()}に<span style="color: #ff0000">${5}</span>ダメージ`;
                 this.__writeDamageCalcDebugLog(logMessage);
-                this._damageCalc.writeSimpleLog(logMessage);
             }
         }
     );

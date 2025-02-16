@@ -3289,36 +3289,36 @@ class BattleSimulatorBase {
 
     writeSimpleLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.simpleLog += `<span class="log-info log-simple">${log}</span><br/>`;
+        this.vm.simpleLog += `<div class="log-info log-simple">${log}</div>`;
     }
 
     writeErrorLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.ERROR)) return;
-        let error = `<span class="log-error">${log}</span><br/>`;
+        let error = `<div class="log-error">${log}</div>`;
         this.vm.damageCalcLog += error;
         this.writeSimpleLogLine(error);
     }
 
     writeWarningLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.WARN)) return;
-        let warning = `<span class="log-warn">${log}</span><br/>`;
+        let warning = `<div class="log-warn">${log}</div>`;
         this.vm.damageCalcLog += warning;
         this.writeSimpleLogLine(warning);
     }
 
     writeLog(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.damageCalcLog += `<span class="log-info">${log}</span>`;
+        this.vm.damageCalcLog += `<div class="log-info">${log}</div>`;
     }
 
     writeLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.damageCalcLog += `<span class="log-info">${log}</span><br/>`;
+        this.vm.damageCalcLog += `<div class="log-info">${log}</div>`;
     }
 
     writeDebugLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.DEBUG)) return;
-        this.vm.damageCalcLog += `<span class="log-debug">${log}</span><br/>`;
+        this.vm.damageCalcLog += `<div class="log-debug">${log}</div>`;
     }
 
     #shouldLog(level) {
@@ -4391,13 +4391,16 @@ class BattleSimulatorBase {
             if (unit.heroIndex === targetUnit.heroIndex) {
                 // 他のインデックスが等しいユニットにも支援を設定する
                 unit.partnerHeroIndex = targetUnit.partnerHeroIndex;
+                unit.partnerLevel = targetUnit.partnerLevel;
             } else if (unit.heroIndex === targetUnit.partnerHeroIndex) {
                 // 自分の支援相手に自分を設定する
                 unit.partnerHeroIndex = targetUnit.heroIndex;
+                unit.partnerLevel = targetUnit.partnerLevel;
             } else {
                 if (unit.partnerHeroIndex === targetUnit.partnerHeroIndex) {
                     // 他のユニットが同じユニットを支援相手にしていた場合に支援を外す
                     unit.partnerHeroIndex = -1;
+                    unit.partnerLevel = PartnerLevel.None;
                 }
             }
         }
@@ -4503,6 +4506,9 @@ class BattleSimulatorBase {
      * @param  {UnitGroupType} group - グループ。どちらのターン開始時かを渡す。決闘の場合は引数を指定しない。
      */
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
+        if (group === UnitGroupType.Ally) {
+            g_appData.globalBattleContext.initContextInCurrentTurn();
+        }
         g_appData.isCombatOccuredInCurrentTurn = false;
         g_appData.globalBattleContext.initContextInCurrentTurnsPhase(group);
 
@@ -7226,9 +7232,10 @@ class BattleSimulatorBase {
                 self.writeLogLine(unit.getNameWithGroup() + "は行動終了");
             }
 
+            let isCantoActivating = unit.isCantoActivating;
             self.endUnitActionAndGainPhaseIfPossible(unit);
             unit.deactivateCanto();
-            unit.applyEndActionSkills();
+            unit.applyEndActionSkills(isCantoActivating);
             // 同時タイミングに付与された天脈を消滅させる
             g_appData.map.applyReservedDivineVein();
         }, serial);
@@ -7719,6 +7726,7 @@ class BattleSimulatorBase {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let func = function () {
+            let isCantoEndAction = unit.isCantoActivating;
             unit.isActionDoneDuringMoveCommand = false;
             if (enableSoundEffect) {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Move);
@@ -7754,10 +7762,9 @@ class BattleSimulatorBase {
                 }
                 self.updateAllUnitSpur();
             }
-
             if (unit.isActionDone) {
                 unit.isActionDoneDuringMoveCommand = true;
-                unit.applyEndActionSkills();
+                unit.applyEndActionSkills(isCantoEndAction);
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
             }
@@ -7765,7 +7772,7 @@ class BattleSimulatorBase {
             if (!unit.isActionDone && endAction) {
                 unit.endAction();
                 unit.deactivateCanto();
-                unit.applyEndActionSkills();
+                unit.applyEndActionSkills(isCantoEndAction);
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
             }
@@ -7866,14 +7873,14 @@ class BattleSimulatorBase {
             label,
             function (input) {
                 if (self.isCommandLogEnabled) {
-                    self.writeSimpleLogLine("「" + input[0] + "」を実行");
+                    self.writeSimpleLogLine(`<div class="log-action-header">「${input[0]}」を実行</div>`);
                 }
                 input[1]();
             },
             function (input) {
                 if (input[1] != null) {
                     if (self.isCommandLogEnabled) {
-                        self.writeSimpleLogLine("「" + input[0] + "」を元に戻す");
+                        self.writeSimpleLogLine(`<div class="log-action-header">「${input[0]}」を元に戻す</div>`);
                     }
                     importPerTurnSetting(input[1], false);
                 }
@@ -9128,21 +9135,25 @@ class BattleSimulatorBase {
         else if (structure instanceof OfCallingCircle) {
             let unit = g_appData.getReinforcementSlotUnitOnTrash(UnitGroupType.Ally);
             if (unit !== null) {
-                let circleTile = structure.placedTile;
-                let tile = circleTile.findTileForCallingCircle(unit, structure);
+                let tile = this.map.findTileForCallingCircle(unit, structure);
                 if (tile) {
                     moveUnitToMap(unit, tile.posX, tile.posY, false, false);
                     unit.anotherActionTurnForCallingCircle = g_appData.currentTurn;
+                    this.writeSimpleLogLine(`<div class="log-action-header">${unit.nameWithGroup}が増援として${tile.positionToString()}に出現</div>`);
+                } else {
+                    this.writeSimpleLogLine('<div class="log-action-header">マスが埋まっているので増援は出現しない<div');
                 }
             }
         }
         else if (structure instanceof DefCallingCircle) {
             let unit = g_appData.getReinforcementSlotUnitOnTrash(UnitGroupType.Enemy);
             if (unit !== null) {
-                let circleTile = structure.placedTile;
-                let tile = circleTile.findTileForCallingCircle(unit, structure, false);
+                let tile = this.map.findTileForCallingCircle(unit, structure, false);
                 if (tile) {
                     moveUnitToMap(unit, tile.posX, tile.posY, false, false);
+                    this.writeSimpleLogLine(`${unit.nameWithGroup}が増援として${tile.positionToString()}に出現`);
+                } else {
+                    this.writeSimpleLogLine('マスが埋まっているので増援は出現しない');
                 }
             }
         }
@@ -11610,7 +11621,7 @@ function loadSettings() {
     g_app.updateAllUnitSpur();
 
     let turnText = g_appData.currentTurn === 0 ? "戦闘開始前" : "ターン" + g_appData.currentTurn;
-    g_app.writeSimpleLogLine(turnText + "の設定を読み込みました。");
+    g_app.writeSimpleLogLine(`<div class="log-action-header">${turnText}の設定を読み込みました。</div>`);
     g_appData.commandQueuePerAction.clear();
     __updateChaseTargetTilesForAllUnits();
     updateAllUi();
@@ -11643,7 +11654,7 @@ function saveSettings() {
     console.log("saving..");
     g_appData.settings.saveSettings();
     console.log("current cookie:" + document.cookie);
-    g_app.writeSimpleLogLine("ターン" + g_appData.currentTurn + "の設定を保存しました。");
+    g_app.writeSimpleLogLine(`<div class="log-action-header">ターン${g_appData.currentTurn}の設定を保存しました。</div>`);
 }
 
 function exportPerTurnSettingAsString(

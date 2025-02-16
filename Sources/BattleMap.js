@@ -3275,4 +3275,108 @@ class BattleMap {
     toImgElem(id, imagePath, additionalStyle) {
         return `<img style='position:absolute;bottom:0;left:0;${additionalStyle}' class='draggable-elem' id='${id}' src='${imagePath}' width='${this.cellWidth}px' draggable='true' ondragstart='f_dragstart(event)' />`;
     }
+
+    /**
+     * 以下の優先順位でマスを選択する
+     * 1. 転移の魔法陣から増援ユニットが到達可能なマスのうち最も近いマス（天駆の効果を含める）
+     * 2. 到達不可能なマスも含め最も近いマス
+     * 3. 上のマス
+     * 4. 右のマス
+     *
+     * 配置できないマス
+     * 1. 未作動の罠、ダミー罠（味方限定）
+     * 2. 通過不可なマス
+     * @param {Unit} unit
+     * @param {OfCallingCircle|DefCallingCircle} callingCircle
+     * @param {boolean} isAlly
+     */
+    findTileForCallingCircle(unit, callingCircle, isAlly = true) {
+        let costMap = Array(this.width * this.height);
+        for (let [index, tile] of this._tiles.entries()) {
+            if (!tile.isMovableTileForUnit(unit)) {
+                costMap[index] = Infinity;
+                continue;
+            }
+            switch (tile.moveWeights) {
+                case CanNotReachTile:
+                case Infinity:
+                    costMap[index] = Infinity;
+                    continue;
+                case 0:
+                    costMap[index] = 0;
+                    continue;
+                default:
+                    costMap[index] = 1;
+            }
+            if (tile.__canActivatePathfinder(unit)) {
+                costMap[index] = 0;
+            }
+        }
+        console.log(`costMap: %o: ${costMap}`);
+        this.printMap(costMap, "costMap");
+        console.log(`callingCircle: ${callingCircle.posX}, ${callingCircle.posY}`);
+        let minCostMap = MapUtil.minCost(costMap, this.width, this.height, callingCircle.posX, callingCircle.posY);
+        this.printMap(minCostMap, "minCostMap");
+
+        let placableMap = Array(this.width * this.height);
+        for (let [index, tile] of this._tiles.entries()) {
+            placableMap[index] = tile.isUnitPlacableForUnit(unit) ? 0 : Infinity;
+            if (isAlly) {
+                if (tile.obj instanceof TrapBase ||
+                    tile.obj instanceof DefCallingCircle) {
+                    placableMap[index] = Infinity;
+                }
+            } else {
+                if (tile.obj instanceof OfCallingCircle) {
+                    placableMap[index] = Infinity;
+                }
+            }
+        }
+        this.printMap(placableMap, "placableMap");
+        let placableMinCostMap = ArrayUtil.add(minCostMap, placableMap);
+        this.printMap(placableMinCostMap, "placableMinCostMap");
+        let minCostIndexes = MapUtil.getMinCostIndexes(placableMinCostMap);
+        console.log(`minCostIndexes: ${minCostIndexes.map(i => this._tiles[i].positionToString())}`);
+        let sortedIndexes = MapUtil.sortIndexesByPriorityOfCallingCircleTile(minCostIndexes, this.width)
+        console.log(`sortedIndexes: ${sortedIndexes.map(i => this._tiles[i].positionToString())}`);
+
+        if (sortedIndexes.length === 0 ||
+            placableMinCostMap[sortedIndexes[0]] === Infinity) {
+            console.log(`sortedIndexes: ${sortedIndexes.map(i => this._tiles[i].positionToString())}`);
+            return this._findTileForCallingCircleWhenSurrounded(unit, callingCircle, placableMap);
+        }
+        console.log(`sortedIndexes[0]: ${sortedIndexes[0]}`);
+        return this._tiles[sortedIndexes[0]];
+    }
+
+    _findTileForCallingCircleWhenSurrounded(unit, callingCircle, placableMap) {
+        let distanceMap = MapUtil.calculateDistanceMap(this.width, this.height, callingCircle.posX, callingCircle.posY);
+        this.printMap(distanceMap, "distanceMap");
+        let placableMinCostMap = ArrayUtil.add(distanceMap, placableMap);
+        this.printMap(placableMinCostMap, "placableMinCostMap");
+        let minCostIndexes = MapUtil.getMinCostIndexes(placableMinCostMap);
+        console.log(`minCostIndexes: ${minCostIndexes.map(i => this._tiles[i].positionToString())}`);
+        let sortedIndexes = MapUtil.sortIndexesByPriorityOfCallingCircleTile(minCostIndexes, this.width)
+        console.log(`sortedIndexes: ${sortedIndexes.map(i => this._tiles[i].positionToString())}`);
+
+        if (sortedIndexes.length === 0 ||
+            placableMinCostMap[sortedIndexes[0]] === Infinity) {
+            return null;
+        }
+        return this._tiles[sortedIndexes[0]];
+    }
+
+    printMap(map, title = null) {
+        let result = '';
+        if (title) {
+            result += `${title}\n`;
+        }
+        for (let [index, value] of map.entries()) {
+            let s = value.toString().padStart(2, " ");
+            if (value === Infinity) s = ' x';
+            result += `[${s}]`;
+            if (index % this.width === this.width - 1) result += '\n';
+        }
+        console.log(result);
+    }
 }

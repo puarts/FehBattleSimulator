@@ -8,7 +8,7 @@
 }
 
 .log-warn {
-    font-size: 12px;
+    /*font-size: 12px;*/
     /*color: #ffa500;*/
     color: #ff6600;
 }
@@ -16,6 +16,7 @@
 .log-info {
     font-size: 10px;
     color: #000000;
+    width: 100%;
 }
 
 .log-debug {
@@ -46,6 +47,67 @@
 .log-trace5 {
     font-size: 10px;
     color: #bbbbbb;
+}
+
+.log-action-header {
+    background: #eeeeee;
+    width: 100%;
+    margin-top: 2px;
+}
+
+.log-ally {
+    color: #0033ff;
+}
+
+.log-ally-header {
+    color: #0033ff;
+    background: #ddddff;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.log-enemy {
+    color: #ff3300;
+}
+
+.log-enemy-header {
+    color: #ff3300;
+    background: #ffdddd;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.log-special-str {
+    color: #ff00ff;
+}
+
+.log-special {
+    color: #ff00ff;
+    font-weight: bold;
+}
+
+.log-damage {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.log-damage-line {
+    /*border: 1px solid #ffbbbb;*/
+    padding-left: 5px;
+}
+
+.log-heal {
+    color: #008800;
+    font-weight: bold;
+}
+
+.log-heal-line {
+    /*border: 1px solid #bbffbb;*/
+    padding-left: 5px;
+}
+
+.log-gray {
+    color: #888888;
 }
 
 /* Summary */
@@ -566,8 +628,4 @@ td.enemy {
 
 .status-effect-description {
     color: grey;
-}
-
-.special-count {
-    color: #ff00ff
 }

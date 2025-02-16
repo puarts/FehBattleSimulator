@@ -95,6 +95,21 @@ class DebugEnvNode extends SkillEffectNode {
     }
 }
 
+const DEBUG_ENV_NODE = new DebugEnvNode();
+
+class PrintDebugNode extends SkillEffectNode {
+    constructor(message) {
+        super();
+        this._message = message;
+    }
+
+    evaluate(env) {
+        console.log(`debug message: ${this._message}`);
+    }
+}
+
+const PRINT_DEBUG_NODE = message => new PrintDebugNode(message);
+
 /**
  * @abstract
  */
@@ -622,6 +637,16 @@ class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
     }
 }
 
+const SPACES_WITHIN_N_SPACES_OF_TARGET_NODE = n => new SpacesWithinNSpacesOfTargetNode(n);
+
+class SpacesWithinNSpacesOfFoeNode extends SpacesWithinNSpacesOfTargetNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const SPACES_WITHIN_N_SPACES_OF_FOE_NODE = n => new SpacesWithinNSpacesOfFoeNode(n);
+
 class SpacesOfTargetNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -729,7 +754,9 @@ const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode
 
 const ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE = new class extends BoolNode {
     evaluate(env) {
-        return env.target.isPartner(env.skillOwner);
+        let result = env.target.isPartner(env.skillOwner);
+        env.debug(`${env.target.nameWithGroup}と${env.skillOwner.nameWithGroup}は支援を結んでいるか: ${result}`);
+        return result;
     }
 }();
 
@@ -833,6 +860,8 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
     }
 }
 
+const NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(1);
+const NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(2);
 const NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(3);
 
 class NumOfFoesAlliesWithinNSpacesNode extends NumOfTargetsAlliesWithinNSpacesNode {
@@ -1138,12 +1167,14 @@ class AfterCombatEnv extends NodeEnv {
      * @param {PostCombatSkillHander} handler
      * @param {Unit} targetUnit
      * @param {Unit} enemyUnit
+     * @param {BattleMap} battleMap
      */
-    constructor(handler, targetUnit, enemyUnit) {
+    constructor(handler, targetUnit, enemyUnit, battleMap) {
         super();
         this.phase = NodeEnv.PHASE.AFTER_COMBAT;
         this.setPostCombatHandler(handler);
         this.setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit);
+        this.setBattleMap(battleMap);
     }
 }
 
@@ -1278,6 +1309,8 @@ class IsBonusActiveOnTargetNode extends BoolNode {
     }
 }
 
+const IS_BONUS_ACTIVE_ON_TARGET_NODE = new IsBonusActiveOnTargetNode();
+
 /**
  * 【Bonus】is active on unit
  */
@@ -1331,6 +1364,14 @@ class HasTargetEnteredCombatDuringCurrentTurnNode extends BoolNode {
 }
 
 const HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new HasTargetEnteredCombatDuringCurrentTurnNode();
+
+class HasFoeEnteredCombatDuringCurrentTurnNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const HAS_FOE_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE = new HasFoeEnteredCombatDuringCurrentTurnNode();
 
 class HasSkillOwnerEnteredCombatDuringCurrentTurnNode extends HasTargetEnteredCombatDuringCurrentTurnNode {
     static {
@@ -2501,6 +2542,8 @@ class TargetsRangeNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_RANGE_NODE = new TargetsRangeNode();
+
 class FoesRangeNode extends TargetsRangeNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -2631,11 +2674,15 @@ class IsTargetRangedWeaponNode extends BoolNode {
     }
 }
 
+const IS_TARGET_RANGED_WEAPON_NODE = new IsTargetRangedWeaponNode();
+
 class IsFoeRangedWeaponNode extends IsTargetRangedWeaponNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
+
+const IS_FOE_RANGED_WEAPON_NODE = new IsFoeRangedWeaponNode();
 
 class IsTarget2SpacesFromTargetsFoeNode extends BoolNode {
     static {
@@ -2869,6 +2916,8 @@ class RestoreTargetHpNode extends FromPositiveNumberNode {
     }
 }
 
+const RESTORE_TARGET_HP_NODE = n => new RestoreTargetHpNode(n);
+
 class ForEachNode extends SkillEffectNode {
 }
 
@@ -3065,6 +3114,10 @@ class ForEachTargetsFoeWithinNSpacesOfTargetNode extends ForEachUnitOnMapNode {
 }
 
 class ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode extends ForEachUnitAndAllyNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     /** @type {NumberNode} */
     _nNode;
 
@@ -3079,7 +3132,7 @@ class ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode extends ForEachUnitAn
     }
 
     getUnits(env) {
-        let unit = env.target;
+        let unit = this.getUnit(env);
         let spaces = this._nNode.evaluate(env);
         let units = env.unitManager.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, spaces, true);
         let unitArray = GeneratorUtil.toArray(units);
@@ -3108,6 +3161,15 @@ const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE =
 
 const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_3_SPACES_OF_TARGET_NODE =
     (...children) => new ForEachTargetAndTargetsAllyWithin3SpacesOfTargetNode(TRUE_NODE, ...children);
+
+class ForEachFoeAndFoesAllyWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOR_EACH_FOE_AND_FOES_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE =
+    (n, pred, ...nodes) => new ForEachFoeAndFoesAllyWithinNSpacesOfTargetNode(n, pred, ...nodes);
 
 class ForEachTargetAndFoeWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
     getUnits(env) {
@@ -3781,6 +3843,8 @@ class ApplyDivineVeinNode extends SkillEffectNode {
     }
 }
 
+const APPLY_DIVINE_VEIN_NODE = (divineVein, group, turns) => new ApplyDivineVeinNode(divineVein, group, turns);
+
 // Tileへの効果 END
 
 // Tileを返す START
@@ -3857,6 +3921,9 @@ class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
         return resultSet;
     }
 }
+
+const TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
+    (n, spacesNode) => new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
 class SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode extends TargetsPlacableSpacesWithinNSpacesFromSpaceNode {
     static {
@@ -3971,6 +4038,9 @@ class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
     }
 }
 
+const INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE =
+    (...stats) => new InflictsStatsMinusOnTargetOnMapNode(...stats);
+
 class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
     evaluate(env) {
         let unit = env.target;
@@ -4005,6 +4075,8 @@ const GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE =
 
 class InflictsStatusEffectsOnTargetOnMapNode extends GrantsStatusEffectsOnTargetOnMapNode {
 }
+
+const INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE = (...es) => new InflictsStatusEffectsOnTargetOnMapNode(...es);
 
 // TODO: rename
 class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
@@ -4153,6 +4225,8 @@ class GrantsAnotherActionNode extends SkillEffectNode {
     }
 }
 
+const GRANTS_ANOTHER_ACTION_NODE = new GrantsAnotherActionNode();
+
 class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -4165,6 +4239,8 @@ class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
     }
 }
 
+const GRANTS_ANOTHER_ACTION_TO_TARGET_ON_MAP_NODE = new GrantsAnotherActionToTargetOnMapNode();
+
 class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -4176,6 +4252,8 @@ class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
         unit.reEnablesCantoOnMap();
     }
 }
+
+const RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE = new ReEnablesCantoToTargetOnMapNode();
 
 class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
     static {
@@ -4534,10 +4612,29 @@ class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
         env.debug(`${unit.nameWithGroup}の現在の不利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
 
         let n = this.evaluateChildren(env);
-        let result = unit.reservedStatusEffectCountInOrder += n;
+        let result = unit.reservedNegativeStatusEffectCountInOrder += n;
         env.debug(`${unit.nameWithGroup}は不利な状態を上位${n}個解除: ${result - n} -> ${result}`);
     }
 }
+
+class NeutralizesTargetsNBonusEffectsNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let getValue = k => POSITIVE_STATUS_EFFECT_ORDER_MAP.get(k) ?? Number.MAX_SAFE_INTEGER;
+        let effects = unit.getPositiveStatusEffects().sort((a, b) => getValue(a) - getValue(b));
+        env.debug(`${unit.nameWithGroup}の現在の有利なステータス: ${effects.map(e => getStatusEffectName(e))}`);
+
+        let n = this.evaluateChildren(env);
+        let result = unit.reservedPositiveStatusEffectCountInOrder += n;
+        env.debug(`${unit.nameWithGroup}は有利な状態を上位${n}個解除: ${result - n} -> ${result}`);
+    }
+}
+
+const NEUTRALIZES_TARGETS_N_BONUS_EFFECTS_NODE = n => new NeutralizesTargetsNBonusEffectsNode(n);
 
 class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
     static {
@@ -4557,13 +4654,16 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
         let unit = this.getUnit(env);
         if (!unit.oneTimeActionPerTurnActivatedSet.has(this._id)) {
             unit.oneTimeActionPerTurnActivatedSet.add(this._id);
-            env.debug(`${unit.nameWithGroup}は1ターン1回の補助効果（${this._id}）をこのターン初めて発動`);
+            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）をこのターン初めて発動`);
             return this.evaluateChildren(env);
         } else {
-            env.debug(`${unit.nameWithGroup}は1ターン1回の補助効果（${this._id}）を発動済み`);
+            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）を発動済み`);
         }
     }
 }
+
+const TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE = (id, ...nodes) =>
+    new TargetsOncePerTurnSkillEffectNode(id, ...nodes);
 
 class TargetsRestSupportSkillAvailableTurnNode extends SkillEffectNode {
     static {
@@ -4728,6 +4828,21 @@ class HasTargetAttackedNode extends BoolNode {
 
 const HAS_TARGET_ATTACKED_NODE = new HasTargetAttackedNode();
 
+class HasTargetBeenAttackedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isAttackedDone;
+        env.debug(`${unit.nameWithGroup}はこのターン攻撃をされたか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_BEEN_ATTACKED_NODE = new HasTargetBeenAttackedNode();
+
 class IsAnotherActionByAssistActivatedInCurrentTurnOnTargetsTeamNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -4764,6 +4879,7 @@ class CanActivateAttackerSpecialNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         env.debug(`アタッカーは奥義を発動することができるか: ${env.canActivateAttackerSpecial}`);
         return env.canActivateAttackerSpecial;
@@ -4771,3 +4887,58 @@ class CanActivateAttackerSpecialNode extends BoolNode {
 }
 
 const CAN_ACTIVATE_ATTACKER_SPECIAL_NODE = new CanActivateAttackerSpecialNode();
+
+class IsTargetActionDoneDuringMoveCommandNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isActionDoneDuringMoveCommand;
+        env.debug(`${unit.nameWithGroup}はこの移動中行動終了したか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_ACTION_DONE_DURING_MOVE_COMMAND_NODE = new IsTargetActionDoneDuringMoveCommandNode();
+
+class IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let dcw = env.damageCalculatorWrapper;
+        if (!dcw) {
+            env.error('DamageCalculatorWrapperがありません。');
+        }
+        let result = dcw.globalBattleContext.isMiracleWithoutSpecialActivatedInCurrentTurn(unit.groupId);
+        env.debug(`${unit.nameWithGroup}の軍の奥義以外の祈りがこのターン発動したか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGETS_TEAMS_MIRACLE_WITHOUT_SPECIAL_ACTIVATED_ON_CURRENT_TURN_NODE =
+    new IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode();
+
+class IsTargetsFollowUpOrPotentFollowUpAttackNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let context = env.damageCalcContext;
+        if (context) {
+            let result = context.isFollowupOrPotentFollowupAttack();
+            env.debug(`${unit.nameWithGroup}の追撃か: ${result}`);
+            return result;
+        } else {
+            env.error('コンテキストがありません。');
+        }
+    }
+}
+
+const IS_TARGETS_FOLLOW_UP_OR_POTENT_FOLLOW_UP_ATTACK_NODE = new IsTargetsFollowUpOrPotentFollowUpAttackNode();

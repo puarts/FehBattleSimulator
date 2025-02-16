@@ -3723,6 +3723,23 @@ Weapon.SwordOfIsaach = 3152; // イザークの守護剣
 Special.CrusadersAstra = 3153; // 剣聖の流星雨
 PassiveC.BrutalTempest = 3154; // 迅雷風烈・鬼没
 Weapon.Spear = 3155; // スレンドスピア
+Weapon.EaglesHeart = 3160; // 黒鷲の愛の斧
+PassiveA.SlySturdyBlow = 3161; // 鬼神金剛の掩撃
+PassiveB.PureStorm = 3162; // 正真狂嵐
+PassiveC.AssaultRush = 3163; // 一斉突撃・突貫
+Weapon.LionsHeart = 3164; // 青獅子の愛の剣
+Special.HazeSlice = 3165; // 霞切り
+PassiveB.PureAtrocity = 3166; // 正真無惨
+Weapon.DeersHeart = 3167; // 金鹿の愛の弓
+PassiveB.PureStarfall = 3168; // 正真落星
+PassiveC.ASInciteHone = 3169; // 攻速鼓舞・奮激
+Weapon.DevotedBreath = 3170; // 永き愛のブレス
+PassiveB.PureDragonWall = 3171; // 正真竜鱗障壁
+PassiveC.LowerGround = 3172; // 縄張り・護り手・近
+PassiveB.Chivalry2 = 3158; // 騎士道・承
+PassiveC.OpeningRetainerPlus = 3159; // 開神の眷属・神
+Weapon.DarkMonograph = 3173; // 闇魔道の研究書
+Weapon.AerialLongsword = 3174; // 四天馬筆頭の長剣
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -3825,6 +3842,24 @@ const EffectiveType = {
     Dagger: 12,
     Bow: 13,
 }
+
+const EFFECTIVE_TYPE_NAMES = new Map([
+    [EffectiveType.None, "-"],
+    [EffectiveType.Armor, "重装"],
+    [EffectiveType.Infantry, "歩行"],
+    [EffectiveType.Cavalry, "騎馬"],
+    [EffectiveType.Flying, "飛行"],
+    [EffectiveType.Dragon, "竜"],
+    [EffectiveType.Beast, "獣"],
+    [EffectiveType.Tome, "魔法"],
+    [EffectiveType.Sword, "剣"],
+    [EffectiveType.Lance, "槍"],
+    [EffectiveType.Axe, "斧"],
+    [EffectiveType.ColorlessBow, "無色弓"],
+    [EffectiveType.Staff, "杖"],
+    [EffectiveType.Dagger, "暗器"],
+    [EffectiveType.Bow, "弓"],
+]);
 
 const ColorType = {
     Unknown: -1,

@@ -235,6 +235,8 @@ class SkillEffectNode {
     }
 }
 
+const SKILL_EFFECT_NODE = (...nodes) => new SkillEffectNode(...nodes);
+
 /**
  * @abstract
  */
@@ -279,6 +281,22 @@ class PositiveNumberNode extends NumberNode {
         return number;
     }
 }
+
+class IntPercentageNumberNode extends NumberNode {
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+    evaluate(env) {
+        let n = this._nNode.evaluate(env);
+        if (!Number.isInteger(n)) {
+            env.error(`Not a integer: ${n}`);
+        }
+        return n;
+    }
+}
+
+const INT_PERCENTAGE_NUMBER_NODE = n => new IntPercentageNumberNode(n);
 
 /**
  * @abstract
@@ -504,11 +522,14 @@ class NotNode extends BoolNode {
      * @param {boolean|BoolNode} value
      */
     constructor(value) {
-        super(BoolNode.makeBoolNodeFrom(value));
+        super();
+        this._boolNode = BoolNode.makeBoolNodeFrom(value);
     }
 
     evaluate(env) {
-        return !this.evaluateChildren(env)[0];
+        let result = !this._boolNode.evaluate(env);
+        env.trace(`[NotNode] ${result}`);
+        return result;
     }
 }
 
@@ -579,6 +600,33 @@ class NumberOperationNode extends NumberNode {
         return evaluations;
     }
 }
+
+class EnsureMinNode extends NumberOperationNode {
+    #minNode;
+
+    /**
+     * @param {number|NumberNode} child
+     * @param {number|NumberNode} min
+     */
+    constructor(child, min) {
+        super(child);
+        this.#minNode = NumberNode.makeNumberNodeFrom(min);
+    }
+
+    evaluateChildren(env) {
+        return super.evaluateChildren(env)[0];
+    }
+
+    evaluate(env) {
+        let value = this.evaluateChildren(env);
+        let min = this.#minNode.evaluate(env);
+        let result = MathUtil.ensureMin(value, min);
+        env?.trace(`[EnsureMinNode] (value: ${value}, min: ${min}) => ${result}`);
+        return result;
+    }
+}
+
+const ENSURE_MIN_NODE = (child, min) => new EnsureMinNode(child, min);
 
 class EnsureMaxNode extends NumberOperationNode {
     #maxNode;
@@ -822,6 +870,39 @@ class IfNode extends SkillEffectNode {
 const IF_NODE = (condNode, ...stmtNodes) => new IfNode(condNode, ...stmtNodes);
 
 const UNLESS_NODE = (condNode, ...stmtNodes) => IF_NODE(NOT_NODE(condNode), ...stmtNodes);
+
+class IfElseNode extends SkillEffectNode {
+    /** @type {BoolNode} */
+    #condNode;
+
+    /**
+     * @param {BoolNode} condNode
+     * @param {number|NumberNode} trueNode
+     * @param {number|NumberNode} falseNode
+     */
+    constructor(condNode, trueNode, falseNode) {
+        super(NumberNode.makeNumberNodeFrom(trueNode), NumberNode.makeNumberNodeFrom(falseNode));
+        this.#condNode = condNode;
+    }
+
+    /**
+     * @returns {NumberNode[]}
+     */
+    getChildren() {
+        return super.getChildren();
+    }
+
+    evaluate(env) {
+        let condResult = this.#condNode.evaluate(env);
+        let index = condResult ? 0 : 1;
+        env?.trace(`[IfThenElseNode] 条件を評価: ${condResult}`)
+        let evalNode = condResult ? 'IF' : 'ELSE';
+        env?.trace(`[IfThenElseNode] ${evalNode}を評価`);
+        this.getChildren()[index].evaluate(env);
+    }
+}
+
+const IF_ELSE_NODE = (condNode, trueNode, falseNode) => new IfElseNode(condNode, trueNode, falseNode);
 
 class TernaryConditionalNumberNode extends NumberNode {
     /** @type {BoolNode} */

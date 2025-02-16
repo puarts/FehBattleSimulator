@@ -945,17 +945,6 @@ class BeginningOfTurnSkillHandler {
                 }
             }
                 break;
-            case Weapon.EbonBolverk: {
-                let count = 0;
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                    count++;
-                }
-                if (count >= 2) {
-                    skillOwner.reserveToAddStatusEffect(StatusEffectType.NullFollowUp);
-                    skillOwner.reserveToAddStatusEffect(StatusEffectType.SpecialCooldownChargePlusOnePerAttack);
-                }
-            }
-                break;
             case PassiveC.AssaultTroop3: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {

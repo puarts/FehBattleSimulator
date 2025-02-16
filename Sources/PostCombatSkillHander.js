@@ -364,7 +364,7 @@ class PostCombatSkillHander {
                     break;
             }
         }
-        let env = new AfterCombatEnv(this, targetUnit, enemyUnit);
+        let env = new AfterCombatEnv(this, targetUnit, enemyUnit, this.map);
         env.setName('戦闘後').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
@@ -467,11 +467,6 @@ class PostCombatSkillHander {
                 case PassiveB.SpdDefBulwark3:
                 case PassiveB.SpdResBulwark3:
                     targetUnit.reserveHeal(7);
-                    break;
-                case Weapon.EbonBolverk:
-                    if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
-                        targetUnit.reserveHeal(7);
-                    }
                     break;
                 case Weapon.MorphFimbulvetr:
                     if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
@@ -1342,10 +1337,15 @@ class PostCombatSkillHander {
 
     __applySkillEffectAfterCombatNeverthelessDeadForUnit(attackUnit, attackTargetUnit, attackCount) {
         if (attackUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated) {
-            g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
+            this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
+            this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
             attackUnit.reserveHeal(99);
+        } else if (attackUnit.battleContext.hasNonSpecialMiracleActivated) {
+            this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
+        } else if (attackUnit.battleContext.hasNonSpecialOneTimePerMapMiracleAcitivated) {
+            this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
         }
-        let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit);
+        let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit, this.map);
         env.setName('戦闘後(死んでも発動)').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_NEVERTHELESS_HOOKS.evaluateWithUnit(attackUnit, env);
         for (let skillId of attackUnit.enumerateSkills()) {

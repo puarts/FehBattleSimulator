@@ -362,6 +362,15 @@ class NodeEnv {
         return this;
     }
 
+    getIsCantoEndAction() {
+        return this.isCantoEndAction;
+    }
+
+    setIsCantoEndAction(isCantoEndAction) {
+        this.isCantoEndAction = isCantoEndAction;
+        return this;
+    }
+
     /**
      * @param {number} v
      */

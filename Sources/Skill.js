@@ -1296,10 +1296,127 @@ const StatusEffectType = {
     DivinelyInspiring: 75, // 神竜の結束
     PreemptPulse: 76, // 初撃の鼓動
     IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat: 77, // 戦闘中、敵の追撃の速さ条件+10
-    PotentFollow: 78,
+    PotentFollow: 78, // 神速追撃
     // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };
+
+const POSITIVE_STATUS_EFFECT_ARRAY = [
+// 双界効果・刃
+    StatusEffectType.ResonantBlades,
+// 双界効果・盾
+    StatusEffectType.ResonantShield,
+// 七色の叫び
+    StatusEffectType.RallySpectrum,
+// 奮激
+    StatusEffectType.Incited,
+// 強化増幅
+    StatusEffectType.BonusDoubler,
+    // 敵弱化増幅
+    StatusEffectType.FoePenaltyDoubler,
+// 神軍師の策
+    StatusEffectType.GrandStrategy,
+// 未来を知るもの
+    StatusEffectType.FutureWitness,
+// 毒も薬に、薬も毒に
+    StatusEffectType.Dosage,
+// 多感
+    StatusEffectType.Empathy,
+// 神竜の結束
+    StatusEffectType.DivinelyInspiring,
+// 赤の呪い
+    StatusEffectType.Anathema,
+// 強化ダメージ+
+    StatusEffectType.Treachery,
+// 敵弱化ダメージ+
+    StatusEffectType.TotalPenaltyDamage,
+// 受けた範囲奥義のダメージを80％軽減
+    StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent,
+// 回避
+    StatusEffectType.Dodge,
+// 自分から攻撃した時、最初に受けた攻撃のダメージを40％軽減
+    StatusEffectType.ReducesDamageFromFirstAttackBy40Percent,
+// 落星
+    StatusEffectType.FallenStar,
+// 真落星
+    StatusEffectType.DeepStar,
+// 敵の強化の+を無効
+    StatusEffectType.NeutralizesFoesBonusesDuringCombat,
+// 弱化を無効
+    StatusEffectType.NeutralizesPenalties,
+// 戦闘外ダメージ無効
+    StatusEffectType.EnGarde,
+// 見切り・パニック
+    StatusEffectType.NullPanic,
+// 見切り・追撃効果
+    StatusEffectType.NullFollowUp,
+// 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効
+    StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
+// 敵ワープ抑制
+    StatusEffectType.WarpBubble,
+// 神獣の蜜
+    StatusEffectType.DivineNectar,
+// 竜特効
+    StatusEffectType.EffectiveAgainstDragons,
+// 竜特効無効
+    StatusEffectType.ShieldDragon,
+// 重装特効無効
+    StatusEffectType.ShieldArmor,
+// 飛行特効無効
+    StatusEffectType.ShieldFlying,
+// 移動+1
+    StatusEffectType.MobilityIncreased,
+// 迅走
+    StatusEffectType.Gallop,
+// 突撃
+    StatusEffectType.Charge,
+// 天駆の道
+    StatusEffectType.Pathfinder,
+// 再移動(1)
+    StatusEffectType.Canto1,
+// 自分が移動可能な地形を平地のように移動可能
+    StatusEffectType.UnitCannotBeSlowedByTerrain,
+// 周囲2マス以内の味方の隣接マスに移動可能
+    StatusEffectType.AirOrders,
+// 時の門
+    StatusEffectType.TimesGate,
+// 魔刃
+    StatusEffectType.Hexblade,
+// 戦闘中、奥義発動カウント変動量+1
+    StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
+// 初撃の鼓動
+    StatusEffectType.PreemptPulse,
+// 自分から攻撃時、絶対追撃
+    StatusEffectType.FollowUpAttackPlus,
+    // 追撃不可
+    StatusEffectType.FollowUpAttackMinus,
+// 戦闘中、敵の追撃の速さ条件+10
+    StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat,
+// 神速追撃
+    StatusEffectType.PotentFollow,
+// 攻め立て
+    StatusEffectType.Desperation,
+// 待ちぶせ
+    StatusEffectType.Vantage,
+// 被害妄想
+    StatusEffectType.Paranoia,
+// 防壁
+    StatusEffectType.Bulwark,
+// 囮指名
+    StatusEffectType.AssignDecoy,
+// 相性相殺
+    StatusEffectType.CancelAffinity,
+// トライアングルアタック
+    StatusEffectType.TriangleAttack,
+// デュアルアタック
+    StatusEffectType.DualStrike,
+// エーギル奪取
+    StatusEffectType.EssenceDrain,
+// 縁
+    StatusEffectType.Bonded,
+];
+const POSITIVE_STATUS_EFFECT_ORDER_MAP = new Map();
+POSITIVE_STATUS_EFFECT_ARRAY.forEach((v, i) => POSITIVE_STATUS_EFFECT_ORDER_MAP.set(v, i));
 
 /**
  * 不利なステータスの解除される順番

@@ -157,6 +157,11 @@ const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
 const AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
+ * 再移動後
+ * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>} */
+const AFTER_CANTO_HOOKS = new SkillEffectHooks();
+
+/**
  * 追撃判定後
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const AFTER_FOLLOW_UP_CONFIGURED_HOOKS = new SkillEffectHooks();

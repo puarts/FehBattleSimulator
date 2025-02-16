@@ -1858,3 +1858,94 @@ class DebugUtil {
         return `${unit.nameWithGroup}の${info.name}`;
     }
 }
+
+class MapUtil {
+    static INF = Infinity;
+
+    // --- 優先度付きキュー（ダイクストラ法で使用） ---
+    static PriorityQueue = class {
+        constructor() {
+            this.queue = [];
+        }
+
+        enqueue(cost, index) {
+            this.queue.push({ cost, index });
+            this.queue.sort((a, b) => a.cost - b.cost); // コストの昇順ソート
+        }
+
+        dequeue() {
+            return this.queue.shift(); // 最小コストの要素を取り出す
+        }
+
+        isEmpty() {
+            return this.queue.length === 0;
+        }
+    };
+
+    // --- 最短コスト計算（ダイクストラ法） ---
+    static minCost(costMap, width, height, startX, startY) {
+        const minCostMap = Array(width * height).fill(this.INF);
+        const startIndex = startX + startY * width; // 計算式変更
+        minCostMap[startIndex] = 0;
+
+        // 優先度付きキューを作成
+        const pq = new this.PriorityQueue();
+        pq.enqueue(0, startIndex);
+
+        // 4方向移動（上、下、左、右）
+        const directions = [-width, width, -1, 1];
+
+        while (!pq.isEmpty()) {
+            const { cost: currentCost, index } = pq.dequeue();
+            if (currentCost > minCostMap[index]) continue;
+
+            for (const d of directions) {
+                const newIndex = index + d;
+                const x = index % width;
+                const y = Math.floor(index / width);
+                const newX = newIndex % width;
+                const newY = Math.floor(newIndex / width);
+
+                if (
+                    newIndex >= 0 && newIndex < width * height &&
+                    Math.abs(x - newX) + Math.abs(y - newY) === 1 &&
+                    costMap[newIndex] !== this.INF
+                ) {
+                    const newCost = currentCost + costMap[newIndex];
+                    if (newCost < minCostMap[newIndex]) {
+                        minCostMap[newIndex] = newCost;
+                        pq.enqueue(newCost, newIndex);
+                    }
+                }
+            }
+        }
+        return minCostMap;
+    }
+
+    // --- 最小コストのマスを取得 ---
+    static getMinCostIndexes(costMap) {
+        let minCost = Math.min(...costMap.filter(cost => cost !== this.INF));
+        return costMap
+            .map((cost, index) => (cost === minCost ? index : -1))
+            .filter(index => index !== -1);
+    }
+
+    // --- 上・右の優先順位でインデックスをソート ---
+    static sortIndexesByPriorityOfCallingCircleTile(cells, width) {
+        return cells.sort((a, b) => {
+            const ax = a % width, ay = Math.floor(a / width);
+            const bx = b % width, by = Math.floor(b / width);
+            return ay - by || bx - ax;
+        });
+    }
+
+    static calculateDistanceMap(width, height, startX, startY) {
+        const distanceMap = Array(width * height).fill(0);
+        for (let i = 0; i < width * height; i++) {
+            const x = i % width;
+            const y = Math.floor(i / width);
+            distanceMap[i] = Math.abs(x - startX) + Math.abs(y - startY);
+        }
+        return distanceMap;
+    }
+}

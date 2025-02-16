@@ -1269,8 +1269,8 @@ class AppData extends UnitManager {
                 {
                     if (this.isReinforcementSlotUnit(targetUnit)) {
                         // 増援は神階でも補正を受ける
-                        // シーズン一致しか増援に出せないのでシーズンチェックは不要
-                        return true;
+                        return this.examinesIsCurrentSeason(targetUnit.grantedBlessing) ||
+                            this.examinesIsCurrentSeason(targetUnit.providableBlessingSeason);
                     }
                     if (targetUnit.grantedBlessing === SeasonType.None &&
                         targetUnit.providableBlessingSeason === SeasonType.None) {
@@ -1914,6 +1914,8 @@ class AppData extends UnitManager {
             + ValueDelimiter + this.globalBattleContext.numOfCombatOnCurrentTurn
             + ValueDelimiter + this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally]
             + ValueDelimiter + this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy]
+            + ValueDelimiter + this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally]
+            + ValueDelimiter + this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy]
             ;
     }
 
@@ -1960,6 +1962,8 @@ class AppData extends UnitManager {
         if (values[i] !== undefined) { this.globalBattleContext.numOfCombatOnCurrentTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally] = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally] = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy] = Number(values[i]); ++i; }
     }
 
     fromTurnWideStatusString(value) {
