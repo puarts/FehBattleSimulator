@@ -4439,8 +4439,7 @@
 }
 
 // ラウアランタン+
-{
-    let skillId = Weapon.RauarlanternPlus;
+function setLantern(skillId) {
     // 威力：12 射程：2
     // ターン開始時スキル
     applySkillForBeginningOfTurnFuncMap.set(skillId,
@@ -4464,6 +4463,10 @@
             }
         }
     );
+}
+{
+    setLantern(Weapon.RauarlanternPlus);
+    setLantern(Weapon.GronnlanternPlus);
 }
 
 // 軍略伝授の刃
@@ -9560,6 +9563,7 @@
             }
         }
     };
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkDefScowl4, getScowlFunc(u => u.addAtkDefSpurs(7), 5));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkResScowl3, getScowlFunc(u => u.addAtkResSpurs(6), 9));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkResScowl4, getScowlFunc(u => u.addAtkResSpurs(7), 5));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdScowl3, getScowlFunc(u => u.addAtkSpdSpurs(6), 9));

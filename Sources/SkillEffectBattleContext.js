@@ -240,6 +240,22 @@ class IsUnitsHpLteNPercentAtStartOfCombatNode extends PercentageCondNode {
 const IS_UNITS_HP_LTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpLteNPercentAtStartOfCombatNode(25);
 const IS_UNITS_HP_LTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpLteNPercentAtStartOfCombatNode(50);
 
+class IsTargetsHpLteNPercentInCombatNode extends PercentageCondNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        // targetUnit.battleContext.restHpPercentage ではなくこちらが正しい
+        let unit = this.getUnit(env);
+        let hpPercentage = unit.restHpPercentage;
+        env.debug(`${unit.nameWithGroup}のHPが${this._percentage}%以下であるか: ${hpPercentage}%(HP:${unit.restHp}) <= ${this._percentage}%`);
+        return hpPercentage <= this._percentage;
+    }
+}
+
+const IS_TARGETS_HP_LTE_N_PERCENT_IN_COMBAT_NODE = n => new IsTargetsHpLteNPercentInCombatNode(n);
+const IS_TARGETS_HP_LTE_99_PERCENT_IN_COMBAT_NODE = IS_TARGETS_HP_LTE_N_PERCENT_IN_COMBAT_NODE(99);
+
 class IsUnitsHpLteNPercentInCombatNode extends PercentageCondNode {
     evaluate(env) {
         // targetUnit.battleContext.restHpPercentage ではなくこちらが正しい
@@ -593,16 +609,19 @@ class IncreasesSpdDiffNecessaryForFoeToMakeFollowUpNode extends IncreasesSpdDiff
 /**
  * increases the Spd difference necessary for foe to make a follow-up attack by N during combat
  */
-class IncreasesSpdDiffNecessaryForFoesFollowUpNode extends FromPositiveNumberNode {
+class IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
     evaluate(env) {
-        let unit = env.foeDuringCombat;
+        let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
         env.debug(`${unit.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
-const INCREASES_SPD_DIFF_NECESSARY_FOR_FOES_FOLLOW_UP_NODE = n => new IncreasesSpdDiffNecessaryForFoesFollowUpNode(n);
+const INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE = n => new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(n);
 
 /**
  * decreases Spd difference necessary for unit to make a follow-up attack by X during combat
@@ -656,7 +675,33 @@ class NeutralizesFoesBonusesToStatsDuringCombatNode extends SetBoolToEachStatusN
     }
 }
 
-const NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE = new NeutralizesFoesBonusesToStatsDuringCombatNode(true, true, true, true);
+const NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE =
+    new NeutralizesFoesBonusesToStatsDuringCombatNode(true, true, true, true);
+
+class NeutralizesTargetsFoesBonusesToStatsDuringCombatNode extends SetBoolToEachStatusNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let values = this.getValues();
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        env.debug(`${unit.nameWithGroup}は相手(${foe.nameWithGroup})の強化を無効: [${values}]`);
+        unit.battleContext.invalidateBuffs(...values);
+    }
+}
+
+const NEUTRALIZES_TARGETS_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE =
+    (...flags) => new NeutralizesTargetsFoesBonusesToStatsDuringCombatNode(...flags);
+
+class NeutralizesTargetsBonusesToStatsDuringCombatNode extends NeutralizesTargetsFoesBonusesToStatsDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const NEUTRALIZES_TARGETS_BONUSES_TO_STATS_DURING_COMBAT_NODE =
+    (...flags) => new NeutralizesTargetsBonusesToStatsDuringCombatNode(...flags);
 
 /**
  * number of【Bonus】effects active on unit, excluding stat bonuses + number of【Penalty】effects active on foe, excluding stat penalties
