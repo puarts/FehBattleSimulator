@@ -310,7 +310,6 @@ class BattleSimulatorBase {
                 if (unit == null) {
                     return;
                 }
-                unit.weaponRefinement = WeaponRefinementType.None;
                 let currentUnit = self.__getCurrentUnit();
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 unit.resetMaxSpecialCount();
