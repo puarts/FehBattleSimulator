@@ -209,7 +209,7 @@ class DamageCalculatorWrapper {
             if (precombatDamages.size > 0) {
                 let damageLog = '';
                 for (let [unit, damage] of precombatDamages) {
-                    damageLog += `${unit.name}に<span style="color: #ff0000;">${damage}</span>、`;
+                    damageLog += `${unit.name}に<span class="log-damage">${damage}</span>、`;
                 }
                 this._damageCalc.writeSimpleLog(`${atkUnit.specialInfo.name}により周囲の${damageLog.slice(0, -1)}のダメージ`);
             }

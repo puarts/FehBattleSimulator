@@ -1066,9 +1066,8 @@ class DamageCalculator {
 
         if (this.isLogEnabled) {
             this.writeDebugLog("戦闘前ダメージ計算..");
-            this.writeLog(`範囲奥義によるダメージ${totalDamageWithOverkill}(HP: → ${defUnit.restHp})`);
-            this.writeSimpleLog(atkUnit.getNameWithGroup() + "→" + defUnit.getNameWithGroup());
-            this.writeSimpleLog(`範囲奥義によるダメージ<span style="color: #ff0000">${totalDamageWithOverkill}</span>(HP: → ${defUnit.restHp})`);
+            this.writeLog(`${totalDamageWithOverkill}（範囲奥義: HP → ${defUnit.restHp}）`);
+            this.writeSimpleLog(`<div class="log-damage-line"><span class="log-damage">${totalDamageWithOverkill}</span>（範囲奥義: HP → ${defUnit.restHp}）</div>`);
             this.writeLog(defUnit.name + "の残りHP " + defUnit.restHp + "/" + defUnit.maxHpWithSkills);
         }
         atkUnit.precombatContext.damageCountOfSpecialAtTheSameTime++;
