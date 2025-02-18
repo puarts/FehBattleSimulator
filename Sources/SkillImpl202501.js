@@ -1599,13 +1599,16 @@
         // At start of turn,
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
-            // grants Atk/Spd+6,
-            GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 6, 0, 0),
-            // [Potent Follow],
-            // and "neutralizes foe's bonuses during combat" to unit and allies within 2 spaces of unit for 1 turn.
-            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
-                StatusEffectType.PotentFollow,
-                StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Atk/Spd+6,
+                GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 6, 0, 0),
+                // [Potent Follow],
+                // and "neutralizes foe's bonuses during combat"
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.PotentFollow,
+                    StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            ),
         ),
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
