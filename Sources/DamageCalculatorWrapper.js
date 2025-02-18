@@ -10200,6 +10200,34 @@ class DamageCalculatorWrapper {
                 env.setName('周囲の味方のスキル(適用後)').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
                     .setCombatPhase(this.combatPhase);
                 FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_OTHER_SKILLS_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
+            }
+        }
+    }
+
+    /**
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {Boolean} calcPotentialDamage
+     * @param  {number} damageType
+     */
+    __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
+        if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+            return;
+        }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
+
+        if (!calcPotentialDamage) {
+            // 距離に関係ない効果
+            for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+                if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
+                    continue
+                }
+                let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
+                env.setName('周囲の味方のスキル').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
+                    .setCombatPhase(this.combatPhase);
+                FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
                 for (let skillId of allyUnit.enumerateSkills()) {
                     let func = getSkillFunc(skillId, applySkillEffectFromAlliesFuncMap);
                     func?.call(this, targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
@@ -10411,34 +10439,6 @@ class DamageCalculatorWrapper {
                             break;
                     }
                 }
-            }
-        }
-    }
-
-    /**
-     * @param  {Unit} targetUnit
-     * @param  {Unit} enemyUnit
-     * @param  {Boolean} calcPotentialDamage
-     * @param  {number} damageType
-     */
-    __applySkillEffectFromAllies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
-        if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
-            return;
-        }
-        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
-            return;
-        }
-
-        if (!calcPotentialDamage) {
-            // 距離に関係ない効果
-            for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
-                if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
-                    continue
-                }
-                let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
-                env.setName('周囲の味方のスキル').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
-                    .setCombatPhase(this.combatPhase);
-                FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
             }
         }
     }
