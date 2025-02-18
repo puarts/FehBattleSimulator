@@ -25,13 +25,13 @@ const MoveType = {
 function moveTypeIconPath(moveType) {
     switch (moveType) {
         case MoveType.Infantry:
-            return `${g_imageRootPath}MoveType_Infantry.png`;
+            return `${g_heroIconRootPath}Icon_Move_Infantry.png`;
         case MoveType.Flying:
-            return `${g_imageRootPath}MoveType_Flying.png`;
+            return `${g_heroIconRootPath}Icon_Move_Flying.png`;
         case MoveType.Cavalry:
-            return `${g_imageRootPath}MoveType_Cavarly.png`;
+            return `${g_heroIconRootPath}Icon_Move_Cavalry.png`;
         case MoveType.Armor:
-            return `${g_imageRootPath}MoveType_Armor.png`;
+            return `${g_heroIconRootPath}Icon_Move_Armored.png`;
     }
     throw new Error(
         `moveTypeIconPath: invalid moveType ${moveType}`
