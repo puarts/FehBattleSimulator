@@ -779,7 +779,7 @@ class IsThereTargetsAllyOnTargetSpace extends BoolNode {
         let unit = this.getUnit(env);
         let tile = this.getTile(env);
         let unitOnTile = tile.placedUnit;
-        if (unitOnTile && unit.isSameGroup(unitOnTile)) {
+        if (unitOnTile && unit.isSameGroup(unitOnTile) && unit !== unitOnTile) {
             env.debug(`${tile.positionToString()}に味方ユニットがいる: ${unitOnTile.nameWithGroup}`);
             return true;
         } else {
