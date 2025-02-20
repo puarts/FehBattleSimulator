@@ -747,7 +747,7 @@ class SpacesWithinNSpacesOfSpacesNode extends SpacesNode {
         for (let targetTile of targetTiles) {
             let tmpTiles = [];
             for (let tile of env.battleMap.enumerateTilesWithinSpecifiedDistance(targetTile, n)) {
-                tileSet.add(targetTile);
+                tileSet.add(tile);
                 tmpTiles.push(tile);
             }
             let tilesStr = tmpTiles.map(t => t.positionToString()).join(', ');

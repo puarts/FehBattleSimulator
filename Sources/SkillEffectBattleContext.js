@@ -686,8 +686,10 @@ class NeutralizesTargetsFoesBonusesToStatsDuringCombatNode extends SetBoolToEach
         let values = this.getValues();
         let unit = this.getUnit(env);
         let foe = env.getFoeDuringCombatOf(unit);
-        env.debug(`${unit.nameWithGroup}は相手(${foe.nameWithGroup})の強化を無効: [${values}]`);
-        unit.battleContext.invalidateBuffs(...values);
+        if (foe) {
+            env.debug(`${unit.nameWithGroup}は相手(${foe.nameWithGroup})の強化を無効: [${values}]`);
+            unit.battleContext.invalidateBuffs(...values);
+        }
     }
 }
 
