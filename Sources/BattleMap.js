@@ -2440,6 +2440,10 @@ class BattleMap {
      * @returns {Generator<Tile>}
      */
     * enumerateWarpCantoTiles(unit) {
+        let env = new BattleMapEnv(this, unit);
+        env.setName('ワープ（再移動）').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        yield* WHEN_CANTO_UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
+
         for (let skillId of unit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.ShadowyQuill:

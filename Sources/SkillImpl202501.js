@@ -1,4 +1,43 @@
 // スキル実装
+// Nova
+{
+    let skillId = Weapon.Nova;
+    // Enables【Canto (Ally 5)】. Grants Atk+3.
+    enablesCantoAlly(skillId, 5);
+
+    // If unit initiates combat,
+    // unit attacks twice.
+
+    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        // For each foe within 5 spaces of unit,
+        // unit can move to any of the nearest spaces that are two spaces away from that foe (unless space is impassable terrain).
+        FOR_EACH_TARGETS_FOE_WITHIN_N_SPACES_OF_UNIT_ANY_OF_THE_NEAREST_SPACES_THAT_ARE_M_SPACES_AWAY_FROM_THAT_FOE_NODE(5, 2),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // on closest foes and any foes within 2 spaces of those foes through their next actions.
+        FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            // inflicts Atk/Res-7 and 【Sabotage】
+            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(7, 0, 0, 7),
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Sabotage),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If either unit or foe has an active【Bonus】 or【Penalty】effect,
+        IF_NODE(OR_NODE(
+                IS_BONUS_ACTIVE_ON_UNIT_NODE,
+                IS_BONUS_ACTIVE_ON_FOE_NODE,
+                IS_PENALTY_ACTIVE_ON_UNIT_NODE,
+                IS_PENALTY_ACTIVE_ON_FOE_NODE),
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Res during combat = 20% of unit's Res at start of combat + 6.
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, 0, READ_NUM_NODE),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 6),
+            ),
+        ),
+    ));
+}
+
 // Arcane Fell Arts
 {
     let skillId = Weapon.ArcaneFellArts;

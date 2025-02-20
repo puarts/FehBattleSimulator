@@ -2519,6 +2519,14 @@ class IsPenaltyActiveOnTargetNode extends BoolNode {
     }
 }
 
+class IsPenaltyActiveOnUnitNode extends IsPenaltyActiveOnTargetNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const IS_PENALTY_ACTIVE_ON_UNIT_NODE = new IsPenaltyActiveOnUnitNode();
+
 /**
  * If【Penalty】is active on foe,
  */
@@ -5096,3 +5104,50 @@ class IsTargetsFollowUpOrPotentFollowUpAttackNode extends BoolNode {
 }
 
 const IS_TARGETS_FOLLOW_UP_OR_POTENT_FOLLOW_UP_ATTACK_NODE = new IsTargetsFollowUpOrPotentFollowUpAttackNode();
+
+class ForEachTargetsFoeWithinNSpacesOfUnitAnyOfTheNearestSpacesThatAreMSpacesAwayFromThatFoeNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    constructor(n, m) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+        this._m = NumberNode.makeNumberNodeFrom(m);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._n.evaluate(env);
+        let m = this._m.evaluate(env);
+        return env.battleMap.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, n, m);
+    }
+}
+
+const FOR_EACH_TARGETS_FOE_WITHIN_N_SPACES_OF_UNIT_ANY_OF_THE_NEAREST_SPACES_THAT_ARE_M_SPACES_AWAY_FROM_THAT_FOE_NODE =
+    (n, m) => new ForEachTargetsFoeWithinNSpacesOfUnitAnyOfTheNearestSpacesThatAreMSpacesAwayFromThatFoeNode(n, m);
+
+class SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    constructor(n) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._n.evaluate(env);
+        let map = env.battleMap;
+        let tiles = [];
+        for (let ally of map.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n)) {
+            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                if (map.__canWarp(tile, unit)) {
+                    tiles.push(tile);
+                }
+            }
+        }
+        return tiles;
+    }
+}
+
+const SPACES_ADJACENT_TO_ANY_TARGETS_ALLY_WITHIN_N_SPACES_NODE =
+    n => new SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode(n);
