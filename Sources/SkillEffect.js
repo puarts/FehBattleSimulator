@@ -622,9 +622,9 @@ class FilterSpacesNode extends SpacesNode {
     }
     evaluate(env) {
         let spaces = Array.from(this._spacesNode.evaluate(env));
-        let spacesStr = spaces.map(s => s.positionToString()).join('\n');
+        let spacesStr = spaces.map(s => s.positionToString()).join(', ');
         let filteredSpaces = spaces.filter(s => this._predNode.evaluate(env.copy().setTile(s)));
-        let filteredSpacesStr = filteredSpaces.map(s => s.positionToString()).join('\n');
+        let filteredSpacesStr = filteredSpaces.map(s => s.positionToString()).join(', ');
         env.trace(`${spacesStr}をフィルタリング: ${filteredSpacesStr}`);
         return filteredSpaces;
     }
