@@ -249,7 +249,7 @@
         // If any space within 2 spaces of unit meets any of the following conditions,
         // if unit initiates combat,
         // unit attacks twice:
-        IF_NODE(EQ_NODE(COUNT_SPACES_NODE(filteredSpacesNode), 0),
+        IF_NODE(GT_NODE(COUNT_SPACES_NODE(filteredSpacesNode), 0),
             IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
                 TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
             ),
