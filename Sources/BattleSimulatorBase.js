@@ -1260,7 +1260,7 @@ class BattleSimulatorBase {
                 break;
         }
 
-        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoAllyHero || x.isHarmonicAllyHero)) {
+        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoEnemyHero || x.isHarmonicEnemyHero)) {
             for (let st of this.__enumerateDefenseStructuresOnMap()) {
                 if (st instanceof DefHiyokuNoTorikago) {
                     let limitTurn = st.amount;
