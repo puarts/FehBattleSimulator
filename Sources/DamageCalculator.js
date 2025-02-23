@@ -313,7 +313,7 @@ class DamageCalculator {
     * __enumerateCombatFuncs(atkUnit, defUnit, result, context) {
         let self = this;
         if (defUnit.battleContext.isVantageActivated) {
-            let message = `【待ち伏せ】 ${defUnit.groupName}`;
+            let message = `【待ち伏せ】${HtmlUtil.groupNameSpan(defUnit)}`;
             this.writeDebugLog(message);
             this.writeSimpleLog(message);
 
@@ -321,7 +321,7 @@ class DamageCalculator {
             yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
             if (defUnit.battleContext.isDefDesperationActivated) {
-                let message = `【攻め立て】 ${defUnit.groupName}`;
+                let message = `【攻め立て】${HtmlUtil.groupNameSpan(defUnit)}`;
                 this.writeDebugLog(message);
                 this.writeSimpleLog(message);
 
@@ -344,7 +344,7 @@ class DamageCalculator {
                 yield () => self.__attack(atkUnit, defUnit, result, context);
 
                 if (atkUnit.battleContext.isDesperationActivated) {
-                    let message = `【攻め立て】 ${atkUnit.groupName}`;
+                    let message = `【攻め立て】${HtmlUtil.groupNameSpan(atkUnit)}`;
                     this.writeDebugLog(message);
                     this.writeSimpleLog(message);
 
@@ -378,7 +378,7 @@ class DamageCalculator {
             yield () => self.__attack(atkUnit, defUnit, result, context);
 
             if (atkUnit.battleContext.isDesperationActivated) { // 攻め立て
-                let message = `【攻め立て】 ${atkUnit.groupName}`;
+                let message = `【攻め立て】${HtmlUtil.groupNameSpan(atkUnit)}`;
                 this.writeDebugLog(message);
                 this.writeSimpleLog(message);
 
@@ -401,7 +401,7 @@ class DamageCalculator {
                 yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
                 if (defUnit.battleContext.isDefDesperationActivated) {
-                    let message = `【攻め立て】 ${defUnit.nameWithGroup}`;
+                    let message = `【攻め立て】${HtmlUtil.groupNameSpan(defUnit)}`;
                     this.writeDebugLog(message);
                     this.writeSimpleLog(message);
 
@@ -1473,13 +1473,14 @@ class DamageCalculator {
             canActivateNonSpecialOneTimePerMapMiracle = false;
             canActivateNonSpecialMiracleAndHeal = false;
         }
+        let groupClass = defUnit.groupId === UnitGroupType.Ally ? "log-ally" : "log-enemy";
         if (atkUnit.battleContext.neutralizesNonSpecialMiracle) {
-            let message = `${atkUnit.nameWithGroup}のスキル効果により${defUnit.nameWithGroup}の奥義以外の祈りを無効`;
+            let message = `【祈り無効】<span class="${groupClass}">${defUnit.groupName}</span>`;
             neutralizesNoneSpecialMiracle(message);
         }
         if (defUnit.hasStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP)) {
             let name = getStatusEffectName(StatusEffectType.NeutralizeUnitSurvivesWith1HP);
-            let message = `ステータス効果(${name})により${defUnit.nameWithGroup}の奥義以外の祈りを無効`;
+            let message = `【祈り無効】<span class="${groupClass}">${defUnit.groupName}</span>`;
             neutralizesNoneSpecialMiracle(message);
         }
 

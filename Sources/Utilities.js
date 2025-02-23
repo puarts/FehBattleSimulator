@@ -1949,3 +1949,16 @@ class MapUtil {
         return distanceMap;
     }
 }
+
+class HtmlUtil {
+    /**
+     * @param {Unit} unit
+     * @returns {string}
+     */
+    static groupNameSpan(unit) {
+        let isAlly = unit.groupId === UnitGroupType.Ally;
+        let groupClass = isAlly ? "log-ally" : "log-enemy";
+        let groupName = isAlly ? "自" : "敵";
+        return `<span class="${groupClass}">${groupName}</span>`
+    }
+}
