@@ -2114,6 +2114,17 @@ class Unit extends BattleMapElement {
         return this.heroInfo != null && isDuo && this.groupId === UnitGroupType.Ally;
     }
 
+    get isHarmonicEnemyHero() {
+        let isInHero = Object.values(Hero).includes(this.heroIndex);
+        let isDuo = DUO_HERO_SET.has(this.heroIndex);
+        return this.heroInfo != null && isInHero && !isDuo && this.groupId === UnitGroupType.Enemy;
+    }
+
+    get isDuoEnemyHero() {
+        let isDuo = DUO_HERO_SET.has(this.heroIndex);
+        return this.heroInfo != null && isDuo && this.groupId === UnitGroupType.Enemy;
+    }
+
     /**
      * 出典の集合を返す。
      * @param {[Unit]|Generator<Unit>} units

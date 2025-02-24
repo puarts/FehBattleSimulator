@@ -310,7 +310,6 @@ class BattleSimulatorBase {
                 if (unit == null) {
                     return;
                 }
-                unit.weaponRefinement = WeaponRefinementType.None;
                 let currentUnit = self.__getCurrentUnit();
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 unit.resetMaxSpecialCount();
@@ -1261,7 +1260,7 @@ class BattleSimulatorBase {
                 break;
         }
 
-        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoAllyHero || x.isHarmonicAllyHero)) {
+        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoEnemyHero || x.isHarmonicEnemyHero)) {
             for (let st of this.__enumerateDefenseStructuresOnMap()) {
                 if (st instanceof DefHiyokuNoTorikago) {
                     let limitTurn = st.amount;

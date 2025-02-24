@@ -386,6 +386,13 @@ function enablesCantoN(skillId, n) {
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(n));
 }
 
+function enablesCantoAlly(skillId, n) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    WHEN_CANTO_UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        SPACES_ADJACENT_TO_ANY_TARGETS_ALLY_WITHIN_N_SPACES_NODE(n),
+    );
+}
+
 const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percentage, statNode) =>
     new AppliesSkillEffectsAfterStatusFixedNode(
         // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),

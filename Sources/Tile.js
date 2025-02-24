@@ -480,6 +480,10 @@ class Tile extends BattleMapElement {
         return this.divineVeinGroup !== unit.groupId;
     }
 
+    isDivineVeinApplied() {
+        return this.divineVein !== DivineVeinType.None;
+    }
+
     /**
      * 指定したユニットについて、このタイルで天駆の道が発動するか
      */
@@ -909,6 +913,10 @@ class Tile extends BattleMapElement {
 
     isImpassableAnyMoveType() {
         return this.type === TileType.Wall;
+    }
+
+    doesCountsAsDifficultTerrainExcludingImpassableTerrain() {
+        return this.isCountedAsDifficultTerrain() && this.isPassableAnyMoveType();
     }
 
     hasDivineVein() {

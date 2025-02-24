@@ -565,6 +565,7 @@ class DamageCalculatorWrapperEnv extends NodeEnv {
     constructor(damageCalculator, targetUnit, enemyUnit, calcPotentialDamage) {
         super();
         this.setDamageCalculatorWrapper(damageCalculator);
+        this.setBattleMap(damageCalculator.map);
         this.setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit);
         this.calcPotentialDamage = calcPotentialDamage;
     }

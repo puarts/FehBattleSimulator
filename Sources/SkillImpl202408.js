@@ -3097,6 +3097,8 @@ function setDiscord(skillId, statsRatios) {
 {
     // 鎧の護り手・近・双
     setTwinSave(PassiveC.ADTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
+    // 兜の護り手・近・双
+    setTwinSave(PassiveC.ARTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
     // 盾の護り手・近・双
     setTwinSave(PassiveC.DRTwinNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4));
 }
@@ -3945,7 +3947,7 @@ function setDiscord(skillId, statsRatios) {
                     // decreases Spd difference necessary for unit to make a follow-up attack by X and
                     new DecreasesSpdDiffNecessaryForUnitFollowUpNode(READ_NUM_NODE),
                     // increases Spd difference necessary for foe to make a follow-up attack by X during combat
-                    new IncreasesSpdDiffNecessaryForFoesFollowUpNode(READ_NUM_NODE),
+                    new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(READ_NUM_NODE),
                 ),
                 // (X = difference between Def stats; max 10;
                 new EnsureMaxNode(DIFFERENCE_BETWEEN_DEF_STATS_NODE, 10),
@@ -5956,7 +5958,7 @@ function setDiscord(skillId, statsRatios) {
                     ),
                     UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
                     FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
-                    new IncreasesSpdDiffNecessaryForFoesFollowUpNode(20),
+                    new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(20),
                 ),
             ),
         ),

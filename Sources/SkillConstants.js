@@ -3740,6 +3740,17 @@ PassiveB.Chivalry2 = 3158; // 騎士道・承
 PassiveC.OpeningRetainerPlus = 3159; // 開神の眷属・神
 Weapon.DarkMonograph = 3173; // 闇魔道の研究書
 Weapon.AerialLongsword = 3174; // 四天馬筆頭の長剣
+Weapon.ArcaneFellArts = 3175; // 魔器・邪竜石
+PassiveA.Protective = 3176; // 守護者
+PassiveB.EdgedScales = 3177; // 竜の鋭鱗
+Weapon.FellSlaystone = 3178; // 邪竜石・屠
+PassiveA.AtkDefScowl4 = 3179; // 攻撃守備の竜眼4
+PassiveC.ARTwinNSave = 3180; // 兜の護り手・近・双
+Weapon.GronnlanternPlus = 3181; // グルンランタン+
+Weapon.HiddenBlade = 3182; // 見えざる仮面の刃
+PassiveA.TrainedToKill = 3183; // 殺しの技術
+PassiveC.ActiveLookout = 3184; // 露払い・攻め立て
+Weapon.Nova = 3185; // ノヴァ
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -3747,6 +3758,7 @@ Weapon.DevLance1 = G_WEAPON_ID_BASE + WeaponType.Lance * 100 + 1;
 Weapon.DevAxe1 = G_WEAPON_ID_BASE + WeaponType.Axe * 100 + 1;
 Weapon.DevDagger1 = G_WEAPON_ID_BASE + WeaponType.Dagger * 100 + 1;
 Weapon.DevBlueTome1 = G_WEAPON_ID_BASE + WeaponType.BlueTome * 100 + 1;
+Weapon.DevGreenTome1 = G_WEAPON_ID_BASE + WeaponType.GreenTome * 100 + 1;
 Support.DevAssist1 = G_ASSIST_ID_BASE + 1;
 Special.DevSpecial1 = G_SPECIAL_ID_BASE + 1;
 Special.DevSpecial2 = G_SPECIAL_ID_BASE + 2;

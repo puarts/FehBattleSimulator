@@ -58,6 +58,12 @@ const GetValueMixin = Object.assign({}, GetUnitMixin, {
     },
 });
 
+const GetTargetTileMixin = {
+    getTile(env) {
+        return env.tile;
+    },
+}
+
 const CheckIfStatsDuringCombatAreDeterminedMixin = {
     checkIfStatsDuringCombatAreDetermined(env) {
         if (env.isStatusUnfixed) {
@@ -604,6 +610,43 @@ class IntersectSpacesNode extends SpacesNode {
     }
 }
 
+class FilterSpacesNode extends SpacesNode {
+    /**
+     * @param {SpacesNode} spacesNode
+     * @param {BoolNode} predNode
+     */
+    constructor(spacesNode, predNode) {
+        super();
+        this._spacesNode = spacesNode;
+        this._predNode = predNode;
+    }
+    evaluate(env) {
+        let spaces = Array.from(this._spacesNode.evaluate(env));
+        let spacesStr = spaces.map(s => s.positionToString()).join(', ');
+        let filteredSpaces = spaces.filter(s => this._predNode.evaluate(env.copy().setTile(s)));
+        let filteredSpacesStr = filteredSpaces.map(s => s.positionToString()).join(', ');
+        env.trace(`${spacesStr}をフィルタリング: ${filteredSpacesStr}`);
+        return filteredSpaces;
+    }
+}
+
+const FILTER_SPACES_NODE = (n, predNode) => new FilterSpacesNode(n, predNode);
+
+class CountSpacesNode extends PositiveNumberNode {
+    constructor(spacesNode) {
+        super();
+        this._spacesNode = spacesNode;
+    }
+    evaluate(env) {
+        let spaces = Array.from(this._spacesNode.evaluate(env));
+        let result = spaces.length;
+        env.trace(`マスの数: ${result}`);
+        return result;
+    }
+}
+
+const COUNT_SPACES_NODE = spacesNode => new CountSpacesNode(spacesNode);
+
 class SpacesOnMapNode extends SpacesNode {
     constructor(predNode) {
         super();
@@ -687,6 +730,39 @@ class TargetsPlacedSpaceNode extends SpacesNode {
 
 const TARGETS_PLACED_SPACE_NODE = new TargetsPlacedSpaceNode();
 
+class SpacesWithinNSpacesOfSpacesNode extends SpacesNode {
+    /**
+     * @param {number|NumberNode} n
+     * @param {SpacesNode} spacesNode
+     */
+    constructor(n, spacesNode) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._spacesNode = spacesNode;
+    }
+    evaluate(env) {
+        let n = this._nNode.evaluate(env);
+        let targetTiles = Array.from(this._spacesNode.evaluate(env));
+        let tileSet = new Set();
+        for (let targetTile of targetTiles) {
+            let tmpTiles = [];
+            for (let tile of env.battleMap.enumerateTilesWithinSpecifiedDistance(targetTile, n)) {
+                tileSet.add(tile);
+                tmpTiles.push(tile);
+            }
+            let tilesStr = tmpTiles.map(t => t.positionToString()).join(', ');
+            env.trace(`${targetTile.positionToString()}の周囲${n}マス以内のマス: ${tilesStr}`);
+        }
+        let targetTilesStr = targetTiles.map(t => t.positionToString()).join(', ');
+        let resultTilesStr = Array.from(tileSet, t => t.positionToString()).join(', ');
+        env.trace(`${targetTilesStr}の周囲${n}マス以内のマス${resultTilesStr}`);
+        return tileSet;
+    }
+}
+
+const SPACES_WITHIN_N_SPACES_OF_SPACES_NODE =
+    (n, spacesNode) => new SpacesWithinNSpacesOfSpacesNode(n, spacesNode);
+
 class SkillOwnersPlacedSpaceNode extends TargetsPlacedSpaceNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
@@ -694,6 +770,76 @@ class SkillOwnersPlacedSpaceNode extends TargetsPlacedSpaceNode {
 }
 
 const SKILL_OWNERS_PLACED_SPACE_NODE = new SkillOwnersPlacedSpaceNode();
+
+class IsThereTargetsAllyOnTargetSpace extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin, GetTargetTileMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let tile = this.getTile(env);
+        let unitOnTile = tile.placedUnit;
+        if (unitOnTile && unit.isSameGroup(unitOnTile) && unit !== unitOnTile) {
+            env.debug(`${tile.positionToString()}に味方ユニットがいる: ${unitOnTile.nameWithGroup}`);
+            return true;
+        } else {
+            env.debug(`${tile.positionToString()}に味方ユニットがいない`);
+            return false;
+        }
+    }
+}
+
+class IsThereSkillOwnersAllyOnTargetSpaceNode extends IsThereTargetsAllyOnTargetSpace {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const IS_THERE_SKILL_OWNERS_ALLY_ON_TARGET_SPACE_NODE =
+    new IsThereSkillOwnersAllyOnTargetSpaceNode();
+
+class IsThereDivineVeinEffectAppliedOnTargetSpacesNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetTargetTileMixin);
+    }
+    evaluate(env) {
+        let tile = this.getTile(env);
+        let result = tile.isDivineVeinApplied();
+        env.debug(`${tile.positionToString()}に天脈が付与されているか: ${result}`);
+        return result;
+    }
+}
+
+const IS_THERE_DIVINE_VEIN_EFFECT_APPLIED_ON_TARGET_SPACES_NODE = new IsThereDivineVeinEffectAppliedOnTargetSpacesNode();
+
+class IsTargetSpaceDefensiveTerrainNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetTargetTileMixin);
+    }
+    evaluate(env) {
+        let tile = this.getTile(env);
+        let result = tile.isDefensiveTile;
+        env.debug(`${tile.positionToString()}は防御地形か: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_SPACE_DEFENSIVE_TERRAIN_NODE = new IsTargetSpaceDefensiveTerrainNode();
+
+class DoesTargetSpaceCountAsDifficultTerrainExcludingImpassableTerrainNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetTargetTileMixin);
+    }
+    evaluate(env) {
+        let tile = this.getTile(env);
+        let result = tile.doesCountsAsDifficultTerrainExcludingImpassableTerrain();
+        env.debug(`${tile.positionToString()}はいずれかの移動タイプが侵入可能で平地のように移動できない地形か: ${result}`);
+        return result;
+    }
+}
+
+const DOES_TARGET_SPACE_COUNT_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
+    new DoesTargetSpaceCountAsDifficultTerrainExcludingImpassableTerrainNode();
 
 class IsThereUnitOnMapNode extends BoolNode {
     static {
@@ -2372,6 +2518,14 @@ class IsPenaltyActiveOnTargetNode extends BoolNode {
         return result;
     }
 }
+
+class IsPenaltyActiveOnUnitNode extends IsPenaltyActiveOnTargetNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const IS_PENALTY_ACTIVE_ON_UNIT_NODE = new IsPenaltyActiveOnUnitNode();
 
 /**
  * If【Penalty】is active on foe,
@@ -4784,6 +4938,14 @@ class IsTargetEngagedNode extends BoolNode {
 
 const IS_TARGET_ENGAGED_NODE = new IsTargetEngagedNode();
 
+class IsFoeEngagedNode extends IsTargetEngagedNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const IS_FOE_ENGAGED_NODE = new IsFoeEngagedNode();
+
 class TargetRestStyleSkillAvailableTurnNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -4942,3 +5104,50 @@ class IsTargetsFollowUpOrPotentFollowUpAttackNode extends BoolNode {
 }
 
 const IS_TARGETS_FOLLOW_UP_OR_POTENT_FOLLOW_UP_ATTACK_NODE = new IsTargetsFollowUpOrPotentFollowUpAttackNode();
+
+class ForEachTargetsFoeWithinNSpacesOfUnitAnyOfTheNearestSpacesThatAreMSpacesAwayFromThatFoeNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    constructor(n, m) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+        this._m = NumberNode.makeNumberNodeFrom(m);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._n.evaluate(env);
+        let m = this._m.evaluate(env);
+        return env.battleMap.enumerateNearestTileForEachEnemyWithinSpecificSpaces(unit, n, m);
+    }
+}
+
+const FOR_EACH_TARGETS_FOE_WITHIN_N_SPACES_OF_UNIT_ANY_OF_THE_NEAREST_SPACES_THAT_ARE_M_SPACES_AWAY_FROM_THAT_FOE_NODE =
+    (n, m) => new ForEachTargetsFoeWithinNSpacesOfUnitAnyOfTheNearestSpacesThatAreMSpacesAwayFromThatFoeNode(n, m);
+
+class SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    constructor(n) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._n.evaluate(env);
+        let map = env.battleMap;
+        let tiles = [];
+        for (let ally of map.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, n)) {
+            for (let tile of ally.placedTile.getMovableNeighborTiles(unit, 1, false, true)) {
+                if (map.__canWarp(tile, unit)) {
+                    tiles.push(tile);
+                }
+            }
+        }
+        return tiles;
+    }
+}
+
+const SPACES_ADJACENT_TO_ANY_TARGETS_ALLY_WITHIN_N_SPACES_NODE =
+    n => new SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode(n);
