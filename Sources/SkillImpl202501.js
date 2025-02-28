@@ -70,13 +70,6 @@
     ));
 }
 
-// Sway Atk/Spd
-// If unit initiates combat or is within 3 spaces of an ally,
-// grants
-// bonus to unit's Atk/Spd during combat = 8 + number of allies
-// within 3 spaces of unit x 2 (max 12),
-// and calculates damage from staff like other weapons.
-
 // Called to Serve
 // If a Rally or movement Assist skill is used by unit,
 // grants
@@ -2881,6 +2874,7 @@
 }
 
 {
+    setSway(PassiveA.SwayAtkSpd, [READ_NUM_NODE, READ_NUM_NODE, 0, 0]);
     setSway(PassiveA.SwayAtkRes, [READ_NUM_NODE, 0, 0, READ_NUM_NODE]);
 }
 
