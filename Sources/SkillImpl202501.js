@@ -56,8 +56,8 @@
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
             // grants bonus to unit's Atk/Spd = 20% of unit's Spd at start of combat + 6,
             X_NUM_NODE(
-               GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
-               ADD_NODE(PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE), 6),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE), 6),
             ),
             // deals damage = 15% of foe's Atk
             // (excluding area-of-effect Specials; calculates damage from staff after combat damage is added),
@@ -71,18 +71,51 @@
 }
 
 // Called to Serve
-// If a Rally or movement Assist skill is used by unit,
-// grants
-// "neutralizes foe's bonuses during combat" to unit,
-// target ally,
-// and allies within 2 spaces of target ally after movement for 1 turn.
-// Allies on the map with the "neutralizes foe's bonuses during combat" status active deal +5 damage during combat (excluding area-of-effect Specials).
-// Inflicts Spd/Res-4 on foe and unit deals +X damage during
-// combat (X = number of allies on the map with "neutralizes foe's
-// bonuses during combat" status active,
-// excluding unit,
-// × 5; max
-// 15; excluding area-of-effect Specials).
+{
+    let skillId = PassiveB.CalledToServe;
+    // If a Rally or movement Assist skill is used by unit,
+    let nodeFunc = () => new SkillEffectNode(
+        // to unit, target ally, and allies within 2 spaces of target ally after movement for 1 turn.
+        FOR_EACH_UNIT_NODE(
+            UNITE_UNITS_NODE(
+                UnitsNode.makeFromUnits(ASSIST_TARGETING_NODE, ASSIST_TARGET_NODE),
+                ASSIST_TARGETS_ALLIES_WITHIN_2_SPACES_OF_TARGET_NODE(TRUE_NODE)
+            ),
+            // grants "neutralizes foe's bonuses during combat"
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+        ),
+    );
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Allies on the map with the "neutralizes foe's bonuses during combat" status active
+        IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            // deal +5 damage during combat (excluding area-of-effect Specials).
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(5),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Spd/Res-4 on foe and
+        INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 4, 0, 4),
+        X_NUM_NODE(
+            // unit deals +X damage during combat
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
+            // (X = number of allies on the map with "neutralizes foe's
+            // bonuses during combat" status active,
+            // excluding unit, × 5; max 15; excluding area-of-effect Specials).
+            ENSURE_MAX_NODE(
+                MULT_NODE(
+                    COUNT_IF_UNITS_NODE(
+                        TARGETS_ALLIES_ON_MAP_NODE,
+                        HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.NeutralizesFoesBonusesDuringCombat)),
+                    5),
+                15
+            ),
+        ),
+    ));
+}
 
 // C Quiet Strength
 // For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,

@@ -289,6 +289,17 @@ class FoesAlliesWithinNSpacesNode extends TargetsAlliesWithinNSpacesNode {
 
 const FOES_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTarget = FALSE_NODE) => new FoesAlliesWithinNSpacesNode(n, includesTarget);
 
+class AssistTargetsAlliesWithinNSpacesOfTargetNode extends TargetsAlliesWithinNSpacesNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetsAllyMixin);
+    }
+}
+
+const ASSIST_TARGETS_ALLIES_WITHIN_N_SPACES_OF_TARGET_NODE =
+    (n, includesTarget) => new AssistTargetsAlliesWithinNSpacesOfTargetNode(n, includesTarget);
+const ASSIST_TARGETS_ALLIES_WITHIN_2_SPACES_OF_TARGET_NODE =
+        includesTarget => ASSIST_TARGETS_ALLIES_WITHIN_N_SPACES_OF_TARGET_NODE(2, includesTarget);
+
 class TargetsClosestFoesNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
