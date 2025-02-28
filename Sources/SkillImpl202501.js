@@ -117,19 +117,47 @@
     ));
 }
 
-// C Quiet Strength
-// For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,
-// grants Atk/Spd/Def/Res+5,
-// deals +7 damage (excluding area-of-effect Specials),
-// reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-// and grants Special cooldown count-1 to ally before ally's first attack during their combat.
-// If unit initiates combat or is within 2 spaces of an ally,
-// grants Atk/Spd+5,
-// neutralizes penalties to unit's Atk/Spd,
-// deals +7 damage (excluding area-of-effect Specials),
-// reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-// grants Special cooldown count-1 to unit before unit's first attack,
-// and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+// Quiet Strength
+{
+    let skillId = PassiveC.QuietStrength;
+    // For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage),
+            // grants Atk/Spd/Def/Res+5,
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+        ),
+    ));
+    // For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage),
+            // deals +7 damage (excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(7),
+            // reduces damage from foe's first attack by 7
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // and grants Special cooldown count-1 to ally before ally's first attack during their combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd+5,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 5, 0, 0),
+            // neutralizes penalties to unit's Atk/Spd,
+            new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
+            // deals +7 damage (excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(7),
+            // reduces damage from foe's first attack by 7
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // grants Special cooldown count-1 to unit before unit's first attack,
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
 
 // Nova
 {
