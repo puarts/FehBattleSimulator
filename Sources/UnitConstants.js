@@ -343,7 +343,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.DivineNectar, ["DivineNectar.webp", "神獣の蜜", "戦闘開始時回復、回復不可無効、条件で被ダメージ減"]],
     [StatusEffectType.Paranoia, ["Paranoia.webp", "被害妄想", "HP99%以下で、攻撃+5、攻め立て・待ち伏せ可能"]],
     [StatusEffectType.Gallop, ["Gallop.webp", "迅走", "移動+2（同系統効果重複時、最大値適用）"]],
-    [StatusEffectType.Anathema, ["Anathema.webp", "赤の呪い", ""]],
+    [StatusEffectType.Anathema, ["Anathema.webp", "赤の呪い", "周囲3マスの敵の速守魔-4"]],
     [StatusEffectType.FutureWitness, ["FutureWitness.webp", "未来を知るもの", "再移動、攻速守魔+5、ダメージ-7、敵奥義発動妨害"]],
     [StatusEffectType.Dosage, ["Dosage.webp", "毒も薬に、薬も毒に", "敵から受ける「敵の有利状態の付与と解除」を無効"]],
     [StatusEffectType.Empathy, ["Empathy.webp", "多感", "自軍と敵軍の有利な状態と不利な状態の種類数で強化"]],
@@ -351,7 +351,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.PreemptPulse, ["PreemptPulse.webp", "初撃の鼓動", "自分の最初の攻撃前に奥義-1"]],
     [StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat, ["IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat.webp", "戦闘中、敵の追撃の速さ条件+10", "戦闘中、敵の追撃の速さ条件+10"]],
     [StatusEffectType.PotentFollow, ["PotentFollow.webp", "神速追撃", "条件を満たすと、追撃の直後に、さらに追撃が発動"]],
-    [StatusEffectType.Salvage, ["Salvage.webp", "七難即滅", ""]],
+    [StatusEffectType.Salvage, ["Salvage.webp", "七難即滅", "【再移動（2）】発動可能、再移動制限を緩和する"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
