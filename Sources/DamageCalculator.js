@@ -276,7 +276,7 @@ class DamageCalculator {
             // ログ
             let logMessage =
                 `<div class="log-damage-line">
-                   <span class="log-damage">${damageAfterBeginningOfCombat}</span>（戦闘開始後(${targetUnit.groupName})）: HP=${targetUnit.restHp}/${targetUnit.maxHpWithSkills}
+                   <span class="log-damage">${damageAfterBeginningOfCombat}</span>（戦闘開始後(${targetUnit.groupChar})）: HP=${targetUnit.restHp}/${targetUnit.maxHpWithSkills}
                  </div>`;
             this.writeDebugLog(logMessage);
             this.writeSimpleLog(logMessage);
@@ -298,7 +298,7 @@ class DamageCalculator {
         // ログ
         if (maxHealAmount !== 0 || healAmount !== 0) {
             let message = `<div class="log-heal-line"><span class="log-heal">${healAmount}回復</span>(-${maxHealAmount - healAmount})
-                                  (${targetUnit.groupName}): HP=${restHp}/${targetUnit.maxHpWithSkills}</div>`;
+                                  (${targetUnit.groupChar}): HP=${restHp}/${targetUnit.maxHpWithSkills}</div>`;
             this.writeDebugLog(message);
             this.writeSimpleLog(message);
         }
@@ -976,7 +976,7 @@ class DamageCalculator {
             let atkCount = atkUnit.tmpSpecialCount +
                 atkUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttack();
             if (atkUnit.battleContext.isChangedSpecialCountBeforeFirstAttack()) {
-                this.writeSimpleLog(`【<span class="${atkLogClass}">奥義カウント(${atkUnit.groupName})</span>】<span class="log-special">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
+                this.writeSimpleLog(`【<span class="${atkLogClass}">奥義カウント(${atkUnit.groupChar})</span>】<span class="log-special">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
                                     ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
                                     ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
                                     ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
@@ -987,7 +987,7 @@ class DamageCalculator {
             let defCount = defUnit.tmpSpecialCount +
                 defUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttackByEnemy();
             if (defUnit.battleContext.isChangedSpecialCountBeforeFirstAttackByEnemy()) {
-                this.writeSimpleLog(`【<span class="${defLogClass}">奥義カウント(${defUnit.groupName})</span>】<span class="log-special">${defCount}</span> = ${defUnit.tmpSpecialCount} -
+                this.writeSimpleLog(`【<span class="${defLogClass}">奥義カウント(${defUnit.groupChar})</span>】<span class="log-special">${defCount}</span> = ${defUnit.tmpSpecialCount} -
                                     ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy} +
                                     ${defUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`
                 );
@@ -1009,7 +1009,7 @@ class DamageCalculator {
             atkCount += atkIncrease;
             atkCount -= atkReduction;
             if (atkIncrease !== 0 || atkReduction !== 0) {
-                this.writeSimpleLog(`【<span class="${atkLogClass}">奥義カウント(${atkUnit.groupName})</span>】
+                this.writeSimpleLog(`【<span class="${atkLogClass}">奥義カウント(${atkUnit.groupChar})</span>】
                                     <span class="log-special">${atkCount}</span> = 
                                     ${atkUnit.tmpSpecialCount} - ${atkReduction} + ${atkIncrease}`
                 );
@@ -1026,7 +1026,7 @@ class DamageCalculator {
             defCount += defIncrease;
             defCount -= defReduction;
             if (defIncrease !== 0 || defReduction !== 0) {
-                this.writeSimpleLog(`【<span class="${defLogClass}">奥義カウント(${defUnit.groupName})</span>】
+                this.writeSimpleLog(`【<span class="${defLogClass}">奥義カウント(${defUnit.groupChar})</span>】
                                     <span class="log-special">${defCount}</span> = 
                                     ${defUnit.tmpSpecialCount} - ${defReduction} + ${defIncrease}`
                 );
@@ -1209,7 +1209,7 @@ class DamageCalculator {
                 if (isChanged) {
                     // let atkLogClass = atkUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
                     let defLogClass = defUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
-                    this.writeSimpleLog(`【<span class="${defLogClass}">奥義カウント(${defUnit.groupName})</span>】
+                    this.writeSimpleLog(`【<span class="${defLogClass}">奥義カウント(${defUnit.groupChar})</span>】
                                              <span class="log-special">${defCount}</span> = 
                                              ${defUnit.tmpSpecialCount} -
                                              ${defUnit.battleContext.specialCountReductionBeforeSecondFirstAttacksByEnemy}`);
@@ -1475,12 +1475,12 @@ class DamageCalculator {
         }
         let groupClass = defUnit.groupId === UnitGroupType.Ally ? "log-ally" : "log-enemy";
         if (atkUnit.battleContext.neutralizesNonSpecialMiracle) {
-            let message = `【祈り無効】<span class="${groupClass}">${defUnit.groupName}</span>`;
+            let message = `【祈り無効】<span class="${groupClass}">${defUnit.groupChar}</span>`;
             neutralizesNoneSpecialMiracle(message);
         }
         if (defUnit.hasStatusEffect(StatusEffectType.NeutralizeUnitSurvivesWith1HP)) {
             let name = getStatusEffectName(StatusEffectType.NeutralizeUnitSurvivesWith1HP);
-            let message = `【祈り無効】<span class="${groupClass}">${defUnit.groupName}</span>`;
+            let message = `【祈り無効】<span class="${groupClass}">${defUnit.groupChar}</span>`;
             neutralizesNoneSpecialMiracle(message);
         }
 
@@ -1506,13 +1506,13 @@ class DamageCalculator {
             }
             // どの祈りが発動するのか判定する
             if (canActivateNonSpecialMiracleAndHeal) {
-                logMiracle(`【奥義以外の祈り+99回復】 ${defUnit.groupName}`);
+                logMiracle(`【奥義以外の祈り+99回復】 ${defUnit.groupChar}`);
                 defUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated = true;
             } else if (canActivateNonSpecialMiracle) {
-                logMiracle(`【奥義以外の祈り】 ${defUnit.groupName}`);
+                logMiracle(`【奥義以外の祈り】 ${defUnit.groupChar}`);
                 defUnit.battleContext.hasNonSpecialMiracleActivated = true;
             } else if (canActivateNonSpecialOneTimePerMapMiracle) {
-                logMiracle(`【奥義以外の祈り(1マップ1回)】 ${defUnit.groupName}`);
+                logMiracle(`【奥義以外の祈り(1マップ1回)】 ${defUnit.groupChar}`);
                 // TODO: リファクタリング(現状使用していない)
                 defUnit.battleContext.hasNonSpecialOneTimePerMapMiracleAcitivated = true;
                 // TODO: リファクタリング
@@ -1520,13 +1520,13 @@ class DamageCalculator {
                 // 1マップ1回でない奥義以外の祈りも発動したとみなす
                 defUnit.battleContext.hasNonSpecialMiracleActivated = true;
             } else if (canActivateSpecialMiracleAndHeal) {
-                logMiracle(`【奥義による祈り+99回復】 ${defUnit.groupName}`);
+                logMiracle(`【奥義による祈り+99回復】 ${defUnit.groupChar}`);
                 defUnit.battleContext.hasSpecialMiracleAndHealAcitivated = true;
             } else if (canActivateSpecialMiracle) {
-                logMiracle(`【奥義による祈り】 ${defUnit.groupName}`);
+                logMiracle(`【奥義による祈り】 ${defUnit.groupChar}`);
                 defUnit.battleContext.hasSpecialMiracleActivated = true;
             } else if (canActivateSpecialOneTimePerMapMiracle) {
-                logMiracle(`【奥義による祈り(1マップ1回)】 ${defUnit.groupName}`);
+                logMiracle(`【奥義による祈り(1マップ1回)】 ${defUnit.groupChar}`);
                 defUnit.battleContext.hasSpecialOneTimePerMapMiracleAcitivated = true;
             }
 
@@ -2030,7 +2030,7 @@ class DamageCalculator {
             unit.restHp = unit.maxHpWithSkills;
         }
         if (this.isLogEnabled) {
-            let healMessage = `<span class="log-heal">${healAmount}回復</span>(-${reducedHeal})(${unit.groupName}): HP=${unit.restHp}/${unit.maxHpWithSkills}`;
+            let healMessage = `<span class="log-heal">${healAmount}回復</span>(-${reducedHeal})(${unit.groupChar}): HP=${unit.restHp}/${unit.maxHpWithSkills}`;
             let message = `<div class="log-heal-line">${healMessage}</div>`;
             this.writeDebugLog(healMessage);
             if (healedHp > 0) {
