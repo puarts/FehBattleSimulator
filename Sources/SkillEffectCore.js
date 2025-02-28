@@ -416,6 +416,8 @@ class ConstantNumberNode extends NumberNode {
     }
 }
 
+const CONSTANT_NUMBER_NODE = value => new ConstantNumberNode(value);
+
 /**
  * @template T
  * @abstract

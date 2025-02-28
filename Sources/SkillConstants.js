@@ -3751,6 +3751,10 @@ Weapon.HiddenBlade = 3182; // 見えざる仮面の刃
 PassiveA.TrainedToKill = 3183; // 殺しの技術
 PassiveC.ActiveLookout = 3184; // 露払い・攻め立て
 Weapon.Nova = 3185; // ノヴァ
+Weapon.Salvage = 3186; // 七難即滅
+PassiveA.SwayAtkSpd = 3187; // 攻撃速さの布教
+PassiveB.CalledToServe = 3188; // 激励・強化無効
+PassiveC.QuietStrength = 3189; // 小さな声援
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

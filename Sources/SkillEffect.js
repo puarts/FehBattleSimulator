@@ -560,6 +560,35 @@ class SpacesNode extends SkillEffectNode {
     }
 }
 
+class NoSpacesNode extends SpacesNode {
+    evaluate(env) {
+        return [];
+    }
+}
+
+const NO_SPACES_NODE = new NoSpacesNode();
+
+class SpacesIfNode extends SpacesNode {
+    /**
+     * @param {boolean|BoolNode} pred
+     * @param {SpacesNode} spacesNode
+     */
+    constructor(pred, spacesNode) {
+        super();
+        this._pred = BoolNode.makeBoolNodeFrom(pred);
+        this._spacesNode = spacesNode;
+    }
+    evaluate(env) {
+        if (this._pred.evaluate(env)) {
+            return this._spacesNode.evaluate(env);
+        } else {
+            return [];
+        }
+    }
+}
+
+const SPACES_IF_NODE = (pred, spacesNode) => new SpacesIfNode(pred, spacesNode);
+
 class UniteSpacesNode extends SpacesNode {
     /**
      * @param {...SpacesNode} children
@@ -681,6 +710,14 @@ class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
 }
 
 const SPACES_WITHIN_N_SPACES_OF_TARGET_NODE = n => new SpacesWithinNSpacesOfTargetNode(n);
+
+class SpacesWithinNSpacesOfSkillOwnerNode extends SpacesWithinNSpacesOfTargetNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const SPACES_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE = n => new SpacesWithinNSpacesOfSkillOwnerNode(n);
 
 class SpacesWithinNSpacesOfFoeNode extends SpacesWithinNSpacesOfTargetNode {
     static {
@@ -2809,6 +2846,8 @@ class IsTargetMeleeWeaponNode extends BoolNode {
     }
 }
 
+const IS_TARGET_MELEE_WEAPON_NODE = new IsTargetMeleeWeaponNode();
+
 class IsFoeMeleeWeaponNode extends IsTargetMeleeWeaponNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -3566,6 +3605,7 @@ const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesO
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
 const IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(4, TRUE_NODE);
 const IS_TARGET_WITHIN_5_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(5, TRUE_NODE);
+const IS_TARGET_WITHIN_6_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(6, TRUE_NODE);
 
 class IsSpaceWithinNSpacesOfTargetNode extends IsInRangeNNode {
     static {

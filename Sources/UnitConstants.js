@@ -351,6 +351,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.PreemptPulse, ["PreemptPulse.webp", "初撃の鼓動", "自分の最初の攻撃前に奥義-1"]],
     [StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat, ["IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat.webp", "戦闘中、敵の追撃の速さ条件+10", "戦闘中、敵の追撃の速さ条件+10"]],
     [StatusEffectType.PotentFollow, ["PotentFollow.webp", "神速追撃", "条件を満たすと、追撃の直後に、さらに追撃が発動"]],
+    [StatusEffectType.Salvage, ["Salvage.webp", "七難即滅", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

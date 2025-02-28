@@ -804,6 +804,10 @@ class Unit extends BattleMapElement {
         this.groupName = groupIdToString(this.groupId);
     }
 
+    get groupChar() {
+        return this.groupId === UnitGroupType.Ally ? '自' : '敵';
+    }
+
     saveCurrentHpAndSpecialCount() {
         this.restHp = this.hp;
         this.battleContext.restHp = this.restHp;
@@ -856,7 +860,8 @@ class Unit extends BattleMapElement {
             if (cantoControlledIfCantoActivated) {
                 this.addStatusEffect(StatusEffectType.CantoControl);
                 this.moveCountForCanto = this.calcMoveCountForCanto();
-                if (this.isRangedWeaponType()) {
+                if (this.isRangedWeaponType() &&
+                    this.moveCountForCanto === 0) {
                     this.endAction();
                     this.applyEndActionSkills(true);
                     this.deactivateCanto();
@@ -6184,7 +6189,12 @@ class Unit extends BattleMapElement {
     calcMoveCountForCanto() {
         let moveCountForCanto = 0;
         if (this.hasStatusEffect(StatusEffectType.CantoControl)) {
-            return isMeleeWeaponType(this.weaponType) ? 1 : 0;
+            moveCountForCanto = isMeleeWeaponType(this.weaponType) ? 1 : 0;
+            let env = new CantoEnv(this);
+            env.setName('再移動距離計算時（制限時）').setLogLevel(getSkillLogLevel());
+            moveCountForCanto = Math.max(moveCountForCanto,
+                CALCULATES_DISTANCE_OF_CANTO_WHEN_CANTO_CONTROL_IS_APPLIED_HOOKS.evaluateMaxWithUnit(this, env));
+            return moveCountForCanto;
         }
         if (this.hasStatusEffect(StatusEffectType.Canto1)) {
             moveCountForCanto = Math.max(moveCountForCanto, 1);

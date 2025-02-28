@@ -1,4 +1,110 @@
 // スキル実装
+// [Salvage]
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Salvage);
+    // Enables [Canto (2)] .
+    enablesCantoN(skillId, 2)
+
+    // When [Canto Control] is applied to unit,
+    CALCULATES_DISTANCE_OF_CANTO_WHEN_CANTO_CONTROL_IS_APPLIED_HOOKS.addSkill(skillId, () =>
+        // if unit's Range = 1,
+        // unit can move 2 spaces with Canto instead of 1 space,
+        // and if unit's Range = 2,
+        // unit can move 1 space with Canto instead of 0 spaces.
+        COND_OP(IS_TARGET_MELEE_WEAPON_NODE,
+            CONSTANT_NUMBER_NODE(2),
+            CONSTANT_NUMBER_NODE(1),
+        ),
+    );
+}
+
+// Salvage
+{
+    let skillId = Weapon.Salvage;
+    // Mt: 14
+    // Rng: 2
+    // Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1).
+    // Foe cannot counterattack.
+
+    // For allies with the [Salvage] effect active,
+    // when Canto triggers,
+    // if ally is within 6 spaces of unit,
+    // ally can move to a space within 2 spaces of unit,
+    // even if that movement exceeds the Canto distance limit.
+    WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        SPACES_IF_NODE(IS_TARGET_WITHIN_6_SPACES_OF_SKILL_OWNER_NODE,
+            SPACES_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(2),
+        ),
+    );
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // and the following status to unit and allies within 2 spaces of unit for 1 turn:
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Atk/Spd+6,
+                GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(6, 6, 0, 0),
+                // [Salvage],
+                // "unit can move to a space adjacent to any ally within 2 spaces."
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Salvage, StatusEffectType.AirOrders),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd = 20% of unit's Spd at start of combat + 6,
+            X_NUM_NODE(
+               GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+               ADD_NODE(PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            // deals damage = 15% of foe's Atk
+            // (excluding area-of-effect Specials; calculates damage from staff after combat damage is added),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, FOES_ATK_DURING_COMBAT_NODE),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+}
+
+// Sway Atk/Spd
+// If unit initiates combat or is within 3 spaces of an ally,
+// grants
+// bonus to unit's Atk/Spd during combat = 8 + number of allies
+// within 3 spaces of unit x 2 (max 12),
+// and calculates damage from staff like other weapons.
+
+// Called to Serve
+// If a Rally or movement Assist skill is used by unit,
+// grants
+// "neutralizes foe's bonuses during combat" to unit,
+// target ally,
+// and allies within 2 spaces of target ally after movement for 1 turn.
+// Allies on the map with the "neutralizes foe's bonuses during combat" status active deal +5 damage during combat (excluding area-of-effect Specials).
+// Inflicts Spd/Res-4 on foe and unit deals +X damage during
+// combat (X = number of allies on the map with "neutralizes foe's
+// bonuses during combat" status active,
+// excluding unit,
+// × 5; max
+// 15; excluding area-of-effect Specials).
+
+// C Quiet Strength
+// For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,
+// grants Atk/Spd/Def/Res+5,
+// deals +7 damage (excluding area-of-effect Specials),
+// reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+// and grants Special cooldown count-1 to ally before ally's first attack during their combat.
+// If unit initiates combat or is within 2 spaces of an ally,
+// grants Atk/Spd+5,
+// neutralizes penalties to unit's Atk/Spd,
+// deals +7 damage (excluding area-of-effect Specials),
+// reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+// grants Special cooldown count-1 to unit before unit's first attack,
+// and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+
 // Nova
 {
     let skillId = Weapon.Nova;

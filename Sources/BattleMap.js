@@ -2430,6 +2430,13 @@ class BattleMap {
                 // ワープ再移動のタイルを生成
                 if (unit.isCantoActivated()) {
                     yield* this.enumerateWarpCantoTiles(unit);
+                    for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
+                        console.log(`ally.nameWithGroup: ${ally.nameWithGroup}`);
+                        let env = new BattleMapEnv(this, unit).setSkillOwner(ally);
+                        env.setName('味方によるワープ（再移動）').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                        // env.setName('味方によるワープ（再移動）').setLogLevel(LoggerBase.LOG_LEVEL.ALL);
+                        yield* WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(ally, env);
+                    }
                 }
             }
         }

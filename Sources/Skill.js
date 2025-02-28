@@ -1297,8 +1297,10 @@ const StatusEffectType = {
     PreemptPulse: 76, // 初撃の鼓動
     IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat: 77, // 戦闘中、敵の追撃の速さ条件+10
     PotentFollow: 78, // 神速追撃
+    Salvage: 79, // 七難即滅
     // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
-    // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SET, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
+    // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
+    // POSITIVE_STATUS_EFFECT_ARRAY, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
 };
 
 const POSITIVE_STATUS_EFFECT_ARRAY = [
@@ -1324,6 +1326,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Empathy,
 // 神竜の結束
     StatusEffectType.DivinelyInspiring,
+    // 七難即滅
+    StatusEffectType.Salvage,
 // 赤の呪い
     StatusEffectType.Anathema,
 // 強化ダメージ+
