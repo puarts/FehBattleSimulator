@@ -746,6 +746,21 @@ class MultTruncNode extends NumberOperationNode {
 
 const MULT_TRUNC_NODE = (...node) => new MultTruncNode(...node);
 
+class MinNode extends NumberOperationNode {
+    /**
+     * @override
+     * @returns {number}
+     */
+    evaluate(env) {
+        let evaluated = super.evaluateChildren(env);
+        let result = Math.min(...evaluated);
+        env?.trace(`[MinNode] min [${[evaluated]}] = ${result}`);
+        return result;
+    }
+}
+
+const MIN_NODE = (...node) => new MinNode(...node);
+
 class MaxNode extends NumberOperationNode {
     /**
      * @override
@@ -1003,3 +1018,27 @@ class XNumNode extends SkillEffectNode {
 }
 
 const X_NUM_NODE = (...nodes) => new XNumNode(...nodes);
+
+class ApplyXNode extends SkillEffectNode {
+    constructor(xNode, node) {
+        super();
+        this._xNode = xNode;
+        this._node = node;
+    }
+    evaluate(env) {
+        let value = this._xNode.evaluate(env);
+        env.storeValue(value);
+        env.trace(`store x value: ${value}`);
+        return this._node.evaluate(env);
+    }
+}
+
+/**
+ * xを評価してnodeを評価する。
+ * nodeではREAD_NUMを使用してxの値を読み取る。
+ * @template T
+ * @param xNode
+ * @param {T} node
+ * @returns {T}
+ */
+const APPLY_X_NODE = (xNode, node) => new ApplyXNode(xNode, node);

@@ -1159,15 +1159,6 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case Weapon.StaffOfTheSaint:
-                for (let u of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                    u.reserveToApplyDefBuff(6);
-                    u.reserveToApplyResBuff(6);
-                }
-                this.__applySkillToEnemiesInCross(skillOwner,
-                    unit => this.__getStatusEvalUnit(unit).getEvalResInPrecombat() <= this.__getStatusEvalUnit(skillOwner).getEvalResInPrecombat() - 1,
-                    unit => unit.reserveToAddStatusEffect(StatusEffectType.FalseStart));
-                break;
             case Weapon.DrybladeLance:
                 if (this.globalBattleContext.currentTurn === 1) {
                     skillOwner.reserveToReduceSpecialCount(2);
@@ -1495,33 +1486,6 @@ class BeginningOfTurnSkillHandler {
                     unit.reserveToApplyAtkDebuff(-7);
                     unit.reserveToApplySpdDebuff(-7);
                     unit.reserveToAddStatusEffect(StatusEffectType.Gravity);
-                }
-                break;
-            }
-            case Weapon.KiaStaff: {
-                let candidates = Array.from(this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 4, false));
-                let negativeStatusCandidates = candidates.filter(unit => unit.hasNegativeStatusEffect());
-                /** @type {Unit[]} */
-                let targets = (negativeStatusCandidates.length === 0 ? candidates : negativeStatusCandidates)
-                    .reduce((a, c) => {
-                        if (a.length === 0) return [c];
-                        let accumHp = this.__getStatusEvalUnit(a[0]).hp;
-                        let currentHp = this.__getStatusEvalUnit(c).hp;
-                        if (accumHp === currentHp) {
-                            a.push(c);
-                        } else if (currentHp < accumHp) {
-                            a = [c];
-                        }
-                        return a;
-                    }, []);
-                for (let target of targets) {
-                    target.reserveToApplyAtkBuff(6);
-                    target.reserveToApplySpdBuff(6);
-                    target.reservedDebuffFlagsToNeutralize = [true, true, true, true];
-
-                    // キアの杖の効果が重なると2回目の実行で対象が変化してしまうので予約する
-                    // todo: 他の場所も状態が変化するものはすべて予約にしないといけない
-                    target.reserveToNeutralizeNegativeStatusEffects();
                 }
                 break;
             }

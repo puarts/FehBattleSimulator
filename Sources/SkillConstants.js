@@ -3755,6 +3755,8 @@ Weapon.Salvage = 3186; // 七難即滅
 PassiveA.SwayAtkSpd = 3187; // 攻撃速さの布教
 PassiveB.CalledToServe = 3188; // 激励・強化無効
 PassiveC.QuietStrength = 3189; // 小さな声援
+PassiveB.FaithfulLoyalty2 = 3190; // 信じつづける…・承
+PassiveC.HolyGroundPlus = 3191; // 地上の最後の…・神
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

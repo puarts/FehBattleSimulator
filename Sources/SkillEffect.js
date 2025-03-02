@@ -1723,6 +1723,28 @@ class GrantsStatsPlusToTargetDuringCombatNode extends FromPositiveStatsNode {
 const GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd, def, res) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res);
 
+class GrantsStatPlusAtToTargetDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    constructor(index, value) {
+        super();
+        this._index = NumberNode.makeNumberNodeFrom(index);
+        this._value = NumberNode.makeNumberNodeFrom(value);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let value = this._value.evaluate(env);
+        let values = new Array(4).fill(0).map((_, i) => i === this._index.evaluate(env) ? value : 0);
+        let beforeSpurs = unit.getSpurs();
+        unit.addSpurs(...values);
+        env.debug(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防+[${values}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+    }
+}
+
+const GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE =
+    (index, value) => new GrantsStatPlusAtToTargetDuringCombatNode(index, value);
+
 class GrantsStatsPlusToUnitDuringCombatNode extends GrantsStatsPlusToTargetDuringCombatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
@@ -1992,6 +2014,37 @@ const INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE =
 const INFLICTS_ALL_STATS_MINUS_4_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 4, 4);
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 5);
 
+class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    constructor(index, value) {
+        super();
+        this._index = NumberNode.makeNumberNodeFrom(index);
+        this._value = NumberNode.makeNumberNodeFrom(value);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let value = this._value.evaluate(env);
+        let values = new Array(4).fill(0).map((_, i) => i === this._index.evaluate(env) ? value : 0);
+        let beforeSpurs = unit.getSpurs();
+        unit.addSpurs(...values.map(v => -v));
+        env.debug(`${unit.nameWithGroup}は攻撃/速さ/守備/魔坊-[${values}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+    }
+}
+
+const INFLICTS_STAT_MINUS_AT_ON_TARGET_DURING_COMBAT_NODE =
+    (index, value) => new InflictsStatMinusAtOnTargetDuringCombatNode(index, value);
+
+class InflictsStatMinusAtOnFoeDuringCombatNode extends InflictsStatMinusAtOnTargetDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE =
+    (index, value) => new InflictsStatMinusAtOnFoeDuringCombatNode(index, value);
+
 class InflictsAllStatsMinusNOnTargetDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
     constructor(n) {
         super(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE);
@@ -2155,12 +2208,14 @@ class FoesEvalStatAtStartOfCombatNode extends UnitsEvalStatAtStartOfCombatNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
+const UNITS_STAT_AT_START_OF_COMBAT_NODE = index => new UnitsStatAtStartOfCombatNode(index);
 const UNITS_ATK_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Atk);
 const UNITS_SPD_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Spd);
 // noinspection JSUnusedGlobalSymbols
 const UNITS_DEF_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Def);
 const UNITS_RES_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Res);
 
+const FOES_STAT_AT_START_OF_COMBAT_NODE = index => new FoesStatAtStartOfCombatNode(index);
 const FOES_ATK_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Atk);
 const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Spd);
 const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Def);
@@ -2222,6 +2277,7 @@ class UnitsStatsDuringCombat extends TargetsStatsDuringCombat {
 }
 
 // noinspection JSUnusedGlobalSymbols
+const UNITS_STAT_DURING_COMBAT_NODE = index => new UnitsStatsDuringCombat(index);
 const UNITS_ATK_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Atk);
 const UNITS_SPD_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Spd);
 // noinspection JSUnusedGlobalSymbols
@@ -2235,6 +2291,7 @@ class FoesStatsDuringCombatNode extends UnitsStatsDuringCombat {
     }
 }
 
+const FOES_STAT_DURING_COMBAT_NODE = index => new FoesStatsDuringCombatNode(index);
 const FOES_ATK_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Atk);
 const FOES_SPD_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Spd);
 const FOES_DEF_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Def);
@@ -2566,6 +2623,8 @@ class IsPenaltyActiveOnTargetNode extends BoolNode {
         return result;
     }
 }
+
+const IS_PENALTY_ACTIVE_ON_TARGET_NODE = new IsPenaltyActiveOnTargetNode();
 
 class IsPenaltyActiveOnUnitNode extends IsPenaltyActiveOnTargetNode {
     static {
@@ -3288,6 +3347,12 @@ class ForEachTargetsAllyWithinNSpacesNode extends ForEachAllyNode {
     }
 }
 
+const FOR_EACH_TARGETS_ALLY_WITHIN_N_SPACES_NODE =
+    (n, ...nodes) => new ForEachTargetsAllyWithinNSpacesNode(n, TRUE_NODE, ...nodes);
+
+const FOR_EACH_TARGETS_ALLY_WITHIN_2_SPACES_NODE =
+    (...nodes) => new ForEachTargetsAllyWithinNSpacesNode(2, TRUE_NODE, ...nodes);
+
 class ForEachUnitAndAllyNode extends ForEachUnitOnMapNode {
     /**
      * @param {NodeEnv} env
@@ -3595,6 +3660,7 @@ class IsTargetWithinNSpacesOfTargetsAllyNode extends IsInRangeNNode {
 const IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE = n => new IsTargetWithinNSpacesOfTargetsAllyNode(n, TRUE_NODE);
 const IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(3, TRUE_NODE);
+const IS_TARGET_WITHIN_4_SPACES_OF_TARGETS_ALLY_NODE = new IsTargetWithinNSpacesOfTargetsAllyNode(4, TRUE_NODE);
 
 class IsUnitWithinNSpacesOfUnitsAllyNode extends IsTargetWithinNSpacesOfTargetsAllyNode {
     static {
@@ -3612,6 +3678,7 @@ class IsTargetWithinNSpacesOfSkillOwnerNode extends IsInRangeNNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
+const IS_TARGET_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE = n => new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE);
 const IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(2, TRUE_NODE);
 const IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(3, TRUE_NODE);
 const IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(4, TRUE_NODE);
@@ -3920,6 +3987,8 @@ class IsTargetInCardinalDirectionsOfSkillOwnerNode extends BoolNode {
         return result;
     }
 }
+
+const IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_SKILL_OWNER_NODE = new IsTargetInCardinalDirectionsOfSkillOwnerNode();
 
 // TODO: renameを検討
 class IsNotSpaceOccupiedByTargetsFoeNode extends BoolNode {
@@ -4733,6 +4802,8 @@ class TargetsBonusesNode extends StatsNode {
     }
 }
 
+const TARGETS_BONUSES_NODE = new TargetsBonusesNode();
+
 /**
  * highest total bonuses
  */
@@ -4780,6 +4851,8 @@ class FoesBonusNode extends TargetsBonusNode {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
+
+const FOES_BONUS_NODE = index => new FoesBonusNode(index);
 
 /**
  * neutralizes stat penalties

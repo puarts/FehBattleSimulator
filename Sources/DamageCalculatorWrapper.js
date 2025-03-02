@@ -5780,11 +5780,6 @@ class DamageCalculatorWrapper {
             }
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.WingLeftedSpear] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.addAllSpur(5);
-            }
-        }
         this._applySkillEffectForUnitFuncDict[PassiveB.WilyFighter3] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25 && enemyUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
@@ -7100,29 +7095,6 @@ class DamageCalculatorWrapper {
                     targetUnit.addAllSpur(4)
                     targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
                     targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                }
-            }
-        };
-
-        this._applySkillEffectForUnitFuncDict[Weapon.BereftLance] = (targetUnit) => {
-            {
-                let allyCount = self.__countAlliesWithinSpecifiedSpaces(
-                    targetUnit, 2);
-                let buffAmount = 0;
-                if (allyCount === 0) {
-                    buffAmount = 6;
-                }
-                else if (allyCount === 1) {
-                    buffAmount = 4;
-                }
-                else if (allyCount === 2) {
-                    buffAmount = 2;
-                }
-                targetUnit.atkSpur += buffAmount;
-                targetUnit.defSpur += buffAmount;
-
-                if (allyCount <= 1) {
-                    targetUnit.battleContext.invalidateAllBuffs();
                 }
             }
         };
@@ -11248,12 +11220,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.WingLeftedSpear:
-                    if (targetUnit.battleContext.initiatesCombat ||
-                        this.__isThereAllyIn2Spaces(targetUnit)) {
-                        this.__applyBuffAbsorption(targetUnit, enemyUnit)
-                    }
-                    break;
                 case Weapon.HvitrvulturePlus:
                 case Weapon.GronnvulturePlus:
                 case Weapon.BlarvulturePlus:
@@ -11382,21 +11348,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.SparkingTome:
-                    if (enemyUnit.battleContext.restHpPercentage >= 50) {
-                        enemyUnit.resSpur -= 6;
-                        enemyUnit.spdSpur -= 6;
-
-                        let spdBuff = enemyUnit.getSpdBuffInCombat(targetUnit);
-                        if (spdBuff > 0) {
-                            enemyUnit.spdSpur -= spdBuff * 2;
-                        }
-                        let resBuff = enemyUnit.getResBuffInCombat(targetUnit);
-                        if (resBuff > 0) {
-                            enemyUnit.resSpur -= resBuff * 2;
-                        }
-                    }
-                    break;
                 case Weapon.SneeringAxe:
                     {
                         let atkBuff = enemyUnit.getAtkBuffInCombat(targetUnit);
@@ -11485,14 +11436,6 @@ class DamageCalculatorWrapper {
                 case Weapon.TharjasHex:
                     {
                         let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
-                        if (buff > 0) {
-                            targetUnit.atkSpur += buff;
-                        }
-                    }
-                    break;
-                case Weapon.TwinStarAxe:
-                    {
-                        let buff = Math.trunc(targetUnit.getBuffTotalInCombat(enemyUnit) / 2);
                         if (buff > 0) {
                             targetUnit.atkSpur += buff;
                         }
@@ -12576,16 +12519,6 @@ class DamageCalculatorWrapper {
                                 if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getSpdInCombat() + 1) {
                                     targetUnit.battleContext.attackCount = 2;
                                 }
-                            }
-                        }
-                        break;
-                    case Weapon.Luin:
-                        if (targetUnit.battleContext.initiatesCombat
-                            || this.__isThereAllyInSpecifiedSpaces(targetUnit, 2)
-                        ) {
-                            targetUnit.spdSpur += 6;
-                            if (targetUnit.getEvalSpdInCombat() >= enemyUnit.getEvalSpdInCombat() + 5) {
-                                targetUnit.battleContext.invalidatesCounterattack = true;
                             }
                         }
                         break;
@@ -13719,12 +13652,6 @@ class DamageCalculatorWrapper {
                     if (defUnit.restHpPercentage >= 75) {
                         atkUnit.battleContext.additionalDamageOfSpecial += 7;
                     }
-                }
-                break;
-            case Weapon.Luin:
-                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)) {
-                    let additionalDamage = floorNumberWithFloatError(DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat) * 0.2);
-                    atkUnit.battleContext.additionalDamage += additionalDamage;
                 }
                 break;
             case Weapon.FairFuryAxe:

@@ -1,4 +1,236 @@
 // スキル実装
+// 虚ろな槍
+{
+    let skillId = getNormalSkillId(Weapon.BereftLance);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘中、自身の攻撃、守備が周囲2マス以内の味方の数によって最大+6上昇
+        // (味方が0体なら+6、1体なら+4、2体なら+2、3体以上なら+0)
+        X_NUM_NODE(
+            IF_NODE(EQ_NODE(READ_NUM_NODE, 0),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 6, 0),
+            ),
+            IF_NODE(EQ_NODE(READ_NUM_NODE, 1),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(4, 0, 4, 0),
+            ),
+            IF_NODE(EQ_NODE(READ_NUM_NODE, 2),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(2, 0, 2, 0),
+            ),
+            NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE,
+        ),
+        // 周囲2マス以内の味方が1体以下の時、戦闘中、敵の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)
+        IF_NODE(LTE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE, 1),
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.BereftLance);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.BereftLance);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// 慕炎の書
+{
+    let skillId = getNormalSkillId(Weapon.SparkingTome);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 6, 0, 6),
+            FOR_EACH_TARGET_STAT_INDEX_NODE([STATUS_INDEX.Spd, STATUS_INDEX.Res],
+                INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(
+                    READ_NUM_NODE,
+                    MULT_NODE(FOES_BONUS_NODE(READ_NUM_NODE), 2)),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.SparkingTome);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.SparkingTome);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// ルーン
+{
+    let skillId = getNormalSkillId(Weapon.Luin);
+    let [dealsDamageDuringCombat, dealsDamageBeforeCombat] =
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(STATUS_INDEX.Spd, 20);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            dealsDamageDuringCombat,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(0, 6, 0, 0),
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                IF_NODE(GTE_NODE(UNITS_EVAL_SPD_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_SPD_DURING_COMBAT_NODE, 5)),
+                    FOE_CANNOT_COUNTERATTACK_NODE,
+                ),
+            ),
+        ),
+    ));
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            dealsDamageBeforeCombat,
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.Luin);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Luin);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// 業火の双斧
+{
+    let skillId = getNormalSkillId(Weapon.TwinStarAxe);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(MULT_TRUNC_NODE(TARGETS_TOTAL_BONUSES_NODE, 0.5), 0, 0, 0),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.TwinStarAxe);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.TwinStarAxe);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// キアの杖
+{
+    let skillId = getNormalSkillId(Weapon.KiaStaff);
+    let APPLY_KIA_NODE = unitsNode =>
+        FOR_EACH_UNIT_NODE(LOWEST_HP_UNITS_NODE(unitsNode),
+            GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(6, 6, 0, 0),
+            NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+        );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if【Penalty】is active on any allies within 4 spaces of unit (excluding unit),
+        // grants Atk/Spd+6 to ally with the lowest HP among them for 1 turn and neutralizes any【Penalty】on that ally
+        // (excluding penalties inflicted at start of turn).
+        // (If【Penalty】is not active on any ally within 4 spaces of unit, targets ally with the lowest HP among them instead.)
+        IF_NODE(IS_TARGET_WITHIN_4_SPACES_OF_TARGETS_ALLY_NODE,
+            IF_ELSE_NODE(
+                IS_THERE_UNITS_IF(SKILL_OWNERS_ALLIES_WITHIN_4_SPACES, IS_PENALTY_ACTIVE_ON_TARGET_NODE),
+                // 不利な状態の味方がいる場合
+                APPLY_KIA_NODE(FILTER_UNITS_NODE(SKILL_OWNERS_ALLIES_WITHIN_4_SPACES, IS_PENALTY_ACTIVE_ON_TARGET_NODE)),
+                // 不利な状態の味方がいない場合
+                APPLY_KIA_NODE(SKILL_OWNERS_ALLIES_WITHIN_4_SPACES),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.KiaStaff);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.KiaStaff);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// 聖女の杖
+{
+    let skillId = getNormalSkillId(Weapon.StaffOfTheSaint);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        FOR_EACH_TARGETS_ALLY_WITHIN_2_SPACES_NODE(
+            GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(0, 0, 6, 6),
+        ),
+        // inflicts【False Start】on foes in cardinal directions of unit with Res < unit’s Res.
+        FOR_EACH_UNIT_NODE(
+            FILTER_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE,
+                AND_NODE(
+                    IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_SKILL_OWNER_NODE,
+                    LT_NODE(TARGETS_RES_ON_MAP, SKILL_OWNERS_RES_ON_MAP),
+                ),
+            ),
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FalseStart),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.StaffOfTheSaint);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.StaffOfTheSaint);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// 扶翼ウイングスピア
+{
+    let skillId = getNormalSkillId(Weapon.WingLeftedSpear);
+    enablesCantoN(skillId, 2);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            FOR_EACH_STAT_INDEX_NODE(
+                GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, FOES_BONUS_NODE(READ_NUM_NODE)),
+            ),
+            FOR_EACH_STAT_INDEX_NODE(
+                INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE, FOES_BONUS_NODE(READ_NUM_NODE)),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.WingLeftedSpear);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.WingLeftedSpear);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
 // [Salvage]
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.Salvage);

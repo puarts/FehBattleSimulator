@@ -6239,7 +6239,6 @@ class Unit extends BattleMapElement {
                     break;
                 case Weapon.AbsoluteAmiti:
                 case PassiveC.FettersOfDromi:
-                case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
