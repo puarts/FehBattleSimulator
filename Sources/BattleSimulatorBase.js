@@ -7663,7 +7663,6 @@ class BattleSimulatorBase {
                 case Weapon.UnyieldingOar:
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
-                case Weapon.WingLeftedSpear:
                 case PassiveB.LunarBrace2:
                 case Weapon.HonorableBlade:
                 case Weapon.BowOfTwelve:

@@ -15,9 +15,19 @@ const CAN_TRIGGER_CANTO_HOOKS = new SkillEffectHooks();
 const CALCULATES_DISTANCE_OF_CANTO_HOOKS = new SkillEffectHooks();
 
 /**
+ * 再移動制限時の再移動量
+ * @type {SkillEffectHooks<NumberNode, CantoEnv>} */
+const CALCULATES_DISTANCE_OF_CANTO_WHEN_CANTO_CONTROL_IS_APPLIED_HOOKS = new SkillEffectHooks();
+
+/**
  * ワープでの再移動
  * @type {SkillEffectHooks<SpacesNode, BattleMapEnv>} */
 const WHEN_CANTO_UNIT_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
+
+/**
+ * ワープでの再移動（味方）
+ * @type {SkillEffectHooks<SpacesNode, BattleMapEnv>} */
+const WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 
 /**
  * 再移動発動開始時

@@ -1,4 +1,396 @@
 // スキル実装
+// 虚ろな槍
+{
+    let skillId = getNormalSkillId(Weapon.BereftLance);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 戦闘中、自身の攻撃、守備が周囲2マス以内の味方の数によって最大+6上昇
+        // (味方が0体なら+6、1体なら+4、2体なら+2、3体以上なら+0)
+        X_NUM_NODE(
+            IF_NODE(EQ_NODE(READ_NUM_NODE, 0),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 6, 0),
+            ),
+            IF_NODE(EQ_NODE(READ_NUM_NODE, 1),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(4, 0, 4, 0),
+            ),
+            IF_NODE(EQ_NODE(READ_NUM_NODE, 2),
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(2, 0, 2, 0),
+            ),
+            NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE,
+        ),
+        // 周囲2マス以内の味方が1体以下の時、戦闘中、敵の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)
+        IF_NODE(LTE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE, 1),
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.BereftLance);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.BereftLance);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// 慕炎の書
+{
+    let skillId = getNormalSkillId(Weapon.SparkingTome);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 6, 0, 6),
+            FOR_EACH_TARGET_STAT_INDEX_NODE([STATUS_INDEX.Spd, STATUS_INDEX.Res],
+                INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(
+                    READ_NUM_NODE,
+                    MULT_NODE(FOES_BONUS_NODE(READ_NUM_NODE), 2)),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.SparkingTome);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.SparkingTome);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// ルーン
+{
+    let skillId = getNormalSkillId(Weapon.Luin);
+    let [dealsDamageDuringCombat, dealsDamageBeforeCombat] =
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(STATUS_INDEX.Spd, 20);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            dealsDamageDuringCombat,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(0, 6, 0, 0),
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                IF_NODE(GTE_NODE(UNITS_EVAL_SPD_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_SPD_DURING_COMBAT_NODE, 5)),
+                    FOE_CANNOT_COUNTERATTACK_NODE,
+                ),
+            ),
+        ),
+    ));
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            dealsDamageBeforeCombat,
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.Luin);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Luin);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// 業火の双斧
+{
+    let skillId = getNormalSkillId(Weapon.TwinStarAxe);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(MULT_TRUNC_NODE(TARGETS_TOTAL_BONUSES_NODE, 0.5), 0, 0, 0),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.TwinStarAxe);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.TwinStarAxe);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// キアの杖
+{
+    let skillId = getNormalSkillId(Weapon.KiaStaff);
+    let APPLY_KIA_NODE = unitsNode =>
+        FOR_EACH_UNIT_NODE(LOWEST_HP_UNITS_NODE(unitsNode),
+            GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(6, 6, 0, 0),
+            NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+        );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if【Penalty】is active on any allies within 4 spaces of unit (excluding unit),
+        // grants Atk/Spd+6 to ally with the lowest HP among them for 1 turn and neutralizes any【Penalty】on that ally
+        // (excluding penalties inflicted at start of turn).
+        // (If【Penalty】is not active on any ally within 4 spaces of unit, targets ally with the lowest HP among them instead.)
+        IF_NODE(IS_TARGET_WITHIN_4_SPACES_OF_TARGETS_ALLY_NODE,
+            IF_ELSE_NODE(
+                IS_THERE_UNITS_IF(SKILL_OWNERS_ALLIES_WITHIN_4_SPACES, IS_PENALTY_ACTIVE_ON_TARGET_NODE),
+                // 不利な状態の味方がいる場合
+                APPLY_KIA_NODE(FILTER_UNITS_NODE(SKILL_OWNERS_ALLIES_WITHIN_4_SPACES, IS_PENALTY_ACTIVE_ON_TARGET_NODE)),
+                // 不利な状態の味方がいない場合
+                APPLY_KIA_NODE(SKILL_OWNERS_ALLIES_WITHIN_4_SPACES),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.KiaStaff);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.KiaStaff);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// 聖女の杖
+{
+    let skillId = getNormalSkillId(Weapon.StaffOfTheSaint);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        FOR_EACH_TARGETS_ALLY_WITHIN_2_SPACES_NODE(
+            GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(0, 0, 6, 6),
+        ),
+        // inflicts【False Start】on foes in cardinal directions of unit with Res < unit’s Res.
+        FOR_EACH_UNIT_NODE(
+            FILTER_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE,
+                AND_NODE(
+                    IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_SKILL_OWNER_NODE,
+                    LT_NODE(TARGETS_RES_ON_MAP, SKILL_OWNERS_RES_ON_MAP),
+                ),
+            ),
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FalseStart),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.StaffOfTheSaint);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.StaffOfTheSaint);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// 扶翼ウイングスピア
+{
+    let skillId = getNormalSkillId(Weapon.WingLeftedSpear);
+    enablesCantoN(skillId, 2);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            FOR_EACH_STAT_INDEX_NODE(
+                GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, FOES_BONUS_NODE(READ_NUM_NODE)),
+            ),
+            FOR_EACH_STAT_INDEX_NODE(
+                INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE, FOES_BONUS_NODE(READ_NUM_NODE)),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.WingLeftedSpear);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.WingLeftedSpear);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
+// [Salvage]
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Salvage);
+    // Enables [Canto (2)] .
+    enablesCantoN(skillId, 2)
+
+    // When [Canto Control] is applied to unit,
+    CALCULATES_DISTANCE_OF_CANTO_WHEN_CANTO_CONTROL_IS_APPLIED_HOOKS.addSkill(skillId, () =>
+        // if unit's Range = 1,
+        // unit can move 2 spaces with Canto instead of 1 space,
+        // and if unit's Range = 2,
+        // unit can move 1 space with Canto instead of 0 spaces.
+        COND_OP(IS_TARGET_MELEE_WEAPON_NODE,
+            CONSTANT_NUMBER_NODE(2),
+            CONSTANT_NUMBER_NODE(1),
+        ),
+    );
+}
+
+// Salvage
+{
+    let skillId = Weapon.Salvage;
+    // Mt: 14
+    // Rng: 2
+    // Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1).
+    // Foe cannot counterattack.
+
+    // For allies with the [Salvage] effect active,
+    // when Canto triggers,
+    // if ally is within 6 spaces of unit,
+    // ally can move to a space within 2 spaces of unit,
+    // even if that movement exceeds the Canto distance limit.
+    WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        SPACES_IF_NODE(IS_TARGET_WITHIN_6_SPACES_OF_SKILL_OWNER_NODE,
+            SPACES_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(2),
+        ),
+    );
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // and the following status to unit and allies within 2 spaces of unit for 1 turn:
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Atk/Spd+6,
+                GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(6, 6, 0, 0),
+                // [Salvage],
+                // "unit can move to a space adjacent to any ally within 2 spaces."
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Salvage, StatusEffectType.AirOrders),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd = 20% of unit's Spd at start of combat + 6,
+            X_NUM_NODE(
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_SPD_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            // deals damage = 15% of foe's Atk
+            // (excluding area-of-effect Specials; calculates damage from staff after combat damage is added),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, FOES_ATK_DURING_COMBAT_NODE),
+            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+    ));
+}
+
+// Called to Serve
+{
+    let skillId = PassiveB.CalledToServe;
+    // If a Rally or movement Assist skill is used by unit,
+    let nodeFunc = () => new SkillEffectNode(
+        // to unit, target ally, and allies within 2 spaces of target ally after movement for 1 turn.
+        FOR_EACH_UNIT_NODE(
+            UNITE_UNITS_NODE(
+                UnitsNode.makeFromUnits(ASSIST_TARGETING_NODE, ASSIST_TARGET_NODE),
+                ASSIST_TARGETS_ALLIES_WITHIN_2_SPACES_OF_TARGET_NODE(TRUE_NODE)
+            ),
+            // grants "neutralizes foe's bonuses during combat"
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+        ),
+    );
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Allies on the map with the "neutralizes foe's bonuses during combat" status active
+        IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            // deal +5 damage during combat (excluding area-of-effect Specials).
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(5),
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // Inflicts Spd/Res-4 on foe and
+        INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 4, 0, 4),
+        X_NUM_NODE(
+            // unit deals +X damage during combat
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
+            // (X = number of allies on the map with "neutralizes foe's
+            // bonuses during combat" status active,
+            // excluding unit, × 5; max 15; excluding area-of-effect Specials).
+            ENSURE_MAX_NODE(
+                MULT_NODE(
+                    COUNT_IF_UNITS_NODE(
+                        TARGETS_ALLIES_ON_MAP_NODE,
+                        HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.NeutralizesFoesBonusesDuringCombat)),
+                    5),
+                15
+            ),
+        ),
+    ));
+}
+
+// Quiet Strength
+{
+    let skillId = PassiveC.QuietStrength;
+    // For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage),
+            // grants Atk/Spd/Def/Res+5,
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+        ),
+    ));
+    // For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage),
+            // deals +7 damage (excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(7),
+            // reduces damage from foe's first attack by 7
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // and grants Special cooldown count-1 to ally before ally's first attack during their combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd+5,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 5, 0, 0),
+            // neutralizes penalties to unit's Atk/Spd,
+            new NeutralizesPenaltiesToUnitsStatsNode(true, true, false, false),
+            // deals +7 damage (excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(7),
+            // reduces damage from foe's first attack by 7
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // grants Special cooldown count-1 to unit before unit's first attack,
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
+
 // Nova
 {
     let skillId = Weapon.Nova;
@@ -2775,6 +3167,7 @@
 }
 
 {
+    setSway(PassiveA.SwayAtkSpd, [READ_NUM_NODE, READ_NUM_NODE, 0, 0]);
     setSway(PassiveA.SwayAtkRes, [READ_NUM_NODE, 0, 0, READ_NUM_NODE]);
 }
 

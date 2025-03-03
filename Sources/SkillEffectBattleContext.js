@@ -103,6 +103,8 @@ class TargetsHpOnMapNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_HP_ON_MAP_NODE = new TargetsHpOnMapNode();
+
 class FoesHpAtStartOfTurnNode extends TargetsHpAtStartOfTurnNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
