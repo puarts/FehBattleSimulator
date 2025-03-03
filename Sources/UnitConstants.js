@@ -126,12 +126,12 @@ const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
 const RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET = new Set();
 
 const IvStateOptions = [
-    {id: StatusType.None, text: "なし"},
-    {id: StatusType.Hp, text: "HP"},
-    {id: StatusType.Atk, text: "攻撃"},
-    {id: StatusType.Spd, text: "速さ"},
-    {id: StatusType.Def, text: "守備"},
-    {id: StatusType.Res, text: "魔防"},
+    { id: StatusType.None, text: "なし" },
+    { id: StatusType.Hp, text: "HP" },
+    { id: StatusType.Atk, text: "攻撃" },
+    { id: StatusType.Spd, text: "速さ" },
+    { id: StatusType.Def, text: "守備" },
+    { id: StatusType.Res, text: "魔防" },
 ];
 
 const UnitGroupType = {
@@ -148,11 +148,11 @@ const SummonerLevel = {
 };
 
 const SummonerLevelOptions = [
-    {id: SummonerLevel.None, text: "なし"},
-    {id: SummonerLevel.C, text: "C"},
-    {id: SummonerLevel.B, text: "B"},
-    {id: SummonerLevel.A, text: "A"},
-    {id: SummonerLevel.S, text: "S"},
+    { id: SummonerLevel.None, text: "なし" },
+    { id: SummonerLevel.C, text: "C" },
+    { id: SummonerLevel.B, text: "B" },
+    { id: SummonerLevel.A, text: "A" },
+    { id: SummonerLevel.S, text: "S" },
 ];
 
 const PartnerLevel = {
@@ -349,7 +349,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Empathy, ["Empathy.webp", "多感", "自軍と敵軍の有利な状態と不利な状態の種類数で強化"]],
     [StatusEffectType.DivinelyInspiring, ["DivinelyInspiring.webp", "神竜の結束", "【神竜の結束】の味方数で強化、回復、奥義カウント減"]],
     [StatusEffectType.PreemptPulse, ["PreemptPulse.webp", "初撃の鼓動", "自分の最初の攻撃前に奥義-1"]],
-    [StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat, ["IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat.webp", "戦闘中、敵の追撃の速さ条件+10", "戦闘中、敵の追撃の速さ条件+10"]],
+    [StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat, ["FoeSpdDifferenceIncrease.webp", "戦闘中、敵の追撃の速さ条件+10", "戦闘中、敵の追撃の速さ条件+10"]],
     [StatusEffectType.PotentFollow, ["PotentFollow.webp", "神速追撃", "条件を満たすと、追撃の直後に、さらに追撃が発動"]],
     [StatusEffectType.Salvage, ["Salvage.webp", "七難即滅", "【再移動（2）】発動可能、再移動制限を緩和する"]],
 ]);
