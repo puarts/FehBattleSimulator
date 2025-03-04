@@ -127,7 +127,10 @@
     let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
     SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.EMBLEM_LYN);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
-        AND_NODE(GTE_NODE(CURRENT_TURN_NODE, 2), EQ_NODE(TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE, 0)),
+        AND_NODE(
+            GTE_NODE(CURRENT_TURN_NODE, 2),
+            EQ_NODE(TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE, 0),
+            IS_TARGET_RANGED_WEAPON_NODE),
     );
     STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
@@ -4228,20 +4231,20 @@ function setDiscord(skillId, statsRatios) {
         // If foe's attack can trigger unit's Special,
         IF_NODE(new CanTargetsFoesAttackTriggerTargetsSpecialNode(),
         ),
-        // triggers the following effects during combat: 
-        // grants Special cooldown count-1 to unit before foe's first attack; 
+        // triggers the following effects during combat:
+        // grants Special cooldown count-1 to unit before foe's first attack;
         new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode(1),
 
         // if foe's first attack triggers the "attacks twice" effect,
-        // grants Special cooldown count-1 to unit before foe's second strike as well; 
+        // grants Special cooldown count-1 to unit before foe's second strike as well;
         new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesSecondStrikeDuringCombatNode(1),
 
-        // grants Special cooldown count-1 to unit before foe's first follow-up attack. 
+        // grants Special cooldown count-1 to unit before foe's first follow-up attack.
         new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstFollowUpAttackDuringCombatNode(1),
 
-        // If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect, 
+        // If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect,
         // Special triggers twice,
-        // then reduces damage by 7. 
+        // then reduces damage by 7.
         new TargetsSpecialTriggersTwiceThenReducesDamageByNNode(7),
         // Each Special trigger is calculated as a separate activation.
     ));
@@ -4267,7 +4270,7 @@ function setDiscord(skillId, statsRatios) {
         ),
         // After Special triggers,
         // unit's next attack deals damage = total damage reduced (by any source,
-        // including other skills; resets at end of combat; min 40% of unit's Res) and 
+        // including other skills; resets at end of combat; min 40% of unit's Res) and
         new AfterSpecialTriggersTargetsNextAttackDealsDamageEqTotalDamageReducedNode(),
         new AppliesSkillEffectsAfterStatusFixedNode(
             new AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode(MULT_TRUNC_NODE(0.4, UNITS_RES_DURING_COMBAT_NODE)),
@@ -4313,7 +4316,7 @@ function setDiscord(skillId, statsRatios) {
             NULL_UNIT_FOLLOW_UP_NODE,
             // and also,
             // when unit deals damage to foe during combat,
-            // restores 7 HP to unit (triggers even if 0 damage is dealt). 
+            // restores 7 HP to unit (triggers even if 0 damage is dealt).
             new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(7),
             // If foe with Range = 2 initiates combat,
             IF_NODE(AND_NODE(DOES_FOE_INITIATE_COMBAT_NODE, EQ_NODE(new FoesRangeNode(), 2)),
@@ -4403,8 +4406,8 @@ function setDiscord(skillId, statsRatios) {
         // If unit is on a team with unit's support partner,
         IF_NODE(new IsThereUnitOnMapNode(new AreTargetAndSkillOwnerPartnersNode()),
             // at start of turn,
-            // grants "neutralizes 'effective against dragons' bonuses" 
-            // to support partners within 3 spaces of unit for 1 turn. 
+            // grants "neutralizes 'effective against dragons' bonuses"
+            // to support partners within 3 spaces of unit for 1 turn.
             new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, new AreTargetAndSkillOwnerPartnersNode(),
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.ShieldDragon),
             ),
