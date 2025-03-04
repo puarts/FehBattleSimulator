@@ -3622,20 +3622,25 @@ function setDiscord(skillId, statsRatios) {
     ))
 }
 
-// 攻撃守備の備え3
+// 備え3
 {
-    let skillId = PassiveA.AtkDefPrime3;
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // If【Bonus】is active on unit,
-        IF_NODE(IS_BONUS_ACTIVE_ON_UNIT_NODE,
-            new NumThatIsNode(
-                // grants Atk/Def+X to unit during combat
-                new GrantsStatsPlusToUnitDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
-                // (X = number of【Bonus】effects active on unit, excluding stat bonuses, × 2, + 3; max 7).
-                new EnsureMaxNode(ADD_NODE(MULT_NODE(NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE, 2), 3), 7),
+    let setSkill = (skillId, spurs) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+            SKILL_EFFECT_NODE(
+                // If【Bonus】is active on unit,
+                IF_NODE(IS_BONUS_ACTIVE_ON_UNIT_NODE,
+                    X_NUM_NODE(
+                        // grants Atk/Def+X to unit during combat
+                        new GrantsStatsPlusToUnitDuringCombatNode(...spurs),
+                        // (X = number of【Bonus】effects active on unit, excluding stat bonuses, × 2, + 3; max 7).
+                        new EnsureMaxNode(ADD_NODE(MULT_NODE(NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE, 2), 3), 7),
+                    ),
+                )
             )
-        )
-    ));
+        );
+    };
+    setSkill(PassiveA.AtkSpdPrime3, [READ_NUM_NODE, READ_NUM_NODE, 0, 0]);
+    setSkill(PassiveA.AtkDefPrime3, [READ_NUM_NODE, 0, READ_NUM_NODE, 0]);
 }
 
 // 称賛の希求の大斧

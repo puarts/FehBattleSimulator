@@ -2711,6 +2711,7 @@ const PassiveA = {
     FlaredMirror: 2648, // 鬼神明鏡の炎撃
 
     // 備え
+    AtkSpdPrime3: 2576, // 攻撃速さの備え3
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
     AtkDefPrime3: 2978, // 攻撃守備の備え3
     AtkDefPrime4: 2699, // 攻撃守備の備え4
