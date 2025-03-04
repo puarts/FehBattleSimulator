@@ -9450,8 +9450,8 @@ class BattleSimulatorBase {
                 let unitSet = new Set(units);
                 for (let u of unitSet) {
                     u.heal(10);
-                    u.neutralizeNegativeStatusEffects();
-                    u.forceResetDebuffs();
+                    u.reserveToNeutralizeNegativeStatusEffects();
+                    u.reservedDebuffFlagsToNeutralize = [true, true, true, true];
                 }
                 break;
             }
@@ -10052,6 +10052,9 @@ class BattleSimulatorBase {
 
         if (isBuffed) {
             this.__applySkillsAfterRally(supporterUnit, targetUnit);
+            for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedState(false);
+            }
         }
         this.map.applyReservedDivineVein();
         return isBuffed;
@@ -10199,7 +10202,8 @@ class BattleSimulatorBase {
                 let unitSet = new Set(units);
                 for (let u of unitSet) {
                     u.heal(10);
-                    u.neutralizeNegativeStatusEffects();
+                    u.reserveToNeutralizeNegativeStatusEffects();
+                    u.reservedDebuffFlagsToNeutralize = [true, true, true, true];
                 }
                 break;
             }
