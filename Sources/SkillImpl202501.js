@@ -113,7 +113,7 @@
 // ルーン
 {
     let skillId = getNormalSkillId(Weapon.Luin);
-    let [dealsDamageDuringCombat, dealsDamageBeforeCombat] =
+    let [dealsDamageBeforeCombat, dealsDamageDuringCombat] =
         DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(STATUS_INDEX.Spd, 20);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
