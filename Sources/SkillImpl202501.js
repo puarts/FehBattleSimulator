@@ -1,4 +1,47 @@
 // スキル実装
+{
+    let skillId = PassiveB.FaithfulLoyalty2;
+    const X = HIGHEST_TOTAL_BONUSES_TO_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(2, TARGETS_TOTAL_BONUSES_NODE);
+    let [reduceDamageBeforeCombat, reduceDamageDuringCombat] =
+        REDUCES_DAMAGE_BY_N(X);
+    const IS_FOE_ARMOR_OR_CAVALRY_NODE =
+        OR_NODE(
+            EQ_NODE(FOE_MOVE_NODE, MoveType.Armor),
+            EQ_NODE(FOE_MOVE_NODE, MoveType.Cavalry)
+        );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 重装、騎馬の敵から攻撃された時、先制攻撃
+        IF_NODE(AND_NODE(
+                DOES_FOE_INITIATE_COMBAT_NODE,
+                IS_FOE_ARMOR_OR_CAVALRY_NODE),
+            TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE,
+        ),
+        // 戦闘中、敵の攻撃、速さ、守備一5、敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
+        INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(5, 5, 5, 0),
+        NULL_UNIT_FOLLOW_UP_NODE,
+        // 敵が重装、騎馬の時、受けるダメージー〇
+        // （範囲奥義を含む（巨影の範囲奥義は除く））、
+        IF_ELSE_NODE(IS_FOE_ARMOR_OR_CAVALRY_NODE,
+            reduceDamageDuringCombat,
+            // 敵が重装、騎馬でない時、戦闘中、最初に受けた攻撃と2回攻撃のダメージー〇の40%
+            // （〇は、自分と周囲2マス以内にいる味方のうち強化の合計値が最も高い値）
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                PERCENTAGE_NODE(40, X)),
+        ),
+        // 戦闘後、7回復、
+        RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+    ));
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // 自分に【待ち伏せ】を付与（1ターン）
+        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Vantage),
+    ));
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        IF_NODE(IS_FOE_ARMOR_OR_CAVALRY_NODE,
+            reduceDamageBeforeCombat,
+        ),
+    ));
+}
+
 // 虚ろな槍
 {
     let skillId = getNormalSkillId(Weapon.BereftLance);

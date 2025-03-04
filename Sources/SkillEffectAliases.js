@@ -223,6 +223,11 @@ const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES = (index, percentage) =>
         DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(percentage, UNITS_STAT_DURING_COMBAT_NODE(index)),
     ];
 
+const REDUCES_DAMAGE_BY_N = n => [
+    REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
+    REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
+];
+
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
  * 奥義カウント最大判定
