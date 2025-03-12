@@ -1,4 +1,144 @@
 // スキル実装
+// Gentle Fell Egg
+{
+    let skillId = Weapon.GentleFellEgg;
+    // Mt: 14
+    // Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    // Grants HP+5,
+    // Atk/Res+6.
+
+    // At start of player phase or enemy phase,
+    let nodeFunc = () => SKILL_EFFECT_NODE(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants "reduces damage from area-of-effect Specials by 80% (excluding Rokkr area-of-effect Specials)," [Resonance: Blades) ,
+                // and (Resonance: Shields)
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.ReduceDamageFromAreaOfEffectSpecialsBy80Percent,
+                    StatusEffectType.ResonantBlades,
+                    StatusEffectType.ResonantShield
+                ),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Res = 20% of unit's Res at start of combat,
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, 0, READ_NUM_NODE),
+                PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE),
+            ),
+            // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+            // and unit makes a guaranteed follow-up attack during combat,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and also,
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                // if unit's Res ≥ foe's Res+ 10,
+                IF_NODE(GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 10)),
+                    // unit attacks twice during combat.
+                    TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+                ),
+            ),
+        ),
+    ));
+}
+
+// A/R Far Resound
+// Enables (Canto (Rem.; Min 1)) •
+// Deals damage to unit as combat begins = 20% of X (X =
+// unit's max HP before entering battle - 20; "max HP before entering battle" means unit's max HP excluding HP increases from Legendary Effects, Mythic Effects, Bonus Heroes, etc.; activates only when unit can attack in combat; effects that reduce damage "during combat" do not apply; will not reduce unit's HP below 1).
+// Inflicts Atk/Res-4 on foe, unit deals damage = unit's HP at
+// start of combat - current HP, x 2 (max 12, min 6; excluding area-of-effect Specials) and reduces the percentage of foe's non-Special "reduce damage by X%" skills by
+// percentage = unit's HP at start of combat - current HP, x
+// 10 during combat (max 60%, min 30%; excluding area-of-effect Specials).
+
+// Fell Majesty
+// Disables foe's "calculate damage using the lower of foe's Def or Res" effects (including area-of-effect Specials).
+// If unit initiates combat or is within 2 spaces of an ally, inflicts Atk/Res-5 on foe, reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes), and grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack), and also, if unit's Res ≥ foe's Res+5 and foe's attack can trigger foe's Special, inflicts Special cooldown count+1 on foe before foe's first
+// attack, and also, if foe's Range = 2, inflicts additional
+// Special cooldown count+ 1 on foe before foe's first follow-up attack (cannot exceed the foe's maximum
+// Special cooldown).
+// For allies within 2 spaces of unit, grants Atk/Def/Res+5 and reduces damage from foe's first attack by 7 during their combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+// For allies within 2 spaces of unit, if this unit's Res ≥ ally's foe's Res+5 at start of combat, and if foe's attack can trigger foe's Special, inflicts Special cooldown count+ 1 on
+// foe before foe's first attack, and also, if foe's Range = 2,
+// inflicts additional Special cooldown count+ 1 on foe before foe's first follow-up attack (cannot exceed the foe's maximum Special cooldown).
+
+// Petaldream Horn
+// Mt: 14
+// Rng: 1
+// Accelerates Special trigger (cooldown count-1).
+// For foes within 3 rows or 3 columns centered on unit, inflicts Atk/Spd/Def/Res-5 and Special cooldown charge
+// -I on those foes per attack during combat (only highest value applied; does not stack), and also, if those foes have bonuses, inflicts a penalty on those foes' Atk/Spd/Def/Res and grants a bonus to foes' combat
+// targets' Atk/Spd/Def/Res during combat = current bonus
+// on each of that foe's stats (calculates each stat bonus and penalty independently).
+// At start of combat, if unit's HP ≥ 25%, grants bonus to
+// unit's Atk/Spd/Def/Res = number of foes within 3 rows
+// or 3 columns centered on unit x 3 (max 9), deals damage = 20% of unit's Spd (excluding area-of-effect Specials), and reduces damage from foe's first attack by 20% of unit's Spd during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes), and restores 7 HP to unit after combat.
+// At start of turn, if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally, unit transforms (otherwise, unit reverts). If unit transforms, grants Atk+2, and also, inflicts Atk/Def-X on foe during combat (X = number of spaces from start position to end position of whoever initiated combat + 3; max 6), and also, if X ≥ 5, reduces damage from foe's first attack by 30% during combat.\
+
+// Nihility's Undoing
+// If unit can transform, transformation effects gain "if unit is within 2 spaces of a beast or dragon ally, or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+// If defending in Aether Raids, at the start of enemy turn 1, if conditions for transforming are met, unit transforms.
+// If unit is transformed or if foe's HP ≥ 75% at start of combat, grants Atk/Spd/Def/Res+X+8 to unit and reduces damage from foe's attacks by X x 4 during
+// combat (X = number of spaces from start position to
+// end position of whoever initiated combat; max 3; excluding area-of-effect Specials), and also, when foe's attack triggers foe's Special, reduces damage by an additional X x 4 (excluding area-of-effect Specials).
+// If unit is transformed or if foe's HP ≥ 75% at start of combat, grants Special cooldown charge + 1 to unit per attack (only highest value applied; does not stack) and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+
+// Bestial Agility
+// Enables (Canto (Rem. +1; Min 2)] while transformed.
+// If unit is transformed or unit's HP ≥ 25% at start of combat, inflicts Spd/Def-4 on foe and deals damage = 20% of the greater of unit's Spd or Def (excluding area-of-effect Specials), and also, if unit's Spd > foe's Spd, neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+
+// Spring-Air Egg+
+// Mt: 12 Rng:2
+// Inflicts Atk/Spd/Def/Res-5 on foes within 3 rows or 3 columns centered on unit and neutralizes effects that grant "Special cooldown charge +X" to those foes during their combat.
+// At start of combat, if unit's HP ≥ 25%, unit deals +X × 5
+// damage during combat (max 20; X = number of foes
+// within 3 spaces of target, including target; excluding area-of-effect Specials).
+
+// Springing Spear
+// Mt: 16
+// Rng: 1
+// Enables (Canto (Rem. + 1; Min 2)] .
+// Grants Res+3.
+// At start of turn, grants [Canto (1)] to allies within 2 spaces of unit for 1 turn.
+// For allies within 3 rows or 3 columns centered on unit, grants Atk/Def/Res+5, ally deals +10 damage (excluding area-of-effect Specials), and grants Special cooldown count-l to ally before ally's first attack during their combat.
+// If there is an ally within 3 rows or 3 columns centered on
+// unit, inflicts penalty on foe's Atk/Def = 20% of unit's Res
+// at start of combat + 6, unit deals + 10 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 10 (excluding area-of-effect Specials), and foe cannot make a follow-up attack during combat.
+
+// Dreamlike Night
+// Rng: 1
+// Grants another action to target ally, and if Canto has already been triggered by target ally, re-enables Canto.
+// Inflicts Atk/Def/Res-7, [Frozen) , and (Sabotage) on closest foes to target ally and any foe within 2 spaces of those foes through their next actions (cannot target an ally with Sing or Dance; this skill treated as Sing or Dance).
+
+// Def/Res Discord
+// At start of player phase or enemy phase, inflicts Def/Res-6 and [Discord) on foes with Res ‹ unit's Res and that are within 2 spaces of another foe through their next actions.
+// Inflicts penalty on foe's Def/Res during combat = number of foes inflicted with (Discord) within 2 spaces of target, including target, x 2, + 4 (max 10) and deals
+// damage = 15% of unit's Res (excluding area-of-effect
+// Specials).
+
+// Shadow Smite 4
+// When Canto triggers, enables unit to use [Smitel on ally (this effect is not treated as an Assist skill; if similar effects are active, this effect does not trigger).
+// If unit is within 3 spaces of an ally, grants
+// Atk/Spd/Def/Res+3 to unit during combat and restores 7
+// HP to unit after combat.
+// (Smite)
+// Range = 1. Pushes target ally 2 spaces away.
+
+{
+    let skillId = PassiveC.HolyGroundPlus;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    ));
+}
+
 {
     let skillId = PassiveB.FaithfulLoyalty2;
     const X = HIGHEST_TOTAL_BONUSES_TO_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(2, TARGETS_TOTAL_BONUSES_NODE);
