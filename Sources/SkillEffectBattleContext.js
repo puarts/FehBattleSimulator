@@ -125,11 +125,27 @@ class TargetsHpAtStartOfCombatNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_HP_AT_START_OF_COMBAT_NODE = new TargetsHpAtStartOfCombatNode();
+
 class FoesHpAtStartOfCombatNode extends TargetsHpAtStartOfCombatNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
+
+class TargetsCurrentHp extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.restHp;
+        env.debug(`${unit.nameWithGroup}の現在のHP: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_CURRENT_HP_NODE = new TargetsCurrentHp();
 
 class TargetsHpPercentageAtStartOfCombatNode extends NumberNode {
     static {
@@ -1217,6 +1233,8 @@ class ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCom
     }
 }
 
+const REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_N_PERCENT_DURING_COMBAT_NODE =
+    n => new ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode(n);
 const REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
     = new ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode(50);
 
@@ -1890,6 +1908,8 @@ class DealsDamageToTargetAsCombatBeginsNode extends FromPositiveNumberNode {
         env.debug(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ: ${result - n} -> ${result}`);
     }
 }
+
+const DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE = n => new DealsDamageToTargetAsCombatBeginsNode(n);
 
 class DealsDamageToFoeAsCombatBeginsNode extends DealsDamageToTargetAsCombatBeginsNode {
     static {

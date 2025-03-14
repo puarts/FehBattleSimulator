@@ -880,3 +880,40 @@ function grantsAnotherActionAfterCanto(skillId) {
         ),
     ));
 }
+
+function setResonance(skillId) {
+    AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+            X_NUM_NODE(
+                // Deals damage to unit as combat begins = 20% of X
+                DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(PERCENTAGE_NODE(20, READ_NUM_NODE)),
+                // (X = unit's max HP before entering battle - 20; "max HP before entering battle" means unit's max HP excluding HP increases from Legendary Effects,
+                // Mythic Effects, Bonus Heroes, etc.; activates only when unit can attack in combat; effects that reduce damage "during combat" do not apply; will not reduce unit's HP below 1).
+                SUB_NODE(
+                    TARGETS_MAX_HP_EXCLUDING_HP_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE,
+                    20),
+            ),
+        ),
+    ));
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // unit deals damage = unit's HP at start of combat - current HP, x 2
+        UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(
+            // (max 12, min 6; excluding area-of-effect Specials)
+            ENSURE_MIN_MAX_NODE(
+                MULT_NODE(SUB_NODE(TARGETS_HP_AT_START_OF_COMBAT_NODE, TARGETS_CURRENT_HP_NODE), 2),
+                6,
+                12,
+            ),
+        ),
+        // and reduces the percentage of foe's non-Special "reduce damage by X%" skills
+        // by percentage = unit's HP at start of combat - current HP, x 10 during combat
+        // (max 60%, min 30%; excluding area-of-effect Specials).
+        REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_N_PERCENT_DURING_COMBAT_NODE(
+            ENSURE_MIN_MAX_NODE(
+                MULT_NODE(SUB_NODE(TARGETS_HP_AT_START_OF_COMBAT_NODE, TARGETS_CURRENT_HP_NODE), 10),
+                30,
+                60,
+            ),
+        ),
+    ));
+}

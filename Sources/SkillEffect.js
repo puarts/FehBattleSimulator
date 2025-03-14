@@ -2093,6 +2093,21 @@ class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
 
 const SKILL_OWNER_MAX_HP_NODE = new SkillOwnerMaxHpNode();
 
+class TargetsMaxHpExcludingHpIncreasesFromLegendaryEffectsMythicEffectsBonusHeroesEtc extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.maxHpWithSkillsWithoutEnteringBattleHpAdd;
+        env.debug(`${unit.nameWithGroup}の出撃時の最大HP: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_MAX_HP_EXCLUDING_HP_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE =
+    new TargetsMaxHpExcludingHpIncreasesFromLegendaryEffectsMythicEffectsBonusHeroesEtc();
+
 /**
  * @abstract
  */

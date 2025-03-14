@@ -3769,6 +3769,7 @@ Weapon.SpringingSpear = 3202; // 春踊る兎達の槍
 Support.DreamlikeNight = 3203; // あまいよるのゆめ
 PassiveB.DefResDiscord = 3204; // 守備魔防の不和
 PassiveC.ShadowSmite4 = 3205; // 影助・ぶちかまし4
+Weapon.SpringAirAxePlus = 3206; // 春光の斧+
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
