@@ -1950,7 +1950,7 @@
         // if unit initiates combat and foe's attack can trigger foe's Special,
         IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
             // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
-            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
         ),
     ));
 }
@@ -2525,7 +2525,7 @@
             // if foe's attack can trigger foe's Special,
             IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                 // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
-                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
             ),
         ),
     ));
@@ -2546,7 +2546,7 @@
                 // foe's attack can trigger foe's Special,
                 IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                     // inflicts Special cooldown count+ 1 on foe before foe's first attack during their combat (cannot exceed the foe's maximum Special cooldown).
-                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
                 ),
             ),
         ),
@@ -3194,7 +3194,7 @@ function setDiscord(skillId, statsRatios) {
                         CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                         GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5))),
                     // inflicts Special cooldown count+1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
-                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
                 ),
             ),
         ),
@@ -4171,8 +4171,8 @@ function setDiscord(skillId, statsRatios) {
             // if foe's attack can trigger foe's Special,
             // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed foe's maximum Special cooldown).
             IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
-                new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack(1),
-                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode(1),
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
             ),
         ),
     ));
@@ -4522,7 +4522,7 @@ function setDiscord(skillId, statsRatios) {
                                 ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5)),
                             // inflicts Special cooldown count+1 on foe before foe's first attack during combat.
                             // (Cannot exceed the foe's maximum Special cooldown.)
-                            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
                         ),
                     ),
                 ),
@@ -4970,7 +4970,7 @@ function setDiscord(skillId, statsRatios) {
         // If unit initiates combat and foe's attack can trigger foe's Special,
         IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
             // inflicts Special cooldown count+1 on foe before foe's first attack during combat
-            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
             // (cannot exceed foe's maximum Special cooldown).
         ),
     ));
@@ -6180,7 +6180,7 @@ function setDiscord(skillId, statsRatios) {
                 // if foe's attack can trigger foe's Special,
                 IF_NODE(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
                     // inflicts Special cooldown count+1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).".
-                    new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack(1),
+                    new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode(1),
                 ),
             ),
         ),

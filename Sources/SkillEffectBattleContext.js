@@ -1488,7 +1488,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesSecondStrikeDurin
 /**
  * inflicts Special cooldown count+1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
  */
-class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack extends FromPositiveNumberNode {
+class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -1500,18 +1500,35 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack 
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.specialCountIncreaseBeforeFirstAttack += n;
-        let result = unit.battleContext.specialCountIncreaseBeforeFirstAttack;
+        let foe = env.getFoeDuringCombatOf(unit);
+        let result = foe.battleContext.specialCountIncreaseBeforeFirstAttack += n;
         env.debug(`${unit.nameWithGroup}は敵の最初の攻撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
     }
 }
 
-const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK = n =>
-    new class extends InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack {
-        static {
-            Object.assign(this.prototype, GetFoeDuringCombatMixin);
-        }
-    }(n);
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE =
+    n => new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode(n);
+
+class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstFollowUpAttackNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n) {
+        super(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let result = foe.battleContext.specialCountIncreaseBeforeFollowupAttack += n;
+        env.debug(`${unit.nameWithGroup}は敵の最初の追撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
+    }
+}
+
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_FOLLOW_UP_ATTACK_NODE =
+    n => new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstFollowUpAttackNode(n);
 
 class GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNode
     extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode {

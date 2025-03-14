@@ -62,31 +62,77 @@
     setResonance(skillId);
 }
 
-    // Fell Majesty
+// Fell Majesty
+{
+    let skillId = PassiveC.FellMajesty;
     // Disables foe's "calculate damage using the lower of foe's Def or Res" effects (including area-of-effect Specials).
-    // If unit initiates combat or is within 2 spaces of an ally,
-    // inflicts Atk/Res-5 on foe,
-    // reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-    // and grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack),
-    // and also,
-    // if unit's Res ≥ foe's Res+5 and foe's attack can trigger foe's Special,
-    // inflicts Special cooldown count+1 on foe before foe's first
-    // attack,
-    // and also,
-    // if foe's Range = 2,
-    // inflicts additional
-    // Special cooldown count+ 1 on foe before foe's first follow-up attack (cannot exceed the foe's maximum
-    // Special cooldown).
-    // For allies within 2 spaces of unit,
-    // grants Atk/Def/Res+5 and reduces damage from foe's first attack by 7 during their combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
-    // For allies within 2 spaces of unit,
-    // if this unit's Res ≥ ally's foe's Res+5 at start of combat,
-    // and if foe's attack can trigger foe's Special,
-    // inflicts Special cooldown count+ 1 on
-    // foe before foe's first attack,
-    // and also,
-    // if foe's Range = 2,
-    // inflicts additional Special cooldown count+ 1 on foe before foe's first follow-up attack (cannot exceed the foe's maximum Special cooldown).
+    DISABLES_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SET.add(skillId);
+
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // For allies within 2 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // grants Atk/Def/Res+5
+            GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(5, 0, 5, 5),
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // For allies within 2 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // and reduces damage from foe's first attack by 7 during their combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_OTHER_SKILLS_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // For allies within 2 spaces of unit,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            // if this unit's Res ≥ ally's foe's Res+5 at start of combat,
+            IF_NODE(GTE_NODE(SKILL_OWNERS_EVAL_RES_ON_MAP, ADD_NODE(FOES_EVAL_RES_AT_START_OF_COMBAT_NODE, 5)),
+                // and if foe's attack can trigger foe's Special,
+                IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                    // inflicts Special cooldown count+ 1 on
+                    // foe before foe's first attack,
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+                    // and also,
+                    // if foe's Range = 2,
+                    IF_NODE(FOES_RANGE_IS_2_NODE,
+                        // inflicts additional Special cooldown count+ 1 on foe before foe's first follow-up attack (cannot exceed the foe's maximum Special cooldown).
+                        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_FOLLOW_UP_ATTACK_NODE(1),
+                    ),
+                ),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // inflicts Atk/Res-5 on foe,
+            INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(5, 0, 0, 5),
+            // reduces damage from foe's first attack by 7
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // and grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack),
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+            // and also,
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                // if unit's Res ≥ foe's Res+5 and foe's attack can trigger foe's Special,
+                IF_NODE(AND_NODE(
+                    GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5)),
+                    CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
+                    // inflicts Special cooldown count+1 on foe before foe's first attack,
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+                ),
+            ),
+            // and also,
+            // if foe's Range = 2,
+            IF_NODE(FOES_RANGE_IS_2_NODE,
+                // inflicts additional Special cooldown count+ 1 on foe before foe's first follow-up attack
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_FOLLOW_UP_ATTACK_NODE(1),
+                // (cannot exceed the foe's maximum Special cooldown).
+            ),
+        ),
+    ));
+}
 
     // Petaldream Horn
     // Mt: 14
@@ -766,7 +812,7 @@
                 // if foe's attack can trigger foe's Special,
                 IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                     // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
-                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
                 ),
             ),
             // At start of combat,
@@ -1831,7 +1877,7 @@
             // if foe's attack can trigger foe's Special,
             IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                 // inflicts Special cooldown count+ 1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
-                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
             ),
         ),
         // If unit initiates combat,
