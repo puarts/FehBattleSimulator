@@ -196,23 +196,49 @@
     setBeastSkill(skillId, BeastCommonSkillType.Cavalry2);
 }
 
-    // Nihility's Undoing
+// Nihility's Undoing
+{
+    let skillId = PassiveA.NihilitysUndoing;
     // If unit can transform,
     // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
     // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
+    setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId);
+
     // If defending in Aether Raids,
     // at the start of enemy turn 1,
     // if conditions for transforming are met,
     // unit transforms.
-    // If unit is transformed or if foe's HP ≥ 75% at start of combat,
-    // grants Atk/Spd/Def/Res+X+8 to unit and reduces damage from foe's attacks by X x 4 during
-    // combat (X = number of spaces from start position to
-    // end position of whoever initiated combat; max 3; excluding area-of-effect Specials),
-    // and also,
-    // when foe's attack triggers foe's Special,
-    // reduces damage by an additional X x 4 (excluding area-of-effect Specials).
-    // If unit is transformed or if foe's HP ≥ 75% at start of combat,
-    // grants Special cooldown charge + 1 to unit per attack (only highest value applied; does not stack) and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+    setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId);
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or if foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants Atk/Spd/Def/Res+X+8 to unit
+            GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE,
+            // and reduces damage from foe's attacks by X x 4 during combat
+            // (X = number of spaces from start position to
+            // end position of whoever initiated combat; max 3; excluding area-of-effect Specials),
+            X_NUM_NODE(
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(MULT_NODE(READ_NUM_NODE, 4)),
+                // and also,
+                // when foe's attack triggers foe's Special,
+                IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                    // reduces damage by an additional X x 4 (excluding area-of-effect Specials).
+                    REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(MULT_NODE(READ_NUM_NODE, 4)),
+                ),
+                ENSURE_MAX_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 3),
+            ),
+        ),
+        // If unit is transformed or if foe's HP ≥ 75% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants Special cooldown charge + 1 to unit per attack (only highest value applied; does not stack)
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+            // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        ),
+    ));
+}
 
     // Bestial Agility
     // Enables (Canto (Rem. +1; Min 2)] while transformed.
