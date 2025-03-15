@@ -267,31 +267,34 @@
 
 // Spring-Air Egg+
 {
-    let skillId = Weapon.SpringAirEggPlus;
-    // Mt: 12 Rng:2
-    // on foes within 3 rows or 3 columns centered on unit
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        // Inflicts Atk/Spd/Def/Res-5
-        INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
-    ));
-    // on foes within 3 rows or 3 columns centered on unit
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        // and neutralizes effects that grant "Special cooldown charge +X" to those foes during their combat.
-        NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
-    ));
+    let setSkill = skillId => {
+        // Mt: 12 Rng:2
+        // on foes within 3 rows or 3 columns centered on unit
+        WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            // Inflicts Atk/Spd/Def/Res-5
+            INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+        ));
+        // on foes within 3 rows or 3 columns centered on unit
+        WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            // and neutralizes effects that grant "Special cooldown charge +X" to those foes during their combat.
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+        ));
 
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // At start of combat,
-        // if unit's HP ≥ 25%,
-        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
-            X_NUM_NODE(
-                // unit deals +X × 5 damage during combat
-                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(MULT_NODE(READ_NUM_NODE, 5)),
-                // (max 20; X = number of foes within 3 spaces of target, including target; excluding area-of-effect Specials).
-                ENSURE_MAX_NODE(NUM_OF_TARGETS_FOES_WITHIN_3_SPACES_OF_TARGET_NODE, 20),
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // At start of combat,
+            // if unit's HP ≥ 25%,
+            IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+                X_NUM_NODE(
+                    // unit deals +X × 5 damage during combat
+                    UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                    // (max 20; X = number of foes within 3 spaces of target, including target; excluding area-of-effect Specials).
+                    ENSURE_MAX_NODE(NUM_OF_TARGETS_FOES_WITHIN_3_SPACES_OF_TARGET_NODE, 20),
+                ),
             ),
-        ),
-    ));
+        ));
+    };
+    setSkill(Weapon.SpringAirEggPlus);
+    setSkill(Weapon.SpringAirAxePlus);
 }
 
 // Springing Spear
@@ -365,7 +368,14 @@
     ));
 }
 
-    // SpringAirAxePlus
+// SpringAirAxePlus
+{
+    let skillId = Weapon.SpringAirAxePlus;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
     // Inflicts Atk/Spd/Def/Res-5 on foes within 3 rows or 3 columns centered on unit and neutralizes effects that grant "Special cooldown charge +X" to those foes during their combat.
     // At start of combat,
     // if unit's HP ≥ 25%,
