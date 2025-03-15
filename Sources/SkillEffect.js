@@ -1229,6 +1229,7 @@ class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
     }
 }
 
+// TODO: 削除
 const IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
 
 class IsTargetsFoeInCardinalDirectionsOfTargetNode extends BoolNode {
@@ -3898,6 +3899,9 @@ class ForTargetsAlliesWithinNSpacesOfTargetNode extends ForTargetsAlliesInNRange
         return new Set(GeneratorUtil.filter(allies, pred));
     }
 }
+
+const FOR_TARGETS_ALLIES_WITHIN_2_SPACES_OF_TARGET_NODE =
+    (...procedureNodes) => new ForTargetsAlliesWithinNSpacesOfTargetNode(2, TRUE_NODE, ...procedureNodes);
 
 const FOR_TARGETS_ALLIES_WITHIN_3_SPACES_OF_TARGET_NODE =
     (...procedureNodes) => new ForTargetsAlliesWithinNSpacesOfTargetNode(3, TRUE_NODE, ...procedureNodes);

@@ -295,23 +295,54 @@
 }
 
     // Springing Spear
+{
+    let skillId = Weapon.SpringingSpear;
     // Mt: 16
     // Rng: 1
     // Enables (Canto (Rem. + 1; Min 2)] .
+    enablesCantoRemPlusMin(skillId, 1, 2);
     // Grants Res+3.
-    // At start of turn,
-    // grants [Canto (1)] to allies within 2 spaces of unit for 1 turn.
-    // For allies within 3 rows or 3 columns centered on unit,
-    // grants Atk/Def/Res+5,
-    // ally deals +10 damage (excluding area-of-effect Specials),
-    // and grants Special cooldown count-l to ally before ally's first attack during their combat.
-    // If there is an ally within 3 rows or 3 columns centered on
-    // unit,
-    // inflicts penalty on foe's Atk/Def = 20% of unit's Res
-    // at start of combat + 6,
-    // unit deals + 10 damage (excluding area-of-effect Specials),
-    // reduces damage from foe's attacks by 10 (excluding area-of-effect Specials),
-    // and foe cannot make a follow-up attack during combat.
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // For allies within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // grants Atk/Def/Res+5,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 0, 5, 5),
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // For allies within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // ally deals +10 damage (excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(10),
+            // and grants Special cooldown count-1 to ally before ally's first attack during their combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // to allies within 2 spaces of unit for 1 turn.
+        FOR_TARGETS_ALLIES_WITHIN_2_SPACES_OF_TARGET_NODE(
+            // grants [Canto (1)]
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Canto1),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If there is an ally within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            // inflicts penalty on foe's Atk/Def = 20% of unit's Res at start of combat + 6,
+            X_NUM_NODE(
+                INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            // unit deals + 10 damage (excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(10),
+            // reduces damage from foe's attacks by 10 (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(10),
+            // and foe cannot make a follow-up attack during combat.
+            FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
+        ),
+    ));
+}
 
     // Dreamlike Night
     // Rng: 1
