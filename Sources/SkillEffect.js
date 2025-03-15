@@ -1745,6 +1745,15 @@ class GrantsStatPlusAtToTargetDuringCombatNode extends SkillEffectNode {
 const GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE =
     (index, value) => new GrantsStatPlusAtToTargetDuringCombatNode(index, value);
 
+class GrantsStatPlusAtToUnitDuringCombatNode extends GrantsStatPlusAtToTargetDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const GRANTS_STAT_PLUS_AT_TO_UNIT_DURING_COMBAT_NODE =
+    (index, value) => new GrantsStatPlusAtToUnitDuringCombatNode(index, value);
+
 class GrantsStatsPlusToUnitDuringCombatNode extends GrantsStatsPlusToTargetDuringCombatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);

@@ -564,6 +564,9 @@ class DamageCalculatorWrapper {
         self.__applySpursFromAllies(atkUnit, defUnit, calcPotentialDamage, damageType);
         self.__applySpursFromAllies(defUnit, atkUnit, calcPotentialDamage, damageType);
 
+        self.__applySpursFromEnemies(atkUnit, defUnit, calcPotentialDamage, damageType)
+        self.__applySpursFromEnemies(defUnit, atkUnit, calcPotentialDamage, damageType)
+
         // 味方ユニットからのスキル効果
         // self.profile.profile("__applySkillEffectFromAllies", () => {
         // self.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
@@ -10147,6 +10150,30 @@ class DamageCalculatorWrapper {
         }
     }
 
+    __applySpursFromEnemies(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
+        let disablesSkillsFromEnemyAlliesInCombat = false;
+        if (enemyUnit) {
+            if (enemyUnit.hasStatusEffect(StatusEffectType.Feud) ||
+                targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+                disablesSkillsFromEnemyAlliesInCombat = true;
+            }
+        }
+        // enemyAllyにはenemyUnitも含まれる
+        for (let enemyAlly of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit, true)) {
+            let isEnemyAllyNotEnemy = enemyAlly !== enemyUnit;
+            if (disablesSkillsFromEnemyAlliesInCombat && isEnemyAllyNotEnemy) {
+                continue;
+            }
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAlly)) {
+                continue;
+            }
+            let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
+            env.setName('周囲の敵からのデバフ').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+            WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
+        }
+    }
+
     /**
      * 戦闘中のユニットのスキル適用後の戦闘中の味方からのスキル効果
      * @param  {Unit} targetUnit
@@ -16717,10 +16744,6 @@ class DamageCalculatorWrapper {
                 continue;
             }
 
-            let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
-            env.setName('周囲の敵からのデバフ').setLogLevel(getSkillLogLevel())
-                .setDamageType(damageType);
-            WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, updateUnitSpurFromEnemyAlliesFuncMap);
                 func?.call(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);

@@ -134,26 +134,55 @@
     ));
 }
 
-    // Petaldream Horn
+// Petaldream Horn
+{
+    let skillId = Weapon.PetaldreamHorn;
     // Mt: 14
     // Rng: 1
     // Accelerates Special trigger (cooldown count-1).
-    // For foes within 3 rows or 3 columns centered on unit,
-    // inflicts Atk/Spd/Def/Res-5 and Special cooldown charge
-    // -I on those foes per attack during combat (only highest value applied; does not stack),
-    // and also,
-    // if those foes have bonuses,
-    // inflicts a penalty on those foes' Atk/Spd/Def/Res and grants a bonus to foes' combat
-    // targets' Atk/Spd/Def/Res during combat = current bonus
-    // on each of that foe's stats (calculates each stat bonus and penalty independently).
-    // At start of combat,
-    // if unit's HP ≥ 25%,
-    // grants bonus to
-    // unit's Atk/Spd/Def/Res = number of foes within 3 rows
-    // or 3 columns centered on unit x 3 (max 9),
-    // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
-    // and reduces damage from foe's first attack by 20% of unit's Spd during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-    // and restores 7 HP to unit after combat.
+    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // For foes within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // inflicts Atk/Spd/Def/Res-5
+            INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+            // if those foes have bonuses,
+            // inflicts a penalty on those foes' Atk/Spd/Def/Res and grants a bonus to foes' combat
+            // targets' Atk/Spd/Def/Res during combat = current bonus
+            // on each of that foe's stats (calculates each stat bonus and penalty independently).
+            FOR_EACH_STAT_INDEX_NODE(
+                INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE, FOES_BONUS_NODE(READ_NUM_NODE)),
+                GRANTS_STAT_PLUS_AT_TO_UNIT_DURING_COMBAT_NODE(READ_NUM_NODE, FOES_BONUS_NODE(READ_NUM_NODE)),
+            ),
+        ),
+    ));
+    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // For foes within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+            // and Special cooldown charge -1 on those foes per attack during combat (only highest value applied; does not stack),
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ),
+    ));
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to
+            // unit's Atk/Spd/Def/Res = number of foes within 3 rows or 3 columns centered on unit x 3 (max 9),
+            GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE(
+                ENSURE_MAX_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 9)
+            ),
+            // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and reduces damage from foe's first attack by 20% of unit's Spd during combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_PERCENTAGE_OF_TARGETS_STAT_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                20, UNITS_SPD_DURING_COMBAT_NODE,
+            ),
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
     // At start of turn,
     // if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally,
     // unit transforms (otherwise,
@@ -164,6 +193,8 @@
     // and also,
     // if X ≥ 5,
     // reduces damage from foe's first attack by 30% during combat.\
+    setBeastSkill(skillId, BeastCommonSkillType.Cavalry2);
+}
 
     // Nihility's Undoing
     // If unit can transform,
