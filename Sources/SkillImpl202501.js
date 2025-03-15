@@ -365,17 +365,6 @@
     ));
 }
 
-    // Shadow Smite 4
-    // When Canto triggers,
-    // enables unit to use [Smitel on ally (this effect is not treated as an Assist skill; if similar effects are active,
-    // this effect does not trigger).
-    // If unit is within 3 spaces of an ally,
-    // grants
-    // Atk/Spd/Def/Res+3 to unit during combat and restores 7
-    // HP to unit after combat.
-    // (Smite)
-    // Range = 1. Pushes target ally 2 spaces away.
-
     // SpringAirAxePlus
     // Inflicts Atk/Spd/Def/Res-5 on foes within 3 rows or 3 columns centered on unit and neutralizes effects that grant "Special cooldown charge +X" to those foes during their combat.
     // At start of combat,

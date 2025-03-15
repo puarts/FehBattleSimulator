@@ -1490,6 +1490,10 @@ class EnablesTargetToUseCantoAssistOnTargetsAllyNode extends SkillEffectNode {
     }
 }
 
+const ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE =
+    (cantoAssist, cantoSupport, range) =>
+        new EnablesTargetToUseCantoAssistOnTargetsAllyNode(cantoAssist, cantoSupport, range);
+
 class IsBonusActiveOnTargetNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
