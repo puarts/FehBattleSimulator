@@ -274,7 +274,7 @@
         // At start of turn,
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
-            new ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(3, TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(3, TRUE_NODE,
                 // inflicts Spd/Res-7,
                 new InflictsStatsMinusOnTargetOnMapNode(0, 7, 0, 7),
                 // 【Panic】,
@@ -1187,7 +1187,7 @@
         // ターン開始時、自身のHPが25%以上なら、
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // 最も近い敵とその周囲2マス以内の敵の守備、魔防ー7、【パニック】、【混乱】（敵の次回行動終了まで）、
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 new InflictsStatsMinusAtStartOfTurnNode(0, 0, 7, 7),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Panic, StatusEffectType.Sabotage),
             ),
@@ -1380,7 +1380,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // ターン開始時、自身のHPが25%以上なら、最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【混乱】を付与(敵の次回行動終了まで)
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Sabotage),
             )
@@ -1542,7 +1542,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // ターン開始時、自身のHPが25%以上なら、最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【弱点露呈】、【凍結】を付与(敵の次回行動終了まで)
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Exposure),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Frozen),
@@ -2331,7 +2331,7 @@
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // on nearest foe and foes within 2 spaces of them through their next actions.
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 // inflicts Spd/Def-7,
                 new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
                 // 【Exposure】,
@@ -2873,7 +2873,7 @@ function setDiscord(skillId, statsRatios) {
         // if unit's HP ≥ 25%,
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
             // inflicts Atk/Def-7 and【Feud】on closest foes and foes within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 new InflictsStatsMinusAtStartOfTurnNode(7, 0, 7, 0),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Feud),
             ),
@@ -4927,7 +4927,7 @@ function setDiscord(skillId, statsRatios) {
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
             // inflicts Atk/Res-7,【Sabotage】,and【Schism】
             // on closest foes and any foes within 2 spaces of those foes through their next actions.
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 new InflictsStatsMinusAtStartOfTurnNode(7, 0, 0, 7),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Sabotage, StatusEffectType.Schism),
             ),
@@ -5157,7 +5157,7 @@ function setDiscord(skillId, statsRatios) {
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Canto1),
             ),
             // on closest foes and any foe within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 // inflicts【Hush Spectrum】and【Panic】
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.HushSpectrum, StatusEffectType.Panic),
             ),
@@ -5292,7 +5292,7 @@ function setDiscord(skillId, statsRatios) {
         IF_NODE(new IfTargetIsWithinNSpacesOfFoe(5),
             // inflicts【Penalty】effects active on unit on closest foes and any foe within 2 spaces of those foes,
             // and neutralizes any【Penalty】 effects active on unit (excluding penalties inflicted at the start of the same turn).
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 new InflictsPenaltyEffectsActiveOnSkillOwner(),
             ),
         )
@@ -6271,7 +6271,7 @@ function setDiscord(skillId, statsRatios) {
         // ターン開始時、自身のHPが25%以上なら
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
             // 最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【キャンセル】、【混乱】を付与(敵の次回行動終了まで)
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Guard, StatusEffectType.Sabotage),
             )

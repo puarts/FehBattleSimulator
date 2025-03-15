@@ -3542,7 +3542,10 @@ class ForEachAllyWithHighestValueWithinNSpacesNode extends ForEachUnitOnMapNode 
     }
 }
 
-class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnitOnMapNode {
+class ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnitOnMapNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
     /**
      * @param {number|NumberNode} n
      * @param {BoolNode} predNode
@@ -3554,8 +3557,9 @@ class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnit
     }
 
     getUnits(env) {
-        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(env.target);
-        let closestUnits = IterUtil.minElements(enemies, u => u.distance(env.target));
+        let unit = this.getUnit(env);
+        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+        let closestUnits = IterUtil.minElements(enemies, u => u.distance(unit));
         env.debug(`最も近いユニット: ${closestUnits.map(u => u.nameWithGroup)}`);
         let allUnits = closestUnits.flatMap(u => {
             let n = this._numberNode.evaluate(env);
@@ -3570,7 +3574,7 @@ class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnit
     }
 }
 
-class ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode {
+class ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode {
     /**
      * @param {BoolNode} predNode
      * @param {...SkillEffectNode} children
@@ -3580,8 +3584,19 @@ class ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachClos
     }
 }
 
-const FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE =
-    (...children) => new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE, ...children);
+const FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
+    (...children) => new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE, ...children);
+
+class ForEachAssistTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetMixin);
+    }
+}
+
+const FOR_EACH_ASSIST_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_THOSE_FOES_NODE =
+    (n, ...children) => new ForEachAssistTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(n, TRUE_NODE, ...children);
+const FOR_EACH_ASSIST_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
+    (...children) => FOR_EACH_ASSIST_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(2, ...children);
 
 /**
  * Target and target's allis within n spaces.
@@ -4556,6 +4571,14 @@ class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
 }
 
 const RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE = new ReEnablesCantoToTargetOnMapNode();
+
+class ReEnablesCantoToAssistTargetOnMapNode extends ReEnablesCantoToTargetOnMapNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetMixin);
+    }
+}
+
+const RE_ENABLES_CANTO_TO_ASSIST_TARGET_ON_MAP_NODE = new ReEnablesCantoToAssistTargetOnMapNode();
 
 class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
     static {

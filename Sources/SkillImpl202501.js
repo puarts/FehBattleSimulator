@@ -294,7 +294,7 @@
     ));
 }
 
-    // Springing Spear
+// Springing Spear
 {
     let skillId = Weapon.SpringingSpear;
     // Mt: 16
@@ -344,14 +344,26 @@
     ));
 }
 
-    // Dreamlike Night
+// Dreamlike Night
+{
+    let skillId = Support.DreamlikeNight;
     // Rng: 1
     // Grants another action to target ally,
-    // and if Canto has already been triggered by target ally,
-    // re-enables Canto.
-    // Inflicts Atk/Def/Res-7,
-    // [Frozen) ,
-    // and (Sabotage) on closest foes to target ally and any foe within 2 spaces of those foes through their next actions (cannot target an ally with Sing or Dance; this skill treated as Sing or Dance).
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
+    // and if Canto has already been triggered by target ally, re-enables Canto.
+    AFTER_REFRESH_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        RE_ENABLES_CANTO_TO_ASSIST_TARGET_ON_MAP_NODE,
+        // on closest foes to target ally and any foe within 2 spaces of those foes through their next actions (cannot target an ally with Sing or Dance; this skill treated as Sing or Dance).
+        FOR_EACH_ASSIST_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
+            // Inflicts Atk/Def/Res-7,
+            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(7, 0, 7, 7),
+            // [Frozen] ,
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Frozen),
+            // and (Sabotage)
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Sabotage),
+        ),
+    ));
+}
 
     // Def/Res Discord
     // At start of player phase or enemy phase,
@@ -840,7 +852,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // on closest foes and any foes within 2 spaces of those foes through their next actions.
-        FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+        FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
             // inflicts Atk/Res-7 and 【Sabotage】
             INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(7, 0, 0, 7),
             INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Sabotage),
@@ -1054,7 +1066,7 @@
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // on closest foes and any foes within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 // inflicts Spd/Def-7,
                 INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(0, 7, 7, 0),
                 // (Sabotage), and (Discord)
@@ -1367,7 +1379,7 @@
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // on closest foes and foes within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 // inflicts Spd/Res-7 and [Sabotage)
                 INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(0, 7, 0, 7),
                 INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Sabotage),
@@ -1414,7 +1426,7 @@
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // on closest foes and foes within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 // inflicts Atk/Res-7,
                 INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(7, 0, 0, 7),
                 // (Panic) , and Deep Wounds)
@@ -1738,7 +1750,7 @@
     // At start of turn and after unit acts (if Canto triggers, after Canto),
     let nodeFunc = () => SKILL_EFFECT_NODE(
         // on closest foes and foes within 2 spaces of those foes through their next actions.
-        FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+        FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
             // inflicts Atk/Def-7,
             INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(7, 0, 7, 0),
             // (Exposure), and (Sabotage)
@@ -3099,7 +3111,7 @@
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // on closest foes and foes within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 // inflicts Spd/Res-7 and【Exposure】
                 INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(0, 7, 0, 7),
                 INFLICTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE(StatusEffectType.Exposure),
@@ -3412,7 +3424,7 @@
         // if unit is within 2 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
             // on closest foes and foes within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 // inflicts Spd/Def-7,
                 INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(0, 7, 7, 0),
                 // 【Panic】, and【Sabotage】
@@ -3553,7 +3565,7 @@
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // on closest foes and foes within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 // inflicts Spd/Def-7,
                 INFLICTS_STATS_MINUS_AT_START_OF_TURN_NODE(0, 7, 7, 0),
                 // 【Exposure】, and【Deep Wounds】

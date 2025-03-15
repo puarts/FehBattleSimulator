@@ -9641,7 +9641,20 @@ class BattleSimulatorBase {
      */
     __applyRefresh(supportUnit, supportTargetUnit) {
         if (supportTargetUnit == null) { return false; }
-        supportTargetUnit.isActionDone = false;
+        supportTargetUnit.grantsAnotherActionByRefresh();
+        // 使用した時
+        {
+            let env = new BattleSimulatorBaseEnv(this, supportUnit);
+            env.setName('再行動を使用した時').setLogLevel(getSkillLogLevel()).setAssistUnits(supportUnit, supportTargetUnit);
+            AFTER_REFRESH_SKILL_IS_USED_BY_UNIT_HOOKS.evaluateWithUnit(supportUnit, env);
+        }
+        // 使用された
+        {
+            let env = new BattleSimulatorBaseEnv(this, supportTargetUnit);
+            env.setName('再行動を使用された時').setLogLevel(getSkillLogLevel()).setAssistUnits(supportUnit, supportTargetUnit);
+            AFTER_REFRESH_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(supportTargetUnit, env);
+        }
+
         for (let skillId of supportUnit.enumerateSkills()) {
             getSkillFunc(skillId, applyRefreshFuncMap)?.call(this, supportUnit, supportTargetUnit);
             this.#applyRefreshSkills(skillId, supportTargetUnit, supportUnit);
@@ -10826,6 +10839,9 @@ class BattleSimulatorBase {
         let assistType = supporterUnit.supportInfo.assistType;
         if (isRallyHealSkill(supporterUnit.support)) {
             assistType = AssistType.Rally;
+        }
+        if (REFRESH_SUPPORT_SKILL_SET.has(supporterUnit.support)) {
+            assistType = AssistType.Refresh;
         }
         let result = false;
         switch (assistType) {
