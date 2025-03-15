@@ -240,13 +240,30 @@
     ));
 }
 
-    // Bestial Agility
+// Bestial Agility
+{
+    let skillId = PassiveB.BestialAgility;
     // Enables (Canto (Rem. +1; Min 2)] while transformed.
-    // If unit is transformed or unit's HP ≥ 25% at start of combat,
-    // inflicts Spd/Def-4 on foe and deals damage = 20% of the greater of unit's Spd or Def (excluding area-of-effect Specials),
-    // and also,
-    // if unit's Spd > foe's Spd,
-    // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+    enablesCantoRemPlusMin(skillId, 1, 2);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit is transformed or unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            // inflicts Spd/Def-4 on foe and
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 4, 4, 0),
+            // deals damage = 20% of the greater of unit's Spd or Def (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20,
+                MAX_NODE(UNITS_SPD_DURING_COMBAT_NODE, UNITS_DEF_DURING_COMBAT_NODE)),
+            // and also,
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                // if unit's Spd > foe's Spd,
+                IF_NODE(GT_NODE(UNITS_EVAL_SPD_DURING_COMBAT_NODE, FOES_EVAL_SPD_DURING_COMBAT_NODE),
+                    // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+                    NULL_UNIT_FOLLOW_UP_NODE,
+                ),
+            ),
+        ),
+    ));
+}
 
     // Spring-Air Egg+
     // Mt: 12 Rng:2
