@@ -3693,11 +3693,33 @@ function setDiscord(skillId, statsRatios) {
 
 // 影助
 {
+    let setSkill = (skillId, cantoAssistNode) => {
+        // When Canto triggers,
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // enables unit to use 【Reposition】on ally
+            cantoAssistNode,
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Reposition, 1),
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Swap, 3),
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Shove, 1),
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Smite, 1),
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Refresh, CantoSupport.SingDance, 1),
+            // (this effect is not treated as an Assist skill; if similar effects are active, this effect does not trigger).
+        ));
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // If unit is within 3 spaces of an ally,
+            IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+                // grants Atk/Spd/Def/Res+3 to unit during combat
+                new GrantsAllStatsPlusNToUnitDuringCombatNode(3),
+                // and restores 7 HP to unit after combat.
+                RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+            )
+        ));
+    }
     // 引き戻し
-    setShadowSkillEffect(PassiveC.ShadowShift4,
+    setSkill(PassiveC.ShadowShift4,
         ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(AssistType.Move, CantoSupport.Reposition, 1));
     // ぶちかまし
-    setShadowSkillEffect(PassiveC.ShadowSmite4,
+    setSkill(PassiveC.ShadowSmite4,
         ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(AssistType.Move, CantoSupport.Smite, 1));
 }
 
