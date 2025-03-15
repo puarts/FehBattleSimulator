@@ -2607,6 +2607,7 @@ function setDiscord(skillId, statsRatios) {
 {
     setDiscord(PassiveB.AtkResDiscord, [1, 0, 0, 1]);
     setDiscord(PassiveB.SpdResDiscord, [0, 1, 0, 1]);
+    setDiscord(PassiveB.DefResDiscord, [0, 0, 1, 1]);
 }
 
 // 鎮魂の願い

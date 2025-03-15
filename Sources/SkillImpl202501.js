@@ -365,16 +365,6 @@
     ));
 }
 
-    // Def/Res Discord
-    // At start of player phase or enemy phase,
-    // inflicts Def/Res-6 and [Discord) on foes with Res ‹ unit's Res and that are within 2 spaces of another foe through their next actions.
-    // Inflicts penalty on foe's Def/Res during combat = number of foes inflicted with (Discord) within 2 spaces of target,
-    // including target,
-    // x 2,
-    // + 4 (max 10) and deals
-    // damage = 15% of unit's Res (excluding area-of-effect
-    // Specials).
-
     // Shadow Smite 4
     // When Canto triggers,
     // enables unit to use [Smitel on ally (this effect is not treated as an Assist skill; if similar effects are active,
