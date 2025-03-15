@@ -432,6 +432,25 @@
     ));
 }
 
+// Harmonized Skill
+{
+    let skillId = Hero.HarmonizedPlumeria;
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(skillId,
+        SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_FROM_SAME_TITLES_NODE(
+                // Grants [Resonance: Blades) to unit and allies from the same titles as unit for 1 turn.
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ResonantBlades),
+            ),
+            // If unit has not entered combat on the current turn,
+            IF_NODE(NOT_NODE(HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE),
+                // grants another action to unit, and if Canto has already been triggered, re-enables Canto.
+                GRANTS_ANOTHER_ACTION_TO_TARGET_ON_MAP_NODE,
+                RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE,
+            ),
+        ),
+    );
+}
+
 // 虚ろな槍
 {
     let skillId = getNormalSkillId(Weapon.BereftLance);
