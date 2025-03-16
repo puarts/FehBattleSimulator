@@ -1229,6 +1229,7 @@ class IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode extends BoolNode {
     }
 }
 
+// TODO: 削除
 const IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE = new IsAllyWithinNRowsOrNColumnsCenteredOnUnitNode(3);
 
 class IsTargetsFoeInCardinalDirectionsOfTargetNode extends BoolNode {
@@ -1489,6 +1490,10 @@ class EnablesTargetToUseCantoAssistOnTargetsAllyNode extends SkillEffectNode {
     }
 }
 
+const ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE =
+    (cantoAssist, cantoSupport, range) =>
+        new EnablesTargetToUseCantoAssistOnTargetsAllyNode(cantoAssist, cantoSupport, range);
+
 class IsBonusActiveOnTargetNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1744,6 +1749,15 @@ class GrantsStatPlusAtToTargetDuringCombatNode extends SkillEffectNode {
 
 const GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE =
     (index, value) => new GrantsStatPlusAtToTargetDuringCombatNode(index, value);
+
+class GrantsStatPlusAtToUnitDuringCombatNode extends GrantsStatPlusAtToTargetDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const GRANTS_STAT_PLUS_AT_TO_UNIT_DURING_COMBAT_NODE =
+    (index, value) => new GrantsStatPlusAtToUnitDuringCombatNode(index, value);
 
 class GrantsStatsPlusToUnitDuringCombatNode extends GrantsStatsPlusToTargetDuringCombatNode {
     static {
@@ -2092,6 +2106,21 @@ class SkillOwnerMaxHpNode extends TargetsMaxHpNode {
 }
 
 const SKILL_OWNER_MAX_HP_NODE = new SkillOwnerMaxHpNode();
+
+class TargetsMaxHpExcludingHpIncreasesFromLegendaryEffectsMythicEffectsBonusHeroesEtc extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.maxHpWithSkillsWithoutEnteringBattleHpAdd;
+        env.debug(`${unit.nameWithGroup}の出撃時の最大HP: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_MAX_HP_EXCLUDING_HP_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE =
+    new TargetsMaxHpExcludingHpIncreasesFromLegendaryEffectsMythicEffectsBonusHeroesEtc();
 
 /**
  * @abstract
@@ -3517,7 +3546,10 @@ class ForEachAllyWithHighestValueWithinNSpacesNode extends ForEachUnitOnMapNode 
     }
 }
 
-class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnitOnMapNode {
+class ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnitOnMapNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
     /**
      * @param {number|NumberNode} n
      * @param {BoolNode} predNode
@@ -3529,8 +3561,9 @@ class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnit
     }
 
     getUnits(env) {
-        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(env.target);
-        let closestUnits = IterUtil.minElements(enemies, u => u.distance(env.target));
+        let unit = this.getUnit(env);
+        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+        let closestUnits = IterUtil.minElements(enemies, u => u.distance(unit));
         env.debug(`最も近いユニット: ${closestUnits.map(u => u.nameWithGroup)}`);
         let allUnits = closestUnits.flatMap(u => {
             let n = this._numberNode.evaluate(env);
@@ -3545,7 +3578,7 @@ class ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachUnit
     }
 }
 
-class ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode {
+class ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode {
     /**
      * @param {BoolNode} predNode
      * @param {...SkillEffectNode} children
@@ -3555,8 +3588,19 @@ class ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForEachClos
     }
 }
 
-const FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE =
-    (...children) => new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE, ...children);
+const FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
+    (...children) => new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE, ...children);
+
+class ForEachAssistTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetMixin);
+    }
+}
+
+const FOR_EACH_ASSIST_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_THOSE_FOES_NODE =
+    (n, ...children) => new ForEachAssistTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(n, TRUE_NODE, ...children);
+const FOR_EACH_ASSIST_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
+    (...children) => FOR_EACH_ASSIST_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(2, ...children);
 
 /**
  * Target and target's allis within n spaces.
@@ -3874,6 +3918,9 @@ class ForTargetsAlliesWithinNSpacesOfTargetNode extends ForTargetsAlliesInNRange
         return new Set(GeneratorUtil.filter(allies, pred));
     }
 }
+
+const FOR_TARGETS_ALLIES_WITHIN_2_SPACES_OF_TARGET_NODE =
+    (...procedureNodes) => new ForTargetsAlliesWithinNSpacesOfTargetNode(2, TRUE_NODE, ...procedureNodes);
 
 const FOR_TARGETS_ALLIES_WITHIN_3_SPACES_OF_TARGET_NODE =
     (...procedureNodes) => new ForTargetsAlliesWithinNSpacesOfTargetNode(3, TRUE_NODE, ...procedureNodes);
@@ -4528,6 +4575,14 @@ class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
 }
 
 const RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE = new ReEnablesCantoToTargetOnMapNode();
+
+class ReEnablesCantoToAssistTargetOnMapNode extends ReEnablesCantoToTargetOnMapNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetMixin);
+    }
+}
+
+const RE_ENABLES_CANTO_TO_ASSIST_TARGET_ON_MAP_NODE = new ReEnablesCantoToAssistTargetOnMapNode();
 
 class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
     static {

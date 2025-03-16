@@ -2711,6 +2711,7 @@ const PassiveA = {
     FlaredMirror: 2648, // 鬼神明鏡の炎撃
 
     // 備え
+    AtkSpdPrime3: 2576, // 攻撃速さの備え3
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
     AtkDefPrime3: 2978, // 攻撃守備の備え3
     AtkDefPrime4: 2699, // 攻撃守備の備え4
@@ -3755,8 +3756,20 @@ Weapon.Salvage = 3186; // 七難即滅
 PassiveA.SwayAtkSpd = 3187; // 攻撃速さの布教
 PassiveB.CalledToServe = 3188; // 激励・強化無効
 PassiveC.QuietStrength = 3189; // 小さな声援
-PassiveB.FaithfulLoyalty2 = 3190; // 信じつづける…・承
-PassiveC.HolyGroundPlus = 3191; // 地上の最後の…・神
+PassiveB.FaithfulLoyalty2 = 3194; // 信じつづける…・承
+PassiveC.HolyGroundPlus = 3193; // 地上の最後の…・神
+Weapon.GentleFellEgg = 3195; // 心優しき邪竜兎の卵
+PassiveB.ARFarResound = 3196; // 共鳴•攻魔遠影
+PassiveC.FellMajesty = 3197; // 邪竜の王女
+Weapon.PetaldreamHorn = 3198; // 春の夜の夢の角
+PassiveA.NihilitysUndoing = 3199; // 虚無破る悪夢の力
+PassiveB.BestialAgility = 3200; // 獣影・敏捷
+Weapon.SpringAirEggPlus = 3201; // 春光の卵+
+Weapon.SpringingSpear = 3202; // 春踊る兎達の槍
+Support.DreamlikeNight = 3203; // あまいよるのゆめ
+PassiveB.DefResDiscord = 3204; // 守備魔防の不和
+PassiveC.ShadowSmite4 = 3205; // 影助・ぶちかまし4
+Weapon.SpringAirAxePlus = 3206; // 春光の斧+
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

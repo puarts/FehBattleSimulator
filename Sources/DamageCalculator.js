@@ -1922,6 +1922,9 @@ class DamageCalculator {
      * @return {boolean}
      */
     __canActivateSpecialMiracle(unit, atkUnit) {
+        if (unit.battleContext.isDefenderSpecialPrevented()) {
+            return false;
+        }
         switch (unit.special) {
             case Special.Miracle:
                 if (unit.battleContext.preventedDefenderSpecial) return false;
@@ -1996,7 +1999,9 @@ class DamageCalculator {
      * @return {boolean}
      */
     __canActivateSpecialMiracleAndHeal(unit, atkUnit) {
-        if (unit.battleContext.preventedDefenderSpecial) return false;
+        if (unit.battleContext.isDefenderSpecialPrevented()) {
+            return false;
+        }
         if (unit.tmpSpecialCount !== 0) return false;
         return MIRACLE_AND_HEAL_SPECIAL_SET.has(unit.special);
     }

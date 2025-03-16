@@ -127,7 +127,10 @@
     let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
     SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.EMBLEM_LYN);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
-        AND_NODE(GTE_NODE(CURRENT_TURN_NODE, 2), EQ_NODE(TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE, 0)),
+        AND_NODE(
+            GTE_NODE(CURRENT_TURN_NODE, 2),
+            EQ_NODE(TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE, 0),
+            IS_TARGET_RANGED_WEAPON_NODE),
     );
     STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
@@ -271,7 +274,7 @@
         // At start of turn,
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
-            new ForEachClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(3, TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(3, TRUE_NODE,
                 // inflicts Spd/Res-7,
                 new InflictsStatsMinusOnTargetOnMapNode(0, 7, 0, 7),
                 // 【Panic】,
@@ -1184,7 +1187,7 @@
         // ターン開始時、自身のHPが25%以上なら、
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // 最も近い敵とその周囲2マス以内の敵の守備、魔防ー7、【パニック】、【混乱】（敵の次回行動終了まで）、
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 new InflictsStatsMinusAtStartOfTurnNode(0, 0, 7, 7),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Panic, StatusEffectType.Sabotage),
             ),
@@ -1377,7 +1380,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // ターン開始時、自身のHPが25%以上なら、最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【混乱】を付与(敵の次回行動終了まで)
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Sabotage),
             )
@@ -1539,7 +1542,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // ターン開始時、自身のHPが25%以上なら、最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【弱点露呈】、【凍結】を付与(敵の次回行動終了まで)
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Exposure),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Frozen),
@@ -1947,7 +1950,7 @@
         // if unit initiates combat and foe's attack can trigger foe's Special,
         IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
             // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
-            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
         ),
     ));
 }
@@ -2328,7 +2331,7 @@
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // on nearest foe and foes within 2 spaces of them through their next actions.
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 // inflicts Spd/Def-7,
                 new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
                 // 【Exposure】,
@@ -2522,7 +2525,7 @@
             // if foe's attack can trigger foe's Special,
             IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                 // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
-                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
             ),
         ),
     ));
@@ -2543,7 +2546,7 @@
                 // foe's attack can trigger foe's Special,
                 IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                     // inflicts Special cooldown count+ 1 on foe before foe's first attack during their combat (cannot exceed the foe's maximum Special cooldown).
-                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
                 ),
             ),
         ),
@@ -2604,6 +2607,7 @@ function setDiscord(skillId, statsRatios) {
 {
     setDiscord(PassiveB.AtkResDiscord, [1, 0, 0, 1]);
     setDiscord(PassiveB.SpdResDiscord, [0, 1, 0, 1]);
+    setDiscord(PassiveB.DefResDiscord, [0, 0, 1, 1]);
 }
 
 // 鎮魂の願い
@@ -2870,7 +2874,7 @@ function setDiscord(skillId, statsRatios) {
         // if unit's HP ≥ 25%,
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
             // inflicts Atk/Def-7 and【Feud】on closest foes and foes within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 new InflictsStatsMinusAtStartOfTurnNode(7, 0, 7, 0),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Feud),
             ),
@@ -3191,7 +3195,7 @@ function setDiscord(skillId, statsRatios) {
                         CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                         GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5))),
                     // inflicts Special cooldown count+1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).
-                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
                 ),
             ),
         ),
@@ -3622,20 +3626,25 @@ function setDiscord(skillId, statsRatios) {
     ))
 }
 
-// 攻撃守備の備え3
+// 備え3
 {
-    let skillId = PassiveA.AtkDefPrime3;
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // If【Bonus】is active on unit,
-        IF_NODE(IS_BONUS_ACTIVE_ON_UNIT_NODE,
-            new NumThatIsNode(
-                // grants Atk/Def+X to unit during combat
-                new GrantsStatsPlusToUnitDuringCombatNode(READ_NUM_NODE, 0, READ_NUM_NODE, 0),
-                // (X = number of【Bonus】effects active on unit, excluding stat bonuses, × 2, + 3; max 7).
-                new EnsureMaxNode(ADD_NODE(MULT_NODE(NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE, 2), 3), 7),
+    let setSkill = (skillId, spurs) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+            SKILL_EFFECT_NODE(
+                // If【Bonus】is active on unit,
+                IF_NODE(IS_BONUS_ACTIVE_ON_UNIT_NODE,
+                    X_NUM_NODE(
+                        // grants Atk/Def+X to unit during combat
+                        new GrantsStatsPlusToUnitDuringCombatNode(...spurs),
+                        // (X = number of【Bonus】effects active on unit, excluding stat bonuses, × 2, + 3; max 7).
+                        new EnsureMaxNode(ADD_NODE(MULT_NODE(NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE, 2), 3), 7),
+                    ),
+                )
             )
-        )
-    ));
+        );
+    };
+    setSkill(PassiveA.AtkSpdPrime3, [READ_NUM_NODE, READ_NUM_NODE, 0, 0]);
+    setSkill(PassiveA.AtkDefPrime3, [READ_NUM_NODE, 0, READ_NUM_NODE, 0]);
 }
 
 // 称賛の希求の大斧
@@ -3682,29 +3691,36 @@ function setDiscord(skillId, statsRatios) {
     ));
 }
 
-// 影助・引き戻し4
+// 影助
 {
-    let skillId = PassiveC.ShadowShift4;
-    // When Canto triggers,
-    WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // enables unit to use 【Reposition】on ally
-        new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Reposition, 1),
-        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Reposition, 1),
-        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Swap, 3),
-        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Shove, 1),
-        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Smite, 1),
-        // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Refresh, CantoSupport.SingDance, 1),
-        // (this effect is not treated as an Assist skill; if similar effects are active, this effect does not trigger).
-    ));
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // If unit is within 3 spaces of an ally,
-        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
-            // grants Atk/Spd/Def/Res+3 to unit during combat
-            new GrantsAllStatsPlusNToUnitDuringCombatNode(3),
-            // and restores 7 HP to unit after combat.
-            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
-        )
-    ));
+    let setSkill = (skillId, cantoAssistNode) => {
+        // When Canto triggers,
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // enables unit to use 【Reposition】on ally
+            cantoAssistNode,
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Reposition, 1),
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Swap, 3),
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Shove, 1),
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Move, CantoSupport.Smite, 1),
+            // new EnablesTargetToUseCantoAssistOnTargetsAllyNode(AssistType.Refresh, CantoSupport.SingDance, 1),
+            // (this effect is not treated as an Assist skill; if similar effects are active, this effect does not trigger).
+        ));
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // If unit is within 3 spaces of an ally,
+            IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+                // grants Atk/Spd/Def/Res+3 to unit during combat
+                new GrantsAllStatsPlusNToUnitDuringCombatNode(3),
+                // and restores 7 HP to unit after combat.
+                RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+            )
+        ));
+    }
+    // 引き戻し
+    setSkill(PassiveC.ShadowShift4,
+        ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(AssistType.Move, CantoSupport.Reposition, 1));
+    // ぶちかまし
+    setSkill(PassiveC.ShadowSmite4,
+        ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(AssistType.Move, CantoSupport.Smite, 1));
 }
 
 // 連魔弾
@@ -4163,8 +4179,8 @@ function setDiscord(skillId, statsRatios) {
             // if foe's attack can trigger foe's Special,
             // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed foe's maximum Special cooldown).
             IF_NODE(CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
-                new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack(1),
-                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode(1),
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
             ),
         ),
     ));
@@ -4223,20 +4239,20 @@ function setDiscord(skillId, statsRatios) {
         // If foe's attack can trigger unit's Special,
         IF_NODE(new CanTargetsFoesAttackTriggerTargetsSpecialNode(),
         ),
-        // triggers the following effects during combat: 
-        // grants Special cooldown count-1 to unit before foe's first attack; 
+        // triggers the following effects during combat:
+        // grants Special cooldown count-1 to unit before foe's first attack;
         new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode(1),
 
         // if foe's first attack triggers the "attacks twice" effect,
-        // grants Special cooldown count-1 to unit before foe's second strike as well; 
+        // grants Special cooldown count-1 to unit before foe's second strike as well;
         new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesSecondStrikeDuringCombatNode(1),
 
-        // grants Special cooldown count-1 to unit before foe's first follow-up attack. 
+        // grants Special cooldown count-1 to unit before foe's first follow-up attack.
         new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstFollowUpAttackDuringCombatNode(1),
 
-        // If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect, 
+        // If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect,
         // Special triggers twice,
-        // then reduces damage by 7. 
+        // then reduces damage by 7.
         new TargetsSpecialTriggersTwiceThenReducesDamageByNNode(7),
         // Each Special trigger is calculated as a separate activation.
     ));
@@ -4262,7 +4278,7 @@ function setDiscord(skillId, statsRatios) {
         ),
         // After Special triggers,
         // unit's next attack deals damage = total damage reduced (by any source,
-        // including other skills; resets at end of combat; min 40% of unit's Res) and 
+        // including other skills; resets at end of combat; min 40% of unit's Res) and
         new AfterSpecialTriggersTargetsNextAttackDealsDamageEqTotalDamageReducedNode(),
         new AppliesSkillEffectsAfterStatusFixedNode(
             new AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode(MULT_TRUNC_NODE(0.4, UNITS_RES_DURING_COMBAT_NODE)),
@@ -4308,7 +4324,7 @@ function setDiscord(skillId, statsRatios) {
             NULL_UNIT_FOLLOW_UP_NODE,
             // and also,
             // when unit deals damage to foe during combat,
-            // restores 7 HP to unit (triggers even if 0 damage is dealt). 
+            // restores 7 HP to unit (triggers even if 0 damage is dealt).
             new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(7),
             // If foe with Range = 2 initiates combat,
             IF_NODE(AND_NODE(DOES_FOE_INITIATE_COMBAT_NODE, EQ_NODE(new FoesRangeNode(), 2)),
@@ -4398,8 +4414,8 @@ function setDiscord(skillId, statsRatios) {
         // If unit is on a team with unit's support partner,
         IF_NODE(new IsThereUnitOnMapNode(new AreTargetAndSkillOwnerPartnersNode()),
             // at start of turn,
-            // grants "neutralizes 'effective against dragons' bonuses" 
-            // to support partners within 3 spaces of unit for 1 turn. 
+            // grants "neutralizes 'effective against dragons' bonuses"
+            // to support partners within 3 spaces of unit for 1 turn.
             new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, new AreTargetAndSkillOwnerPartnersNode(),
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.ShieldDragon),
             ),
@@ -4514,7 +4530,7 @@ function setDiscord(skillId, statsRatios) {
                                 ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5)),
                             // inflicts Special cooldown count+1 on foe before foe's first attack during combat.
                             // (Cannot exceed the foe's maximum Special cooldown.)
-                            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+                            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
                         ),
                     ),
                 ),
@@ -4919,7 +4935,7 @@ function setDiscord(skillId, statsRatios) {
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
             // inflicts Atk/Res-7,【Sabotage】,and【Schism】
             // on closest foes and any foes within 2 spaces of those foes through their next actions.
-            new ForEachClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
+            new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE,
                 new InflictsStatsMinusAtStartOfTurnNode(7, 0, 0, 7),
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.Sabotage, StatusEffectType.Schism),
             ),
@@ -4962,7 +4978,7 @@ function setDiscord(skillId, statsRatios) {
         // If unit initiates combat and foe's attack can trigger foe's Special,
         IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
             // inflicts Special cooldown count+1 on foe before foe's first attack during combat
-            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_FOE_BEFORE_FOES_FIRST_ATTACK(1),
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
             // (cannot exceed foe's maximum Special cooldown).
         ),
     ));
@@ -5149,7 +5165,7 @@ function setDiscord(skillId, statsRatios) {
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Canto1),
             ),
             // on closest foes and any foe within 2 spaces of those foes through their next actions.
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 // inflicts【Hush Spectrum】and【Panic】
                 new InflictsStatusEffectsAtStartOfTurnNode(StatusEffectType.HushSpectrum, StatusEffectType.Panic),
             ),
@@ -5284,7 +5300,7 @@ function setDiscord(skillId, statsRatios) {
         IF_NODE(new IfTargetIsWithinNSpacesOfFoe(5),
             // inflicts【Penalty】effects active on unit on closest foes and any foe within 2 spaces of those foes,
             // and neutralizes any【Penalty】 effects active on unit (excluding penalties inflicted at the start of the same turn).
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 new InflictsPenaltyEffectsActiveOnSkillOwner(),
             ),
         )
@@ -6172,7 +6188,7 @@ function setDiscord(skillId, statsRatios) {
                 // if foe's attack can trigger foe's Special,
                 IF_NODE(CAN_UNITS_ATTACK_TRIGGER_SPECIAL_NODE,
                     // inflicts Special cooldown count+1 on foe before foe's first attack (cannot exceed the foe's maximum Special cooldown).".
-                    new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttack(1),
+                    new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode(1),
                 ),
             ),
         ),
@@ -6263,7 +6279,7 @@ function setDiscord(skillId, statsRatios) {
         // ターン開始時、自身のHPが25%以上なら
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
             // 最も近い敵とその周囲2マス以内の敵の速さ、守備-7、【キャンセル】、【混乱】を付与(敵の次回行動終了まで)
-            FOR_EACH_CLOSEST_FOE_AND_ANY_FOE_WITHIN2_SPACES_OF_THOSE_FOES_NODE(
+            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
                 new InflictsStatsMinusAtStartOfTurnNode(0, 7, 7, 0),
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Guard, StatusEffectType.Sabotage),
             )

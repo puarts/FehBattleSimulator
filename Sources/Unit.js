@@ -6386,6 +6386,10 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
     }
 
+    grantsAnotherActionByRefresh() {
+        this.isActionDone = false;
+    }
+
     grantsAnotherActionOnMap() {
         this.isActionDone = false;
     }
