@@ -154,15 +154,6 @@
     ));
 }
 
-    // Seal Atk/Res 3
-    // Inflicts Atk/Res-3 on foe and additional penalty to foe's
-    // Atk/Res = 6 - current penalty on each of those stats
-    // during combat (min 0; calculates each stat penalty independently; still inflicts penalty on foe even if foe triggers an effect that neutralizes penalties during combat).
-    // If penalty is active on foe's Atk or Res,
-    // inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
-    // After combat,
-    // inflicts Atk/Res-6 on foe through its next action.
-
     // Hexblade Sword +
     // Mt: 14
     // Rng: 1
