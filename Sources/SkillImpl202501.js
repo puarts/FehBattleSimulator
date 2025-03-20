@@ -154,16 +154,30 @@
     ));
 }
 
-    // Hexblade Sword +
+// Hexblade Sword +
+{
+    let skillId = Weapon.HexbladeSwordPlus;
     // Mt: 14
     // Rng: 1
-    // At start of turn,
-    // if unit is within 2 spaces of an ally,
-    // grants "unit cannot be slowed by terrain (does not apply to impassable terrain)" and [Hexblade) to unit for 1 turn.
-    // If unit initiates combat or is within 2 spaces of an ally,
-    // grants Atk/Spd/Def/Res+5 to unit during combat and
-    // deals damage = 10% of unit's Atk (excluding
-    // area-of-effect Specials).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants "unit cannot be slowed by terrain (does not apply to impassable terrain)" and [Hexblade) to unit for 1 turn.
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                StatusEffectType.UnitCannotBeSlowedByTerrain, StatusEffectType.Hexblade),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd/Def/Res+5 to unit during combat and
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            // deals damage = 10% of unit's Atk (excluding area-of-effect Specials).
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(10, UNITS_ATK_DURING_COMBAT_NODE),
+        ),
+    ));
+}
 
     // True-Bond Bow
     // Mt: 14
