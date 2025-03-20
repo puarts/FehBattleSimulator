@@ -3332,7 +3332,7 @@ class BattleMap {
         for (let [index, tile] of this._tiles.entries()) {
             placableMap[index] = tile.isUnitPlacableForUnit(unit) ? 0 : Infinity;
             if (isAlly) {
-                if (tile.obj instanceof TrapBase ||
+                if ((tile.obj instanceof TrapBase && !tile.obj.isDisabled) ||
                     tile.obj instanceof DefCallingCircle) {
                     placableMap[index] = Infinity;
                 }

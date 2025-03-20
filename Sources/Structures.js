@@ -72,6 +72,7 @@ class StructureBase extends BattleMapElement {
         this._id = id;
         this.level = 1;
         this.placedTile = null;
+        this.isDisabled = false;
 
         // シリアライズする時に一時的に使用
         this.ownerType = 0;
@@ -138,7 +139,8 @@ class StructureBase extends BattleMapElement {
     perTurnStatusToString() {
         return this.ownerType
             + ValueDelimiter + this.posX
-            + ValueDelimiter + this.posY;
+            + ValueDelimiter + this.posY
+            + ValueDelimiter + boolToInt(this.isDisabled);
     }
 
     turnWideStatusToString() {
@@ -159,6 +161,7 @@ class StructureBase extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.ownerType = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.posX = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.posY = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isDisabled = intToBool(Number(values[i])); ++i; }
         return [values, i];
     }
 
@@ -172,7 +175,9 @@ class StructureBase extends BattleMapElement {
         return this.ownerType
             + ValueDelimiter + this.posX
             + ValueDelimiter + this.posY
-            + ValueDelimiter + this.level;
+            + ValueDelimiter + this.level
+            + ValueDelimiter + boolToInt(this.isDisabled)
+        ;
     }
 
     fromString(value) {
@@ -182,6 +187,7 @@ class StructureBase extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.posX = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.posY = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.level = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.isDisabled = boolToInt(values[i]); ++i; }
     }
 }
 
@@ -788,7 +794,7 @@ class FalseHexTrap extends TrapBase {
         super(id);
     }
     get iconFileName() {
-        return "HexTrap.png";
+        return this.isDisabled ? "HexTrap_Disable.webp" : "HexTrap.png";
     }
     // noinspection JSCheckFunctionSignatures
     get name() {
@@ -810,7 +816,7 @@ class HexTrap extends TrapBase {
         super(id);
     }
     get iconFileName() {
-        return "HexTrap.png";
+        return this.isDisabled ? "HexTrap_Disable.webp" : "HexTrap.png";
     }
     // noinspection JSCheckFunctionSignatures
     get name() {
@@ -832,7 +838,7 @@ class FalseBoltTrap extends TrapBase {
         super(id);
     }
     get iconFileName() {
-        return "BoltTrap.png";
+        return this.isDisabled ? "BoltTrap_Disable.webp" : "BoltTrap.png";
     }
     // noinspection JSCheckFunctionSignatures
     get name() {
@@ -854,7 +860,7 @@ class BoltTrap extends TrapBase {
         super(id);
     }
     get iconFileName() {
-        return "BoltTrap.png";
+        return this.isDisabled ? "BoltTrap_Disable.webp" : "BoltTrap.png";
     }
     // noinspection JSCheckFunctionSignatures
     get name() {
@@ -876,7 +882,7 @@ class FalseHeavyTrap extends TrapBase {
         super(id);
     }
     get iconFileName() {
-        return "HeavyTrap.png";
+        return this.isDisabled ? "HeavyTrap_Disable.webp" : "HeavyTrap.png";
     }
     // noinspection JSCheckFunctionSignatures
     get name() {
@@ -898,7 +904,7 @@ class HeavyTrap extends TrapBase {
         super(id);
     }
     get iconFileName() {
-        return "HeavyTrap.png";
+        return this.isDisabled ? "HeavyTrap_Disable.webp" : "HeavyTrap.png";
     }
     // noinspection JSCheckFunctionSignatures
     get name() {

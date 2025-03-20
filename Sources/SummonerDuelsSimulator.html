@@ -1722,6 +1722,10 @@
             <div v-if="value.isExecutable" style="margin:5px">
                 <input v-bind:style="g_app.vm.debugMenuStyle" type="button" value='効果を発動' class="buttonUi"
                     @click="g_app.executeCurrentStructure()" style="width:150px;">
+                <label>
+                    <input v-model="value.isDisabled" type="checkbox" @change="updateAllUi"/>
+                    発動済み
+                </label>
             </div>
         </div>
     </script>
