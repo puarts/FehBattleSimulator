@@ -79,15 +79,28 @@
     ));
 }
 
-    // C Time Pulse Helm
-    // At start of turn,
-    // if unit's Special cooldown count is at its maximum value,
-    // grants Special cooldown count-1 to unit.
-    // Grants bonus to unit's Atk/Res during combat = unit's
-    // maximum Special cooldown count value + 2,
-    // and also,
-    // if unit's Special cooldown count is at its maximum value after combat,
-    // grants Special cooldown count-1 to unit.
+// Time Pulse Helm
+{
+    let skillId = PassiveC.TimePulseHelm;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // if unit's Special cooldown count is at its maximum value,
+        // grants Special cooldown count-1 to unit.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        X_NUM_NODE(
+            // Grants bonus to unit's Atk/Res during combat = unit's
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, 0, READ_NUM_NODE),
+            // maximum Special cooldown count value + 2,
+            ADD_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 2),
+        ),
+        // and also,
+        // if unit's Special cooldown count is at its maximum value after combat,
+        // grants Special cooldown count-1 to unit.
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_1_IF_COUNT_IS_MAX_AFTER_COMBAT_NODE,
+    ));
+}
 
     // Prior's Tome
     // Mt: 14 Rng:2
