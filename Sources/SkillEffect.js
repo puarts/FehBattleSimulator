@@ -298,7 +298,7 @@ class AssistTargetsAlliesWithinNSpacesOfTargetNode extends TargetsAlliesWithinNS
 const ASSIST_TARGETS_ALLIES_WITHIN_N_SPACES_OF_TARGET_NODE =
     (n, includesTarget) => new AssistTargetsAlliesWithinNSpacesOfTargetNode(n, includesTarget);
 const ASSIST_TARGETS_ALLIES_WITHIN_2_SPACES_OF_TARGET_NODE =
-        includesTarget => ASSIST_TARGETS_ALLIES_WITHIN_N_SPACES_OF_TARGET_NODE(2, includesTarget);
+    includesTarget => ASSIST_TARGETS_ALLIES_WITHIN_N_SPACES_OF_TARGET_NODE(2, includesTarget);
 
 class TargetsClosestFoesNode extends UnitsNode {
     static {
@@ -589,6 +589,7 @@ class SpacesIfNode extends SpacesNode {
         this._pred = BoolNode.makeBoolNodeFrom(pred);
         this._spacesNode = spacesNode;
     }
+
     evaluate(env) {
         if (this._pred.evaluate(env)) {
             return this._spacesNode.evaluate(env);
@@ -660,6 +661,7 @@ class FilterSpacesNode extends SpacesNode {
         this._spacesNode = spacesNode;
         this._predNode = predNode;
     }
+
     evaluate(env) {
         let spaces = Array.from(this._spacesNode.evaluate(env));
         let spacesStr = spaces.map(s => s.positionToString()).join(', ');
@@ -677,6 +679,7 @@ class CountSpacesNode extends PositiveNumberNode {
         super();
         this._spacesNode = spacesNode;
     }
+
     evaluate(env) {
         let spaces = Array.from(this._spacesNode.evaluate(env));
         let result = spaces.length;
@@ -686,6 +689,15 @@ class CountSpacesNode extends PositiveNumberNode {
 }
 
 const COUNT_SPACES_NODE = spacesNode => new CountSpacesNode(spacesNode);
+
+const IS_THERE_SPACES = (spaces, pred) =>
+    GT_NODE(
+        COUNT_SPACES_NODE(
+            FILTER_SPACES_NODE(
+                spaces,
+                pred)),
+        0,
+    );
 
 class SpacesOnMapNode extends SpacesNode {
     constructor(predNode) {
@@ -788,6 +800,7 @@ class SpacesWithinNSpacesOfSpacesNode extends SpacesNode {
         this._nNode = NumberNode.makeNumberNodeFrom(n);
         this._spacesNode = spacesNode;
     }
+
     evaluate(env) {
         let n = this._nNode.evaluate(env);
         let targetTiles = Array.from(this._spacesNode.evaluate(env));
@@ -823,6 +836,7 @@ class IsThereTargetsAllyOnTargetSpace extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin, GetTargetTileMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let tile = this.getTile(env);
@@ -850,6 +864,7 @@ class IsThereDivineVeinEffectAppliedOnTargetSpacesNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetTargetTileMixin);
     }
+
     evaluate(env) {
         let tile = this.getTile(env);
         let result = tile.isDivineVeinApplied();
@@ -864,6 +879,7 @@ class IsTargetSpaceDefensiveTerrainNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetTargetTileMixin);
     }
+
     evaluate(env) {
         let tile = this.getTile(env);
         let result = tile.isDefensiveTile;
@@ -878,6 +894,7 @@ class DoesTargetSpaceCountAsDifficultTerrainExcludingImpassableTerrainNode exten
     static {
         Object.assign(this.prototype, GetTargetTileMixin);
     }
+
     evaluate(env) {
         let tile = this.getTile(env);
         let result = tile.doesCountsAsDifficultTerrainExcludingImpassableTerrain();
@@ -888,6 +905,21 @@ class DoesTargetSpaceCountAsDifficultTerrainExcludingImpassableTerrainNode exten
 
 const DOES_TARGET_SPACE_COUNT_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
     new DoesTargetSpaceCountAsDifficultTerrainExcludingImpassableTerrainNode();
+
+class HasTargetSpaceTrapNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetTargetTileMixin);
+    }
+
+    evaluate(env) {
+        let tile = this.getTile(env);
+        let result = tile.obj instanceof TrapBase;
+        env.debug(`${tile}に罠があるか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_SPACE_TRAP_NODE = new HasTargetSpaceTrapNode();
 
 class IsThereUnitOnMapNode extends BoolNode {
     static {
@@ -1732,11 +1764,13 @@ class GrantsStatPlusAtToTargetDuringCombatNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     constructor(index, value) {
         super();
         this._index = NumberNode.makeNumberNodeFrom(index);
         this._value = NumberNode.makeNumberNodeFrom(value);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let value = this._value.evaluate(env);
@@ -2032,11 +2066,13 @@ class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     constructor(index, value) {
         super();
         this._index = NumberNode.makeNumberNodeFrom(index);
         this._value = NumberNode.makeNumberNodeFrom(value);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let value = this._value.evaluate(env);
@@ -2111,6 +2147,7 @@ class TargetsMaxHpExcludingHpIncreasesFromLegendaryEffectsMythicEffectsBonusHero
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.maxHpWithSkillsWithoutEnteringBattleHpAdd;
@@ -3550,6 +3587,7 @@ class ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForE
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     /**
      * @param {number|NumberNode} n
      * @param {BoolNode} predNode
@@ -5268,6 +5306,7 @@ class IsTargetsFirstAttackNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let context = env.damageCalcContext;
@@ -5307,11 +5346,13 @@ class ForEachTargetsFoeWithinNSpacesOfUnitAnyOfTheNearestSpacesThatAreMSpacesAwa
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     constructor(n, m) {
         super();
         this._n = NumberNode.makeNumberNodeFrom(n);
         this._m = NumberNode.makeNumberNodeFrom(m);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this._n.evaluate(env);
@@ -5327,10 +5368,12 @@ class SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     constructor(n) {
         super();
         this._n = NumberNode.makeNumberNodeFrom(n);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this._n.evaluate(env);

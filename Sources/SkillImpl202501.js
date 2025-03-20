@@ -102,25 +102,57 @@
     ));
 }
 
-    // Prior's Tome
+// Prior's Tome
+{
+    let skillId = Weapon.PriorsTome;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
     // Mt: 14 Rng:2
     // Accelerates Special trigger (cooldown count-1).
-    // If unit is within 2 spaces of a trap in Aether Raids,
-    // allies on the map can move to a space within 2 spaces of unit ("trap in Aether Raids" includes any trap-triggered,
-    // disarmed,
-    // false,
-    // or otherwise).
-    // Allies within 2 spaces of unit can move to any space within 2 spaces of unit.
+    ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        UNITE_SPACES_NODE(
+            // Allies within 2 spaces of unit can move to any space within 2 spaces of unit.
+            SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE(2, 2),
+            // If unit is within 2 spaces of a trap in Aether Raids,
+            SPACES_IF_NODE(
+                IS_THERE_SPACES(SPACES_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(2), HAS_TARGET_SPACE_TRAP_NODE),
+                // allies on the map can move to a space within 2 spaces of unit
+                // ("trap in Aether Raids" includes any trap-triggered, disarmed, false, or otherwise).
+                SPACES_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(2),
+            ),
+        ),
+    );
+
     // For allies within 2 spaces of unit,
-    // grants Atk/Res+5 and neutralizes penalties to Atk/Res during their combat,
-    // and restores 7 HP after combat.
-    // If unit is within 3 spaces of an ally,
-    // grants bonus to unit's
-    // Atk/Res = 20% of unit's Res at start of combat + 6,
-    // neutralizes unit's penalties to Atk/Res,
-    // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
-    // and unit makes a guaranteed follow-up attack during combat,
-    // and restores 7 HP to unit after combat.
+    setForAlliesHooks(skillId, IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+        // grants Atk/Res+5 and
+        GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(5, 0, 0, 5),
+        SKILL_EFFECT_NODE(
+            // neutralizes penalties to Atk/Res during their combat,
+            new NeutralizesPenaltiesToUnitsStatsNode(true, false, false, true),
+            // and restores 7 HP after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            X_NUM_NODE(
+                // grants bonus to unit's Atk/Res = 20% of unit's Res at start of combat + 6,
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, 0, READ_NUM_NODE),
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 6),
+            ),
+            // neutralizes unit's penalties to Atk/Res,
+            new NeutralizesPenaltiesToUnitsStatsNode(true, false, false, true),
+            // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+            // and unit makes a guaranteed follow-up attack during combat,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
 
     // Seal Atk/Res 3
     // Inflicts Atk/Res-3 on foe and additional penalty to foe's
@@ -304,8 +336,8 @@
             APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
                 // if unit's Res ≥ foe's Res+5 and foe's attack can trigger foe's Special,
                 IF_NODE(AND_NODE(
-                    GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5)),
-                    CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
+                        GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5)),
+                        CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
                     // inflicts Special cooldown count+1 on foe before foe's first attack,
                     INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
                 ),

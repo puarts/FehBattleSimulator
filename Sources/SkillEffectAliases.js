@@ -1,3 +1,16 @@
+function setForAlliesHooks(skillId, pred, statNodes, skillEffectNodes) {
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(pred,
+            statNodes,
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(pred,
+            skillEffectNodes,
+        ),
+    ));
+}
+
 const IS_THERE_UNITS_IF = (units, pred) => GT_NODE(
     COUNT_IF_UNITS_NODE(units, pred),
     0,
@@ -453,6 +466,12 @@ const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = (...nodes) =>
 const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = (...nodes) =>
     IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE, ...nodes);
 
+// spaces within m spaces of allies within n spaces
+let SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE =
+    (n, m) => new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
+        new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(m, SKILL_OWNERS_PLACED_SPACE_NODE),
+    );
+
 /**
  * Unit can move to any space within 2 spaces of an ally within 2 spaces of unit.
  */
@@ -466,9 +485,7 @@ function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUn
 
 function setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, n, m) {
     ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
-        new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
-            new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(m, SKILL_OWNERS_PLACED_SPACE_NODE),
-        )
+        SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE(n, m),
     );
 }
 
