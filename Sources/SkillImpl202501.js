@@ -1,4 +1,156 @@
 // スキル実装
+// Arcane Medusa
+{
+    let skillId = Weapon.ArcaneMedusa;
+    // Mt: 14
+    // Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants (Anathema) to unit for 1 turn.
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Anathema),
+        ),
+    ));
+    let [dealsDamageBeforeCombat, dealsDamageDuringCombat] =
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(STATUS_INDEX.Atk, 15);
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // deals damage = 15% of unit's Atk (including area-of-effect Specials),
+        dealsDamageBeforeCombat,
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to
+            // unit's Atk/Spd/Def/Res = 25% of foe's Atk at start of combat - 4 (max 14; min 5),
+            GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
+                ENSURE_MAX_NODE(
+                    SUB_NODE(PERCENTAGE_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE), 4),
+                    5,
+                    14
+                ),
+            ),
+            // deals damage = 15% of unit's Atk (including area-of-effect Specials),
+            dealsDamageDuringCombat,
+            // reduces damage from foe's first attack by 7
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice, " it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // and grants Special cooldown count-1 to unit before unit's first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+}
+    // Mounting Fear
+    // At start of turn,
+    // inflicts (Panic),
+    // (Exposure) ,
+    // and [Deep Wounds) on foes with Res < unit's Res and that are within 2 spaces of another foe through their next actions.
+    // Inflicts Atk/Res-5 on foe,
+    // deals damage = 20% of unit's
+    // Res (excluding area-of-effect Specials),
+    // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
+    // and also,
+    // for unit's first attack during combat,
+    // if damage dealt prior to damage reduction calculation < foe's HP - 1,
+    // sets damage before damage reduction as foe's HP - 1 (excluding area-of-effect Specials; excluding certain foes,
+    // such as Rokkr).
+
+    // C Time Pulse Helm
+    // At start of turn,
+    // if unit's Special cooldown count is at its maximum value,
+    // grants Special cooldown count-1 to unit.
+    // Grants bonus to unit's Atk/Res during combat = unit's
+    // maximum Special cooldown count value + 2,
+    // and also,
+    // if unit's Special cooldown count is at its maximum value after combat,
+    // grants Special cooldown count-1 to unit.
+
+    // Prior's Tome
+    // Mt: 14 Rng:2
+    // Accelerates Special trigger (cooldown count-1).
+    // If unit is within 2 spaces of a trap in Aether Raids,
+    // allies on the map can move to a space within 2 spaces of unit ("trap in Aether Raids" includes any trap-triggered,
+    // disarmed,
+    // false,
+    // or otherwise).
+    // Allies within 2 spaces of unit can move to any space within 2 spaces of unit.
+    // For allies within 2 spaces of unit,
+    // grants Atk/Res+5 and neutralizes penalties to Atk/Res during their combat,
+    // and restores 7 HP after combat.
+    // If unit is within 3 spaces of an ally,
+    // grants bonus to unit's
+    // Atk/Res = 20% of unit's Res at start of combat + 6,
+    // neutralizes unit's penalties to Atk/Res,
+    // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+    // and unit makes a guaranteed follow-up attack during combat,
+    // and restores 7 HP to unit after combat.
+
+    // Seal Atk/Res 3
+    // Inflicts Atk/Res-3 on foe and additional penalty to foe's
+    // Atk/Res = 6 - current penalty on each of those stats
+    // during combat (min 0; calculates each stat penalty independently; still inflicts penalty on foe even if foe triggers an effect that neutralizes penalties during combat).
+    // If penalty is active on foe's Atk or Res,
+    // inflicts Special cooldown charge -1 on foe per attack during combat (only highest value applied; does not stack).
+    // After combat,
+    // inflicts Atk/Res-6 on foe through its next action.
+
+    // Hexblade Sword +
+    // Mt: 14
+    // Rng: 1
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // grants "unit cannot be slowed by terrain (does not apply to impassable terrain)" and [Hexblade) to unit for 1 turn.
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit during combat and
+    // deals damage = 10% of unit's Atk (excluding
+    // area-of-effect Specials).
+
+    // True-Bond Bow
+    // Mt: 14
+    // Rng:2
+    // Eff: E
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+    // Unit can move to a space within 2 spaces of any ally within 2 spaces.
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // for unit and allies within 2 spaces of unit,
+    // grants Atk/Spd (Great Talent) +2,
+    // and also,
+    // if Special cooldown count is at its maximum value,
+    // grants Special cooldown count-2; if Special cooldown count is at its maximum value - 1,
+    // grants Special cooldown count-1.
+    // 5 (max 14),
+    // unit deals +X damage (excluding area-of-effect Specials),
+    // and reduces damage from foe's
+    // first attack by X during combat (X = total value of Atk
+    // and Spd [Great Talent) × 2; max 30; "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+    // and restores 7 HP to unit after combat.
+    // (This skill grants max of (Great Talent) +10 for unit.)
+
+    // True Lunar Flash
+    // When Special triggers,
+    // treats foe's Def/Res as if reduced by 35%,
+    // boosts damage by 35% of unit's Spd,
+    // neutralizes
+    // "reduces damage by X%" effects from foe's non-Special skills,
+    // and prevents foe's Specials that are triggered by unit's attack.
+    // If unit's or foe's Special is ready or triggered before or during this combat,
+    // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+
+    // Pulse On: Blades
+    // Grants bonus to unit's Atk/Spd = unit's max Special
+    // cooldown count value + 2,
+    // and if unit's attack can trigger unit's Special,
+    // grants Special cooldown count-2 to unit before unit's first follow-up attack during combat.
+
+    // Lull Echo
+    // Inflicts penalty on foe's Atk/Spd/Def/Res = number of
+    // (Bonus) effects active on foe (max 4; excluding stat bonuses),
+    // and neutralizes foe's bonuses during combat.
+
 // Gentle Fell Egg
 {
     let skillId = Weapon.GentleFellEgg;
