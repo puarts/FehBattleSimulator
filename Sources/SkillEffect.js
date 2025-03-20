@@ -5264,6 +5264,25 @@ class IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode extends Bool
 const IS_TARGETS_TEAMS_MIRACLE_WITHOUT_SPECIAL_ACTIVATED_ON_CURRENT_TURN_NODE =
     new IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode();
 
+class IsTargetsFirstAttackNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let context = env.damageCalcContext;
+        if (context) {
+            let result = context.isFirstAttack(unit);
+            env.debug(`${unit.nameWithGroup}の最初の攻撃か: ${result}`);
+            return result;
+        } else {
+            env.error('コンテキストがありません。');
+        }
+    }
+}
+
+const IS_TARGETS_FIRST_ATTACK_NODE = new IsTargetsFirstAttackNode()
+
 class IsTargetsFollowUpOrPotentFollowUpAttackNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

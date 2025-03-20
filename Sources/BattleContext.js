@@ -487,6 +487,7 @@ class BattleContext {
 
         // 瞬殺
         this.isBaneSpecial = false;
+        this.isBanePerAttack = false;
 
         // 自分の戦闘順序入れ替えスキル(待ち伏せ、攻め立てなど)を無効
         this.canUnitDisableSkillsThatChangeAttackPriority = false;

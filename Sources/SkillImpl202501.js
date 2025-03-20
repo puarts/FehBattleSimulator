@@ -42,20 +42,42 @@
         ),
     ));
 }
-    // Mounting Fear
-    // At start of turn,
-    // inflicts (Panic),
-    // (Exposure) ,
-    // and [Deep Wounds) on foes with Res < unit's Res and that are within 2 spaces of another foe through their next actions.
-    // Inflicts Atk/Res-5 on foe,
-    // deals damage = 20% of unit's
-    // Res (excluding area-of-effect Specials),
-    // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
-    // and also,
-    // for unit's first attack during combat,
-    // if damage dealt prior to damage reduction calculation < foe's HP - 1,
-    // sets damage before damage reduction as foe's HP - 1 (excluding area-of-effect Specials; excluding certain foes,
-    // such as Rokkr).
+
+// Mounting Fear
+{
+    let skillId = PassiveB.MountingFear;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // on foes with Res < unit's Res and that are within 2 spaces of another foe through their next actions.
+        FOR_EACH_UNIT_NODE(
+            FILTER_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE,
+                AND_NODE(
+                    LT_NODE(TARGETS_EVAL_RES_ON_MAP, SKILL_OWNERS_EVAL_RES_ON_MAP),
+                    TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE(2))),
+            // inflicts (Panic), (Exposure) , and [Deep Wounds)
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                StatusEffectType.Panic, StatusEffectType.Exposure, StatusEffectType.DeepWounds),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Inflicts Atk/Res-5 on foe,
+        INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(5, 0, 0, 5),
+        // deals damage = 20% of unit's Res (excluding area-of-effect Specials),
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
+        // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials),
+        REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        // and also,
+    ));
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // for unit's first attack during combat,
+        IF_NODE(IS_TARGETS_FIRST_ATTACK_NODE,
+            // if damage dealt prior to damage reduction calculation < foe's HP - 1,
+            // sets damage before damage reduction as foe's HP - 1
+            SET_TARGETS_BANE_PER_ATTACK_NODE,
+            // (excluding area-of-effect Specials; excluding certain foes, such as Rokkr).
+        ),
+    ));
+}
 
     // C Time Pulse Helm
     // At start of turn,

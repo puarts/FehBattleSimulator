@@ -2189,3 +2189,16 @@ class TargetNeutralizesEffectiveAgainstXNode extends FromPositiveNumberNode {
 }
 
 const TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE = e => new TargetNeutralizesEffectiveAgainstXNode(e);
+
+class SetTargetsBanePerAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.isBanePerAttack = true;
+        env.debug(`${unit.nameWithGroup}は瞬殺を発動`);
+    }
+}
+
+const SET_TARGETS_BANE_PER_ATTACK_NODE = new SetTargetsBanePerAttackNode();
