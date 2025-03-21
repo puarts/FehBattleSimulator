@@ -179,49 +179,134 @@
     ));
 }
 
-    // True-Bond Bow
+// True-Bond Bow
+{
+    let skillId = Weapon.TrueBondBow;
     // Mt: 14
     // Rng:2
     // Eff: E
     // Accelerates Special trigger (cooldown count-1).
     // Effective against flying foes.
     // Unit can move to a space within 2 spaces of any ally within 2 spaces.
-    // At start of turn,
-    // if unit is within 2 spaces of an ally,
-    // for unit and allies within 2 spaces of unit,
-    // grants Atk/Spd (Great Talent) +2,
-    // and also,
-    // if Special cooldown count is at its maximum value,
-    // grants Special cooldown count-2; if Special cooldown count is at its maximum value - 1,
-    // grants Special cooldown count-1.
-    // 5 (max 14),
-    // unit deals +X damage (excluding area-of-effect Specials),
-    // and reduces damage from foe's
-    // first attack by X during combat (X = total value of Atk
-    // and Spd [Great Talent) × 2; max 30; "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-    // and restores 7 HP to unit after combat.
-    // (This skill grants max of (Great Talent) +10 for unit.)
+    setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, 2, 2);
 
-    // True Lunar Flash
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // for unit and allies within 2 spaces of unit,
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Atk/Spd (Great Talent) +2,
+                GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
+                    StatsNode.makeStatsNodeFrom(2, 2, 0, 0),
+                    StatsNode.makeStatsNodeFrom(10, 10, 10, 10),
+                ),
+                // and also,
+                // if Special cooldown count is at its maximum value,
+                IF_NODE(IS_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_NODE,
+                    // grants Special cooldown count-2;
+                    GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(2),
+                ),
+                // if Special cooldown count is at its maximum value - 1,
+                IF_NODE(EQ_NODE(TARGETS_SPECIAL_COOLDOWN_COUNT_NODE, SUB_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 1)),
+                    // grants Special cooldown count-1.
+                    GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+                ),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res =
+            GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
+                // number of allies within 3 rows or 3 columns centered on unit x 3, + 5 (max 14),
+                ENSURE_MAX_NODE(
+                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14,
+                ),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage (excluding area-of-effect Specials),
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
+                // and reduces damage from foe's first attack by X during combat
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(READ_NUM_NODE),
+                // (X = total value of Atk and Spd [Great Talent) × 2; max 30;
+                // "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+                ENSURE_MAX_NODE(
+                    MULT_NODE(ADD_NODE(UNITS_ATK_GREAT_TALENT_NODE, UNITS_SPD_GREAT_TALENT_NODE), 2),
+                    30,
+                ),
+            ),
+            // and restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+            // (This skill grants max of (Great Talent) +10 for unit.)
+        ),
+    ));
+}
+
+// True Lunar Flash
+{
+    let skillId = Special.TrueLunarFlash;
+    setSpecialCount(skillId, 3);
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
     // When Special triggers,
-    // treats foe's Def/Res as if reduced by 35%,
-    // boosts damage by 35% of unit's Spd,
-    // neutralizes
-    // "reduces damage by X%" effects from foe's non-Special skills,
-    // and prevents foe's Specials that are triggered by unit's attack.
-    // If unit's or foe's Special is ready or triggered before or during this combat,
-    // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // treats foe's Def/Res as if reduced by 35%,
+        TREATS_TARGETS_FOES_DEF_RES_AS_IF_REDUCED_BY_X_PERCENTAGE_NODE(35),
+        // boosts damage by 35% of unit's Spd,
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(35, UNITS_SPD_DURING_COMBAT_NODE)),
+        // neutralizes "reduces damage by X%" effects from foe's non-Special skills,
+        WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+    ));
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(CAN_ACTIVATE_ATTACKER_SPECIAL_NODE,
+            // and prevents foe's Specials that are triggered by unit's attack.
+            PREVENTS_TARGETS_FOES_SPECIALS_THAT_ARE_TRIGGERED_BY_TARGETS_ATTACK_NODE,
+        ),
+    ));
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If unit's or foe's Special is ready or triggered before or during this combat,
+        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+            new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
+        ),
+    ));
+}
 
-    // Pulse On: Blades
-    // Grants bonus to unit's Atk/Spd = unit's max Special
-    // cooldown count value + 2,
-    // and if unit's attack can trigger unit's Special,
-    // grants Special cooldown count-2 to unit before unit's first follow-up attack during combat.
+// Pulse On: Blades
+{
+    let skillId = PassiveC.PulseOnBlades;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        X_NUM_NODE(
+            // Grants bonus to unit's Atk/Spd =
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, 0, 0),
+            // unit's max Special cooldown count value + 2,
+            ADD_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 2),
+        ),
+        // and if unit's attack can trigger unit's Special,
+        IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
+            // grants Special cooldown count-2 to unit before unit's first follow-up attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE(2),
+        ),
+    ));
+}
 
-    // Lull Echo
-    // Inflicts penalty on foe's Atk/Spd/Def/Res = number of
-    // (Bonus) effects active on foe (max 4; excluding stat bonuses),
-    // and neutralizes foe's bonuses during combat.
+// Lull Echo
+{
+    let skillId = PassiveX.LullEcho;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Inflicts penalty on foe's Atk/Spd/Def/Res =
+        INFLICTS_ALL_STATS_MINUS_N_ON_FOE_DURING_COMBAT_NODE(
+            // number of (Bonus) effects active on foe (max 4; excluding stat bonuses),
+            ENSURE_MAX_NODE(NUM_OF_BONUSES_ACTIVE_ON_FOE_EXCLUDING_STAT_NODE, 4)
+        ),
+        // and neutralizes foe's bonuses during combat.
+        NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+    ));
+}
 
 // Gentle Fell Egg
 {

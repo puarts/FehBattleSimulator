@@ -2030,6 +2030,9 @@ class GrantsGreatTalentsPlusToTargetNode extends SkillEffectNode {
     }
 }
 
+const GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE =
+    (statsNode, maxStatsNode) => new GrantsGreatTalentsPlusToTargetNode(statsNode, maxStatsNode);
+
 class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2777,6 +2780,8 @@ class TargetsSpecialCountAtStartOfTurnNode extends PositiveNumberNode {
         return result;
     }
 }
+
+const TARGETS_SPECIAL_COUNT_AT_START_OF_TURN_NODE = new TargetsSpecialCountAtStartOfTurnNode();
 
 class TargetsMaxSpecialCountNode extends PositiveNumberNode {
     static {
@@ -4831,6 +4836,23 @@ class IsTargetsSpecialCooldownCountIsAtItsMaximumNode extends BoolNode {
         return isMax;
     }
 }
+
+const IS_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_NODE =
+    new IsTargetsSpecialCooldownCountIsAtItsMaximumNode();
+
+class TargetsSpecialCooldownCountNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.specialCount;
+        env.debug(`${unit.nameWithGroup}の奥義カウント: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_SPECIAL_COOLDOWN_COUNT_NODE = new TargetsSpecialCooldownCountNode();
 
 class IsTargetTransformedNode extends BoolNode {
     static {
