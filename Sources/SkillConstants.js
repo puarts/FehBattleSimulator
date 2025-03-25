@@ -3770,6 +3770,17 @@ Support.DreamlikeNight = 3203; // あまいよるのゆめ
 PassiveB.DefResDiscord = 3204; // 守備魔防の不和
 PassiveC.ShadowSmite4 = 3205; // 影助・ぶちかまし4
 Weapon.SpringAirAxePlus = 3206; // 春光の斧+
+Weapon.ArcaneMedusa = 3207; // 魔器メデューサ
+PassiveB.MountingFear = 3208; // 恐山の妖術
+PassiveC.TimePulseHelm = 3209; // 始まりの鼓動・兜
+Weapon.PriorsTome = 3210; // 修道院長の書
+PassiveB.SealAtkRes3 = 3211; // 攻撃魔防封じ3
+Weapon.HexbladeSwordPlus = 3212; // 魔刃の剣+
+Weapon.TrueBondBow = 3213; // 想い合う絆の弓
+Special.TrueLunarFlash = 3214; // 真月光閃
+PassiveC.PulseOnBlades = 3215; // 追撃の鼓動・刃
+PassiveX.LullEcho = 3216; // 響・凪
+Weapon.RaudrcrabPlus = 3217; // ラウアクラブ
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

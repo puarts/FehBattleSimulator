@@ -5826,6 +5826,8 @@ function setLantern(skillId) {
             }
         );
     }
+    // 攻撃魔防
+    setSkill(PassiveB.SealAtkRes3, [1, 0, 0, 1]);
     // 速さ魔防
     setSkill(PassiveB.SealSpdRes3, [0, 1, 0, 1]);
     // 守備魔防封じ3

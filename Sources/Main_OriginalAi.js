@@ -217,7 +217,8 @@ class OriginalAi {
                             return false;
                         }
 
-                        if (result.targetUnitTileAfterAssist.obj instanceof TrapBase) {
+                        if (result.targetUnitTileAfterAssist.obj instanceof TrapBase &&
+                            !result.targetUnitTileAfterAssist.obj.isDisabled) {
                             return false;
                         }
 
@@ -241,7 +242,8 @@ class OriginalAi {
                             return false;
                         }
 
-                        if (result.targetUnitTileAfterAssist.obj instanceof TrapBase) {
+                        if (result.targetUnitTileAfterAssist.obj instanceof TrapBase &&
+                            !result.targetUnitTileAfterAssist.obj.isDisabled) {
                             return false;
                         }
 
@@ -265,7 +267,7 @@ class OriginalAi {
 
                     return false;
                 },
-                tile => !(tile.obj instanceof TrapBase)
+                tile => !(tile.obj instanceof TrapBase && !tile.obj.isDisabled)
             );
             if (assistUnit.actionContext.bestTargetToAssist == null) {
                 self.writeDebugLogLine(assistUnit.getNameWithGroup() + "の補助可能な味方がいない");
@@ -319,7 +321,7 @@ class OriginalAi {
                 assistUnit,
                 true,
                 (targetUnit, tile) => self.__canBeActivatedPrecombatAssist(assistUnit, targetUnit, tile),
-                tile => !(tile.obj instanceof TrapBase)
+                tile => !(tile.obj instanceof TrapBase && !tile.obj.isDisabled)
             );
             if (assistUnit.actionContext.bestTargetToAssist == null) {
                 self.writeDebugLogLine(assistUnit.getNameWithGroup() + "の補助可能な味方がいない");
@@ -360,7 +362,7 @@ class OriginalAi {
         }
 
         for (let unit of attackers) {
-            self.__setAttackableUnitInfo(unit, enemyUnits, tile => !(tile.obj instanceof TrapBase));
+            self.__setAttackableUnitInfo(unit, enemyUnits, tile => !(tile.obj instanceof TrapBase && !tile.obj.isDisabled));
             unit.actionContext.attackableTiles = [];
             for (let attackTargetInfo of unit.actionContext.attackableUnitInfos) {
                 for (let tile of attackTargetInfo.tiles) {

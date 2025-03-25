@@ -745,6 +745,16 @@ class NumOfBonusesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
     }
 }
 
+const NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfBonusesActiveOnTargetExcludingStatNode();
+
+class NumOfBonusesActiveOnFoeExcludingStatNode extends NumOfBonusesActiveOnTargetExcludingStatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const NUM_OF_BONUSES_ACTIVE_ON_FOE_EXCLUDING_STAT_NODE = new NumOfBonusesActiveOnFoeExcludingStatNode();
+
 class NumOfPenaltiesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2189,3 +2199,31 @@ class TargetNeutralizesEffectiveAgainstXNode extends FromPositiveNumberNode {
 }
 
 const TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE = e => new TargetNeutralizesEffectiveAgainstXNode(e);
+
+class SetTargetsBanePerAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.isBanePerAttack = true;
+        env.debug(`${unit.nameWithGroup}は瞬殺を発動`);
+    }
+}
+
+const SET_TARGETS_BANE_PER_ATTACK_NODE = new SetTargetsBanePerAttackNode();
+
+class TreatsTargetsFoesDefResAsIfReducedByXPercentageNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialSufferPercentage = n;
+        env.debug(`${unit.nameWithGroup}は敵の守備、魔防-${n}%扱いで攻撃`);
+    }
+}
+
+const TREATS_TARGETS_FOES_DEF_RES_AS_IF_REDUCED_BY_X_PERCENTAGE_NODE =
+    n => new TreatsTargetsFoesDefResAsIfReducedByXPercentageNode(n);

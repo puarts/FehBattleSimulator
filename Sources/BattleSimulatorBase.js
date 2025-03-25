@@ -4905,10 +4905,14 @@ class BattleSimulatorBase {
                 for (let unit of g_appData.units) {
                     unit.resetAllState();
                 }
-                // タイルの天脈をリセットする
+                // タイルをリセットする
+                // 天脈・施設
                 for (let tile of g_appData.map.enumerateTiles()) {
                     tile.divineVein = DivineVeinType.None;
                     tile.divineVeinGroup = null;
+                    if (tile.obj && tile.obj.isDisabled) {
+                        tile.obj.isDisabled = false;
+                    }
                 }
                 g_appData.resonantBattleItems = [];
             }
@@ -9055,7 +9059,7 @@ class BattleSimulatorBase {
         else if (structure instanceof DefBrightShrine) {
             this.__executeBrightShrine(structure, UnitGroupType.Ally);
         }
-        else if (structure instanceof HexTrap) {
+        else if (structure instanceof HexTrap && !structure.isDisabled) {
             for (let unit of g_appData.enumerateUnitsInSpecifiedGroupOnMap(UnitGroupType.Ally)) {
                 if (unit.posX === px && unit.posY === py) {
                     if (this.__getStatusEvalUnit(unit).hp <= structure.amount) {
@@ -9066,7 +9070,7 @@ class BattleSimulatorBase {
                 }
             }
         }
-        else if (structure instanceof BoltTrap) {
+        else if (structure instanceof BoltTrap && !structure.isDisabled) {
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Enemy, 3)) {
                 unit.reserveTakeDamage(structure.amount);
             }
@@ -9074,7 +9078,7 @@ class BattleSimulatorBase {
                 unit.reserveTakeDamage(structure.amount);
             }
         }
-        else if (structure instanceof HeavyTrap) {
+        else if (structure instanceof HeavyTrap && !structure.isDisabled) {
             for (let unit of this.enumerateUnitsWithinSpecifiedSpaces(px, py, UnitGroupType.Enemy, 2)) {
                 if (this.__getStatusEvalUnit(unit).hp <= structure.amount) {
                     this.writeLogLine(unit.getNameWithGroup() + "に重圧の罠の効果適用");
@@ -11293,7 +11297,7 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
 
     let obj = tile.obj;
 
-    if (unit.groupId === UnitGroupType.Ally && obj instanceof TrapBase) {
+    if (unit.groupId === UnitGroupType.Ally && obj instanceof TrapBase && !obj.isDisabled) {
         // トラップ床発動
         if (obj.isExecutable) {
             let trapCondSatisfied = false;
@@ -11328,7 +11332,7 @@ function executeTrapIfPossible(unit, endsActionIfActivateTrap = false) {
             }
         }
 
-        moveStructureToTrashBox(obj);
+        obj.isDisabled = true;
     }
     return result;
 }
