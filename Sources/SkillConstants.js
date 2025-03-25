@@ -3780,6 +3780,7 @@ Weapon.TrueBondBow = 3213; // 想い合う絆の弓
 Special.TrueLunarFlash = 3214; // 真月光閃
 PassiveC.PulseOnBlades = 3215; // 追撃の鼓動・刃
 PassiveX.LullEcho = 3216; // 響・凪
+Weapon.RaudrcrabPlus = 3217; // ラウアクラブ
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
