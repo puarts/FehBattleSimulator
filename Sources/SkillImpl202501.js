@@ -1,4 +1,35 @@
 // スキル実装
+// Azure Twin Edge
+// Mt: 16
+// Rng: 1
+// Accelerates Special trigger (cooldown count-1).
+// At start of turn, if unit is within 2 spaces of an ally, grants [Empathyl and the following status to unit and allies within 2 spaces for 1 turn: "grants Special cooldown charge +1 per attack during combat (only highest value applied; does not stack).*
+// If unit initiates combat or if unit is within 2 spaces of an
+// ally, grants bonus to unit's Atk/Spd/Def/Res = number
+// of allies within 3 rows or 3 columns centered on unit x 3,
+// + 5 (max 14), deals damage = 20% of unit's Spd
+// (excluding area-of-effect Specials), reduces damage from foe's first attack by 20% of unit's Spd ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes), and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+// Unit can use the following (Style] :
+// Wind Sword Style
+
+// Twin Strike
+// Boosts damage by 60% of unit's Spd when Special triggers.
+// Unit attacks twice (even if foe initiates combat, unit attacks twice) and neutralizes effects that inflict "Special cooldown charge -X™ on unit during combat.
+// If unit's or foe's Special is ready or triggered before or during this combat, reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+
+// Blue Skies 4
+// Enables [Canto (2)] .
+// If unit initiates combat or is within 2 spaces of an ally, grants Atk/Spd+8 to unit, unit deals +X damage (excluding area-of-effect Specials), and reduces damage
+// from foe's first attack by X during combat (X = number
+// of allies within 3 rows or 3 columns centered on unit x 2, + 2; max 8; "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+
+// Emblem Effect
+// Enhanced Engaged Special:
+// When Special triggers, boosts damage by unit's max Special cooldown count value x 4 (excluding area-of-effect Specials).
+// If it is unit's first combat initiated by unit or first combat initiated by foe that turn, inflicts Atk-4 on unit and unit attacks twice during combat (triggers only when unit's
+// Range = 1; does not trigger when equipped with an
+// area-of-effect Special).
+
 // Arcane Medusa
 {
     let skillId = Weapon.ArcaneMedusa;
