@@ -1812,7 +1812,12 @@ class AppData extends UnitManager {
     selectCurrentItem() {
         let currentItem = this.currentItem;
         for (let item of this.enumerateItems()) {
-            item.isSelected = item === currentItem;
+            let selected = item === currentItem;
+            if (item.isSelected && selected) {
+                item.isSelected = false;
+            } else {
+                item.isSelected = selected;
+            }
         }
 
         this.setAttackerAndAttackTargetInfo();
