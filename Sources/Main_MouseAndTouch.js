@@ -57,14 +57,12 @@ function findParentTdElement(elem) {
     return currentNode;
 }
 
-function __selectItemById(id, button = 0) {
-    if (g_keyboardManager.isShiftKeyPressing) {
+function __selectItemById(id, button = 0, isShiftKey = false, isControlKey = false) {
+    if (isShiftKey) {
         selectItemById(id, true, false);
-    }
-    else if (g_keyboardManager.isControlKeyPressing) {
+    } else if (isControlKey) {
         selectItemById(id, false, true);
-    }
-    else {
+    } else {
         selectItemById(id, false, false, button);
     }
 }
@@ -85,10 +83,10 @@ function onItemSelected(event) {
         let tdElem = findParentTdElement(targetElem);
         if (tdElem != null) {
             // タイルが選択された
-            __selectItemById(tdElem.id, button);
+            __selectItemById(tdElem.id, button, event.shiftKey, event.ctrlKey);
         }
     } else {
-        __selectItemById(targetElem.id, button);
+        __selectItemById(targetElem.id, button, event.shiftKey, event.ctrlKey);
     }
 
     if (isLeftClick && g_doubleClickChecker.isDoubleClicked()) {
