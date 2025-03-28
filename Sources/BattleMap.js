@@ -2934,7 +2934,8 @@ class BattleMap {
                     // 危険度の表示
                     additionalInnerText += "<span style='color:#f80;font-size:12px;" + shadowCss + ";'><b>" + tile.allyDangerLevel + "</b></span>";
                 }
-                if (tile.divineVein !== DivineVeinType.None) {
+                if (tile.divineVein !== DivineVeinType.None &&
+                    !g_appData.showDivineVeinImageWithoutBreakable) {
                     let divineString = "";
                     divineString = DIVINE_VEIN_STRINGS[tile.divineVein];
                     let divineColor = divineVeinColor(tile.divineVeinGroup);
@@ -3054,7 +3055,7 @@ class BattleMap {
 
             // 敵の天脈の色設定
             if (tile.hasBreakableDivineVein() ||
-                g_appData.showDivineVeinImageWithoutBreakable === true) {
+                g_appData.showDivineVeinImageWithoutBreakable) {
                 let divineVeinTag = getDivineVeinTag(tile.divineVein);
                 divineVeinTag.classList.add('map-divine-vein-img');
                 if (tile.divineVein === DivineVeinType.Ice &&
