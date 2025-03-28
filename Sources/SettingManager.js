@@ -3,12 +3,12 @@
 
 // todo: ビューに依存してしまっているのでどうにかする
 function changeCurrentUnitTab(tabIndex) {
-    // $('.jquery .tabs li').removeClass('active').eq(tabIndex).addClass('active');
+    let $tabs = $('#unitSettings > ul.contents > li');
     if (tabIndex < 0) {
-        $('.jquery .contents li').removeClass('active');
+        $tabs.removeClass('active');
         return;
     }
-    $('.jquery .contents li').removeClass('active').eq(tabIndex).addClass('active');
+    $tabs.removeClass('active').eq(tabIndex).addClass('active');
 
     // アイコン
     $('.weaponIcon').attr('src', g_imageRootPath + "Weapon.png");

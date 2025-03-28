@@ -99,11 +99,6 @@ function onItemSelected(event) {
     }
 }
 
-function onMouseDown(event) {
-    g_app.showItemInfo(event.target.id);
-    g_appData.selectCurrentItem();
-}
-
 /***** ドラッグ開始時の処理 *****/
 function f_dragstart(event) {
     //ドラッグするデータのid名をDataTransferオブジェクトにセット
