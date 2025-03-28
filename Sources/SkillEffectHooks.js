@@ -334,6 +334,7 @@ const AOE_SPECIAL_SPACES_HOOKS = new SkillEffectHooks();
 const CALC_HEAL_AMOUNT_HOOKS = new SkillEffectHooks();
 
 /**
+ * 移動が不可能になるスタイルの攻撃範囲を求めるときに呼び出される。
  * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
 const CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS = new SkillEffectHooks();
 
@@ -343,6 +344,7 @@ const CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS = new SkillEffectHooks();
 const CAN_ACTIVATE_STYLE_HOOKS = new SkillEffectHooks();
 
 /**
+ * スタイル発動後に呼び出される。クールタイムの設定などに使用。
  * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>}
  */
 const STYLE_ACTIVATED_HOOKS = new SkillEffectHooks();

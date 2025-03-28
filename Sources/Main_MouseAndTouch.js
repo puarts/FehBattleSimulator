@@ -273,8 +273,12 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                 let currentTile = g_currentTile;
                 const alpha = "a0";
                 if (unit.groupId === UnitGroupType.Ally) {
-                    let tiles = unit.isCannotMoveStyleActive() ?
-                        unit.attackableTilesInCannotMoveStyle : unit.attackableTiles;
+                    let tiles = unit.attackableTiles;
+                    if (unit.isCannotMoveStyleActive()) {
+                        tiles = unit.attackableTilesInCannotMoveStyle;
+                    } else if (unit.isRangedStyleForMeleeActive()) {
+                        tiles = unit.attackableTilesInRangedForMeleeStyle;
+                    }
                     let color = "#feccc5";
                     color = "#ff8888" + alpha;
                     for (let tile of tiles) {
@@ -287,6 +291,9 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                     for (let tile of unit.attackableTilesInCannotMoveStyle) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    }
+                    for (let tile of unit.attackableTilesInRangedForMeleeStyle) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                 }
@@ -376,7 +383,7 @@ function dragoverImplForTargetTile(unit, targetTile) {
             unitPlacedOnTargetTile != null &&
             unit.groupId !== unitPlacedOnTargetTile.groupId;
         if (isThereEnemyOnTile) {
-            let attackTile = findBestActionTile(targetTile, unit.attackRange, unit);
+            let attackTile = findBestActionTile(targetTile, unit.attackRangeOnMapForAttackingUnit, unit);
             g_attackTile = attackTile;
             // 再計算のチェックのためサマリーを計算するタイルを保存しておく
             g_dragoverTargetTileForCalcSummary = targetTile;
@@ -477,7 +484,7 @@ function dropToUnitImpl(unit, dropTargetId) {
         let isSupportEnabled = !g_appData.isSupportActivationDisabled;
         if (isSupportEnabled && isDifferentGroup) {
             // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
-            let bestTile = getBestActionTile(unit, targetTile, unit.attackRange);
+            let bestTile = getBestActionTile(unit, targetTile, unit.attackRangeOnMapForAttackingUnit);
             if (bestTile != null && !unit.isCantoActivating) {
                 g_app.__enqueueAttackCommand(unit, unitPlacedOnTargetTile, bestTile);
                 g_appData.isEnemyActionTriggered = true;

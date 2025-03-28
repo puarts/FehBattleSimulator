@@ -697,6 +697,7 @@ class Unit extends BattleMapElement {
         this.movableTilesIgnoringWarpBubble = [];
         this.attackableTiles = [];
         this.attackableTilesInCannotMoveStyle = [];
+        this.attackableTilesInRangedForMeleeStyle = [];
         this.assistableTiles = [];
         this.teleportOnlyTiles = [];
         this.precombatSpecialTiles = [];
@@ -1086,6 +1087,15 @@ class Unit extends BattleMapElement {
      */
     * enumerateAttackableUnitsInCannotMoveStyle() {
         for (let tile of this.attackableTilesInCannotMoveStyle) {
+            let existsEnemyOnTile = tile.placedUnit != null && this.isDifferentGroup(tile.placedUnit);
+            if (existsEnemyOnTile) {
+                yield tile.placedUnit;
+            }
+        }
+    }
+
+    * enumerateAttackableUnitsInRangedForMeleeStyle() {
+        for (let tile of this.attackableTilesInRangedForMeleeStyle) {
             let existsEnemyOnTile = tile.placedUnit != null && this.isDifferentGroup(tile.placedUnit);
             if (existsEnemyOnTile) {
                 yield tile.placedUnit;
@@ -3656,6 +3666,13 @@ class Unit extends BattleMapElement {
         return getAttackRangeOfWeaponType(this.weaponType);
     }
 
+    get attackRangeOnMapForAttackingUnit() {
+        if (this.isRangedStyleForMeleeActive()) {
+            return 2;
+        }
+        return this.attackRange;
+    }
+
     get enemyGroupId() {
         return this.groupId !== UnitGroupType.Ally ? UnitGroupType.Ally : UnitGroupType.Enemy;
     }
@@ -5075,6 +5092,21 @@ class Unit extends BattleMapElement {
      * @returns {Generator<number|string>}
      */
     * enumerateSkills() {
+        yield* this.enumerateEquippedSkills();
+        // 受けているステータス
+        yield* this.getStatusEffects().map(getStatusEffectSkillId);
+        // 現在発動しているスタイル
+        let style = this.getCurrentStyle();
+        if (style !== STYLE_TYPE.NONE) {
+            yield getStyleSkillId(style);
+        }
+    }
+
+    /**
+     * マップに入る前に装備されているスキルを列挙する
+     * @returns {Generator<string|number>}
+     */
+    * enumerateEquippedSkills() {
         yield* this.#enumerateSkills(this.weapon, true);
         yield* this.#enumerateSkills(this.support);
         yield* this.#enumerateSkills(this.special);
@@ -5086,7 +5118,6 @@ class Unit extends BattleMapElement {
         if (this.emblemHeroIndex > 0) {
             yield getEmblemHeroSkillId(this.emblemHeroIndex);
         }
-        yield* this.getStatusEffects().map(getStatusEffectSkillId);
     }
 
     /**
@@ -5887,8 +5918,18 @@ class Unit extends BattleMapElement {
                 }
             }
         }
+        // リンスタイル
         for (let unit of this.enumerateAttackableUnitsInCannotMoveStyle()) {
             yield [unit, this.placedTile];
+        }
+        // かぜの剣スタイル
+        for (let unit of this.enumerateAttackableUnitsInRangedForMeleeStyle()) {
+            for (let tile of this.enumerateMovableTiles(false)) {
+                let dist = tile.calculateDistanceToUnit(unit);
+                if (dist === 2) {
+                    yield [unit, tile];
+                }
+            }
         }
     }
 
@@ -6514,7 +6555,7 @@ class Unit extends BattleMapElement {
      */
     getStyles() {
         let styles = [];
-        for (let skillId of this.enumerateSkills()) {
+        for (let skillId of this.enumerateEquippedSkills()) {
             if (SKILL_STYLE_MAP.has(skillId)) {
                 styles.push(SKILL_STYLE_MAP.get(skillId));
             }
@@ -6546,6 +6587,10 @@ class Unit extends BattleMapElement {
 
     isCannotMoveStyleActive() {
         return this.isAnyStyleActive(...CANNOT_MOVE_STYLE_SET);
+    }
+
+    isRangedStyleForMeleeActive() {
+        return this.isAnyStyleActive(...RANGED_STYLE_FOR_MELEE_SET);
     }
 
     /**
@@ -6585,6 +6630,10 @@ class Unit extends BattleMapElement {
 
     hasCannotMoveStyle() {
         return this.hasAvailableStyle() && CANNOT_MOVE_STYLE_SET.has(this.getAvailableStyle());
+    }
+
+    hasRangedStyleForMelee() {
+        return this.hasAvailableStyle() && RANGED_STYLE_FOR_MELEE_SET.has(this.getAvailableStyle());
     }
 }
 

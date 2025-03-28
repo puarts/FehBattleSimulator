@@ -830,6 +830,9 @@ class AppData extends UnitManager {
                 this.registerSkillInfos(heroInfo);
             }
         }
+        if (this.isDevelopmentMode) {
+            this.emblemHeroOptions.push({ id: EmblemHero.Debug, text: "紋章士デバッグ" });
+        }
     }
     /**
      * @param  {HeroInfo} heroInfo

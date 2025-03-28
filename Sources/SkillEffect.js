@@ -2861,6 +2861,7 @@ class TargetsMoveTypeNode extends PositiveNumberNode {
     }
 }
 
+// TODO: マップ上でのRangeを取得するノードを作成する（かぜの剣スタイルなど）
 class TargetsRangeNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

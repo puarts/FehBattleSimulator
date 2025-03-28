@@ -3847,10 +3847,12 @@ const EmblemHero = {
     Celica: 1139,
     Sigurd: 1177,
     Lyn: 1216,
+    Debug: 100000,
 };
 
 // エンゲージしたときの奥義アイコン
 const EngagedSpecialIcon = {};
+EngagedSpecialIcon[EmblemHero.Debug] = `${g_imageRootPath}Special.png`;
 EngagedSpecialIcon[EmblemHero.None] = `${g_imageRootPath}Special.png`;
 const g_engagedSpecialIconRoot = `${g_skillIconRootPath}EngagedSpecial/`;
 const g_debugEngagedSpecialIconRoot = `${g_debugSkillIconRootPath}EngagedSpecial/`;
@@ -3920,6 +3922,7 @@ const STYLE_TYPE = {
     NONE: -1,
     ASTRA_STORM: 0,
     EMBLEM_LYN: 1,
+    WIND_SWORD: 2,
 }
 
 /**
@@ -3932,6 +3935,11 @@ const SKILL_STYLE_MAP = new Map();
  * @type {Set<number>}
  */
 const CANNOT_MOVE_STYLE_SET = new Set();
+
+/**
+ * @type {Set<number>}
+ */
+const RANGED_STYLE_FOR_MELEE_SET = new Set();
 
 const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
 
