@@ -7456,6 +7456,7 @@ class BattleSimulatorBase {
                 moveStructureToTrashBox(obj);
             }
 
+            unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
         };
         return this.__createCommand(
@@ -7520,6 +7521,7 @@ class BattleSimulatorBase {
             // TODO: 予約しなくて良いのか検討
             targetTile.removeDivineVein();
 
+            unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
         };
         return this.__createCommand(
