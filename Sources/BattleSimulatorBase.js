@@ -11081,7 +11081,7 @@ class BattleSimulatorBase {
         if (add) {
             g_appData.selectAddCurrentItem();
         } else {
-            g_appData.selectCurrentItem();
+            g_appData.selectCurrentItem(button);
         }
         g_appData.__showStatusToAttackerInfo();
 
