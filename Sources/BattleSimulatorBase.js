@@ -11075,7 +11075,7 @@ class BattleSimulatorBase {
         }
     }
 
-    selectItem(targetId, add = false, button = 0) {
+    selectItem(targetId, add = false, button = 0, isDoubleClick = false) {
         this.showItemInfo(targetId);
 
         let tabIndex = this.convertItemIndexToTabIndex(this.vm.currentItemIndex);
@@ -11083,7 +11083,7 @@ class BattleSimulatorBase {
         if (add) {
             g_appData.selectAddCurrentItem();
         } else {
-            g_appData.selectCurrentItem(button);
+            g_appData.selectCurrentItem(button, isDoubleClick);
         }
         g_appData.__showStatusToAttackerInfo();
 

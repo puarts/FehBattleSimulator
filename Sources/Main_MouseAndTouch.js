@@ -37,12 +37,12 @@ let g_dragoverTargetTileForCalcSummary = null;
 
 let g_doubleClickChecker = new DoubleClickChecker();
 
-function selectItemById(id, add = false, toggle = false, button = 0) {
+function selectItemById(id, add = false, toggle = false, button = 0, isDoubleClick = false) {
     if (toggle) {
         g_app.selectItemToggle(id);
     }
     else {
-        g_app.selectItem(id, add, button);
+        g_app.selectItem(id, add, button, isDoubleClick);
     }
 
     // 選択アイテムのタイルを更新
@@ -57,13 +57,16 @@ function findParentTdElement(elem) {
     return currentNode;
 }
 
-function __selectItemById(id, button = 0, isShiftKey = false, isControlKey = false) {
+function __selectItemById(id, button = 0,
+                          isShiftKey = false, isControlKey = false,
+                          isDoubleClick = false) {
+    console.log(`selected id: ${id}`);
     if (isShiftKey) {
         selectItemById(id, true, false);
     } else if (isControlKey) {
         selectItemById(id, false, true);
     } else {
-        selectItemById(id, false, false, button);
+        selectItemById(id, false, false, button, isDoubleClick);
     }
 }
 
@@ -77,6 +80,7 @@ function onItemSelected(event) {
     } else {
         g_doubleClickChecker.reset();
     }
+    let isDoubleClick = isLeftClick && g_doubleClickChecker.isDoubleClicked();
 
     let targetElem = event.target;
     if (targetElem.id === undefined || targetElem.id === "") {
@@ -86,10 +90,10 @@ function onItemSelected(event) {
             __selectItemById(tdElem.id, button, event.shiftKey, event.ctrlKey);
         }
     } else {
-        __selectItemById(targetElem.id, button, event.shiftKey, event.ctrlKey);
+        __selectItemById(targetElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
     }
 
-    if (isLeftClick && g_doubleClickChecker.isDoubleClicked()) {
+    if (isDoubleClick) {
         for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit && !x.isActionDone)) {
             g_app.executeEndActionCommand(unit);
         }
