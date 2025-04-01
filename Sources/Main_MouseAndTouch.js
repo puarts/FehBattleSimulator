@@ -37,12 +37,12 @@ let g_dragoverTargetTileForCalcSummary = null;
 
 let g_doubleClickChecker = new DoubleClickChecker();
 
-function selectItemById(id, add = false, toggle = false, button = 0) {
+function selectItemById(id, add = false, toggle = false, button = 0, isDoubleClick = false) {
     if (toggle) {
         g_app.selectItemToggle(id);
     }
     else {
-        g_app.selectItem(id, add, button);
+        g_app.selectItem(id, add, button, isDoubleClick);
     }
 
     // 選択アイテムのタイルを更新
@@ -57,15 +57,16 @@ function findParentTdElement(elem) {
     return currentNode;
 }
 
-function __selectItemById(id, button = 0) {
-    if (g_keyboardManager.isShiftKeyPressing) {
+function __selectItemById(id, button = 0,
+                          isShiftKey = false, isControlKey = false,
+                          isDoubleClick = false) {
+    console.log(`selected id: ${id}`);
+    if (isShiftKey) {
         selectItemById(id, true, false);
-    }
-    else if (g_keyboardManager.isControlKeyPressing) {
+    } else if (isControlKey) {
         selectItemById(id, false, true);
-    }
-    else {
-        selectItemById(id, false, false, button);
+    } else {
+        selectItemById(id, false, false, button, isDoubleClick);
     }
 }
 
@@ -79,29 +80,25 @@ function onItemSelected(event) {
     } else {
         g_doubleClickChecker.reset();
     }
+    let isDoubleClick = isLeftClick && g_doubleClickChecker.isDoubleClicked();
 
     let targetElem = event.target;
     if (targetElem.id === undefined || targetElem.id === "") {
         let tdElem = findParentTdElement(targetElem);
         if (tdElem != null) {
             // タイルが選択された
-            __selectItemById(tdElem.id, button);
+            __selectItemById(tdElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
         }
     } else {
-        __selectItemById(targetElem.id, button);
+        __selectItemById(targetElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
     }
 
-    if (isLeftClick && g_doubleClickChecker.isDoubleClicked()) {
+    if (isDoubleClick) {
         for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit && !x.isActionDone)) {
             g_app.executeEndActionCommand(unit);
         }
         updateAllUi();
     }
-}
-
-function onMouseDown(event) {
-    g_app.showItemInfo(event.target.id);
-    g_appData.selectCurrentItem();
 }
 
 /***** ドラッグ開始時の処理 *****/
@@ -278,8 +275,12 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                 let currentTile = g_currentTile;
                 const alpha = "a0";
                 if (unit.groupId === UnitGroupType.Ally) {
-                    let tiles = unit.isCannotMoveStyleActive() ?
-                        unit.attackableTilesInCannotMoveStyle : unit.attackableTiles;
+                    let tiles = unit.attackableTiles;
+                    if (unit.isCannotMoveStyleActive()) {
+                        tiles = unit.attackableTilesInCannotMoveStyle;
+                    } else if (unit.isRangedStyleForMeleeActive()) {
+                        tiles = unit.attackableTilesInRangedForMeleeStyle;
+                    }
                     let color = "#feccc5";
                     color = "#ff8888" + alpha;
                     for (let tile of tiles) {
@@ -292,6 +293,9 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                     for (let tile of unit.attackableTilesInCannotMoveStyle) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    }
+                    for (let tile of unit.attackableTilesInRangedForMeleeStyle) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                 }
@@ -381,7 +385,7 @@ function dragoverImplForTargetTile(unit, targetTile) {
             unitPlacedOnTargetTile != null &&
             unit.groupId !== unitPlacedOnTargetTile.groupId;
         if (isThereEnemyOnTile) {
-            let attackTile = findBestActionTile(targetTile, unit.attackRange, unit);
+            let attackTile = findBestActionTile(targetTile, unit.attackRangeOnMapForAttackingUnit, unit);
             g_attackTile = attackTile;
             // 再計算のチェックのためサマリーを計算するタイルを保存しておく
             g_dragoverTargetTileForCalcSummary = targetTile;
@@ -482,7 +486,7 @@ function dropToUnitImpl(unit, dropTargetId) {
         let isSupportEnabled = !g_appData.isSupportActivationDisabled;
         if (isSupportEnabled && isDifferentGroup) {
             // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
-            let bestTile = getBestActionTile(unit, targetTile, unit.attackRange);
+            let bestTile = getBestActionTile(unit, targetTile, unit.attackRangeOnMapForAttackingUnit);
             if (bestTile != null && !unit.isCantoActivating) {
                 g_app.__enqueueAttackCommand(unit, unitPlacedOnTargetTile, bestTile);
                 g_appData.isEnemyActionTriggered = true;
@@ -545,7 +549,7 @@ function dropToUnitImpl(unit, dropTargetId) {
                 let obj = targetTile.obj;
                 if (examinesCanBreak(unit, obj, targetTile)) {
                     // 壊せる壁や施設を破壊
-                    let tile = getBestActionTile(unit, targetTile, unit.attackRange);
+                    let tile = getBestActionTile(unit, targetTile, unit.attackRangeOnMapForAttackingUnit);
                     if (tile != null && !unit.isCantoActivating) {
                         // 破壊対象が施設か天脈かでコマンドを分ける
                         if (targetTile.hasEnemyBreakableDivineVein(unit.groupId)) {

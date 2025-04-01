@@ -138,6 +138,10 @@ function getStatusEffectSkillId(id) {
     return `se_${id}`;
 }
 
+function getStyleSkillId(id) {
+    return `style_${id}`;
+}
+
 const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
 
 const PHYSICAL_WEAPON_TYPE_SET = new Set([

@@ -830,6 +830,9 @@ class AppData extends UnitManager {
                 this.registerSkillInfos(heroInfo);
             }
         }
+        if (this.isDevelopmentMode) {
+            this.emblemHeroOptions.push({ id: EmblemHero.Debug, text: "紋章士デバッグ" });
+        }
     }
     /**
      * @param  {HeroInfo} heroInfo
@@ -1806,10 +1809,15 @@ class AppData extends UnitManager {
         this.setAttackerAndAttackTargetInfo();
     }
 
-    selectCurrentItem() {
+    selectCurrentItem(button, isDoubleClick) {
         let currentItem = this.currentItem;
         for (let item of this.enumerateItems()) {
-            item.isSelected = item === currentItem;
+            let selected = item === currentItem;
+            if (item.isSelected && selected && button !== 2 && !isDoubleClick) {
+                item.isSelected = false;
+            } else {
+                item.isSelected = selected;
+            }
         }
 
         this.setAttackerAndAttackTargetInfo();

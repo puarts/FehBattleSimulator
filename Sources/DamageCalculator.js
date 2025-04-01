@@ -715,7 +715,6 @@ class DamageCalculator {
         let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
 
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
-        fixedAddDamage = this.#updateFixedAddDamagePerAttack(fixedAddDamage, atkUnit, defUnit, context);
 
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
 
@@ -869,9 +868,11 @@ class DamageCalculator {
      * @param {Unit} defUnit
      * @param {DamageCalcContext} context
      */
-    #updateFixedAddDamagePerAttack(fixedAddDamage, atkUnit, defUnit, context) {
+    #getFixedAddDamagePerAttack(atkUnit, defUnit, context) {
+        let fixedAddDamage = 0;
         fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttack;
         atkUnit.battleContext.additionalDamageOfNextAttack = 0;
+        // TODO: 戦闘開始のタイミングに移動させる
         if (context.isFirstAttack(atkUnit)) {
             fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
         }
@@ -1281,9 +1282,13 @@ class DamageCalculator {
             DamageCalculator.#applyDamageReductionValues(damageReductionValues, defUnit, context);
 
             let currentDamage = 0;
-            normalDamage += atkUnit.battleContext.additionalDamagePerAttack;
-            specialDamage +=
+            let additionalDamagePerAttack =
                 atkUnit.battleContext.additionalDamagePerAttack +
+                this.#getFixedAddDamagePerAttack(atkUnit, defUnit, context);
+            let normalDamageOfThisAttack = normalDamage + additionalDamagePerAttack;
+            let specialDamageOfThisAttack =
+                specialDamage +
+                additionalDamagePerAttack +
                 atkUnit.battleContext.getSpecialAddDamagePerAttack() +
                 atkUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
             if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
@@ -1297,20 +1302,20 @@ class DamageCalculator {
                 damageReductionValues.push(defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack);
                 if (atkUnit.battleContext.isBaneSpecial || atkUnit.battleContext.isBanePerAttack) {
                     // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
-                    if (specialDamage < defUnit.restHp - 1) {
+                    if (specialDamageOfThisAttack < defUnit.restHp - 1) {
                         if (this.isLogEnabled) {
                             let message = `${atkUnit.nameWithGroup}の瞬殺効果が発動`;
                             this.writeDebugLog(message);
                             this.writeSimpleLog(message);
                         }
-                        specialDamage = defUnit.restHp - 1;
+                        specialDamageOfThisAttack = defUnit.restHp - 1;
                     }
                 }
                 let atkSpecialCountBefore = atkUnit.tmpSpecialCount
                 let defSpecialCountBefore = defUnit.tmpSpecialCount
                 currentDamage = this.__calcUnitAttackDamage(
                     defUnit, atkUnit,
-                    specialDamage,
+                    specialDamageOfThisAttack,
                     damageReductionRatiosAfterNeutralization,
                     damageReductionRatiosByDefenderSpecial,
                     damageReductionRatiosByNonDefenderSpecial,
@@ -1358,18 +1363,18 @@ class DamageCalculator {
                 let defSpecialCountBefore = defUnit.tmpSpecialCount
                 if (atkUnit.battleContext.isBanePerAttack) {
                     // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
-                    if (normalDamage < defUnit.restHp - 1) {
+                    if (normalDamageOfThisAttack < defUnit.restHp - 1) {
                         if (this.isLogEnabled) {
                             let message = `${atkUnit.nameWithGroup}の瞬殺効果が発動`;
                             this.writeDebugLog(message);
                             this.writeSimpleLog(message);
                         }
-                        normalDamage = defUnit.restHp - 1;
+                        normalDamageOfThisAttack = defUnit.restHp - 1;
                     }
                 }
                 currentDamage = this.__calcUnitAttackDamage(
                     defUnit, atkUnit,
-                    normalDamage,
+                    normalDamageOfThisAttack,
                     damageReductionRatiosAfterNeutralization,
                     damageReductionRatiosByDefenderSpecial,
                     damageReductionRatiosByNonDefenderSpecial,

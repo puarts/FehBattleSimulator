@@ -1588,7 +1588,7 @@ class BattleMap {
     }
 
     *enumerateAttackableTiles(attackerUnit, targetUnitTile) {
-        for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(targetUnitTile, attackerUnit.attackRange)) {
+        for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(targetUnitTile, attackerUnit.attackRangeOnMapForAttackingUnit)) {
             if (tile.isMovableTileForUnit(attackerUnit)) {
                 yield tile;
             }
@@ -2542,7 +2542,7 @@ class BattleMap {
             if (ignoreTileFunc != null && ignoreTileFunc(neighborTile)) {
                 continue;
             }
-            for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, attackerUnit.attackRange)) {
+            for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, attackerUnit.attackRangeOnMapForAttackingUnit)) {
                 if (doneTiles.includes(tile)) {
                     continue;
                 }
@@ -2564,29 +2564,37 @@ class BattleMap {
 
         let doneTiles = [];
         for (let neighborTile of this.enumerateMovableTilesForEnemyThreat(unit, true, true, true)) {
-            for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, unit.attackRange)) {
-                if (doneTiles.includes(tile)) {
-                    continue;
-                }
+            let attackRanges = [unit.attackRangeOnMapForAttackingUnit];
+            // かぜの剣スタイルは2距離で脅威度を計算
+            if (unit.canActivateStyle() && unit.hasRangedStyleForMelee()) {
+                attackRanges.push(2);
+            }
+            for (let attackRange of attackRanges) {
+                for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, attackRange)) {
+                    if (doneTiles.includes(tile)) {
+                        continue;
+                    }
 
-                doneTiles.push(tile);
-                switch (unit.groupId) {
-                    case UnitGroupType.Ally:
-                        if (!tile.threateningAllies.includes(unit)) {
-                            tile.threateningAllies.push(unit);
-                        }
-                        tile.increaseDangerLevel();
-                        break;
-                    case UnitGroupType.Enemy:
-                        if (!tile.threateningEnemies.includes(unit)) {
-                            tile.threateningEnemies.push(unit);
-                        }
-                        tile.increaseAllyDangerLevel();
-                        break;
+                    doneTiles.push(tile);
+                    switch (unit.groupId) {
+                        case UnitGroupType.Ally:
+                            if (!tile.threateningAllies.includes(unit)) {
+                                tile.threateningAllies.push(unit);
+                            }
+                            tile.increaseDangerLevel();
+                            break;
+                        case UnitGroupType.Enemy:
+                            if (!tile.threateningEnemies.includes(unit)) {
+                                tile.threateningEnemies.push(unit);
+                            }
+                            tile.increaseAllyDangerLevel();
+                            break;
+                    }
                 }
             }
         }
-        if (unit.canActivateStyle()) {
+        // リンスタイル
+        if (unit.canActivateStyle() && unit.hasCannotMoveStyle()) {
             let env = new BattleMapEnv(this, unit);
             env.setName("脅威度判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
             let tiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
@@ -2607,6 +2615,7 @@ class BattleMap {
         unit.movableTilesIgnoringWarpBubble = [];
         unit.attackableTiles = [];
         unit.attackableTilesInCannotMoveStyle = [];
+        unit.attackableTilesInRangedForMeleeStyle = [];
         unit.assistableTiles = [];
         unit.teleportOnlyTiles = [];
 
@@ -2643,8 +2652,14 @@ class BattleMap {
                                 unit.attackableTilesInCannotMoveStyle.push(attackableTile);
                             }
                         }
+                    } else if (unit.isRangedStyleForMeleeActive()) {
+                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, 2)) {
+                            if (!unit.attackableTilesInRangedForMeleeStyle.includes(attackableTile)) {
+                                unit.attackableTilesInRangedForMeleeStyle.push(attackableTile);
+                            }
+                        }
                     } else {
-                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
+                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRangeOnMapForAttackingUnit)) {
                             if (!unit.attackableTiles.includes(attackableTile)) {
                                 unit.attackableTiles.push(attackableTile);
                             }
@@ -2654,7 +2669,7 @@ class BattleMap {
                     // 敵サイド
                     // 通常・スタイル両方のタイルを更新
                     // 通常時
-                    for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRange)) {
+                    for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRangeOnMapForAttackingUnit)) {
                         if (!unit.attackableTiles.includes(attackableTile)) {
                             unit.attackableTiles.push(attackableTile);
                         }
@@ -2669,6 +2684,15 @@ class BattleMap {
                         for (let attackableTile of attackableTiles) {
                             if (!unit.attackableTilesInCannotMoveStyle.includes(attackableTile)) {
                                 unit.attackableTilesInCannotMoveStyle.push(attackableTile);
+                            }
+                        }
+                    }
+                    if ((unit.hasRangedStyleForMelee && unit.canActivateStyle()) ||
+                        unit.isRangedStyleForMeleeActive()) {
+                        let tiles = this.enumerateTilesInSpecifiedDistanceFrom(tile, 2);
+                        for (let attackableTile of tiles) {
+                            if (!unit.attackableTilesInRangedForMeleeStyle.includes(attackableTile)) {
+                                unit.attackableTilesInRangedForMeleeStyle.push(attackableTile);
                             }
                         }
                     }
@@ -2724,6 +2748,9 @@ class BattleMap {
                 for (let tile of unit.attackableTilesInCannotMoveStyle) {
                     tile.isAttackableForEnemy = true;
                 }
+                for (let tile of unit.attackableTilesInRangedForMeleeStyle) {
+                    tile.isAttackableForEnemy = true;
+                }
             } else {
                 for (let tile of unit.movableTiles) {
                     tile.isMovableForAlly = true;
@@ -2735,6 +2762,12 @@ class BattleMap {
                 if (g_appData.gameMode === GameMode.SummonerDuels ||
                     unit.isCannotMoveStyleActive()) {
                     for (let tile of unit.attackableTilesInCannotMoveStyle) {
+                        tile.isAttackableForAlly = true;
+                    }
+                }
+                if (g_appData.gameMode === GameMode.SummonerDuels ||
+                    unit.isRangedStyleForMeleeActive()) {
+                    for (let tile of unit.attackableTilesInRangedForMeleeStyle) {
                         tile.isAttackableForAlly = true;
                     }
                 }
@@ -2901,7 +2934,8 @@ class BattleMap {
                     // 危険度の表示
                     additionalInnerText += "<span style='color:#f80;font-size:12px;" + shadowCss + ";'><b>" + tile.allyDangerLevel + "</b></span>";
                 }
-                if (tile.divineVein !== DivineVeinType.None) {
+                if (tile.divineVein !== DivineVeinType.None &&
+                    !g_appData.showDivineVeinImageWithoutBreakable) {
                     let divineString = "";
                     divineString = DIVINE_VEIN_STRINGS[tile.divineVein];
                     let divineColor = divineVeinColor(tile.divineVeinGroup);
@@ -3021,7 +3055,7 @@ class BattleMap {
 
             // 敵の天脈の色設定
             if (tile.hasBreakableDivineVein() ||
-                g_appData.showDivineVeinImageWithoutBreakable === true) {
+                g_appData.showDivineVeinImageWithoutBreakable) {
                 let divineVeinTag = getDivineVeinTag(tile.divineVein);
                 divineVeinTag.classList.add('map-divine-vein-img');
                 if (tile.divineVein === DivineVeinType.Ice &&

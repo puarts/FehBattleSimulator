@@ -3781,6 +3781,9 @@ Special.TrueLunarFlash = 3214; // 真月光閃
 PassiveC.PulseOnBlades = 3215; // 追撃の鼓動・刃
 PassiveX.LullEcho = 3216; // 響・凪
 Weapon.RaudrcrabPlus = 3217; // ラウアクラブ
+Weapon.AzureTwinEdge = 3218; // 碧き風空の剣
+Special.TwinStrike = 3219; // ツインストライク
+PassiveA.BlueSkies4 = 3220; // 蒼穹4
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -3847,10 +3850,13 @@ const EmblemHero = {
     Celica: 1139,
     Sigurd: 1177,
     Lyn: 1216,
+    Eirika: 1255,
+    Debug: 100000,
 };
 
 // エンゲージしたときの奥義アイコン
 const EngagedSpecialIcon = {};
+EngagedSpecialIcon[EmblemHero.Debug] = `${g_imageRootPath}Special.png`;
 EngagedSpecialIcon[EmblemHero.None] = `${g_imageRootPath}Special.png`;
 const g_engagedSpecialIconRoot = `${g_skillIconRootPath}EngagedSpecial/`;
 const g_debugEngagedSpecialIconRoot = `${g_debugSkillIconRootPath}EngagedSpecial/`;
@@ -3859,6 +3865,7 @@ EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_engagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Eirika] = `${g_imageRootPath}Special.png`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_imageRootPath}Special.png`;
 // 紋章士アイコン
 // https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
@@ -3920,6 +3927,7 @@ const STYLE_TYPE = {
     NONE: -1,
     ASTRA_STORM: 0,
     EMBLEM_LYN: 1,
+    WIND_SWORD: 2,
 }
 
 /**
@@ -3932,6 +3940,11 @@ const SKILL_STYLE_MAP = new Map();
  * @type {Set<number>}
  */
 const CANNOT_MOVE_STYLE_SET = new Set();
+
+/**
+ * @type {Set<number>}
+ */
+const RANGED_STYLE_FOR_MELEE_SET = new Set();
 
 const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
 

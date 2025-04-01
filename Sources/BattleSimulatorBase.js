@@ -3708,7 +3708,10 @@ class BattleSimulatorBase {
 
         // 切り込みなどの移動系スキル
         let isMoveSkillEnabled = defUnit === result.defUnit;
-        if (isMoveSkillEnabled && atkUnit.isAlive && !atkUnit.isCannotMoveStyleActive()) {
+        if (isMoveSkillEnabled &&
+            atkUnit.isAlive &&
+            !atkUnit.isCannotMoveStyleActive() &&
+            !atkUnit.isRangedStyleForMeleeActive()) {
             this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
         }
 
@@ -7453,6 +7456,7 @@ class BattleSimulatorBase {
                 moveStructureToTrashBox(obj);
             }
 
+            unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
         };
         return this.__createCommand(
@@ -7517,6 +7521,7 @@ class BattleSimulatorBase {
             // TODO: 予約しなくて良いのか検討
             targetTile.removeDivineVein();
 
+            unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
         };
         return this.__createCommand(
@@ -8819,32 +8824,7 @@ class BattleSimulatorBase {
 
     __setAttackableUnitInfo(unit, targetableUnits, acceptTileFunc = null) {
         unit.actionContext.attackableUnitInfos = [];
-        for (let tile of g_appData.map.enumerateMovableTiles(unit, false, false)) {
-            if (acceptTileFunc != null && !acceptTileFunc?.(tile)) {
-                continue;
-            }
-
-            // this.writeDebugLogLine(tile.positionToString() + "から攻撃可能な敵がいるか評価");
-            for (let targetableUnit of targetableUnits) {
-                let dist = calcDistance(tile.posX, tile.posY, targetableUnit.posX, targetableUnit.posY);
-                // this.writeDebugLogLine("- " + tile.positionToString() + "から" + targetableUnit.getNameWithGroup() + "への距離=" + dist);
-                if (dist !== unit.attackRange) {
-                    continue;
-                }
-
-                // this.writeDebugLogLine("- " + tile.positionToString() + "から" + targetableUnit.getNameWithGroup() + "に攻撃可能");
-
-                let info = unit.actionContext.findAttackableUnitInfo(targetableUnit);
-                if (info == null) {
-                    info = new AttackableUnitInfo(targetableUnit);
-                    unit.actionContext.attackableUnitInfos.push(info);
-                }
-
-                if (tile === unit.placedTile || tile.isUnitPlacable(unit)) {
-                    info.tiles.push(tile);
-                }
-            }
-        }
+        this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc);
         // スタイル時
         if (unit.canActivateStyle() && unit.hasCannotMoveStyle()) {
             let env = new BattleMapEnv(this.map, unit);
@@ -8861,6 +8841,41 @@ class BattleSimulatorBase {
                         info.usesStyle = true;
                         info.tiles.push(unit.placedTile);
                     }
+                }
+            }
+        }
+        if (unit.canActivateStyle() && unit.hasRangedStyleForMelee()) {
+            this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, 2, true);
+        }
+    }
+
+    __setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc,
+                                     attackRange = unit.attackRangeOnMapForAttackingUnit,
+                                     usesStyle = false) {
+        for (let tile of g_appData.map.enumerateMovableTiles(unit, false, false)) {
+            if (acceptTileFunc != null && !acceptTileFunc?.(tile)) {
+                continue;
+            }
+
+            // this.writeDebugLogLine(tile.positionToString() + "から攻撃可能な敵がいるか評価");
+            for (let targetableUnit of targetableUnits) {
+                let dist = calcDistance(tile.posX, tile.posY, targetableUnit.posX, targetableUnit.posY);
+                // this.writeDebugLogLine("- " + tile.positionToString() + "から" + targetableUnit.getNameWithGroup() + "への距離=" + dist);
+                if (dist !== attackRange) {
+                    continue;
+                }
+
+                // this.writeDebugLogLine("- " + tile.positionToString() + "から" + targetableUnit.getNameWithGroup() + "に攻撃可能");
+
+                let info = unit.actionContext.findAttackableUnitInfo(targetableUnit);
+                if (info == null) {
+                    info = new AttackableUnitInfo(targetableUnit);
+                    unit.actionContext.attackableUnitInfos.push(info);
+                }
+
+                if (tile === unit.placedTile || tile.isUnitPlacable(unit)) {
+                    info.tiles.push(tile);
+                    info.usesStyle = usesStyle;
                 }
             }
         }
@@ -11060,7 +11075,7 @@ class BattleSimulatorBase {
         }
     }
 
-    selectItem(targetId, add = false, button = 0) {
+    selectItem(targetId, add = false, button = 0, isDoubleClick = false) {
         this.showItemInfo(targetId);
 
         let tabIndex = this.convertItemIndexToTabIndex(this.vm.currentItemIndex);
@@ -11068,7 +11083,7 @@ class BattleSimulatorBase {
         if (add) {
             g_appData.selectAddCurrentItem();
         } else {
-            g_appData.selectCurrentItem();
+            g_appData.selectCurrentItem(button, isDoubleClick);
         }
         g_appData.__showStatusToAttackerInfo();
 

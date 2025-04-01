@@ -14393,6 +14393,13 @@ class DamageCalculatorWrapper {
             if (defUnit.battleContext.canCounterattackToAllDistance) return true;
             // 条件C: 敵の射程が自分と敵の距離と同じ
             if (defUnit.attackRange === atkUnit.distance(defUnit)) return true;
+        } else if (atkUnit.isRangedStyleForMeleeActive()) {
+            // 条件A: 敵が1距離の重装
+            if (defUnit.moveType === MoveType.Armor && defUnit.isMeleeWeaponType()) return true;
+            // 条件B: 敵が全距離反撃を持つ
+            if (defUnit.battleContext.canCounterattackToAllDistance) return true;
+            // 条件C: 敵の射程が自分と敵の距離と同じ
+            if (defUnit.attackRange === atkUnit.distance(defUnit)) return true;
         } else {
             if (atkUnit.attackRange === defUnit.attackRange) {
                 return true;
