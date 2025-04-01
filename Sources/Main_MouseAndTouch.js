@@ -549,7 +549,7 @@ function dropToUnitImpl(unit, dropTargetId) {
                 let obj = targetTile.obj;
                 if (examinesCanBreak(unit, obj, targetTile)) {
                     // 壊せる壁や施設を破壊
-                    let tile = getBestActionTile(unit, targetTile, unit.attackRange);
+                    let tile = getBestActionTile(unit, targetTile, unit.attackRangeOnMapForAttackingUnit);
                     if (tile != null && !unit.isCantoActivating) {
                         // 破壊対象が施設か天脈かでコマンドを分ける
                         if (targetTile.hasEnemyBreakableDivineVein(unit.groupId)) {
