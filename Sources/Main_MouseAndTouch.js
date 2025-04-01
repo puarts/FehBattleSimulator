@@ -87,7 +87,7 @@ function onItemSelected(event) {
         let tdElem = findParentTdElement(targetElem);
         if (tdElem != null) {
             // タイルが選択された
-            __selectItemById(tdElem.id, button, event.shiftKey, event.ctrlKey);
+            __selectItemById(tdElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
         }
     } else {
         __selectItemById(targetElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
