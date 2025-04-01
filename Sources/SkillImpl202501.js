@@ -21,8 +21,7 @@
 
 // Azure Twin Edge
 {
-    // let skillId = Weapon.AzureTwinEdge;
-    let skillId = Weapon.DevSword1;
+    let skillId = Weapon.AzureTwinEdge;
     // Mt: 16
     // Rng: 1
     // Accelerates Special trigger (cooldown count-1).
@@ -69,8 +68,7 @@
 
 // Twin Strike
 {
-    // let skillId = Special.TwinStrike;
-    let skillId = Special.DevSpecial3;
+    let skillId = Special.TwinStrike;
     setSpecialCount(3);
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
