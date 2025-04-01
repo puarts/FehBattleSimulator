@@ -1390,6 +1390,9 @@ class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode extends 
     }
 }
 
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE =
+    n => new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(n);
+
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

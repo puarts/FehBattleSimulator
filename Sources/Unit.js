@@ -5095,11 +5095,8 @@ class Unit extends BattleMapElement {
         yield* this.enumerateEquippedSkills();
         // 受けているステータス
         yield* this.getStatusEffects().map(getStatusEffectSkillId);
-        // 現在発動しているスタイル
-        let style = this.getCurrentStyle();
-        if (style !== STYLE_TYPE.NONE) {
-            yield getStyleSkillId(style);
-        }
+        // スタイル
+        yield* this.getStyles().map(x => getStyleSkillId(x));
     }
 
     /**

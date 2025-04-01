@@ -1,34 +1,147 @@
 // スキル実装
-// Azure Twin Edge
-// Mt: 16
-// Rng: 1
-// Accelerates Special trigger (cooldown count-1).
-// At start of turn, if unit is within 2 spaces of an ally, grants [Empathyl and the following status to unit and allies within 2 spaces for 1 turn: "grants Special cooldown charge +1 per attack during combat (only highest value applied; does not stack).*
-// If unit initiates combat or if unit is within 2 spaces of an
-// ally, grants bonus to unit's Atk/Spd/Def/Res = number
-// of allies within 3 rows or 3 columns centered on unit x 3,
-// + 5 (max 14), deals damage = 20% of unit's Spd
-// (excluding area-of-effect Specials), reduces damage from foe's first attack by 20% of unit's Spd ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes), and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
-// Unit can use the following (Style] :
 // Wind Sword Style
+{
+    let skillId = getStyleSkillId(STYLE_TYPE.WIND_SWORD);
+    // Unit can attack foes 2 spaces away (unit cannot attack adjacent foes).
+    // Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 1,
+    // foe can counterattack regardless of unit's range,
+    // or foe's Range is the same as the distance between unit and foe.
+    // After-combat movement effects do not occur.
+    // Skill effect's Range is treated as 1, including by skill effects determined by attack Range, like Pavise and Aegis.
+    // This Style can be used only once per turn.
+    RANGED_STYLE_FOR_MELEE_SET.add(STYLE_TYPE.WIND_SWORD);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(EQ_NODE(TARGETS_CURRENT_STYLE_NODE, STYLE_TYPE.WIND_SWORD),
+            // Calculates damage using the lower of foe's Def or Res during combat (excluding area-of-effect Specials).
+            CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
+        ),
+    ));
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
+}
+
+// Azure Twin Edge
+{
+    // let skillId = Weapon.AzureTwinEdge;
+    let skillId = Weapon.DevSword1;
+    // Mt: 16
+    // Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // to unit and allies within 2 spaces for 1 turn:
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants [Empathy] and the following status
+                // "grants Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.Empathy, StatusEffectType.SpecialCooldownChargePlusOnePerAttack),
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat or if unit is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit's Atk/Spd/Def/Res =
+            // number of allies within 3 rows or 3 columns centered on unit x 3, + 5 (max 14),
+            GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
+                ENSURE_MAX_NODE(
+                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                    14
+                ),
+            ),
+            // deals damage = 20% of unit's Spd
+            // (excluding area-of-effect Specials),
+            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
+            // reduces damage from foe's first attack by 20% of unit's Spd
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_PERCENTAGE_OF_TARGETS_STAT_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                20, UNITS_SPD_DURING_COMBAT_NODE),
+            // and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+            NULL_UNIT_FOLLOW_UP_NODE,
+        ),
+    ));
+    // Unit can use the following [Style] :
+    // Wind Sword Style
+    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.WIND_SWORD);
+}
 
 // Twin Strike
-// Boosts damage by 60% of unit's Spd when Special triggers.
-// Unit attacks twice (even if foe initiates combat, unit attacks twice) and neutralizes effects that inflict "Special cooldown charge -X™ on unit during combat.
-// If unit's or foe's Special is ready or triggered before or during this combat, reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+{
+    // let skillId = Special.TwinStrike;
+    let skillId = Special.DevSpecial3;
+    setSpecialCount(3);
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Boosts damage by 60% of unit's Spd when Special triggers.
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_SPD_DURING_COMBAT_NODE)),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Unit attacks twice (even if foe initiates combat, unit attacks twice) and
+        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        // neutralizes effects that inflict "Special cooldown charge -X on unit during combat.
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+    ));
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit's or foe's Special is ready or triggered before or during this combat,
+        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(40),
+        ),
+    ));
+}
 
 // Blue Skies 4
-// Enables [Canto (2)] .
-// If unit initiates combat or is within 2 spaces of an ally, grants Atk/Spd+8 to unit, unit deals +X damage (excluding area-of-effect Specials), and reduces damage
-// from foe's first attack by X during combat (X = number
-// of allies within 3 rows or 3 columns centered on unit x 2, + 2; max 8; "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+{
+    let skillId = PassiveA.BlueSkies4;
+    // Enables [Canto (2)] .
+    enablesCantoN(skillId, 2);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Spd+8 to unit,
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(8, 8, 0, 0),
+            X_NUM_NODE(
+                // unit deals +X damage (excluding area-of-effect Specials),
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
+                // and reduces damage from foe's first attack by X during combat
+                // "first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(READ_NUM_NODE),
+                // (X = number of allies within 3 rows or 3 columns centered on unit x 2, + 2; max 8;
+                ENSURE_MAX_NODE(
+                    ADD_NODE(MULT_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 2), 2),
+                    8
+                ),
+            ),
+        ),
+    ));
+}
 
 // Emblem Effect
-// Enhanced Engaged Special:
-// When Special triggers, boosts damage by unit's max Special cooldown count value x 4 (excluding area-of-effect Specials).
-// If it is unit's first combat initiated by unit or first combat initiated by foe that turn, inflicts Atk-4 on unit and unit attacks twice during combat (triggers only when unit's
-// Range = 1; does not trigger when equipped with an
-// area-of-effect Special).
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Eirika);
+    // Enhanced Engaged Special:
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // When Special triggers,
+        // boosts damage by unit's max Special cooldown count value x 4 (excluding area-of-effect Specials).
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(MULT_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 4)),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // (triggers only when unit's Range = 1; does not trigger when equipped with an area-of-effect Special).
+        IF_NODE(AND_NODE(EQ_NODE(TARGETS_RANGE_NODE, 1), NOT_NODE(HAS_TARGET_AOE_SPECIAL_NODE)),
+            IF_NODE(
+                // If it is unit's first combat initiated by unit or first combat initiated by foe that turn,
+                IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE,
+                // inflicts Atk-4 on unit and
+                INFLICTS_STAT_MINUS_AT_ON_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Atk, 4),
+                // unit attacks twice during combat
+                TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+            ),
+        ),
+    ));
+}
 
 // Arcane Medusa
 {

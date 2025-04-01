@@ -5345,6 +5345,14 @@ class IsTargetsFirstAttackNode extends BoolNode {
 
 const IS_TARGETS_FIRST_ATTACK_NODE = new IsTargetsFirstAttackNode()
 
+class IsFoeFirstAttackNode extends IsTargetsFirstAttackNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const IS_FOE_FIRST_ATTACK_NODE = new IsFoeFirstAttackNode();
+
 class IsTargetsFollowUpOrPotentFollowUpAttackNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -5415,3 +5423,17 @@ class SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode extends SpacesNode {
 
 const SPACES_ADJACENT_TO_ANY_TARGETS_ALLY_WITHIN_N_SPACES_NODE =
     n => new SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode(n);
+
+class TargetsCurrentStyleNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getCurrentStyle();
+        env.debug(`${unit.nameWithGroup}の現在のスタイル: ${ObjectUtil.getKeyName(STYLE_TYPE, result)}`);
+        return result;
+    }
+}
+
+const TARGETS_CURRENT_STYLE_NODE = new TargetsCurrentStyleNode();
