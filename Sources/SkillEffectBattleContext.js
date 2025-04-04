@@ -1597,6 +1597,8 @@ class EffectiveAgainstNode extends BoolNode {
     }
 }
 
+const EFFECTIVE_AGAINST_NODE = n => new EffectiveAgainstNode(n);
+
 /**
  * If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect, Special triggers twice, then reduces damage by N.
  */

@@ -1,4 +1,251 @@
 // スキル実装
+// Tome of Dusk
+{
+    let skillId = Weapon.TomeOfDusk;
+    // Mt: 14
+    // Rng: 2
+    // Enables [Canto (Rem.; Min 1)) .
+    enablesCantoRemPlusMin(skillId, 0, 1);
+    // Accelerates Special trigger (cooldown count-1).
+    // If a Rally or movement Assist skill is used by unit,
+    // grants another action to unit (once per turn).
+    AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+    ));
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+    ));
+
+    // After unit acts (if Canto triggers, after Canto),
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // grants Special cooldown count-1 to unit, and also,
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+        // if the number of times unit has acted on the current turn (not counting Canto) ≤ 2,
+        // for foes with Res ‹ unit's Res+5,
+        // triggers the following effects based on the foe's position: if foe is within 3 rows or 3 columns centered on unit,
+        // inflicts Atk/Res-7 and [Sabotage) on foe; if foe is in cardinal directions of unit,
+        // also inflicts (Gravity) on foe (all effects are inflicted through foes' next actions).
+    ));
+
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // grants bonus to
+    // unit's Atk/Spd/Def/Res = number of foes within 3 rows
+    // or 3 columns centered on unit x 3,
+    // + 5 (max 14),
+    // deals
+    // damage = 20% of unit's Res (including area-of-effect
+    // Specials),
+    // and reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+    // Atk/Res Detect
+    // Inflicts Atk/Res-4 on foe during combat.
+    // If a movement Assist skill (like Reposition,
+    // Shove,
+    // Pivot,
+    // etc.) is used by unit or targets unit,
+    // inflicts (Exposurel on closest foes within 5 spaces of both unit and target ally or unit and targeting ally after movement and foes within 2 spaces of those foes through their next actions.
+    // Inflicts Atk/Res-5 on foes on the map with the [Exposure) effect active and neutralizes bonuses to Atk/Res for those foes during combat.
+
+    // A/R Incite Hone
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // grants Atk/Res+6 and (Incited) to unit and allies within 2 spaces of unit for 1 turn.
+    // Grants bonus to unit's Atk/Res during combat = number
+    // of allies on the map with the [Incited) effect + 2 (excluding unit; max 5).
+
+    // Axe of Dusk
+    // Mt: 16 Rng: 1
+    // Enables [Canto (Dist. +1; Max 4)] .
+    // Accelerates Special trigger (cooldown count-1).
+    // At start of player phase or enemy phase,
+    // inflicts Spd/Def-7,
+    // (Discord),
+    // and Deep Wounds on foes that are within 2 spaces of another foe through their next actions.
+    // If unit initiates combat or if foe's HP ≥ 75% at start of combat,
+    // grants bonus to unit's Atk/Spd/Def/Res = number of foes within 3 rows or 3 columns centered on
+    // unit x 3,
+    // + 5 (max 14),
+    // unit deals + Y damage (Y = total
+    // number of Bonuses and Penalties active on foe and any foe within 2 spaces of foe,
+    // excluding stat bonuses and stat penalties,
+    // x 3; excluding area-of-effect Specials),
+    // and grants Special cooldown charge + 1 to unit per attack during combat (only highest value applied; does not stack),
+    // and also,
+    // if decreasing the Spd difference necessary to make a follow-up attack by 25 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
+    // triggers (Potent Follow X%) during combat (if unit cannot perform follow-up and
+    // attack twice,
+    // X = 80; otherwise,
+    // X = 40).
+
+    // Trample
+    // If unit initiates combat or if foe's HP ≥ 75% at start of combat,
+    // grants Atk/Spd+7 to unit during combat,
+    // and also,
+    // if foe is infantry or armored,
+    // or if any space within 2 spaces of unit has a Divine Vein effect applied or counts as difficult terrain,
+    // excluding impassable terrain,
+    // grants an additional Atk/Spd+3 to unit and unit deals +5 damage during combat (excluding area-of-effect Specials).
+    // If unit initiates combat,
+    // unit can make a follow-up attack before foe's next attack.
+
+    // Tut-Tut!
+    // Unit can move through foes' spaces.
+    // Unit can move to a space within 2 spaces of any ally within 2 spaces of unit. Unit can move to a space within 5 spaces where a Divine Vein effect is applied.
+    // At start of turn,
+    // if unit's HP ≥ 25%,
+    // grants Atk/Spd+6 and
+    // "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% during combat (excluding area-of-effect Specials)" to unit and allies within 2 spaces of unit for 1 turn.
+    // At start of turn,
+    // if unit's HP ≥ 25% after start-of-turn healing and damage effects are applied,
+    // applies (Divine Vein (Haze)] on closest foes' spaces and on each space within 2 spaces of those spaces for 1 turn.
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // inflicts Spd/Def-5
+    // on foe,
+    // deals damage = 20% of unit's Spd (excluding
+    // area-of-effect Specials),
+    // and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+
+    // Baton of Dusk
+    // Mt: 14
+    // Rng:2
+    // Grants Spd+3.
+    // Enables /Canto (Rem.; Min 1)) .
+    // Calculates damage from staff like other weapons.
+    // At start of turn,
+    // if unit's HP ≥ 25%,
+    // grants Atk/Spd+6,
+    // (Treachery),
+    // and "grants Special cooldown charge + 1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // grants bonus to
+    // unit's Atk/Spd/Def/Res = number of foes within 3 rows
+    // or 3 columns centered on unit x 3,
+    // + 5 (max 14),
+    // deals
+    // damage = 20% of unit's Spd (excluding area-of-effect
+    // Specials; if the "calculates damage from staff like other weapons" effect is neutralized,
+    // damage from staff is calculated after combat damage is added),
+    // and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+
+    // Atk/Spd Tidings
+    // If unit initiates combat or is within 3 spaces of an ally,
+    // grants bonus to unit's Atk/Spd = number of allies within
+    // 3 spaces of unit x 2,
+    // + 8 (max 12),
+    // and foe cannot counterattack during combat.
+
+    // Duskstone
+    // Mt: 16
+    // Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+    // If foe's Range = 2,
+    // calculates damage using the lower of foe's
+    // Def or Res.
+    // At start of turn,
+    // and at start of enemy phase (except for in Summoner Duels),
+    // if unit's HP ≥ 25%,
+    // grants [Draconic Hex/ to unit and allies within 2 spaces of unit,
+    // and if unit's Special cooldown count is at its maximum value,
+    // grants Special cooldown count-1 to unit.
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // inflicts penalty on foe's
+    // Atk/Spd/Def/Res = number of foes within 3 rows or 3 columns
+    // centered on unit x 3,
+    // + 5 (max 14; if unit triggers Savior,
+    // value is treated as 14),
+    // unit deals +X damage (excluding area-of-effect Specials),
+    // and reduces damage from foe's attacks by X during combat (excluding area-of-effect Specials;
+    // X = number of allies within 3 spaces of unit x 5; max 15; if unit
+    // triggers Savior,
+    // value is treated as 15),
+    // and also,
+    // if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5,
+    // triggers the following effects during combat: inflicts Special cooldown count+1 on foe before foe's first attack and if foe's first attack triggers the "attacks twice" effect,
+    // inflicts Special cooldown count+1 on foe before foe's second strike as well (in either case,
+    // cannot exceed the foe's maximum Special cooldown).
+    // If unit's HP ≥ 25% at start of combat and unit's Special cooldown count is at its maximum value after combat,
+    // grants Special cooldown count-l to unit after combat.
+    // [Draconic Hex)
+    // Inflicts Atk/Spd/Def/Res-5 on foe during combat and inflicts
+    // penalty on each of those stats = 5 - current penalty on each of
+    // those stats for 1 turn (min 0; calculates each stat penalty independently).
+
+    // Dragon Fang Fire
+    // Boosts damage by 40% of unit's Res when Special triggers.
+    // If a skill compares unit's Res to a foe's or ally's Res,
+    // treats unit's Res as if granted +5.
+    // If unit's Res > foe's Res,
+    // reduces damage from attacks during combat and from area-of-effect Specials (excluding Rokkr
+    // area-of-effect Specials) by percentage = difference between
+    // stats × X (max X x 10%; if from area-of-effect Special,
+    // X = 8 -
+    // current Special cooldown count value; otherwise,
+    // X = 4 - current
+    // Special cooldown count value).
+    // If unit's Special is ready or unit's Special triggered during combat,
+    // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50%.
+    // After combat,
+    // if unit's Special triggered,
+    // applies (Divine Vein (Water)] on target's space and on each space within 2 spaces of target's space for 1 turn.
+
+    // Primordial Boost
+    // Grants HP+5.
+    // If foe initiates combat or if unit's HP ≥ 50% at start of combat,
+    // grants Spd/Def/Res+9 to unit during combat and restores 7 HP
+    // to unit after combat.
+
+{
+    let skillId = getNormalSkillId(Weapon.TailwindShuriken);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.TailwindShuriken);
+    //
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.TailwindShuriken);
+    //
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.SilesseFrost);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
+            GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(6, 6, 0, 0),
+            IF_NODE(EXISTS_UNITS(TARGETS_ALLIES_WITHIN_2_SPACES_NODE(), ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE),
+                TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.SilesseFrost);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.SilesseFrost);
+    //
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
 // Wind Sword Style
 {
     let skillId = getStyleSkillId(STYLE_TYPE.WIND_SWORD);

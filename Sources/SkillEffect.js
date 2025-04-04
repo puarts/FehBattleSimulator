@@ -515,6 +515,8 @@ class CountUnitsNode extends PositiveNumberNode {
     }
 }
 
+const COUNT_UNITS_NODE = unitsNode => new CountUnitsNode(unitsNode);
+
 class CountIfUnitsNode extends PositiveNumberNode {
     /**
      * @param {UnitsNode} unitsNode
@@ -536,6 +538,8 @@ class CountIfUnitsNode extends PositiveNumberNode {
 }
 
 const COUNT_IF_UNITS_NODE = (unitsNode, predNode) => new CountIfUnitsNode(unitsNode, predNode);
+
+const EXISTS_UNITS = (units, pred) => GT_NODE(COUNT_UNITS_NODE(FILTER_UNITS_NODE(units, pred)), 0);
 
 /**
  * ターゲットを補助ユニット、補助を受けるユニットにそれぞれ設定して引数のUnitsNodeを評価する

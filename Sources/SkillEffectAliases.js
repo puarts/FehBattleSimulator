@@ -396,6 +396,12 @@ function enablesCantoRemPlus(skillId, n) {
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoRemNode(n));
 }
 
+/**
+ * 再移動残り+n（最低m）を設定
+ * @param skillId
+ * @param {number} n
+ * @param {number} min
+ */
 function enablesCantoRemPlusMin(skillId, n, min) {
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => ENSURE_MIN_NODE(new CantoRemNode(n), min));

@@ -7344,17 +7344,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.8, enemyUnit);
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.SilesseFrost] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-
-                let partners = self.__getPartnersInSpecifiedRange(targetUnit, 2);
-                if (partners.length > 0) {
-                    targetUnit.battleContext.attackCount = 2;
-                }
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.Audhulma] = (targetUnit, enemyUnit) => {
             if (!targetUnit.isWeaponSpecialRefined) return;
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage === 100) {
