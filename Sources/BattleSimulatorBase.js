@@ -4689,6 +4689,7 @@ class BattleSimulatorBase {
             unit.isCombatDone = false;
             unit.isSupportDone = false;
             unit.isSupportedDone = false;
+            unit.actionCount = 0;
         }
     }
 
@@ -7299,6 +7300,7 @@ class BattleSimulatorBase {
         let self = this;
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
         let func = function () {
+            unit.actionCount++;
             if (unit.isActionDone) {
                 // TODO: 動作確認をする
                 let env = new BattleSimulatorBaseEnv(this, unit);
@@ -7428,6 +7430,7 @@ class BattleSimulatorBase {
         }
         let self = this;
         let func = function () {
+            unit.actionCount++;
             if (unit.isActionDone) {
                 // 移動時にトラップ発動した場合は行動終了している
                 // その場合でも天脈は発動する
@@ -7777,6 +7780,9 @@ class BattleSimulatorBase {
             }
 
             if (!unit.isActionDone && endAction) {
+                if (!unit.isCantoActivating) {
+                    unit.actionCount++;
+                }
                 unit.endAction();
                 unit.deactivateCanto();
                 unit.applyEndActionSkills(isCantoEndAction);
@@ -7814,6 +7820,7 @@ class BattleSimulatorBase {
         }
         let self = this;
         let func = function () {
+            attackerUnit.actionCount++;
             if (attackerUnit.isActionDone) {
                 // 移動時にトラップ発動した場合は行動終了している
                 return;

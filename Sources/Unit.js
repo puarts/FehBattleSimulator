@@ -560,6 +560,8 @@ class Unit extends BattleMapElement {
         this.isSupportDone = false;
         // このターン補助を行われたか
         this.isSupportedDone = false;
+        // このターンの行動回数
+        this.actionCount = 0;
 
         this.isBonusChar = false;
 
@@ -1420,6 +1422,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isStyleActivatedInThisTurn)
             + ValueDelimiter + boolToInt(this.isAttackedDone)
             + ValueDelimiter + this.restSpecialSkillAvailableTurn
+            + ValueDelimiter + this.actionCount
             ;
     }
 
@@ -1569,6 +1572,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isStyleActivatedInThisTurn = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isAttackedDone = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restSpecialSkillAvailableTurn = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.actionCount = Number(values[i]); ++i; }
     }
 
 
