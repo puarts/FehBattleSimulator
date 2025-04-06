@@ -6716,14 +6716,14 @@ class BattleSimulatorBase {
             let chaseTarget = null;
             if (evalUnit.hasWeapon) {
                 for (let allyUnit of enemyUnits) {
-                    using_(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ` + time + " ms")), () => {
+                    using_(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ${time} ms`)), () => {
                         let turnRange = g_appData.map.calculateTurnRange(evalUnit, allyUnit);
                         if (turnRange < 0) {
                             // 攻撃不可
                             return;
                         }
 
-                        this.writeDebugLogLine("■" + evalUnit.getNameWithGroup() + "から" + allyUnit.getNameWithGroup() + "への追跡優先度計算:");
+                        this.writeDebugLogLine(`■${evalUnit.getNameWithGroup()}から${allyUnit.getNameWithGroup()}への追跡優先度計算:`);
 
                         // todo: 攻撃対象の陣営の紋章バフは無効にしないといけない。あと周囲の味方の数で発動する系は必ず発動させないといけない
                         // 防御系奥義によるダメージ軽減も無視しないといけない
@@ -6749,7 +6749,7 @@ class BattleSimulatorBase {
                         if (priorityValue > maxPriorityValue) {
                             maxPriorityValue = priorityValue;
                             chaseTarget = allyUnit;
-                            this.writeDebugLogLine("追跡対象を" + chaseTarget.getNameWithGroup() + "に更新");
+                            this.writeDebugLogLine(`追跡対象を${chaseTarget.getNameWithGroup()}に更新`);
                         }
                     });
                 }
