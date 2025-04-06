@@ -2499,7 +2499,11 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // if unit's HP = 100% or any foe is within 3 columns or 3 rows centered on unit,
-        IF_NODE(OR_NODE(IS_UNITS_HP_GTE_100_PERCENT_AT_START_OF_TURN_NODE, IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_FOE_NODE),
+        IF_NODE(OR_NODE(
+                IS_UNITS_HP_GTE_100_PERCENT_AT_START_OF_TURN_NODE,
+                EXISTS_UNITS(TARGETS_FOES_ON_MAP_NODE,
+                    IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE),
+            ),
             // grants Atk+6,
             GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 0, 0, 0),
             // "unit can move 1 extra space (that turn only, does not stack)," and
