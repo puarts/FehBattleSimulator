@@ -1414,7 +1414,10 @@
     // ally can move to a space within 2 spaces of unit,
     // even if that movement exceeds the Canto distance limit.
     WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
-        SPACES_IF_NODE(IS_TARGET_WITHIN_6_SPACES_OF_SKILL_OWNER_NODE,
+        SPACES_IF_NODE(
+            AND_NODE(
+                IS_TARGET_WITHIN_6_SPACES_OF_SKILL_OWNER_NODE,
+                HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage)),
             SPACES_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(2),
         ),
     );
