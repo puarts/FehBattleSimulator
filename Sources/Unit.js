@@ -2532,6 +2532,9 @@ class Unit extends BattleMapElement {
         if (this.isCannotMoveStyleActive()) {
             return 2;
         }
+        if (this.isRangedStyleForMeleeActive()) {
+            return 1;
+        }
 
         return calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);
     }
