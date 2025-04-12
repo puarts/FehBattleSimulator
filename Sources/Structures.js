@@ -708,7 +708,7 @@ class DefDarkShrine extends DefenceStructureBase {
         return "防衛・黒の封印祠";
     }
     get description() {
-        return `ターン開始時、敵軍内で最も守備+魔防の合計値が高い敵の守備、魔防-${this.amount}(敵の次回行動終了まで)`;
+        return `ターン開始時、敵軍内で最も守備+魔防の合計値が高い敵の守備、魔防${this.amount}(敵の次回行動終了まで)`;
     }
     get amount() {
         return Number(this.level) + 1;
@@ -727,7 +727,10 @@ class OfDarkShrine extends OffenceStructureBase {
     }
     get description() {
         let value = - 1 - Number(this.level);
-        return `ターン開始時、敵軍内で最も守備+魔防の合計値が高い敵の守備、魔防-${value}(敵の次回行動終了まで)`;
+        return `ターン開始時、敵軍内で最も守備+魔防の合計値が高い敵の守備、魔防${value}(敵の次回行動終了まで)`;
+    }
+    get amount() {
+        return Number(this.level) + 1;
     }
 }
 
