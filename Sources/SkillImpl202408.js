@@ -156,7 +156,7 @@
     WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.addValue(skillId,
         new SkillEffectNode(
             new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
-                NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+                NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
                 new GrantsStatusEffectsOnTargetOnMapNode(
                     StatusEffectType.NeutralizesFoesBonusesDuringCombat,
                     StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent
@@ -1886,41 +1886,46 @@
     );
 }
 
-// 速さ守備の看破
+// 看破
 {
-    let skillId = PassiveB.SpdDefDetect;
-    let nodeFunc = () => new SkillEffectNode(
-        // If a movement Assist skill (like Reposition, Shove, Pivot, etc.) is used by unit or targets unit,
-        // inflicts【Exposure】on closest foes within 5 spaces of both unit and target ally or unit and targeting ally after movement and foes within 2 spaces of those foes through their next actions.
-        new ForEachUnitNode(
-            CLOSEST_FOES_WITHIN5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN2_SPACES_OF_THOSE_FOES_NODE,
-            TRUE_NODE,
-            new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Exposure),
-        ),
-    );
-    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc)
-    AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc)
+    let setSkill = (skillId, statsFlags) => {
+        let nodeFunc = () => new SkillEffectNode(
+            // If a movement Assist skill (like Reposition, Shove, Pivot, etc.) is used by unit or targets unit,
+            // inflicts【Exposure】on closest foes within 5 spaces of both unit and target ally or unit and targeting ally after movement and foes within 2 spaces of those foes through their next actions.
+            new ForEachUnitNode(
+                CLOSEST_FOES_WITHIN_5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE,
+                TRUE_NODE,
+                new InflictsStatusEffectsOnTargetOnMapNode(StatusEffectType.Exposure),
+            ),
+        );
+        AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc)
+        AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc)
 
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // on the map with the 【Exposure】effect active and
-        IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
-            // Inflicts Spd/Def-5 on foes
-            new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
-        ),
-    ));
+        // noinspection JSCheckFunctionSignatures
+        WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // on the map with the 【Exposure】effect active and
+            IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
+                // Inflicts Spd/Def-5 on foes
+                new InflictsStatsMinusOnFoeDuringCombatNode(...statsFlags.map(f => f ? 5 : 0)),
+            ),
+        ));
 
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // on the map with the 【Exposure】effect active and
-        IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
-            // neutralizes bonuses to Spd/Def for those foes during combat.
-            new NeutralizesFoesBonusesToStatsDuringCombatNode(false, true, true, false),
-        ),
-    ));
+        WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // on the map with the 【Exposure】effect active and
+            IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
+                // neutralizes bonuses to Spd/Def for those foes during combat.
+                new NeutralizesFoesBonusesToStatsDuringCombatNode(...statsFlags),
+            ),
+        ));
 
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // Inflicts Spd/Def-4 on foe during combat.
-        new InflictsStatsMinusOnFoeDuringCombatNode(0, 4, 4, 0),
-    ));
+        // noinspection JSCheckFunctionSignatures
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // Inflicts Spd/Def-4 on foe during combat.
+            new InflictsStatsMinusOnFoeDuringCombatNode(...statsFlags.map(f => f ? 4 : 0)),
+        ));
+    };
+    setSkill(PassiveB.AtkResDetect, [true, false, false, true]);
+    setSkill(PassiveB.SpdDefDetect, [false, true, true, false]);
 }
 
 // 赤の呪い
@@ -2233,7 +2238,7 @@
         // At start of turn,
         new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE,
             // neutralizes any【Penalty】 effects on unit and allies within 2 spaces of unit (excluding penalties inflicted at the start of the same turn),
-            NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+            NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
             // and deals 1 damage to unit and allies within 2 spaces of unit.
             new DealsDamageToTargetAtStartOfTurnNode(1),
         ),
@@ -3017,7 +3022,7 @@ function setDiscord(skillId, statsRatios) {
                     StatusEffectType.WarpBubble,
                 ),
                 // neutralizes any【Penalty】,
-                NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+                NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
                 // and restores 30 HP.
                 new RestoreTargetHpNode(30),
             ),
@@ -5771,7 +5776,7 @@ function setDiscord(skillId, statsRatios) {
                     StatusEffectType.ResonantBlades,
                     StatusEffectType.MobilityIncreased,
                 ),
-                NEUTRALIZES_ANY_PENALTY_ON_UNIT_NODE,
+                NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
             )
         )
     )

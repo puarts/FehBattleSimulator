@@ -3787,7 +3787,7 @@ PassiveA.BlueSkies4 = 3220; // 蒼穹4
 Weapon.TailwindShuriken = 1523;
 Weapon.TomeOfDusk = 3221; // 戦神の闇夜の書
 PassiveB.AtkResDetect = 3222; // 攻撃魔防の看破
-PassiveC.ARInciteHone = 3223; // 攻魔鼓舞•奮激
+PassiveC.ARInciteHone = 3223; // 攻魔鼓舞・奮激
 Weapon.AxeOfDusk = 3224; // 戦神の闇夜の斧
 PassiveA.Trample = 3225; // 見下す者
 PassiveB.TutTut = 3226; // 仕方がない子ね
@@ -3799,8 +3799,7 @@ PassiveA.PrimordialBoost = 3231; // 風地水の命脈
 Weapon.TomeOfFury = 3232; // 激情の炎の青
 Weapon.ProudSpear = 3233; // 矜持の槍
 Weapon.TaciturnAxe = 3234; // 寡黙なる忠義の斧
-// TODO: 修正する
-Weapon.ZhanShenNoanYeNojian = 3234; // 戦神の闇夜の剣
+Weapon.SwordOfDusk = 3234; // 戦神の闇夜の剣
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

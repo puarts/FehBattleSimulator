@@ -74,6 +74,7 @@ const Hero = {
     HarmonizedMarisa: 1230,
     DuoRhea: 1237,
     HarmonizedPlumeria: 1248,
+    DuoCorrinM: 1259,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -353,6 +354,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat, ["FoeSpdDifferenceIncrease.webp", "戦闘中、敵の追撃の速さ条件+10", "戦闘中、敵の追撃の速さ条件+10"]],
     [StatusEffectType.PotentFollow, ["PotentFollow.webp", "神速追撃", "条件を満たすと、追撃の直後に、さらに追撃が発動"]],
     [StatusEffectType.Salvage, ["Salvage.webp", "七難即滅", "【再移動（2）】発動可能、再移動制限を緩和する"]],
+    [StatusEffectType.DraconicHex, ["DraconicHex.webp", "竜呪", "敵の攻速守魔-5、さらに5-敵各能力の弱化だけ減"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

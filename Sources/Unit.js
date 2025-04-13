@@ -5103,7 +5103,9 @@ class Unit extends BattleMapElement {
         // 受けているステータス
         yield* this.getStatusEffects().map(getStatusEffectSkillId);
         // スタイル
-        yield* this.getStyles().map(x => getStyleSkillId(x));
+        yield* this.getStyles().map(getStyleSkillId);
+        // 比翼・双界スキル
+        yield getDuoOrHarmonizedSkillId(this.heroIndex);
     }
 
     /**

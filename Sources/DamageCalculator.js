@@ -1199,23 +1199,10 @@ class DamageCalculator {
             atkUnit.battleContext.initContextPerAttack();
             defUnit.battleContext.initContextPerAttack();
 
-            // TODO: リファクタリング
             let isSecondStrike = i === 1; // FirstStrike: i === 0
             if (isFirstAttack && isSecondStrike) {
-                // defUnitの奥義カウント変動
-                let defCount = defUnit.tmpSpecialCount -
-                    // TODO: リファクタリング。メソッドを作成する。
-                    defUnit.battleContext.specialCountReductionBeforeSecondFirstAttacksByEnemy;
-                let isChanged = defUnit.battleContext.specialCountReductionBeforeSecondFirstAttacksByEnemy !== 0;
-                if (isChanged) {
-                    // let atkLogClass = atkUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
-                    let defLogClass = defUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
-                    this.writeSimpleLog(`【<span class="${defLogClass}">奥義カウント(${defUnit.groupChar})</span>】
-                                             <span class="log-special">${defCount}</span> = 
-                                             ${defUnit.tmpSpecialCount} -
-                                             ${defUnit.battleContext.specialCountReductionBeforeSecondFirstAttacksByEnemy}`);
-                }
-                defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
+                this.applySpecialCountChangeAmountBeforeSecondStrike(atkUnit);
+                this.applySpecialCountChangeAmountBeforeSecondStrike(defUnit);
             }
 
             // 攻撃奥義発動可能状態で実際に奥義が発動できる
@@ -1418,6 +1405,21 @@ class DamageCalculator {
         }
 
         return totalDamage;
+    }
+
+    applySpecialCountChangeAmountBeforeSecondStrike(unit) {
+        let count =
+            unit.tmpSpecialCount - unit.battleContext.getSpecialCountChangeAmountBeforeSecondStrikeAttack();
+        let isChanged = unit.battleContext.isChangedSpecialCountBeforeSecondStrike();
+        if (isChanged) {
+            let logClass = unit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
+            this.writeSimpleLog(`【<span class="${logClass}">奥義カウント(${unit.groupChar})</span>】
+                                             <span class="log-special">${count}</span> = 
+                                             ${unit.tmpSpecialCount} +
+                                             ${unit.battleContext.specialCountIncreaseBeforeSecondStrike} -
+                                             ${unit.battleContext.specialCountReductionBeforeSecondStrikeByEnemy}`);
+        }
+        unit.tmpSpecialCount = MathUtil.ensureMinMax(count, 0, unit.maxSpecialCount);
     }
 
     #getDamageReductionRatiosBySpecial(damageReductionRatiosByNonDefenderSpecial, defUnit, context) {

@@ -142,6 +142,10 @@ function getStyleSkillId(id) {
     return `style_${id}`;
 }
 
+function getDuoOrHarmonizedSkillId(id) {
+    return `duo-or-harmonized_${id}`;
+}
+
 const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
 
 const PHYSICAL_WEAPON_TYPE_SET = new Set([
@@ -1302,6 +1306,7 @@ const StatusEffectType = {
     IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat: 77, // 戦闘中、敵の追撃の速さ条件+10
     PotentFollow: 78, // 神速追撃
     Salvage: 79, // 七難即滅
+    DraconicHex: 80, // 竜呪
     // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // POSITIVE_STATUS_EFFECT_ARRAY, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1334,6 +1339,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Salvage,
 // 赤の呪い
     StatusEffectType.Anathema,
+    // 竜呪
+    StatusEffectType.DraconicHex,
 // 強化ダメージ+
     StatusEffectType.Treachery,
 // 敵弱化ダメージ+

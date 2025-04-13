@@ -691,8 +691,12 @@ class DamageCalculatorWrapper {
         self.__selectReferencingResOrDef(atkUnit, defUnit);
         self.__selectReferencingResOrDef(defUnit, atkUnit);
 
+        // 周囲の味方（適用後）
         self.__applySkillEffectFromAlliesAfterOtherSkills(atkUnit, defUnit, calcPotentialDamage, damageType);
         self.__applySkillEffectFromAlliesAfterOtherSkills(defUnit, atkUnit, calcPotentialDamage, damageType);
+        // 周囲の敵（適用後）
+        self.__applySkillEffectFromEnemyAlliesAfterOtherSkills(atkUnit, defUnit, calcPotentialDamage, damageType);
+        self.__applySkillEffectFromEnemyAlliesAfterOtherSkills(defUnit, atkUnit, calcPotentialDamage, damageType);
 
         // 戦闘開始後ダメージ決定後に評価されるスキル効果
         this.combatPhase = NodeEnv.COMBAT_PHASE.AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED;
@@ -10519,6 +10523,32 @@ class DamageCalculatorWrapper {
                         break;
                 }
             }
+        }
+    }
+
+    __applySkillEffectFromEnemyAlliesAfterOtherSkills(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
+        let disablesSkillsFromEnemyAlliesInCombat = false;
+        if (enemyUnit) {
+            if (enemyUnit.hasStatusEffect(StatusEffectType.Feud) ||
+                targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+                disablesSkillsFromEnemyAlliesInCombat = true;
+            }
+        }
+        // enemyAllyにはenemyUnitも含まれる
+        for (let enemyAlly of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit, true)) {
+            let isEnemyAllyNotEnemy = enemyAlly !== enemyUnit;
+            if (disablesSkillsFromEnemyAlliesInCombat && isEnemyAllyNotEnemy) {
+                continue;
+            }
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAlly)) {
+                continue;
+            }
+
+            let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
+            env.setName('周囲の敵からのスキル効果（適用後）').setLogLevel(getSkillLogLevel())
+                .setDamageType(damageType).setCombatPhase(this.combatPhase);
+            WHEN_INFLICTS_EFFECTS_TO_FOES_AFTER_OTHER_SKILLS_HOOKS.evaluateWithUnit(enemyAlly, env);
         }
     }
 
