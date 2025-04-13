@@ -7490,6 +7490,9 @@ class BattleSimulatorBase {
             } else {
                 moveStructureToTrashBox(obj);
             }
+            if (unit.isStyleActive) {
+                unit.isStyleActivatedInThisTurn = true;
+            }
 
             unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
@@ -7555,6 +7558,9 @@ class BattleSimulatorBase {
 
             // TODO: 予約しなくて良いのか検討
             targetTile.removeDivineVein();
+            if (unit.isStyleActive) {
+                unit.isStyleActivatedInThisTurn = true;
+            }
 
             unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
