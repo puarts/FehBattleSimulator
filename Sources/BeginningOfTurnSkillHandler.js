@@ -116,14 +116,16 @@ class BeginningOfTurnSkillHandler {
         }
     }
 
-    applyReservedStateForAllUnitsOnMap(isBeginningOfTurn = true) {
+    applyReservedStateForAllUnitsOnMap(isBeginningOfTurn = true, applyDivineVein = true) {
         for (let unit of this._unitManager.enumerateAllUnitsOnMap()) {
             if (unit.isDead) {
                 continue;
             }
             unit.applyReservedState(isBeginningOfTurn);
         }
-        this.map.applyReservedDivineVein();
+        if (applyDivineVein) {
+            this.map.applyReservedDivineVein();
+        }
     }
 
     /**

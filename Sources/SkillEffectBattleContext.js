@@ -245,6 +245,7 @@ class IsUnitsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
 }
 
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpGteNPercentAtStartOfCombatNode(25);
+const IS_UNITS_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpGteNPercentAtStartOfCombatNode(50);
 
 class IsUnitsHpLteNPercentAtStartOfCombatNode extends PercentageCondNode {
     evaluate(env) {
@@ -391,6 +392,8 @@ const UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffec
         env.debug(`${unit.nameWithGroup}は絶対追撃: ${unit.battleContext.followupAttackPriorityIncrement}`);
     }
 }();
+
+const FOE_SUFFERS_GUARANTEED_FOLLOW_UP_ATTACKS_DURING_COMBAT = UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE;
 
 const FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -695,6 +698,9 @@ class NeutralizesFoesBonusesToStatsDuringCombatNode extends SetBoolToEachStatusN
 
 const NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE =
     new NeutralizesFoesBonusesToStatsDuringCombatNode(true, true, true, true);
+const NEUTRALIZES_FOES_EACH_BONUSES_TO_STATS_DURING_COMBAT_NODE =
+    (atk = true, spd = true, def = true, res = true) =>
+        new NeutralizesFoesBonusesToStatsDuringCombatNode(atk, spd, def, res);
 
 class NeutralizesTargetsFoesBonusesToStatsDuringCombatNode extends SetBoolToEachStatusNode {
     static {
@@ -1031,6 +1037,20 @@ class ReducesDamageFromAoeSpecialsByXPercentNode extends ApplyingNumberNode {
 }
 
 const REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE = x => new ReducesDamageFromAoeSpecialsByXPercentNode(x);
+// TODO: 奥義扱いの範囲奥義軽減が特別扱いされた場合に修正する
+const REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_BY_SPECIAL_NODE = x => new ReducesDamageFromAoeSpecialsByXPercentNode(x);
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_OR_FROM_AOE_SPECIALS_NODE =
+    x => IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(x),
+        REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(x),
+    );
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_DURING_COMBAT_OR_FROM_AOE_SPECIALS_NODE =
+    x => IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(x),
+        REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_BY_SPECIAL_NODE(x),
+    );
 
 /**
  * reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials),
@@ -1066,7 +1086,7 @@ class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPosi
     }
 }
 
-const REDUCE_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE =
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE =
         n => new ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode(n);
 
 /**
@@ -1492,8 +1512,8 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesSecondStrikeDurin
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.specialCountReductionBeforeSecondFirstAttacksByEnemy += n;
-        let result = unit.battleContext.specialCountReductionBeforeSecondFirstAttacksByEnemy;
+        unit.battleContext.specialCountReductionBeforeSecondStrikeByEnemy += n;
+        let result = unit.battleContext.specialCountReductionBeforeSecondStrikeByEnemy;
         env.debug(`${unit.nameWithGroup}は相手の最初の2回攻撃の2回目の前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
     }
 }
@@ -1504,10 +1524,6 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesSecondStrikeDurin
 class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
-    }
-
-    constructor(n) {
-        super(n);
     }
 
     evaluate(env) {
@@ -1521,6 +1537,23 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackN
 
 const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE =
     n => new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode(n);
+
+class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesSecondStrikeNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let result = foe.battleContext.specialCountIncreaseBeforeSecondStrike += n;
+        env.debug(`${unit.nameWithGroup}は敵の最初の2回攻撃の2回目の攻撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
+    }
+}
+
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_SECOND_STRIKE_NODE =
+    n => new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesSecondStrikeNode(n);
 
 class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstFollowUpAttackNode extends FromPositiveNumberNode {
     static {
@@ -1596,6 +1629,8 @@ class EffectiveAgainstNode extends BoolNode {
         }
     }
 }
+
+const EFFECTIVE_AGAINST_NODE = n => new EffectiveAgainstNode(n);
 
 /**
  * If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect, Special triggers twice, then reduces damage by N.
@@ -2216,7 +2251,7 @@ class SetTargetsBanePerAttackNode extends SkillEffectNode {
 
 const SET_TARGETS_BANE_PER_ATTACK_NODE = new SetTargetsBanePerAttackNode();
 
-class TreatsTargetsFoesDefResAsIfReducedByXPercentageNode extends FromPositiveNumberNode {
+class TreatsTargetsFoesDefResAsIfReducedByXPercentNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2228,5 +2263,5 @@ class TreatsTargetsFoesDefResAsIfReducedByXPercentageNode extends FromPositiveNu
     }
 }
 
-const TREATS_TARGETS_FOES_DEF_RES_AS_IF_REDUCED_BY_X_PERCENTAGE_NODE =
-    n => new TreatsTargetsFoesDefResAsIfReducedByXPercentageNode(n);
+const TREATS_TARGETS_FOES_DEF_RES_AS_IF_REDUCED_BY_X_PERCENT_NODE =
+    n => new TreatsTargetsFoesDefResAsIfReducedByXPercentNode(n);

@@ -1360,7 +1360,9 @@ class BattleSimulatorBase {
         }
         let env = new EnumerationEnv(g_appData, duoUnit).setBattleMap(this.map);
         env.setName('比翼双界スキル').setLogLevel(getSkillLogLevel());
+        // TODO: リファクタリング
         WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
+        WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS.evaluateWithUnit(duoUnit, env);
         switch (duoUnit.heroIndex) {
             case Hero.HarmonizedGoldmary:
                 // 自分と同じ出典の味方と、自分自身に
@@ -4428,6 +4430,7 @@ class BattleSimulatorBase {
 
         this.#applySkillsForBeginningOfTurnForAllGroups(targetUnits, enemyTurnSkillTargetUnits);
         this.#applyHpSkillsForBeginningOfTurnForAllGroups(targetUnits);
+        this.#applySkillsForBeginningOfTurnAfterHpSkillsForAllGroups(targetUnits, enemyTurnSkillTargetUnits);
 
         for (let unit of targetUnits) {
             unit.deleteSnapshot();
@@ -4474,6 +4477,35 @@ class BattleSimulatorBase {
             this.beginningOfTurnSkillHandler.clearLog();
         }
         // ターン開始時効果(通常)による効果を反映
+        this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap(true, false);
+        this.writeLog(this.beginningOfTurnSkillHandler.log);
+        this.beginningOfTurnSkillHandler.clearLog();
+    }
+
+    #applySkillsForBeginningOfTurnAfterHpSkillsForAllGroups(targetUnits, enemyTurnSkillTargetUnits) {
+        // HP反映後ターン開始時スキル(通常)
+        for (let unit of targetUnits) {
+            this.writeDebugLogLine(`${unit.getNameWithGroup()}のHP反映後のターン開始時発動スキルを適用..`);
+
+            let env = new AtStartOfTurnEnv(this.beginningOfTurnSkillHandler, unit);
+            env.setName('HP反映後ターン開始時').setLogLevel(getSkillLogLevel());
+            AT_START_OF_TURN_AFTER_HEALING_AND_DAMAGE_HOOKS.evaluateWithUnit(unit, env);
+
+            this.writeLog(this.beginningOfTurnSkillHandler.log);
+            this.beginningOfTurnSkillHandler.clearLog();
+        }
+        // HP反映後ターン開始時スキル(敵ユニット)
+        for (let unit of enemyTurnSkillTargetUnits) {
+            this.writeDebugLogLine(`${unit.getNameWithGroup()}のHP反映後の敵ターン開始時発動スキルを適用..`);
+
+            let env = new AtStartOfTurnEnv(this.beginningOfTurnSkillHandler, unit);
+            env.setName('HP反映後敵軍ターン開始時').setLogLevel(getSkillLogLevel());
+            AT_START_OF_ENEMY_PHASE_AFTER_HEALING_AND_DAMAGE_SKILLS_HOOKS.evaluateWithUnit(unit, env);
+
+            this.writeLog(this.beginningOfTurnSkillHandler.log);
+            this.beginningOfTurnSkillHandler.clearLog();
+        }
+        // HP反映後ターン開始時効果(通常)による効果を反映
         this.beginningOfTurnSkillHandler.applyReservedStateForAllUnitsOnMap();
         this.writeLog(this.beginningOfTurnSkillHandler.log);
         this.beginningOfTurnSkillHandler.clearLog();
@@ -4689,6 +4721,7 @@ class BattleSimulatorBase {
             unit.isCombatDone = false;
             unit.isSupportDone = false;
             unit.isSupportedDone = false;
+            unit.actionCount = 0;
         }
     }
 
@@ -6715,14 +6748,14 @@ class BattleSimulatorBase {
             let chaseTarget = null;
             if (evalUnit.hasWeapon) {
                 for (let allyUnit of enemyUnits) {
-                    using_(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ` + time + " ms")), () => {
+                    using_(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ${time} ms`)), () => {
                         let turnRange = g_appData.map.calculateTurnRange(evalUnit, allyUnit);
                         if (turnRange < 0) {
                             // 攻撃不可
                             return;
                         }
 
-                        this.writeDebugLogLine("■" + evalUnit.getNameWithGroup() + "から" + allyUnit.getNameWithGroup() + "への追跡優先度計算:");
+                        this.writeDebugLogLine(`■${evalUnit.getNameWithGroup()}から${allyUnit.getNameWithGroup()}への追跡優先度計算:`);
 
                         // todo: 攻撃対象の陣営の紋章バフは無効にしないといけない。あと周囲の味方の数で発動する系は必ず発動させないといけない
                         // 防御系奥義によるダメージ軽減も無視しないといけない
@@ -6748,7 +6781,7 @@ class BattleSimulatorBase {
                         if (priorityValue > maxPriorityValue) {
                             maxPriorityValue = priorityValue;
                             chaseTarget = allyUnit;
-                            this.writeDebugLogLine("追跡対象を" + chaseTarget.getNameWithGroup() + "に更新");
+                            this.writeDebugLogLine(`追跡対象を${chaseTarget.getNameWithGroup()}に更新`);
                         }
                     });
                 }
@@ -7299,6 +7332,7 @@ class BattleSimulatorBase {
         let self = this;
         let skillName = unit.supportInfo != null ? unit.supportInfo.name : "補助";
         let func = function () {
+            unit.actionCount++;
             if (unit.isActionDone) {
                 // TODO: 動作確認をする
                 let env = new BattleSimulatorBaseEnv(this, unit);
@@ -7428,6 +7462,7 @@ class BattleSimulatorBase {
         }
         let self = this;
         let func = function () {
+            unit.actionCount++;
             if (unit.isActionDone) {
                 // 移動時にトラップ発動した場合は行動終了している
                 // その場合でも天脈は発動する
@@ -7454,6 +7489,9 @@ class BattleSimulatorBase {
                 }
             } else {
                 moveStructureToTrashBox(obj);
+            }
+            if (unit.isStyleActive) {
+                unit.isStyleActivatedInThisTurn = true;
             }
 
             unit.deactivateStyle();
@@ -7520,6 +7558,9 @@ class BattleSimulatorBase {
 
             // TODO: 予約しなくて良いのか検討
             targetTile.removeDivineVein();
+            if (unit.isStyleActive) {
+                unit.isStyleActivatedInThisTurn = true;
+            }
 
             unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
@@ -7777,6 +7818,9 @@ class BattleSimulatorBase {
             }
 
             if (!unit.isActionDone && endAction) {
+                if (!unit.isCantoActivating) {
+                    unit.actionCount++;
+                }
                 unit.endAction();
                 unit.deactivateCanto();
                 unit.applyEndActionSkills(isCantoEndAction);
@@ -7814,6 +7858,7 @@ class BattleSimulatorBase {
         }
         let self = this;
         let func = function () {
+            attackerUnit.actionCount++;
             if (attackerUnit.isActionDone) {
                 // 移動時にトラップ発動した場合は行動終了している
                 return;

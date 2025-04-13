@@ -422,6 +422,10 @@ class NodeEnv {
         return this;
     }
 
+    isInCombatPhase() {
+        return this.combatPhase !== NodeEnv.COMBAT_PHASE.NULL_PHASE;
+    }
+
     isAfterCombatPhase(phase) {
         return this.combatPhase > phase;
     }

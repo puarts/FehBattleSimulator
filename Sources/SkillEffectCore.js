@@ -101,12 +101,22 @@ class SkillEffectHooks {
             case 'se':
                 type = 'ステータス効果'
                 break;
+            case 'style':
+                type = 'スタイル効果'
+                break;
+            case 'duo-or-harmonized':
+                type = '比翼・双界スキル'
+                break;
         }
         let name;
         if (prefix === 'e') {
             name = ObjectUtil.getKeyName(EmblemHero, Number(suffix));
         } else if (prefix === 'se') {
             name = getStatusEffectName(suffix);
+        } else if (prefix === 'style') {
+            name = ObjectUtil.getKeyName(STYLE_TYPE, Number(suffix));
+        } else if (prefix === 'duo-or-harmonized') {
+            name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }

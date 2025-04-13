@@ -245,6 +245,9 @@ class BattleContext {
         // 最初の攻撃前の奥義発動カウント増加値
         this.specialCountIncreaseBeforeFirstAttack = 0;
 
+        // 最初の2回攻撃の2回目の攻撃前の奥義発動カウント増加値
+        this.specialCountIncreaseBeforeSecondStrike = 0;
+
         // 最初の追撃前の奥義発動カウント増加値
         this.specialCountIncreaseBeforeFollowupAttack = 0;
 
@@ -255,7 +258,7 @@ class BattleContext {
         this.specialCountReductionBeforeFirstFollowUpAttackByEnemy = 0;
 
         // 敵の最初の2回攻撃の2撃目前の奥義発動カウント減少値(Shield Fighterなど)
-        this.specialCountReductionBeforeSecondFirstAttacksByEnemy = 0;
+        this.specialCountReductionBeforeSecondStrikeByEnemy = 0;
 
         this.specialCountReductionAfterFirstSpecial = 0;
 
@@ -763,6 +766,12 @@ class BattleContext {
         return increase - reduction;
     }
 
+    getSpecialCountChangeAmountBeforeSecondStrikeAttack() {
+        let increase = this.specialCountIncreaseBeforeSecondStrike;
+        let reduction = this.specialCountReductionBeforeSecondStrikeByEnemy;
+        return increase - reduction;
+    }
+
     getSpecialCountChangeAmountBeforeFirstAttackByEnemy() {
         let increase = 0;
         let reduction = this.specialCountReductionBeforeFirstAttackByEnemy;
@@ -785,6 +794,11 @@ class BattleContext {
         return this.specialCountIncreaseBeforeFirstAttack !== 0 ||
             this.specialCountReductionBeforeFirstAttack !== 0 ||
             this.specialCountReductionBeforeFirstAttackPerAttack !== 0;
+    }
+
+    isChangedSpecialCountBeforeSecondStrike() {
+        return this.specialCountIncreaseBeforeSecondStrike !== 0
+            || this.specialCountReductionBeforeSecondStrikeByEnemy !== 0;
     }
 
     isChangedSpecialCountBeforeFirstAttackByEnemy() {

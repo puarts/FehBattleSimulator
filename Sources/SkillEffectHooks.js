@@ -45,6 +45,16 @@ const AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 const AT_START_OF_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
 
 /**
+ * HP反映後ターン開始時
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const AT_START_OF_TURN_AFTER_HEALING_AND_DAMAGE_HOOKS = new SkillEffectHooks();
+
+/**
+ * HP反映後敵軍ターン開始時
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const AT_START_OF_ENEMY_PHASE_AFTER_HEALING_AND_DAMAGE_SKILLS_HOOKS = new SkillEffectHooks();
+
+/**
  * 敵軍のターン開始時スキル発動後
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
 const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
@@ -112,9 +122,19 @@ const WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS = new SkillEffectHooks();
 const WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS = new SkillEffectHooks();
 
 /**
+ * 周囲の敵から受けるスキル効果（適用後）
+ * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
+const WHEN_INFLICTS_EFFECTS_TO_FOES_AFTER_OTHER_SKILLS_HOOKS = new SkillEffectHooks();
+
+/**
  * ボタンを押したときのスキル効果
  * @type {MultiValueMap<number, SkillEffectNode>} */
 const WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
+
+/**
+ * ボタンを押したときのスキル効果
+ * @type {SkillEffectHooks<SkillEffectNode, EnumerationEnv>} */
+const WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS = new SkillEffectHooks();
 
 /**
  * ボタンを押せるかどうか

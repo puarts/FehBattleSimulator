@@ -560,6 +560,8 @@ class Unit extends BattleMapElement {
         this.isSupportDone = false;
         // このターン補助を行われたか
         this.isSupportedDone = false;
+        // このターンの行動回数
+        this.actionCount = 0;
 
         this.isBonusChar = false;
 
@@ -1420,6 +1422,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isStyleActivatedInThisTurn)
             + ValueDelimiter + boolToInt(this.isAttackedDone)
             + ValueDelimiter + this.restSpecialSkillAvailableTurn
+            + ValueDelimiter + this.actionCount
             ;
     }
 
@@ -1569,6 +1572,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isStyleActivatedInThisTurn = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isAttackedDone = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restSpecialSkillAvailableTurn = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.actionCount = Number(values[i]); ++i; }
     }
 
 
@@ -2527,6 +2531,9 @@ class Unit extends BattleMapElement {
         }
         if (this.isCannotMoveStyleActive()) {
             return 2;
+        }
+        if (this.isRangedStyleForMeleeActive()) {
+            return 1;
         }
 
         return calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);
@@ -5096,7 +5103,9 @@ class Unit extends BattleMapElement {
         // 受けているステータス
         yield* this.getStatusEffects().map(getStatusEffectSkillId);
         // スタイル
-        yield* this.getStyles().map(x => getStyleSkillId(x));
+        yield* this.getStyles().map(getStyleSkillId);
+        // 比翼・双界スキル
+        yield getDuoOrHarmonizedSkillId(this.heroIndex);
     }
 
     /**

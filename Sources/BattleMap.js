@@ -1588,7 +1588,9 @@ class BattleMap {
     }
 
     *enumerateAttackableTiles(attackerUnit, targetUnitTile) {
-        for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(targetUnitTile, attackerUnit.attackRangeOnMapForAttackingUnit)) {
+        let tiles = this.enumerateTilesInSpecifiedDistanceFrom(targetUnitTile,
+            attackerUnit.attackRangeOnMapForAttackingUnit);
+        for (let tile of tiles) {
             if (tile.isMovableTileForUnit(attackerUnit)) {
                 yield tile;
             }
