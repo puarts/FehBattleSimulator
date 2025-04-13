@@ -1767,7 +1767,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         X_NUM_NODE(
             // Grants Atk/Spd/Def/Res+X to unit
-            grantsatkspddefre(READ_NUM_NODE),
+            GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE),
             // (calculates X based on number of allies adjacent to unit:
             // 	•	0 allies grants +10
             // 	•	1 ally grants +8
