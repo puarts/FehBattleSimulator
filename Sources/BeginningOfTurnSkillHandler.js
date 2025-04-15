@@ -89,6 +89,9 @@ class BeginningOfTurnSkillHandler {
             this.writeDebugLog(`${unit.nameWithGroup}はステータス${getStatusEffectName(StatusEffectType.AfterStartOfTurnSkillsTriggerActionEndsImmediately)}により行動終了`);
             unit.endActionByStatusEffect();
         }
+        let env = new AtStartOfTurnEnv(this, unit);
+        env.setName('自軍のターン開始時スキル発動後').setLogLevel(getSkillLogLevel());
+        AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS.evaluateWithUnit(unit, env);
         for (let skillId of unit.enumerateSkills()) {
             this.applySkillAfterSkillsForBeginningOfTurn(skillId, unit);
         }

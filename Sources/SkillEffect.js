@@ -2980,6 +2980,7 @@ class IsTargetTomeTypeNode extends BoolNode {
 }
 
 const IS_TARGET_TOME_TYPE_NODE = new IsTargetTomeTypeNode();
+const IS_TARGET_MAGIC_TYPE_NODE = IS_TARGET_TOME_TYPE_NODE;
 const DOES_TARGET_USE_MAGIC_NODE = IS_TARGET_TOME_TYPE_NODE;
 
 class DoesFoeUseMagicNode extends IsTargetTomeTypeNode {
@@ -2989,6 +2990,21 @@ class DoesFoeUseMagicNode extends IsTargetTomeTypeNode {
 }
 
 const DOES_FOE_USE_MAGIC_NODE = new DoesFoeUseMagicNode();
+
+class IsTargetStaffTypeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.weaponType === WeaponType.Staff;
+        env.debug(`${unit.nameWithGroup}は杖であるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_STAFF_TYPE_NODE = new IsTargetStaffTypeNode();
 
 class IsTargetBeastOrDragonTypeNode extends BoolNode {
     static {

@@ -57,6 +57,11 @@ const AT_START_OF_ENEMY_PHASE_AFTER_HEALING_AND_DAMAGE_SKILLS_HOOKS = new SkillE
 /**
  * 敵軍のターン開始時スキル発動後
  * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS = new SkillEffectHooks();
+
+/**
+ * 敵軍のターン開始時スキル発動後
+ * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
 const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
 
 /**
