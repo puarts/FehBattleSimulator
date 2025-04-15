@@ -9064,6 +9064,8 @@ function setLantern(skillId) {
         );
     }
     // 近影
+    // 攻撃魔防の近影4
+    setSkill(PassiveB.ARNearTrace4, u => u.addAtkResSpurs(-4), 2);
     // 速さ守備の近影4
     setSkill(PassiveB.SDNearTrace4, u => u.addSpdDefSpurs(-4), 2);
     // 速さ魔防の近影4

@@ -3799,7 +3799,18 @@ PassiveA.PrimordialBoost = 3231; // 風地水の命脈
 Weapon.TomeOfFury = 3232; // 激情の炎の青
 Weapon.ProudSpear = 3233; // 矜持の槍
 Weapon.TaciturnAxe = 3234; // 寡黙なる忠義の斧
-Weapon.SwordOfDusk = 3234; // 戦神の闇夜の剣
+Weapon.AncientMajesty = 3235; // 古の神竜王のブレス
+PassiveB.ARNearTrace4 = 3236; // 攻撃魔防の近影4
+PassiveC.DivineGodFang = 3237; // 神竜王の大牙
+Weapon.Fundament = 3238; // 原初の魔道
+PassiveA.GiftOfGuidance = 3239; // 人に未来を授けし者
+PassiveB.AtkResHavoc = 3240; // 攻撃魔防の大混乱
+Weapon.AncientBetrayal = 3241; // 古の地竜族のブレス
+Weapon.AncientVoice = 3242; // 古の神竜姫のブレス
+Special.DragonFlame = 3243; // 竜炎
+PassiveC.LoveForAll = 3244; // みんなだいすき
+PassiveX.ResScowlEcho = 3245; // 響・魔防の竜眼
+Weapon.SwordOfDusk = 3246; // 戦神の闇夜の剣
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

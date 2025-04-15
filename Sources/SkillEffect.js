@@ -2108,17 +2108,26 @@ const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMi
 
 const GRANTS_BONUS_TO_TARGETS_ATK_SPD_DEF_RES_NODE = (atk, spd = atk, def = atk, res = atk) =>
     new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res);
+const GRANTS_ALL_BONUSES_TO_TARGETS_NODE = x =>
+    X_NUM_NODE(
+        GRANTS_BONUS_TO_TARGETS_ATK_SPD_DEF_RES_NODE(READ_NUM_NODE),
+        x
+    );
 
 const INFLICTS_ATK_ON_FOE_DURING_COMBAT_NODE = atk =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, 0, 0);
-const INFLICTS_SPD_ON_FOE_DURING_COMBAT_NODE = atk =>
+const INFLICTS_SPD_ON_FOE_DURING_COMBAT_NODE = spd =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, 0, 0);
+
 const INFLICTS_ATK_DEF_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, 0);
+const INFLICTS_ATK_RES_ON_FOE_DURING_COMBAT_NODE = (atk, res = atk) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, 0, res);
 const INFLICTS_SPD_DEF_ON_FOE_DURING_COMBAT_NODE = (spd, def = spd) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, def, 0);
 const INFLICTS_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (spd, res = spd) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, 0, res);
+
 const INFLICTS_ATK_SPD_DEF_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, def = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, 0);
 const INFLICTS_ATK_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, res = atk) =>
