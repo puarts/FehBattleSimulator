@@ -9573,6 +9573,7 @@ function setLantern(skillId) {
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdScowl3, getScowlFunc(u => u.addAtkSpdSpurs(6), 9));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdScowl4, getScowlFunc(u => u.addAtkSpdSpurs(7), 5));
     applySkillEffectForUnitFuncMap.set(PassiveA.SpdResScowl4, getScowlFunc(u => u.addSpdResSpurs(7), 5));
+    applySkillEffectForUnitFuncMap.set(PassiveA.DefResScowl3, getScowlFunc(u => u.addDefResSpurs(6), 9));
     applySkillEffectForUnitFuncMap.set(PassiveA.DefResScowl4, getScowlFunc(u => u.addDefResSpurs(7), 5));
 }
 

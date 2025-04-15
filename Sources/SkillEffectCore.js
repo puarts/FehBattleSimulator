@@ -756,6 +756,10 @@ class MultTruncNode extends NumberOperationNode {
 
 const MULT_TRUNC_NODE = (...node) => new MultTruncNode(...node);
 
+const MULT_ADD_NODE = (mult1, mult2, add) => ADD_NODE(MULT_NODE(mult1, mult2), add);
+const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
+    ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(mult1, mult2), add), max);
+
 class MinNode extends NumberOperationNode {
     /**
      * @override

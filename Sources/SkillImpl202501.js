@@ -202,24 +202,67 @@
     ));
 }
 
-    // Ancient Betrayal
-    //
+// Ancient Betrayal
+{
+    let skillId = Weapon.AncientBetrayal;
     // Mt: 16  Rng: 1
     // Grants Atk+3.
     // If foe’s Range = 2, calculates damage using the lower of foe’s Def or Res.
-    //
-    // At start of player phase or enemy phase, if unit’s HP ≥ 25%,
-    // grants Atk/Res+6, [En Garde], and
-    // “neutralizes foe’s bonuses during combat” to unit and allies within 2 spaces of unit for 1 turn.
-    //
-    // At start of combat, if unit’s HP ≥ 25%,
-    // inflicts penalty on foe’s Atk/Def/Res = 20% of unit’s Res at start of combat + 5,
-    // unit deals +X damage (excluding area-of-effect Specials),
-    // reduces damage from foe’s attacks by X (excluding area-of-effect Specials;
-    // X = number of staff and dragon allies on the map, excluding unit, × 5 + 10; max 20),
-    // and also, if foe’s attack can trigger foe’s Special and unit’s Res ≥ foe’s Res + 5,
-    // inflicts Special cooldown count +1 on foe before foe’s first attack during combat
-    // (cannot exceed foe’s maximum Special cooldown).
+    let nodeFunc = () => SKILL_EFFECT_NODE(
+        // At start of player phase or enemy phase, if unit’s HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // grants Atk/Res+6,
+                GRANTS_ATK_RES_TO_TARGET_ON_MAP_NODE(6),
+                // [En Garde], and
+                // “neutralizes foe’s bonuses during combat”
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.EnGarde,
+                    StatusEffectType.NeutralizesFoesBonusesDuringCombat),
+            ),
+        ),
+    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of combat, if unit’s HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            X_NUM_NODE(
+                // inflicts penalty on foe’s Atk/Def/Res =
+                INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE),
+                // 20% of unit’s Res at start of combat + 5,
+                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 5),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage (excluding area-of-effect Specials),
+                UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
+                // reduces damage from foe’s attacks by X (excluding area-of-effect Specials;
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(READ_NUM_NODE),
+                // X = number of staff and dragon allies on the map, excluding unit, × 5 + 10; max 20),
+                MULT_ADD_MAX_NODE(
+                    COUNT_IF_UNITS_NODE(
+                        TARGETS_ALLIES_ON_MAP_NODE,
+                        OR_NODE(IS_TARGET_STAFF_TYPE_NODE, IS_TARGET_DRAGON_TYPE_NODE),
+                    ),
+                    5, 10, 20
+                ),
+            ),
+            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+                // and also, if foe’s attack can trigger foe’s Special and unit’s Res ≥ foe’s Res + 5,
+                IF_NODE(
+                    AND_NODE(
+                        CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                        LT_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5)),
+                    ),
+                    // inflicts Special cooldown count +1 on foe before foe’s first attack during combat
+                    // (cannot exceed foe’s maximum Special cooldown).
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+                ),
+            ),
+        ),
+    ));
+}
 
     // Ancient Voice
     //

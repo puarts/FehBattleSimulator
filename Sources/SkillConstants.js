@@ -2701,6 +2701,7 @@ const PassiveA = {
     AtkSpdScowl3: 2760, // 攻撃速さの竜眼3
     AtkSpdScowl4: 2754, // 攻撃速さの竜眼4
     SpdResScowl4: 2868, // 速さ魔防の竜眼4
+    DefResScowl3: 2775, // 守備魔防の竜眼3
     DefResScowl4: 2765, // 守備魔防の竜眼4
 
     // 柔撃

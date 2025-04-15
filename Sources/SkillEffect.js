@@ -2132,6 +2132,8 @@ const INFLICTS_ATK_SPD_DEF_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, def = at
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, 0);
 const INFLICTS_ATK_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, res = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, res);
+const INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk, res = atk) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, res);
 
 class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
     static {
@@ -3005,6 +3007,21 @@ class IsTargetStaffTypeNode extends BoolNode {
 }
 
 const IS_TARGET_STAFF_TYPE_NODE = new IsTargetStaffTypeNode();
+
+class IsTargetDragonTypeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = isWeaponTypeBeast(unit.weaponType);
+        env.debug(`${unit.nameWithGroup}は竜であるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_DRAGON_TYPE_NODE = new IsTargetDragonTypeNode();
 
 class IsTargetBeastOrDragonTypeNode extends BoolNode {
     static {
