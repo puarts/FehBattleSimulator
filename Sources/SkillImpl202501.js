@@ -334,35 +334,35 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Effective against dragon foes.
         EFFECTIVE_AGAINST_NODE(EffectiveType.Dragon),
-        // If unit is within 3 spaces of an ally,
-        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+        SKILL_EFFECT_NODE(
             // calculates damage using 150% of unit’s Def instead of unit’s Atk when Special triggers (excluding area-of-effect Specials).
             CALCULATES_DAMAGE_USING_X_PERCENT_OF_TARGETS_STAT_INSTEAD_OF_ATK_WHEN_SPECIAL_NODE(STATUS_INDEX.Def, 150),
-        ),
-        // If unit is within 3 spaces of an ally,
-        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
             X_NUM_NODE(
                 // grants bonus to unit’s Atk/Spd/Def/Res =
                 GRANTS_ALL_BONUSES_TO_TARGETS_NODE(READ_NUM_NODE),
                 // number of allies within 3 spaces of unit × 3 + 5 (max 14),
                 MULT_ADD_MAX_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 3, 5, 14),
             ),
+        ),
+        SKILL_EFFECT_NODE(
             // deals damage = 20% of unit’s Def (excluding area-of-effect Specials),
             DEALS_DAMAGE_X_PERCENTAGE_OF_UNITS_STAT_NODE(STATUS_INDEX.Def, 20),
             // reduces damage from foe’s first attack by 20% of unit’s Def during combat
-            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_PERCENTAGE_OF_TARGETS_STAT_DURING_COMBAT_INCLUDING_TWICE_NODE(
-                20, STATUS_INDEX.Def),
             // (“first attack” normally means only the first strike; for effects that grant “unit attacks twice,” it means the first and second strikes),
-            APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
-                // and also, if unit’s Def > foe’s Def + 5,
-                IF_NODE(GT_NODE(UNITS_DEF_DURING_COMBAT_NODE, ADD_NODE(FOES_DEF_DURING_COMBAT_NODE, 5)),
-                    // disables unit’s and foe’s skills that change attack priority during combat.
-                    UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
-                    FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
-                ),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                PERCENTAGE_NODE(20, UNITS_DEF_NODE),
+            ),
+            // and also, if unit’s Def > foe’s Def + 5,
+            IF_NODE(GT_NODE(UNITS_DEF_DURING_COMBAT_NODE, ADD_NODE(FOES_DEF_DURING_COMBAT_NODE, 5)),
+                // disables unit’s and foe’s skills that change attack priority during combat.
+                UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+                FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
             ),
         ),
-    ));
+    );
 }
 
 // Dragon Flame (Special, Cooldown: 4)
@@ -3065,24 +3065,32 @@
 // Edged Scales
 {
     let skillId = PassiveB.EdgedScales;
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
         // If foe initiates combat or if unit's HP ≥ 25% at start of combat,
-        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+        OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+        SKILL_EFFECT_NODE(
             // inflicts Spd/Def/Res-4 on foe,
             INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 4, 4, 4),
+            // and increases the Spd difference necessary for foe to make a follow-up attack by 10 during combat,
+            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(10),
+        ),
+        SKILL_EFFECT_NODE(
             // deals damage = 15% of foe's Atk (excluding area-of-effect Specials),
-            DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(15, FOES_ATK_DURING_COMBAT_NODE),
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(15, FOES_ATK_NODE)),
             // reduces damage from foe's first attack by 10
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
             REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(10),
-            // and increases the Spd difference necessary for foe to make a follow-up attack by 10 during combat,
-            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(10),
             // and also,
             // if unit's Spd > foe's Spd,
             IF_NODE(GT_NODE(UNITS_EVAL_SPD_DURING_COMBAT_NODE, FOES_EVAL_SPD_DURING_COMBAT_NODE),
                 // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
                 NULL_UNIT_FOLLOW_UP_NODE,
             ),
+        ),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // If foe initiates combat or if unit's HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
         ),
     ));
 }

@@ -637,8 +637,9 @@ class IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode extends FromPositiveNu
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
-        env.debug(`${unit.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+        let foe = env.getFoeDuringCombatOf(unit);
+        foe.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
+        env.debug(`${foe.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
