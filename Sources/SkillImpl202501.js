@@ -2732,14 +2732,22 @@
     let skillId = PassiveC.QuietStrength;
     // For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,
     FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage),
+        IF_NODE(
+            OR_NODE(
+                HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage),
+                IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE
+            ),
             // grants Atk/Spd/Def/Res+5,
             GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
         ),
     ));
     // For allies on the map with the [Salvage] effect active and allies within 2 spaces of unit,
     FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage),
+        IF_NODE(
+            OR_NODE(
+                HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Salvage),
+                IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE
+            ),
             // deals +7 damage (excluding area-of-effect Specials),
             UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(7),
             // reduces damage from foe's first attack by 7
