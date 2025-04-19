@@ -3812,6 +3812,7 @@ Special.DragonFlame = 3243; // 竜炎
 PassiveC.LoveForAll = 3244; // みんなだいすき
 PassiveX.ResScowlEcho = 3245; // 響・魔防の竜眼
 Weapon.SwordOfDusk = 3246; // 戦神の闇夜の剣
+Weapon.AncientTrickery = 3247; // 古の変身の力
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

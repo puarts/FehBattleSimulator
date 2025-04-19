@@ -2088,6 +2088,9 @@ class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode exte
     }
 }
 
+const CALCULATES_DAMAGE_USING_X_PERCENT_OF_TARGETS_STAT_INSTEAD_OF_ATK_WHEN_SPECIAL_NODE =
+    (index, percentage) => new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(index, percentage);
+
 /**
  * any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
  */
