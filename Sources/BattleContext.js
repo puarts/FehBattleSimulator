@@ -790,21 +790,6 @@ class BattleContext {
         return this.specialCountReductionBeforeFirstFollowupAttack;
     }
 
-    isChangedSpecialCountBeforeFirstAttack() {
-        return this.specialCountIncreaseBeforeFirstAttack !== 0 ||
-            this.specialCountReductionBeforeFirstAttack !== 0 ||
-            this.specialCountReductionBeforeFirstAttackPerAttack !== 0;
-    }
-
-    isChangedSpecialCountBeforeSecondStrike() {
-        return this.specialCountIncreaseBeforeSecondStrike !== 0
-            || this.specialCountReductionBeforeSecondStrikeByEnemy !== 0;
-    }
-
-    isChangedSpecialCountBeforeFirstAttackByEnemy() {
-        return this.specialCountReductionBeforeFirstAttackByEnemy !== 0;
-    }
-
     getAttackCount(isCounterAttack) {
         return isCounterAttack ? this.counterattackCount : this.attackCount;
     }
