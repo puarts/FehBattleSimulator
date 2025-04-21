@@ -1783,12 +1783,20 @@ const GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd, def, res) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res);
 
 const GRANTS_ATK_TO_TARGET_DURING_COMBAT_NODE =
-    atk => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, 0, 0);
+    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Atk, n);
+const GRANTS_SPD_TO_TARGET_DURING_COMBAT_NODE =
+    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Spd, n);
+const GRANTS_DEF_TO_TARGET_DURING_COMBAT_NODE =
+    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Def, n);
+const GRANTS_RES_TO_TARGET_DURING_COMBAT_NODE =
+    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Res, n);
 
 const GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, 0, 0);
 const GRANTS_ATK_DEF_TO_TARGET_DURING_COMBAT_NODE =
     (atk, def = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, def, 0);
+const GRANTS_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE =
+    (spd, def = spd) => new GrantsStatsPlusToTargetDuringCombatNode(0, spd, def, 0);
 const GRANTS_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
     (def, res = def) => new GrantsStatsPlusToTargetDuringCombatNode(0, 0, def, res);
 
@@ -1880,6 +1888,32 @@ const GRANTS_ATK_SPD_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUn
 const GRANTS_ATK_SPD_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUnitDuringCombatNode(5, 5, 0, 0)
 const GRANTS_ATK_SPD_PLUS_6_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUnitDuringCombatNode(6, 6, 0, 0)
 const GRANTS_ATK_SPD_PLUS_7_TO_UNIT_DURING_COMBAT_NODE = new GrantsStatsPlusToUnitDuringCombatNode(7, 7, 0, 0)
+
+class GrantsOrInflictsTargetsStatsDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {StatsNode} statsNode
+     */
+    constructor(statsNode) {
+        super();
+        this._statsNode = statsNode;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let stats = this._statsNode.evaluate(env);
+        let beforeSpurs = unit.getSpurs();
+        unit.addSpurs(...stats);
+        env.debug(`${unit.nameWithGroup}は戦闘中ステータス+[${stats}]: [${beforeSpurs}] → [${unit.getSpurs()}]`);
+    }
+}
+
+const GRANTS_OR_INFLICTS_TARGETS_STATS_DURING_COMBAT_NODE = statsNode => new GrantsOrInflictsTargetsStatsDuringCombatNode(statsNode);
+const GRANTS_OR_INFLICTS_TARGETS_STAT_DURING_COMBAT_NODE = (index, value) =>
+    GRANTS_OR_INFLICTS_TARGETS_STATS_DURING_COMBAT_NODE(STATS_FROM_STAT_NODE(value, index));
 
 class TargetsStatsAreHighestStatsFromNode extends SkillEffectNode {
     static {
@@ -1981,6 +2015,10 @@ class GetStatAtNode extends NumberNode {
 const GET_STAT_AT_NODE = (statsNode, index) => new GetStatAtNode(statsNode, index);
 
 class StatsFromStatNode extends StatsNode {
+    /**
+     * @param {number|NumberNode} stat
+     * @param {number|NumberNode} index
+     */
     constructor(stat, index) {
         super()
         this._statNode = NumberNode.makeNumberNodeFrom(stat);
@@ -2108,21 +2146,32 @@ const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMi
 
 const GRANTS_BONUS_TO_TARGETS_ATK_SPD_DEF_RES_NODE = (atk, spd = atk, def = atk, res = atk) =>
     new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res);
+const GRANTS_ALL_BONUSES_TO_TARGETS_NODE = x =>
+    X_NUM_NODE(
+        GRANTS_BONUS_TO_TARGETS_ATK_SPD_DEF_RES_NODE(READ_NUM_NODE),
+        x
+    );
 
 const INFLICTS_ATK_ON_FOE_DURING_COMBAT_NODE = atk =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, 0, 0);
-const INFLICTS_SPD_ON_FOE_DURING_COMBAT_NODE = atk =>
+const INFLICTS_SPD_ON_FOE_DURING_COMBAT_NODE = spd =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, 0, 0);
+
 const INFLICTS_ATK_DEF_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, 0);
+const INFLICTS_ATK_RES_ON_FOE_DURING_COMBAT_NODE = (atk, res = atk) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, 0, res);
 const INFLICTS_SPD_DEF_ON_FOE_DURING_COMBAT_NODE = (spd, def = spd) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, def, 0);
 const INFLICTS_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (spd, res = spd) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, 0, res);
+
 const INFLICTS_ATK_SPD_DEF_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, def = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, 0);
 const INFLICTS_ATK_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, res = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, res);
+const INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk, res = atk) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, res);
 
 class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
     static {
@@ -2971,6 +3020,7 @@ class IsTargetTomeTypeNode extends BoolNode {
 }
 
 const IS_TARGET_TOME_TYPE_NODE = new IsTargetTomeTypeNode();
+const IS_TARGET_MAGIC_TYPE_NODE = IS_TARGET_TOME_TYPE_NODE;
 const DOES_TARGET_USE_MAGIC_NODE = IS_TARGET_TOME_TYPE_NODE;
 
 class DoesFoeUseMagicNode extends IsTargetTomeTypeNode {
@@ -2980,6 +3030,36 @@ class DoesFoeUseMagicNode extends IsTargetTomeTypeNode {
 }
 
 const DOES_FOE_USE_MAGIC_NODE = new DoesFoeUseMagicNode();
+
+class IsTargetStaffTypeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.weaponType === WeaponType.Staff;
+        env.debug(`${unit.nameWithGroup}は杖であるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_STAFF_TYPE_NODE = new IsTargetStaffTypeNode();
+
+class IsTargetDragonTypeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = isWeaponTypeBeast(unit.weaponType);
+        env.debug(`${unit.nameWithGroup}は竜であるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_DRAGON_TYPE_NODE = new IsTargetDragonTypeNode();
 
 class IsTargetBeastOrDragonTypeNode extends BoolNode {
     static {
@@ -4447,6 +4527,8 @@ const GRANTS_ATK_SPD_TO_TARGET_ON_MAP_NODE =
     (atk, spd = atk) => new GrantsStatsPlusToTargetOnMapNode(atk, spd, 0, 0);
 const GRANTS_ATK_RES_TO_TARGET_ON_MAP_NODE =
     (atk, res = atk) => new GrantsStatsPlusToTargetOnMapNode(atk, 0, 0, res);
+const GRANTS_SPD_DEF_TO_TARGET_ON_MAP_NODE =
+    (spd, def = spd) => new GrantsStatsPlusToTargetOnMapNode(0, spd, def, 0);
 const GRANTS_DEF_RES_TO_TARGET_ON_MAP_NODE =
     (atk, def = atk) => new GrantsStatsPlusToTargetOnMapNode(atk, 0, def, 0);
 
@@ -4484,6 +4566,8 @@ class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
 const INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE =
     (...stats) => new InflictsStatsMinusOnTargetOnMapNode(...stats);
 
+const INFLICTS_SPD_RES_ON_TARGET_ON_MAP_NODE =
+    (spd, res = spd) => new InflictsStatsMinusOnTargetOnMapNode(0, spd, 0, res);
 const INFLICTS_ATK_DEF_ON_TARGET_ON_MAP_NODE =
     (atk, def = atk) => new InflictsStatsMinusOnTargetOnMapNode(atk, 0, def, 0);
 const INFLICTS_ATK_RES_ON_TARGET_ON_MAP_NODE =

@@ -637,8 +637,9 @@ class IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode extends FromPositiveNu
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
-        env.debug(`${unit.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+        let foe = env.getFoeDuringCombatOf(unit);
+        foe.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
+        env.debug(`${foe.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
@@ -2087,6 +2088,9 @@ class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode exte
         env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに${getStatusName(index)}の値を使用(${percentage}%)`);
     }
 }
+
+const CALCULATES_DAMAGE_USING_X_PERCENT_OF_TARGETS_STAT_INSTEAD_OF_ATK_WHEN_SPECIAL_NODE =
+    (index, percentage) => new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(index, percentage);
 
 /**
  * any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),

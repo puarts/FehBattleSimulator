@@ -1,4 +1,24 @@
 // フェーズによって適切な値を返す
+const UNITS_STAT_NODE = i =>
+    COND_OP(IS_IN_COMBAT_PHASE_NODE,
+        UNITS_STAT_DURING_COMBAT_NODE(i),
+        UNITS_STAT_AT_START_OF_COMBAT_NODE(i),
+    );
+const UNITS_ATK_NODE = UNITS_STAT_NODE(STATUS_INDEX.Atk);
+const UNITS_SPD_NODE = UNITS_STAT_NODE(STATUS_INDEX.Spd);
+const UNITS_DEF_NODE = UNITS_STAT_NODE(STATUS_INDEX.Def);
+const UNITS_RES_NODE = UNITS_STAT_NODE(STATUS_INDEX.Res);
+
+const FOES_STAT_NODE = i =>
+    COND_OP(IS_IN_COMBAT_PHASE_NODE,
+        FOES_STAT_DURING_COMBAT_NODE(i),
+        FOES_STAT_AT_START_OF_COMBAT_NODE(i),
+    );
+const FOES_ATK_NODE = FOES_STAT_NODE(STATUS_INDEX.Atk);
+const FOES_SPD_NODE = FOES_STAT_NODE(STATUS_INDEX.Spd);
+const FOES_DEF_NODE = FOES_STAT_NODE(STATUS_INDEX.Def);
+const FOES_RES_NODE = FOES_STAT_NODE(STATUS_INDEX.Res);
+
 const UNITS_EVAL_SPD_NODE =
     COND_OP(IS_IN_COMBAT_PHASE_NODE,
         UNITS_EVAL_SPD_DURING_COMBAT_NODE,
@@ -264,6 +284,13 @@ const PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new PenaltiesActiveOn
 const BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE =
     UNION_SET_NODE(BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE, PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE);
 
+const DEALS_DAMAGE_X_NODE = n =>
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        UNIT_DEALS_DAMAGE_BEFORE_COMBAT_NODE(n),
+        UNIT_DEALS_DAMAGE_AT_AOE(n),
+    );
+const DEALS_DAMAGE_X_PERCENTAGE_OF_UNITS_STAT_NODE = (index, percentage) =>
+    DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(percentage, UNITS_STAT_NODE(index)));
 const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES = (index, percentage) =>
     [
         UNIT_DEALS_DAMAGE_BEFORE_COMBAT_NODE(PERCENTAGE_NODE(percentage, UNITS_STAT_AT_START_OF_COMBAT_NODE(index))),
@@ -366,11 +393,14 @@ const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL = skillId => {
 const IS_TARGET_CAVALRY_WITH_RANGE_2_NODE =
     AND_NODE(EQ_NODE(new TargetsMoveTypeNode(), MoveType.Cavalry), EQ_NODE(new TargetsRangeNode(), 2));
 
+const DOES_FOE_INITIATE_COMBAT_NODE_OR_IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE =
+    OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE);
+
 /**
  * If foe initiates combat or if foe's HP ≥ 75% at start of combat,
  */
 const IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT = (...nodes) =>
-    IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE), ...nodes);
+    IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE_OR_IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE, ...nodes);
 const IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT = (...nodes) =>
     IF_NODE(OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE), ...nodes);
 
@@ -653,6 +683,8 @@ const HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
             new TargetsAlliesWithinNSpacesNode(n),
             TARGETS_STATS_ON_MAP_NODE,
         );
+const HIGHEST_STAT_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE = (index, n) =>
+    GET_STAT_AT_NODE(HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE(n), index);
 
 const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
 
@@ -981,6 +1013,41 @@ function setResonance(skillId) {
                 30,
                 60,
             ),
+        ),
+    ));
+}
+
+function setAllEffectsForSkillOwnersAlliesDuringCombatHooks(skillId, condNode,
+                                                            grantsStatsNode, grantsOtherEffectNode) {
+    FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(condNode,
+            grantsStatsNode,
+        ),
+    ));
+    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(condNode,
+            grantsOtherEffectNode,
+        ),
+    ));
+}
+
+function setAtStartOfCombatHooks(skillId, condNode, node) {
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(condNode,
+            node,
+        ),
+    ));
+}
+
+function setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, atStartOfNode, afterNode) {
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(condNode,
+            atStartOfNode,
+        ),
+    ));
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(condNode,
+            afterNode,
         ),
     ));
 }

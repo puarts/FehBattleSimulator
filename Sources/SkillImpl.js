@@ -9064,6 +9064,8 @@ function setLantern(skillId) {
         );
     }
     // 近影
+    // 攻撃魔防の近影4
+    setSkill(PassiveB.ARNearTrace4, u => u.addAtkResSpurs(-4), 2);
     // 速さ守備の近影4
     setSkill(PassiveB.SDNearTrace4, u => u.addSpdDefSpurs(-4), 2);
     // 速さ魔防の近影4
@@ -9571,6 +9573,7 @@ function setLantern(skillId) {
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdScowl3, getScowlFunc(u => u.addAtkSpdSpurs(6), 9));
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdScowl4, getScowlFunc(u => u.addAtkSpdSpurs(7), 5));
     applySkillEffectForUnitFuncMap.set(PassiveA.SpdResScowl4, getScowlFunc(u => u.addSpdResSpurs(7), 5));
+    applySkillEffectForUnitFuncMap.set(PassiveA.DefResScowl3, getScowlFunc(u => u.addDefResSpurs(6), 9));
     applySkillEffectForUnitFuncMap.set(PassiveA.DefResScowl4, getScowlFunc(u => u.addDefResSpurs(7), 5));
 }
 

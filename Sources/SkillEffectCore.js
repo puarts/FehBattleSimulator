@@ -695,6 +695,7 @@ class EnsureMinMaxNode extends NumberOperationNode {
 }
 
 const ENSURE_MIN_MAX_NODE = (child, min, max) => new EnsureMinMaxNode(child, min, max);
+const ENSURE_MAX_MIN_NODE = (child, max, min) => ENSURE_MIN_MAX_NODE(child, min, max);
 
 class AddNode extends NumberOperationNode {
     /**
@@ -755,6 +756,11 @@ class MultTruncNode extends NumberOperationNode {
 }
 
 const MULT_TRUNC_NODE = (...node) => new MultTruncNode(...node);
+
+const MULT_ADD_NODE = (mult1, mult2, add) => ADD_NODE(MULT_NODE(mult1, mult2), add);
+const MULT_MAX_NODE = (mult1, mult2, max) => ENSURE_MAX_NODE(MULT_NODE(mult1, mult2), max);
+const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
+    ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(mult1, mult2), add), max);
 
 class MinNode extends NumberOperationNode {
     /**
