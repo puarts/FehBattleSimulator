@@ -1762,6 +1762,12 @@ class GrantsStatPlusToTargetDuringCombatNode extends SkillEffectNode {
     }
 }
 
+/**
+ * @param {number|NumberNode} n
+ * @param {number|NumberNode} index
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
 const GRANTS_STAT_PLUS_TO_TARGET_DURING_COMBAT_NODE =
     (n, index) => new GrantsStatPlusToTargetDuringCombatNode(n, index);
 
@@ -2012,6 +2018,12 @@ class GetStatAtNode extends NumberNode {
     }
 }
 
+/**
+ * @param {StatsNode} statsNode
+ * @param {number|NumberNode} index
+ * @returns {GetStatAtNode}
+ * @constructor
+ */
 const GET_STAT_AT_NODE = (statsNode, index) => new GetStatAtNode(statsNode, index);
 
 class StatsFromStatNode extends StatsNode {
@@ -2060,6 +2072,11 @@ class ForEachStatIndexNode extends SkillEffectNode {
     }
 }
 
+/**
+ * @param {SkillEffectNode} nodes
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
 const FOR_EACH_STAT_INDEX_NODE =
     (...nodes) => new ForEachStatIndexNode(
         [STATUS_INDEX.Atk, STATUS_INDEX.Spd, STATUS_INDEX.Res, STATUS_INDEX.Def], ...nodes);
@@ -3841,11 +3858,13 @@ const FOR_EACH_UNIT_FROM_SAME_TITLES_NODE = (...nodes) => new ForEachUnitFromSam
 
 class AppliesPotentEffectNode extends FromNumbersNode {
     /**
-     * @param {number|NumberNode} ratio
+     * @param {number|NumberNode} percentage
      * @param {number|NumberNode} spdDiff
+     * @param {boolean|BoolNode} isFixed
      */
-    constructor(ratio = 0.4, spdDiff = -25) {
-        super(NumberNode.makeNumberNodeFrom(ratio), NumberNode.makeNumberNodeFrom(spdDiff));
+    constructor(percentage = 40, spdDiff = -25, isFixed = FALSE_NODE) {
+        super(NumberNode.makeNumberNodeFrom(percentage), NumberNode.makeNumberNodeFrom(spdDiff));
+        this._isFixed = BoolNode.makeBoolNodeFrom(isFixed);
     }
 
     /**
@@ -3854,14 +3873,18 @@ class AppliesPotentEffectNode extends FromNumbersNode {
     evaluate(env) {
         // 追撃の速さ条件を25した状態で追撃の速さ条件を満たしている時（絶対追撃、追撃不可は含まない）、
         // 戦闘中、【神速追撃：ダメージ●%】を発動（〇は、自分が2回攻撃でない、かつ追撃ができない時は80、それ以外は40）
-        let [ratio, spdDiff] = this.evaluateChildren(env);
+        let [percentage, spdDiff] = this.evaluateChildren(env);
+        let isFixed = this._isFixed.evaluate(env);
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}に神速スキル(${Math.trunc(ratio * 100)}%, 速さ条件${spdDiff})を適用`);
-        return env.damageCalculatorWrapper.__applyPotent(unit, env.foeDuringCombat, ratio, spdDiff);
+        env.debug(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用`);
+        env.damageCalculatorWrapper.__applyPotent(unit, env.foeDuringCombat, percentage / 100.0, spdDiff, isFixed);
     }
 }
 
 const APPLY_POTENT_EFFECT_NODE = new AppliesPotentEffectNode();
+const POTENT_FOLLOW_N_PERCENT_NODE =
+    (percentage = 40, spdDiff = -25, isFixed = false) =>
+        new AppliesPotentEffectNode(percentage, spdDiff, isFixed);
 
 // Tileへの効果 START
 
@@ -4532,6 +4555,12 @@ const GRANTS_SPD_DEF_TO_TARGET_ON_MAP_NODE =
 const GRANTS_DEF_RES_TO_TARGET_ON_MAP_NODE =
     (atk, def = atk) => new GrantsStatsPlusToTargetOnMapNode(atk, 0, def, 0);
 
+const GRANTS_ALL_BONUSES_TO_TARGET_ON_MAP_NODE = n =>
+    X_NUM_NODE(
+        GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE),
+        NumberNode.makeNumberNodeFrom(n),
+    );
+
 class GrantsStatsPlusToSkillOwnerOnMapNode extends GrantsStatsPlusToTargetOnMapNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
@@ -5088,7 +5117,7 @@ class TargetsBonusesNode extends StatsNode {
 const TARGETS_BONUSES_NODE = new TargetsBonusesNode();
 
 /**
- * highest total bonuses
+ * total bonuses
  */
 class TargetsTotalBonusesNode extends NumberNode {
     static {
@@ -5104,6 +5133,8 @@ class TargetsTotalBonusesNode extends NumberNode {
         return result;
     }
 }
+
+const TARGETS_TOTAL_BONUSES_NODE = new TargetsTotalBonusesNode();
 
 class TargetsBonusNode extends NumberNode {
     static {

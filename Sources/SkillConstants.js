@@ -3813,6 +3813,13 @@ PassiveC.LoveForAll = 3244; // みんなだいすき
 PassiveX.ResScowlEcho = 3245; // 響・魔防の竜眼
 Weapon.SwordOfDusk = 3246; // 戦神の闇夜の剣
 Weapon.AncientTrickery = 3247; // 古の変身の力
+Weapon.JawsOfClosure = 3248; // 閉ざす者の鋭き爪牙
+PassiveA.NewOpening = 3249; // 開く者たちとの奇縁
+PassiveC.PreemptScreech = 3250; // 暗獣・初撃の鼓動
+Weapon.SwordOfPeace = 3251; // 平和の願いの剣
+Special.TheFireEmblem = 3252; // 真炎の紋章
+PassiveB.ShieldOfHope = 3253; // 人と竜との盾
+PassiveC.SDHoldGuide = 3254; // 速守大牽制・導き手
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -3894,8 +3901,10 @@ EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_engagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Eirika] = `${g_imageRootPath}Special.png`;
+EngagedSpecialIcon[EmblemHero.Eirika] = `${g_debugEngagedSpecialIconRoot}Eirika_Of_The_Sacred.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_imageRootPath}Special.png`;
+// EngagedSpecialIcon[EmblemHero.XXX] = `${g_debugEngagedSpecialIconRoot}XXX.webp`;
+// EngagedSpecialIcon[EmblemHero.XXX] = `${g_engagedSpecialIconRoot}XXX.webp`;
 // 紋章士アイコン
 // https://feheroes.fandom.com/wiki/Category:Engaged_Special_icons
 
