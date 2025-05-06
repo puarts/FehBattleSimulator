@@ -75,6 +75,7 @@ const Hero = {
     DuoRhea: 1237,
     HarmonizedPlumeria: 1248,
     DuoCorrinM: 1259,
+    DuoMarth: 1266,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -122,6 +123,7 @@ const DUO_HERO_SET = new Set([
     Hero.DuoAlear,
     Hero.DuoHeidrun,
     Hero.DuoRhea,
+    Hero.DuoMarth,
 ]);
 
 const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
@@ -355,6 +357,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.PotentFollow, ["PotentFollow.webp", "神速追撃", "条件を満たすと、追撃の直後に、さらに追撃が発動"]],
     [StatusEffectType.Salvage, ["Salvage.webp", "七難即滅", "【再移動（2）】発動可能、再移動制限を緩和する"]],
     [StatusEffectType.DraconicHex, ["DraconicHex.webp", "竜呪", "敵の攻速守魔-5、さらに5-敵各能力の弱化だけ減"]],
+    [StatusEffectType.FireEmblem, ["FireEmblem.webp", "炎の紋章", "全移動種特効無効、攻速守魔+強化値、初撃ダメージ減"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

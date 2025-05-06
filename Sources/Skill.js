@@ -1307,6 +1307,7 @@ const StatusEffectType = {
     PotentFollow: 78, // 神速追撃
     Salvage: 79, // 七難即滅
     DraconicHex: 80, // 竜呪
+    FireEmblem: 81, // 炎の紋章
     // STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // POSITIVE_STATUS_EFFECT_ARRAY, NEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1341,6 +1342,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Anathema,
     // 竜呪
     StatusEffectType.DraconicHex,
+    // 炎の紋章
+    StatusEffectType.FireEmblem,
 // 強化ダメージ+
     StatusEffectType.Treachery,
 // 敵弱化ダメージ+

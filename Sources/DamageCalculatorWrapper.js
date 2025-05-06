@@ -838,6 +838,9 @@ class DamageCalculatorWrapper {
         if (defUnit.hasStatusEffect(StatusEffectType.Undefended)) {
             return null;
         }
+        if (atkUnit.battleContext.doesNotTriggerFoesSaviorEffects) {
+            return null;
+        }
         let saverUnit = null;
         let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2, false);
         for (let ally of allies) {
@@ -11749,12 +11752,15 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applyPotent(targetUnit, enemyUnit, baseRatio = 0.4, evalSpd = -25) {
+    __applyPotent(targetUnit, enemyUnit, baseRatio = 0.4, evalSpd = -25, isFixed = false) {
         if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, evalSpd)) {
             let potentRatio = baseRatio;
             if (!targetUnit.battleContext.isTwiceAttackActivating() &&
                 !targetUnit.battleContext.canFollowupAttackWithoutPotent) {
                 potentRatio = baseRatio * 2;
+            }
+            if (isFixed) {
+                potentRatio = baseRatio;
             }
             targetUnit.battleContext.potentRatios.push(potentRatio);
         }

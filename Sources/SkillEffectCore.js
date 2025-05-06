@@ -282,6 +282,54 @@ class NumbersNode extends SkillEffectNode {
     }
 }
 
+class TopNNode extends NumbersNode {
+    /**
+     * @param {number|NumberNode} n
+     * @param {NumbersNode} numbersNode
+     */
+    constructor(n, numbersNode) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+        this._numbersNode = numbersNode;
+    }
+
+    evaluate(env) {
+        let n = this._n.evaluate(env);
+        let ns = this._numbersNode.evaluate(env);
+        let sorted = ns.sort((a, b) => b - a);
+        return sorted.slice(0, n);
+    }
+}
+
+/**
+ * @param {number|NumberNode} n
+ * @param {NumbersNode} numbersNode
+ * @constructor
+ */
+const TOP_N_NODE = (n, numbersNode) => new TopNNode(n, numbersNode);
+
+class SumNumbersNode extends NumberNode {
+    /**
+     * @param {NumbersNode} numbersNode
+     */
+    constructor(numbersNode) {
+        super();
+        this._numbersNode = numbersNode;
+    }
+
+    evaluate(env) {
+        let ns = this._numbersNode.evaluate(env);
+        return ArrayUtil.sum(ns);
+    }
+}
+
+/**
+ * @param {NumbersNode} ns
+ * @returns {SumNumbersNode}
+ * @constructor
+ */
+const SUM_NUMBERS_NODE = (ns) => new SumNumbersNode(ns);
+
 class PositiveNumberNode extends NumberNode {
     evaluate(env) {
         let number = super.evaluate(env);

@@ -5740,7 +5740,7 @@ function setDiscord(skillId, statsRatios) {
         )
     );
     WHEN_APPLIES_POTENT_EFFECTS_HOOKS.addSkill(skillId, () =>
-        new AppliesPotentEffectNode(1, -10)
+        POTENT_FOLLOW_N_PERCENT_NODE(100, -10)
     );
 }
 

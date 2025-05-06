@@ -2269,3 +2269,17 @@ class TreatsTargetsFoesDefResAsIfReducedByXPercentNode extends FromPositiveNumbe
 
 const TREATS_TARGETS_FOES_DEF_RES_AS_IF_REDUCED_BY_X_PERCENT_NODE =
     n => new TreatsTargetsFoesDefResAsIfReducedByXPercentNode(n);
+
+class DoesNotTriggerTargetsFoesSaviorEffectsNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.doesNotTriggerFoesSaviorEffects = true;
+        env.debug(`${unit.nameWithGroup}の戦闘時、敵の護り手は発動しない`);
+    }
+}
+
+const DOES_NOT_TRIGGER_TARGETS_FOES_SAVIOR_EFFECTS_NODE = new DoesNotTriggerTargetsFoesSaviorEffectsNode();

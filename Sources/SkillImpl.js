@@ -11220,20 +11220,14 @@ function setLantern(skillId) {
 {
     let skillId = Weapon.CorsairCleaver;
     // ターン開始時スキル
-    applySkillForBeginningOfTurnFuncMap.set(skillId,
-        function (skillOwner) {
-            let found = false;
-            for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 3)) {
-                found = true;
-                unit.reserveToApplyBuffs(6, 6, 0, 0);
-                unit.reservedStatusEffects(StatusEffectType.AirOrders);
-            }
-            if (found) {
-                skillOwner.reserveToApplyBuffs(6, 6, 0, 0);
-                skillOwner.reservedStatusEffects(StatusEffectType.AirOrders);
-            }
-        }
-    );
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_3_SPACES_OF_TARGET_NODE(
+                GRANTS_ATK_SPD_TO_TARGET_ON_MAP_NODE(6),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.AirOrders),
+            ),
+        ),
+    ));
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.battleContext.restHpPercentage >= 25) {

@@ -230,6 +230,9 @@ class BattleContext {
         // 護り手が発動しているかどうか
         this.isSaviorActivated = false;
 
+        // 護り手不可
+        this.doesNotTriggerFoesSaviorEffects = false;
+
         // 最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttack = 0;
 
