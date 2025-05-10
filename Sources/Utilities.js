@@ -1563,6 +1563,21 @@ class IterUtil {
     static unique(...iterables) {
         return new Set(this.concat(...iterables));
     }
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @param {T} value
+     * @returns {boolean}
+     */
+    static has(iterable, value) {
+        for (const e of iterable) {
+            if (e === value) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 class GeneratorUtil {

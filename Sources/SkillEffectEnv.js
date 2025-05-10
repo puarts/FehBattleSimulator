@@ -50,6 +50,7 @@ class NodeEnv {
     // TODO: rename
     /** @type {Unit} */
     #foeDuringCombat = null;
+    #targetAlly = null;
     /** @type {Unit} */
     #targetUnitOrAlly = null;
     /** @type {Unit} */
@@ -112,6 +113,7 @@ class NodeEnv {
         copyInstance.setSkillOwner(this.skillOwner);
         copyInstance.setTarget(this.target);
         copyInstance.setUnitsDuringCombat(this.unitDuringCombat, this.foeDuringCombat);
+        copyInstance.setTargetAlly(this.targetAlly);
         copyInstance.setTargetUnitOrAlly(this.targetUnitOrAlly);
         copyInstance.setTargetFoe(this.targetFoe);
         copyInstance.setReferenceUnit(this.referenceUnit);
@@ -229,6 +231,10 @@ class NodeEnv {
         return this.#target;
     }
 
+    get targetAlly() {
+        return this.#targetAlly;
+    }
+
     get targetUnitOrAlly() {
         return this.#targetUnitOrAlly;
     }
@@ -297,6 +303,11 @@ class NodeEnv {
                 this.#targetFoe = this.target;
             }
         }
+        return this;
+    }
+
+    setTargetAlly(unit) {
+        this.#targetAlly = unit;
         return this;
     }
 

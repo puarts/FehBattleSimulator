@@ -775,6 +775,16 @@ class NumOfPenaltiesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
     }
 }
 
+const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfPenaltiesActiveOnTargetExcludingStatNode();
+
+class NumOfPenaltiesActiveOnFoeExcludingStatNode extends NumOfPenaltiesActiveOnTargetExcludingStatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const NUM_OF_PENALTIES_ACTIVE_ON_FOE_EXCLUDING_STAT_NODE = new NumOfPenaltiesActiveOnFoeExcludingStatNode();
+
 class BonusesActiveOnTargetExcludingStatSetNode extends SetNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1590,10 +1600,10 @@ class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
     }
 
     /**
-     * @param {number|NumberNode} n
+     * @param {number|NumberNode} threshold
      */
-    constructor(n) {
-        super(NumberNode.makeNumberNodeFrom(n));
+    constructor(threshold) {
+        super(NumberNode.makeNumberNodeFrom(threshold));
     }
 
     evaluate(env) {
@@ -1605,7 +1615,7 @@ class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
     }
 }
 
-const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = n => new TargetCanActivateNonSpecialMiracleNode(n);
+const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = threshold => new TargetCanActivateNonSpecialMiracleNode(threshold);
 
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 
@@ -2108,6 +2118,9 @@ class AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode 
     }
 }
 
+const ANY_TARGETS_REDUCE_DAMAGE_EFFECT_ONLY_ONCE_CAN_BE_TRIGGERED_UP_TO_N_TIMES_PER_COMBAT_NODE =
+    n => new AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode(n);
+
 /**
  * Grants weapon-triangle advantage against colorless foes and inflicts weapon-triangle disadvantage on colorless foes during combat.
  */
@@ -2283,3 +2296,18 @@ class DoesNotTriggerTargetsFoesSaviorEffectsNode extends SkillEffectNode {
 }
 
 const DOES_NOT_TRIGGER_TARGETS_FOES_SAVIOR_EFFECTS_NODE = new DoesNotTriggerTargetsFoesSaviorEffectsNode();
+
+class GrantsMiracleAndHealToTargetOncePerMapNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[unit.groupId] === 0) {
+            unit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
+        }
+    }
+}
+
+const GRANTS_MIRACLE_AND_HEAL_TO_TARGET_ONCE_PER_MAP_NODE = new GrantsMiracleAndHealToTargetOncePerMapNode();

@@ -200,6 +200,26 @@ class UnitsNode extends SkillEffectNode {
     }
 }
 
+class IncludesUnitNode extends BoolNode {
+    /**
+     * @param {UnitNode} unitNode
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(unitNode, unitsNode) {
+        super();
+        this._unitNode = unitNode;
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let unit = this._unitNode.evaluate(env);
+        let units = this._unitsNode.evaluate(env);
+        return IterUtil.has(units, unit);
+    }
+}
+
+const INCLUDES_UNIT_NODE = (unitNode, unitsNode) => new IncludesUnitNode(unitNode, unitsNode);
+
 class UnitsOnMapNode extends UnitsNode {
     evaluate(env) {
         return env.unitManager.enumerateAllUnitsOnMap();
@@ -1801,6 +1821,8 @@ const GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, 0, 0);
 const GRANTS_ATK_DEF_TO_TARGET_DURING_COMBAT_NODE =
     (atk, def = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, def, 0);
+const GRANTS_ATK_RES_TO_TARGET_DURING_COMBAT_NODE =
+    (atk, res = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, 0, res);
 const GRANTS_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE =
     (spd, def = spd) => new GrantsStatsPlusToTargetDuringCombatNode(0, spd, def, 0);
 const GRANTS_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
@@ -1886,6 +1908,7 @@ const GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE = n => new GrantsAllSta
 const GRANTS_ALL_STATS_PLUS_4_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(5);
 const GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(8);
+const GRANTS_ALL_STATS_PLUS_9_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(9);
 
 const GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(5);
@@ -2158,6 +2181,8 @@ class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTarget
 const INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE =
     (atk, spd, def, res) => new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, res);
 
+const INFLICTS_ALL_STATS_MINUS_2_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(2, 2, 2, 2);
+const INFLICTS_ALL_STATS_MINUS_3_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(3, 3, 3, 3);
 const INFLICTS_ALL_STATS_MINUS_4_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 4, 4);
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 5);
 
@@ -3236,6 +3261,8 @@ class DoesTargetTriggerSaviorNode extends BoolNode {
         return result;
     }
 }
+
+const DOES_TARGET_TRIGGER_SAVIOR_NODE = new DoesTargetTriggerSaviorNode();
 
 /**
  * total penalties
@@ -4426,6 +4453,9 @@ class ForEachAllyForSpacesNode extends ForEachTargetForSpacesNode {
     }
 }
 
+const FOR_EACH_ALLY_FOR_SPACES_NODE =
+    (predNode, ...children) => new ForEachAllyForSpacesNode(predNode, ...children);
+
 class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -4461,11 +4491,46 @@ class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
 const TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
     (n, spacesNode) => new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
+class TargetsPlacableSpacesWithinNSpacesFromUnitsNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {UnitsNode} units
+     */
+    constructor(n, units) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._unitsNode = units;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let units = this._unitsNode.evaluate(env);
+        let resultSet = new Set();
+        for (let u of units) {
+            let tileSet = new Set(env.battleMap.__enumeratePlacableTilesWithinSpecifiedSpaces(u, unit, n));
+            env.debug(`${unit.nameWithGroup}が移動可能な${u.nameWithGroup}の周囲${n}以内のマス: ${SetUtil.toString(tileSet)}`);
+            resultSet = SetUtil.union(resultSet, tileSet);
+        }
+        return resultSet;
+    }
+}
+
+const TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE =
+    (n, units) => new TargetsPlacableSpacesWithinNSpacesFromUnitsNode(n, units);
+
 class SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode extends TargetsPlacableSpacesWithinNSpacesFromSpaceNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
+
+const SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
+    (n, spacesNode) => new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
 class CrossSpacesNode extends SpacesNode {
     evaluate(env) {
@@ -4597,6 +4662,8 @@ const INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE =
 
 const INFLICTS_SPD_RES_ON_TARGET_ON_MAP_NODE =
     (spd, res = spd) => new InflictsStatsMinusOnTargetOnMapNode(0, spd, 0, res);
+const INFLICTS_ATK_SPD_ON_TARGET_ON_MAP_NODE =
+    (atk, spd = atk) => new InflictsStatsMinusOnTargetOnMapNode(atk, spd, 0, 0);
 const INFLICTS_ATK_DEF_ON_TARGET_ON_MAP_NODE =
     (atk, def = atk) => new InflictsStatsMinusOnTargetOnMapNode(atk, 0, def, 0);
 const INFLICTS_ATK_RES_ON_TARGET_ON_MAP_NODE =

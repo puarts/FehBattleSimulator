@@ -192,7 +192,7 @@ class DamageCalculatorWrapper {
             let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
             for (let tile of tiles) {
                 let isNotDefUnit = tile.placedUnit !== defUnit;
-                let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit);
+                let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit, DamageType.ActualDamage);
                 if (tile.placedUnit != null &&
                     isNotDefUnit &&
                     isNotSaverUnit &&
@@ -357,7 +357,7 @@ class DamageCalculatorWrapper {
 
             let actualDefUnit = defUnit;
             if (!calcPotentialDamage) {
-                let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);
+                let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit, damageType);
                 if (saverUnit != null) {
                     // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
                     preCombatDamage = 0;
@@ -834,7 +834,7 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __getSaverUnitIfPossible(atkUnit, defUnit) {
+    __getSaverUnitIfPossible(atkUnit, defUnit, damageType) {
         if (defUnit.hasStatusEffect(StatusEffectType.Undefended)) {
             return null;
         }
@@ -850,7 +850,11 @@ class DamageCalculatorWrapper {
                 continue;
             }
 
-            if (this.__canActivateSaveSkill(atkUnit, ally)) {
+            let canActivateSaviorWithin2Spaces =
+                this.__canActivateSaveSkillWithin2Spaces(atkUnit, ally, damageType) &&
+                ally.distance(defUnit) <= 2;
+            if (canActivateSaviorWithin2Spaces ||
+                this.__canActivateSaveSkill(atkUnit, defUnit, ally, damageType)) {
                 if (saverUnit != null) {
                     // 複数発動可能な場合は発動しない
                     return null;
@@ -859,7 +863,6 @@ class DamageCalculatorWrapper {
                 saverUnit = ally;
             }
         }
-
         return saverUnit;
     }
 
@@ -869,7 +872,7 @@ class DamageCalculatorWrapper {
      * @params {Unit} ally
      * @returns {boolean}
      */
-    __canActivateSaveSkill(atkUnit, ally) {
+    __canActivateSaveSkillWithin2Spaces(atkUnit, ally, damageType) {
         if (this.__canDisableSaveSkill(atkUnit, ally)) {
             return false;
         }
@@ -926,6 +929,21 @@ class DamageCalculatorWrapper {
         }
 
         return false;
+    }
+
+    /**
+     * 護られ不可は考慮しない
+     * @params {Unit} atkUnit
+     * @params {Unit} defUnit
+     * @params {Unit} ally
+     * @returns {boolean}
+     */
+    __canActivateSaveSkill(atkUnit, defUnit, ally, damageType) {
+        let env = new DamageCalculatorWrapperEnv(this, defUnit, atkUnit, null);
+        env.setTargetAlly(ally);
+        env.setName('護り手判定時').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
+            .setCombatPhase(this.combatPhase);
+        return CAN_TRIGGER_SAVIOR_HOOKS.evaluateSomeWithUnit(ally, env);
     }
 
     /**
@@ -15364,7 +15382,8 @@ class DamageCalculatorWrapper {
      */
     __applySpecialSkillEffect(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, false);
-        env.setName('戦闘開始時奥義効果').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+        env.setName('戦闘開始時奥義効果').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
+            .setCombatPhase(this.combatPhase);
         WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         let func = this._applySpecialSkillEffectFuncDict[targetUnit.special];
         if (func) {

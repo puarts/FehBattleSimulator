@@ -966,9 +966,6 @@ class IfElseNode extends SkillEffectNode {
         this.#condNode = condNode;
     }
 
-    /**
-     * @returns {NumberNode[]}
-     */
     getChildren() {
         return super.getChildren();
     }
@@ -979,11 +976,39 @@ class IfElseNode extends SkillEffectNode {
         env?.trace(`[IfThenElseNode] 条件を評価: ${condResult}`)
         let evalNode = condResult ? 'IF' : 'ELSE';
         env?.trace(`[IfThenElseNode] ${evalNode}を評価`);
-        this.getChildren()[index].evaluate(env);
+        return this.getChildren()[index].evaluate(env);
     }
 }
 
 const IF_ELSE_NODE = (condNode, trueNode, falseNode) => new IfElseNode(condNode, trueNode, falseNode);
+
+class IfExpressionNode extends SkillEffectNode {
+    /**
+     * @param {boolean|BoolNode} condNode
+     * @param trueNode
+     * @param falseNode
+     */
+    constructor(condNode, trueNode, falseNode) {
+        super();
+        this._condNode = BoolNode.makeBoolNodeFrom(condNode);
+        this._trueNode = trueNode;
+        this._falseNode = falseNode;
+    }
+
+    evaluate(env) {
+        let condResult = this._condNode.evaluate(env);
+        return condResult ? this._trueNode.evaluate(env) : this._falseNode.evaluate(env);
+    }
+}
+
+/**
+ * @param {boolean|BoolNode} condNode
+ * @param trueNode
+ * @param falseNode
+ * @constructor
+ */
+const IF_EXPRESSION_NODE = (condNode, trueNode, falseNode) =>
+    new IfExpressionNode(condNode, trueNode, falseNode);
 
 class TernaryConditionalNumberNode extends NumberNode {
     /** @type {BoolNode} */

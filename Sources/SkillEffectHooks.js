@@ -152,6 +152,12 @@ const CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
 const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
 
 /**
+ * 護り手判定時
+ * targetは護られるユニット、護り手はally、攻撃した敵はfoe
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const CAN_TRIGGER_SAVIOR_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘後
  * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
 const AFTER_COMBAT_HOOKS = new SkillEffectHooks();

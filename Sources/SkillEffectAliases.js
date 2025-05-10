@@ -276,13 +276,15 @@ const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
 const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
 const FOES_RES_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Res);
 
-const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfPenaltiesActiveOnTargetExcludingStatNode();
 const NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE =
     SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
 const BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new BonusesActiveOnTargetExcludingStatSetNode();
 const PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new PenaltiesActiveOnTargetExcludingStatSetNode();
 const BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE =
     UNION_SET_NODE(BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE, PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE);
+// the total of the number of Bonus effects active on unit and the number of Penalty effects active on foe
+const NUM_OF_BONUSES_ON_TARGET_AND_PENALTIES_ON_FOE_EXCLUDING_STAT_NODE =
+    SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_FOE_EXCLUDING_STAT_NODE);
 
 const DEALS_DAMAGE_X_NODE = n =>
     IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
@@ -301,6 +303,12 @@ const REDUCES_DAMAGE_BY_N_NODES = n => [
     REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
     REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
 ];
+
+const REDUCES_DAMAGE_BY_N_NODE = n =>
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
+        REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
+    );
 
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
@@ -555,8 +563,8 @@ let SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE =
  */
 function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, n, m) {
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
-        new ForEachAllyForSpacesNode(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
-            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(n, TARGETS_PLACED_SPACE_NODE),
+        FOR_EACH_ALLY_FOR_SPACES_NODE(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
+            SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(n, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 }
@@ -698,7 +706,7 @@ const HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
 const HIGHEST_STAT_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE = (index, n) =>
     GET_STAT_AT_NODE(HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE(n), index);
 
-const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
+const TARGETS_PARTNERS_ON_MAP_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
 
 const MAX_UNITS_NODE = (unitsNode, funcNode) => new MaxUnitsNode(unitsNode, funcNode);
 
@@ -934,7 +942,7 @@ const TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE =
 /**
  * number of distinct game titles among allies within 3 spaces of unit
  */
-const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE =
+const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_N_SPACES_OF_UNIT_NODE =
     n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));
 
 /**
@@ -1071,6 +1079,18 @@ function setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, atSta
     ));
 }
 
+function setBeforeAoeSpecialAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, beforeAoeNode, atStartOfNode, afterNode) {
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(condNode, atStartOfNode),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(condNode, atStartOfNode),
+    ));
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(condNode, afterNode),
+    ));
+}
+
 function setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId, condNode, statsNode, effectNode) {
     WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode, statsNode),
@@ -1085,4 +1105,9 @@ function setWhenUnitIsInCombatFoesSaviorEffectsWillNotTriggerNode(skillId) {
         // When unit is in combat, foes' Savior effects will not trigger.
         DOES_NOT_TRIGGER_TARGETS_FOES_SAVIOR_EFFECTS_NODE,
     ));
+}
+
+function setAtStartOfPlayerPhaseOrEnemyPhase(skillId, nodeFunc) {
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
 }

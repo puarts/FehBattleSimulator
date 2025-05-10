@@ -358,6 +358,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Salvage, ["Salvage.webp", "七難即滅", "【再移動（2）】発動可能、再移動制限を緩和する"]],
     [StatusEffectType.DraconicHex, ["DraconicHex.webp", "竜呪", "敵の攻速守魔-5、さらに5-敵各能力の弱化だけ減"]],
     [StatusEffectType.FireEmblem, ["FireEmblem.webp", "炎の紋章", "全移動種特効無効、攻速守魔+強化値、初撃ダメージ減"]],
+    [StatusEffectType.FellSpirit, ["FellSpirit.webp", "邪竜気", "反撃不可を無効、奥義でのダメージ軽減を1戦闘2回に"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

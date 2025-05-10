@@ -3820,6 +3820,19 @@ Weapon.SwordOfPeace = 3251; // 平和の願いの剣
 Special.TheFireEmblem = 3252; // 真炎の紋章
 PassiveB.ShieldOfHope = 3253; // 人と竜との盾
 PassiveC.SDHoldGuide = 3254; // 速守大牽制・導き手
+Weapon.FellChildsArts = 3255; // 邪竜の御子の体術
+Special.FellBlast = 3256; // 邪竜破
+PassiveA.DiluvialBoost = 3257; // 火地水の命脈
+PassiveB.ScowlingFighter = 3258; // 奥義隊形・竜眼
+Weapon.FellChildsBlade = 3259; // 邪竜の御子の剣
+PassiveA.BondBreaker = 3260; // 絆を引き裂くもの
+PassiveB.SDSpikedWall = 3261; // 速さ守備の刃壁
+Weapon.MartysStaff = 3262; // 生贄の聖女の杖
+PassiveA.AtkResTidings = 3263; // 攻撃魔防の福音
+Weapon.ArcaneCrest = 3264; // 魔器・紋章石
+PassiveA.AtkDefFortune = 3265; // 攻撃守備の共栄
+PassiveB.AssaultFighter = 3266; // 強襲隊形
+PassiveC.ForTheTrueKing = 3267; // おれの、ただ一人の
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
