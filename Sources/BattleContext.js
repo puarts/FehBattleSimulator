@@ -115,6 +115,9 @@ class BattleContext {
         // 回復を無効化されている状態
         this.hasDeepWounds = false;
 
+        // 回復を無効化されている状態
+        this.hasDeepWoundsAfterCombatNeutralizedWhenFeud = false;
+
         // [回復不可]を無効にする割合
         this.#nullInvalidatesHealRatios = [];
 

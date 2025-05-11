@@ -3833,6 +3833,11 @@ Weapon.ArcaneCrest = 3264; // 魔器・紋章石
 PassiveA.AtkDefFortune = 3265; // 攻撃守備の共栄
 PassiveB.AssaultFighter = 3266; // 強襲隊形
 PassiveC.ForTheTrueKing = 3267; // おれの、ただ一人の
+Weapon.IronHreidmarr = 3268; // 機構フレイズマル
+Weapon.TomeOfGrief = 3269; // 哀歌の書
+Weapon.NobleBow = 3270; // 貴婦人の弓
+Special.CircletOfBalance2 = 3271; // 聖神と暗黒神…・承
+PassiveC.DarklingGuardian2 = 3272; // 闇の樹海の守…・承
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

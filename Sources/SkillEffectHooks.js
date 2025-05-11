@@ -178,6 +178,11 @@ const AFTER_COMBAT_NEVERTHELESS_HOOKS = new SkillEffectHooks();
 const AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS = new SkillEffectHooks();
 
 /**
+ * 戦闘後周囲からのスキル効果
+ * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
+const FOR_ALLIES_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘ステータス決定後のバフ
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffectHooks();

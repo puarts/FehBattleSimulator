@@ -48,7 +48,12 @@ class PostCombatSkillHander {
         return this._unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
     }
 
-    // 戦闘後スキル評価時にenumerateUnitsInTheSameGroupOnMapは護られているユニットを含まないのでそのユニットを含めてマップにいるユニットを列挙する
+    /**
+     * 戦闘後スキル評価時にenumerateUnitsInTheSameGroupOnMapは護られているユニットを含まないのでそのユニットを含めてマップにいるユニットを列挙する
+     * @param {Unit} targetUnit
+     * @param {boolean} withTargetUnit
+     * @returns {Generator<Unit>}
+     */
     enumerateUnitsInTheSameGroupOnMapIncludingSavedUnit(targetUnit, withTargetUnit = false) {
         return this._unitManager.enumerateUnitsWithPredicator(x =>
             x.groupId === targetUnit.groupId
@@ -104,8 +109,8 @@ class PostCombatSkillHander {
                 this.__applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, defUnit);
                 this.__applyAttackSkillEffectAfterCombat(atkUnit, defUnit);
             }
-
             this.__applySkillEffectAfterCombatForUnit(atkUnit, defUnit);
+            this.__applySkillEffectAfterCombatForUnitFromAllies(atkUnit, defUnit);
         }
 
         if (defUnit.isAlive) {
@@ -115,6 +120,7 @@ class PostCombatSkillHander {
                 this.__applyAttackSkillEffectAfterCombat(defUnit, atkUnit);
             }
             this.__applySkillEffectAfterCombatForUnit(defUnit, atkUnit);
+            this.__applySkillEffectAfterCombatForUnitFromAllies(defUnit, atkUnit);
         }
 
         // 死んでも発動するスキル効果
@@ -814,6 +820,15 @@ class PostCombatSkillHander {
                     targetUnit.reserveToAddStatusEffect(StatusEffectType.Dodge);
                     break;
             }
+        }
+    }
+
+    __applySkillEffectAfterCombatForUnitFromAllies(targetUnit, enemyUnit) {
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMapIncludingSavedUnit(targetUnit)) {
+            let env = new AfterCombatEnv(this, targetUnit, enemyUnit, this.map);
+            env.setTargetAlly(allyUnit).setSkillOwner(allyUnit);
+            env.setName('戦闘後周囲からのスキル').setLogLevel(getSkillLogLevel());
+            FOR_ALLIES_AFTER_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         }
     }
 

@@ -106,10 +106,14 @@ const NUM_OF_PENALTY_ON_FOE_AND_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_THAT
  */
 const ASSIST_TARGETING_AND_TARGET_NODE = UnitsNode.makeFromUnits(ASSIST_TARGETING_NODE, ASSIST_TARGET_NODE);
 
+const TOTAL_DAMAGE_DEALT_TO_TARGET_DURING_COMBAT_NODE = SUB_NODE(TARGETS_MAX_HP_NODE, TARGETS_HP_DURING_COMBAT_NODE);
 const TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE = SUB_NODE(new FoesMaxHpNode(), new FoesHpDuringCombatNode());
 
 const PERCENTAGE_NODE = (percentage, num) =>
     MULT_TRUNC_NODE(MULT_NODE(INT_PERCENTAGE_NUMBER_NODE(percentage), 0.01), num);
+
+const PERCENTAGE_ADD_NODE = (percentage, num, add) =>
+    ADD_NODE(PERCENTAGE_NODE(percentage, num), add);
 
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpacesNode(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
@@ -587,13 +591,8 @@ function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
     ));
 }
 
-/**
- * highest total penalties among target and foes within 2 spaces of target
- * @returns {NumberNode}
- */
-function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
-    return highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
-}
+const HIGHEST_TOTAL_PENALTIES_AMONG_TARGET_AND_FOES_WITHIN_N_SPACES_OF_TARGET_NODE =
+    (n) => highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
 
 /**
  * @param {number|NumberNode} n
@@ -1079,16 +1078,30 @@ function setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, atSta
     ));
 }
 
-function setBeforeAoeSpecialAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, beforeAoeNode, atStartOfNode, afterNode) {
-    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        IF_NODE(condNode, atStartOfNode),
-    ));
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        IF_NODE(condNode, atStartOfNode),
-    ));
-    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        IF_NODE(condNode, afterNode),
-    ));
+/**
+ * @param {string|number} skillId
+ * @param {BoolNode} condNode
+ * @param {SkillEffectNode} beforeAoeNode
+ * @param {SkillEffectNode} atStartOfNode
+ * @param {SkillEffectNode} afterNode
+ */
+function setBeforeAoeSpecialAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode,
+                                                                        beforeAoeNode, atStartOfNode, afterNode) {
+    if (beforeAoeNode) {
+        BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(condNode, atStartOfNode),
+        ));
+    }
+    if (atStartOfNode) {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(condNode, atStartOfNode),
+        ));
+    }
+    if (afterNode) {
+        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(condNode, afterNode),
+        ));
+    }
 }
 
 function setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId, condNode, statsNode, effectNode) {
@@ -1110,4 +1123,26 @@ function setWhenUnitIsInCombatFoesSaviorEffectsWillNotTriggerNode(skillId) {
 function setAtStartOfPlayerPhaseOrEnemyPhase(skillId, nodeFunc) {
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+}
+
+function setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, nodeFunc) {
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_NOT_SUMMONER_DUELS_MODE_NODE,
+            nodeFunc(),
+        ),
+    ));
+}
+
+/**
+ * @param {number|string} skillId
+ * @param {BoolNode} condNode
+ * @param {...[SkillEffectHooks, () => SkillEffectNode][]} hooksAndNodeFuncs
+ */
+function setCondHooks(skillId, condNode, ...hooksAndNodeFuncs) {
+    for (let [hooks, nodeFunc] of hooksAndNodeFuncs) {
+        hooks.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(condNode, nodeFunc()),
+        ));
+    }
 }

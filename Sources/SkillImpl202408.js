@@ -2732,7 +2732,7 @@ function setDiscord(skillId, statsRatios) {
             // unit deals +X damage (excluding area-of-effect Specials;
             new UnitDealsDamageExcludingAoeSpecialsNode(
                 // X = highest total penalties among target and foes within 2 spaces of target),
-                highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(2),
+                HIGHEST_TOTAL_PENALTIES_AMONG_TARGET_AND_FOES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
             ),
             // and reduces damage from foe's attacks by 30% during combat (excluding area-of-effect Specials).
             new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),

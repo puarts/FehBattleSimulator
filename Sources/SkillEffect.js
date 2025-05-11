@@ -146,6 +146,12 @@ const FOE_NODE = new class extends TargetNode {
     }
 }
 
+const SKILL_OWNER_NODE = new class extends TargetNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
 class AssistTargetingNode extends TargetNode {
     static {
         Object.assign(this.prototype, GetAssistTargetingMixin);
@@ -1513,6 +1519,7 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
 }
 
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
+const CANTO_DIST_PLUS_2_MAX_5_NODE = new CantoDistNode(2, 5);
 const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
 
 /**
@@ -3011,6 +3018,8 @@ class TargetsMoveTypeNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_MOVE_TYPE_NODE = new TargetsMoveTypeNode();
+
 // TODO: マップ上でのRangeを取得するノードを作成する（かぜの剣スタイルなど）
 class TargetsRangeNode extends PositiveNumberNode {
     static {
@@ -3277,6 +3286,14 @@ class TargetsTotalPenaltiesNode extends PositiveNumberNode {
         let result = -unit.getDebuffTotal(unit !== env.foeDuringCombat);
         env.debug(`${unit.nameWithGroup}の弱化の合計値は${result}`);
         return result;
+    }
+}
+
+const TARGETS_TOTAL_PENALTIES_NODE = new TargetsTotalPenaltiesNode();
+
+const FOES_TOTAL_PENALTIES_NODE = new class extends TargetsTotalPenaltiesNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
@@ -4835,6 +4852,9 @@ class DealsDamageToTargetAtStartOfTurnNode extends FromPositiveNumberNode {
         env.debug(`${unit.nameWithGroup}は${result}ダメージを予約`);
     }
 }
+
+const DEALS_DAMAGE_TO_TARGET_AT_START_OF_TURN_NODE = n => new DealsDamageToTargetAtStartOfTurnNode(n);
+const DEALS_DAMAGE_TO_TARGET_ON_MAP_NODE = n => new DealsDamageToTargetAtStartOfTurnNode(n);
 
 // 再行動・再移動
 class GrantsAnotherActionNode extends SkillEffectNode {

@@ -181,6 +181,8 @@ class TargetsHpDuringCombatNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_HP_DURING_COMBAT_NODE = new TargetsHpDuringCombatNode();
+
 class FoesHpDuringCombatNode extends TargetsHpDuringCombatNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -682,6 +684,8 @@ class NeutralizesPenaltiesToUnitsStatsNode extends NeutralizesPenaltiesToTargets
     }
 }
 
+const NEUTRALIZES_EACH_PENALTIES_ON_UNIT_NODE =
+    (atk, spd, def, res) => new NeutralizesPenaltiesToUnitsStatsNode(atk, spd, def, res);
 const NEUTRALIZES_PENALTIES_ON_UNIT_NODE = new NeutralizesPenaltiesToUnitsStatsNode(true, true, true, true);
 
 /**
@@ -1112,6 +1116,9 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends Applyin
         env.debug(`${unit.nameWithGroup}は最初に受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
+
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_NODE =
+    n => new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(n);
 
 class ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode extends ApplyingNumberNode {
     static {
@@ -1883,6 +1890,9 @@ class DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefO
     }
 }
 
+const DISABLES_TARGETS_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_DURING_COMBAT_NODE =
+    new DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefOrResDuringCombatNode();
+
 // Unit or BattleContextに値を設定 END
 
 class CanTargetMakeFollowUpIncludingPotentNode extends BoolNode {
@@ -2311,3 +2321,32 @@ class GrantsMiracleAndHealToTargetOncePerMapNode extends SkillEffectNode {
 }
 
 const GRANTS_MIRACLE_AND_HEAL_TO_TARGET_ONCE_PER_MAP_NODE = new GrantsMiracleAndHealToTargetOncePerMapNode();
+
+class TargetCannotRecoverHpDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.hasDeepWounds = true;
+        env.debug(`${unit.nameWithGroup}は戦闘中HPを回復できない`);
+    }
+}
+
+const TARGET_CANNOT_RECOVER_HP_DURING_COMBAT_NODE = new TargetCannotRecoverHpDuringCombatNode();
+
+class TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.hasDeepWoundsAfterCombatNeutralizedWhenFeud = true;
+        env.debug(`${unit.nameWithGroup}は戦闘後HPを回復できない（暗闘で無効化される）`);
+    }
+}
+
+const TARGET_CANNOT_RECOVER_HP_AFTER_COMBAT_NEUTRALIZED_WHEN_FEUD_NODE =
+    new TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode();
