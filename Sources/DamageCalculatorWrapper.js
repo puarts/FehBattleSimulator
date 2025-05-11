@@ -837,7 +837,7 @@ class DamageCalculatorWrapper {
             return null;
         }
         let saverUnit = null;
-        let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2, false);
+        let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 4, false);
         for (let ally of allies) {
             let isNoDefTile = defUnit.placedTile === null || defUnit.placedTile === undefined;
             let cannotMoveToForSave = !defUnit.placedTile.isMovableTileForUnit(ally);
@@ -935,7 +935,7 @@ class DamageCalculatorWrapper {
      */
     __canActivateSaveSkill(atkUnit, defUnit, ally, damageType) {
         let env = new DamageCalculatorWrapperEnv(this, defUnit, atkUnit, null);
-        env.setTargetAlly(ally);
+        env.setTargetAlly(ally).setSkillOwner(ally);
         env.setName('護り手判定時').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
             .setCombatPhase(this.combatPhase);
         return CAN_TRIGGER_SAVIOR_HOOKS.evaluateSomeWithUnit(ally, env);

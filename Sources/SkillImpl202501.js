@@ -600,8 +600,8 @@
     let skillId = PassiveC.DarklingGuardian2;
     enablesCantoN(skillId, 2);
     let targetUnitsNode = IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
-        TARGETS_PARTNERS_ON_MAP_NODE,
-        HIGHEST_DEF_ALLIES_ON_MAP_NODE,
+        SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
+        HIGHEST_DEF_SKILL_OWNERS_ALLIES_ON_MAP_NODE,
     );
     setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
         FOR_EACH_UNIT_NODE(
@@ -994,8 +994,8 @@
     SAVE_SKILL_SET.add(skillId);
     CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
     let targetUnitsNode = IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
-        TARGETS_PARTNERS_ON_MAP_NODE,
-        HIGHEST_ATK_ALLIES_ON_MAP_NODE,
+        SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
+        HIGHEST_ATK_SKILL_OWNERS_ALLIES_ON_MAP_NODE,
     );
     CAN_TRIGGER_SAVIOR_HOOKS.addSkill(skillId, () =>
         // If foe initiates combat against target ally within 4 spaces of unit,

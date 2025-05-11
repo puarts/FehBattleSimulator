@@ -228,7 +228,12 @@ const INCLUDES_UNIT_NODE = (unitNode, unitsNode) => new IncludesUnitNode(unitNod
 
 class UnitsOnMapNode extends UnitsNode {
     evaluate(env) {
-        return env.unitManager.enumerateAllUnitsOnMap();
+        if (env.unitManager) {
+            return env.unitManager.enumerateAllUnitsOnMap();
+        } else if (env.battleMap) {
+            return env.battleMap.enumerateUnitsOnMap();
+        }
+        return [];
     }
 }
 
@@ -248,7 +253,12 @@ class TargetsAlliesOnMapNode extends UnitsNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let withTargetUnit = this._includesTargetNode.evaluate(env);
-        return env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
+        if (env.unitManager) {
+            return env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
+        } else if (env.battleMap) {
+            return env.battleMap.enumerateUnitsInTheSameGroup(unit, withTargetUnit);
+        }
+        return [];
     }
 }
 
@@ -982,7 +992,17 @@ class IsThereUnitOnMapNode extends BoolNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let pred = u => u.isOnMap && this._predNode.evaluate(env.copy().setTarget(u));
-        let result = env.unitManager.isThereUnit(pred);
+        let result = false;
+        if (env.unitManager) {
+            result = env.unitManager.isThereUnit(pred);
+        } else if (env.battleMap) {
+            for (let unit of env.battleMap.enumerateUnitsOnMap()) {
+                if (pred(unit)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
         env.debug(`${unit.nameWithGroup}に対して条件を満たすユニットがマップ上にいるか: ${result}`);
         return result;
     }
@@ -1028,7 +1048,7 @@ const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode
 
 const ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE = new class extends BoolNode {
     evaluate(env) {
-        let result = env.target.isPartner(env.skillOwner);
+        let result = env.target.isPartner(env.skillOwner) && env.target.isSameGroup(env.skillOwner);
         env.debug(`${env.target.nameWithGroup}と${env.skillOwner.nameWithGroup}は支援を結んでいるか: ${result}`);
         return result;
     }
