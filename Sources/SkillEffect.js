@@ -2152,7 +2152,7 @@ class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
         let units = Array.from(this._unitsNode.evaluate(env));
         let evaluated = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
         env.trace(`Units: ${units.map(u => u.nameWithGroup)} => values array: [${evaluated.map(a => `[${a}]`)}]`);
-        let result = ArrayUtil.max(...evaluated);
+        let result = ArrayUtil.maxByIndex(...evaluated);
         env.trace(`Highest values: [${result}]`);
         return result;
     }

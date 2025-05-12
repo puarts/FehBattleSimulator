@@ -2106,35 +2106,41 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
 
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    setCondHooks(skillId,
         // If unit initiates combat or if foe's HP ≥ 75% at start of combat,
-        IF_FOE_INITIATES_COMBAT_OR_IF_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT(
-
-        ),
-        // grants bonus to unit's Atk/Spd/Def/Res =
-        GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
-            // number of foes within 3 rows or 3 columns centered on unit x 3, + 5 (max 14),
-            ENSURE_MAX_NODE(
-                ADD_NODE(MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
-                14
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE),
+        [
+            AT_START_OF_COMBAT_HOOKS,
+            () => SKILL_EFFECT_NODE(
+                // grants bonus to unit's Atk/Spd/Def/Res =
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
+                    // number of foes within 3 rows or 3 columns centered on unit x 3, + 5 (max 14),
+                    ENSURE_MAX_NODE(
+                        ADD_NODE(MULT_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3), 5),
+                        14
+                    ),
+                ),
+                X_NUM_NODE(
+                    // unit deals + Y damage
+                    UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
+                    // (Y = total number of Bonuses and Penalties active on foe and any foe within 2 spaces of foe,
+                    // excluding stat bonuses and stat penalties,
+                    // x 3; excluding area-of-effect Specials),
+                    MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
+                ),
+                // and grants Special cooldown charge + 1 to unit per attack during combat (only highest value applied; does not stack),
+                GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
             ),
-        ),
-        X_NUM_NODE(
-            // unit deals + Y damage
-            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(READ_NUM_NODE),
-            // (Y = total number of Bonuses and Penalties active on foe and any foe within 2 spaces of foe,
-            // excluding stat bonuses and stat penalties,
-            // x 3; excluding area-of-effect Specials),
-            MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
-        ),
-        // and grants Special cooldown charge + 1 to unit per attack during combat (only highest value applied; does not stack),
-        GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
-        // and also,
-        // if decreasing the Spd difference necessary to make a follow-up attack by 25 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
-        // triggers (Potent Follow X%) during combat
-        // (if unit cannot perform follow-up and attack twice, X = 80; otherwise, X = 40).
-        APPLY_POTENT_EFFECT_NODE,
-    ));
+        ],
+        [
+            WHEN_APPLIES_POTENT_EFFECTS_HOOKS,
+            // and also,
+            // if decreasing the Spd difference necessary to make a follow-up attack by 25 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
+            // triggers (Potent Follow X%) during combat
+            // (if unit cannot perform follow-up and attack twice, X = 80; otherwise, X = 40).
+            () => APPLY_POTENT_EFFECT_NODE,
+        ]
+    );
 }
 
 // Trample
@@ -5990,7 +5996,7 @@
     let skillId = getStatusEffectSkillId(StatusEffectType.PotentFollow);
     WHEN_APPLIES_POTENT_EFFECTS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         APPLY_POTENT_EFFECT_NODE,
-    ))
+    ));
 }
 
 {

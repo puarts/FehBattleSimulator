@@ -1110,7 +1110,7 @@ class BattleContext {
     }
 
     getMaxPotentRatio() {
-        return ArrayUtil.max(this.potentRatios);
+        return Math.max(...this.potentRatios);
     }
 
     isDefenderSpecialPrevented() {

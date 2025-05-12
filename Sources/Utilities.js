@@ -1745,7 +1745,7 @@ class ArrayUtil {
      * @param {...Array<number>} arrays
      * @returns {number[]}
      */
-    static max(...arrays) {
+    static maxByIndex(...arrays) {
         // 配列の最大長を取得
         const maxLength = Math.max(...arrays.map(arr => arr.length));
 

@@ -3930,7 +3930,7 @@ class Unit extends BattleMapElement {
     }
 
     calculateMaxReservedGreatTalents(maxValues) {
-        this._reservedMaxGreatTalents = ArrayUtil.max(this.getReservedMaxGreatTalents(), maxValues);
+        this._reservedMaxGreatTalents = ArrayUtil.maxByIndex(this.getReservedMaxGreatTalents(), maxValues);
     }
 
     applyReservedGreatTalents() {
@@ -3941,7 +3941,7 @@ class Unit extends BattleMapElement {
         // 予約された最大値を適用(最大値とのmin)
         let minValues = ArrayUtil.min(addedValues, this.getReservedMaxGreatTalents());
         // 適用したものとcurrentのmaxを選択(現在より減ることはない)
-        this.setGreatTalentsFrom(ArrayUtil.max(currentValues, minValues));
+        this.setGreatTalentsFrom(ArrayUtil.maxByIndex(currentValues, minValues));
         // 値をクリア
         this.clearReservedGreatTalents();
     }
