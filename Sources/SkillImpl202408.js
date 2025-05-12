@@ -2411,11 +2411,11 @@
 
         // At start of turn,
         // if unit is not on a team with support partner and if there is only 1 ally who has the highest Def,
-        IF_NODE(EQ_NODE(0, new CountUnitsNode(TARGETS_PARTNERS_ON_MAP_NODE)),
-            IF_NODE(EQ_NODE(1, new CountUnitsNode(HIGHEST_DEF_ALLIES_ON_MAP_NODE)),
-                FOR_EACH_UNIT_NODE(HIGHEST_DEF_ALLIES_ON_MAP_NODE,
+        IF_NODE(EQ_NODE(0, COUNT_UNITS_NODE(TARGETS_PARTNERS_ON_MAP_NODE)),
+            IF_NODE(EQ_NODE(1, COUNT_UNITS_NODE(HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE(STATUS_INDEX.Def))),
+                FOR_EACH_UNIT_NODE(HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE(STATUS_INDEX.Def),
                     // grants【Pathfinder】to that ally for 1 turn.
-                    new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Pathfinder),
+                    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Pathfinder),
                 ),
             ),
         ),
@@ -2657,7 +2657,7 @@ function setDiscord(skillId, statsRatios) {
         // If unit's Res > foe's Res, reduces damage from attacks during combat and from area-of-effect Specials (excluding
         // Rokkr area-of-effect Specials) by percentage = 4 - current
         // Special cooldown count value, x difference between stats (max difference between stats: 10).
-        IF_NODE(UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE,
+        IF_NODE(UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res),
             new ReducesDamageFromAoeSpecialsByXPercentNode(
                 MULT_TRUNC_NODE(
                     SUB_NODE(4, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT),

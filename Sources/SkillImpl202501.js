@@ -599,15 +599,13 @@
 {
     let skillId = PassiveC.DarklingGuardian2;
     enablesCantoN(skillId, 2);
-    let targetUnitsNode = IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
-        SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
-        HIGHEST_DEF_SKILL_OWNERS_ALLIES_ON_MAP_NODE,
-    );
     setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
         FOR_EACH_UNIT_NODE(
             UNITE_UNITS_NODE(
-                UnitsNode.makeFromUnit(SKILL_OWNER_NODE),
-                FILTER_UNITS_NODE(targetUnitsNode, IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
+                SKILL_OWNER_NODE,
+                FILTER_UNITS_NODE(
+                    PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(STATUS_INDEX.Def),
+                    IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
             ),
             GRANTS_DEF_RES_TO_TARGET_ON_MAP_NODE(6),
             GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
@@ -993,16 +991,12 @@
     // triggers [Savior] on unit.
     SAVE_SKILL_SET.add(skillId);
     CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
-    let targetUnitsNode = IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
-        SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
-        HIGHEST_ATK_SKILL_OWNERS_ALLIES_ON_MAP_NODE,
-    );
     CAN_TRIGGER_SAVIOR_HOOKS.addSkill(skillId, () =>
         // If foe initiates combat against target ally within 4 spaces of unit,
         // triggers [Savior] on unit.
         AND_NODE(
             IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE,
-            INCLUDES_UNIT_NODE(TARGET_NODE, targetUnitsNode),
+            INCLUDES_UNIT_NODE(TARGET_NODE, PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(STATUS_INDEX.Atk)),
         ),
     );
     // (If support partner is on player team,
@@ -1010,7 +1004,8 @@
     // target ally is the ally with the highest Atk on player team, excluding unit.)
     // Unit can move to a space within 2 spaces of target ally.
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
-        TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE(2, targetUnitsNode)
+        TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE(2,
+            PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(STATUS_INDEX.Atk))
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // If unit is transformed or if foe initiates combat,
@@ -1977,7 +1972,7 @@
                             ),
                             AND_NODE(
                                 NOT_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE),
-                                HIGHEST_ATK_ALLIES_ON_MAP_NODE,
+                                INCLUDES_UNIT_NODE(TARGET_NODE, HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(STATUS_INDEX.Atk)),
                             ),
                         )),
                     30,
@@ -2604,7 +2599,8 @@
             NULL_UNIT_FOLLOW_UP_NODE,
             // and also,
             // if unit is within 4 spaces of a certain target ally,
-            IF_NODE(IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE(4,
+            IF_NODE(
+                IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE(4,
                     // (If support partner is on player team,
                     // targets any support partner; otherwise,
                     // targets ally with the highest Spd on player team,
@@ -2616,7 +2612,7 @@
                         ),
                         AND_NODE(
                             NOT_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE),
-                            HIGHEST_SPD_ALLIES_ON_MAP_NODE,
+                            INCLUDES_UNIT_NODE(TARGET_NODE, HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(STATUS_INDEX.Spd)),
                         ),
                     )),
                 // unit attacks twice during combat.
@@ -3965,7 +3961,7 @@
             FILTER_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE,
                 AND_NODE(
                     IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_SKILL_OWNER_NODE,
-                    LT_NODE(TARGETS_RES_ON_MAP, SKILL_OWNERS_RES_ON_MAP),
+                    LT_NODE(TARGETS_STAT_ON_MAP(STATUS_INDEX.Res), SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Res)),
                 ),
             ),
             INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FalseStart),
@@ -3988,7 +3984,7 @@
             FILTER_UNITS_NODE(TARGETS_FOES_ON_MAP_NODE,
                 AND_NODE(
                     IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_SKILL_OWNER_NODE,
-                    LT_NODE(TARGETS_RES_ON_MAP, SKILL_OWNERS_RES_ON_MAP),
+                    LT_NODE(TARGETS_STAT_ON_MAP(STATUS_INDEX.Res), SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Res)),
                 ),
             ),
             // inflicts Atk/Res-7 and (False Start)
@@ -5619,7 +5615,7 @@
 
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's Res > foe's Res,
-        IF_NODE(UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE,
+        IF_NODE(UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res),
             // reduces damage from attacks during combat and from area-of-effect Specials
             REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(
                 COND_OP(
@@ -6518,7 +6514,7 @@
             IF_NODE(NOT_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE),
                 FOR_EACH_UNIT_NODE(
                     // targets ally with the highest Atk within 2 spaces of unit).
-                    UNITE_UNITS_NODE(UnitsNode.makeFromUnit(TARGET_NODE), HIGHEST_ATK_ALLIES_WITHIN_2_SPACES_NODE),
+                    UNITE_UNITS_NODE(TARGET_NODE, HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(STATUS_INDEX.Atk)),
                     GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 0, 0, 6),
                     GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.EssenceDrain, StatusEffectType.BonusDoubler),
                 ),

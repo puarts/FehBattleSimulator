@@ -453,10 +453,13 @@ class MinUnitsNode extends UnitsNode {
 
 class UniteUnitsNode extends UnitsNode {
     /**
-     * @param {UnitsNode} unitsNode
+     * @param {...(UnitNode|UnitsNode)} unitsNode
      */
     constructor(...unitsNode) {
-        super(...unitsNode);
+        let units = unitsNode.map(
+            node => node instanceof UnitNode ? UniteUnitsNode.makeFromUnit(node) : node
+        );
+        super(...units);
     }
 
     evaluate(env) {
@@ -2467,15 +2470,17 @@ const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_
 const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Def);
 const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Res);
 
-const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
-const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Spd);
-const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Def);
-const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Res);
+const UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
+const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Atk);
+const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Spd);
+const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Def);
+const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res);
 
-const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
-const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Spd);
-const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Def);
-const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Res);
+const FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
+const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Atk);
+const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Spd);
+const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Def);
+const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res);
 
 class TargetsStatsDuringCombat extends PositiveNumberNode {
     static {
@@ -4768,6 +4773,9 @@ class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
         }
     }
 }
+
+const GRANTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE =
+    (...statusEffects) => new GrantsStatusEffectsAtStartOfTurnNode(...statusEffects);
 
 class GrantsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAtStartOfTurnNode {
 }
