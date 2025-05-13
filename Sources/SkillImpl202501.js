@@ -630,6 +630,7 @@
 // Fell Child’s Arts
 {
     let skillId = Weapon.FellChildsArts;
+    REDUCE_SPECIAL_COUNT_WHEN_NO_WEAPON_SKILL_INFO_SET.add(skillId);
     // Accelerates Special trigger (cooldown count–1).
     // If foe’s Range = 2, calculates damage using the lower of foe’s Def or Res.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
@@ -2197,7 +2198,7 @@
             // grants Atk/Spd+6 and
             GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(6, 6, 0, 0),
             // "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% during combat (excluding area-of-effect Specials)" to unit and allies within 2 spaces of unit for 1 turn.
-            REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent),
         ),
     ));
     AT_START_OF_TURN_AFTER_HEALING_AND_DAMAGE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(

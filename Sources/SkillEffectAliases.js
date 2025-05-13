@@ -1127,7 +1127,7 @@ function setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId, condNode, 
 }
 
 function setWhenUnitIsInCombatFoesSaviorEffectsWillNotTriggerNode(skillId) {
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // When unit is in combat, foes' Savior effects will not trigger.
         DOES_NOT_TRIGGER_TARGETS_FOES_SAVIOR_EFFECTS_NODE,
     ));

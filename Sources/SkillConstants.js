@@ -4003,6 +4003,7 @@ const CANNOT_MOVE_STYLE_SET = new Set();
 const RANGED_STYLE_FOR_MELEE_SET = new Set();
 
 const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
+const REDUCE_SPECIAL_COUNT_WHEN_NO_WEAPON_SKILL_INFO_SET = new Set();
 
 /**
  * 範囲奥義も含む低い方計算無効

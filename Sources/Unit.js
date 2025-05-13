@@ -5765,6 +5765,12 @@ class Unit extends BattleMapElement {
         if (this.weaponInfo != null) {
             specialCountMax += this.weaponInfo.cooldownCount;
         }
+        if (this.weaponInfo &&
+            this.weaponInfo.cooldownCount === 0) {
+            if (REDUCE_SPECIAL_COUNT_WHEN_NO_WEAPON_SKILL_INFO_SET.has(this.weapon)) {
+                specialCountMax -= 1;
+            }
+        }
         for (let skillId of this.enumerateSkills()) {
             if (ACCELERATES_SPECIAL_TRIGGER_SET.has(skillId)) {
                 specialCountMax -= 1;
