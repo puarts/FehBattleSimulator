@@ -1776,13 +1776,13 @@ class ApplyingNumberNode extends SkillEffectNode {
 
 class FromPositiveStatsNode extends FromPositiveNumbersNode {
     /**
-     * @param {number|NumberNode|NumbersNode} atk
+     * @param {number|NumberNode|NumbersNode} atkOrStats
      * @param {number|NumberNode} spd
      * @param {number|NumberNode} def
      * @param {number|NumberNode} res
      */
-    constructor(atk, spd = null, def = null, res = null) {
-        super(atk, spd, def, res);
+    constructor(atkOrStats, spd = null, def = null, res = null) {
+        super(atkOrStats, spd, def, res);
     }
 }
 
@@ -2037,6 +2037,22 @@ class StatsNode extends NumbersNode {
 }
 
 const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
+
+const ATK_NODE = n => StatsNode.makeStatsNodeFrom(n, 0, 0, 0);
+const SPD_NODE = n => StatsNode.makeStatsNodeFrom(0, n, 0, 0);
+const DEF_NODE = n => StatsNode.makeStatsNodeFrom(0, 0, n, 0);
+const RES_NODE = n => StatsNode.makeStatsNodeFrom(0, 0, 0, n);
+
+const ATK_SPD_NODE = (atk, spd = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, 0);
+const ATK_DEF_NODE = (atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, 0);
+const ATK_RES_NODE = (atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, 0, res);
+const SPD_DEF_NODE = (spd, def = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, 0);
+const DEF_RES_NODE = (def, res = def) => StatsNode.makeStatsNodeFrom(0, 0, def, res);
+
+const ATK_SPD_DEF_NODE = (atk, spd = atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, spd, def, 0);
+const ATK_SPD_RES_NODE = (atk, spd = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, res);
+const ATK_DEF_RES_NODE = (atk, def = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, res);
+const SPD_DEF_RES_NODE = (spd, def = spd, res = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, res);
 
 class MultStatsNode extends StatsNode {
     constructor(...statsNodes) {
@@ -3725,17 +3741,14 @@ class ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode extends ForEachTarget
     }
 }
 
-class ForEachTargetAndTargetsAllyWithin3SpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
-    constructor(predNode, ...children) {
-        super(3, predNode, ...children);
-    }
-}
+const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE =
+    (n, ...nodes) => new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(n, TRUE_NODE, ...nodes);
 
 const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE =
-    (...children) => new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE, ...children);
+    (...children) => FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(2, ...children);
 
 const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_3_SPACES_OF_TARGET_NODE =
-    (...children) => new ForEachTargetAndTargetsAllyWithin3SpacesOfTargetNode(TRUE_NODE, ...children);
+    (...children) => FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(3, ...children);
 
 class ForEachFoeAndFoesAllyWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
     static {
