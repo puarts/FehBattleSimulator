@@ -769,6 +769,36 @@ const ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET = (n) =>
 
 /**
  * @param {number|NumberNode} n
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n, ...statusEffectType) =>
+        FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(n,
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(...statusEffectType),
+        );
+
+/**
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE =
+    (...statusEffectType) =>
+        GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2, ...statusEffectType);
+
+/**
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_3_SPACES_NODE =
+    (...statusEffectType) =>
+        GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(3, ...statusEffectType);
+
+/**
+ * @param {number|NumberNode} n
  * @param {StatsNode} statsNode
  * @param {...number} statusEffectType
  * @returns {SkillEffectNode}
