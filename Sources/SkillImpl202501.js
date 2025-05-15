@@ -47,13 +47,13 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // At start of turn, if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // inflicts Atk/Res–7 and
+            // status preventing counterattacks
+            // through their next actions.
             // on closest foes and foes within 2 spaces of those foes
-            FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
-                // inflicts Atk/Res–7 and
-                INFLICTS_ATK_RES_ON_TARGET_ON_MAP_NODE(7),
-                // status preventing counterattacks
-                // through their next actions.
-                INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.CounterattacksDisrupted),
+            INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                ATK_RES_NODE(7),
+                StatusEffectType.CounterattacksDisrupted,
             ),
         ),
     ));
@@ -819,17 +819,14 @@
         () => SKILL_EFFECT_NODE(
             // if unit’s HP ≥ 25%,
             IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+                // grants [Fell Spirit]
                 // to unit and allies within 2 spaces of unit for 1 turn,
-                FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
-                    // grants [Fell Spirit]
-                    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FellSpirit),
+                GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                    StatusEffectType.FellSpirit,
                 ),
-                // on closest foes and any foes within 2 spaces of those foes through their next actions.
-                FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
-                    // and inflicts Atk/Spd–7 and
-                    INFLICTS_ATK_SPD_ON_TARGET_ON_MAP_NODE(7),
-                    // [Schism]
-                    INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Schism),
+                INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                    ATK_SPD_NODE(7),
+                    StatusEffectType.Schism,
                 ),
             ),
         )
