@@ -3098,19 +3098,32 @@ class BattleMap {
 
     /**
      * @param {Unit} targetUnit
+     * @param withTargetUnit
      * @returns {Generator<Unit>}
      */
-    * enumerateUnitsInTheSameGroup(targetUnit) {
+    * enumerateUnitsInTheSameGroup(targetUnit, withTargetUnit = false) {
         for (let unit of this.enumerateUnitsInSpecifiedGroup(targetUnit.groupId)) {
-            if (unit !== targetUnit) {
-                yield unit;
+            if (!withTargetUnit && unit === targetUnit) {
+                continue;
             }
+            yield unit;
         }
     }
 
     * enumerateUnitsInSpecifiedGroup(groupId) {
         for (let unit of this._units) {
             if (unit.groupId == groupId) {
+                yield unit;
+            }
+        }
+    }
+
+    /**
+     * @returns {Generator<Unit>}
+     */
+    * enumerateUnitsOnMap() {
+        for (let unit of this._units) {
+            if (unit.isOnMap) {
                 yield unit;
             }
         }

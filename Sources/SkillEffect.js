@@ -146,6 +146,12 @@ const FOE_NODE = new class extends TargetNode {
     }
 }
 
+const SKILL_OWNER_NODE = new class extends TargetNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
 class AssistTargetingNode extends TargetNode {
     static {
         Object.assign(this.prototype, GetAssistTargetingMixin);
@@ -200,9 +206,34 @@ class UnitsNode extends SkillEffectNode {
     }
 }
 
+class IncludesUnitNode extends BoolNode {
+    /**
+     * @param {UnitNode} unitNode
+     * @param {UnitsNode} unitsNode
+     */
+    constructor(unitNode, unitsNode) {
+        super();
+        this._unitNode = unitNode;
+        this._unitsNode = unitsNode;
+    }
+
+    evaluate(env) {
+        let unit = this._unitNode.evaluate(env);
+        let units = this._unitsNode.evaluate(env);
+        return IterUtil.has(units, unit);
+    }
+}
+
+const INCLUDES_UNIT_NODE = (unitNode, unitsNode) => new IncludesUnitNode(unitNode, unitsNode);
+
 class UnitsOnMapNode extends UnitsNode {
     evaluate(env) {
-        return env.unitManager.enumerateAllUnitsOnMap();
+        if (env.unitManager) {
+            return env.unitManager.enumerateAllUnitsOnMap();
+        } else if (env.battleMap) {
+            return env.battleMap.enumerateUnitsOnMap();
+        }
+        return [];
     }
 }
 
@@ -222,7 +253,12 @@ class TargetsAlliesOnMapNode extends UnitsNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let withTargetUnit = this._includesTargetNode.evaluate(env);
-        return env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
+        if (env.unitManager) {
+            return env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, withTargetUnit);
+        } else if (env.battleMap) {
+            return env.battleMap.enumerateUnitsInTheSameGroup(unit, withTargetUnit);
+        }
+        return [];
     }
 }
 
@@ -417,10 +453,13 @@ class MinUnitsNode extends UnitsNode {
 
 class UniteUnitsNode extends UnitsNode {
     /**
-     * @param {UnitsNode} unitsNode
+     * @param {...(UnitNode|UnitsNode)} unitsNode
      */
     constructor(...unitsNode) {
-        super(...unitsNode);
+        let units = unitsNode.map(
+            node => node instanceof UnitNode ? UniteUnitsNode.makeFromUnit(node) : node
+        );
+        super(...units);
     }
 
     evaluate(env) {
@@ -956,7 +995,17 @@ class IsThereUnitOnMapNode extends BoolNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let pred = u => u.isOnMap && this._predNode.evaluate(env.copy().setTarget(u));
-        let result = env.unitManager.isThereUnit(pred);
+        let result = false;
+        if (env.unitManager) {
+            result = env.unitManager.isThereUnit(pred);
+        } else if (env.battleMap) {
+            for (let unit of env.battleMap.enumerateUnitsOnMap()) {
+                if (pred(unit)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
         env.debug(`${unit.nameWithGroup}に対して条件を満たすユニットがマップ上にいるか: ${result}`);
         return result;
     }
@@ -1002,7 +1051,7 @@ const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode
 
 const ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE = new class extends BoolNode {
     evaluate(env) {
-        let result = env.target.isPartner(env.skillOwner);
+        let result = env.target.isPartner(env.skillOwner) && env.target.isSameGroup(env.skillOwner);
         env.debug(`${env.target.nameWithGroup}と${env.skillOwner.nameWithGroup}は支援を結んでいるか: ${result}`);
         return result;
     }
@@ -1493,6 +1542,7 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
 }
 
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
+const CANTO_DIST_PLUS_2_MAX_5_NODE = new CantoDistNode(2, 5);
 const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
 
 /**
@@ -1726,13 +1776,13 @@ class ApplyingNumberNode extends SkillEffectNode {
 
 class FromPositiveStatsNode extends FromPositiveNumbersNode {
     /**
-     * @param {number|NumberNode|NumbersNode} atk
+     * @param {number|NumberNode|NumbersNode} atkOrStats
      * @param {number|NumberNode} spd
      * @param {number|NumberNode} def
      * @param {number|NumberNode} res
      */
-    constructor(atk, spd = null, def = null, res = null) {
-        super(atk, spd, def, res);
+    constructor(atkOrStats, spd = null, def = null, res = null) {
+        super(atkOrStats, spd, def, res);
     }
 }
 
@@ -1801,6 +1851,8 @@ const GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, 0, 0);
 const GRANTS_ATK_DEF_TO_TARGET_DURING_COMBAT_NODE =
     (atk, def = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, def, 0);
+const GRANTS_ATK_RES_TO_TARGET_DURING_COMBAT_NODE =
+    (atk, res = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, 0, res);
 const GRANTS_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE =
     (spd, def = spd) => new GrantsStatsPlusToTargetDuringCombatNode(0, spd, def, 0);
 const GRANTS_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
@@ -1886,6 +1938,7 @@ const GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE = n => new GrantsAllSta
 const GRANTS_ALL_STATS_PLUS_4_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(5);
 const GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(8);
+const GRANTS_ALL_STATS_PLUS_9_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(9);
 
 const GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(5);
@@ -1984,6 +2037,22 @@ class StatsNode extends NumbersNode {
 }
 
 const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
+
+const ATK_NODE = n => StatsNode.makeStatsNodeFrom(n, 0, 0, 0);
+const SPD_NODE = n => StatsNode.makeStatsNodeFrom(0, n, 0, 0);
+const DEF_NODE = n => StatsNode.makeStatsNodeFrom(0, 0, n, 0);
+const RES_NODE = n => StatsNode.makeStatsNodeFrom(0, 0, 0, n);
+
+const ATK_SPD_NODE = (atk, spd = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, 0);
+const ATK_DEF_NODE = (atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, 0);
+const ATK_RES_NODE = (atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, 0, res);
+const SPD_DEF_NODE = (spd, def = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, 0);
+const DEF_RES_NODE = (def, res = def) => StatsNode.makeStatsNodeFrom(0, 0, def, res);
+
+const ATK_SPD_DEF_NODE = (atk, spd = atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, spd, def, 0);
+const ATK_SPD_RES_NODE = (atk, spd = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, res);
+const ATK_DEF_RES_NODE = (atk, def = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, res);
+const SPD_DEF_RES_NODE = (spd, def = spd, res = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, res);
 
 class MultStatsNode extends StatsNode {
     constructor(...statsNodes) {
@@ -2099,7 +2168,7 @@ class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
         let units = Array.from(this._unitsNode.evaluate(env));
         let evaluated = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
         env.trace(`Units: ${units.map(u => u.nameWithGroup)} => values array: [${evaluated.map(a => `[${a}]`)}]`);
-        let result = ArrayUtil.max(...evaluated);
+        let result = ArrayUtil.maxByIndex(...evaluated);
         env.trace(`Highest values: [${result}]`);
         return result;
     }
@@ -2158,6 +2227,8 @@ class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTarget
 const INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE =
     (atk, spd, def, res) => new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, res);
 
+const INFLICTS_ALL_STATS_MINUS_2_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(2, 2, 2, 2);
+const INFLICTS_ALL_STATS_MINUS_3_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(3, 3, 3, 3);
 const INFLICTS_ALL_STATS_MINUS_4_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(4, 4, 4, 4);
 const INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(5, 5, 5, 5);
 
@@ -2415,15 +2486,17 @@ const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_
 const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Def);
 const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Res);
 
-const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
-const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Spd);
-const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Def);
-const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Res);
+const UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
+const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Atk);
+const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Spd);
+const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Def);
+const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res);
 
-const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
-const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Spd);
-const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Def);
-const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Res);
+const FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
+const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Atk);
+const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Spd);
+const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Def);
+const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res);
 
 class TargetsStatsDuringCombat extends PositiveNumberNode {
     static {
@@ -2986,6 +3059,8 @@ class TargetsMoveTypeNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_MOVE_TYPE_NODE = new TargetsMoveTypeNode();
+
 // TODO: マップ上でのRangeを取得するノードを作成する（かぜの剣スタイルなど）
 class TargetsRangeNode extends PositiveNumberNode {
     static {
@@ -3237,6 +3312,8 @@ class DoesTargetTriggerSaviorNode extends BoolNode {
     }
 }
 
+const DOES_TARGET_TRIGGER_SAVIOR_NODE = new DoesTargetTriggerSaviorNode();
+
 /**
  * total penalties
  */
@@ -3250,6 +3327,14 @@ class TargetsTotalPenaltiesNode extends PositiveNumberNode {
         let result = -unit.getDebuffTotal(unit !== env.foeDuringCombat);
         env.debug(`${unit.nameWithGroup}の弱化の合計値は${result}`);
         return result;
+    }
+}
+
+const TARGETS_TOTAL_PENALTIES_NODE = new TargetsTotalPenaltiesNode();
+
+const FOES_TOTAL_PENALTIES_NODE = new class extends TargetsTotalPenaltiesNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
@@ -3656,17 +3741,14 @@ class ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode extends ForEachTarget
     }
 }
 
-class ForEachTargetAndTargetsAllyWithin3SpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
-    constructor(predNode, ...children) {
-        super(3, predNode, ...children);
-    }
-}
+const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE =
+    (n, ...nodes) => new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(n, TRUE_NODE, ...nodes);
 
 const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE =
-    (...children) => new ForEachTargetAndTargetsAllyWithin2SpacesOfTargetNode(TRUE_NODE, ...children);
+    (...children) => FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(2, ...children);
 
 const FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_3_SPACES_OF_TARGET_NODE =
-    (...children) => new ForEachTargetAndTargetsAllyWithin3SpacesOfTargetNode(TRUE_NODE, ...children);
+    (...children) => FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(3, ...children);
 
 class ForEachFoeAndFoesAllyWithinNSpacesOfTargetNode extends ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode {
     static {
@@ -4426,6 +4508,9 @@ class ForEachAllyForSpacesNode extends ForEachTargetForSpacesNode {
     }
 }
 
+const FOR_EACH_ALLY_FOR_SPACES_NODE =
+    (predNode, ...children) => new ForEachAllyForSpacesNode(predNode, ...children);
+
 class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -4461,11 +4546,46 @@ class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
 const TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
     (n, spacesNode) => new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
+class TargetsPlacableSpacesWithinNSpacesFromUnitsNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {UnitsNode} units
+     */
+    constructor(n, units) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._unitsNode = units;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let units = this._unitsNode.evaluate(env);
+        let resultSet = new Set();
+        for (let u of units) {
+            let tileSet = new Set(env.battleMap.__enumeratePlacableTilesWithinSpecifiedSpaces(u, unit, n));
+            env.debug(`${unit.nameWithGroup}が移動可能な${u.nameWithGroup}の周囲${n}以内のマス: ${SetUtil.toString(tileSet)}`);
+            resultSet = SetUtil.union(resultSet, tileSet);
+        }
+        return resultSet;
+    }
+}
+
+const TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE =
+    (n, units) => new TargetsPlacableSpacesWithinNSpacesFromUnitsNode(n, units);
+
 class SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode extends TargetsPlacableSpacesWithinNSpacesFromSpaceNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
+
+const SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
+    (n, spacesNode) => new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
 class CrossSpacesNode extends SpacesNode {
     evaluate(env) {
@@ -4597,6 +4717,8 @@ const INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE =
 
 const INFLICTS_SPD_RES_ON_TARGET_ON_MAP_NODE =
     (spd, res = spd) => new InflictsStatsMinusOnTargetOnMapNode(0, spd, 0, res);
+const INFLICTS_ATK_SPD_ON_TARGET_ON_MAP_NODE =
+    (atk, spd = atk) => new InflictsStatsMinusOnTargetOnMapNode(atk, spd, 0, 0);
 const INFLICTS_ATK_DEF_ON_TARGET_ON_MAP_NODE =
     (atk, def = atk) => new InflictsStatsMinusOnTargetOnMapNode(atk, 0, def, 0);
 const INFLICTS_ATK_RES_ON_TARGET_ON_MAP_NODE =
@@ -4664,6 +4786,9 @@ class GrantsStatusEffectsAtStartOfTurnNode extends FromNumbersNode {
         }
     }
 }
+
+const GRANTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE =
+    (...statusEffects) => new GrantsStatusEffectsAtStartOfTurnNode(...statusEffects);
 
 class GrantsStatusEffectsAfterCombatNode extends GrantsStatusEffectsAtStartOfTurnNode {
 }
@@ -4768,6 +4893,9 @@ class DealsDamageToTargetAtStartOfTurnNode extends FromPositiveNumberNode {
         env.debug(`${unit.nameWithGroup}は${result}ダメージを予約`);
     }
 }
+
+const DEALS_DAMAGE_TO_TARGET_AT_START_OF_TURN_NODE = n => new DealsDamageToTargetAtStartOfTurnNode(n);
+const DEALS_DAMAGE_TO_TARGET_ON_MAP_NODE = n => new DealsDamageToTargetAtStartOfTurnNode(n);
 
 // 再行動・再移動
 class GrantsAnotherActionNode extends SkillEffectNode {

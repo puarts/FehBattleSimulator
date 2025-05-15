@@ -106,10 +106,14 @@ const NUM_OF_PENALTY_ON_FOE_AND_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_THAT
  */
 const ASSIST_TARGETING_AND_TARGET_NODE = UnitsNode.makeFromUnits(ASSIST_TARGETING_NODE, ASSIST_TARGET_NODE);
 
+const TOTAL_DAMAGE_DEALT_TO_TARGET_DURING_COMBAT_NODE = SUB_NODE(TARGETS_MAX_HP_NODE, TARGETS_HP_DURING_COMBAT_NODE);
 const TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE = SUB_NODE(new FoesMaxHpNode(), new FoesHpDuringCombatNode());
 
 const PERCENTAGE_NODE = (percentage, num) =>
     MULT_TRUNC_NODE(MULT_NODE(INT_PERCENTAGE_NUMBER_NODE(percentage), 0.01), num);
+
+const PERCENTAGE_ADD_NODE = (percentage, num, add) =>
+    ADD_NODE(PERCENTAGE_NODE(percentage, num), add);
 
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpacesNode(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
@@ -218,32 +222,37 @@ const BOOST_3_NODE =
     );
 
 /// ステータス
-const TARGETS_ATK_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Atk);
-const TARGETS_SPD_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Spd);
-const TARGETS_DEF_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Def);
-const TARGETS_RES_ON_MAP = new TargetsStatOnMapNode(STATUS_INDEX.Res);
+const TARGETS_STAT_ON_MAP = index => new TargetsStatOnMapNode(index);
 
 const TARGETS_EVAL_STAT_ON_MAP = index => new TargetsEvalStatOnMapNode(index);
-const TARGETS_EVAL_ATK_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Atk);
-const TARGETS_EVAL_SPD_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Spd);
-const TARGETS_EVAL_DEF_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Def);
-const TARGETS_EVAL_RES_ON_MAP = new TargetsEvalStatOnMapNode(STATUS_INDEX.Res);
+const TARGETS_EVAL_ATK_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Atk);
+const TARGETS_EVAL_SPD_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Spd);
+const TARGETS_EVAL_DEF_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Def);
+const TARGETS_EVAL_RES_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Res);
 
-const SKILL_OWNERS_ATK_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Atk);
-const SKILL_OWNERS_SPD_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Spd);
-const SKILL_OWNERS_DEF_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Def);
-const SKILL_OWNERS_RES_ON_MAP = new SkillOwnersStatOnMapNode(STATUS_INDEX.Res);
+const SKILL_OWNERS_STAT_ON_MAP = index => new SkillOwnersStatOnMapNode(index);
+const SKILL_OWNERS_ATK_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Atk);
+const SKILL_OWNERS_SPD_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Spd);
+const SKILL_OWNERS_DEF_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Def);
+const SKILL_OWNERS_RES_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Res);
 
-const SKILL_OWNERS_EVAL_ATK_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Atk);
-const SKILL_OWNERS_EVAL_SPD_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Spd);
-const SKILL_OWNERS_EVAL_DEF_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Def);
-const SKILL_OWNERS_EVAL_RES_ON_MAP = new SkillOwnersEvalStatOnMapNode(STATUS_INDEX.Res);
+const SKILL_OWNERS_EVAL_STAT_ON_MAP = index => new SkillOwnersEvalStatOnMapNode(index);
+const SKILL_OWNERS_EVAL_ATK_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(STATUS_INDEX.Atk);
+const SKILL_OWNERS_EVAL_SPD_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(STATUS_INDEX.Spd);
+const SKILL_OWNERS_EVAL_DEF_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(STATUS_INDEX.Def);
+const SKILL_OWNERS_EVAL_RES_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(STATUS_INDEX.Res);
 
 /// 戦闘開始時ステータスの比較
-const UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE =
-    GT_NODE(UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE, FOES_EVAL_RES_AT_START_OF_COMBAT_NODE);
+const UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE =
+    index => GT_NODE(UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(index), FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(index));
+
+const DIFFERENCE_BETWEEN_STATS_AT_START_OF_COMBAT_NODE = index =>
+    SUB_NODE(
+        UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(index),
+        FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(index)
+    );
 const DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE =
-    SUB_NODE(UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE, FOES_EVAL_RES_AT_START_OF_COMBAT_NODE);
+    DIFFERENCE_BETWEEN_STATS_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res);
 
 /// 戦闘中ステータスの比較
 /**
@@ -266,23 +275,27 @@ const DIFFERENCE_BETWEEN_RES_STATS_NODE =
     SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
 /// 強化(バフ)
-const TARGET_ATK_BONUS_NODE = new TargetsBonusNode(STATUS_INDEX.Atk);
-const TARGET_SPD_BONUS_NODE = new TargetsBonusNode(STATUS_INDEX.Spd);
-const TARGET_DEF_BONUS_NODE = new TargetsBonusNode(STATUS_INDEX.Def);
-const TARGET_RES_BONUS_NODE = new TargetsBonusNode(STATUS_INDEX.Res);
+const TARGET_STAT_BONUS_NODE = index => new TargetsBonusNode(index);
+const TARGET_ATK_BONUS_NODE = TARGET_STAT_BONUS_NODE(STATUS_INDEX.Atk);
+const TARGET_SPD_BONUS_NODE = TARGET_STAT_BONUS_NODE(STATUS_INDEX.Spd);
+const TARGET_DEF_BONUS_NODE = TARGET_STAT_BONUS_NODE(STATUS_INDEX.Def);
+const TARGET_RES_BONUS_NODE = TARGET_STAT_BONUS_NODE(STATUS_INDEX.Res);
 
-const FOES_ATK_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Atk);
-const FOES_SPD_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Spd);
-const FOES_DEF_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Def);
-const FOES_RES_BONUS_NODE = new FoesBonusNode(STATUS_INDEX.Res);
+const FOES_STAT_BONUS_NODE = index => new FoesBonusNode(index);
+const FOES_ATK_BONUS_NODE = FOES_STAT_BONUS_NODE(STATUS_INDEX.Atk);
+const FOES_SPD_BONUS_NODE = FOES_STAT_BONUS_NODE(STATUS_INDEX.Spd);
+const FOES_DEF_BONUS_NODE = FOES_STAT_BONUS_NODE(STATUS_INDEX.Def);
+const FOES_RES_BONUS_NODE = FOES_STAT_BONUS_NODE(STATUS_INDEX.Res);
 
-const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfPenaltiesActiveOnTargetExcludingStatNode();
 const NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE =
     SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
 const BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new BonusesActiveOnTargetExcludingStatSetNode();
 const PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE = new PenaltiesActiveOnTargetExcludingStatSetNode();
 const BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE =
     UNION_SET_NODE(BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE, PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE);
+// the total of the number of Bonus effects active on unit and the number of Penalty effects active on foe
+const NUM_OF_BONUSES_ON_TARGET_AND_PENALTIES_ON_FOE_EXCLUDING_STAT_NODE =
+    SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_FOE_EXCLUDING_STAT_NODE);
 
 const DEALS_DAMAGE_X_NODE = n =>
     IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
@@ -301,6 +314,12 @@ const REDUCES_DAMAGE_BY_N_NODES = n => [
     REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
     REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
 ];
+
+const REDUCES_DAMAGE_BY_N_NODE = n =>
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
+        REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
+    );
 
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
@@ -555,8 +574,8 @@ let SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE =
  */
 function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, n, m) {
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
-        new ForEachAllyForSpacesNode(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
-            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(n, TARGETS_PLACED_SPACE_NODE),
+        FOR_EACH_ALLY_FOR_SPACES_NODE(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
+            SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(n, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 }
@@ -579,13 +598,8 @@ function highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, unitValueNode) {
     ));
 }
 
-/**
- * highest total penalties among target and foes within 2 spaces of target
- * @returns {NumberNode}
- */
-function highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(n) {
-    return highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
-}
+const HIGHEST_TOTAL_PENALTIES_AMONG_TARGET_AND_FOES_WITHIN_N_SPACES_OF_TARGET_NODE =
+    (n) => highestValueAmongTargetAndFoesWithinNSpacesOfTarget(n, new TargetsTotalPenaltiesNode());
 
 /**
  * @param {number|NumberNode} n
@@ -698,30 +712,36 @@ const HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
 const HIGHEST_STAT_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE = (index, n) =>
     GET_STAT_AT_NODE(HIGHEST_STATS_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE(n), index);
 
-const TARGETS_PARTNERS_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
+const TARGETS_PARTNERS_ON_MAP_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
+const SKILL_OWNERS_PARTNERS_ON_MAP_NODE =
+    FILTER_UNITS_NODE(SKILL_OWNERS_ALLIES_ON_MAP_NODE, ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
 
 const MAX_UNITS_NODE = (unitsNode, funcNode) => new MaxUnitsNode(unitsNode, funcNode);
 
-const HIGHEST_ATK_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_ATK_ON_MAP);
-const HIGHEST_SPD_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_SPD_ON_MAP);
-const HIGHEST_DEF_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_DEF_ON_MAP);
-const HIGHEST_RES_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_RES_ON_MAP);
-const HIGHEST_HP_ALLIES_ON_MAP_NODE = MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_HP_ON_MAP_NODE);
+const HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE =
+    index => MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_STAT_ON_MAP(index));
 
-const HIGHEST_ALLIES_WITHIN_N_SPACES_NODE =
+const HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE =
+    index => MAX_UNITS_NODE(SKILL_OWNERS_ALLIES_ON_MAP_NODE, TARGETS_STAT_ON_MAP(index));
+
+const HIGHEST_TARGETS_ALLIES_WITHIN_N_SPACES_NODE =
     (n, funcNode) => MAX_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n), funcNode);
 
-const HIGHEST_ATK_ALLIES_WITHIN_N_SPACES_NODE = n => HIGHEST_ALLIES_WITHIN_N_SPACES_NODE(n, TARGETS_ATK_ON_MAP);
-const HIGHEST_HP_ALLIES_WITHIN_N_SPACES_NODE = n => HIGHEST_ALLIES_WITHIN_N_SPACES_NODE(n, TARGETS_HP_ON_MAP_NODE);
-
-const HIGHEST_ATK_ALLIES_WITHIN_2_SPACES_NODE = HIGHEST_ATK_ALLIES_WITHIN_N_SPACES_NODE(2);
-const HIGHEST_HP_ALLIES_WITHIN_2_SPACES_NODE = HIGHEST_HP_ALLIES_WITHIN_N_SPACES_NODE(2);
+const HIGHEST_TARGETS_STAT_ALLIES_WITHIN_N_SPACES_NODE =
+    (index, n) => HIGHEST_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n, TARGETS_STAT_ON_MAP(index));
+const HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE = index => HIGHEST_TARGETS_STAT_ALLIES_WITHIN_N_SPACES_NODE(index, 2);
 
 const HIGHEST_HP_AMONG_TARGETS_ALLIES
     = MAX_NODE(MAP_UNITS_TO_NUM_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_MAX_HP_NODE))
 
 const HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES
     = MAX_NODE(MAP_UNITS_TO_NUM_NODE(SKILL_OWNERS_ALLIES_ON_MAP_NODE, TARGETS_MAX_HP_NODE))
+
+const PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE = index =>
+    IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
+        SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
+        HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(index),
+    );
 
 const IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE =
     OR_NODE(new IsBonusActiveOnTargetNode(), new IsPenaltyActiveOnTargetNode());
@@ -746,6 +766,72 @@ const ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET = (n) =>
             ),
         )
     );
+
+/**
+ * @param {number|NumberNode} n
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n, ...statusEffectType) =>
+        FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(n,
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(...statusEffectType),
+        );
+
+/**
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE =
+    (...statusEffectType) =>
+        GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2, ...statusEffectType);
+
+/**
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_3_SPACES_NODE =
+    (...statusEffectType) =>
+        GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(3, ...statusEffectType);
+
+/**
+ * @param {number|NumberNode} n
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n, statsNode, ...statusEffectType) =>
+        FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(n,
+            GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(statsNode),
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(...statusEffectType),
+        );
+
+/**
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE =
+    (statsNode, ...statusEffectType) =>
+        GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(
+            2, statsNode, ...statusEffectType);
+
+/**
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectType
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_3_SPACES_NODE =
+    (statsNode, ...statusEffectType) =>
+        GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(
+            3, statsNode, ...statusEffectType);
 
 /**
  * @param {number|string} skillId
@@ -934,7 +1020,7 @@ const TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE =
 /**
  * number of distinct game titles among allies within 3 spaces of unit
  */
-const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE =
+const NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_N_SPACES_OF_UNIT_NODE =
     n => TOTAL_OF_THE_NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n));
 
 /**
@@ -1071,6 +1157,32 @@ function setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, atSta
     ));
 }
 
+/**
+ * @param {string|number} skillId
+ * @param {BoolNode} condNode
+ * @param {SkillEffectNode} beforeAoeNode
+ * @param {SkillEffectNode} atStartOfNode
+ * @param {SkillEffectNode} afterNode
+ */
+function setBeforeAoeSpecialAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode,
+                                                                        beforeAoeNode, atStartOfNode, afterNode) {
+    if (beforeAoeNode) {
+        BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(condNode, atStartOfNode),
+        ));
+    }
+    if (atStartOfNode) {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(condNode, atStartOfNode),
+        ));
+    }
+    if (afterNode) {
+        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(condNode, afterNode),
+        ));
+    }
+}
+
 function setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId, condNode, statsNode, effectNode) {
     WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode, statsNode),
@@ -1081,8 +1193,35 @@ function setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId, condNode, 
 }
 
 function setWhenUnitIsInCombatFoesSaviorEffectsWillNotTriggerNode(skillId) {
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // When unit is in combat, foes' Savior effects will not trigger.
         DOES_NOT_TRIGGER_TARGETS_FOES_SAVIOR_EFFECTS_NODE,
     ));
+}
+
+function setAtStartOfPlayerPhaseOrEnemyPhase(skillId, nodeFunc) {
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+}
+
+function setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, nodeFunc) {
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_NOT_SUMMONER_DUELS_MODE_NODE,
+            nodeFunc(),
+        ),
+    ));
+}
+
+/**
+ * @param {number|string} skillId
+ * @param {BoolNode} condNode
+ * @param {...[SkillEffectHooks, () => SkillEffectNode][]} hooksAndNodeFuncs
+ */
+function setCondHooks(skillId, condNode, ...hooksAndNodeFuncs) {
+    for (let [hooks, nodeFunc] of hooksAndNodeFuncs) {
+        hooks.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(condNode, nodeFunc()),
+        ));
+    }
 }

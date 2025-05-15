@@ -1563,6 +1563,21 @@ class IterUtil {
     static unique(...iterables) {
         return new Set(this.concat(...iterables));
     }
+
+    /**
+     * @template T
+     * @param {Iterable<T>} iterable
+     * @param {T} value
+     * @returns {boolean}
+     */
+    static has(iterable, value) {
+        for (const e of iterable) {
+            if (e === value) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 class GeneratorUtil {
@@ -1730,7 +1745,7 @@ class ArrayUtil {
      * @param {...Array<number>} arrays
      * @returns {number[]}
      */
-    static max(...arrays) {
+    static maxByIndex(...arrays) {
         // 配列の最大長を取得
         const maxLength = Math.max(...arrays.map(arr => arr.length));
 

@@ -192,7 +192,7 @@ class DamageCalculatorWrapper {
             let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
             for (let tile of tiles) {
                 let isNotDefUnit = tile.placedUnit !== defUnit;
-                let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit);
+                let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit, DamageType.ActualDamage);
                 if (tile.placedUnit != null &&
                     isNotDefUnit &&
                     isNotSaverUnit &&
@@ -357,7 +357,7 @@ class DamageCalculatorWrapper {
 
             let actualDefUnit = defUnit;
             if (!calcPotentialDamage) {
-                let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit);
+                let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit, damageType);
                 if (saverUnit != null) {
                     // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
                     preCombatDamage = 0;
@@ -747,11 +747,6 @@ class DamageCalculatorWrapper {
                 case PassiveB.HikariToYamito:
                 case PassiveB.LightAndDark2:
                     return true;
-                case Weapon.SpiritForestWrit:
-                    if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                        return true;
-                    }
-                    break;
                 case Weapon.SplashyBucketPlus:
                     return true;
                 case Weapon.Naga:
@@ -834,7 +829,7 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __getSaverUnitIfPossible(atkUnit, defUnit) {
+    __getSaverUnitIfPossible(atkUnit, defUnit, damageType) {
         if (defUnit.hasStatusEffect(StatusEffectType.Undefended)) {
             return null;
         }
@@ -842,7 +837,7 @@ class DamageCalculatorWrapper {
             return null;
         }
         let saverUnit = null;
-        let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 2, false);
+        let allies = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(defUnit, 4, false);
         for (let ally of allies) {
             let isNoDefTile = defUnit.placedTile === null || defUnit.placedTile === undefined;
             let cannotMoveToForSave = !defUnit.placedTile.isMovableTileForUnit(ally);
@@ -850,7 +845,11 @@ class DamageCalculatorWrapper {
                 continue;
             }
 
-            if (this.__canActivateSaveSkill(atkUnit, ally)) {
+            let canActivateSaviorWithin2Spaces =
+                this.__canActivateSaveSkillWithin2Spaces(atkUnit, ally, damageType) &&
+                ally.distance(defUnit) <= 2;
+            if (canActivateSaviorWithin2Spaces ||
+                this.__canActivateSaveSkill(atkUnit, defUnit, ally, damageType)) {
                 if (saverUnit != null) {
                     // 複数発動可能な場合は発動しない
                     return null;
@@ -859,7 +858,6 @@ class DamageCalculatorWrapper {
                 saverUnit = ally;
             }
         }
-
         return saverUnit;
     }
 
@@ -869,7 +867,7 @@ class DamageCalculatorWrapper {
      * @params {Unit} ally
      * @returns {boolean}
      */
-    __canActivateSaveSkill(atkUnit, ally) {
+    __canActivateSaveSkillWithin2Spaces(atkUnit, ally, damageType) {
         if (this.__canDisableSaveSkill(atkUnit, ally)) {
             return false;
         }
@@ -926,6 +924,21 @@ class DamageCalculatorWrapper {
         }
 
         return false;
+    }
+
+    /**
+     * 護られ不可は考慮しない
+     * @params {Unit} atkUnit
+     * @params {Unit} defUnit
+     * @params {Unit} ally
+     * @returns {boolean}
+     */
+    __canActivateSaveSkill(atkUnit, defUnit, ally, damageType) {
+        let env = new DamageCalculatorWrapperEnv(this, defUnit, atkUnit, null);
+        env.setTargetAlly(ally).setSkillOwner(ally);
+        env.setName('護り手判定時').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
+            .setCombatPhase(this.combatPhase);
+        return CAN_TRIGGER_SAVIOR_HOOKS.evaluateSomeWithUnit(ally, env);
     }
 
     /**
@@ -1071,11 +1084,6 @@ class DamageCalculatorWrapper {
                 case Weapon.ShishiouNoTsumekiba:
                     if (defUnit.isWeaponRefined) {
                         defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.7);
-                    }
-                    break;
-                case Weapon.GodlyBreath:
-                    if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(0.3);
                     }
                     break;
                 case Weapon.Mafu:
@@ -5007,17 +5015,6 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.SpiritForestWrit] = (targetUnit, enemyUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                enemyUnit.addSpurs(-6, 0, 0, -6);
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
-                let diff = targetUnit.getResInPrecombat() - enemyUnit.getResInPrecombat();
-                if (diff >= 1) {
-                    let amount = Math.min(Math.trunc(diff * 0.8), 12);
-                    enemyUnit.addSpurs(-amount, 0, 0, -amount);
-                }
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.BreakerLance] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-6, 0, -6, 0);
@@ -5438,12 +5435,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.NewHeightBow] = (targetUnit) => {
             if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
                 targetUnit.addSpurs(6, 6, 0, 0);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.GodlyBreath] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                enemyUnit.addAllSpur(-5);
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.BridalSunflowerPlus] = (targetUnit) => {
@@ -7114,12 +7105,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.defSpur -= 6;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.TomeOfDespair] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.resSpur -= 6;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[PassiveB.MurderousLion] = (targetUnit, enemyUnit) => {
             if (!self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                 enemyUnit.spdSpur -= 3;
@@ -7333,19 +7318,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.IcyFimbulvetr] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.resSpur -= 6;
-
-                if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 3,
-                    x => x.moveType === MoveType.Cavalry || x.moveType === MoveType.Flying)
-                ) {
-                    targetUnit.battleContext.followupAttackPriorityIncrement++;
-                    targetUnit.battleContext.healedHpByAttack += 5;
-                }
-            }
-        };
         this._applySkillEffectForUnitFuncDict[PassiveB.FallenStar] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.8, enemyUnit);
@@ -7491,12 +7463,6 @@ class DamageCalculatorWrapper {
                 enemyUnit.atkSpur -= 6;
                 enemyUnit.spdSpur -= 6;
                 targetUnit.battleContext.increaseCooldownCountForBoth();
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.Hrist] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage <= 99) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfFavors] = (targetUnit, enemyUnit) => {
@@ -11454,24 +11420,6 @@ class DamageCalculatorWrapper {
                 }
                     break;
                 case Weapon.AxeOfDespair:
-                case Weapon.TomeOfDespair:
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        let buff = targetUnit.getBuffTotalInCombat(enemyUnit);
-                        let debuffTotal = targetUnit.debuffTotal;
-                        let buffDebuffTotal = buff - debuffTotal;
-                        if (buffDebuffTotal >= 5) {
-                            --enemyUnit.battleContext.followupAttackPriorityDecrement;
-
-                            if (buffDebuffTotal >= 10) {
-                                ++targetUnit.battleContext.followupAttackPriorityIncrement;
-
-                                if (buffDebuffTotal >= 15) {
-                                    targetUnit.battleContext.reducesCooldownCount = true;
-                                }
-                            }
-                        }
-                    }
-                    break;
                 case Weapon.Revatein:
                 case Weapon.Blarblade:
                 case Weapon.BlarbladePlus:
@@ -13005,11 +12953,6 @@ class DamageCalculatorWrapper {
                 break;
             case PassiveB.Chivalry:
                 return atkUnit.battleContext.restHpPercentage * 0.5 / 100;
-            case Weapon.GodlyBreath:
-                if (defUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(defUnit)) {
-                    return 0.3;
-                }
-                break;
             case Weapon.Mafu:
                 if (defUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 25 && !isWeaponTypeTome(atkUnit.weaponType)) {
@@ -15364,7 +15307,8 @@ class DamageCalculatorWrapper {
      */
     __applySpecialSkillEffect(targetUnit, enemyUnit, calcPotentialDamage, damageType) {
         let env = new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, false);
-        env.setName('戦闘開始時奥義効果').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+        env.setName('戦闘開始時奥義効果').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
+            .setCombatPhase(this.combatPhase);
         WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         let func = this._applySpecialSkillEffectFuncDict[targetUnit.special];
         if (func) {
@@ -15447,11 +15391,6 @@ class DamageCalculatorWrapper {
                     if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) &&
                         enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);
-                    }
-                    break;
-                case Weapon.Hrist:
-                    if (targetUnit.battleContext.restHpPercentage <= 99) {
-                        targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                     }
                     break;
                 case Weapon.StoutLancePlus:

@@ -181,6 +181,8 @@ class TargetsHpDuringCombatNode extends PositiveNumberNode {
     }
 }
 
+const TARGETS_HP_DURING_COMBAT_NODE = new TargetsHpDuringCombatNode();
+
 class FoesHpDuringCombatNode extends TargetsHpDuringCombatNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -682,6 +684,8 @@ class NeutralizesPenaltiesToUnitsStatsNode extends NeutralizesPenaltiesToTargets
     }
 }
 
+const NEUTRALIZES_EACH_PENALTIES_ON_UNIT_NODE =
+    (atk, spd, def, res) => new NeutralizesPenaltiesToUnitsStatsNode(atk, spd, def, res);
 const NEUTRALIZES_PENALTIES_ON_UNIT_NODE = new NeutralizesPenaltiesToUnitsStatsNode(true, true, true, true);
 
 /**
@@ -774,6 +778,16 @@ class NumOfPenaltiesActiveOnTargetExcludingStatNode extends PositiveNumberNode {
         return result;
     }
 }
+
+const NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE = new NumOfPenaltiesActiveOnTargetExcludingStatNode();
+
+class NumOfPenaltiesActiveOnFoeExcludingStatNode extends NumOfPenaltiesActiveOnTargetExcludingStatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const NUM_OF_PENALTIES_ACTIVE_ON_FOE_EXCLUDING_STAT_NODE = new NumOfPenaltiesActiveOnFoeExcludingStatNode();
 
 class BonusesActiveOnTargetExcludingStatSetNode extends SetNode {
     static {
@@ -1102,6 +1116,9 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends Applyin
         env.debug(`${unit.nameWithGroup}は最初に受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
+
+const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_NODE =
+    n => new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode(n);
 
 class ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode extends ApplyingNumberNode {
     static {
@@ -1590,10 +1607,10 @@ class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
     }
 
     /**
-     * @param {number|NumberNode} n
+     * @param {number|NumberNode} threshold
      */
-    constructor(n) {
-        super(NumberNode.makeNumberNodeFrom(n));
+    constructor(threshold) {
+        super(NumberNode.makeNumberNodeFrom(threshold));
     }
 
     evaluate(env) {
@@ -1605,7 +1622,7 @@ class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
     }
 }
 
-const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = n => new TargetCanActivateNonSpecialMiracleNode(n);
+const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = threshold => new TargetCanActivateNonSpecialMiracleNode(threshold);
 
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 
@@ -1873,6 +1890,9 @@ class DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefO
     }
 }
 
+const DISABLES_TARGETS_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_DURING_COMBAT_NODE =
+    new DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefOrResDuringCombatNode();
+
 // Unit or BattleContextに値を設定 END
 
 class CanTargetMakeFollowUpIncludingPotentNode extends BoolNode {
@@ -2108,6 +2128,9 @@ class AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode 
     }
 }
 
+const ANY_TARGETS_REDUCE_DAMAGE_EFFECT_ONLY_ONCE_CAN_BE_TRIGGERED_UP_TO_N_TIMES_PER_COMBAT_NODE =
+    n => new AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode(n);
+
 /**
  * Grants weapon-triangle advantage against colorless foes and inflicts weapon-triangle disadvantage on colorless foes during combat.
  */
@@ -2283,3 +2306,47 @@ class DoesNotTriggerTargetsFoesSaviorEffectsNode extends SkillEffectNode {
 }
 
 const DOES_NOT_TRIGGER_TARGETS_FOES_SAVIOR_EFFECTS_NODE = new DoesNotTriggerTargetsFoesSaviorEffectsNode();
+
+class GrantsMiracleAndHealToTargetOncePerMapNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[unit.groupId] === 0) {
+            unit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
+        }
+    }
+}
+
+const GRANTS_MIRACLE_AND_HEAL_TO_TARGET_ONCE_PER_MAP_NODE = new GrantsMiracleAndHealToTargetOncePerMapNode();
+
+class TargetCannotRecoverHpDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.hasDeepWounds = true;
+        env.debug(`${unit.nameWithGroup}は戦闘中HPを回復できない`);
+    }
+}
+
+const TARGET_CANNOT_RECOVER_HP_DURING_COMBAT_NODE = new TargetCannotRecoverHpDuringCombatNode();
+
+class TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.hasDeepWoundsAfterCombatNeutralizedWhenFeud = true;
+        env.debug(`${unit.nameWithGroup}は戦闘後HPを回復できない（暗闘で無効化される）`);
+    }
+}
+
+const TARGET_CANNOT_RECOVER_HP_AFTER_COMBAT_NEUTRALIZED_WHEN_FEUD_NODE =
+    new TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode();

@@ -221,7 +221,7 @@
             INFLICTS_ALL_STATS_MINUS_N_ON_FOE_DURING_COMBAT_NODE(
                 ENSURE_MAX_NODE(
                     ADD_NODE(
-                        MULT_NODE(NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_3_SPACES_OF_UNIT_NODE(3), 3),
+                        MULT_NODE(NUMBER_OF_DISTINCT_GAME_TITLES_AMONG_ALLIES_WITHIN_N_SPACES_OF_UNIT_NODE(3), 3),
                         4,
                     ),
                     10
@@ -2024,6 +2024,7 @@
 {
     setSpikedWall(PassiveB.ASSpikedWall, [4, 4, 0, 0], [UNITS_ATK_DURING_COMBAT_NODE]);
     setSpikedWall(PassiveB.ADSpikedWall, [4, 0, 4, 0], [UNITS_DEF_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE]);
+    setSpikedWall(PassiveB.SRSpikedWall, [0, 4, 4, 0], [UNITS_SPD_DURING_COMBAT_NODE, UNITS_DEF_DURING_COMBAT_NODE]);
     setSpikedWall(PassiveB.SRSpikedWall, [0, 4, 0, 4], [UNITS_SPD_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE]);
 }
 
@@ -2283,6 +2284,8 @@
 {
     // 攻撃速さの共栄
     setFortune(PassiveA.AtkSpdFortune, [false, true, true, false], [8, 8, 0, 0]);
+    // 攻撃守備の共栄
+    setFortune(PassiveA.AtkDefFortune, [true, false, true, false], [8, 0, 8, 0]);
     // 攻撃魔防の共栄
     setFortune(PassiveA.AtkResFortune, [true, false, true, false], [8, 0, 0, 8]);
 }
@@ -2399,8 +2402,8 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // if unit is on a team with only 1 support partner,
-        IF_NODE(EQ_NODE(1, new CountUnitsNode(TARGETS_PARTNERS_NODE)),
-            FOR_EACH_UNIT_NODE(TARGETS_PARTNERS_NODE,
+        IF_NODE(EQ_NODE(1, new CountUnitsNode(TARGETS_PARTNERS_ON_MAP_NODE)),
+            FOR_EACH_UNIT_NODE(TARGETS_PARTNERS_ON_MAP_NODE,
                 // grants【Pathfinder】to support partner for 1 turn.
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Pathfinder),
             ),
@@ -2408,11 +2411,11 @@
 
         // At start of turn,
         // if unit is not on a team with support partner and if there is only 1 ally who has the highest Def,
-        IF_NODE(EQ_NODE(0, new CountUnitsNode(TARGETS_PARTNERS_NODE)),
-            IF_NODE(EQ_NODE(1, new CountUnitsNode(HIGHEST_DEF_ALLIES_ON_MAP_NODE)),
-                FOR_EACH_UNIT_NODE(HIGHEST_DEF_ALLIES_ON_MAP_NODE,
+        IF_NODE(EQ_NODE(0, COUNT_UNITS_NODE(TARGETS_PARTNERS_ON_MAP_NODE)),
+            IF_NODE(EQ_NODE(1, COUNT_UNITS_NODE(HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE(STATUS_INDEX.Def))),
+                FOR_EACH_UNIT_NODE(HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE(STATUS_INDEX.Def),
                     // grants【Pathfinder】to that ally for 1 turn.
-                    new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.Pathfinder),
+                    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Pathfinder),
                 ),
             ),
         ),
@@ -2654,7 +2657,7 @@ function setDiscord(skillId, statsRatios) {
         // If unit's Res > foe's Res, reduces damage from attacks during combat and from area-of-effect Specials (excluding
         // Rokkr area-of-effect Specials) by percentage = 4 - current
         // Special cooldown count value, x difference between stats (max difference between stats: 10).
-        IF_NODE(UNITS_RES_GT_FOES_RES_AT_START_OF_COMBAT_NODE,
+        IF_NODE(UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res),
             new ReducesDamageFromAoeSpecialsByXPercentNode(
                 MULT_TRUNC_NODE(
                     SUB_NODE(4, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT),
@@ -2729,7 +2732,7 @@ function setDiscord(skillId, statsRatios) {
             // unit deals +X damage (excluding area-of-effect Specials;
             new UnitDealsDamageExcludingAoeSpecialsNode(
                 // X = highest total penalties among target and foes within 2 spaces of target),
-                highestTotalPenaltiesAmongTargetAndFoesWithinNSpacesOfTarget(2),
+                HIGHEST_TOTAL_PENALTIES_AMONG_TARGET_AND_FOES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
             ),
             // and reduces damage from foe's attacks by 30% during combat (excluding area-of-effect Specials).
             new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),

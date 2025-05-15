@@ -3103,13 +3103,6 @@ class BeginningOfTurnSkillHandler {
 
     applyDamageSkillForBeginningOfTurn(skillId, skillOwner) {
         switch (skillId) {
-            case Weapon.Hrist:
-                if (this.__getStatusEvalUnit(skillOwner).hpPercentage === 100 && this.__isThereAllyInSpecifiedSpaces(skillOwner, 2)) {
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                        unit.reserveTakeDamage(1);
-                    }
-                }
-                break;
             case Weapon.Mafu:
                 if (this.globalBattleContext.currentTurn === 3) {
                     let units = this.enumerateUnitsWithinSpecifiedRange(

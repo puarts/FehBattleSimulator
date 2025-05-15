@@ -3820,6 +3820,24 @@ Weapon.SwordOfPeace = 3251; // 平和の願いの剣
 Special.TheFireEmblem = 3252; // 真炎の紋章
 PassiveB.ShieldOfHope = 3253; // 人と竜との盾
 PassiveC.SDHoldGuide = 3254; // 速守大牽制・導き手
+Weapon.FellChildsArts = 3255; // 邪竜の御子の体術
+Special.FellBlast = 3256; // 邪竜破
+PassiveA.DiluvialBoost = 3257; // 火地水の命脈
+PassiveB.ScowlingFighter = 3258; // 奥義隊形・竜眼
+Weapon.FellChildsBlade = 3259; // 邪竜の御子の剣
+PassiveA.BondBreaker = 3260; // 絆を引き裂くもの
+PassiveB.SDSpikedWall = 3261; // 速さ守備の刃壁
+Weapon.MartysStaff = 3262; // 生贄の聖女の杖
+PassiveA.AtkResTidings = 3263; // 攻撃魔防の福音
+Weapon.ArcaneCrest = 3264; // 魔器・紋章石
+PassiveA.AtkDefFortune = 3265; // 攻撃守備の共栄
+PassiveB.AssaultFighter = 3266; // 強襲隊形
+PassiveC.ForTheTrueKing = 3267; // おれの、ただ一人の
+Weapon.IronHreidmarr = 3268; // 機構フレイズマル
+Weapon.TomeOfGrief = 3269; // 哀歌の書
+Weapon.NobleBow = 3270; // 貴婦人の弓
+Special.CircletOfBalance2 = 3271; // 聖神と暗黒神…・承
+PassiveC.DarklingGuardian2 = 3272; // 闇の樹海の守…・承
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -3901,7 +3919,7 @@ EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_engagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Eirika] = `${g_debugEngagedSpecialIconRoot}Eirika_Of_The_Sacred.webp`;
+EngagedSpecialIcon[EmblemHero.Eirika] = `${g_debugEngagedSpecialIconRoot}Eirika_Of_The_Sacred_ES.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_imageRootPath}Special.png`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_debugEngagedSpecialIconRoot}XXX.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_engagedSpecialIconRoot}XXX.webp`;
@@ -3985,6 +4003,7 @@ const CANNOT_MOVE_STYLE_SET = new Set();
 const RANGED_STYLE_FOR_MELEE_SET = new Set();
 
 const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
+const REDUCE_SPECIAL_COUNT_WHEN_NO_WEAPON_SKILL_INFO_SET = new Set();
 
 /**
  * 範囲奥義も含む低い方計算無効
