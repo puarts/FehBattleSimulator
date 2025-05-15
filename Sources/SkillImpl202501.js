@@ -1,4 +1,171 @@
 // スキル実装
+    // 🗡 Legacy Axe
+    // Mt: 16 Rng: 1
+    // Accelerates Special trigger (cooldown count–1).
+    // For allies within 3 rows or 3 columns centered on unit,
+    // grants Atk/Spd+5 and neutralizes penalties during combat.
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of allies within 3 rows or 3 columns centered on unit × 3, +5 (max 14;
+    // if number of spaces from start position to end position
+    // of whoever initiated combat ≥ 3, value is treated as 14),
+    // neutralizes penalties on unit,
+    // unit deals +X × 5 damage
+    // (max 25; X = number of [Bonus] effects active on unit,
+    // excluding stat bonuses + number of [Penalty] effects active on foe,
+    // excluding stat penalties; excluding area-of-effect Specials),
+    // grants Special cooldown count–Y before unit’s first attack,
+    // and grants Special cooldown count–Y before unit’s first follow-up attack during combat
+    // (Y = 50% of the number of spaces from start position to end position
+    // of whoever initiated combat, rounded down before first attack
+    // and up before follow-up attack),
+    // and also, if unit’s HP > 1 and foe would reduce unit’s HP to 0,
+    // unit survives with 1 HP (once per combat;
+    // does not stack with non-Special effects
+    // that allow unit to survive with 1 HP if foe’s attack would reduce HP to 0).
+
+    // 🅱️ Potent Assault
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // inflicts Spd/Def–4 on foe,
+    // deals damage = 20% of the greater of unit’s Spd or Def
+    // (excluding area-of-effect Specials),
+    // and reduces the percentage of foe’s non-Special
+    // “reduce damage by X%” skills by 50% during combat
+    // (excluding area-of-effect Specials).
+    // Also, if decreasing the Spd difference necessary to make a follow-up attack by 25
+    // would allow unit to trigger a follow-up attack
+    // (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow X%] during combat
+    // (if unit cannot perform follow-up and attack twice,
+    // X = 80; otherwise, X = 40).
+
+    // 🅲 The Heir to Light
+    // Enables [Canto (Dist. +1; Max 4)].
+    // When Canto triggers,
+    // enables unit to use [Reposition] on ally
+    // (this effect is not treated as an Assist skill;
+    // if similar effects are active, this effect does not trigger).
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // grants Atk/Spd+6, [Null Follow-Up], and [Incited]
+    // to unit and allies within 2 spaces of unit for 1 turn,
+    // and grants “unit can move 1 extra space”
+    // to unit and sword, lance, axe, infantry, and flying allies
+    // within 2 spaces of unit for 1 turn (does not stack).
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd =
+    // number of spaces from start position to end position
+    // of whoever initiated combat +5 (max 9),
+    // and reduces damage from foe’s first attack by 7 during combat
+    // (“first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,”
+    // it means the first and second strikes),
+    // and restores 7 HP to unit after combat.
+
+    // 🗡 Brilliant Brident
+    // Mt: 16 Rng: 1
+    // Accelerates Special trigger (cooldown count–1).
+    // At start of turn, if unit’s HP ≥ 25%,
+    // inflicts Spd/Def–7, [Exposure], and [Discord]
+    // on closest foes and any foes within 2 spaces of those foes
+    // through their next actions.
+    // At start of combat, if unit’s HP ≥ 25%,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns centered on unit × 3, +5 (max 14),
+    // deals damage = 20% of unit’s Spd (excluding area-of-effect Specials),
+    // reduces damage from foe’s first attack by 20% of unit’s Spd
+    // (“first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,” it means the first and second strikes),
+    // and reduces damage from foe’s Specials by 20% of unit’s Spd during combat
+    // (excluding area-of-effect Specials),
+    // and also, if [Potent Follow X%] has triggered and X ≤ 99, then X = 100.
+
+    // 🅱️ Potent Finish
+    // Inflicts Spd/Def–4 on foe
+    // and reduces damage from foe’s attacks by 7 during combat
+    // (excluding area-of-effect Specials),
+    // and also, if unit’s Special is ready
+    // or unit’s Special triggered before or during this combat,
+    // unit deals +15 damage during combat (excluding area-of-effect Specials),
+    // and also, restores 7 HP to unit
+    // when unit deals damage to foe during combat.
+    // If decreasing the Spd difference necessary to make a follow-up attack by 25
+    // would allow unit to trigger a follow-up attack
+    // (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow X%] during combat
+    // (if unit cannot perform follow-up and attack twice, X = 80; otherwise, X = 40).
+
+    // 🗡 Bridal Bouquet+
+    // Mt: 12 Rng: 2
+    // For allies within 3 rows or 3 columns centered on unit,
+    // grants Atk/Spd+5 and neutralizes foe’s bonuses during combat.
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit,
+    // neutralizes foe’s bonuses,
+    // and unit deals +X damage during combat
+    // (max 15; excluding area-of-effect Specials;
+    // X = number of allies within 3 rows or 3 columns centered on unit × 5).
+
+    // 🗡 Loving Bouquets
+    // Mt: 14 Rng: 2 Eff: vs. Dragon
+    // Effective against dragon foes.
+    // Accelerates Special trigger (cooldown count–1).
+    // For allies within 3 rows or 3 columns centered on unit,
+    // grants Atk/Res+5, neutralizes foe’s bonuses,
+    // and grants Special cooldown count–1
+    // before ally’s first attack during combat.
+    // At start of combat, if unit’s HP ≥ 25%,
+    // inflicts penalty on foe’s Atk/Res = 20% of unit’s Res at start of combat +6,
+    // neutralizes foe’s bonuses,
+    // unit deals +X damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by X
+    // (excluding area-of-effect Specials;
+    // X = number of allies within 3 rows or 3 columns centered on unit × 5; max 15),
+    // neutralizes effects that inflict
+    // “Special cooldown charge –X” on unit,
+    // and grants Special cooldown count–1 to unit
+    // before unit’s first attack during combat.
+    // Also, if unit’s Res ≥ foe’s Res +10,
+    // unit attacks twice during combat.
+
+    // 🌙 Ice Wall
+    // CD: 4
+    // Boosts damage by 70% of unit’s Res when Special triggers.
+    // If unit’s or foe’s Special is ready,
+    // or unit’s or foe’s Special triggered before or during this combat,
+    // and also, if unit’s Res ≥ foe’s Res –10,
+    // reduces damage from foe’s next attack by 40%
+    // (once per combat; excluding area-of-effect Specials).
+
+    // 🅱️ Full Light & Dark
+    // At start of player phase or enemy phase,
+    // inflicts Atk/Res–7, [Sabotage], and [Schism]
+    // on foes with Res < unit’s Res
+    // and that are within 2 spaces of another foe
+    // through their next actions.
+    // After start-of-turn skills trigger on unit’s player phase,
+    // if the number of foes with the [Sabotage] effect active on the map ≥ 2,
+    // grants “unit makes a guaranteed follow-up attack during combat”
+    // and [Canto (1)] to unit and allies within 2 spaces of unit for 1 turn.
+    // Inflicts penalty on foe’s Atk/Res =
+    // number of foes with the [Sabotage] effect active on the map,
+    // including target, × 3, +5 (max 14),
+    // deals damage = 20% of unit’s Res (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 20% of unit’s Res
+    // (excluding area-of-effect Specials),
+    // reduces the percentage of foe’s non-Special
+    // “reduce damage by X%” skills by 50% (excluding area-of-effect Specials),
+    // and disables foe’s effects that
+    // “calculate damage using the lower of foe’s Def or Res”
+    // during combat (including area-of-effect Specials).
+
+    // ✅ Duo Skill
+    // Grants [Empathy] to unit and allies within 2 spaces for 1 turn,
+    // and grants Special cooldown count–1 to unit and those allies.
+    // Once used, Duo Skill cannot be activated again right away.
+    // At start of every third turn,
+    // if Duo Skill has already been used,
+    // unit can use Duo Skill again.
 
 // IronHreidmarr
 {
