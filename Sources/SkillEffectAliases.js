@@ -834,6 +834,72 @@ const GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_W
             3, statsNode, ...statusEffectType);
 
 /**
+ * @param {number|NumberNode} n
+ * @param {...number} statusEffectTypes
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE =
+    (n, ...statusEffectTypes) =>
+        FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(n,
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(...statusEffectTypes),
+        );
+
+/**
+ * @param {...number} statusEffectTypes
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE =
+    (...statusEffectTypes) =>
+        INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE(2, ...statusEffectTypes);
+
+/**
+ * @param {...number} statusEffectTypes
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_3_SPACES_NODE =
+    (...statusEffectTypes) =>
+        INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE(3, ...statusEffectTypes);
+
+/**
+ * @param {number|NumberNode} n
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectTypes
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE =
+    (n, statsNode, ...statusEffectTypes) =>
+        FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(n,
+            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(statsNode),
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(...statusEffectTypes),
+        );
+
+/**
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectTypes
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE =
+    (statsNode, ...statusEffectTypes) =>
+        INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE(
+            2, statsNode, ...statusEffectTypes);
+
+/**
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectTypes
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_3_SPACES_NODE =
+    (statsNode, ...statusEffectTypes) =>
+        INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE(
+            3, statsNode, ...statusEffectTypes);
+
+/**
  * @param {number|string} skillId
  * @param {[boolean, boolean, boolean, boolean]} neutralizesBonusFlags
  * @param {[number|NumberNode, number|NumberNode, number|NumberNode, number|NumberNode]} bonuses

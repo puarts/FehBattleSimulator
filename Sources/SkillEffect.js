@@ -2771,13 +2771,13 @@ class FromBoolStatsNode extends SkillEffectNode {
  */
 class ApplyingNumberToEachStatNode extends FromNumbersNode {
     /**
-     * @param {number|NumberNode} atk
+     * @param {number|NumberNode|NumbersNode} atkOrStats
      * @param {number|NumberNode} spd
      * @param {number|NumberNode} def
      * @param {number|NumberNode} res
      */
-    constructor(atk, spd, def, res) {
-        super(...[atk, spd, def, res].map(v => NumberNode.makeNumberNodeFrom(v)));
+    constructor(atkOrStats, spd, def, res) {
+        super(...[atkOrStats, spd, def, res].map(v => NumberNode.makeNumberNodeFrom(v)));
     }
 }
 
@@ -3879,8 +3879,11 @@ class ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode extends ForE
     }
 }
 
+const FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_THOSE_FOES_NODE =
+    (n, ...children) => new ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode(n, TRUE_NODE, ...children);
+
 const FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
-    (...children) => new ForEachTargetsClosestFoeAndAnyFoeWithin2SpacesOfThoseFoesNode(TRUE_NODE, ...children);
+    (...children) => FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(2, TRUE_NODE, ...children);
 
 class ForEachAssistTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode extends ForEachTargetsClosestFoeAndAnyFoeWithinNSpacesOfThoseFoesNode {
     static {
