@@ -76,6 +76,7 @@ const Hero = {
     HarmonizedPlumeria: 1248,
     DuoCorrinM: 1259,
     DuoMarth: 1266,
+    DuoJulia: 0,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -124,6 +125,7 @@ const DUO_HERO_SET = new Set([
     Hero.DuoHeidrun,
     Hero.DuoRhea,
     Hero.DuoMarth,
+    Hero.DuoJulia,
 ]);
 
 const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
@@ -294,7 +296,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Vantage, ["Vantage.png", "待ち伏せ", ""]],
     [StatusEffectType.DeepWounds, ["DeepWounds.png", "回復不可", ""]],
     [StatusEffectType.FallenStar, ["FallenStar.png", "落星", ""]],
-    [StatusEffectType.FollowUpAttackPlus, ["GuaranteedFollowUps.png", "絶対追撃", ""]],
+    [StatusEffectType.FollowUpAttackPlus, ["GuaranteedFollowUps.png", "自分から攻撃時、絶対追撃", "自分から攻撃時、絶対追撃"]],
     [StatusEffectType.FollowUpAttackMinus, ["FoeCannotFollowUp.png", "追撃不可", "敵は追撃不可"]],
     [StatusEffectType.ShieldFlying, ["NeutralizeEffectiveAgainstFlying.png", "飛行特効無効", ""]],
     [StatusEffectType.Dodge, ["Dodge.png", "回避", ""]],
@@ -359,6 +361,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.DraconicHex, ["DraconicHex.webp", "竜呪", "敵の攻速守魔-5、さらに5-敵各能力の弱化だけ減"]],
     [StatusEffectType.FireEmblem, ["FireEmblem.webp", "炎の紋章", "全移動種特効無効、攻速守魔+強化値、初撃ダメージ減"]],
     [StatusEffectType.FellSpirit, ["FellSpirit.webp", "邪竜気", "反撃不可を無効、奥義でのダメージ軽減を1戦闘2回に"]],
+    [StatusEffectType.UnitMakesAGuaranteedFollowUpAttackDuringCombat, ["GuaranteedFollowUp.webp", "戦闘中、絶対追撃", "戦闘中、絶対追撃"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

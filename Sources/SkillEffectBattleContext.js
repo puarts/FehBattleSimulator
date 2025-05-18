@@ -1714,6 +1714,25 @@ class WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode extends FromPosit
 const WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_TO_TARGET_NODE =
     n => new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(n);
 
+/**
+ * when unit deals damage to foe during combat, restores 7 HP to unit (triggers even if 0 damage is dealt).
+ */
+class WhenTargetDealsDamageDuringCombatRestoresNHpPerAttackToTargetNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = this.evaluateChildren(env);
+        unit.battleContext.healedHpByAttackPerAttack += result;
+        env.debug(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
+    }
+}
+
+const WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_PER_ATTACK_TO_TARGET_NODE =
+    n => new WhenTargetDealsDamageDuringCombatRestoresNHpPerAttackToTargetNode(n);
+
 class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2203,7 +2222,7 @@ class PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode extends SkillEffe
 }
 
 const POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE =
-    n => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(n);
+    x => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(x);
 
 class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
     static {

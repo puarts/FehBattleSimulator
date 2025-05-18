@@ -53,6 +53,12 @@ const TARGETS_SPECIAL_COOLDOWN_COUNT_NODE =
         UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT,
         TARGETS_SPECIAL_COOLDOWN_COUNT_ON_MAP_NODE);
 
+/**
+ * @param {number|string} skillId
+ * @param {BoolNode} pred
+ * @param {SkillEffectNode} statNodes
+ * @param {SkillEffectNode} skillEffectNodes
+ */
 function setForAlliesHooks(skillId, pred, statNodes, skillEffectNodes) {
     FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(pred,
@@ -112,6 +118,9 @@ const TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE = SUB_NODE(new FoesMaxHpNode(
 const PERCENTAGE_NODE = (percentage, num) =>
     MULT_TRUNC_NODE(MULT_NODE(INT_PERCENTAGE_NUMBER_NODE(percentage), 0.01), num);
 
+const PERCENTAGE_CEIL_NODE = (percentage, num) =>
+    MULT_CEIL_NODE(MULT_NODE(INT_PERCENTAGE_NUMBER_NODE(percentage), 0.01), num);
+
 const PERCENTAGE_ADD_NODE = (percentage, num, add) =>
     ADD_NODE(PERCENTAGE_NODE(percentage, num), add);
 
@@ -144,6 +153,9 @@ const NUM_OF_TARGETS_FOES_ON_MAP_WITH_STATUS_EFFECT_ACTIVE_NODE = (e) =>
  */
 const TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE =
     n => FILTER_UNITS_NODE(TARGETS_FOES_NODE, IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE(n))
+
+const TARGETS_FOES_THAT_ARE_WITHIN_2_SPACES_OF_ANOTHER_TARGETS_FOE_NODE =
+    TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE(2);
 
 /**
  * 生の息吹4のようなHP回復効果。
@@ -299,7 +311,7 @@ const NUM_OF_BONUSES_ON_TARGET_AND_PENALTIES_ON_FOE_EXCLUDING_STAT_NODE =
 
 const DEALS_DAMAGE_X_NODE = n =>
     IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
-        UNIT_DEALS_DAMAGE_BEFORE_COMBAT_NODE(n),
+        UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
         UNIT_DEALS_DAMAGE_AT_AOE(n),
     );
 const DEALS_DAMAGE_X_PERCENTAGE_OF_UNITS_STAT_NODE = (index, percentage) =>
@@ -887,6 +899,46 @@ const INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_A
     (statsNode, ...statusEffectTypes) =>
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE(
             2, statsNode, ...statusEffectTypes);
+
+/**
+ * @param {number|NumberNode} n
+ * @param {BoolNode} predNode
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectTypes
+ * @returns {ForEachUnitNode}
+ * @constructor
+ */
+const INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_FOES_WITH_PRED_AND_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_FOR_NODE =
+    (n, predNode, statsNode, ...statusEffectTypes) =>
+        FOR_EACH_UNIT_NODE(
+            FILTER_UNITS_NODE(TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE(2), predNode),
+            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(statsNode),
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(...statusEffectTypes),
+        );
+
+/**
+ * @param {BoolNode} predNode
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectTypes
+ * @returns {ForEachUnitNode}
+ * @constructor
+ */
+const INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_FOES_WITH_PRED_AND_THAT_ARE_WITHIN_2_SPACES_OF_ANOTHER_FOR_NODE =
+    (predNode, statsNode, ...statusEffectTypes) =>
+        INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_FOES_WITH_PRED_AND_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_FOR_NODE(
+            2, predNode, statsNode, ...statusEffectTypes);
+
+/**
+ * @param {BoolNode} predNode
+ * @param {StatsNode} statsNode
+ * @param {...number} statusEffectTypes
+ * @returns {ForEachUnitNode}
+ * @constructor
+ */
+const INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_FOES_WITH_PRED_AND_THAT_ARE_WITHIN_3_SPACES_OF_ANOTHER_FOR_NODE =
+    (predNode, statsNode, ...statusEffectTypes) =>
+        INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_FOES_WITH_PRED_AND_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_FOR_NODE(
+            3, predNode, statsNode, ...statusEffectTypes);
 
 /**
  * @param {StatsNode} statsNode
