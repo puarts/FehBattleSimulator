@@ -283,7 +283,7 @@
             GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
         ),
     );
-    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, () => SKILL_EFFECT_NODE(
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
         // At start of combat, if unit’s HP ≥ 25%,
         IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
         SKILL_EFFECT_NODE(
@@ -316,7 +316,7 @@
                 TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
             ),
         ),
-    ));
+    );
 }
 
 // 🌙 Ice Wall

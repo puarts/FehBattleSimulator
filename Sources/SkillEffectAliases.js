@@ -1262,6 +1262,12 @@ function setAtStartOfCombatHooks(skillId, condNode, node) {
     ));
 }
 
+/**
+ * @param {number|string} skillId
+ * @param {BoolNode} condNode
+ * @param {SkillEffectNode} atStartOfNode
+ * @param {SkillEffectNode} afterNode
+ */
 function setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, atStartOfNode, afterNode) {
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode,
