@@ -148,9 +148,6 @@
 // 🅱️ Counter Fighter
 {
     let skillId = PassiveB.CounterFighter;
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-    ));
     setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
         // If foe initiates combat
         // or if unit’s HP ≥ 25% at start of combat,
