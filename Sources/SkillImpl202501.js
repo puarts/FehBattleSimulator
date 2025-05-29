@@ -43,7 +43,7 @@
                     IF_VALUE_NODE(IS_FOES_HP_GTE_70_PERCENT_AT_START_OF_COMBAT_NODE, 16, 10),
                 ),
                 // and neutralizes [Deep Wounds] during combat,
-                NEUTRALIZES_TARGETS_DEEP_WOUNDS_DURING_COMBAT_NODE(),
+                NEUTRALIZES_TARGETS_DEEP_WOUNDS_DURING_COMBAT_NODE,
                 // and also, when unit’s Special triggers,
                 // neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills
                 // (excluding area-of-effect Specials).
