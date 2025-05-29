@@ -1,4 +1,75 @@
 // スキル実装
+    // 🗡 Final Sword
+    // Mt: 16 Rng: 1
+    // Accelerates Special trigger (cooldown count–1).
+    // At start of player phase or enemy phase,
+    // if unit’s HP ≥ 25%,
+    // grants Atk/Def+6, [Imbue], and [Reflex]
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    // If foe initiates combat
+    // or if unit’s HP ≥ 25% at start of combat,
+    // grants Atk+X to unit,
+    // inflicts Atk–X on foe
+    // (X = 20% of unit’s Def at start of combat + 6),
+    // unit deals +Y damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by Y (excluding area-of-effect Specials),
+    // reduces damage from foe’s Specials by Y (excluding area-of-effect Specials;
+    // if foe’s HP ≥ 70% at start of combat, Y = 16; otherwise Y = 10),
+    // and neutralizes [Deep Wounds] during combat,
+    // and also, when unit’s Special triggers,
+    // neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills
+    // (excluding area-of-effect Specials).
+
+    // [Imbue]
+    // Reduces the effect of [Deep Wounds] on unit by 50% during combat,
+    // and restores 40% of unit’s maximum HP
+    // as unit’s combat begins for 1 turn
+    // (triggers after effects that deal damage as combat begins;
+    // only highest value applied; does not stack).
+
+    // [Reflex]
+    // Reduces damage from foe’s first attack by 7 during combat
+    // (“first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,”
+    // it means the first and second strikes),
+    // and unit’s next attack deals damage =
+    // total damage reduced from foe’s first attack
+    // (by any source, including other skills; resets at end of combat).
+    // (For 1 turn.)
+
+    // 🌙 Pitch-Dark Luna
+    // CD: 3
+    // When Special triggers,
+    // boosts damage by 80% of the greater of foe’s Spd or Def.
+    // Neutralizes effects that prevent unit’s counterattacks
+    // and reduces damage from attacks by X% during combat
+    // (X = 50 – current Special cooldown count value × 10,
+    // but if unit’s Special triggered during this combat,
+    // X = 50; excluding area-of-effect Specials),
+    // and also, if unit’s Def ≥ foe’s Def +5,
+    // disables unit’s and foe’s skills
+    // that change attack priority during combat.
+
+    // 🅰️ Distant A/D Form
+    // Unit can counterattack regardless of foe’s range.
+    // If unit is within 3 spaces of an ally,
+    // grants bonus to unit’s Atk/Def during combat =
+    // number of allies within 3 spaces of unit × 3 (max 9;
+    // if unit triggers Savior, value is treated as 9).
+
+    // 🅱️ Counter Fighter
+    // If foe initiates combat
+    // or if unit’s HP ≥ 25% at start of combat,
+    // inflicts Atk–5 on foe,
+    // deals damage = 15% of unit’s Atk (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 15% of unit’s Atk during combat
+    // (excluding area-of-effect Specials),
+    // and restores 7 HP to unit
+    // when unit deals damage to foe during combat,
+    // and also, if unit’s attack can trigger unit’s Special,
+    // grants Special cooldown count–2 to unit
+    // before foe’s first attack during combat.
+
 // 🗡 Legacy Axe
 {
     let skillId = Weapon.LegacyAxe;
