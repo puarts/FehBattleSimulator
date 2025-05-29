@@ -1,74 +1,181 @@
 // スキル実装
-    // 🗡 Final Sword
+// // 🗡 Final Sword
+{
+    let skillId = Weapon.FinalSword;
     // Mt: 16 Rng: 1
     // Accelerates Special trigger (cooldown count–1).
     // At start of player phase or enemy phase,
-    // if unit’s HP ≥ 25%,
-    // grants Atk/Def+6, [Imbue], and [Reflex]
-    // to unit and allies within 2 spaces of unit for 1 turn.
-    // If foe initiates combat
-    // or if unit’s HP ≥ 25% at start of combat,
-    // grants Atk+X to unit,
-    // inflicts Atk–X on foe
-    // (X = 20% of unit’s Def at start of combat + 6),
-    // unit deals +Y damage (excluding area-of-effect Specials),
-    // reduces damage from foe’s attacks by Y (excluding area-of-effect Specials),
-    // reduces damage from foe’s Specials by Y (excluding area-of-effect Specials;
-    // if foe’s HP ≥ 70% at start of combat, Y = 16; otherwise Y = 10),
-    // and neutralizes [Deep Wounds] during combat,
-    // and also, when unit’s Special triggers,
-    // neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills
-    // (excluding area-of-effect Specials).
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
+        // if unit’s HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants Atk/Def+6, [Imbue], and [Reflex]
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                ATK_DEF_NODE(6),
+                StatusEffectType.Imbue,
+                StatusEffectType.Reflex,
+            ),
+        ),
+    ));
+    setCondHooks(skillId,
+        // If foe initiates combat
+        // or if unit’s HP ≥ 25% at start of combat,
+        OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+        [
+            AT_START_OF_COMBAT_HOOKS,
+            () => SKILL_EFFECT_NODE(
+                X_NUM_NODE(
+                    // grants Atk+X to unit,
+                    // inflicts Atk–X on foe
+                    GRANTS_ATK_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE),
+                    INFLICTS_ATK_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE),
+                    // (X = 20% of unit’s Def at start of combat + 6),
+                    PERCENTAGE_ADD_NODE(20, UNITS_DEF_AT_START_OF_COMBAT_NODE, 6),
+                ),
+                X_NUM_NODE(
+                    // unit deals +Y damage (excluding area-of-effect Specials),
+                    DEALS_DAMAGE_X_NODE(READ_NUM_NODE),
+                    // reduces damage from foe’s attacks by Y (excluding area-of-effect Specials),
+                    REDUCES_DAMAGE_BY_N_NODE(READ_NUM_NODE),
+                    // reduces damage from foe’s Specials by Y (excluding area-of-effect Specials;
+                    REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(READ_NUM_NODE),
+                    // if foe’s HP ≥ 70% at start of combat, Y = 16; otherwise Y = 10),
+                    IF_VALUE_NODE(IS_FOES_HP_GTE_70_PERCENT_AT_START_OF_COMBAT_NODE, 16, 10),
+                ),
+                // and neutralizes [Deep Wounds] during combat,
+                NEUTRALIZES_TARGETS_DEEP_WOUNDS_DURING_COMBAT_NODE(),
+                // and also, when unit’s Special triggers,
+                // neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills
+                // (excluding area-of-effect Specials).
+                WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+            ),
+        ],
+    );
+}
 
-    // [Imbue]
-    // Reduces the effect of [Deep Wounds] on unit by 50% during combat,
-    // and restores 40% of unit’s maximum HP
-    // as unit’s combat begins for 1 turn
-    // (triggers after effects that deal damage as combat begins;
-    // only highest value applied; does not stack).
+// [Imbue]
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Imbue);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Reduces the effect of [Deep Wounds] on unit by 50% during combat,
+        REDUCES_EFFECT_OF_DEEP_WOUNDS_ON_TARGET_BY_N_PERCENT_NODE(50),
+        // and restores 40% of unit’s maximum HP
+        // as unit’s combat begins for 1 turn
+        // (triggers after effects that deal damage as combat begins;
+        // only highest value applied; does not stack).
+        RESTORES_N_PERCENT_OF_TARGETS_MAX_HP_AS_TARGETS_COMBAT_BEGINS_NODE(40),
+    ));
+}
 
-    // [Reflex]
-    // Reduces damage from foe’s first attack by 7 during combat
-    // (“first attack” normally means only the first strike;
-    // for effects that grant “unit attacks twice,”
-    // it means the first and second strikes),
-    // and unit’s next attack deals damage =
-    // total damage reduced from foe’s first attack
-    // (by any source, including other skills; resets at end of combat).
-    // (For 1 turn.)
-
-    // 🌙 Pitch-Dark Luna
+// [Reflex]
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Reflex);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Reduces damage from foe’s first attack by 7 during combat
+        // (“first attack” normally means only the first strike;
+        // for effects that grant “unit attacks twice,”
+        // it means the first and second strikes),
+        REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+        // and unit’s next attack deals damage =
+        // total damage reduced from foe’s first attack
+        // (by any source, including other skills; resets at end of combat).
+        // (For 1 turn.)
+        TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
+    ));
+}
+//
+// 🌙 Pitch-Dark Luna
+{
+    let skillId = Special.Luna;
     // CD: 3
-    // When Special triggers,
-    // boosts damage by 80% of the greater of foe’s Spd or Def.
-    // Neutralizes effects that prevent unit’s counterattacks
-    // and reduces damage from attacks by X% during combat
-    // (X = 50 – current Special cooldown count value × 10,
-    // but if unit’s Special triggered during this combat,
-    // X = 50; excluding area-of-effect Specials),
-    // and also, if unit’s Def ≥ foe’s Def +5,
-    // disables unit’s and foe’s skills
-    // that change attack priority during combat.
+    setSpecialCount(skillId, 3);
+    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // When Special triggers,
+        // boosts damage by 80% of the greater of foe’s Spd or Def.
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            PERCENTAGE_NODE(80, MAX_NODE(FOES_SPD_NODE, FOES_DEF_NODE))),
+    ));
+    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Neutralizes effects that prevent unit’s counterattacks
+        NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
+        X_NUM_NODE(
+            // and reduces damage from attacks by X% during combat
+            REDUCES_DAMAGE_FROM_ATTACKS_DURING_COMBAT_BY_X_PERCENT_AS_SPECIAL_SKILL_EFFECT_PER_ATTACK_NODE(READ_NUM_NODE),
+            // (X = 50 – current Special cooldown count value × 10,
+            // but if unit’s Special triggered during this combat,
+            // X = 50; excluding area-of-effect Specials),
+            IF_VALUE_NODE(
+                IS_TARGETS_SPECIAL_TRIGGERED_NODE,
+                50,
+                50 - MULT_NODE(UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT, 10),
+            ),
+        ),
+        // and also, if unit’s Def ≥ foe’s Def +5,
+        IF_NODE(
+            GTE_NODE(
+                UNITS_EVAL_DEF_DURING_COMBAT_NODE,
+                ADD_NODE(FOES_EVAL_DEF_DURING_COMBAT_NODE, 5)
+            ),
+            // disables unit’s and foe’s skills
+            // that change attack priority during combat.
+            DISABLES_UNITS_AND_FOES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY_NODE,
+        ),
+    ));
+}
 
-    // 🅰️ Distant A/D Form
-    // Unit can counterattack regardless of foe’s range.
-    // If unit is within 3 spaces of an ally,
-    // grants bonus to unit’s Atk/Def during combat =
-    // number of allies within 3 spaces of unit × 3 (max 9;
-    // if unit triggers Savior, value is treated as 9).
+// 🅰️ Distant A/D Form
+{
+    let skillId = PassiveA.DistantADForm;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Unit can counterattack regardless of foe’s range.
+        TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants bonus to unit’s Atk/Def during combat =
+            // number of allies within 3 spaces of unit × 3 (max 9;
+            // if unit triggers Savior, value is treated as 9).
+            GRANTS_ATK_DEF_TO_TARGET_DURING_COMBAT_NODE(
+                IF_VALUE_NODE(IS_TARGETS_SAVIOR_TRIGGERED_NODE,
+                    9,
+                    MULT_MAX_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 3, 9)
+                ),
+            ),
+        ),
+    ));
+}
 
-    // 🅱️ Counter Fighter
-    // If foe initiates combat
-    // or if unit’s HP ≥ 25% at start of combat,
-    // inflicts Atk–5 on foe,
-    // deals damage = 15% of unit’s Atk (excluding area-of-effect Specials),
-    // reduces damage from foe’s attacks by 15% of unit’s Atk during combat
-    // (excluding area-of-effect Specials),
-    // and restores 7 HP to unit
-    // when unit deals damage to foe during combat,
-    // and also, if unit’s attack can trigger unit’s Special,
-    // grants Special cooldown count–2 to unit
-    // before foe’s first attack during combat.
+// 🅱️ Counter Fighter
+{
+    let skillId = PassiveB.CounterFighter;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If foe initiates combat
+        // or if unit’s HP ≥ 25% at start of combat,
+        OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+        // inflicts Atk–5 on foe,
+        INFLICTS_ATK_ON_FOE_DURING_COMBAT_NODE(5),
+        SKILL_EFFECT_NODE(
+            // deals damage = 15% of unit’s Atk (excluding area-of-effect Specials),
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(15, UNITS_ATK_NODE)),
+            // reduces damage from foe’s attacks by 15% of unit’s Atk during combat
+            // (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(
+                PERCENTAGE_NODE(15, UNITS_ATK_NODE)),
+            // and restores 7 HP to unit
+            // when unit deals damage to foe during combat,
+            WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_TO_TARGET_NODE(7),
+            // and also, if unit’s attack can trigger unit’s Special,
+            IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
+                // grants Special cooldown count–2 to unit
+                // before foe’s first attack during combat.
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE(2),
+            ),
+        ),
+    );
+}
 
 // 🗡 Legacy Axe
 {
@@ -90,7 +197,7 @@
                 // number of allies within 3 rows or 3 columns centered on unit × 3, +5 (max 14;
                 // if number of spaces from start position to end position
                 // of whoever initiated combat ≥ 3, value is treated as 14),
-                IF_EXPRESSION_NODE(
+                IF_VALUE_NODE(
                     GTE_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 3),
                     14,
                     MULT_ADD_MAX_NODE(
@@ -419,7 +526,6 @@
     let skillId = PassiveB.FullLightAndDark;
     // At start of player phase or enemy phase,
     setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
-
         // inflicts Atk/Res–7, [Sabotage], and [Schism]
         // on foes with Res < unit’s Res
         // and that are within 2 spaces of another foe

@@ -1059,6 +1059,7 @@ class TernaryConditionalNumberNode extends NumberNode {
 
 const COND_OP =
     (cond, trueNode, falseNode) => new TernaryConditionalNumberNode(cond, trueNode, falseNode);
+const IF_VALUE_NODE = COND_OP;
 
 class StoreNumNode extends FromNumberNode {
     evaluate(env) {

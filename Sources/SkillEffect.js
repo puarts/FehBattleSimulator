@@ -4671,6 +4671,8 @@ const GRANTS_ATK_TO_TARGET_ON_MAP_NODE =
 
 const GRANTS_ATK_SPD_TO_TARGET_ON_MAP_NODE =
     (atk, spd = atk) => new GrantsStatsPlusToTargetOnMapNode(atk, spd, 0, 0);
+const GRANTS_ATK_DEF_TO_TARGET_ON_MAP_NODE =
+    (atk, def = atk) => new GrantsStatsPlusToTargetOnMapNode(atk, 0, def, 0);
 const GRANTS_ATK_RES_TO_TARGET_ON_MAP_NODE =
     (atk, res = atk) => new GrantsStatsPlusToTargetOnMapNode(atk, 0, 0, res);
 const GRANTS_SPD_DEF_TO_TARGET_ON_MAP_NODE =

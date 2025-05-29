@@ -362,6 +362,8 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.FireEmblem, ["FireEmblem.webp", "炎の紋章", "全移動種特効無効、攻速守魔+強化値、初撃ダメージ減"]],
     [StatusEffectType.FellSpirit, ["FellSpirit.webp", "邪竜気", "反撃不可を無効、奥義でのダメージ軽減を1戦闘2回に"]],
     [StatusEffectType.UnitMakesAGuaranteedFollowUpAttackDuringCombat, ["GuaranteedFollowUp.webp", "戦闘中、絶対追撃", "戦闘中、絶対追撃"]],
+    [StatusEffectType.Imbue, ["Imbue.webp", "治癒", ""]],
+    [StatusEffectType.Reflex, ["Reflex.webp", "反射", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
