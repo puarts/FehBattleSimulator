@@ -108,7 +108,7 @@
             IF_VALUE_NODE(
                 IS_TARGETS_SPECIAL_TRIGGERED_NODE,
                 50,
-                50 - MULT_NODE(UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT, 10),
+                SUB_NODE(50, MULT_NODE(UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT, 10)),
             ),
         ),
         // and also, if unit’s Def ≥ foe’s Def +5,
