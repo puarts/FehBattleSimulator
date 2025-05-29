@@ -3848,6 +3848,10 @@ Weapon.LovingBouquets = 3279; // 愛深き花嫁のブーケ
 Special.IceWall = 3280; // 氷壁
 PassiveB.FullLightAndDark = 3281; // 真・光と闇と
 Weapon.BridalStaffPlus = 3282; // 花嫁の杖+
+Weapon.FinalSword = 3283; // 終着の剣
+Special.PitchDarkLuna = 3284; // 漆闇の月光
+PassiveA.DistantADForm = 3285; // 遠反・攻守の密集
+PassiveB.CounterFighter = 3286; // 反攻隊形
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
