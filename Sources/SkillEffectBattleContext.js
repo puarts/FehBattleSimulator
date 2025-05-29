@@ -137,6 +137,7 @@ class TargetsCurrentHp extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.battleContext.restHp;
@@ -265,6 +266,7 @@ class IsTargetsHpLteNPercentInCombatNode extends PercentageCondNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         // targetUnit.battleContext.restHpPercentage ではなくこちらが正しい
         let unit = this.getUnit(env);
@@ -299,6 +301,7 @@ class IsFoesHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
 }
 
 const IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(50);
+const IS_FOES_HP_GTE_70_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(70);
 const IS_FOES_HP_GTE_75_PERCENT_AT_START_OF_COMBAT_NODE = new IsFoesHpGteNPercentAtStartOfCombatNode(75);
 
 class IsTargetsHpLteXPercentOnMapNode extends PercentageCondNode {
@@ -361,6 +364,8 @@ class IsTargetsSpecialTriggeredNode extends BoolNode {
         return result;
     }
 }
+
+const IS_TARGETS_SPECIAL_TRIGGERED_NODE = new IsTargetsSpecialTriggeredNode();
 
 const IS_UNITS_SPECIAL_TRIGGERED = new class extends IsTargetsSpecialTriggeredNode {
     static {
@@ -610,6 +615,11 @@ const FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillE
     }
 }();
 
+const DISABLES_UNITS_AND_FOES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY_NODE = SKILL_EFFECT_NODE(
+    UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+    FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+);
+
 class IncreasesSpdDiffNecessaryForTargetToMakeFollowUpNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -636,6 +646,7 @@ class IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode extends FromPositiveNu
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
@@ -711,6 +722,7 @@ class NeutralizesTargetsFoesBonusesToStatsDuringCombatNode extends SetBoolToEach
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let values = this.getValues();
         let unit = this.getUnit(env);
@@ -1102,7 +1114,7 @@ class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPosi
 }
 
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE =
-        n => new ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode(n);
+    n => new ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode(n);
 
 /**
  * reduces damage from foe's first attack by X% during combat
@@ -1225,7 +1237,7 @@ class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends Applying
 }
 
 const DEALS_DAMAGE_WHEN_TRIGGERING_SPECIAL_DURING_COMBAT_PER_ATTACK_NODE =
-        n => new DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(n);
+    n => new DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode(n);
 
 /**
  * [Special]
@@ -1456,7 +1468,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeEachOfTargetsFollowUpAttackD
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        let result =unit.battleContext.specialCountReductionBeforeEachFollowupAttack += n;
+        let result = unit.battleContext.specialCountReductionBeforeEachFollowupAttack += n;
         env.debug(`${unit.nameWithGroup}は自分の各追撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
     }
 }
@@ -1714,6 +1726,25 @@ class WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode extends FromPosit
 const WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_TO_TARGET_NODE =
     n => new WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode(n);
 
+/**
+ * when unit deals damage to foe during combat, restores 7 HP to unit (triggers even if 0 damage is dealt).
+ */
+class WhenTargetDealsDamageDuringCombatRestoresNHpPerAttackToTargetNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = this.evaluateChildren(env);
+        unit.battleContext.healedHpByAttackPerAttack += result;
+        env.debug(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
+    }
+}
+
+const WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_PER_ATTACK_TO_TARGET_NODE =
+    n => new WhenTargetDealsDamageDuringCombatRestoresNHpPerAttackToTargetNode(n);
+
 class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1819,6 +1850,16 @@ class RestoresXHPToTargetAsTargetsCombatBeginsNode extends FromPositiveNumberNod
         env.debug(`${unit.nameWithGroup}は戦闘開始後${n}回復`);
     }
 }
+
+const RESTORES_X_HP_TO_TARGET_AS_TARGETS_COMBAT_BEGINS_NODE = n => new RestoresXHPToTargetAsTargetsCombatBeginsNode(n);
+// restores 40% of unit’s maximum HP
+// as unit’s combat begins for 1 turn
+// (triggers after effects that deal damage as combat begins;
+// only highest value applied; does not stack).
+const RESTORES_N_PERCENT_OF_TARGETS_MAX_HP_AS_TARGETS_COMBAT_BEGINS_NODE =
+    percentage => RESTORES_X_HP_TO_TARGET_AS_TARGETS_COMBAT_BEGINS_NODE(
+        PERCENTAGE_NODE(percentage, TARGETS_MAX_HP_NODE));
+
 
 /**
  * reduces the effect of【Deep Wounds】on unit by 50% during combat.
@@ -2203,7 +2244,7 @@ class PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode extends SkillEffe
 }
 
 const POTENT_FOLLOW_X_PERCENTAGE_HAS_TRIGGERED_AND_X_LTE_99_THEN_X_IS_N_NODE =
-    n => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(n);
+    x => new PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode(x);
 
 class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
     static {
@@ -2269,6 +2310,7 @@ class SetTargetsBanePerAttackNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.isBanePerAttack = true;
@@ -2282,6 +2324,7 @@ class TreatsTargetsFoesDefResAsIfReducedByXPercentNode extends FromPositiveNumbe
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
@@ -2350,3 +2393,23 @@ class TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode extends SkillEffec
 
 const TARGET_CANNOT_RECOVER_HP_AFTER_COMBAT_NEUTRALIZED_WHEN_FEUD_NODE =
     new TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode();
+
+class ReducesEffectOfDeepWoundsOnTargetByNPercentNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let value = this.evaluateChildren(env);
+        let ratio = value / 100.0;
+        unit.battleContext.addNullInvalidatesHealRatios(ratio);
+        env.debug(`${unit.nameWithGroup}は回復不可を${value}%無効`);
+    }
+}
+
+const REDUCES_EFFECT_OF_DEEP_WOUNDS_ON_TARGET_BY_N_PERCENT_NODE =
+    n => new ReducesEffectOfDeepWoundsOnTargetByNPercentNode(n);
+
+const NEUTRALIZES_TARGETS_DEEP_WOUNDS_DURING_COMBAT_NODE =
+    new ReducesEffectOfDeepWoundsOnTargetByNPercentNode(100);

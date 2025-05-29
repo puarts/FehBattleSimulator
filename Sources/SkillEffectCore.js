@@ -805,10 +805,26 @@ class MultTruncNode extends NumberOperationNode {
 
 const MULT_TRUNC_NODE = (...node) => new MultTruncNode(...node);
 
+class MultCeilNode extends NumberOperationNode {
+    /**
+     * @override
+     * @returns {number}
+     */
+    evaluate(env) {
+        let evaluated = super.evaluateChildren(env);
+        let result = evaluated.reduce((a, b) => Math.ceil(a * b));
+        env?.trace(`[MultCeilNode] mult ceil [${[evaluated]}] = ${result}`);
+        return result;
+    }
+}
+
+const MULT_CEIL_NODE = (...node) => new MultCeilNode(...node);
+
 const MULT_ADD_NODE = (mult1, mult2, add) => ADD_NODE(MULT_NODE(mult1, mult2), add);
 const MULT_MAX_NODE = (mult1, mult2, max) => ENSURE_MAX_NODE(MULT_NODE(mult1, mult2), max);
 const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
     ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(mult1, mult2), add), max);
+const ADD_MAX_NODE = (add1, add2, max) => ENSURE_MAX_NODE(ADD_NODE(add1, add2), max);
 
 class MinNode extends NumberOperationNode {
     /**
@@ -1043,6 +1059,7 @@ class TernaryConditionalNumberNode extends NumberNode {
 
 const COND_OP =
     (cond, trueNode, falseNode) => new TernaryConditionalNumberNode(cond, trueNode, falseNode);
+const IF_VALUE_NODE = COND_OP;
 
 class StoreNumNode extends FromNumberNode {
     evaluate(env) {

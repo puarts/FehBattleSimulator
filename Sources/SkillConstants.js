@@ -3838,6 +3838,20 @@ Weapon.TomeOfGrief = 3269; // 哀歌の書
 Weapon.NobleBow = 3270; // 貴婦人の弓
 Special.CircletOfBalance2 = 3271; // 聖神と暗黒神…・承
 PassiveC.DarklingGuardian2 = 3272; // 闇の樹海の守…・承
+Weapon.LegacyAxe = 3273; // 光の花婿の斧
+PassiveB.PotentAssault = 3274; // 強襲・神速
+PassiveC.TheHeirToLight = 3275; // 真・光をつぐもの
+Weapon.BrilliantBrident = 3276; // 流星の花嫁の槍
+PassiveB.PotentFinish = 3277; // 秘奥・神速
+Weapon.BridalBouquetPlus = 3278; // 花嫁の花束+
+Weapon.LovingBouquets = 3279; // 愛深き花嫁のブーケ
+Special.IceWall = 3280; // 氷壁
+PassiveB.FullLightAndDark = 3281; // 真・光と闇と
+Weapon.BridalStaffPlus = 3282; // 花嫁の杖+
+Weapon.FinalSword = 3283; // 終着の剣
+Special.PitchDarkLuna = 3284; // 漆闇の月光
+PassiveA.DistantADForm = 3285; // 遠反・攻守の密集
+PassiveB.CounterFighter = 3286; // 反攻隊形
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

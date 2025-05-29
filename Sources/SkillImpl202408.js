@@ -2024,7 +2024,7 @@
 {
     setSpikedWall(PassiveB.ASSpikedWall, [4, 4, 0, 0], [UNITS_ATK_DURING_COMBAT_NODE]);
     setSpikedWall(PassiveB.ADSpikedWall, [4, 0, 4, 0], [UNITS_DEF_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE]);
-    setSpikedWall(PassiveB.SRSpikedWall, [0, 4, 4, 0], [UNITS_SPD_DURING_COMBAT_NODE, UNITS_DEF_DURING_COMBAT_NODE]);
+    setSpikedWall(PassiveB.SDSpikedWall, [0, 4, 4, 0], [UNITS_SPD_DURING_COMBAT_NODE, UNITS_DEF_DURING_COMBAT_NODE]);
     setSpikedWall(PassiveB.SRSpikedWall, [0, 4, 0, 4], [UNITS_SPD_DURING_COMBAT_NODE, UNITS_RES_DURING_COMBAT_NODE]);
 }
 
