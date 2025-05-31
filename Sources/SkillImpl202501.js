@@ -83,7 +83,7 @@
         TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
     ));
 }
-//
+
 // 🌙 Pitch-Dark Luna
 {
     let skillId = Special.Luna;
@@ -96,32 +96,48 @@
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
             PERCENTAGE_NODE(80, MAX_NODE(FOES_SPD_NODE, FOES_DEF_NODE))),
     ));
-    AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        // Neutralizes effects that prevent unit’s counterattacks
-        NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
-        X_NUM_NODE(
-            // and reduces damage from attacks by X% during combat
-            REDUCES_DAMAGE_FROM_ATTACKS_DURING_COMBAT_BY_X_PERCENT_AS_SPECIAL_SKILL_EFFECT_PER_ATTACK_NODE(READ_NUM_NODE),
-            // (X = 50 – current Special cooldown count value × 10,
-            // but if unit’s Special triggered during this combat,
-            // X = 50; excluding area-of-effect Specials),
-            IF_VALUE_NODE(
-                IS_TARGETS_SPECIAL_TRIGGERED_NODE,
-                50,
-                SUB_NODE(50, MULT_NODE(UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT, 10)),
+    setCondHooks(skillId,
+        TRUE_NODE,
+        [
+            AT_START_OF_TURN_HOOKS,
+            () => SKILL_EFFECT_NODE(
+                // Neutralizes effects that prevent unit’s counterattacks
+                NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
             ),
-        ),
-        // and also, if unit’s Def ≥ foe’s Def +5,
-        IF_NODE(
-            GTE_NODE(
-                UNITS_EVAL_DEF_DURING_COMBAT_NODE,
-                ADD_NODE(FOES_EVAL_DEF_DURING_COMBAT_NODE, 5)
+        ],
+        [
+            AT_START_OF_ATTACK_HOOKS,
+            () => SKILL_EFFECT_NODE(
+                X_NUM_NODE(
+                    // and reduces damage from attacks by X% during combat
+                    REDUCES_DAMAGE_FROM_ATTACKS_DURING_COMBAT_BY_X_PERCENT_AS_SPECIAL_SKILL_EFFECT_PER_ATTACK_NODE(READ_NUM_NODE),
+                    // (X = 50 – current Special cooldown count value × 10,
+                    // but if unit’s Special triggered during this combat,
+                    // X = 50; excluding area-of-effect Specials),
+                    IF_VALUE_NODE(
+                        IS_TARGETS_SPECIAL_TRIGGERED_NODE,
+                        50,
+                        SUB_NODE(50, MULT_NODE(UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT, 10)),
+                    ),
+                ),
             ),
-            // disables unit’s and foe’s skills
-            // that change attack priority during combat.
-            DISABLES_UNITS_AND_FOES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY_NODE,
-        ),
-    ));
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            () => SKILL_EFFECT_NODE(
+                // and also, if unit’s Def ≥ foe’s Def +5,
+                IF_NODE(
+                    GTE_NODE(
+                        UNITS_EVAL_DEF_DURING_COMBAT_NODE,
+                        ADD_NODE(FOES_EVAL_DEF_DURING_COMBAT_NODE, 5)
+                    ),
+                    // disables unit’s and foe’s skills
+                    // that change attack priority during combat.
+                    DISABLES_UNITS_AND_FOES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY_NODE,
+                ),
+            ),
+        ],
+    );
 }
 
 // 🅰️ Distant A/D Form

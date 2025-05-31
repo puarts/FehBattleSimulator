@@ -1364,6 +1364,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.FallenStar,
 // 真落星
     StatusEffectType.DeepStar,
+    // 反射
+    StatusEffectType.Reflex,
 // 敵の強化の+を無効
     StatusEffectType.NeutralizesFoesBonusesDuringCombat,
 // 弱化を無効
@@ -1380,6 +1382,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.WarpBubble,
 // 神獣の蜜
     StatusEffectType.DivineNectar,
+    // 治癒
+    StatusEffectType.Imbue,
 // 竜特効
     StatusEffectType.EffectiveAgainstDragons,
 // 竜特効無効
