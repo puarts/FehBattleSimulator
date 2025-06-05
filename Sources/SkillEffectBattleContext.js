@@ -1653,9 +1653,9 @@ class EffectiveAgainstNode extends BoolNode {
         // noinspection JSCheckFunctionSignatures
         if (DamageCalculationUtility.isEffectiveAttackEnabled(foe, type)) {
             unit.battleContext.isEffectiveToOpponent = true;
-            env.debug(`${unit.nameWithGroup}は相手に対して特攻`);
+            env.debug(`${unit.nameWithGroup}は相手に対して特効`);
         } else {
-            env.debug(`${foe.nameWithGroup}は特攻無効`);
+            env.debug(`${foe.nameWithGroup}は特効無効`);
         }
     }
 }
