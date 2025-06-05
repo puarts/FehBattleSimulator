@@ -1,5 +1,5 @@
 // スキル実装
-// // 🗡 Final Sword
+// 🗡 Final Sword
 {
     let skillId = Weapon.FinalSword;
     // Mt: 16 Rng: 1
@@ -1269,7 +1269,7 @@
         OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
         SKILL_EFFECT_NODE(
             X_NUM_NODE(
-                // inflicts penalty on foe’s Atk/Def/Res = 
+                // inflicts penalty on foe’s Atk/Def/Res =
                 INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE),
                 COND_OP(
                     // (max 15; if unit triggers Savior, value is treated as 15),
@@ -1286,7 +1286,7 @@
         ),
         SKILL_EFFECT_NODE(
             X_NUM_NODE(
-                // unit deals +X damage 
+                // unit deals +X damage
                 DEALS_DAMAGE_X_NODE(READ_NUM_NODE),
                 // reduces damage from foe’s attacks by X (excluding area-of-effect Specials),
                 REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(READ_NUM_NODE),
@@ -1313,7 +1313,7 @@
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // to unit and allies within 2 spaces of unit for 1 turn.
             FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
-                // grants [Fell Spirit] 
+                // grants [Fell Spirit]
                 GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FellSpirit),
             ),
         ),
@@ -1321,7 +1321,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
     AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        // If foe initiates combat, 
+        // If foe initiates combat,
         IF_NODE(
             OR_NODE(
                 // if unit’s or foe’s Special is ready,
@@ -4135,7 +4135,7 @@
                 // unit deals +X × 5 damage during combat
                 // (max 20; X = number of foes within 3 spaces of target,
                 // including target; excluding area-of-effect Specials).
-                DEALS_DAMAGE_X_NODE(MULT_MAX_NODE(READ_NUM_AT_NODE, 5, 20)),
+                DEALS_DAMAGE_X_NODE(MULT_MAX_NODE(READ_NUM_NODE, 5, 20)),
                 NUM_OF_TARGETS_FOES_WITHIN_3_SPACES_OF_TARGET_NODE,
             ),
         ),
