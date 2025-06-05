@@ -76,7 +76,7 @@ const Hero = {
     HarmonizedPlumeria: 1248,
     DuoCorrinM: 1259,
     DuoMarth: 1266,
-    DuoJulia: 0,
+    DuoJulia: 1276,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
