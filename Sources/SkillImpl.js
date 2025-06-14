@@ -12136,6 +12136,14 @@ function setLantern(skillId) {
 // 邪竜の救済
 {
     let skillId = PassiveC.FellProtection;
+    // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+    // 戦闘中、攻撃魔防+5、かつ魔防が敵より5以上高い時、
+    // 戦闘中、攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)、かつ、
+    // 敵が攻撃時に発動する奥義を装備している時、戦闘中、敵の最初の攻撃前に敷の奥義発動カウント+1(奥義発動カウントの最大値は超えない)
+    // 周囲2マス以内の味方は、戦闘中、攻撃魔防+4
+    // 周囲2マス以内の味方は、戦闘開始時、スキル所持者の魔防が敵より5以上高い時、
+    // 戦闘中、攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)、
+    // かつ敵が攻撃時に発動する奥義を装備している時、戦闘中、敵の最初の攻撃前に敵の奥義発動カウント+1(奥義発動カウントの最大値は超えない)
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
@@ -12161,7 +12169,7 @@ function setLantern(skillId) {
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
             if (targetUnit.distance(allyUnit) <= 2) {
                 targetUnit.addAtkResSpurs(4);
-                if (targetUnit.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + 5) {
+                if (allyUnit.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + 5) {
                     targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
                         return 0.3;
                     });
