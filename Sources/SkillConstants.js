@@ -3865,8 +3865,10 @@ Weapon.KindredTome = 3294; // 母娘の呪術書
 PassiveA.AlreadyDead = 3295; // あの世行きよ…
 PassiveB.SpdResHavoc = 3296; // 速さ魔防の大混乱
 PassiveX.CruxEcho = 3297; // 響・十字牽制
-Weapon.Gjallarhorn = 3298; // ギャラルホルン
-Weapon.RaudrsparrowPlus = 3299; // ラウアスパロー
+// TODO: 実装
+// Weapon.Gjallarhorn = 3298; // ギャラルホルン
+// TODO: 実装
+// Weapon.RaudrsparrowPlus = 3299; // ラウアスパロー
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
