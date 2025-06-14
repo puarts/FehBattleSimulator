@@ -1502,7 +1502,7 @@
             new AppliesSkillEffectsAfterStatusFixedNode(
                 new ReducesDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
             ),
-            new TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode(),
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
             WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
         )
     ));
@@ -3912,7 +3912,7 @@ function setDiscord(skillId, statsRatios) {
             new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(70),
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
             // and unit's next attack deals damage = total damage reduced from foe's first attack (by any source,
-            new TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode(),
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
             // including other skills). Resets at end of combat.
         ),
     ));

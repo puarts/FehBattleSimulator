@@ -2728,23 +2728,8 @@ class DamageCalculatorWrapper {
                     // 最初に受けた攻撃のダメージを軽減
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
                     // ダメージ軽減分を保存
-                    targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                        (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
-                            if (!context.isFirstAttack(atkUnit)) return;
-                            defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                            defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
-                        }
-                    );
                     // 攻撃ごとの固定ダメージに軽減した分を加算
-                    targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                        if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                            atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                            let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                            return addDamage;
-                        }
-                        return 0;
-                    });
+                    targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 }
             }
         }
@@ -2994,24 +2979,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(4);
                 // 最初に受けた攻撃のダメージを軽減
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(30 / 100.0, enemyUnit);
-                // ダメージ軽減分を保存
-                targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                    (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
-                        if (!context.isFirstAttack(atkUnit)) return;
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
-                    }
-                );
-                // 攻撃ごとの固定ダメージに軽減した分を加算
-                targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                        atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                        let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                        return addDamage;
-                    }
-                    return 0;
-                });
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }
             if (targetUnit.isWeaponSpecialRefined) {
@@ -3612,6 +3580,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpdDefSpurs(-5);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                     targetUnit.battleContext.passiveBSkillCondSatisfied = true;
                 }
@@ -4475,6 +4444,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(6, 6, 0, 0);
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.ShintakuNoBreath] = (targetUnit, enemyUnit) => {
@@ -6161,6 +6131,7 @@ class DamageCalculatorWrapper {
             if (enemyUnit.battleContext.restHpPercentage >= 50) {
                 enemyUnit.addAllSpur(-4);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DamiellBow] = (targetUnit) => {

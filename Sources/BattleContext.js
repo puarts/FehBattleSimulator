@@ -528,10 +528,6 @@ class BattleContext {
         this.canActivateNonSpecialOneTimePerMapMiracleFuncs = [];
         // 無効スキル
         this.applyInvalidationSkillEffectFuncs = [];
-        // 攻撃ごとのダメージ加算
-        this.calcFixedAddDamagePerAttackFuncs = [];
-        // 軽減分のダメージを次の攻撃に加算
-        this.addReducedDamageForNextAttackFuncs = [];
         // ステータス決定後の戦闘中バフ
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
         /** @type {SkillEffectNode[]} */
@@ -895,16 +891,6 @@ class BattleContext {
         );
     }
 
-    /**
-     * @param {Unit} enemyUnit
-     * @param {number} ratio
-     */
-    reduceAndAddDamage(enemyUnit, ratio) {
-        // 最初に受けた攻撃のダメージを軽減
-        this.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
-        this.addReducedDamageForNextAttack();
-    }
-
     addDamageByStatus(statusFlags, ratio) {
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -985,28 +971,6 @@ class BattleContext {
             }
         );
     }
-
-    addReducedDamageForNextAttack() {
-        // ダメージ軽減分を保存
-        this.addReducedDamageForNextAttackFuncs.push(
-            (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
-                if (!context.isFirstAttack(atkUnit)) return;
-                defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
-            }
-        );
-        // 攻撃ごとの固定ダメージに軽減した分を加算
-        this.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-            if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                return addDamage;
-            }
-            return 0;
-        });
-    }
-
     applyFoesPenaltyDoubler() {
         this.applySpurForUnitAfterCombatStatusFixedFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {

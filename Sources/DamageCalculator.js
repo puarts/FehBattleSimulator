@@ -544,33 +544,12 @@ class DamageCalculator {
             atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio = 0;
         }
 
-        for (let func of atkUnit.battleContext.calcFixedAddDamagePerAttackFuncs) {
-            let value = func(atkUnit, defUnit, isPrecombat);
-            fixedAddDamage += value;
-        }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case PassiveB.FruitOfLife:
-                    if (atkUnit.battleContext.restHpPercentage >= 25) {
-                        if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                            atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                            fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                        }
-                    }
-                    break;
                 case Weapon.ArcaneGrima:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getAtkInCombat(defUnit);
                         atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
-                    }
-                    break;
-                case Weapon.Aurgelmir:
-                case PassiveB.DivineRecreation:
-                    if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                        atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                        fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
                     }
                     break;
             }
@@ -2176,9 +2155,6 @@ class DamageCalculator {
      * @param {DamageCalcContext} context
      */
     #applyReducedDamageForNextAttack(atkUnit, defUnit, reducedDamage, activatesDefenderSpecial, context) {
-        for (let func of defUnit.battleContext.addReducedDamageForNextAttackFuncs) {
-            func(defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context);
-        }
         // ダメージ反射
         if (context.isFirstAttack(atkUnit)) {
             for (let rate of defUnit.battleContext.firstAttackReflexDamageRates) {
@@ -2200,32 +2176,6 @@ class DamageCalculator {
                     defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
                 }
                 break;
-        }
-
-        for (let skillId of defUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveB.FruitOfLife:
-                    if (atkUnit.battleContext.restHpPercentage >= 25) {
-                        if (!context.isFirstAttack(atkUnit)) break;
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
-                    }
-                    break;
-                case Weapon.Aurgelmir:
-                    if (!context.isFirstAttack(atkUnit)) break;
-                    if (defUnit.battleContext.weaponSkillCondSatisfied) {
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
-                    }
-                    break;
-                case PassiveB.DivineRecreation:
-                    if (!context.isFirstAttack(atkUnit)) break;
-                    if (atkUnit.battleContext.restHpPercentage >= 50) {
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
-                    }
-                    break;
-            }
         }
     }
 
