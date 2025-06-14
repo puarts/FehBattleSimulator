@@ -3852,6 +3852,19 @@ Weapon.FinalSword = 3283; // 終着の剣
 Special.PitchDarkLuna = 3284; // 漆闇の月光
 PassiveA.DistantADForm = 3285; // 遠反・攻守の密集
 PassiveB.CounterFighter = 3286; // 反攻隊形
+Weapon.ArcaneHexBow = 3287; // 魔器・呪術の秘弓
+PassiveA.AtkSpdHexedge = 3288; // 攻撃速さの呪刃
+PassiveC.BloodAndThunder = 3289; // あの世に行くが良い
+Weapon.DespairingBreath = 3290; // 深き絶望のブレス
+Special.ArmoredGlacier = 3291; // 重装の大氷
+PassiveC.ARBriarNSave = 3292; // 兜の護り手・近・茨
+Weapon.ObstinateBreathPlus = 3293; // 堅牢のブレス+
+Weapon.KindredTome = 3294; // 母娘の呪術書
+PassiveA.AlreadyDead = 3295; // あの世行きよ…
+PassiveB.SpdResHavoc = 3296; // 速さ魔防の大混乱
+PassiveX.CruxEcho = 3297; // 響・十字牽制
+Weapon.Gjallarhorn = 3298; // ギャラルホルン
+Weapon.RaudrsparrowPlus = 3299; // ラウアスパロー
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

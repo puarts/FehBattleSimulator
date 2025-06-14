@@ -1099,6 +1099,8 @@ class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends From
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(n);
 
+const REDUCES_DAMAGE_BY_N_PERCENT_NODE = REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE;
+
 class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1649,14 +1651,9 @@ class EffectiveAgainstNode extends BoolNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let foe = env.foeDuringCombat;
-        let type = this.evaluateChildren(env)[0];
-        // noinspection JSCheckFunctionSignatures
-        if (DamageCalculationUtility.isEffectiveAttackEnabled(foe, type)) {
-            unit.battleContext.isEffectiveToOpponent = true;
-            env.debug(`${unit.nameWithGroup}は相手に対して特効`);
-        } else {
-            env.debug(`${foe.nameWithGroup}は特効無効`);
-        }
+        let effective = this.evaluateChildren(env)[0];
+        unit.battleContext.effectivesAgainst.push(effective);
+        env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(effective)}特効`);
     }
 }
 
@@ -1805,7 +1802,7 @@ class TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttack
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        unit.battleContext.canAddDamageReductionToNextAttackFromEnemiesFirstAttack = true;
+        unit.battleContext.firstAttackReflexDamageRates.push(1.0);
         env.debug(`${unit.nameWithGroup}は敵の最初の攻撃で軽減した値を、自身の次の攻撃のダメージに+`);
     }
 }
@@ -2393,6 +2390,13 @@ class TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode extends SkillEffec
 
 const TARGET_CANNOT_RECOVER_HP_AFTER_COMBAT_NEUTRALIZED_WHEN_FEUD_NODE =
     new TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode();
+
+const FOE_CANNOT_RECOVER_HP_AFTER_COMBAT_NEUTRALIZED_WHEN_FEUD_NODE =
+    new class extends TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode {
+        static {
+            Object.assign(this.prototype, GetFoeDuringCombatMixin);
+        }
+    }
 
 class ReducesEffectOfDeepWoundsOnTargetByNPercentNode extends FromPositiveNumberNode {
     static {

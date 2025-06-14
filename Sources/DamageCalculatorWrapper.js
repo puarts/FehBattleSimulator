@@ -2729,10 +2729,10 @@ class DamageCalculatorWrapper {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
                     // ダメージ軽減分を保存
                     targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                        (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                        (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
                             if (!context.isFirstAttack(atkUnit)) return;
                             defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                            defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
                         }
                     );
                     // 攻撃ごとの固定ダメージに軽減した分を加算
@@ -2996,10 +2996,10 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(30 / 100.0, enemyUnit);
                 // ダメージ軽減分を保存
                 targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                    (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                    (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
                         if (!context.isFirstAttack(atkUnit)) return;
                         defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                        defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
                     }
                 );
                 // 攻撃ごとの固定ダメージに軽減した分を加算
@@ -6811,6 +6811,7 @@ class DamageCalculatorWrapper {
                 if (targetUnit.battleContext.initiatesCombat ||
                     (enemyUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 }
             }
         };
@@ -10796,6 +10797,14 @@ class DamageCalculatorWrapper {
                 return;
             }
         }
+
+        for (let effective of atkUnit.battleContext.effectivesAgainst) {
+            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, effective)) {
+                atkUnit.battleContext.isEffectiveToOpponent = true;
+                return;
+            }
+        }
+
         if (atkUnit.hasStatusEffect(StatusEffectType.EffectiveAgainstDragons)) {
             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Dragon)) {
                 atkUnit.battleContext.isEffectiveToOpponent = true;

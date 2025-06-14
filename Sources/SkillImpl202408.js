@@ -3121,8 +3121,9 @@ function setDiscord(skillId, statsRatios) {
     setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
 }
 
-// 護り手・遠・茨
+// 護り手・X・茨
 {
+    setBriarSave(PassiveC.ARBriarNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
     setBriarSave(PassiveC.ADBriarFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
 }
 
@@ -5695,7 +5696,7 @@ function setDiscord(skillId, statsRatios) {
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE,
-                    new IsStatusEffectActiveOnUnitNode(StatusEffectType.DeepStar)),
+                    IS_STATUS_EFFECT_ACTIVE_ON_TARGET_NODE(StatusEffectType.DeepStar)),
                 new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(

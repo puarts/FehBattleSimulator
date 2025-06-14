@@ -756,7 +756,8 @@
                     }
                 );
                 // 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに+(その戦闘中のみ。軽減値はスキルによる軽減効果も含む)
-                targetUnit.battleContext.addReducedDamageForNextAttack();
+                // targetUnit.battleContext.addReducedDamageForNextAttack();
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
             }
         }
     );
@@ -2435,10 +2436,10 @@
                 // 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。軽減値はスキルによる軽減効果も含む）
                 // [ダメージ軽減分を保存]
                 targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                    (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                    (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
                         if (!context.isFirstAttack(atkUnit)) return;
                         defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                        defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
                     }
                 );
                 // [攻撃ごとの固定ダメージに軽減した分を加算]
@@ -7605,10 +7606,10 @@ function setLantern(skillId) {
                     }
                     // ダメージ軽減分を保存
                     targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                        (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                        (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
                             if (!context.isFirstAttack(atkUnit)) return;
                             defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                            defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
                         }
                     );
                     // 攻撃ごとの固定ダメージに軽減した分を加算
@@ -11536,10 +11537,10 @@ function setLantern(skillId) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
                         // ダメージ軽減分を保存
                         targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                            (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+                            (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
                                 if (!context.isFirstAttack(atkUnit)) return;
                                 defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                                defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
                             }
                         );
                         // 攻撃ごとの固定ダメージに軽減した分を加算

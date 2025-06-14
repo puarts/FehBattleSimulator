@@ -16,10 +16,28 @@ class MultiValueMap extends Map {
     }
 
     /**
+     * @param {K} key
      * @returns {V[]}
      */
     getValues(key) {
         return this.get(key) || [];
+    }
+
+    /**
+     * @param {K} key
+     * @returns {Set<V>}
+     */
+    getValueSet(key) {
+        return new Set(this.getValues(key));
+    }
+
+    /**
+     * @param {K} key
+     * @param {V} value
+     * @returns {boolean}
+     */
+    hasValue(key, value) {
+        return this.getValueSet(key).has(value);
     }
 }
 
@@ -50,6 +68,22 @@ class SkillEffectHooks {
      */
     addSkills(skillIds, nodeFunc) {
         skillIds.forEach(skillId => this.addSkill(skillId, nodeFunc));
+    }
+
+    /**
+     * @param {number|string} skillId
+     * @param {() => N} nodeFunc
+     * @returns {boolean} 既に登録されている場合はfalse
+     */
+    addSkillIfAbsent(skillId, nodeFunc) {
+        if (typeof nodeFunc !== 'function') {
+            throw new Error('Argument nodeFunc must be a function');
+        }
+        if (this.#delayedMap.has(skillId) || this.#instantiatedMap.has(skillId)) {
+            return false;
+        }
+        this.#delayedMap.addValue(skillId, nodeFunc);
+        return true;
     }
 
     /**

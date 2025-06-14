@@ -124,6 +124,9 @@ const PERCENTAGE_CEIL_NODE = (percentage, num) =>
 const PERCENTAGE_ADD_NODE = (percentage, num, add) =>
     ADD_NODE(PERCENTAGE_NODE(percentage, num), add);
 
+const PERCENTAGE_SUB_NODE = (percentage, num, sub) =>
+    SUB_NODE(PERCENTAGE_NODE(percentage, num), sub);
+
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpacesNode(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
     new TargetsAndThoseAlliesWithinNSpacesNode(2, TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE);
@@ -647,6 +650,16 @@ function setSpecialCount(skillId, n) {
     }
 }
 
+function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense) {
+    setSpecialCount(skillId, n);
+    if (isNormalAttack) {
+        NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    }
+    if (isDefense) {
+        DEFENSE_SPECIAL_SET.add(skillId);
+    }
+}
+
 function setPathfinder(skillId) {
     PATHFINDER_SKILL_SET.add(skillId);
 }
@@ -808,6 +821,18 @@ const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_N
 const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_3_SPACES_NODE =
     (...statusEffectType) =>
         GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(3, ...statusEffectType);
+
+/**
+ * @param {number|NumberNode} n
+ * @param {StatsNode} statsNode
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATS_BONUS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n, statsNode) =>
+        FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(n,
+            GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(statsNode),
+        );
 
 /**
  * @param {number|NumberNode} n

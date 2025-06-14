@@ -144,13 +144,13 @@ const FOE_NODE = new class extends TargetNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
-}
+}();
 
 const SKILL_OWNER_NODE = new class extends TargetNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
     }
-}
+}();
 
 class AssistTargetingNode extends TargetNode {
     static {
@@ -843,6 +843,7 @@ class PlacedSpacesNode extends SpacesNode {
         super();
         this._unitsNode = unitsNode;
     }
+
     evaluate(env) {
         let units = this._unitsNode.evaluate(env);
         return IterUtil.map(units, u => u.placedTile);
@@ -1160,6 +1161,7 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
 const NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(1);
 const NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(2);
 const NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(3);
+const NUM_OF_TARGETS_ALLIES_NODE = pred => new NumOfTargetsAlliesWithinNSpacesNode(99, pred);
 
 class NumOfFoesAlliesWithinNSpacesNode extends NumOfTargetsAlliesWithinNSpacesNode {
     static {
@@ -1631,9 +1633,13 @@ const IS_BONUS_ACTIVE_ON_FOE_NODE = new class extends IsBonusActiveOnTargetNode 
 }();
 
 /**
- * 【StatusEffect】is active on unit
+ * 【StatusEffect】is active on target
  */
-class IsStatusEffectActiveOnUnitNode extends BoolNode {
+class IsStatusEffectActiveOnTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     /**
      * @param {number|NumberNode} value
      */
@@ -1642,13 +1648,26 @@ class IsStatusEffectActiveOnUnitNode extends BoolNode {
     }
 
     evaluate(env) {
-        let unit = env.unitDuringCombat;
+        let unit = this.getUnit(env);
         let statusEffect = this.evaluateChildren(env)[0];
         let result = unit.hasStatusEffect(statusEffect);
         env.debug(`${unit.nameWithGroup}が${getStatusEffectName(statusEffect)}を持っているか: ${result}`);
         return result;
     }
 }
+
+const IS_STATUS_EFFECT_ACTIVE_ON_TARGET_NODE = e => new IsStatusEffectActiveOnTargetNode(e);
+
+/**
+ * 【StatusEffect】is active on unit
+ */
+class IsStatusEffectActiveOnUnitNode extends IsStatusEffectActiveOnTargetNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const IS_STATUS_EFFECT_ACTIVE_ON_UNIT_NODE = e => new IsStatusEffectActiveOnUnitNode(e);
 
 class HasTargetEnteredCombatDuringCurrentTurnNode extends BoolNode {
     static {
@@ -2047,6 +2066,7 @@ const ATK_SPD_NODE = (atk, spd = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0
 const ATK_DEF_NODE = (atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, 0);
 const ATK_RES_NODE = (atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, 0, res);
 const SPD_DEF_NODE = (spd, def = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, 0);
+const SPD_RES_NODE = (spd, res = spd) => StatsNode.makeStatsNodeFrom(0, spd, 0, res);
 const DEF_RES_NODE = (def, res = def) => StatsNode.makeStatsNodeFrom(0, 0, def, res);
 
 const ATK_SPD_DEF_NODE = (atk, spd = atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, spd, def, 0);
@@ -2956,7 +2976,7 @@ const CURRENT_TURN_NODE = new class extends NumberNode {
     evaluate(env) {
         return g_appData.globalBattleContext?.currentTurn ?? 0;
     }
-}
+}();
 
 const NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
@@ -3336,7 +3356,7 @@ const FOES_TOTAL_PENALTIES_NODE = new class extends TargetsTotalPenaltiesNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
-}
+}();
 
 class TargetsPenaltiesNode extends StatsNode {
     static {
@@ -4367,7 +4387,7 @@ const IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE = new class ex
         }
         return true;
     }
-}
+}();
 
 class IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode extends BoolNode {
     static {
@@ -5174,6 +5194,7 @@ class TargetsSpecialCooldownCountOnMapNode extends PositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.specialCount;
@@ -5784,6 +5805,7 @@ class TargetsCurrentStyleNode extends NumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.getCurrentStyle();
@@ -5798,6 +5820,7 @@ class NumberOfTimesTargetHasActedOnTheCurrentTurnNotCountingCantoNode extends Po
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
+
     evaluateChildren(env) {
         let unit = this.getUnit(env);
         let result = unit.actionCount;

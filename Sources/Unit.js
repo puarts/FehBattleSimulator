@@ -934,8 +934,9 @@ class Unit extends BattleMapElement {
         return calcGrowthValue(growthRate, this.rarity, this.level);
     }
 
-
+    // TODO: 削除する
     clearReservedSkills() {
+        return;
         this.reservedWeapon = NotReserved;
         this.reservedSupport = NotReserved;
         this.reservedSpecial = NotReserved;
@@ -946,7 +947,9 @@ class Unit extends BattleMapElement {
         this.reservedPassiveX = NotReserved;
     }
 
+    // TODO: 削除する
     reserveCurrentSkills() {
+        return;
         this.reservedWeapon = this.weapon;
         this.reservedSupport = this.support;
         this.reservedSpecial = this.special;
@@ -957,7 +960,9 @@ class Unit extends BattleMapElement {
         this.reservedPassiveX = this.passiveX;
     }
 
+    // TODO: 削除する
     restoreReservedSkills() {
+        return;
         this.restoreReservedWeapon();
         this.restoreReservedSupport();
         this.restoreReservedSpecial();

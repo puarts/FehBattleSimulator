@@ -84,6 +84,7 @@ class BattleContext {
         this.#damageReductionRatiosByChainGuard = [];
         this.isEffectiveToOpponent = false;
         this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
+        this.effectivesAgainst = [];
         this.attackCount = 1;
         this.counterattackCount = 1;
         this.canCounterattackToAllDistance = false;
@@ -178,6 +179,10 @@ class BattleContext {
         this.additionalDamageOfNextAttack = 0;
 
         this.canAddDamageReductionToNextAttackFromEnemiesFirstAttack = false;
+        // 最初の攻撃の反射ダメージの反射割合(2025年6月時点で実装されているのは100% = 1のみ)
+        this.firstAttackReflexDamageRates = [];
+        /** type {[number, number]} */
+        this.reflexDamagesAndRatesForNextAttack = [];
         this.canAddDamageReductionToNextAttackAfterSpecial = false;
         this.nextAttackMinAdditionAfterSpecial = Number.MIN_SAFE_INTEGER;
 
@@ -984,10 +989,10 @@ class BattleContext {
     addReducedDamageForNextAttack() {
         // ダメージ軽減分を保存
         this.addReducedDamageForNextAttackFuncs.push(
-            (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
+            (defUnit, atkUnit, reducedDamage, activatesDefenderSpecial, context) => {
                 if (!context.isFirstAttack(atkUnit)) return;
                 defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
             }
         );
         // 攻撃ごとの固定ダメージに軽減した分を加算
