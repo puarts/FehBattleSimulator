@@ -146,6 +146,11 @@ function getDuoOrHarmonizedSkillId(id) {
     return `duo-or-harmonized_${id}`;
 }
 
+/**
+ * @param {string} funcId
+ * @param {Object} args
+ * @returns {string}
+ */
 function getCustomSkillId(funcId, args) {
     return `custom_${funcId}_${JSON.stringify(args)}`;
 }

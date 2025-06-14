@@ -187,7 +187,8 @@ for (let [_key, value] of Object.entries(StatusEffectType)) {
 // }
 
 {
-    let skillId = getCustomSkillId('accelerates-special-trigger-cooldown-count–1');
-    CUSTOM_SKILL_OPTIONS.push({id: skillId, text: "奥義が発動しやすい"});
+    let funcId = 'accelerates-special-trigger-cooldown-count–1';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "奥義が発動しやすい（最低1）"});
     ACCELERATES_SPECIAL_TRIGGER_SET.add(skillId);
 }
