@@ -515,6 +515,13 @@ class Unit extends BattleMapElement {
         this.passiveC = -1;
         this.passiveS = -1;
         this.passiveX = -1;
+        this.additionalPassives = [];
+        this.initAdditionalPassives();
+        /**
+         * @type {Array<[string, Object, boolean]>}
+         */
+        this.customSkills = [];
+        this.initCustomSkills();
         this.captain = -1;
 
         /**
@@ -595,6 +602,8 @@ class Unit extends BattleMapElement {
         this.passiveXInfo = null;
         /** @type {SkillInfo} */
         this.captainInfo = null;
+        /** @type {SkillInfo[]} */
+        this.additionalPassiveInfos = [];
 
         // indexが0の英雄が存在するので-1で初期化する
         this.partnerHeroIndex = -1;
@@ -767,6 +776,26 @@ class Unit extends BattleMapElement {
      */
     get canHavePairUpUnit() {
         return this.heroInfo != null && this.heroInfo.canHavePairUpUnit;
+    }
+
+    initAdditionalPassives() {
+        this.additionalPassives = Unit.getInitAdditionalPassives();
+    }
+
+    initCustomSkills() {
+        this.customSkills = Unit.getInitCustomSkills();
+    }
+
+    static getInitAdditionalPassives() {
+        return [[-2, {}, true]];
+    }
+
+    static getInitCustomSkills() {
+        return [["", {}, true]];
+    }
+
+    static getInitCustomSkillsStr() {
+        return JSON.stringify(Unit.getInitCustomSkills());
     }
 
     /**
@@ -1210,6 +1239,7 @@ class Unit extends BattleMapElement {
         this.passiveSInfo = null;
         this.passiveXInfo = null;
         this.captainInfo = null;
+        this.additionalPassiveInfos = [];
     }
 
     resetStatusAdd() {
@@ -1358,6 +1388,8 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.passiveX
             + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
             + ValueDelimiter + this.reinforcementMerge
+            + ValueDelimiter + Base62.encode(JSON.stringify(this.additionalPassives))
+            + ValueDelimiter + Base62.encode(JSON.stringify(this.customSkills))
             + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
@@ -1491,6 +1523,8 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.reinforcementMerge = Number(values[i]); ++i; }
+        if (values[i]) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
+        if (values[i]) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
         if (i < elemCount) {
             this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
@@ -1641,6 +1675,8 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.spdAdd
             + ValueDelimiter + this.defAdd
             + ValueDelimiter + this.resAdd
+            + ValueDelimiter + Base62.encode(JSON.stringify(this.additionalPassives))
+            + ValueDelimiter + Base62.encode(JSON.stringify(this.customSkills))
             ;
     }
 
@@ -1710,6 +1746,8 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.spdAdd = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.defAdd = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.resAdd = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
+        if (values[i] !== undefined) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
     }
 
     // 応援を強制的に実行可能かどうか
@@ -1966,6 +2004,7 @@ class Unit extends BattleMapElement {
         this.snapshot.passiveSInfo = this.passiveSInfo;
         this.snapshot.passiveXInfo = this.passiveXInfo;
         this.snapshot.captainInfo = this.captainInfo;
+        this.snapshot.additionalPassiveInfos = [...this.additionalPassiveInfos];
         this.snapshot.fromString(this.toString());
         this.snapshot._greatTalents = [...this.getGreatTalents()];
         return this.snapshot;
@@ -5076,6 +5115,9 @@ class Unit extends BattleMapElement {
         if (this.isCaptain) {
             yield* this.#enumerateSkillInfo(this.captainInfo);
         }
+        for (let info of this.additionalPassiveInfos) {
+            yield* this.#enumerateSkillInfo(info);
+        }
     }
 
     /**
@@ -5123,6 +5165,20 @@ class Unit extends BattleMapElement {
         yield* this.#enumerateSkills(this.special);
         // passiveA-X
         yield* this.enumeratePassiveSkills()
+        if (this.additionalPassives) {
+            for (let [skillId, _args, isEnable] of this.additionalPassives) {
+                if (isEnable) {
+                    yield skillId;
+                }
+            }
+        }
+        if (this.customSkills) {
+            for (let [funcId, args, isEnable] of this.customSkills) {
+                if (isEnable) {
+                    yield getCustomSkillId(funcId, args);
+                }
+            }
+        }
         if (this.isCaptain) {
             yield* this.#enumerateSkills(this.captain);
         }

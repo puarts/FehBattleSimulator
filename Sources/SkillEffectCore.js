@@ -109,6 +109,19 @@ class SkillEffectHooks {
                 env?.info(`登録スキル数: ${skills.length}`);
             }
         }
+        if (String(skillId).startsWith('custom_')) {
+            let str = skillId;
+            let firstUnderscore = str.indexOf('_');
+            let secondUnderscore = str.indexOf('_', firstUnderscore + 1);
+            let funcId = str.slice(firstUnderscore + 1, secondUnderscore);
+            let args = str.slice(secondUnderscore + 1);
+
+            let func = CUSTOM_SKILL_FUNC_MAP.get(funcId);
+            if (func && !registeredCustomSkillIds.has(skillId)) {
+                func(skillId, JSON.parse(args));
+                registeredCustomSkillIds.add(skillId);
+            }
+        }
         return skills.map(skillNode => skillNode.evaluate(env));
     }
 
@@ -141,6 +154,9 @@ class SkillEffectHooks {
             case 'duo-or-harmonized':
                 type = '比翼・双界スキル'
                 break;
+            case 'custom':
+                type = 'カスタムスキル'
+                break;
         }
         let name;
         if (prefix === 'e') {
@@ -151,6 +167,9 @@ class SkillEffectHooks {
             name = ObjectUtil.getKeyName(STYLE_TYPE, Number(suffix));
         } else if (prefix === 'duo-or-harmonized') {
             name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
+        } else if (prefix === 'custom') {
+            // TODO: 修正する
+            name = CUSTOM_SKILL_OPTIONS.find(option => option.id === skillId)?.text ?? 'undefined';
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }

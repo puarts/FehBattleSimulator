@@ -371,8 +371,24 @@
         <div class="sk-circle12 sk-circle"></div>
     </div>
     <div id="app" style="display: none;">
+        <div class="flash-container">
+            <div v-for="(msg, index) in flashMessages"
+                 :key="index"
+                 class="flash-message"
+                 :class="[ { closable: !msg.autoClose, static: !msg.autoClose }, 'flash-' + (msg.type || 'info') ]"
+            >
+                {{ msg.text }}
+                <span
+                        v-if="!msg.autoClose"
+                        class="close-btn"
+                        @click.stop="removeFlash(index)"
+                >
+                    ✖
+                    </span>
+            </div>
+        </div>
         <table style="border-style: none;">
-            <tr>
+        <tr>
                 <td style="width: 450px" valign="top">
                     <table style="border-width: 0px;border-style: none;">
                         <tr>
@@ -1476,8 +1492,13 @@
         <div id="saveUnitDialog" class="unit-dialog">
             <div class="input-box">
                 <input class="text-input" type="text" id="saveUnitNameInput" placeholder="名前を入力"
-                       @keydown.enter="g_appData.saveCurrentUnit()" aria-label="ユニット名">
-                <button class="save-box-button" @click="g_appData.saveCurrentUnit()">
+                       @keydown.enter="g_appData.saveCurrentUnit();
+                       showFlash(`${document.getElementById('saveUnitNameInput').value}を保存しました`, 'success', true)"
+                       aria-label="ユニット名">
+                <button class="save-box-button"
+                        @click="g_appData.saveCurrentUnit();
+                       showFlash(`${document.getElementById('saveUnitNameInput').value}を保存しました`, 'success', true)"
+                >
                     <i class="fa-solid fa-save" title="保存"></i>
                 </button>
             </div>
@@ -1535,7 +1556,8 @@
                                @keydown.enter="g_appData.saveChangesSavedUnits()" />
                     </td>
                     <td class="col-load">
-                        <button class="icon-button load-button" @click="g_appData.loadUnit(unitObj)">
+                        <button class="icon-button load-button"
+                                @click="g_appData.loadUnit(unitObj);showFlash(`設定を読み込みました`, 'success', true)">
                             <i class="fa-solid fa-file-import" title="読み込む"></i>
                         </button>
                     </td>
@@ -2182,11 +2204,12 @@
                         <tr>
                             <th class='param'><img class="weaponIcon" style="max-width:15px" /></th>
                             <td>
-                                <select2 :options="g_app.vm.weaponOptions" v-model="value.weapon" v-if="g_app.vm.enableAllSkillOptions"
-                                    @input="g_app.vm.weaponChanged" class="skill">
-                                </select2>
-                                <select2 :options="value.heroInfo.weaponOptions" v-model="value.weapon" v-bind:name="value.id+'-weapon'" v-else-if="value.heroInfo!=null"
-                                    @input="g_app.vm.weaponChanged" class="skill">
+                                <select2
+                                        :options="g_app.vm.enableAllSkillOptions ? g_app.vm.weaponOptions : (value.heroInfo && value.heroInfo.weaponOptions)"
+                                        :name="value.id + '-weapon'"
+                                        v-model="value.weapon"
+                                        @input="g_app.vm.weaponChanged"
+                                        class="skill">
                                 </select2>
                                 <a v-bind:href="value.weaponInfo.detailPageUrl" target="_blank" v-if="value.weaponInfo != null" >
                                     <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'" /></a>
@@ -2348,6 +2371,163 @@
                                     ({{value.passiveX}}) {{value.heroInfo!=null?value.heroInfo.passiveXOptions.length:0}}, {{g_appData.passiveXImplCount}}/{{g_appData.passiveXCount}}({{Math.floor(100*g_appData.passiveXImplCount/g_appData.passiveXCount, 2)}}%)</span>
                             </td>
                         </tr>
+
+                        <!-- 追加スキル -->
+                        <tr v-for="([skillId, _args, isEnabled], index) of value.additionalPassives"
+                            :key="`additional-passives-${value.id}-${index}-${String(skillId)}`">
+                            <td>
+                                <i
+                                        :class="['fa-solid',
+                                                 value.additionalPassives[index][2] ? 'fa-toggle-on' : 'fa-toggle-off',
+                                                 value.additionalPassives[index][2] ? 'icon-green' : 'icon-red']"
+                                        :title="!value.additionalPassives[index][2] ? '有効' : '無効'"
+                                        style="cursor: pointer;"
+                                        @click="g_app.vm.isSkillEnabledChanged(index, 'additional')"
+                                ></i>
+                            </td>
+                            <td>
+                                <select2 :options="g_app.vm.additionalPassiveOptions"
+                                         v-model="value.additionalPassives[index][0]"
+                                         @input="g_app.vm.additionalSkillChanged" class="skill">
+                                </select2>
+                                <a v-bind:href="value.additionalPassiveInfos[index].detailPageUrl"
+                                   target="_blank"
+                                   v-if="value.additionalPassiveInfos[index] != null">
+                                    <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'"/></a>
+                                <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle">
+                                    ({{value.additionalPassives[index][0]}})
+                                </span>
+
+                                <!-- 削除ボタン -->
+                                <button class="icon-button-small icon-red align-middle"
+                                        @click="value.additionalPassives.splice(index, 1)"
+                                        :disabled="value.additionalPassives.length === 1">
+                                    <i class="fa-solid fa-trash-can"
+                                       title="削除"
+                                       :class="{ 'icon-disabled': value.additionalPassives.length === 1 }"></i>
+                                </button>
+
+                                <!-- 下に追加ボタン -->
+                                <button type="button"
+                                        @click="value.additionalPassives.splice(index + 1, 0, [-2, {}, true]);
+                                                g_app.vm.passiveChanged()"
+                                        class="icon-button-small add-button icon-green align-middle"
+                                        title="下に追加">
+                                    <i class="fa-solid fa-square-plus"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- カスタムスキル -->
+                        <tr v-for="([funcId, args, isEnabled], index) of value.customSkills"
+                            :key="`custom-passives-${value.id}-${index}-${String(funcId)}`">
+                            <td>
+                                <i
+                                        :class="['fa-solid',
+                                                 value.customSkills[index][2] ? 'fa-toggle-on' : 'fa-toggle-off',
+                                                 value.customSkills[index][2] ? 'icon-green' : 'icon-red']"
+                                        :title="!value.customSkills[index][2] ? '有効' : '無効'"
+                                        style="cursor: pointer;"
+                                        @click="g_app.vm.isSkillEnabledChanged(index, 'custom')"
+                                ></i>
+                            </td>
+                            <td>
+                                <!-- カスタムスキル関数 -->
+                                <select2
+                                        :options="CUSTOM_SKILL_OPTIONS"
+                                        v-model="value.customSkills[index][0]"
+                                        @input="g_app.vm.customSkillChanged(String(funcId), args, isEnabled, index)"
+                                        class="custom-skill"
+                                ></select2>
+
+                                <!-- 引数 -->
+                                <!-- 数値 -->
+                                <span
+                                        v-if="FUNC_ID_TO_ARG_TYPES_MAP.hasValue(funcId,
+                                                CUSTOM_SKILL_ARG_TYPE.NON_NEGATIVE_INTEGER)"
+                                >
+                                    <br/>
+                                    <input
+                                            type="number"
+                                            min="0"
+                                            step="1"
+                                            inputmode="numeric"
+                                            pattern="(?:0|[1-9]\d*)"
+                                            placeholder="0以上の整数を入力してください"
+                                            v-model.number="
+                                                value.customSkills[index][1][CUSTOM_SKILL_ARG_TYPE.NON_NEGATIVE_INTEGER]"
+                                            @input="g_app.vm.customSkillChanged(
+                                                      String(funcId),
+                                                      value.customSkills[index][1],
+                                                      isEnabled,
+                                                      index
+                                                    )"
+                                            class="custom-skill-args"
+                                    />
+                                </span>
+
+                                <!-- パーセント -->
+                                <span
+                                        v-if="FUNC_ID_TO_ARG_TYPES_MAP.hasValue(funcId,
+                                                CUSTOM_SKILL_ARG_TYPE.PERCENTAGE)"
+                                >
+                                    <br/>
+                                    <input
+                                            type="number"
+                                            min="0"
+                                            step="1"
+                                            inputmode="numeric"
+                                            pattern="(?:0|[1-9]\d*)"
+                                            placeholder="0以上の整数を入力してください"
+                                            v-model.number="
+                                                value.customSkills[index][1][CUSTOM_SKILL_ARG_TYPE.PERCENTAGE]"
+                                            @input="g_app.vm.customSkillChanged(
+                                                      String(funcId),
+                                                      value.customSkills[index][1],
+                                                      isEnabled,
+                                                      index
+                                                    )"
+                                            class="custom-skill-args"
+                                    >%</input>
+                                </span>
+
+                                <!-- カテゴリー -->
+                                <span
+                                        v-for="argType in CUSTOM_SKILL_CATEGORY_ARG_TYPES"
+                                        :key="argType"
+                                        v-if="FUNC_ID_TO_ARG_TYPES_MAP.hasValue(funcId, argType)"
+                                >
+                                      <br/>
+                                      <select2
+                                              :options="ARG_TYPE_TO_OPTIONS_MAP.getValues(argType)"
+                                              v-model="value.customSkills[index][1][argType]"
+                                              @input="g_app.vm.customSkillChanged(
+                                                          String(funcId),
+                                                          value.customSkills[index][1], isEnabled, index
+                                                      )"
+                                              class="custom-skill-args"
+                                      ></select2>
+                                </span>
+
+                                <!-- 削除ボタン -->
+                                <button class="icon-button-small icon-red align-middle"
+                                        @click="value.customSkills.splice(index, 1)"
+                                        :disabled="value.customSkills.length === 1">
+                                    <i class="fa-solid fa-trash-can"
+                                       title="削除"
+                                       :class="{ 'icon-disabled': value.customSkills.length === 1 }"></i>
+                                </button>
+
+                                <!-- 下に追加ボタン -->
+                                <button type="button"
+                                        @click="value.customSkills.splice(index + 1, 0, ['', {}, true]);
+                                                g_app.vm.passiveChanged()"
+                                        class="icon-button-small add-button icon-green align-middle"
+                                        title="下に追加">
+                                    <i class="fa-solid fa-square-plus"></i>
+                                </button>
+                            </td>
+                        </tr>
                     </table>
                     <div>
                         <span style="font-size:12px">×がついているスキルは未実装
@@ -2357,6 +2537,21 @@
                         <input type="button" value="初期スキル装備" @click="value.clearReservedSkills();value.initializeSkillsToDefault();" >
                         <input type="button" value="全て外す" @click="value.clearReservedSkills();value.clearSkills();" >
                         <input v-if="g_appData.isDebugMenuEnabled" type="button" value="未実装スキルをログ表示" @click="g_app.outputSkillsNotImplemented();" >
+
+                        <button
+                                type="button"
+                                @click="value.initAdditionalPassives();
+                                        g_app.vm.passiveChanged()"
+                        >
+                            追加スキルを初期化
+                        </button>
+                        <button
+                                type="button"
+                                @click="value.initCustomSkills();
+                                        g_app.vm.passiveChanged()"
+                        >
+                            カスタムスキルを初期化
+                        </button>
                     </div>
                     <div style="padding:5px">
                         <span v-if="value.isDuoAllyHero && g_app.canActivateDuoSkillOrHarmonizedSkill(value)">
@@ -2413,6 +2608,15 @@
 
                     <span v-bind:style="g_app.vm.debugMenuStyle">
                         pos=({{value.posX}}, {{value.posY}})
+                        <br/>
+                        skills={{value.weapon}},{{value.support}},{{value.special}},
+                        {{value.passiveA}},{{value.passiveB}},{{value.passiveC}},{{value.passiveS}},{{value.passiveX}}
+                        <br/>
+                        additionalPassives={{value.additionalPassives}}
+                        <br/>
+                        customSkills={{value.customSkills}}
+                        <br/>
+                        enumerateSkills={{Array.from(value.enumerateSkills())}}
                         <br/>
                         reservedSkills={{value.reservedWeapon}},{{value.reservedSupport}},{{value.reservedSpecial}},
                         {{value.reservedPassiveA}},{{value.reservedPassiveB}},{{value.reservedPassiveC}},{{value.reservedPassiveS}},{{value.reservedPassiveX}}

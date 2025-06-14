@@ -444,6 +444,10 @@ class AppData extends UnitManager {
         this.captainOptions = [
             { id: -1, text: "なし" }
         ];
+        this.additionalPassiveOptions = [
+            {id: -2, text: "追加スキルを選択", disabled: true},
+            {id: -1, text: "なし"}
+        ];
 
         this.ornamentTypeOptions = [
         ];
@@ -522,6 +526,8 @@ class AppData extends UnitManager {
             this.syncMapKind();
         }
 
+        this.flashMessages = [];
+
         this.addStructuresToSelectionOptions();
         this.registerTemplateImages();
         this.applyDebugMenuVisibility();
@@ -549,8 +555,8 @@ class AppData extends UnitManager {
         }
         this.currentUnit.fromTurnWideStatusString(unitObj.data);
         this.initializeByHeroInfo(currentUnit, currentUnit.heroIndex, false, true);
-        this.currentUnit.reserveCurrentSkills();
-        this.currentUnit.restoreReservedSkills();
+        // this.currentUnit.reserveCurrentSkills();
+        // this.currentUnit.restoreReservedSkills();
         this.updateSlotOrders();
         $('#saveUnitNameInput').val(unitObj.name);
     }
@@ -870,6 +876,12 @@ class AppData extends UnitManager {
         __registerPassiveSOptions(this.passiveSOptions, passiveAs);
         __registerPassiveSOptions(this.passiveSOptions, passiveBs);
         __registerPassiveSOptions(this.passiveSOptions, passiveCs);
+        __registerSkillOptions(this.additionalPassiveOptions, passiveAs);
+        __registerSkillOptions(this.additionalPassiveOptions, passiveBs);
+        __registerSkillOptions(this.additionalPassiveOptions, passiveCs);
+        __registerSkillOptions(this.additionalPassiveOptions, passiveSs);
+        __registerSkillOptions(this.additionalPassiveOptions, passiveXs);
+        __registerSkillOptions(this.additionalPassiveOptions, captainSkills);
     }
     /**
      * @param  {Unit} unit
@@ -1205,6 +1217,14 @@ class AppData extends UnitManager {
 
         if (withPairUpUnit && unit.canHavePairUpUnit && unit.pairUpUnit != null) {
             this.initializeByHeroInfo(unit.pairUpUnit, unit.pairUpUnit.heroIndex, initEditableAttrs, false);
+        }
+
+        if (!unit.additionalPassives || !(unit.additionalPassives instanceof Array)) {
+            unit.initAdditionalPassives();
+        }
+
+        if (!unit.customSkills || !(unit.customSkills instanceof Array)) {
+            unit.initCustomSkills();
         }
     }
 

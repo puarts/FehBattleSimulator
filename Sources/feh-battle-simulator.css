@@ -1,3 +1,194 @@
+/* flash.css */
+/* コンテナを右上に固定配置（複数メッセージ縦積み） */
+.flash-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    pointer-events: none; /* 背後をクリック可能にする */
+}
+
+/* 各メッセージの見た目とアニメーション */
+.flash-message {
+    background-color: #333;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    opacity: 0;
+    animation: fadeInOutRight 3s forwards;
+    pointer-events: auto; /* クリック可能にする */
+    max-width: 300px;
+    word-break: break-word;
+}
+
+/* 自動消去しない用：フェードなし */
+.flash-message.static {
+    opacity: 1;
+    transform: translateX(0);
+    animation: none;
+}
+
+/* 手動で閉じる ✖ */
+.flash-message .close-btn {
+    margin-left: 10px;
+    cursor: pointer;
+    font-weight: lighter;
+    font-size: 80%;
+    color: inherit;
+}
+
+/* メッセージタイプごとの色 (Bootstrap 風) */
+/*.flash-info    { background-color: #0d6efd; } !* blue *!*/
+/*.flash-success { background-color: #198754; } !* green *!*/
+/*.flash-warning { background-color: #ffc107; color: #000; } !* yellow/black text *!*/
+/*.flash-danger  { background-color: #dc3545; } !* red *!*/
+/*.flash-error   { background-color: #dc3545; } !* red *!*/
+.flash-success {
+    background-color: #d1e7dd;  /* Bootstrap5のalert-success背景 */
+    color:            #0f5132;  /* Bootstrap5のalert-success文字色 */
+    border: 1px solid #badbcc;  /* Optional: ボーダーで境界を強調 */
+}
+
+/* 情報（info） */
+.flash-info {
+    background-color: #cff4fc;  /* alert-info背景 */
+    color:            #055160;  /* alert-info文字色 */
+    border: 1px solid #b6effb;
+}
+
+/* 警告（warning） */
+.flash-warning {
+    background-color: #fff3cd;  /* alert-warning背景 */
+    color:            #664d03;  /* alert-warning文字色 */
+    border: 1px solid #ffecb5;
+}
+
+/* 危険（danger） */
+.flash-danger {
+    background-color: #f8d7da;  /* alert-danger背景 */
+    color:            #842029;  /* alert-danger文字色 */
+    border: 1px solid #f5c2c7;
+}
+
+/* エラー（error */
+.flash-error {
+    background-color: #f8d7da;  /* alert-danger背景 */
+    color:            #842029;  /* alert-danger文字色 */
+    border: 1px solid #f5c2c7;
+}
+
+/* そのほか必要なら primary/secondary も同様に */
+.flash-primary {
+    background-color: #cfe2ff;
+    color:            #084298;
+    border: 1px solid #b6d4fe;
+}
+
+.flash-secondary {
+    background-color: #e2e3e5;
+    color:            #41464b;
+    border: 1px solid #d3d6d8;
+}
+
+/* アニメーション：右からスライドインして徐々に消える */
+@keyframes fadeInOutRight {
+    0% {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    10% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    90% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+}
+
+/*.flash-container {*/
+/*    position: fixed;*/
+/*    top: 0;*/
+/*    left: 0;*/
+/*    width: 100%;*/
+/*    z-index: 9999;*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    align-items: center;*/
+/*    pointer-events: none; !* クリックを個別メッセージだけに通す *!*/
+/*}*/
+
+/*.flash-message {*/
+/*    pointer-events: auto;*/
+/*    min-width: 300px;*/
+/*    margin: 8px;*/
+/*    padding: 10px 16px;*/
+/*    border-radius: 4px;*/
+/*    color: white;*/
+/*    font-weight: bold;*/
+/*    box-shadow: 0 2px 6px rgba(0,0,0,0.3);*/
+/*    transition: opacity 0.3s ease;*/
+/*}*/
+
+/*.flash-message.info { background-color: #3498db; }*/
+/*.flash-message.success { background-color: #28a745; }*/
+/*.flash-message.error { background-color: #dc3545; }*/
+
+/*.flash-message.closable::after {*/
+/*    content: ' ×';*/
+/*    float: right;*/
+/*    margin-left: 8px;*/
+/*    cursor: pointer;*/
+/*}*/
+
+.custom-skill {
+    width: 250px;
+}
+
+.custom-skill-args {
+    width: 160px;
+}
+
+.icon-disabled {
+    color: gray;
+    opacity: 0.5;
+}
+
+.icon-green {
+    /*Bootstrap 4/5 の success カラー*/
+    color: #28a745;
+}
+
+.icon-red {
+    color: red;
+}
+
+.align-middle {
+    vertical-align: middle;
+}
+
+.bordered-green {
+    color: green;
+    border: 1px solid green;
+    border-radius: 4px;
+    padding: 4px 8px;
+    background-color: transparent;
+    cursor: pointer;
+}
+.bordered-green:hover {
+    background-color: #e6ffe6; /* 薄緑背景 */
+}
+
 /* Logger */
 .log-simple {
 }
@@ -552,6 +743,14 @@ td.enemy {
     cursor: pointer;
     font-size: 24px;
     margin: 2px;
+}
+
+.icon-button-small {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 0px;
 }
 
 .download-button {

@@ -93,128 +93,53 @@ function initVueComponents() {
 
     // select2 を使うためのVueコンポーネント
     Vue.component('select2', {
-        template: '<select><slot></slot></select>',
+        template: '<select></select>',
+
         props: {
-            options: Array,
-            value: Number,
+            options: {
+                type: Array,
+                required: true,
+            },
+            value: {
+                type: [Number, String],
+                required: false,
+            },
         },
 
-        mounted: function () {
+        mounted() {
             $(this.$el)
-                // init select2
-                .select2({ data: this.options })
+                .select2({data: this.options})
                 .val(this.value)
                 .trigger('change')
-                .on('change', (event) =>
-                    this.$emit('input', parseInt(event.target.value, 10))
-                )
+                .on('change', (event) => {
+                    const raw = event.target.value;
+                    const parsed = parseInt(raw, 10);
+                    this.$emit('input', isNaN(parsed) ? raw : parsed);
+                });
         },
-        watch: {
-            value: function (val) {
-                let extractResult = extractUnitAndSkillType(this.$el.name);
-                let unit = extractResult[0];
-                let skillType = extractResult[1];
-                if (unit == null) {
-                    // スキル以外の場合
-                    $(this.$el).val(val).trigger('change');
-                    return;
-                }
 
-                if (skillType == "weapon") {
-                    if (!unit.hasReservedWeapon()) {
-                        // 普通にUIからスキルが変更された場合
-                        $(this.$el).val(val).trigger('change');
-                    }
-                    else if (val == -1) {
-                        // キャラが変更されてスキルオプションが変わったことにより初期値に戻った場合、
-                        // 予約していたスキル情報で上書きする
-                        unit.restoreReservedWeapon();
-                        console.log("restore weapon for " + unit.getNameWithGroup());
-                    }
-                }
-                else if (skillType == "support") {
-                    if (!unit.hasReservedSupport()) {
-                        $(this.$el).val(val).trigger('change');
-                    }
-                    else if (val == -1) {
-                        unit.restoreReservedSupport();
-                        console.log("restore support for " + unit.getNameWithGroup());
-                    }
-                }
-                else if (skillType == "special") {
-                    if (!unit.hasReservedSpecial()) {
-                        // 普通にUIからスキルが変更された場合
-                        $(this.$el).val(val).trigger('change');
-                    }
-                    else if (val == -1) {
-                        unit.restoreReservedSpecial();
-                        console.log("restore special for " + unit.getNameWithGroup());
-                    }
-                }
-                else if (skillType == "passiveA") {
-                    if (!unit.hasReservedPassiveA()) {
-                        // 普通にUIからスキルが変更された場合
-                        $(this.$el).val(val).trigger('change');
-                    }
-                    else if (val == -1) {
-                        unit.restoreReservedPassiveA();
-                        console.log("restore passiveA for " + unit.getNameWithGroup());
-                    }
-                }
-                else if (skillType == "passiveB") {
-                    if (!unit.hasReservedPassiveB()) {
-                        // 普通にUIからスキルが変更された場合
-                        $(this.$el).val(val).trigger('change');
-                    }
-                    else if (val == -1) {
-                        unit.restoreReservedPassiveB();
-                        console.log("restore passiveB for " + unit.getNameWithGroup());
-                    }
-                }
-                else if (skillType == "passiveC") {
-                    if (!unit.hasReservedPassiveC()) {
-                        // 普通にUIからスキルが変更された場合
-                        $(this.$el).val(val).trigger('change');
-                    }
-                    else if (val == -1) {
-                        unit.restoreReservedPassiveC();
-                        console.log("restore passiveC for " + unit.getNameWithGroup());
-                    }
-                }
-                else if (skillType == "passiveS") {
-                    if (!unit.hasReservedPassiveS()) {
-                        // 普通にUIからスキルが変更された場合
-                        $(this.$el).val(val).trigger('change');
-                    }
-                    else if (val == -1) {
-                        unit.restoreReservedPassiveS();
-                        console.log("restore passiveS for " + unit.getNameWithGroup());
-                    }
-                }
-                else if (skillType == "passiveX") {
-                    if (!unit.hasReservedPassiveX()) {
-                        // 普通にUIからスキルが変更された場合
-                        $(this.$el).val(val).trigger('change');
-                    }
-                    else if (val == -1) {
-                        unit.restoreReservedPassiveX();
-                        console.log("restore passiveX for " + unit.getNameWithGroup());
-                    }
+        watch: {
+            value(newVal, oldVal) {
+                // 外部から value が変更されたときに select2 に反映
+                if (String(oldVal) !== String(newVal)) {
+                    $(this.$el).val(newVal).trigger('change');
                 }
             },
-            // update options
-            options: function (options) {
-                let value = this.value;
+
+            options(newOptions) {
+                // options が変更されたら再初期化
                 $(this.$el)
                     .empty()
-                    .select2({ data: options })
-                    .val(value)
+                    .select2({data: newOptions})
+                    .val(this.value)
                     .trigger('change');
-            }
+            },
         },
-        destroyed: function () {
-            $(this.$el).off().select2('destroy')
-        },
+
+        beforeDestroy() {
+            // select2 インスタンスのクリーンアップ
+            $(this.$el).off().select2('destroy');
+        }
     });
 }
 

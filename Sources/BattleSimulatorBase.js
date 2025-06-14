@@ -301,8 +301,7 @@ class BattleSimulatorBase {
                 }
                 updateAllUi();
             },
-            weaponChanged: function () {
-                console.log("weaponChanged");
+            updateCurrentUnit: function () {
                 if (g_app == null) {
                     return;
                 }
@@ -312,52 +311,31 @@ class BattleSimulatorBase {
                 }
                 let currentUnit = self.__getCurrentUnit();
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
-                unit.resetMaxSpecialCount();
-                self.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
-            },
-            weaponOptionChanged: function () {
-                console.log("weaponOptionChanged");
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                unit.resetMaxSpecialCount();
+                currentUnit.resetMaxSpecialCount();
                 g_app.updateAllUnitSpur();
                 appData.updateArenaScore(unit);
+                appData.__showStatusToAttackerInfo();
+
+                updateAllUi();
+                return [unit, currentUnit];
+            },
+            passiveChanged: function () {
+                this.updateCurrentUnit();
+            },
+            weaponChanged: function () {
+                this.passiveChanged();
+            },
+            weaponOptionChanged: function () {
+                this.passiveChanged();
             },
             supportChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                appData.__updateUnitSkillInfo(unit);
-                appData.updateArenaScore(unit);
-                appData.__showStatusToAttackerInfo();
+                this.passiveChanged();
             },
             specialChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                appData.__updateUnitSkillInfo(unit);
-                unit.resetMaxSpecialCount();
-                appData.updateArenaScore(unit);
-                updateAllUi();
-                appData.__showStatusToAttackerInfo();
+                this.passiveChanged();
             },
             specialCountChanged: function () {
+                // console.log("specialCountChanged");
                 if (g_app == null) {
                     return;
                 }
@@ -368,6 +346,7 @@ class BattleSimulatorBase {
                 updateAllUi();
             },
             hpChanged: function () {
+                // console.log("hpChanged");
                 if (g_app == null) {
                     return;
                 }
@@ -375,89 +354,55 @@ class BattleSimulatorBase {
                 updateAllUi();
             },
             passiveAChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                unit.resetMaxSpecialCount();
-                g_app.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
+                this.passiveChanged();
             },
             passiveBChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                appData.__updateUnitSkillInfo(unit);
-                appData.updateArenaScore(unit);
-
-                // 救援等に変わったら移動可能範囲の更新が必要
-                updateAllUi();
+                this.passiveChanged();
             },
             passiveCChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                g_app.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
+                this.passiveChanged();
             },
             passiveSChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                g_app.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
-
-                // 曲技飛行等で移動範囲が変わる
-                updateAllUi();
+                this.passiveChanged();
             },
             passiveXChanged: function () {
-                if (g_app == null) {
+                this.passiveChanged();
+            },
+            additionalSkillChanged: function () {
+                this.updateCurrentUnit();
+            },
+            customSkillChanged: function () {
+                this.updateCurrentUnit();
+            },
+            isSkillEnabledChanged: function (index, type) {
+                let currentUnit = this.tryGetCurrentUnit();
+                if (currentUnit == null) {
                     return;
                 }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                g_app.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
 
-                // 曲技飛行等で移動範囲が変わる
-                updateAllUi();
+                switch (type) {
+                    case 'additional':
+                        currentUnit.additionalPassives[index][2] = !currentUnit.additionalPassives[index][2];
+                        if (currentUnit.additionalPassives[index][2]) {
+                            this.showFlash("追加スキルを有効にしました", 'success', true);
+                        } else {
+                            this.showFlash("追加スキルを無効にしました", 'secondary', true);
+                        }
+                        break;
+                    case 'custom':
+                        currentUnit.customSkills[index][2] = !currentUnit.customSkills[index][2];
+                        if (currentUnit.customSkills[index][2]) {
+                            this.showFlash("カスタムスキルを有効にしました", 'success', true);
+                        } else {
+                            this.showFlash("カスタムスキルを無効にしました", 'secondary', true);
+                        }
+                        break;
+                }
+
+                this.updateCurrentUnit();
             },
             captainChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                appData.__updateStatusBySkillsAndMerges(unit);
-                g_app.updateAllUnitSpur();
-                updateAllUi();
+                this.passiveChanged();
             },
             mergeChanged: function () {
                 if (g_app == null) {
@@ -859,7 +804,16 @@ class BattleSimulatorBase {
                 return 'ー';
             },
             getCurrentUnit() {
-                return g_appData.currentUnit;
+                return g_appData?.currentUnit;
+            },
+            isCurrentUnitPresent() {
+                return Boolean(
+                    g_app?.__getEditingTargetUnit() &&
+                    self?.__getCurrentUnit()
+                );
+            },
+            tryGetCurrentUnit() {
+                return (g_app?.__getEditingTargetUnit() && self?.__getCurrentUnit()) || null;
             },
             onDivineVeinImageVisibilityChanged() {
                 updateMap();
@@ -949,6 +903,20 @@ class BattleSimulatorBase {
                 updateAllUi();
                 appData.__showStatusToAttackerInfo();
             },
+            showFlash(text, type = 'info', autoClose = true, duration = 3000) {
+                const msg = { text, type: type.toLowerCase(), autoClose };
+                this.flashMessages.push(msg);
+
+                if (autoClose) {
+                    setTimeout(() => {
+                        const i = this.flashMessages.indexOf(msg);
+                        if (i >= 0) this.flashMessages.splice(i, 1);
+                    }, duration);
+                }
+            },
+            removeFlash(index) {
+                this.flashMessages.splice(index, 1);
+            }
         };
 
         if (additionalMethods != null) {

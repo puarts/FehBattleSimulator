@@ -135,6 +135,8 @@ const WeaponRefinementType = {
     DazzlingStaff: 12, // 幻惑の杖
 };
 
+const NONE_ID = 'none';
+
 const Weapon = {
     None: -1,
 

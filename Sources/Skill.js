@@ -146,6 +146,10 @@ function getDuoOrHarmonizedSkillId(id) {
     return `duo-or-harmonized_${id}`;
 }
 
+function getCustomSkillId(funcId, args) {
+    return `custom_${funcId}_${JSON.stringify(args)}`;
+}
+
 const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
 
 const PHYSICAL_WEAPON_TYPE_SET = new Set([
