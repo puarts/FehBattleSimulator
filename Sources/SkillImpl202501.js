@@ -8164,8 +8164,7 @@
 
 {
     let skillId = Special.LifeUnending2;
-    DEFENSE_SPECIAL_SET.add(skillId);
-    setSpecialCount(5);
+    setSpecialCountAndType(skillId, 5, false, true);
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At the start of turn 1, grants Special cooldown count-5 to unit.
         IF_NODE(EQ_NODE(CURRENT_TURN_NODE, 1),
