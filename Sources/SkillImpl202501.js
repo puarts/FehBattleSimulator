@@ -1782,7 +1782,7 @@
             // and grants Special cooldown count-1 to ally before ally's first attack during combat,
             GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
             // and restores 10 HP to those allies after their combat.
-            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+            RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE,
         ),
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
