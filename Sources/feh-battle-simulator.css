@@ -1,3 +1,291 @@
+.container {
+    /* margin: 20px auto; */
+    max-width: 270px;
+    float: left;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    list-style: none;
+}
+
+.tabs {
+    overflow: hidden;
+}
+
+.tabs li,
+.tabs label {
+    float: left;
+    font-size: 11px;
+    padding: 5px 5px;
+    /* border: 1px solid #ccc; */
+    cursor: pointer;
+    /* transition: .3s; */
+}
+
+.tabs li:not(:first-child),
+.tabs label:not(:first-of-type) {
+    border-left: none;
+}
+
+.tabs li.active,
+.tabs :checked + label {
+    background-color: #000;
+    border-color: #000;
+    color: #fff;
+    cursor: auto;
+}
+
+.contents {
+    overflow: hidden;
+    margin-top: -1px;
+}
+
+.contents li {
+    border: 1px solid #ccc;
+}
+
+.jquery .contents li {
+    display: none;
+}
+
+.jquery .contents li.active {
+    display: block;
+}
+
+.tabs input {
+    display: none;
+}
+
+.buttonUi {
+    font-size: 11px;
+}
+
+.plusButtonUi {
+    font-size: 12px;
+    font-weight: bold;
+    width: 25px;
+    height: 25px;
+    color: #fff;
+    background-color: green;
+    border-radius: 50%;
+    border-width: 0px;
+    border-collapse: collapse;
+}
+
+.minusButtonUi {
+    font-size: 12px;
+    font-weight: bold;
+    width: 25px;
+    height: 25px;
+    color: #fff;
+    background-color: orangered;
+    border-radius: 50%;
+    border-width: 0px;
+    border-collapse: collapse;
+}
+
+.fehButton {
+    display: block;
+    float: left;
+    width: 62px;
+    height: 62px;
+    margin-left: -2px;
+    margin-right: -2px;
+    background-color: #ffffff;
+    border-style: none;
+    cursor: pointer;
+    background-size: cover;
+}
+
+.fehButtonDisabled {
+    display: inline-block;
+    width: 62px;
+    height: 62px;
+    margin-left: -2px;
+    margin-right: -2px;
+    background-color: #ffffff;
+    border-style: none;
+    background-size: cover;
+    filter: grayscale(100%);
+}
+
+.imageButton:hover {
+    filter: brightness(120%);
+}
+
+.menuButton {
+    width: 23px;
+    height: 23px;
+    margin-left: 0px;
+    margin-right: 0px;
+    background-color: #dddddd;
+    border-style: solid;
+    border-color: grey;
+    border-width: 1px;
+    cursor: pointer;
+    background-size: cover;
+}
+
+.playerButton {
+    width: 25px;
+    height: 25px;
+    margin-left: 0px;
+    margin-right: 0px;
+    background-color: #dddddd;
+    border-style: solid;
+    border-color: grey;
+    border-width: 1px;
+    cursor: pointer;
+    background-size: cover;
+}
+
+img.urlJumpIcon {
+    width: 15px;
+    height: 15px;
+}
+
+.statusInput {
+    width: 50px;
+}
+
+th.param {
+    font-size: 11px;
+    background-color: #ffffff;
+    padding: 0px;
+    text-align: center;
+}
+
+td.param {
+    min-width: 40px;
+    text-align: center;
+    font-size: 11px;
+}
+
+input.numeric {
+    width: 40px;
+}
+
+input.numericFloat {
+    width: 50px;
+}
+
+.normal {
+    font-size: 11px;
+}
+
+select.hero {
+    width: 160px;
+}
+
+select.blessing {
+    width: 140px;
+}
+
+select.skill {
+    width: 160px;
+}
+
+.debugInfo {
+    font-size: 11px;
+    /* visibility: hidden; */
+}
+
+.itemDialog-button {
+    width: 200px;
+}
+
+.dialog-button {
+    width: 100px;
+}
+
+.dialog-button-text {
+    font-size: 14px;
+}
+
+input[type="checkbox"].fehButton {
+    display: none;
+}
+
+input[class="fehButton"]:checked + label {
+    filter: grayscale(0%);
+}
+
+input[class="fehButton"]:not(:checked) + label {
+    filter: grayscale(100%);
+}
+
+.assetStatus {
+    color: rgb(161, 234, 252);
+    text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+}
+
+.flowStatus {
+    color: rgb(252, 161, 161);
+    text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+}
+
+.normalStatus {
+    color: rgb(0, 0, 0);
+}
+
+.skillTypeText {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.skillHeader {
+    font-size: 16px;
+    padding: 0px;
+    text-align: center;
+    position: relative;
+    color: white;
+    text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+}
+
+.iconButton {
+    width: auto;
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: 0;
+    font-size: 0;
+    line-height: 0;
+    overflow: visible;
+    cursor: pointer;
+}
+
+.team-container {
+    position: relative;
+    display: inline-block;
+}
+
+.team-container .unit-img {
+    display: block;
+    width: 100%;
+}
+
+.team-container .engage-img {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 50%;
+    /* 必要に応じてサイズを調整 */
+    /*border: 1px solid white; !* 任意のスタイル *!*/
+    border-radius: 50%;
+    /* 任意のスタイル */
+}
+
+.tile-info-icon {
+    height: 30px;
+    width: 30px;
+}
+
 /* flash.css */
 /* コンテナを右上に固定配置（複数メッセージ縦積み） */
 .flash-container {
