@@ -2435,3 +2435,17 @@ const REDUCES_EFFECT_OF_DEEP_WOUNDS_ON_TARGET_BY_N_PERCENT_NODE =
 
 const NEUTRALIZES_TARGETS_DEEP_WOUNDS_DURING_COMBAT_NODE =
     new ReducesEffectOfDeepWoundsOnTargetByNPercentNode(100);
+
+class NeutralizesTargetFoesNonSpecialMiracle extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.neutralizesNonSpecialMiracle = true;
+        env.debug(`${unit.nameWithGroup}は相手の奥義以外の祈りを無効`);
+    }
+}
+
+const NEUTRALIZES_TARGET_FOES_NON_SPECIAL_MIRACLE = new NeutralizesTargetFoesNonSpecialMiracle();

@@ -192,3 +192,102 @@ for (let [_key, value] of Object.entries(StatusEffectType)) {
     CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "奥義が発動しやすい（最低1）"});
     ACCELERATES_SPECIAL_TRIGGER_SET.add(skillId);
 }
+
+{
+    let funcId = 'reflex-foes-first-attack';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "反射"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
+    ));
+}
+
+/// 祈り
+{
+    let funcId = 'non-special-miracle';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "奥義以外の祈り"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(0),
+    ));
+}
+
+{
+    let funcId = 'neutralizes-foes-non-special-miracle';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "奥義以外の祈り無効"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        NEUTRALIZES_TARGET_FOES_NON_SPECIAL_MIRACLE,
+    ));
+}
+
+/// 竜眼
+{
+    let funcId = 'unconditional-scowl';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "無条件竜眼"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+    ));
+}
+
+{
+    let funcId = 'conditional-scowl';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "竜眼（相手攻撃奥義+魔防比較あり）"});
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(
+            AND_NODE(
+                CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(5, FOES_EVAL_RES_DURING_COMBAT_NODE))
+            ),
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+        ),
+    ));
+}
+
+/// 攻撃前の奥義カウント変動
+{
+    let funcId = 'grants-special-count-before-first-attack';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "自分の最初の攻撃前に自身の奥義発動カウント-1"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
+    ));
+}
+
+{
+    let funcId = 'grants-special-count-before-first-follow-up-attack';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "自分の最初の追撃前に自身の奥義発動カウント-1"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE(1),
+    ));
+}
+
+{
+    let funcId = 'inflicts-special-count-before-foes-first-attack';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "敵の最初の攻撃前に敵の奥義カウント-1"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+    ));
+}
+
+{
+    let funcId = 'inflicts-special-count-before-foes-second-strike';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "敵の最初の2回攻撃の2回目の攻撃前に敵の奥義カウント-1"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_SECOND_STRIKE_NODE(1),
+    ));
+}
+
+{
+    let funcId = 'inflicts-special-count-before-foes-first-follow-up-attack';
+    let skillId = getCustomSkillId(funcId, {});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "敵の最初の追撃前に敵の奥義カウント-1"});
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_FOLLOW_UP_ATTACK_NODE(1),
+    ));
+}
