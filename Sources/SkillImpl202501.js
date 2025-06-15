@@ -237,7 +237,7 @@
 // 🗡️ Obstinate Breath+
 {
     let skillId = Weapon.ObstinateBreathPlus;
-    // Mt: 14　Rng: 1
+    // Mt: 14 Rng: 1
     // If foe’s Range = 2, calculates damage using the lower of foe’s Def or Res.
     setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
         // At start of combat, if unit’s HP ≥ 25%,

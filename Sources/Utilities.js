@@ -2051,6 +2051,7 @@ class Base62 {
         try {
             result = this.decode(base62Str);
         } catch (e) {
+            return result;
         }
         return result;
     }

@@ -965,41 +965,38 @@ class Unit extends BattleMapElement {
 
     // TODO: 削除する
     clearReservedSkills() {
-        return;
-        this.reservedWeapon = NotReserved;
-        this.reservedSupport = NotReserved;
-        this.reservedSpecial = NotReserved;
-        this.reservedPassiveA = NotReserved;
-        this.reservedPassiveB = NotReserved;
-        this.reservedPassiveC = NotReserved;
-        this.reservedPassiveS = NotReserved;
-        this.reservedPassiveX = NotReserved;
+        // this.reservedWeapon = NotReserved;
+        // this.reservedSupport = NotReserved;
+        // this.reservedSpecial = NotReserved;
+        // this.reservedPassiveA = NotReserved;
+        // this.reservedPassiveB = NotReserved;
+        // this.reservedPassiveC = NotReserved;
+        // this.reservedPassiveS = NotReserved;
+        // this.reservedPassiveX = NotReserved;
     }
 
     // TODO: 削除する
     reserveCurrentSkills() {
-        return;
-        this.reservedWeapon = this.weapon;
-        this.reservedSupport = this.support;
-        this.reservedSpecial = this.special;
-        this.reservedPassiveA = this.passiveA;
-        this.reservedPassiveB = this.passiveB;
-        this.reservedPassiveC = this.passiveC;
-        this.reservedPassiveS = this.passiveS;
-        this.reservedPassiveX = this.passiveX;
+        // this.reservedWeapon = this.weapon;
+        // this.reservedSupport = this.support;
+        // this.reservedSpecial = this.special;
+        // this.reservedPassiveA = this.passiveA;
+        // this.reservedPassiveB = this.passiveB;
+        // this.reservedPassiveC = this.passiveC;
+        // this.reservedPassiveS = this.passiveS;
+        // this.reservedPassiveX = this.passiveX;
     }
 
     // TODO: 削除する
     restoreReservedSkills() {
-        return;
-        this.restoreReservedWeapon();
-        this.restoreReservedSupport();
-        this.restoreReservedSpecial();
-        this.restoreReservedPassiveA();
-        this.restoreReservedPassiveB();
-        this.restoreReservedPassiveC();
-        this.restoreReservedPassiveS();
-        this.restoreReservedPassiveX();
+        // this.restoreReservedWeapon();
+        // this.restoreReservedSupport();
+        // this.restoreReservedSpecial();
+        // this.restoreReservedPassiveA();
+        // this.restoreReservedPassiveB();
+        // this.restoreReservedPassiveC();
+        // this.restoreReservedPassiveS();
+        // this.restoreReservedPassiveX();
     }
 
     hasReservedWeapon() {
@@ -6360,7 +6357,6 @@ class Unit extends BattleMapElement {
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
-                case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                 case Weapon.BlazingPolearms:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);
