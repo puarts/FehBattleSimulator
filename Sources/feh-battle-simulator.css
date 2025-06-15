@@ -333,49 +333,49 @@ input[class="fehButton"]:not(:checked) + label {
 
 /* メッセージタイプごとの色 (Bootstrap 風) */
 .flash-success {
-    background-color: #d1e7dd;  /* Bootstrap5のalert-success背景 */
-    color:            #0f5132;  /* Bootstrap5のalert-success文字色 */
-    border: 1px solid #badbcc;  /* Optional: ボーダーで境界を強調 */
+    background-color: #d1e7dd; /* Bootstrap5のalert-success背景 */
+    color: #0f5132; /* Bootstrap5のalert-success文字色 */
+    border: 1px solid #badbcc; /* Optional: ボーダーで境界を強調 */
 }
 
 /* 情報（info） */
 .flash-info {
-    background-color: #cff4fc;  /* alert-info背景 */
-    color:            #055160;  /* alert-info文字色 */
+    background-color: #cff4fc; /* alert-info背景 */
+    color: #055160; /* alert-info文字色 */
     border: 1px solid #b6effb;
 }
 
 /* 警告（warning） */
 .flash-warning {
-    background-color: #fff3cd;  /* alert-warning背景 */
-    color:            #664d03;  /* alert-warning文字色 */
+    background-color: #fff3cd; /* alert-warning背景 */
+    color: #664d03; /* alert-warning文字色 */
     border: 1px solid #ffecb5;
 }
 
 /* 危険（danger） */
 .flash-danger {
-    background-color: #f8d7da;  /* alert-danger背景 */
-    color:            #842029;  /* alert-danger文字色 */
+    background-color: #f8d7da; /* alert-danger背景 */
+    color: #842029; /* alert-danger文字色 */
     border: 1px solid #f5c2c7;
 }
 
 /* エラー（error */
 .flash-error {
-    background-color: #f8d7da;  /* alert-danger背景 */
-    color:            #842029;  /* alert-danger文字色 */
+    background-color: #f8d7da; /* alert-danger背景 */
+    color: #842029; /* alert-danger文字色 */
     border: 1px solid #f5c2c7;
 }
 
 /* そのほか必要なら primary/secondary も同様に */
 .flash-primary {
     background-color: #cfe2ff;
-    color:            #084298;
+    color: #084298;
     border: 1px solid #b6d4fe;
 }
 
 .flash-secondary {
     background-color: #e2e3e5;
-    color:            #41464b;
+    color: #41464b;
     border: 1px solid #d3d6d8;
 }
 
@@ -468,6 +468,7 @@ input[class="fehButton"]:not(:checked) + label {
     background-color: transparent;
     cursor: pointer;
 }
+
 .bordered-green:hover {
     background-color: #e6ffe6; /* 薄緑背景 */
 }
