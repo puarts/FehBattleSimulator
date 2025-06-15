@@ -44,11 +44,6 @@
 }
 
 /* メッセージタイプごとの色 (Bootstrap 風) */
-/*.flash-info    { background-color: #0d6efd; } !* blue *!*/
-/*.flash-success { background-color: #198754; } !* green *!*/
-/*.flash-warning { background-color: #ffc107; color: #000; } !* yellow/black text *!*/
-/*.flash-danger  { background-color: #dc3545; } !* red *!*/
-/*.flash-error   { background-color: #dc3545; } !* red *!*/
 .flash-success {
     background-color: #d1e7dd;  /* Bootstrap5のalert-success背景 */
     color:            #0f5132;  /* Bootstrap5のalert-success文字色 */
