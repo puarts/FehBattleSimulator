@@ -105,7 +105,7 @@ setFuncId('reduces-damage-from-special-excluding-aoe', "奥義ダメージ-（�
     ],
 );
 
-setFuncId('reduces-damage-by-x-percent-excluding-aoe', "ダメ軽減（範囲除）",
+setFuncId('reduces-damage-by-x-percent-excluding-aoe', "ダメージ軽減（範囲除）",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(
@@ -117,7 +117,7 @@ setFuncId('reduces-damage-by-x-percent-excluding-aoe', "ダメ軽減（範囲除
     ],
 );
 
-setFuncId('reduces-damage-by-x-percent-by-special-excluding-aoe', "ダメ軽減（奥義扱、範囲除）",
+setFuncId('reduces-damage-by-x-percent-by-special-excluding-aoe', "ダメージ軽減（奥義扱、範囲除）",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(
