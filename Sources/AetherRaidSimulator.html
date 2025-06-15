@@ -1199,7 +1199,8 @@
                 </button>
             </div>
             <div class="action-container">
-                <button class="icon-button load-button" @click="g_appData.restoreUnit()">
+                <button class="icon-button load-button"
+                        @click="g_appData.restoreUnit();showFlash('ユニットを復元しました', 'success', true)">
                     <i class="fa-solid fa-rotate-left" title="元に戻す"></i>
                 </button>
             </div>
@@ -1255,6 +1256,14 @@
                         <button class="icon-button load-button"
                                 @click="g_appData.loadUnit(unitObj);showFlash(`設定を読み込みました`, 'success', true)">
                             <i class="fa-solid fa-file-import" title="読み込む"></i>
+                        </button>
+                    </td>
+                    <td class="col-save">
+                        <button class="icon-button save-button"
+                                @click="g_appData.saveUnitAt(index) ?
+                                        showFlash(`上書き保存しました`, 'success', true) :
+                                        showFlash(`キャンセルしました`, 'success', true)">
+                        <i class="fa-solid fa-save" title="上書き保存"></i>
                         </button>
                     </td>
                     <td class="col-delete">

@@ -548,6 +548,26 @@ class AppData extends UnitManager {
         });
         LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
     }
+    saveUnitAt(index) {
+        const currentUnit = this.currentUnit;
+        if (currentUnit == null) {
+            return false;
+        }
+        const name = document.getElementById('saveUnitNameInput').value;
+        const savedUnit = this.savedUnits[index];
+        const result = window.confirm(`${savedUnit.name}を${name}で上書きして良いですか？`);
+        if (result) {
+            this.savedUnits[index] = {
+                name: name,
+                weaponType: currentUnit.weaponType,
+                moveType: currentUnit.moveType,
+                data: currentUnit.turnWideStatusToString()
+            };
+            LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
+            return true;
+        }
+        return false;
+    }
     loadUnit(unitObj) {
         const currentUnit = this.currentUnit;
         if (currentUnit == null || unitObj.data === "") {

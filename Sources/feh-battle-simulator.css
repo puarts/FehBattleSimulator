@@ -1005,6 +1005,12 @@ td.enemy {
     background-color: #f4f4f4;
 }
 
+.unit-dialog .col-save {
+    width: 12px;
+    padding: 0;
+    margin: 0;
+}
+
 .unit-dialog .col-load {
     width: 12px;
     padding: 0;
