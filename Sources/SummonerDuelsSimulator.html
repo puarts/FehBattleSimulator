@@ -1319,7 +1319,8 @@
                         </button>
                     </td>
                     <td class="col-delete">
-                        <button class="icon-button delete-button" @click="g_appData.deleteUnit(index)">
+                        <button class="icon-button delete-button"
+                                @click="g_appData.deleteUnit(index);showFlash('設定を削除しました', 'success', true)">
                             <i class="fa-solid fa-trash-can" title="削除"></i>
                         </button>
                     </td>
