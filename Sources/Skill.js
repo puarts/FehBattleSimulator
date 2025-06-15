@@ -1063,7 +1063,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.EbonPirateClaw,
     Weapon.CrossbonesClaw,
     Weapon.RefreshedFang,
-    Weapon.RenewedFang,
     Weapon.RaydreamHorn,
     Weapon.BrightmareHorn,
     Weapon.NightmareHorn,
@@ -1085,7 +1084,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.ShirasagiNoTsubasa,
     Weapon.SeijuNoKeshinHiko,
     Weapon.GroomsWings,
-    Weapon.TwinCrestPower,
     Weapon.IlluminatingHorn,
 ]);
 
@@ -1127,7 +1125,6 @@ const BEAST_COMMON_SKILL_MAP = new Map([
     [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
 
     // 旧世代歩行
-    [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
     [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
 
     // 次世代騎馬

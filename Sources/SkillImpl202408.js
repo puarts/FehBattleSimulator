@@ -3583,7 +3583,8 @@ function setDiscord(skillId, statsRatios) {
     // grants another action to unit after combat (once per turn).
     AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(new DoesTargetDealDamageTo2OrMoreTargetsFoesAtTheSameTimeUsingSpecialNode(),
-            new GrantsAnotherActionNode(),
+            // grants another action to unit,
+            TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(`${skillId}-再行動`, GRANTS_ANOTHER_ACTION_NODE),
         ),
     ));
 

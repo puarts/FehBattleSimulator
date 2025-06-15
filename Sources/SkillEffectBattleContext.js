@@ -402,11 +402,23 @@ const UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffec
 
 const FOE_SUFFERS_GUARANTEED_FOLLOW_UP_ATTACKS_DURING_COMBAT = UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE;
 
-const FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
+class TargetCannotMakeFollowUpAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
-        let unit = env.foeDuringCombat;
+        let unit = this.getUnit(env);
         unit.battleContext.followupAttackPriorityDecrement--;
         env.debug(`${unit.nameWithGroup}は追撃不可: ${unit.battleContext.followupAttackPriorityDecrement}`);
+    }
+}
+
+const TARGET_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new TargetCannotMakeFollowUpAttackNode();
+
+const FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new class extends TargetCannotMakeFollowUpAttackNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }();
 
@@ -1636,7 +1648,13 @@ class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
     }
 }
 
-const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = threshold => new TargetCanActivateNonSpecialMiracleNode(threshold);
+/**
+ * HP n%以上の時奥義以外の祈り
+ * @param {number} thresholdPercentage %
+ * @returns {TargetCanActivateNonSpecialMiracleNode}
+ * @constructor
+ */
+const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = thresholdPercentage => new TargetCanActivateNonSpecialMiracleNode(thresholdPercentage);
 
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 

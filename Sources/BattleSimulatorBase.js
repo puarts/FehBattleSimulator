@@ -3762,7 +3762,7 @@ class BattleSimulatorBase {
         }
 
         // 優先度が高いスキルの後かつ奥義の再行動の前
-        let env = new BattleSimulatorBaseEnv(this, atkUnit);
+        let env = new BattleSimulatorBaseEnv(this, atkUnit).setUnitsDuringCombat(atkUnit, defUnit);
         env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
 
@@ -3801,17 +3801,6 @@ class BattleSimulatorBase {
                             atkUnit.battleContext.initiatesCombat &&
                             !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1) &&
                             atkUnit.isActionDone) {
-                            atkUnit.isActionDone = false;
-                            atkUnit.isOneTimeActionActivatedForWeapon = true;
-                        }
-                        break;
-                    case Weapon.TwinCrestPower:
-                        if (!atkUnit.isOneTimeActionActivatedForWeapon
-                            && atkUnit.battleContext.restHpPercentage >= 25
-                            && atkUnit.isTransformed
-                            && atkUnit.isActionDone
-                        ) {
-                            this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.weaponInfo.name + "により再行動");
                             atkUnit.isActionDone = false;
                             atkUnit.isOneTimeActionActivatedForWeapon = true;
                         }
@@ -7688,7 +7677,6 @@ class BattleSimulatorBase {
                 case PassiveB.MoonlightBangle:
                 case PassiveB.MoonlitBangleF:
                 case Weapon.DolphinDiveAxe:
-                case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                 case Weapon.BlazingPolearms:
                 case PassiveB.AtkSpdNearTrace3:

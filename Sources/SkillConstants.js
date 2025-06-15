@@ -3869,12 +3869,15 @@ PassiveX.CruxEcho = 3297; // 響・十字牽制
 // Weapon.Gjallarhorn = 3298; // ギャラルホルン
 // TODO: 実装
 // Weapon.RaudrsparrowPlus = 3299; // ラウアスパロー
+Weapon.VisionOfDaein = 3300; // デインの後継の書
+Weapon.GeneralToBe = 3301; // 魔道軍将の器の書
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
 Weapon.DevLance1 = G_WEAPON_ID_BASE + WeaponType.Lance * 100 + 1;
 Weapon.DevAxe1 = G_WEAPON_ID_BASE + WeaponType.Axe * 100 + 1;
 Weapon.DevDagger1 = G_WEAPON_ID_BASE + WeaponType.Dagger * 100 + 1;
+Weapon.DevRedTome1 = G_WEAPON_ID_BASE + WeaponType.RedTome * 100 + 1;
 Weapon.DevBlueTome1 = G_WEAPON_ID_BASE + WeaponType.BlueTome * 100 + 1;
 Weapon.DevGreenTome1 = G_WEAPON_ID_BASE + WeaponType.GreenTome * 100 + 1;
 Support.DevAssist1 = G_ASSIST_ID_BASE + 1;

@@ -1842,11 +1842,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        self._applySkillEffectForDefUnitFuncDict[Weapon.TwinCrestPower] = (defUnit) => {
-            if (defUnit.isTransformed) {
-                defUnit.battleContext.canCounterattackToAllDistance = true;
-            }
-        };
         self._applySkillEffectForDefUnitFuncDict[Weapon.OgonNoTanken] = (defUnit) => {
             if (defUnit.isSpecialCharged) {
                 defUnit.battleContext.canCounterattackToAllDistance = true;
@@ -7017,9 +7012,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Ladyblade] = (targetUnit) => {
-            targetUnit.battleContext.refersMinOfDefOrRes = true;
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.RohyouNoKnife] = (targetUnit, enemyUnit) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
@@ -7093,14 +7085,6 @@ class DamageCalculatorWrapper {
                 ) {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
                 }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.TwinCrestPower] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.defSpur -= 6;
-                targetUnit.battleContext.followupAttackPriorityDecrement--;
-                enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.FatalSmoke3] = (targetUnit, enemyUnit) => {
@@ -7425,16 +7409,6 @@ class DamageCalculatorWrapper {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.spdSpur += 5;
                 enemyUnit.spdSpur -= 5;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.RenewedFang] = (targetUnit, enemyUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                (u) =>
-                    targetUnit.partnerHeroIndex === u.heroIndex ||
-                    targetUnit.heroIndex === u.partnerHeroIndex)) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.spdSpur -= 6;
-                targetUnit.battleContext.increaseCooldownCountForBoth();
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfFavors] = (targetUnit, enemyUnit) => {
@@ -10243,12 +10217,6 @@ class DamageCalculatorWrapper {
                         case Weapon.RespitePlus:
                         case Weapon.TannenbatonPlus:
                             targetUnit.battleContext.reducesCooldownCount = true;
-                            break;
-                        case Weapon.RenewedFang:
-                            if (targetUnit.partnerHeroIndex === allyUnit.heroIndex ||
-                                targetUnit.heroIndex === allyUnit.partnerHeroIndex) {
-                                targetUnit.battleContext.increaseCooldownCountForBoth();
-                            }
                             break;
                         case Weapon.Flykoogeru:
                             if (!targetUnit.isWeaponRefined) {

@@ -1877,6 +1877,8 @@ const GRANTS_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE =
 const GRANTS_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
     (def, res = def) => new GrantsStatsPlusToTargetDuringCombatNode(0, 0, def, res);
 
+const GRANTS_ATK_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE =
+    (atk, spd = atk, def = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, 0);
 const GRANTS_ATK_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
     (atk, def = atk, res = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, def, res);
 const GRANTS_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
@@ -2264,7 +2266,11 @@ const INFLICTS_ATK_ON_FOE_DURING_COMBAT_NODE = atk =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, 0, 0);
 const INFLICTS_SPD_ON_FOE_DURING_COMBAT_NODE = spd =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, 0, 0);
+const INFLICTS_DEF_ON_FOE_DURING_COMBAT_NODE = def =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, def, 0);
 
+const INFLICTS_ATK_SPD_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, 0);
 const INFLICTS_ATK_DEF_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, 0);
 const INFLICTS_ATK_RES_ON_FOE_DURING_COMBAT_NODE = (atk, res = atk) =>
@@ -4930,12 +4936,8 @@ class GrantsAnotherActionNode extends SkillEffectNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let success = unit.grantAnotherActionOnAssistIfPossible();
-        if (success) {
-            env.debug(`${unit.nameWithGroup}は再行動`);
-        } else {
-            env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
-        }
+        unit.grantsAnotherActionOnMap();
+        env.debug(`${unit.nameWithGroup}は再行動`);
     }
 }
 
@@ -5800,6 +5802,31 @@ class SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode extends SpacesNode {
 
 const SPACES_ADJACENT_TO_ANY_TARGETS_ALLY_WITHIN_N_SPACES_NODE =
     n => new SpacesAdjacentToAnyTargetsAllyWithinNSpacesNode(n);
+
+class NSpacesInALineCenteredOnTargetsFoesSpaceOrientedLeftToRightBasedOnTheDirectionTargetIsFacingNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     */
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let n = this._nNode.evaluate(env);
+        let battleMap = env.battleMap;
+        return new Set(battleMap.enumerateNTilesInALineCenteredOnFoesTiles(unit, foe, n));
+    }
+}
+
+const N_SPACES_IN_A_LINE_CENTERED_ON_TARGETS_FOES_SPACE_ORIENTED_LEFT_TO_RIGHT_BASED_ON_THE_DIRECTION_TARGET_IS_FACING_NODE =
+    n => new NSpacesInALineCenteredOnTargetsFoesSpaceOrientedLeftToRightBasedOnTheDirectionTargetIsFacingNode(n);
 
 class TargetsCurrentStyleNode extends NumberNode {
     static {

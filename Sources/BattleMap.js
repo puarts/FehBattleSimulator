@@ -1557,6 +1557,60 @@ class BattleMap {
         }
     }
 
+    /**
+     * @param {number} size
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @returns {Generator<Tile>}
+     */
+    * enumerateNTilesInALineCenteredOnFoesTiles(targetUnit, enemyUnit, size = 5) {
+        // size は必ず奇数 (3,5,7…) を渡す前提
+        const radius = Math.floor(size / 2);
+
+        const {posX: tx, posY: ty} = targetUnit;
+        const {placedTile, posX: ex, posY: ey} = enemyUnit;
+        const tiles = this.enumerateTiles();
+
+        // 方向ベクトル
+        const dx = tx - ex;
+        const dy = ty - ey;
+
+        // offsets 配列を作成
+        let offsets;
+        if (dx === 0) {
+            // 垂直方向
+            offsets = Array.from({length: size}, (_, i) => ({
+                x: i - radius,
+                y: 0
+            }));
+        } else if (dy === 0) {
+            // 水平方向
+            offsets = Array.from({length: size}, (_, i) => ({
+                x: 0,
+                y: i - radius
+            }));
+        } else {
+            // 対角方向
+            const stepX = -Math.sign(dx);
+            const stepY = Math.sign(dy);
+            offsets = Array.from({length: size}, (_, i) => ({
+                x: stepX * (i - radius),
+                y: stepY * (i - radius)
+            }));
+        }
+
+        // 各タイルでチェック＆予約
+        for (const tile of tiles) {
+            for (const {x, y} of offsets) {
+                if (tile.posX === placedTile.posX + x &&
+                    tile.posY === placedTile.posY + y) {
+                    yield tile;
+                    break;  // このタイルは予約済みなので次の tile へ
+                }
+            }
+        }
+    }
+
     isThereBreakableTileWithinSpecifiedSpaces(targetTile, n, groupId) {
         for (let tile of this.enumerateTilesWithinSpecifiedDistance(targetTile, n)) {
             if (tile instanceof BreakableWall || tile.hasEnemyBreakableDivineVein(groupId)) {
