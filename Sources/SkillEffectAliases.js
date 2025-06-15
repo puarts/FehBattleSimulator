@@ -395,6 +395,15 @@ const FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE = new SkillEffectNode(
 );
 
 /**
+ * 戦闘中に奥義が発動できない
+ * @type {SkillEffectNode}
+ */
+const UNIT_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE = new SkillEffectNode(
+    UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+    UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+);
+
+/**
  * If unit initiates combat or is within 2 spaces of an ally,
  * @param nodes
  * @returns {IfNode}
