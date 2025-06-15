@@ -75,7 +75,7 @@ function setFuncId(funcId, text, func, args) {
 setFuncId('deals-damage-excluding-aoe', "ダメージ+（範囲除）",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
-            DEALS_DAMAGE_X_NODE(args[CUSTOM_SKILL_ARG_TYPE.NON_NEGATIVE_INTEGER])
+            DEALS_DAMAGE_X_NODE(args[CUSTOM_SKILL_ARG_TYPE.NON_NEGATIVE_INTEGER] ?? 0)
         );
     },
     [
@@ -86,7 +86,7 @@ setFuncId('deals-damage-excluding-aoe', "ダメージ+（範囲除）",
 setFuncId('reduces-damage-excluding-aoe', "ダメージ-（範囲除）",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
-            REDUCES_DAMAGE_BY_N_NODE(args[CUSTOM_SKILL_ARG_TYPE.NON_NEGATIVE_INTEGER])
+            REDUCES_DAMAGE_BY_N_NODE(args[CUSTOM_SKILL_ARG_TYPE.NON_NEGATIVE_INTEGER] ?? 0)
         );
     },
     [
@@ -97,7 +97,9 @@ setFuncId('reduces-damage-excluding-aoe', "ダメージ-（範囲除）",
 setFuncId('reduces-damage-from-special-excluding-aoe', "奥義ダメージ-（範囲除）",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
-            REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(args[CUSTOM_SKILL_ARG_TYPE.NON_NEGATIVE_INTEGER])
+            REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(
+                args[CUSTOM_SKILL_ARG_TYPE.NON_NEGATIVE_INTEGER] ?? 0
+            ),
         );
     },
     [
@@ -109,7 +111,8 @@ setFuncId('reduces-damage-by-x-percent-excluding-aoe', "ダメージ軽減（範
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(
-                args[CUSTOM_SKILL_ARG_TYPE.PERCENTAGE],)
+                args[CUSTOM_SKILL_ARG_TYPE.PERCENTAGE] ?? 0
+            ),
         );
     },
     [
@@ -121,7 +124,8 @@ setFuncId('reduces-damage-by-x-percent-by-special-excluding-aoe', "ダメージ�
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(
-                args[CUSTOM_SKILL_ARG_TYPE.PERCENTAGE],)
+                args[CUSTOM_SKILL_ARG_TYPE.PERCENTAGE] ?? 0
+            ),
         );
     },
     [
@@ -133,7 +137,7 @@ setFuncId('reduces-damage-by-x-percent-by-special-excluding-aoe', "ダメージ�
 setFuncId('effective-against', "特効",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
-            EFFECTIVE_AGAINST_NODE(args[CUSTOM_SKILL_ARG_TYPE.EFFECTIVE_TYPE]),
+            EFFECTIVE_AGAINST_NODE(args[CUSTOM_SKILL_ARG_TYPE.EFFECTIVE_TYPE] ?? EffectiveType.None),
         ));
     },
     [
@@ -146,11 +150,26 @@ setFuncId('neutralizes-effective-against-bonuses', "特効無効",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             // Neutralizes "effective against" bonuses for all movement types.
-            TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE(args[CUSTOM_SKILL_ARG_TYPE.EFFECTIVE_TYPE]),
+            TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE(
+                args[CUSTOM_SKILL_ARG_TYPE.EFFECTIVE_TYPE] ?? EffectiveType.None
+            ),
         ));
     },
     [
         CUSTOM_SKILL_ARG_TYPE.EFFECTIVE_TYPE,
+    ],
+);
+
+setFuncId('reflex-foes-first-attack-damage', "最初の攻撃のダメージのn%を反射",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE(
+                args[CUSTOM_SKILL_ARG_TYPE.PERCENTAGE] ?? 0,
+            ),
+        ));
+    },
+    [
+        CUSTOM_SKILL_ARG_TYPE.PERCENTAGE,
     ],
 );
 
@@ -196,7 +215,7 @@ for (let [_key, value] of Object.entries(StatusEffectType)) {
 {
     let funcId = 'reflex-foes-first-attack';
     let skillId = getCustomSkillId(funcId, {});
-    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "反射"});
+    CUSTOM_SKILL_OPTIONS.push({id: funcId, text: "最初の攻撃を反射"});
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
     ));
