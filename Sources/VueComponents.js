@@ -141,6 +141,28 @@ function initVueComponents() {
             $(this.$el).off().select2('destroy');
         }
     });
+
+    Vue.component('flash-message', {
+        props: ['flashMessages'],
+        template: `
+                <div class="flash-container">
+                    <div v-for="(msg, index) in flashMessages"
+                         :key="index"
+                         class="flash-message"
+                         :class="[ { closable: !msg.autoClose, static: !msg.autoClose }, 'flash-' + (msg.type || 'info') ]"
+                    >
+                        {{ msg.text }}
+                        <span
+                                v-if="!msg.autoClose"
+                                class="close-btn"
+                                @click.stop="removeFlash(index)"
+                        >
+                            ✖
+                            </span>
+                    </div>
+                </div>
+        `,
+    })
 }
 
 initVueComponents();

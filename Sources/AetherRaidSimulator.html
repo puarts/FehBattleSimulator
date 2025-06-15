@@ -371,22 +371,7 @@
         <div class="sk-circle12 sk-circle"></div>
     </div>
     <div id="app" style="display: none;">
-        <div class="flash-container">
-            <div v-for="(msg, index) in flashMessages"
-                 :key="index"
-                 class="flash-message"
-                 :class="[ { closable: !msg.autoClose, static: !msg.autoClose }, 'flash-' + (msg.type || 'info') ]"
-            >
-                {{ msg.text }}
-                <span
-                        v-if="!msg.autoClose"
-                        class="close-btn"
-                        @click.stop="removeFlash(index)"
-                >
-                    ✖
-                    </span>
-            </div>
-        </div>
+        <flash-message :flash-messages="flashMessages"></flash-message>
         <table style="border-style: none;">
         <tr>
                 <td style="width: 450px" valign="top">
