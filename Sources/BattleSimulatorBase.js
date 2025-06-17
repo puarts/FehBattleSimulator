@@ -3665,9 +3665,9 @@ class BattleSimulatorBase {
 
         let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack, this.data.gameMode);
         atkUnit.isAttackDone = true;
-        defUnit.isAttackedDone = true;
+        result.defUnit.isAttackedDone = true;
         atkUnit.isCombatDone = true;
-        defUnit.isCombatDone = true;
+        result.defUnit.isCombatDone = true;
         if (atkUnit.isStyleActive) {
             atkUnit.isStyleActivatedInThisTurn = true;
         }
