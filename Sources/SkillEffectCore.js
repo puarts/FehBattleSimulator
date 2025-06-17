@@ -168,8 +168,8 @@ class SkillEffectHooks {
         } else if (prefix === 'duo-or-harmonized') {
             name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
         } else if (prefix === 'custom') {
-            // TODO: 修正する
-            name = CUSTOM_SKILL_OPTIONS.find(option => option.id === skillId)?.text ?? 'undefined';
+            let funcId = skillId.split('_')[1];
+            name = CUSTOM_SKILL_FUNC_ID_TO_NAME_MAP.get(funcId) ?? skillId;
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }

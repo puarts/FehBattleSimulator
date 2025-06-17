@@ -43,9 +43,11 @@ const ARG_TYPE_TO_OPTIONS_MAP = new MultiValueMap();
 /**
  * カスタムスキルのオプション。idはfuncId
  */
-let CUSTOM_SKILL_OPTIONS = [];
+const CUSTOM_SKILL_OPTIONS = [];
 CUSTOM_SKILL_OPTIONS.push({id: '', text: 'カスタムスキルを選択', disabled: true});
 CUSTOM_SKILL_OPTIONS.push({id: NONE_ID, text: "なし"});
+
+const CUSTOM_SKILL_FUNC_ID_TO_NAME_MAP = new Map();
 
 /// カスタムスキル関数
 // 特効
@@ -59,6 +61,8 @@ function setFuncId(funcId, text, func, args) {
     CUSTOM_SKILL_OPTIONS.push({id: funcId, text: text});
     // 関数登録
     CUSTOM_SKILL_FUNC_MAP.set(funcId, func);
+    // 名前登録
+    CUSTOM_SKILL_FUNC_ID_TO_NAME_MAP.set(funcId, text);
     // 引数設定
     for (let arg of args) {
         FUNC_ID_TO_ARG_TYPES_MAP.addValue(funcId, arg);
