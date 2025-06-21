@@ -1,4 +1,212 @@
 // スキル実装
+    // 🪩 Bouncin’ Ball
+    // Mt: 14 Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // grants Atk/Spd+6,
+    // “neutralizes penalties on unit during combat,”
+    // and [Hexblade] to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd = 20% of unit’s Spd at start of combat + 6,
+    // unit deals +X × 5 damage (max 25; excluding area-of-effect Specials;
+    // X = number of [Bonus] effects active on unit,
+    // excluding stat bonuses + number of [Penalty] effects active on foe,
+    // excluding stat penalties),
+    // and reduces the percentage of foe’s non-Special “reduce damage by X%” skills by 50% during combat
+    // (excluding area-of-effect Specials),
+    // and also,
+    // if unit initiates combat,
+    // unit can make a follow-up attack before foe’s next attack.
+
+    // 🅱️ S/R Lull Finish
+    // Inflicts Spd/Res-4 on foe,
+    // inflicts additional penalty on foe’s Spd/Res = number of [Bonus] effects on foe,
+    // excluding stat bonuses (max 4),
+    // neutralizes foe’s bonuses to Spd/Res,
+    // and reduces damage from foe’s attacks by 7 during combat
+    // (excluding area-of-effect Specials),
+    // and also,
+    // if unit’s Special is ready or triggered before or during this combat,
+    // deals +15 damage during combat
+    // (except when dealing damage with area-of-effect Specials),
+    // and when unit deals damage to foe during combat,
+    // restores 7 HP to unit.
+
+    // 🅲 Black Fang Bond
+    // Enables 【Canto (2)】.
+    //
+    // When Canto triggers,
+    // enables unit to use [Distant Swap] on ally
+    // (this effect is not treated as an Assist skill;
+    // if similar effects are active, this effect does not trigger).
+    //
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // grants “unit can move 1 extra space” to unit (that turn only; does not stack),
+    // and also,
+    // if Special cooldown count is at its maximum value,
+    // grants Special cooldown count-2 to unit;
+    // if Special cooldown count is at its maximum value - 1,
+    // grants Special cooldown count-1 to unit.
+    //
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // inflicts Spd/Res-7,
+    // 【Exposure】,
+    // and 【Undefended】 on closest foes through their next actions,
+    // and inflicts Spd/Res-7 and 【Exposure】 on foes within 2 spaces of those foes through their next actions.
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd+5 to unit
+    // and unit deals +7 damage during combat (excluding area-of-effect Specials).
+
+    // 🪝 Haulin’ Harpoon
+    // Mt: 16 Rng: 1
+    // Enables 【Canto (Dist. +1; Max 4)】.
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // When Canto triggers,
+    // enables unit to use [Distant Swap] on ally
+    // (this effect is not treated as an Assist skill;
+    // if similar effects are active, this effect does not trigger).
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res = number of allies within 3 rows or 3 columns centered on unit × 3,
+    // 5 (max 14),
+    // grants Special cooldown count-1 to unit before unit’s first attack,
+    // unit deals +X × 8 damage (max 32; excluding area-of-effect Specials;
+    // X = number of foes within 3 spaces of target, including target),
+    // and reduces damage from foe’s attacks by 20% of unit’s Spd during combat
+    // (excluding area-of-effect Specials),
+    // and also,
+    // reduces damage by an additional 20% of unit’s Spd
+    // when foe’s attack triggers foe’s Special
+    // (excluding area-of-effect Specials).
+    // If unit initiates combat,
+    // after combat,
+    // deals 10 damage to foe and foes within 2 spaces of that foe,
+    // and inflicts 【Share Spoils+】 on those foes through their next actions.
+    //
+    // 【Share Spoils+】
+    // Inflicts Atk/Spd/Def/Res-5 on unit during combat
+    // and neutralizes “reduces damage by X%” effects from unit’s non-Special skills
+    // (excluding area-of-effect Specials).
+    //
+    // Once per turn for the entire map,
+    // if foe initiates combat and if unit is defeated in combat,
+    // grants another action to that foe after combat
+    // (this effect has priority over other similar effects aside from Share Spoils;
+    // if this status and Share Spoils are both active at the same time,
+    // they are both treated as having been triggered;
+    // other similar effects aside from Share Spoils are treated as not having triggered).
+
+    // 🅲 Pulse Tempest F
+    // At start of turn,
+    // unit can move 1 extra space (that turn only; does not stack).
+    //
+    // Grants bonus to unit’s Atk/Spd/Def/Res during combat = number of spaces from start position to end position of whoever initiated combat (max 3),
+    // and also,
+    // if unit’s attack can trigger unit’s Special,
+    // grants Special cooldown count-2 to unit before unit’s first follow-up attack.
+
+    // 🍃 Fannin’ Foliage+
+    // Mt: 14 Rng: 1
+    // At start of turn,
+    // if unit’s Special cooldown count is at its maximum value,
+    // grants Special cooldown count-1 to unit.
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit
+    // and deals damage = 15% of unit’s Atk during combat
+    // (excluding area-of-effect Specials).
+
+    // 🅱️ A/D Near Trace 4
+    // Enables 【Canto (Rem. +1; Min 2)】.
+    //
+    // Inflicts Atk/Def-4 on foe during combat
+    // and unit deals +7 damage,
+    // including when dealing damage with a Special triggered before combat.
+
+    // 🛐 Pious Offering
+    // Mt: 14 Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd = 20% of unit’s Spd at start of combat + 6,
+    // unit deals +X × 5 damage (max 25; excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit, excluding stat bonuses
+    //
+    // number of Penalty effects active on foe, excluding stat penalties),
+    // neutralizes effects that guarantee foe’s follow-up attacks
+    // and effects that prevent unit’s follow-up attacks,
+    // and grants Special cooldown charge +1 to unit per attack during combat
+    // (only highest value applied; does not stack).
+    //
+    // Unit can use the following 【Style】:
+    // Echo Style
+
+    // 🌙 Magic Light ⏳3
+    // When Special triggers,
+    // treats foe’s Def/Res as if reduced by 50%
+    // and neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills.
+
+    // 🅱️ Holy Soul of Zofia
+    // Enables 【Canto (Dist.; Max 3)】.
+    //
+    // At start of turn,
+    // inflicts Spd/Res-7, 【Sabotage】, and 【Discord】 on closest foes
+    // and foes within 2 spaces of those foes through their next actions.
+    //
+    // Inflicts Spd/Res-5 on foe
+    // and deals damage = 20% of unit’s Spd during combat
+    // (excluding area-of-effect Specials),
+    // and also,
+    // if unit’s HP > 1 and foe would reduce unit’s HP to 0,
+    // unit survives with 1 HP (once per combat;
+    // does not stack with non-Special effects that allow unit to survive with 1 HP
+    // if foe’s attack would reduce HP to 0).
+    // Restores 7 HP to unit after combat.
+
+    // 🎭 Style
+    // Unit can use the following [Style]:
+    // ――― Echo Style ―――
+    // Unit can attack foes 3 spaces away
+    // (unit cannot attack foes 2 spaces away).
+    //
+    // Unit attacks twice
+    // and calculates damage at 60% during combat
+    // (this calculation stacks with other effects
+    // that calculate damage at X% such as Potent Follow).
+    //
+    // Unit suffers a counterattack
+    // if any of the following conditions are met:
+    // foe is armored with Range = 2
+    // or foe can counterattack regardless of unit’s range.
+    // After-combat movement effects do not occur.
+    // Skill effect’s Range is treated as 2,
+    // including by skill effects determined by attack Range,
+    // like Pavise and Aegis.
+    // This Style can be used only once per turn.
+    //
+    // A "Style" function allows you to change that Hero's battle style.
+    // The effects that come with a Style will vary for different Heroes.
+
+    // 🪄 Harmonized Skill
+    // Neutralizes any [Penalty],
+    // restores 40 HP,
+    // and grants [Resonance: Blades] to unit and allies from the same titles as unit for 1 turn.
+    //
+    // Once used,
+    // Harmonized Skill cannot be activated again right away.
+    // At start of every third turn,
+    // if Harmonized Skill has already been used,
+    // unit can use Harmonized Skill again.
+    //
+    // Heroes equipped with a Skill that has a Style cannot use Harmonized Skills.
+
 // Vision of Daein
 // Mt 14 Rng 2
 {

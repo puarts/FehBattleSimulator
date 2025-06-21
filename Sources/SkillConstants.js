@@ -3871,6 +3871,16 @@ PassiveX.CruxEcho = 3297; // 響・十字牽制
 // Weapon.RaudrsparrowPlus = 3299; // ラウアスパロー
 Weapon.VisionOfDaein = 3300; // デインの後継の書
 Weapon.GeneralToBe = 3301; // 魔道軍将の器の書
+Weapon.BouncinBall = 3300; // 夏の海に弾む球
+PassiveB.SRLullFinish = 3301; // 秘奥・速魔凪
+PassiveC.BlackFangBond = 3302; // 黒い牙の絆
+Weapon.HaulinHarpoon = 3303; // 大海呼ぶ魚獲りの鉤
+PassiveC.PulseTempestF = 3304; // 迅雷風烈・追撃鼓動
+Weapon.FanninFoliagePlus = 3305; // ヤシの葉+
+Weapon.PiousOffering = 3306; // 敬虔なる信徒の供物
+Special.MagicLight = 3307; // 魔光
+PassiveB.HolySoulOfZofia = 3308; // ソフィアの聖魂
+Weapon.NanGuoNoguoZhiPlus = 3309; // 南国の果汁+
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
