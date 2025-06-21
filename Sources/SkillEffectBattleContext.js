@@ -1282,6 +1282,7 @@ class RestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
     }
 }
 
+const RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE = n => new RestoresHpToUnitAfterCombatNode(n);
 const RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(7);
 const RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(10);
 
@@ -2393,6 +2394,14 @@ class TargetCannotRecoverHpDuringCombatNode extends SkillEffectNode {
 }
 
 const TARGET_CANNOT_RECOVER_HP_DURING_COMBAT_NODE = new TargetCannotRecoverHpDuringCombatNode();
+
+class FoeCannotRecoverHpDuringCombatNode extends TargetCannotRecoverHpDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOE_CANNOT_RECOVER_HP_DURING_COMBAT_NODE = new FoeCannotRecoverHpDuringCombatNode();
 
 class TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode extends SkillEffectNode {
     static {

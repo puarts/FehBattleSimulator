@@ -445,7 +445,7 @@ class AppData extends UnitManager {
             { id: -1, text: "なし" }
         ];
         this.additionalPassiveOptions = [
-            {id: -2, text: "追加スキルを選択", disabled: true},
+            {id: -2, text: "-- 追加スキルを選択 --", disabled: true},
             {id: -1, text: "なし"}
         ];
 

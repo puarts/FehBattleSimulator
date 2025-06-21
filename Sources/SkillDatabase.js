@@ -89,7 +89,9 @@ class SkillDatabase {
         unit.passiveXInfo = this.findSkillInfoByDict(unit.passiveX);
         unit.captainInfo = this.findSkillInfoByDict(unit.captain);
         unit.additionalPassiveInfos =
-            (unit.additionalPassives || []).map(([skillId, _args, _isEnabled]) => this.findSkillInfoByDict(skillId));
+            (unit.additionalPassives || []).map(
+                ([skillId, _args, isEnabled]) => isEnabled ? this.findSkillInfoByDict(skillId) : null
+            );
     }
 
     __registerInfosToDict(skillInfos) {

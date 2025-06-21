@@ -116,10 +116,10 @@ class SkillEffectHooks {
             let funcId = str.slice(firstUnderscore + 1, secondUnderscore);
             let args = str.slice(secondUnderscore + 1);
 
-            let func = CUSTOM_SKILL_FUNC_MAP.get(funcId);
-            if (func && !registeredCustomSkillIds.has(skillId)) {
+            let func = CustomSkill.FUNC_MAP.get(funcId);
+            if (func && !CustomSkill.registeredSkillIds.has(skillId)) {
                 func(skillId, JSON.parse(args));
-                registeredCustomSkillIds.add(skillId);
+                CustomSkill.registeredSkillIds.add(skillId);
             }
         }
         return skills.map(skillNode => skillNode.evaluate(env));
@@ -169,7 +169,7 @@ class SkillEffectHooks {
             name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
         } else if (prefix === 'custom') {
             let funcId = skillId.split('_')[1];
-            name = CUSTOM_SKILL_FUNC_ID_TO_NAME_MAP.get(funcId) ?? skillId;
+            name = CustomSkill.NAME_BY_FUNC_ID.get(funcId) ?? skillId;
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }
@@ -530,6 +530,8 @@ class ConstantNumberNode extends NumberNode {
 }
 
 const CONSTANT_NUMBER_NODE = value => new ConstantNumberNode(value);
+
+const ZERO_NUMBER_NODE = CONSTANT_NUMBER_NODE(0);
 
 /**
  * @template T

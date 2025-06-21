@@ -11640,6 +11640,7 @@ function updateAllUi() {
     g_trashArea.updateUi();
     updateMapUi();
     addTouchEventToDraggableElements();
+    g_appData.__showStatusToAttackerInfo();
 }
 
 function __updateChaseTargetTilesForAllUnits() {

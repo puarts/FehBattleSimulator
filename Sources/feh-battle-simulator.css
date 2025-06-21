@@ -1,3 +1,8 @@
+:root {
+    --select-width: 160px;
+    --custom-select-width: 250px;
+}
+
 .container {
     /* margin: 20px auto; */
     max-width: 270px;
@@ -179,7 +184,7 @@ input.numericFloat {
 }
 
 select.hero {
-    width: 160px;
+    width: var(--select-width);
 }
 
 select.blessing {
@@ -187,7 +192,7 @@ select.blessing {
 }
 
 select.skill {
-    width: 160px;
+    width: var(--select-width);
 }
 
 .debugInfo {
@@ -234,18 +239,30 @@ input[class="fehButton"]:not(:checked) + label {
 }
 
 .skillTypeText {
-    position: absolute;
-    bottom: 0;
-    right: 0;
+    width: 12px;
+    height: 12px;
+    position: relative;
+    bottom: -10px;
+    right: 10px;
 }
 
 .skillHeader {
+    width: 25px;
+    height: 25px;
     font-size: 16px;
     padding: 0px;
     text-align: center;
     position: relative;
     color: white;
     text-shadow: #444 1px 1px 0px, #444 -1px 1px 0px, #444 1px -1px 0px, #444 -1px -1px 0px, #444 0px 1px 0px, #444 0px -1px 0px, #444 -1px 0px 0px, #444 1px 0px 0px;
+}
+
+.skill-toggle-header {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    place-content: center;
+    cursor: pointer;
 }
 
 .iconButton {
@@ -400,11 +417,11 @@ input[class="fehButton"]:not(:checked) + label {
 }
 
 .custom-skill {
-    width: 250px;
+    width: var(--custom-select-width);
 }
 
 .custom-skill-args {
-    width: 160px;
+    width: var(--select-width);
 }
 
 .icon-disabled {
@@ -1086,3 +1103,123 @@ td.enemy {
 .status-effect-description {
     color: grey;
 }
+
+.skill-select-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skill-select {
+    /*padding-top: 2px;*/
+    /*padding: 2px 2px;*/
+    /*background: #eee;*/
+    /*border-radius: 2px;*/
+}
+
+/* スキル変更画面 */
+/* 行を縦に積むコンテナ */
+.skill-grid {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.2rem;       /* 行間 */
+    place-content: center; /* オプションで全体を中央寄せ */
+}
+
+/* 各行を 3 列グリッドに */
+.skill-row {
+    display: grid;
+    width: 100%;
+    /* 列定義と背景色は下位クラスで --cols, --bg に設定 */
+    grid-template-columns: var(--cols);
+    column-gap: 0.3rem;    /* 列間 */
+    align-items: center;   /* 縦方向中央揃え */
+    background: var(--bg);
+    border-radius: 4px;
+    padding: 1px;
+}
+
+/* 武器スキル行 */
+.weapon-skill-row {
+    --cols: 25px var(--select-width) 15px 120px 1fr;
+    --bg:   #ff000020;
+}
+
+/* サポートスキル行 */
+.support-skill-row {
+    --cols: 25px var(--select-width) 15px 1fr;
+    --bg:   #00ff0020;
+}
+
+/* 奥義スキル行 */
+.special-skill-row {
+    --cols: 25px var(--select-width) 15px 70px 1fr;
+    --bg:   #ff00ff20;
+}
+
+/* パッシブスキル行 */
+.passive-skill-row {
+    --cols: 25px var(--select-width) 15px 1fr;
+    --bg:   #00885520;
+}
+
+/* パッシブSスキル行 */
+.passive-s-skill-row {
+    --cols: 25px var(--select-width) 15px 1fr;
+    --bg:   #cccc5530;
+}
+
+/* パッシブXスキル行 */
+.passive-x-skill-row {
+    --cols: 25px var(--select-width) 15px 1fr;
+    --bg:   #00ff0040;
+}
+
+/* 追加スキル行 */
+.additional-skill-row {
+    --cols: 25px var(--select-width) 15px 60px 1fr;
+    --bg:   #00000010;
+}
+
+/* カスタムスキル行 */
+.custom-skill-row {
+    --cols: 25px var(--custom-select-width) 60px;
+    --bg:   #00000010;
+}
+
+.custom-skill-name {
+    width: 100%;
+    /*width: 300px;*/
+}
+
+.custom-skill-arg-name {
+    width: 100%;
+}
+
+/* 各セル（列）に必要なスタイル */
+.skill-icon {
+    justify-self: center;  /* 横方向中央揃え */
+    display: flex;
+    align-items: center;
+    text-align: center;
+    /*width: 25px;*/
+    /*height: 25px;*/
+}
+
+.skill-content {
+    /* 2 列目は自動で幅いっぱい */
+}
+
+.skill-actions {
+    justify-self: center;  /* 横方向中央揃え */
+}
+
+.custom-skill-test {
+    width: 100%;
+}
+
+/*.debugInfo {*/
+/*    display: block;*/
+/*    margin-top: 0.25rem;*/
+/*}*/
