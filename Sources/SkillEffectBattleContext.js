@@ -1160,6 +1160,9 @@ class ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode extend
     }
 }
 
+const REDUCES_DAMAGE_FROM_TARGET_FOES_FOLLOW_UP_ATTACK_BY_X_PERCENT_DURING_COMBAT_NODE =
+    percentage => new ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode(percentage);
+
 /**
  * reduces damage from foe's first attack by X% during combat
  * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)
@@ -1189,6 +1192,23 @@ class ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTw
 
 const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_BY_SPECIAL_DURING_COMBAT_INCLUDING_TWICE_NODE =
     n => new ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTwiceNode(n);
+
+class ReducesDamageFromTargetFoesConsecutiveAttacksByXPercentDuringCombatNode extends ApplyingNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let ratio = n / 100.0;
+        unit.battleContext.addDamageReductionRatioOfConsecutiveAttacks(ratio);
+        env.debug(`${unit.nameWithGroup}は連撃のダメージを${n}%軽減`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_CONSECUTIVE_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
+    percentage => new ReducesDamageFromTargetFoesConsecutiveAttacksByXPercentDuringCombatNode(percentage);
 
 /**
  * reduces damage from foe's first attack by X during combat

@@ -371,6 +371,12 @@ class BattleSimulatorBase {
             additionalSkillChanged: function () {
                 this.updateCurrentUnit();
             },
+            initCustomSkillArgs: function (index) {
+                // TODO: funcIdから適切な初期化を行うようにする
+                let unit = g_app.__getEditingTargetUnit();
+                CustomSkill.Arg.initArgs(unit?.customSkills[index]);
+                this.updateCurrentUnit();
+            },
             customSkillChanged: function () {
                 this.updateCurrentUnit();
             },

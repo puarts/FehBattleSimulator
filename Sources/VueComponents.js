@@ -252,11 +252,24 @@ function initVueComponents() {
                 <select2
                     :options="CustomSkill.OPTIONS"
                     v-model="unit.customSkills[index][0]"
-                    @input="vm.customSkillChanged"
+                    @input="vm.initCustomSkillArgs(index);vm.customSkillChanged();"
                     class="custom-skill"
                 ></select2>
                 <!-- 引数 -->
                 <span v-for="argNode in CustomSkill.Arg.NODES_BY_FUNC_ID.getValues(funcId)">
+                    <!-- + -->
+                    <span
+                        v-if="argNode === CustomSkill.Arg.Node.PLUS"
+                    >
+                      &plus;
+                    </span>
+                    <!-- x -->
+                    <span
+                        v-if="argNode === CustomSkill.Arg.Node.MULT"
+                    >
+                      &times;
+                    </span>
+
                     <!-- 数値 -->
                     <span
                         v-if="CustomSkill.Arg.getNodeType(argNode) === CustomSkill.Arg.NodeType.NON_NEGATIVE_INTEGER"
@@ -281,7 +294,7 @@ function initVueComponents() {
                         <input
                             type="number"
                             min="0"
-                            step="1"
+                            step="10"
                             inputmode="numeric"
                             pattern="(?:0|[1-9]\\d*)"
                             placeholder="0以上の整数"

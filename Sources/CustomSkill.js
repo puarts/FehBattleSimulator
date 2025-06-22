@@ -1,11 +1,6 @@
 class CustomSkill {
     static OPTIONS = [];
 
-    /**
-     * @type {[NumberNode, string][]}
-     */
-    static STAT_NODE_LIST = [];
-
     static {
         /**
          * カスタムスキルのオプション。idはfuncId
@@ -29,8 +24,8 @@ class CustomSkill {
     static Arg = class {
         static Node = {
             NON_NEGATIVE_INTEGER: "non_negative_integer",
-            CONST_VALUE: "const_value",
             PLUS: "plus",
+            MULT: "mult",
             VARIABLE: "variable",
             VARIABLE_PERCENTAGE: "variable_percentage",
             PERCENTAGE: "percentage",
@@ -50,9 +45,9 @@ class CustomSkill {
 
         static NODE_TYPE_BY_NODE = new Map([
             [this.Node.NON_NEGATIVE_INTEGER, this.NodeType.NON_NEGATIVE_INTEGER],
-            [this.Node.CONST_VALUE, this.NodeType.INTEGER],
             [this.Node.PLUS, this.NodeType.OPERATION],
-            [this.Node.VARIABLE, this.NodeType.INTEGER],
+            [this.Node.MULT, this.NodeType.OPERATION],
+            [this.Node.VARIABLE, this.NodeType.ID],
             [this.Node.VARIABLE_PERCENTAGE, this.NodeType.PERCENTAGE],
             [this.Node.PERCENTAGE, this.NodeType.PERCENTAGE],
             [this.Node.EFFECTIVE_TYPE, this.NodeType.ID],
@@ -70,6 +65,25 @@ class CustomSkill {
          */
         static OPTIONS_BY_NODE = new MultiValueMap();
 
+        /**
+         * @type {[NumberNode, string][]}
+         */
+        static STAT_NODE_LIST = [];
+
+        /**
+         * @type {[NumberNode, string][]}
+         */
+        static VARIABLE_NODE_LIST = [];
+
+        static initArgs(customSkill) {
+            const {NON_NEGATIVE_INTEGER, PERCENTAGE, VARIABLE_PERCENTAGE} = this.Node;
+            customSkill[1] = {
+                [NON_NEGATIVE_INTEGER]: 0,
+                [PERCENTAGE]: 100,
+                [VARIABLE_PERCENTAGE]: 100
+            };
+        }
+
         static getNodeType(node) {
             return this.NODE_TYPE_BY_NODE.get(node);
         }
@@ -78,17 +92,95 @@ class CustomSkill {
             return NumberNode.makeNumberNodeFrom(args[this.Node.NON_NEGATIVE_INTEGER] ?? 0);
         }
 
+        static getTotalNonNegativeIntegerNode(args) {
+            return ADD_NODE(
+                this.getNonNegativeIntegerNode(args),
+                PERCENTAGE_NODE(this.getVariablePercentageNode(args), this.getVariableNode(args))
+            );
+        }
+
         static getPercentageNode(args) {
             return NumberNode.makeNumberNodeFrom(args[this.Node.PERCENTAGE] ?? 0);
         }
 
+        static getVariablePercentageNode(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.VARIABLE_PERCENTAGE] ?? 0);
+        }
+
         static getStatNode(args) {
             let id = args[this.Node.STAT];
-            return id ? CustomSkill.STAT_NODE_LIST[id][0] : ZERO_NUMBER_NODE;
+            return id ? this.STAT_NODE_LIST[id][0] : ZERO_NUMBER_NODE;
+        }
+
+        static getVariableNode(args) {
+            let id = args[this.Node.VARIABLE];
+            return id ? this.VARIABLE_NODE_LIST[id][0] : ZERO_NUMBER_NODE;
         }
 
         static getStatPercentNode(args) {
             return PERCENTAGE_NODE(this.getPercentageNode(args), this.getStatNode(args));
+        }
+
+        static {
+            this.STAT_NODE_LIST = [
+                [ZERO_NUMBER_NODE, '-- 選択してください --'],
+                [UNITS_ATK_AT_START_OF_COMBAT_NODE, '戦闘開始時の攻撃'],
+                [UNITS_SPD_AT_START_OF_COMBAT_NODE, '戦闘開始時の速さ'],
+                [UNITS_DEF_AT_START_OF_COMBAT_NODE, '戦闘開始時の守備'],
+                [UNITS_RES_AT_START_OF_COMBAT_NODE, '戦闘開始時の魔防'],
+
+                [FOES_ATK_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の攻撃'],
+                [FOES_SPD_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の速さ'],
+                [FOES_DEF_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の守備'],
+                [FOES_RES_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の魔防'],
+
+                [UNITS_ATK_NODE, '攻撃'],
+                [UNITS_SPD_NODE, '速さ'],
+                [UNITS_DEF_NODE, '守備'],
+                [UNITS_RES_NODE, '魔防'],
+
+                [FOES_ATK_NODE, '敵の攻撃'],
+                [FOES_SPD_NODE, '敵の速さ'],
+                [FOES_DEF_NODE, '敵の守備'],
+                [FOES_RES_NODE, '敵の魔防'],
+            ];
+
+            this.VARIABLE_NODE_LIST = [...this.STAT_NODE_LIST];
+            // TODO: 追加
+            // フレスベルグ、子供カミラ
+
+            const REGISTER_OPTIONS_BY_NODE = (node, nodeList) => {
+                nodeList.forEach(([_node, text], index) => {
+                    const option = index === 0 ? {id: '', text, disabled: true} : {id: index, text};
+                    this.OPTIONS_BY_NODE.addValue(node, option);
+                });
+            };
+
+            REGISTER_OPTIONS_BY_NODE(this.Node.STAT, this.STAT_NODE_LIST);
+            REGISTER_OPTIONS_BY_NODE(this.Node.VARIABLE, this.VARIABLE_NODE_LIST);
+
+            const addEnumOptions = (nodeType, enumObj, getText) => {
+                for (const [, value] of Object.entries(enumObj)) {
+                    const option = value === enumObj.None
+                        ? { id: '', text: '-- 選択してください --', disabled: true }
+                        : { id: value, text: getText(value) };
+                    this.OPTIONS_BY_NODE.addValue(nodeType, option);
+                }
+            };
+
+            // 特効タイプ
+            addEnumOptions(
+                this.Node.EFFECTIVE_TYPE,
+                EffectiveType,
+                value => EFFECTIVE_TYPE_NAMES.get(value)
+            );
+
+            // ステータス状態
+            addEnumOptions(
+                this.Node.STATUS_EFFECT_TYPE,
+                StatusEffectType,
+                value => STATUS_EFFECT_INFO_MAP.get(value)[1]
+            );
         }
     }
 
@@ -118,54 +210,6 @@ class CustomSkill {
     }
 }
 
-CustomSkill.Arg.STAT_NODE_LIST = [
-    [ZERO_NUMBER_NODE, '選択してください'],
-    [UNITS_ATK_AT_START_OF_COMBAT_NODE, '戦闘開始時の攻撃'],
-    [UNITS_SPD_AT_START_OF_COMBAT_NODE, '戦闘開始時の速さ'],
-    [UNITS_DEF_AT_START_OF_COMBAT_NODE, '戦闘開始時の守備'],
-    [UNITS_RES_AT_START_OF_COMBAT_NODE, '戦闘開始時の魔防'],
-
-    [FOES_ATK_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の攻撃'],
-    [FOES_SPD_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の速さ'],
-    [FOES_DEF_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の守備'],
-    [FOES_RES_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の魔防'],
-
-    [UNITS_ATK_NODE, '攻撃'],
-    [UNITS_SPD_NODE, '速さ'],
-    [UNITS_DEF_NODE, '守備'],
-    [UNITS_RES_NODE, '魔防'],
-
-    [FOES_ATK_NODE, '敵の攻撃'],
-    [FOES_SPD_NODE, '敵の速さ'],
-    [FOES_DEF_NODE, '敵の守備'],
-    [FOES_RES_NODE, '敵の魔防'],
-];
-
-for (let [index, [_node, text]] of CustomSkill.Arg.STAT_NODE_LIST.entries()) {
-    let option = {id: index, text};
-    if (index === 0) {
-        option.id = "";
-        option.disabled = true;
-    }
-    CustomSkill.Arg.OPTIONS_BY_NODE.addValue(CustomSkill.Arg.Node.STAT, option);
-}
-
-// 特効タイプ
-for (let [_key, value] of Object.entries(EffectiveType)) {
-    let option = value === EffectiveType.None ?
-        {id: '', text: '選択してください', disabled: true} :
-        {id: value, text: EFFECTIVE_TYPE_NAMES.get(value)};
-    CustomSkill.Arg.OPTIONS_BY_NODE.addValue(CustomSkill.Arg.Node.EFFECTIVE_TYPE, option);
-}
-
-// ステータス状態
-for (let [_key, value] of Object.entries(StatusEffectType)) {
-    let option = value === StatusEffectType.None ?
-        {id: '', text: '選択してください', disabled: true} :
-        {id: value, text: STATUS_EFFECT_INFO_MAP.get(value)[1]};
-    CustomSkill.Arg.OPTIONS_BY_NODE.addValue(CustomSkill.Arg.Node.STATUS_EFFECT_TYPE, option);
-}
-
 // setFuncId('XXX', "YYY",
 //     (skillId, args) => {
 //     },
@@ -173,40 +217,101 @@ for (let [_key, value] of Object.entries(StatusEffectType)) {
 //     ],
 // );
 
+const NON_NEGATIVE_INTEGER_ARGS = [
+    CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
+    CustomSkill.Arg.Node.PLUS,
+    CustomSkill.Arg.Node.VARIABLE,
+    CustomSkill.Arg.Node.MULT,
+    CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
+];
+
+/// ダメージ+
+
 CustomSkill.setFuncId('deals-damage-excluding-aoe', "ダメージ+（範囲除）",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
-            DEALS_DAMAGE_X_NODE(CustomSkill.Arg.getNonNegativeIntegerNode(args))
+            DEALS_DAMAGE_X_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
         );
     },
-    [
-        CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
-    ],
+    NON_NEGATIVE_INTEGER_ARGS,
 );
+
+CustomSkill.setFuncId('deals-damage-of-aoe', "ダメージ+（範囲）",
+    (skillId, args) => {
+        BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
+            DEALS_DAMAGE_X_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
+        );
+    },
+    NON_NEGATIVE_INTEGER_ARGS,
+);
+
+CustomSkill.setFuncId('deals-damage-including-aoe', "ダメージ+（範囲含）",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            DEALS_DAMAGE_X_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
+        );
+        BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
+            DEALS_DAMAGE_X_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
+        );
+    },
+    NON_NEGATIVE_INTEGER_ARGS,
+);
+
+/// ダメージ-
 
 CustomSkill.setFuncId('reduces-damage-excluding-aoe', "ダメージ-（範囲除）",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
-            REDUCES_DAMAGE_BY_N_NODE(CustomSkill.Arg.getNonNegativeIntegerNode(args))
+            REDUCES_DAMAGE_BY_N_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
         );
     },
-    [
-        CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
-    ],
+    NON_NEGATIVE_INTEGER_ARGS,
+);
+
+CustomSkill.setFuncId('reduces-damage-of-aoe', "ダメージ-（範囲）",
+    (skillId, args) => {
+        BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_BY_N_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
+        );
+    },
+    NON_NEGATIVE_INTEGER_ARGS,
+);
+
+CustomSkill.setFuncId('reduces-damage-including-aoe', "ダメージ-（範囲含）",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_BY_N_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
+        );
+        BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_BY_N_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
+        );
+    },
+    NON_NEGATIVE_INTEGER_ARGS,
+);
+
+CustomSkill.setFuncId('reduces-damage-from-foes-first-strikes', "最初に受けた攻撃と2回攻撃のダメージ-",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
+            ),
+        );
+    },
+    NON_NEGATIVE_INTEGER_ARGS,
 );
 
 CustomSkill.setFuncId('reduces-damage-from-special-excluding-aoe', "奥義ダメージ-（範囲除）",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(
-                CustomSkill.Arg.getNonNegativeIntegerNode(args)
+                CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
             ),
         );
     },
-    [
-        CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
-    ],
+    NON_NEGATIVE_INTEGER_ARGS,
 );
+
+/// ダメージ軽減
 
 CustomSkill.setFuncId('reduces-damage-by-x-percent-excluding-aoe', "ダメージ軽減（範囲除）",
     (skillId, args) => {
@@ -219,6 +324,89 @@ CustomSkill.setFuncId('reduces-damage-by-x-percent-excluding-aoe', "ダメージ
     [
         CustomSkill.Arg.Node.PERCENTAGE,
     ],
+);
+
+CustomSkill.setFuncId('reduces-damage-by-x-percent-of-aoe', "ダメージ軽減（範囲）",
+    (skillId, args) => {
+        BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_BEFORE_COMBAT_NODE(
+                CustomSkill.Arg.getPercentageNode(args)
+            ),
+        );
+    },
+    [
+        CustomSkill.Arg.Node.PERCENTAGE,
+    ],
+);
+
+CustomSkill.setFuncId('reduces-damage-by-x-percent-including-aoe', "ダメージ軽減（範囲含）",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(
+                CustomSkill.Arg.getPercentageNode(args)
+            ),
+        );
+        BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_BEFORE_COMBAT_NODE(
+                CustomSkill.Arg.getPercentageNode(args)
+            ),
+        );
+    },
+    [
+        CustomSkill.Arg.Node.PERCENTAGE,
+    ],
+);
+
+CustomSkill.setFuncId('reduces-damage-by-x-percent-from-first-attack', "最初に受けた攻撃のダメージをn%軽減",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_NODE(
+                CustomSkill.Arg.getPercentageNode(args)
+            ),
+        );
+    },
+    [
+        CustomSkill.Arg.Node.PERCENTAGE,
+    ]
+);
+
+CustomSkill.setFuncId('reduces-damage-by-x-percent-from-first-strikes', "最初に受けた攻撃と2回攻撃のダメージをn%軽減",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                CustomSkill.Arg.getPercentageNode(args)
+            ),
+        );
+    },
+    [
+        CustomSkill.Arg.Node.PERCENTAGE,
+    ]
+);
+
+CustomSkill.setFuncId('reduces-damage-by-x-percent-from-follow-up-attack', "追撃のダメージをn%軽減",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_FROM_TARGET_FOES_FOLLOW_UP_ATTACK_BY_X_PERCENT_DURING_COMBAT_NODE(
+                CustomSkill.Arg.getPercentageNode(args)
+            ),
+        );
+    },
+    [
+        CustomSkill.Arg.Node.PERCENTAGE,
+    ]
+);
+
+CustomSkill.setFuncId('reduces-damage-by-x-percent-from-consecutive-attacks', "連撃のダメージをn%軽減",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_CONSECUTIVE_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(
+                CustomSkill.Arg.getPercentageNode(args)
+            ),
+        );
+    },
+    [
+        CustomSkill.Arg.Node.PERCENTAGE,
+    ]
 );
 
 CustomSkill.setFuncId('reduces-damage-by-x-percent-by-special-excluding-aoe', "ダメージ軽減（奥義扱、範囲除）",
@@ -234,18 +422,27 @@ CustomSkill.setFuncId('reduces-damage-by-x-percent-by-special-excluding-aoe', "�
     ],
 );
 
-CustomSkill.setFuncId('deals-damage-stat-percent-excluding-aoe', "ダメージ+ステータスのn%（範囲除）",
+CustomSkill.setFuncId('reduces-percentage-of-non-special-damage-reduction', "奥義以外のダメージ軽減をn%無効",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
-            DEALS_DAMAGE_X_NODE(
-                CustomSkill.Arg.getStatPercentNode(args)
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_N_PERCENT_DURING_COMBAT_NODE(
+                CustomSkill.Arg.getPercentageNode(args)
             ),
         );
     },
     [
-        CustomSkill.Arg.Node.STAT,
         CustomSkill.Arg.Node.PERCENTAGE,
     ],
+);
+
+CustomSkill.setFuncId('neutralizes-non-special-damage-reduction-when-special',
+    "奥義発動時、奥義以外のダメージ軽減を無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        );
+    },
+    []
 );
 
 // 特効
@@ -294,9 +491,7 @@ CustomSkill.setFuncId('restore-n-hp-after-combat', "戦闘後、n回復",
             RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE(args[CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER] ?? 0),
         ));
     },
-    [
-        CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
-    ],
+    NON_NEGATIVE_INTEGER_ARGS,
 );
 
 CustomSkill.setFuncId('when-deals-damage-restores-n-hp', "攻撃でダメージを与えたとき、n回復",
@@ -307,9 +502,7 @@ CustomSkill.setFuncId('when-deals-damage-restores-n-hp', "攻撃でダメージ�
             ),
         ));
     },
-    [
-        CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
-    ],
+    NON_NEGATIVE_INTEGER_ARGS,
 );
 
 CustomSkill.setFuncId('reduce-deep-wounds-by-n-percent-during-combat', "回復不可をn%無効",
