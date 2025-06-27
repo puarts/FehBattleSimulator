@@ -496,6 +496,9 @@ class BattleContext {
         this._potentOverwriteRatio = null;
         this._potentOverwriteRatioPerAttack = null;
 
+        // 与えるダメージをn%で計算
+        this.damageCalculationRatios = [];
+
         // 戦闘中に一度しか発動しない奥義のスキル効果が発動したか
         this.isOneTimeSpecialSkillEffectActivatedDuringCombat = false;
 
@@ -515,6 +518,10 @@ class BattleContext {
 
         // 特攻無効
         this.invalidatedEffectives = [];
+
+        // 戦闘後移動スキル無効(切り込みなど)
+        // After-combat movement effects do not occur.
+        this.isAfterCombatMovementDisabled = false;
 
         //
         // フック関数

@@ -105,6 +105,14 @@ class TargetsHpOnMapNode extends PositiveNumberNode {
 
 const TARGETS_HP_ON_MAP_NODE = new TargetsHpOnMapNode();
 
+class FoesHpOnMapNode extends TargetsHpOnMapNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOES_HP_ON_MAP_NODE = new FoesHpOnMapNode();
+
 class FoesHpAtStartOfTurnNode extends TargetsHpAtStartOfTurnNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -1402,6 +1410,37 @@ class TargetCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
 
 const TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new TargetCanCounterattackRegardlessOfRangeNode();
 
+class FoeCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOE_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new FoeCanCounterattackRegardlessOfRangeNode();
+
+class CanTargetCounterattackRegardlessOfRangeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canCounterattackToAllDistance;
+        env.debug(`${unit.nameWithGroup}は距離に関係なく反撃するか: ${result}`);
+        return result;
+    }
+}
+
+const CAN_TARGET_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new CanTargetCounterattackRegardlessOfRangeNode();
+
+class CanFoeCounterattackRegardlessOfRangeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new CanFoeCounterattackRegardlessOfRangeNode();
+
 /**
  * Calculates damage using the lower of foe's Def or Res.
  */
@@ -2478,3 +2517,36 @@ class NeutralizesTargetFoesNonSpecialMiracle extends SkillEffectNode {
 }
 
 const NEUTRALIZES_TARGET_FOES_NON_SPECIAL_MIRACLE = new NeutralizesTargetFoesNonSpecialMiracle();
+
+class CalculatesDamageAtNPercentNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.damageCalculationRatios.push(percentage / 100.0);
+        env.debug(`${unit.nameWithGroup}は与えるダメージを${percentage}%で計算`);
+    }
+}
+
+/**
+ * @param {number|NumberNode} n
+ */
+const CALCULATES_DAMAGE_AT_N_PERCENT_NODE = (n) => new CalculatesDamageAtNPercentNode(n);
+
+class AfterCombatMovementEffectsDoNotOccurBecauseOfTargetNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.isAfterCombatMovementDisabled = true;
+        env.debug(`${unit.nameWithGroup}は戦闘後移動スキルを無効にする`);
+    }
+}
+
+const AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE =
+    new AfterCombatMovementEffectsDoNotOccurBecauseOfTargetNode();

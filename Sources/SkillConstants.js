@@ -3871,16 +3871,17 @@ PassiveX.CruxEcho = 3297; // 響・十字牽制
 // Weapon.RaudrsparrowPlus = 3299; // ラウアスパロー
 Weapon.VisionOfDaein = 3300; // デインの後継の書
 Weapon.GeneralToBe = 3301; // 魔道軍将の器の書
-Weapon.BouncinBall = 3300; // 夏の海に弾む球
-PassiveB.SRLullFinish = 3301; // 秘奥・速魔凪
-PassiveC.BlackFangBond = 3302; // 黒い牙の絆
-Weapon.HaulinHarpoon = 3303; // 大海呼ぶ魚獲りの鉤
-PassiveC.PulseTempestF = 3304; // 迅雷風烈・追撃鼓動
-Weapon.FanninFoliagePlus = 3305; // ヤシの葉+
-Weapon.PiousOffering = 3306; // 敬虔なる信徒の供物
-Special.MagicLight = 3307; // 魔光
-PassiveB.HolySoulOfZofia = 3308; // ソフィアの聖魂
-Weapon.NanGuoNoguoZhiPlus = 3309; // 南国の果汁+
+Weapon.BouncinBall = 3302; // 夏の海に弾む球
+PassiveB.SRLullFinish = 3303; // 秘奥・速魔凪
+PassiveC.BlackFangBond = 3304; // 黒い牙の絆
+Weapon.HaulinHarpoon = 3305; // 大漁呼ぶ魚獲りの鉤
+PassiveC.PulseTempestF = 3306; // 迅雷風烈・追撃鼓動
+Weapon.FanninFoliagePlus = 3307; // ヤシの葉+
+Weapon.PiousOffering = 3308; // 敬虔なる信徒の供物
+Special.MagicLight = 3309; // 魔光
+PassiveB.HolySoulOfZofia = 3310; // ソフィアの聖魂
+Weapon.NanGuoNoguoZhiPlus = 3311; // 南国の果汁+
+PassiveB.ADNearTrace4 = 3312; // 攻撃守備の近影4
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -4028,13 +4029,14 @@ const STYLE_TYPE = {
     ASTRA_STORM: 0,
     EMBLEM_LYN: 1,
     WIND_SWORD: 2,
+    ECHO: 3,
 }
 
 /**
  * skill id => style type
  * @type {Map<number|string, number>}
  */
-const SKILL_STYLE_MAP = new Map();
+const SKILL_ID_TO_STYLE_TYPE = new Map();
 
 /**
  * @type {Set<number>}
@@ -4045,6 +4047,14 @@ const CANNOT_MOVE_STYLE_SET = new Set();
  * @type {Set<number>}
  */
 const RANGED_STYLE_FOR_MELEE_SET = new Set();
+
+const STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN = new Set();
+
+const STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1 = new Set();
+const STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2 = new Set();
+
+const SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1 = new Set();
+const SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2 = new Set();
 
 const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
 const REDUCE_SPECIAL_COUNT_WHEN_NO_WEAPON_SKILL_INFO_SET = new Set();

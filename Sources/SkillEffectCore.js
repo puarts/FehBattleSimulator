@@ -169,7 +169,7 @@ class SkillEffectHooks {
             name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
         } else if (prefix === 'custom') {
             let funcId = skillId.split('_')[1];
-            name = CustomSkill.NAME_BY_FUNC_ID.get(funcId) ?? skillId;
+            name = CustomSkill.FUNC_ID_TO_NAME.get(funcId) ?? skillId;
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }
@@ -621,6 +621,11 @@ class AndNode extends BoolNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
+/**
+ * @param {BoolNode} nodes
+ * @returns {AndNode}
+ * @constructor
+ */
 const AND_NODE = (...nodes) => new AndNode(...nodes);
 
 class OrNode extends BoolNode {
@@ -632,6 +637,11 @@ class OrNode extends BoolNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
+/**
+ * @param {BoolNode} nodes
+ * @returns {OrNode}
+ * @constructor
+ */
 const OR_NODE = (...nodes) => new OrNode(...nodes);
 
 class NotNode extends BoolNode {
@@ -770,6 +780,12 @@ class EnsureMaxNode extends NumberOperationNode {
     }
 }
 
+/**
+ * @param child
+ * @param max
+ * @returns {EnsureMaxNode}
+ * @constructor
+ */
 const ENSURE_MAX_NODE = (child, max) => new EnsureMaxNode(child, max);
 
 class EnsureMinMaxNode extends NumberOperationNode {
@@ -877,10 +893,39 @@ class MultCeilNode extends NumberOperationNode {
 
 const MULT_CEIL_NODE = (...node) => new MultCeilNode(...node);
 
+/**
+ * @param mult1
+ * @param mult2
+ * @param add
+ * @returns {AddNode}
+ * @constructor
+ */
 const MULT_ADD_NODE = (mult1, mult2, add) => ADD_NODE(MULT_NODE(mult1, mult2), add);
+/**
+ * @param mult1
+ * @param mult2
+ * @param max
+ * @returns {EnsureMaxNode}
+ * @constructor
+ */
 const MULT_MAX_NODE = (mult1, mult2, max) => ENSURE_MAX_NODE(MULT_NODE(mult1, mult2), max);
+/**
+ * @param mult1
+ * @param mult2
+ * @param add
+ * @param max
+ * @returns {EnsureMaxNode}
+ * @constructor
+ */
 const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
     ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(mult1, mult2), add), max);
+/**
+ * @param add1
+ * @param add2
+ * @param max
+ * @returns {EnsureMaxNode}
+ * @constructor
+ */
 const ADD_MAX_NODE = (add1, add2, max) => ENSURE_MAX_NODE(ADD_NODE(add1, add2), max);
 
 class MinNode extends NumberOperationNode {

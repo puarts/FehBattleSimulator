@@ -709,6 +709,7 @@ class Unit extends BattleMapElement {
         this.attackableTiles = [];
         this.attackableTilesInCannotMoveStyle = [];
         this.attackableTilesInRangedForMeleeStyle = [];
+        this.attackableTilesInStyle = [];
         this.assistableTiles = [];
         this.teleportOnlyTiles = [];
         this.precombatSpecialTiles = [];
@@ -768,6 +769,7 @@ class Unit extends BattleMapElement {
 
         this._isStyleActive = false;
         this.isStyleActivatedInThisTurn = false;
+        this.styleActivationsCount = 0;
     }
 
     /**
@@ -1136,6 +1138,16 @@ class Unit extends BattleMapElement {
         }
     }
 
+    * enumerateAttackableUnitsInAttackChangingStyle() {
+        for (let tile of this.attackableTilesInStyle) {
+            console.log(`tile: ${tile}`);
+            let existsEnemyOnTile = tile.placedUnit != null && this.isDifferentGroup(tile.placedUnit);
+            if (existsEnemyOnTile) {
+                yield tile.placedUnit;
+            }
+        }
+    }
+
     get atkBuff() {
         return Number(this._atkBuff);
     }
@@ -1457,6 +1469,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isAttackedDone)
             + ValueDelimiter + this.restSpecialSkillAvailableTurn
             + ValueDelimiter + this.actionCount
+            + ValueDelimiter + this.styleActivationsCount
             ;
     }
 
@@ -1609,6 +1622,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isAttackedDone = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restSpecialSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.actionCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.styleActivationsCount = Number(values[i]); ++i; }
     }
 
 
@@ -2576,6 +2590,16 @@ class Unit extends BattleMapElement {
         if (this.isRangedStyleForMeleeActive()) {
             return 1;
         }
+        if (STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.has(this.getCurrentStyle())) {
+            return 1;
+        }
+        if (STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.has(this.getCurrentStyle())) {
+            return 2;
+        }
+        for (let skillId of this.enumerateSkills()) {
+            if (SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.has(skillId)) return 1;
+            if (SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.has(skillId)) return 2;
+        }
 
         return calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);
     }
@@ -2880,6 +2904,7 @@ class Unit extends BattleMapElement {
         this.isAttackedDone = false;
         // TODO: リセットの場所がここで良いか検証する
         this.isStyleActivatedInThisTurn = false;
+        this.styleActivationsCount = 0;
         this.neutralizeBuffsAtStartOfAction();
         this.setMoveCountFromMoveType();
         this.neutralizePositiveStatusEffectsAtStartOfTurn();
@@ -3717,6 +3742,18 @@ class Unit extends BattleMapElement {
     get attackRangeOnMapForAttackingUnit() {
         if (this.isRangedStyleForMeleeActive()) {
             return 2;
+        }
+        if (this.isStyleActive) {
+            let env = new NodeEnv().setTarget(this).setSkillOwner(this)
+                .setName('スタイル時の射程').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(this, env);
+            if (range > 0) return range;
+        }
+        if (this.attackRange > 0) {
+            let env = new NodeEnv().setTarget(this).setSkillOwner(this)
+                .setName('射程').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            let range = CAN_ATTACK_FOES_N_SPACES_AWAY_HOOKS.evaluateMaxWithUnit(this, env);
+            if (range > 0) return range;
         }
         return this.attackRange;
     }
@@ -5988,16 +6025,36 @@ class Unit extends BattleMapElement {
                 }
             }
         }
+
+        /// スタイル時
+        // 攻撃可能なユニットから攻撃可能なユニットとタイルの組み合わせを作成する
+        console.log(`this.nameWithGroup: ${this.nameWithGroup}`);
+        console.log(`this.getAvailableStyle(): ${this.getAvailableStyle()}`);
         // リンスタイル
         for (let unit of this.enumerateAttackableUnitsInCannotMoveStyle()) {
             yield [unit, this.placedTile];
         }
         // かぜの剣スタイル
-        for (let unit of this.enumerateAttackableUnitsInRangedForMeleeStyle()) {
-            for (let tile of this.enumerateMovableTiles(false)) {
-                let dist = tile.calculateDistanceToUnit(unit);
-                if (dist === 2) {
-                    yield [unit, tile];
+        if (this.getAvailableStyle() === STYLE_TYPE.WIND_SWORD) {
+            for (let unit of this.enumerateAttackableUnitsInRangedForMeleeStyle()) {
+                for (let tile of this.enumerateMovableTiles(false)) {
+                    let dist = tile.calculateDistanceToUnit(unit);
+                    if (dist === 2) {
+                        yield [unit, tile];
+                    }
+                }
+            }
+        }
+        // Echoスタイル
+        if (this.getAvailableStyle() === STYLE_TYPE.ECHO) {
+            console.log('ECHO style');
+            for (let unit of this.enumerateAttackableUnitsInAttackChangingStyle()) {
+                for (let tile of this.enumerateMovableTiles(false)) {
+                    let dist = tile.calculateDistanceToUnit(unit);
+                    console.log(`tile: ${tile}`);
+                    if (dist === 3) {
+                        yield [unit, tile];
+                    }
                 }
             }
         }
@@ -6625,8 +6682,8 @@ class Unit extends BattleMapElement {
     getStyles() {
         let styles = [];
         for (let skillId of this.enumerateEquippedSkills()) {
-            if (SKILL_STYLE_MAP.has(skillId)) {
-                styles.push(SKILL_STYLE_MAP.get(skillId));
+            if (SKILL_ID_TO_STYLE_TYPE.has(skillId)) {
+                styles.push(SKILL_ID_TO_STYLE_TYPE.get(skillId));
             }
         }
         return styles;
@@ -6688,8 +6745,10 @@ class Unit extends BattleMapElement {
         if (!this.hasAvailableStyle() || this.isStyleActive) {
             return false;
         }
-        if (this.isStyleActivatedInThisTurn) {
-            return true;
+        if (STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.has(this.getAvailableStyle())) {
+            if (this.styleActivationsCount > 0) {
+                return true;
+            }
         }
         let env = new NodeEnv().setTarget(this).setSkillOwner(this);
         env.setName("スタイル発動可能判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);

@@ -280,6 +280,8 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                         tiles = unit.attackableTilesInCannotMoveStyle;
                     } else if (unit.isRangedStyleForMeleeActive()) {
                         tiles = unit.attackableTilesInRangedForMeleeStyle;
+                    } else if (unit.isStyleActive) {
+                        tiles = unit.attackableTilesInStyle;
                     }
                     let color = "#feccc5";
                     color = "#ff8888" + alpha;
@@ -296,6 +298,9 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                     for (let tile of unit.attackableTilesInRangedForMeleeStyle) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    }
+                    for (let tile of unit.attackableTilesInStyle) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                 }

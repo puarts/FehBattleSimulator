@@ -61,6 +61,11 @@ class GlobalBattleContext {
         this.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally] = 0;
         this.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy] = 0;
 
+        this.oncePerTurnSkillsForTheEntireMapInCurrentTurn = {
+            [UnitGroupType.Ally]: new Set(),
+            [UnitGroupType.Enemy]: new Set(),
+        }
+
         // 現在ターンで行われた戦闘の回数
         // 自軍・敵軍は別カウントなのでこの変数1つで管理する
         this.numOfCombatOnCurrentTurn = 0;
@@ -278,6 +283,10 @@ class GlobalBattleContext {
     initContextInCurrentTurn() {
         this.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally] = 0;
         this.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy] = 0;
+        this.oncePerTurnSkillsForTheEntireMapInCurrentTurn = {
+            [UnitGroupType.Ally]: new Set(),
+            [UnitGroupType.Enemy]: new Set(),
+        }
     }
 
     isMiracleWithoutSpecialActivatedInCurrentTurn(groupId) {

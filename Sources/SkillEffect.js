@@ -3494,6 +3494,8 @@ class RestoreTargetsHpOnMapNode extends FromPositiveNumberNode {
     }
 }
 
+const RESTORE_TARGETS_HP_ON_MAP_NODE = n => new RestoreTargetsHpOnMapNode(n);
+
 class RestoreTargetsHpNeutralizesDeepWoundsOnMapNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -5438,6 +5440,32 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
 const TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE = (id, ...nodes) =>
     new TargetsOncePerTurnSkillEffectNode(id, ...nodes);
 
+class TargetsOncePerTurnSkillEffectForEntireMapNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(id, ...nodes) {
+        super(...nodes);
+        this._id = id;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let skillIdSet = g_appData.globalBattleContext.oncePerTurnSkillsForTheEntireMapInCurrentTurn[unit.groupId];
+        if (!skillIdSet.has(this._id)) {
+            skillIdSet.add(this._id);
+            env.debug(`${unit.nameWithGroup}はマップ全体で1ターン1回のスキル効果（${this._id}）をこのターン初めて発動`);
+            return this.evaluateChildren(env);
+        } else {
+            env.debug(`${unit.nameWithGroup}はマップ全体で1ターン1回のスキル効果（${this._id}）を発動済み`);
+        }
+    }
+}
+
+const TARGETS_ONCE_PER_TURN_SKILL_EFFECT_FOR_ENTIRE_MAP_NODE = (id, ...nodes) =>
+    new TargetsOncePerTurnSkillEffectForEntireMapNode(id, ...nodes);
+
 class TargetsRestSupportSkillAvailableTurnNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -5842,6 +5870,12 @@ class TargetsCurrentStyleNode extends NumberNode {
 }
 
 const TARGETS_CURRENT_STYLE_NODE = new TargetsCurrentStyleNode();
+/**
+ * @param style
+ * @returns {EqNode}
+ * @constructor
+ */
+const IS_STYLE_ACTIVE = style => EQ_NODE(TARGETS_CURRENT_STYLE_NODE, style);
 
 class NumberOfTimesTargetHasActedOnTheCurrentTurnNotCountingCantoNode extends PositiveNumberNode {
     static {

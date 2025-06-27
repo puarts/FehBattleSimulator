@@ -1202,6 +1202,10 @@ class BattleSimulatorBase {
             return false;
         }
 
+        if (duoUnit.hasAvailableStyle()) {
+            return false;
+        }
+
         let env = new EnumerationEnv(g_appData, duoUnit);
         env.setName('比翼双界スキル使用可能判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
         let cannotTrigger =
@@ -3679,6 +3683,7 @@ class BattleSimulatorBase {
         result.defUnit.isCombatDone = true;
         if (atkUnit.isStyleActive) {
             atkUnit.isStyleActivatedInThisTurn = true;
+            atkUnit.styleActivationsCount++;
         }
 
         // this.clearSimpleLog();
@@ -3689,6 +3694,8 @@ class BattleSimulatorBase {
         let isMoveSkillEnabled = defUnit === result.defUnit;
         if (isMoveSkillEnabled &&
             atkUnit.isAlive &&
+            !atkUnit.battleContext.isAfterCombatMovementDisabled &&
+            !defUnit.battleContext.isAfterCombatMovementDisabled &&
             !atkUnit.isCannotMoveStyleActive() &&
             !atkUnit.isRangedStyleForMeleeActive()) {
             this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
@@ -3754,7 +3761,11 @@ class BattleSimulatorBase {
             if (defUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
                 // さらに、敵から攻撃された戦闘で撃破された時、
                 if (defUnit.isDead) {
-                   // 戦闘後、敵を行動可能な状態にする（この効果は「時は光」を含む、他の同系統効果より優先する、その際、他の同系統効果は発動していない扱いとする）
+                    // 戦闘後、敵を行動可能な状態にする（この効果は「時は光」を含む、他の同系統効果より優先する、その際、他の同系統効果は発動していない扱いとする）
+                    // 戦果移譲・広域も発動したものとする
+                    let skillSet =
+                        g_appData.globalBattleContext.oncePerTurnSkillsForTheEntireMapInCurrentTurn[atkUnit.groupId];
+                    skillSet.add(`${getStatusEffectSkillId(StatusEffectType.ShareSpoilsPlus)}-再行動`);
                     if (atkUnit.isActionDone) {
                         atkUnit.isActionDone = false;
                     }
@@ -3774,6 +3785,12 @@ class BattleSimulatorBase {
         let env = new BattleSimulatorBaseEnv(this, atkUnit).setUnitsDuringCombat(atkUnit, defUnit);
         env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
+        let foeEnv =
+            new BattleSimulatorBaseEnv(this, atkUnit)
+                .setUnitsDuringCombat(atkUnit, defUnit)
+                .setSkillOwner(defUnit)
+                .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
+        AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         if (atkUnit.isAlive) {
@@ -4654,7 +4671,8 @@ class BattleSimulatorBase {
     #resetDuoOrHarmonizedSkill(unit) {
         unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
         let heroIndex = unit.heroIndex;
-        if (RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET.has(heroIndex) ||
+        let skillId = getDuoOrHarmonizedSkillId(heroIndex);
+        if (RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET.has(skillId) ||
             heroIndex === Hero.YoungPalla ||
             heroIndex === Hero.DuoSigurd ||
             heroIndex === Hero.DuoEirika ||
@@ -4663,7 +4681,7 @@ class BattleSimulatorBase {
             if (this.isOddTurn) {
                 unit.duoOrHarmonizedSkillActivationCount = 0;
             }
-        } else if (RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.has(heroIndex) ||
+        } else if (RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.has(skillId) ||
             heroIndex === Hero.SummerMia ||
             heroIndex === Hero.SummerByleth ||
             heroIndex === Hero.PirateVeronica ||
@@ -5899,7 +5917,7 @@ class BattleSimulatorBase {
 
         return isActionActivated;
     }
-    
+
     simulatePostCombatCantoAssist(cantoUnit, assistEnemyUnits, enemyUnits, allyUnits) {
         // コンテキスト初期化
         this.__prepareActionContextForAssist(enemyUnits, allyUnits, false);
@@ -6074,7 +6092,7 @@ class BattleSimulatorBase {
 
         return isActionActivated;
     }
-    
+
     simulatePrecombatCantoAssist(cantoUnit, assistableUnits, enemyUnits, allyUnits) {
         // TODO: 移動以外が実装された場合は以下を修正して実装
         return false;
@@ -7458,6 +7476,7 @@ class BattleSimulatorBase {
             }
             if (unit.isStyleActive) {
                 unit.isStyleActivatedInThisTurn = true;
+                unit.styleActivationsCount++;
             }
 
             unit.deactivateStyle();
@@ -7526,6 +7545,7 @@ class BattleSimulatorBase {
             targetTile.removeDivineVein();
             if (unit.isStyleActive) {
                 unit.isStyleActivatedInThisTurn = true;
+                unit.styleActivationsCount++;
             }
 
             unit.deactivateStyle();
@@ -8856,6 +8876,9 @@ class BattleSimulatorBase {
         }
         if (unit.canActivateStyle() && unit.hasRangedStyleForMelee()) {
             this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, 2, true);
+        }
+        if (unit.canActivateStyle() && unit.getAvailableStyle() === STYLE_TYPE.ECHO) {
+            this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, 3, true);
         }
     }
 

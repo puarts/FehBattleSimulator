@@ -1236,7 +1236,7 @@ class DamageCalculator {
             this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
 
             // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
-            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context);
+            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial, context);
 
             // 防御系奥義によるダメージ軽減
             let isDefenderSpecialActivated =
@@ -1297,6 +1297,7 @@ class DamageCalculator {
                     damageReductionRatiosByNonDefenderSpecial,
                     damageReductionValues,
                     potentRatio,
+                    atkUnit.battleContext.damageCalculationRatios,
                     activatesDefenderSpecial, context
                 );
                 this.__restoreMaxSpecialCount(atkUnit);
@@ -1358,6 +1359,7 @@ class DamageCalculator {
                     damageReductionRatiosByNonDefenderSpecial,
                     damageReductionValues,
                     potentRatio,
+                    atkUnit.battleContext.damageCalculationRatios,
                     activatesDefenderSpecial, context
                 );
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
@@ -1658,8 +1660,8 @@ class DamageCalculator {
         return isDefenderSpecialActivated;
     }
 
-    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context) {
-        let env = new DamageCalculatorEnv(this, defUnit, atkUnit);
+    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial ,context) {
+        let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context);
         env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
         for (let skillId of defUnit.enumerateSkills()) {
@@ -2072,6 +2074,7 @@ class DamageCalculator {
      * @param {number[]} damageReductionRatiosByNonDefenderSpecial
      * @param {number[]} damageReductionValues
      * @param {number} potentRatio
+     * @param {number[]} damageCalculationRatios
      * @param {boolean} activatesDefenderSpecial
      * @param {DamageCalcContext} context
      */
@@ -2083,6 +2086,7 @@ class DamageCalculator {
                            damageReductionRatiosByNonDefenderSpecial,
                            damageReductionValues,
                            potentRatio,
+                           damageCalculationRatios,
                            activatesDefenderSpecial, context) {
         // 軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする
         // （巨影など一部の敵を除く）
@@ -2099,7 +2103,10 @@ class DamageCalculator {
         let reduceRatio = 1 - damageRatio;
         // let reducedDamage = Math.trunc(damage * (1 - ratio)) + damageReductionValue;
         let reducedDamage = Math.trunc(damage * reduceRatio) + damageReductionValue;
-        let currentDamage = Math.max(damage - reducedDamage, 0);
+        let currentDamage = Math.trunc(Math.max(damage - reducedDamage, 0) * potentRatio);
+        for (let ratio of damageCalculationRatios) {
+            currentDamage = Math.trunc(currentDamage * ratio);
+        }
         if (this.isLogEnabled) {
             this.writeDebugLog(`ダメージ軽減計算開始`);
             this.writeDebugLog(`軽減前ダメージ: ${damage}`);

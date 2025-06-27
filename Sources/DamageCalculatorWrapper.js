@@ -644,7 +644,7 @@ class DamageCalculatorWrapper {
         // self.profile.profile("__applySkillEffect 3", () => {
         // 敵が反撃可能か判定
         this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_CAN_COUNTER;
-        defUnit.battleContext.canCounterattack = self.canCounterAttack(atkUnit, defUnit);
+        defUnit.battleContext.canCounterattack = self.canCounterAttack(atkUnit, defUnit, calcPotentialDamage, damageType);
         // self.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
 
         // 追撃可能か判定
@@ -14066,8 +14066,8 @@ class DamageCalculatorWrapper {
         }
     }
 
-    canCounterAttack(atkUnit, defUnit) {
-        return this.__examinesCanCounterattackBasically(atkUnit, defUnit)
+    canCounterAttack(atkUnit, defUnit, calcPotentialDamage = true, damageType = DamageType.PotentialDamage) {
+        return this.__examinesCanCounterattackBasically(atkUnit, defUnit, calcPotentialDamage, damageType)
             && !this.__canDisableCounterAttack(atkUnit, defUnit);
     }
 
@@ -14285,7 +14285,7 @@ class DamageCalculatorWrapper {
         return false;
     }
 
-    __examinesCanCounterattackBasically(atkUnit, defUnit) {
+    __examinesCanCounterattackBasically(atkUnit, defUnit, calcPotentialDamage, damageType) {
         if (!defUnit.hasWeapon) {
             return false;
         }
@@ -14316,6 +14316,12 @@ class DamageCalculatorWrapper {
             if (defUnit.battleContext.canCounterattackToAllDistance) return true;
             // 条件C: 敵の射程が自分と敵の距離と同じ
             if (defUnit.attackRange === atkUnit.distance(defUnit)) return true;
+        } else if (atkUnit.isStyleActive) {
+            let env = new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, calcPotentialDamage);
+            env.setName('スタイル時に反撃可能を受ける').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+            if (SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.evaluateSomeWithUnit(atkUnit, env)) {
+                return true;
+            }
         } else {
             if (atkUnit.attackRange === defUnit.attackRange) {
                 return true;

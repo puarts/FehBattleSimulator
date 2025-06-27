@@ -149,7 +149,7 @@ function initVueComponents() {
         ],
         template: `
           <div class="flash-container">
-            <div v-for="(msg, index) in this.flashMessages"
+            <div v-for="(msg, index) in flashMessages"
                  :key="index"
                  class="flash-message"
                  :class="[ { closable: !msg.autoClose, static: !msg.autoClose }, 'flash-' + (msg.type || 'info') ]"
@@ -158,7 +158,7 @@ function initVueComponents() {
               <span
                   v-if="!msg.autoClose"
                   class="close-btn"
-                  @click.stop="this.removeFlash(index)"
+                  @click.stop="removeFlash(index)"
               >
                         ✖
                         </span>
@@ -256,7 +256,7 @@ function initVueComponents() {
                     class="custom-skill"
                 ></select2>
                 <!-- 引数 -->
-                <span v-for="argNode in CustomSkill.Arg.NODES_BY_FUNC_ID.getValues(funcId)">
+                <span v-for="argNode in CustomSkill.Arg.FUNC_ID_TO_NODES.getValues(funcId)">
                     <!-- + -->
                     <span
                         v-if="argNode === CustomSkill.Arg.Node.PLUS"
@@ -311,7 +311,7 @@ function initVueComponents() {
                         v-if="CustomSkill.Arg.getNodeType(argNode) === CustomSkill.Arg.NodeType.ID"
                     >
                           <select2
-                              :options="CustomSkill.Arg.OPTIONS_BY_NODE.getValues(argNode)"
+                              :options="CustomSkill.Arg.NODE_TO_OPTIONS.getValues(argNode)"
                               v-model="unit.customSkills[index][1][argNode]"
                               @input="vm.customSkillChanged"
                               class="custom-skill-args"

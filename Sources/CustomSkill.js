@@ -43,7 +43,7 @@ class CustomSkill {
             OPERATION: "operation",
         }
 
-        static NODE_TYPE_BY_NODE = new Map([
+        static NODE_TO_NODE_TYPE = new Map([
             [this.Node.NON_NEGATIVE_INTEGER, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.PLUS, this.NodeType.OPERATION],
             [this.Node.MULT, this.NodeType.OPERATION],
@@ -58,12 +58,12 @@ class CustomSkill {
         /**
          * @type {MultiValueMap<string, string>}
          */
-        static NODES_BY_FUNC_ID = new MultiValueMap();
+        static FUNC_ID_TO_NODES = new MultiValueMap();
 
         /**
          * @type {MultiValueMap<string, Object>}
          */
-        static OPTIONS_BY_NODE = new MultiValueMap();
+        static NODE_TO_OPTIONS = new MultiValueMap();
 
         /**
          * @type {[NumberNode, string][]}
@@ -85,7 +85,7 @@ class CustomSkill {
         }
 
         static getNodeType(node) {
-            return this.NODE_TYPE_BY_NODE.get(node);
+            return this.NODE_TO_NODE_TYPE.get(node);
         }
 
         static getNonNegativeIntegerNode(args) {
@@ -121,6 +121,21 @@ class CustomSkill {
             return PERCENTAGE_NODE(this.getPercentageNode(args), this.getStatNode(args));
         }
 
+        /**
+         * nodeList の内容を tree.addValue に登録するヘルパー
+         * @param {MultiValueMap} nodeToOptions
+         * @param {number} node
+         * @param {[NumberNode, string][]} nodeList
+         */
+        static registerOptionsByNode(nodeToOptions, node, nodeList) {
+            nodeList.forEach(([_, text], index) => {
+                const option = index === 0
+                    ? { id: '', text, disabled: true }
+                    : { id: index, text };
+                nodeToOptions.addValue(node, option);
+            });
+        }
+
         static {
             this.STAT_NODE_LIST = [
                 [ZERO_NUMBER_NODE, '-- 選択してください --'],
@@ -149,22 +164,15 @@ class CustomSkill {
             // TODO: 追加
             // フレスベルグ、子供カミラ
 
-            const REGISTER_OPTIONS_BY_NODE = (node, nodeList) => {
-                nodeList.forEach(([_node, text], index) => {
-                    const option = index === 0 ? {id: '', text, disabled: true} : {id: index, text};
-                    this.OPTIONS_BY_NODE.addValue(node, option);
-                });
-            };
-
-            REGISTER_OPTIONS_BY_NODE(this.Node.STAT, this.STAT_NODE_LIST);
-            REGISTER_OPTIONS_BY_NODE(this.Node.VARIABLE, this.VARIABLE_NODE_LIST);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT, this.STAT_NODE_LIST);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.VARIABLE, this.VARIABLE_NODE_LIST);
 
             const addEnumOptions = (nodeType, enumObj, getText) => {
                 for (const [, value] of Object.entries(enumObj)) {
                     const option = value === enumObj.None
                         ? { id: '', text: '-- 選択してください --', disabled: true }
                         : { id: value, text: getText(value) };
-                    this.OPTIONS_BY_NODE.addValue(nodeType, option);
+                    this.NODE_TO_OPTIONS.addValue(nodeType, option);
                 }
             };
 
@@ -187,7 +195,7 @@ class CustomSkill {
     /**
      * @type {Map<string, string>}
      */
-    static NAME_BY_FUNC_ID = new Map();
+    static FUNC_ID_TO_NAME = new Map();
 
     /// カスタムスキル関数
     // 特効
@@ -202,10 +210,10 @@ class CustomSkill {
         // 関数登録
         this.FUNC_MAP.set(funcId, func);
         // 名前登録
-        this.NAME_BY_FUNC_ID.set(funcId, text);
+        this.FUNC_ID_TO_NAME.set(funcId, text);
         // 引数設定
         for (let arg of args) {
-            this.Arg.NODES_BY_FUNC_ID.addValue(funcId, arg);
+            this.Arg.FUNC_ID_TO_NODES.addValue(funcId, arg);
         }
     }
 }
@@ -516,6 +524,31 @@ CustomSkill.setFuncId('reduce-deep-wounds-by-n-percent-during-combat', "回復�
     [
         CustomSkill.Arg.Node.PERCENTAGE,
     ],
+);
+
+CustomSkill.setFuncId('attack-range-on-map', "射程n（マップ時。1以上を入力）",
+    (skillId, args) => {
+        CAN_ATTACK_FOES_N_SPACES_AWAY_HOOKS.addSkill(skillId, () =>
+            CustomSkill.Arg.getNonNegativeIntegerNode(args),
+        );
+    },
+    [
+        CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
+    ]
+);
+
+CustomSkill.setFuncId('attack-range-1-during-combat', "スキル効果の射程の判定は、射程1として扱う",
+    (skillId, args) => {
+        SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(skillId);
+    },
+    []
+);
+
+CustomSkill.setFuncId('attack-range-2-during-combat', "スキル効果の射程の判定は、射程2として扱う",
+    (skillId, args) => {
+        SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(skillId);
+    },
+    []
 );
 
 // setFuncId('XXX', "YYY",

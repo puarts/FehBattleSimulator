@@ -111,7 +111,7 @@
     // including by skill effects determined by attack Range, like Pavise and Aegis.
     // This Style can be used only once per turn.
     // ――――――――――――――――――――
-    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.ASTRA_STORM);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ASTRA_STORM);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.ASTRA_STORM);
     CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
@@ -120,12 +120,13 @@
             IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3))
         ),
     );
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(STYLE_TYPE.ASTRA_STORM);
 }
 
 // 紋章士リン
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
-    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.EMBLEM_LYN);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.EMBLEM_LYN);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
         AND_NODE(
             GTE_NODE(CURRENT_TURN_NODE, 2),
@@ -148,6 +149,7 @@
             MULT_NODE(new TargetsMaxSpecialCountNode(), 4),
         ),
     ));
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(STYLE_TYPE.EMBLEM_LYN);
 }
 
 // 比翼リュール

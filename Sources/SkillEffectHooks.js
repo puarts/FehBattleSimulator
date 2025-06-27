@@ -228,6 +228,12 @@ const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();
 const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
+ * 戦闘後の再行動評価時
+ * 敵（攻撃者）から見た視点になる（targetはatkUnit、skill ownerはdefUnit）。
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘以外の行動後の再行動評価時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
@@ -384,3 +390,24 @@ const CAN_ACTIVATE_STYLE_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>}
  */
 const STYLE_ACTIVATED_HOOKS = new SkillEffectHooks();
+
+/**
+ * スタイル時に反撃を受ける条件
+ * @type {SkillEffectHooks<BoolNode, DamageCalculatorWrapperEnv>}
+ */
+const SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>}
+ */
+const CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>}
+ */
+const CAN_ATTACK_FOES_N_SPACES_AWAY_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>}
+ */
+const SKILLS_EFFECTS_RANGE_IS_TREATED_AS_N_HOOKS = new SkillEffectHooks();
