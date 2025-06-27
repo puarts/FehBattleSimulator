@@ -2057,6 +2057,16 @@ class Base62 {
     }
 }
 
+class Base62Util {
+    static encodeSet(set) {
+        return Base62.encode(JSON.stringify(Array.from(set)));
+    }
+
+    static decodeSet(str) {
+        return new Set(JSON.parse(Base62.decode(str)));
+    }
+}
+
 class JsonUtil {
     static tryParse(str, defaultValue = null) {
         try {

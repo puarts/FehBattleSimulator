@@ -1939,104 +1939,186 @@ class AppData extends UnitManager {
 
 
     perTurnStatusToString() {
-        return this.globalBattleContext.currentPhaseType
-            + ValueDelimiter + boolToInt(this.isEnemyActionTriggered)
-            + ValueDelimiter + this.currentTurn
-            + ValueDelimiter + this.battileItemsToString()
-            + ValueDelimiter + boolToInt(this.isCombatOccuredInCurrentTurn)
-            + ValueDelimiter + this.globalBattleContext.removedUnitCountsInCombat[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.removedUnitCountsInCombat[UnitGroupType.Enemy]
-            + ValueDelimiter + this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy]
-            + ValueDelimiter + boolToInt(this.globalBattleContext.isAllyPhaseEnded)
-            + ValueDelimiter + boolToInt(this.globalBattleContext.isEnemyPhaseEnded)
-            + ValueDelimiter + this.globalBattleContext.summonerDuelsPointAreaOffset
-            + ValueDelimiter + this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Enemy]
-            + ValueDelimiter + this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy]
-            + ValueDelimiter + this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy]
-            + ValueDelimiter + this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy]
-            + ValueDelimiter + this.globalBattleContext.numOfCombatOnCurrentTurn
-            + ValueDelimiter + this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy]
-            + ValueDelimiter + this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally]
-            + ValueDelimiter + this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy]
-            ;
+        const context = this.globalBattleContext;
+        return [
+            context.currentPhaseType,
+            boolToInt(this.isEnemyActionTriggered),
+            this.currentTurn,
+            this.battileItemsToString(),
+            boolToInt(this.isCombatOccuredInCurrentTurn),
+            context.removedUnitCountsInCombat[UnitGroupType.Ally],
+            context.removedUnitCountsInCombat[UnitGroupType.Enemy],
+            context.restOfPhaseCounts[UnitGroupType.Ally],
+            context.restOfPhaseCounts[UnitGroupType.Enemy],
+            boolToInt(context.isAllyPhaseEnded),
+            boolToInt(context.isEnemyPhaseEnded),
+            context.summonerDuelsPointAreaOffset,
+            context.summonerDuelsKoScores[UnitGroupType.Ally],
+            context.summonerDuelsKoScores[UnitGroupType.Enemy],
+            context.summonerDuelsCaptureScores[UnitGroupType.Ally],
+            context.summonerDuelsCaptureScores[UnitGroupType.Enemy],
+            context.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally],
+            context.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy],
+            context.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally],
+            context.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy],
+            context.numOfCombatOnCurrentTurn,
+            context.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally],
+            context.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy],
+            context.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally],
+            context.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy],
+            Base62Util.encodeSet(context.oncePerTurnSkillsForTheEntireMapInCurrentTurn[UnitGroupType.Ally]),
+            Base62Util.encodeSet(context.oncePerTurnSkillsForTheEntireMapInCurrentTurn[UnitGroupType.Enemy])
+        ].join(ValueDelimiter);
     }
 
     turnWideStatusToString() {
-        return this.mapKind
-            + ValueDelimiter + boolToInt(this.globalBattleContext.isLightSeason)
-            + ValueDelimiter + boolToInt(this.globalBattleContext.isAstraSeason)
-            + ValueDelimiter + boolToInt(this.globalBattleContext.isFireSeason)
-            + ValueDelimiter + boolToInt(this.globalBattleContext.isWaterSeason)
-            + ValueDelimiter + boolToInt(this.globalBattleContext.isWindSeason)
-            + ValueDelimiter + boolToInt(this.globalBattleContext.isEarthSeason)
-            + ValueDelimiter + this.settingCompressMode
-            + ValueDelimiter + this.gameMode
-            + ValueDelimiter + this.resonantBattleInterval
-            ;
+        return [
+            this.mapKind,
+            boolToInt(this.globalBattleContext.isLightSeason),
+            boolToInt(this.globalBattleContext.isAstraSeason),
+            boolToInt(this.globalBattleContext.isFireSeason),
+            boolToInt(this.globalBattleContext.isWaterSeason),
+            boolToInt(this.globalBattleContext.isWindSeason),
+            boolToInt(this.globalBattleContext.isEarthSeason),
+            this.settingCompressMode,
+            this.gameMode,
+            this.resonantBattleInterval
+        ].join(ValueDelimiter);
     }
 
     fromPerTurnStatusString(value) {
-        if (!value) {
-            return;
-        }
-        let values = value.split(ValueDelimiter);
-        let i = 0;
-        if (Number.isInteger(Number(values[i]))) { this.globalBattleContext.currentPhaseType = Number(values[i]); ++i; }
-        this.isEnemyActionTriggered = intToBool(Number(values[i])); ++i;
-        if (Number.isInteger(Number(values[i]))) { this.currentTurn = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.setBattleItemsFromString(values[i]); ++i; }
-        if (values[i] !== undefined) { this.isCombatOccuredInCurrentTurn = intToBool(Number(values[i])); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountsInCombat[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountsInCombat[UnitGroupType.Enemy] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.restOfPhaseCounts[UnitGroupType.Enemy] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.isAllyPhaseEnded = intToBool(Number(values[i])); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.isEnemyPhaseEnded = intToBool(Number(values[i])); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsPointAreaOffset = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsKoScores[UnitGroupType.Enemy] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.summonerDuelsCaptureScores[UnitGroupType.Enemy] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.numOfCombatOnCurrentTurn = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally] = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy] = Number(values[i]); ++i; }
+        if (!value) return;
+        const context = this.globalBattleContext;
+        const handlers = [
+            v => {
+                if (Number.isInteger(+v)) context.currentPhaseType = +v
+            },
+            v => {
+                this.isEnemyActionTriggered = intToBool(+v)
+            },
+            v => {
+                if (Number.isInteger(+v)) this.currentTurn = +v
+            },
+            v => {
+                this.setBattleItemsFromString(v)
+            },
+            v => {
+                this.isCombatOccuredInCurrentTurn = intToBool(+v)
+            },
+            v => {
+                context.removedUnitCountsInCombat[UnitGroupType.Ally] = +v
+            },
+            v => {
+                context.removedUnitCountsInCombat[UnitGroupType.Enemy] = +v
+            },
+            v => {
+                context.restOfPhaseCounts[UnitGroupType.Ally] = +v
+            },
+            v => {
+                context.restOfPhaseCounts[UnitGroupType.Enemy] = +v
+            },
+            v => {
+                context.isAllyPhaseEnded = intToBool(+v)
+            },
+            v => {
+                context.isEnemyPhaseEnded = intToBool(+v)
+            },
+            v => {
+                context.summonerDuelsPointAreaOffset = +v
+            },
+            v => {
+                context.summonerDuelsKoScores[UnitGroupType.Ally] = +v
+            },
+            v => {
+                context.summonerDuelsKoScores[UnitGroupType.Enemy] = +v
+            },
+            v => {
+                context.summonerDuelsCaptureScores[UnitGroupType.Ally] = +v
+            },
+            v => {
+                context.summonerDuelsCaptureScores[UnitGroupType.Enemy] = +v
+            },
+            v => {
+                context.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = +v
+            },
+            v => {
+                context.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = +v
+            },
+            v => {
+                context.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Ally] = intToBool(+v)
+            },
+            v => {
+                context.isAnotherActionByAssistActivatedInCurrentTurn[UnitGroupType.Enemy] = intToBool(+v)
+            },
+            v => {
+                context.numOfCombatOnCurrentTurn = +v
+            },
+            v => {
+                context.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Ally] = +v
+            },
+            v => {
+                context.removedUnitCountInCombatInCurrentTurnsPhase[UnitGroupType.Enemy] = +v
+            },
+            v => {
+                context.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Ally] = +v
+            },
+            v => {
+                context.miracleWithoutSpecialActivationCountInCurrentTurn[UnitGroupType.Enemy] = +v
+            },
+            v => {
+                context.oncePerTurnSkillsForTheEntireMapInCurrentTurn[UnitGroupType.Ally] = Base62Util.decodeSet(v)
+            },
+            v => {
+                context.oncePerTurnSkillsForTheEntireMapInCurrentTurn[UnitGroupType.Enemy] = Base62Util.decodeSet(v)
+            }
+        ];
+        const parts = value.split(ValueDelimiter);
+        handlers.forEach((handler, index) => {
+            const v = parts[index];
+            if (v !== undefined) handler(v);
+        });
     }
 
     fromTurnWideStatusString(value) {
-        if (!value) {
-            return;
-        }
-        let values = value.split(ValueDelimiter);
-        let i = 0;
-        if (Number.isInteger(Number(values[i]))) { this.mapKind = Number(values[i]); ++i; }
-        this.globalBattleContext.isLightSeason = intToBool(Number(values[i])); ++i;
-        this.globalBattleContext.isAstraSeason = intToBool(Number(values[i])); ++i;
-        this.globalBattleContext.isFireSeason = intToBool(Number(values[i])); ++i;
-        this.globalBattleContext.isWaterSeason = intToBool(Number(values[i])); ++i;
-        this.globalBattleContext.isWindSeason = intToBool(Number(values[i])); ++i;
-        this.globalBattleContext.isEarthSeason = intToBool(Number(values[i])); ++i;
-        if (Number.isInteger(Number(values[i]))) { this.settingCompressMode = Number(values[i]); ++i; }
-        if (Number.isInteger(Number(values[i]))) {
-            let newValue = Number(values[i]);
-            this.setGameMode(newValue);
-
-            ++i;
-        }
-        if (Number.isInteger(Number(values[i]))) { this.resonantBattleInterval = Number(values[i]); ++i; }
-
-        this.globalBattleContext.setChaosSeasonFromCurrentSeasons();
+        if (!value) return;
+        const ctx = this.globalBattleContext;
+        const handlers = [
+            v => {
+                this.mapKind = +v
+            },
+            v => {
+                ctx.isLightSeason = intToBool(+v)
+            },
+            v => {
+                ctx.isAstraSeason = intToBool(+v)
+            },
+            v => {
+                ctx.isFireSeason = intToBool(+v)
+            },
+            v => {
+                ctx.isWaterSeason = intToBool(+v)
+            },
+            v => {
+                ctx.isWindSeason = intToBool(+v)
+            },
+            v => {
+                ctx.isEarthSeason = intToBool(+v)
+            },
+            v => {
+                this.settingCompressMode = +v
+            },
+            v => {
+                this.gameMode = +v
+            },
+            v => {
+                this.resonantBattleInterval = +v
+            }
+        ];
+        const parts = value.split(ValueDelimiter);
+        handlers.forEach((handler, idx) => {
+            const v = parts[idx];
+            if (v !== undefined) handler(v);
+        });
     }
 
     setGameMode(gameMode) {

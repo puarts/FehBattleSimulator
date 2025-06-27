@@ -409,15 +409,21 @@ test('DamageCalculator_SaverSkillTest', () => test_executeTest(() => {
   defUnit.placedTile.posY = 0;
   saverUnit.placedTile.posX = 1;
   saverUnit.placedTile.posY = 0;
+  // 錬成などで武器が変わることがあるので銀の斧に固定する
+  // 銀の斧
+  saverUnit.weapon = 122;
 
   let calclator = new test_DamageCalculator();
   calclator.isLogEnabled = false;
   calclator.unitManager.units = [atkUnit, defUnit, saverUnit];
 
+  // 錬成などで値が変わることがあるので固定する
+  atkUnit.atkWithSkills = 51;
+  saverUnit.defWithSkills = 45;
   let result = calclator.calcDamage(atkUnit, defUnit);
 
   let atackerAtk = (atkUnit.atkWithSkills + 6) + Math.floor((atkUnit.atkWithSkills + 6) * 0.2);
-  let saverDef = saverUnit.defWithSkills + 4 + 5 + 6;
+  let saverDef = saverUnit.defWithSkills + 4 + 6;
   expect(result.atkUnit_normalAttackDamage).toBe(atackerAtk - saverDef);
   expect(result.atkUnit_totalAttackCount).toBe(2);
 

@@ -671,8 +671,274 @@ function initVueComponents() {
         `
     });
 
+    Vue.component('TestComponent', {
+        name: 'TestComponent',
+        props: {
+        },
+        template: `
+            <span>
+                <div>test1</div>
+                <div>test2</div>
+            </span>
+        `,
+    });
+
     Vue.component('MapButton', {
         name: 'MapButton',
+        props: {
+            testMethod: {type: Function, required: false},
+            getApp: {type: Function, required: true},
+            getAttacker: {type: Function, required: true},
+            getCurrentUnit: {type: Function, required: true},
+        },
+        methods: {
+            canDisplayDuoButton: function () {
+                return this.getAttacker()?.isDuoAllyHero && !this.getAttacker()?.hasAvailableStyle();
+            },
+            canDisplayHarmonicButton: function () {
+                return this.getAttacker()?.isHarmonicAllyHero && !this.getAttacker()?.hasAvailableStyle();
+            },
+            duoOrHarmonizedSkillButtonStyle(type) {
+                const enabled = this.canActivateDuoSkillOrHarmonizedSkill();
+                const fileName = enabled
+                    ? `Activate${type}Skill.png`
+                    : `Activate${type}Skill_Disabled.png`;
+                return {
+                    backgroundImage: `url(/AetherRaidTacticsBoard/images/${fileName})`
+                };
+            },
+            onDuoOrHarmonizedSkillClick() {
+                if (this.canActivateDuoSkillOrHarmonizedSkill()) {
+                    this.getApp().activateDuoOrHarmonizedSkill(this.getAttacker());
+                }
+            },
+            canActivateDuoSkillOrHarmonizedSkill: function () {
+                return this.getApp().canActivateDuoSkillOrHarmonizedSkill(this.getAttacker());
+            },
+            canActivateStyle: function () {
+                return this.getCurrentUnit()?.canActivateStyle();
+            },
+            canDeactivateStyle: function () {
+                return this.getCurrentUnit()?.canDeactivateStyle();
+            },
+        },
+        template: `
+            <span>
+                <input
+                    v-if="canDisplayDuoButton()"
+                    type="button"
+                    :style="duoOrHarmonizedSkillButtonStyle('Duo')"
+                    :class="canActivateDuoSkillOrHarmonizedSkill() ? 'fehButton' : 'fehButtonDisabled'"
+                    :disabled="!canActivateDuoSkillOrHarmonizedSkill()"
+                    @click="onDuoOrHarmonizedSkillClick()"
+                />
+
+                <input
+                    v-if="canDisplayHarmonicButton()"
+                    type="button"
+                    :style="duoOrHarmonizedSkillButtonStyle('Harmonized')"
+                    :class="canActivateDuoSkillOrHarmonizedSkill() ? 'fehButton' : 'fehButtonDisabled'"
+                    :disabled="!canActivateDuoSkillOrHarmonizedSkill()"
+                    @click="onDuoOrHarmonizedSkillClick()"
+                />
+
+                <input
+                    v-if="canActivateStyle() || canDeactivateStyle()"
+                    type="button"
+                    class="fehButton map-control-button"
+                    :class="canActivateStyle()
+                      ? 'map-activate-style-button'
+                      : 'map-deactivate-style-button'"
+                    @click="canActivateStyle()
+                      ? getApp().activateStyleSkill(getCurrentUnit())
+                      : getApp().deactivateStyleSkill(getCurrentUnit())"
+                />
+                <span v-if="getCurrentUnit()?.hasAvailableStyleButCannotActivate()">
+                    <input type="button"
+                           disabled
+                           class="fehButtonDisabled map-control-button map-activate-style-button"
+                    >
+                </span>
+            </span>
+        `,
+    });
+
+    Vue.component('ControlButtons', {
+        name: 'ControlButtons',
+        props: {
+            getApp: {type: Function, required: true},
+            getAttacker: {type: Function, required: true},
+            getCurrentUnit: {type: Function, required: true},
+            map: {type: Map, required: true},
+            updateMap: {type: Function, required: true},
+            endTurn: {type: Function, required: true},
+            saveSettings: {type: Function, required: true},
+            globalBattleContext: {type: GlobalBattleContext, required: true},
+            showSettingDialog: {type: Function, required: true},
+            showImportDialog: {type: Function, required: true},
+            showExportDialog: {type: Function, required: true},
+            audioManager: {type: AudioManager, required: true},
+            bgmEnabledChanged: {type: Function, required: true},
+            loadLazyImages: {type: Function, required: true},
+        },
+        methods: {},
+        mounted() {
+            this.loadLazyImages();
+        },
+        template: `
+            <div class="control-panel">
+                <upper-buttons
+                        :get-app="getApp"
+                        :get-attacker="getAttacker"
+                        :get-current-unit="getCurrentUnit"
+                        :map="map"
+                        :update-map="updateMap"
+                        :end-turn="endTurn"
+                        :save-settings="saveSettings"
+                        :global-battle-context="globalBattleContext"
+                        :show-setting-dialog="showSettingDialog"
+                        :show-import-dialog="showImportDialog"
+                        :show-export-dialog="showExportDialog"
+                        :audio-manager="audioManager"
+                        :bgm-enabled-changed="bgmEnabledChanged"
+                        :load-lazy-images="loadLazyImages"
+                >
+                </upper-buttons>
+                <lower-buttons
+                        :get-app="getApp"
+                        :get-attacker="getAttacker"
+                        :get-current-unit="getCurrentUnit"
+                        :map="map"
+                        :update-map="updateMap"
+                        :save-settings="saveSettings"
+                        :global-battle-context="globalBattleContext"
+                        :show-setting-dialog="showSettingDialog"
+                        :show-import-dialog="showImportDialog"
+                        :show-export-dialog="showExportDialog"
+                        :audio-manager="audioManager"
+                        :bgm-enabled-changed="bgmEnabledChanged"
+                        :load-lazy-images="loadLazyImages"
+                >
+                </lower-buttons>
+            </div>
+        `,
+    });
+
+    Vue.component('UpperButtons', {
+        name: 'UpperButtons',
+        props: {
+            getApp: {type: Function, required: true},
+            getAttacker: {type: Function, required: true},
+            getCurrentUnit: {type: Function, required: true},
+            map: {type: Map, required: true},
+            endTurn: {type: Function, required: true},
+            globalBattleContext: {type: GlobalBattleContext, required: true},
+            loadLazyImages: {type: Function, required: true},
+        },
+        methods: {},
+        mounted() {
+            this.loadLazyImages();
+        },
+        template: `
+            <div class="control-row">
+                <span v-if="map.showEnemyAttackRange == true">
+                    <input type="button"
+                        style="background-image: url(/AetherRaidTacticsBoard/images/DangerAreaEnabled.png) "
+                        class="fehButton imageButton"
+                        @click="map.switchEnemyAttackRange();updateMap();">
+                </span>
+                <span v-if="map.showEnemyAttackRange == false">
+                    <input type="button"
+                        style="background-image: url(/AetherRaidTacticsBoard/images/DangerAreaDisabled.png) "
+                        class="fehButton imageButton"
+                        @click="map.switchEnemyAttackRange();updateMap();">
+                </span>
+
+                <input type="button" style="background-image: url(/images/dummy.png) "
+                    class="lazy fehButton imageButton"
+                    data-src="/AetherRaidTacticsBoard/images/SaveState.png"
+                    @click="getApp?.().clearSimpleLog();saveSettings();">
+                <input type="button" style="background-image: url(/images/dummy.png) "
+                    class="lazy fehButton imageButton"
+                    data-src="/AetherRaidTacticsBoard/images/LoadState.png"
+                    @click="getApp?.().clearSimpleLog();loadSettings();">
+
+                <span
+                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
+                    <input type="button"
+                        style="background-image: url(/AetherRaidTacticsBoard/images/AutoPlay.png) "
+                        class="fehButton imageButton"
+                        @click="getApp?.().clearLog(); getApp?.().simulateAllyAction();">
+                </span>
+                <span
+                    class="control-row-5"
+                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
+                    <input type="button"
+                        style="background-image: url(/AetherRaidTacticsBoard/images/EndTurn.png)"
+                        class="fehButton imageButton" @click="endTurn">
+                </span>
+
+                <span
+                    class="control-row-5"
+                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy">
+                    <input type="button"
+                        style="background-image: url(/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
+                        class="fehButton imageButton"
+                        @click="getApp?.().clearLog(); getApp?.().simulateEnemyAction();">
+                </span>
+            </div>
+        `,
+    });
+
+    Vue.component('LowerButtons', {
+        name: 'LowerButtons',
+        props: {
+            getApp: {type: Function, required: true},
+            getAttacker: {type: Function, required: true},
+            getCurrentUnit: {type: Function, required: true},
+            showSettingDialog: {type: Function, required: true},
+            showImportDialog: {type: Function, required: true},
+            showExportDialog: {type: Function, required: true},
+            audioManager: {type: AudioManager, required: true},
+            bgmEnabledChanged: {type: Function, required: true},
+            loadLazyImages: {type: Function, required: true},
+        },
+        methods: {
+        },
+        mounted() {
+            this.loadLazyImages();
+        },
+        template: `
+            <div class="control-row">
+                <input type="button" style="background-image: url(/images/dummy.png) "
+                    class="lazy fehButton imageButton"
+                    data-src="/AetherRaidTacticsBoard/images/Settings.png"
+                    @click="showSettingDialog();">
+                <input type="button" style="background-image: url(/images/dummy.png) "
+                    class="lazy fehButton imageButton"
+                    data-src="/AetherRaidTacticsBoard/images/ImportSettings.png"
+                    @click="showImportDialog();">
+                <input type="button" style="background-image: url(/images/dummy.png) "
+                    class="lazy fehButton imageButton"
+                    data-src="/AetherRaidTacticsBoard/images/ExportSettings.png"
+                    @click="showExportDialog();">
+                <input type="checkbox" id="enableSound" class="fehButton"
+                    v-model="audioManager.isBgmEnabled" @change="bgmEnabledChanged">
+                <label for="enableSound" class="fehButton"
+                    style="background-image: url('/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
+
+                <map-button
+                        :get-app="getApp"
+                        :get-attacker="getAttacker"
+                        :get-current-unit="getCurrentUnit"
+                >
+                </map-button>
+            </div>
+        `
+    })
+
+    Vue.component('MapButtonInUnitTab', {
+        name: 'MapButtonInUnitTab',
         model: {
             prop: 'unit',
         },

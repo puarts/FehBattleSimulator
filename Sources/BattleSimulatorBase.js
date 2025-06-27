@@ -120,6 +120,9 @@ class BattleSimulatorBase {
         this.data = appData;
 
         this.methods = {
+            getApp: function () {
+                return self;
+            },
             bgmEnabledChanged: function () {
                 if (self.audioManager.isBgmEnabled) {
                     self.vm.audioManager.isSoundEffectEnabled = true;

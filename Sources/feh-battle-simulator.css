@@ -416,6 +416,48 @@ input[class="fehButton"]:not(:checked) + label {
     }
 }
 
+.control-panel {
+    display: grid;
+    grid-template-rows:    repeat(2, auto);  /* 行を2つ、自動高さ */
+    gap: 0.1rem;                             /* 行・列の間隔 */
+}
+
+.control-row {
+    display: grid;
+    grid-template-columns: repeat(5, 60px);
+    /*column-gap: 0.1rem;*/
+    row-gap:   0.1rem;    /* 必要なら行間も同じギャップで */
+    align-items: center;  /* 縦中央揃え */
+}
+
+.control-row .control-row-1 {
+    grid-column: 1;
+}
+
+.control-row .control-row-2 {
+    grid-column: 2;
+}
+
+.control-row .control-row-3 {
+    grid-column: 3;
+}
+
+.control-row .control-row-4 {
+    grid-column: 4;
+}
+
+.control-row .control-row-5 {
+    grid-column: 5;
+}
+
+/*.control-row {*/
+/*    display: flex;*/
+/*    flex-wrap: wrap;       !* 要素が増えたら次の行に折り返す *!*/
+/*    gap: 0.1rem;           !* grid の column-gap 相当 *!*/
+/*    justify-content: flex-start; !* 左詰め *!*/
+/*    align-items: center;   !* 縦方向中央揃え *!*/
+/*}*/
+
 .custom-skill {
     width: var(--custom-select-width);
 }

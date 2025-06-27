@@ -371,115 +371,23 @@
                         <tr>
                             <td colspan="2">
                                 <div class="buttonUi">
-                                    <table style="border-style: none;">
-                                        <tr>
-                                            <td>
-                                                <span v-if="map.showEnemyAttackRange == true">
-                                                    <input type="button"
-                                                        style="background-image: url(/AetherRaidTacticsBoard/images/DangerAreaEnabled.png) "
-                                                        class="fehButton imageButton"
-                                                        @click=" map.switchEnemyAttackRange();updateMap();">
-                                                </span>
-                                                <span v-if="map.showEnemyAttackRange == false">
-                                                    <input type="button"
-                                                        style="background-image: url(/AetherRaidTacticsBoard/images/DangerAreaDisabled.png) "
-                                                        class="fehButton imageButton"
-                                                        @click="map.switchEnemyAttackRange();updateMap();">
-                                                </span>
-                                                <input type="button" style="background-image: url(/images/dummy.png) "
-                                                    class="lazy fehButton imageButton"
-                                                    data-src="/AetherRaidTacticsBoard/images/SaveState.png"
-                                                    @click="g_app.clearSimpleLog();saveSettings();">
-                                                <input type="button" style="background-image: url(/images/dummy.png) "
-                                                    class="lazy fehButton imageButton"
-                                                    data-src="/AetherRaidTacticsBoard/images/LoadState.png"
-                                                    @click="g_app.clearSimpleLog();loadSettings();">
-
-                                                <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
-                                                    <input type="button"
-                                                        style="background-image: url(/AetherRaidTacticsBoard/images/AutoPlay.png) "
-                                                        class="fehButton imageButton"
-                                                        @click="g_app.clearLog(); g_app.simulateAllyAction();">
-                                                </span>
-                                                <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
-                                                    <input type="button"
-                                                        style="background-image: url(/AetherRaidTacticsBoard/images/EndTurn.png)"
-                                                        class="fehButton imageButton" @click="endTurn">
-                                                </span>
-
-                                                <span
-                                                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy">
-                                                    <input type="button"
-                                                        style="background-image: url(/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
-                                                        class="fehButton imageButton"
-                                                        @click="g_app.clearLog(); g_app.simulateEnemyAction();">
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding:0px" align="left">
-                                                <input type="button" style="background-image: url(/images/dummy.png) "
-                                                    class="lazy fehButton imageButton"
-                                                    data-src="/AetherRaidTacticsBoard/images/Settings.png"
-                                                    @click="showSettingDialog();">
-                                                <input type="button" style="background-image: url(/images/dummy.png) "
-                                                    class="lazy fehButton imageButton"
-                                                    data-src="/AetherRaidTacticsBoard/images/ImportSettings.png"
-                                                    @click="showImportDialog();">
-                                                <input type="button" style="background-image: url(/images/dummy.png) "
-                                                    class="lazy fehButton imageButton"
-                                                    data-src="/AetherRaidTacticsBoard/images/ExportSettings.png"
-                                                    @click="showExportDialog();">
-                                                <input type="checkbox" id="enableSound" class="fehButton"
-                                                    v-model="audioManager.isBgmEnabled" @change="bgmEnabledChanged">
-                                                <label for="enableSound" class="fehButton"
-                                                    style="background-image: url('/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
-
-                                                <span v-if="(getAttacker()?.isDuoAllyHero) && g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
-                                                    <input type="button"
-                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
-                                                           class="fehButton"
-                                                           @click="g_app.activateDuoOrHarmonizedSkill(getAttacker());">
-                                                </span>
-                                                <span v-if="(getAttacker()?.isDuoAllyHero) && !g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
-                                                    <input type="button" v-if="getAttacker()?.isDuoAllyHero " disabled
-                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
-                                                           class="fehButtonDisabled">
-                                                </span>
-
-                                                <span v-if="(getAttacker()?.isHarmonicAllyHero) && g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
-                                                    <input type="button"
-                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
-                                                           class="fehButton"
-                                                           @click="g_app.activateDuoOrHarmonizedSkill(getAttacker());">
-                                                </span>
-                                                <span v-if="(getAttacker()?.isHarmonicAllyHero) && !g_app.canActivateDuoSkillOrHarmonizedSkill(getAttacker())">
-                                                    <input type="button" v-if="getAttacker()?.isHarmonicAllyHero " disabled
-                                                           style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
-                                                           class="fehButtonDisabled">
-                                                </span>
-
-                                                <span v-if="getCurrentUnit()?.canActivateStyle()">
-                                                    <input type="button"
-                                                           class="fehButton map-control-button map-activate-style-button"
-                                                           @click="g_app.activateStyleSkill(getCurrentUnit());">
-                                                </span>
-                                                <span v-if="getCurrentUnit()?.canDeactivateStyle()">
-                                                    <input type="button"
-                                                           class="fehButton map-control-button map-deactivate-style-button"
-                                                           @click="g_app.deactivateStyleSkill(getCurrentUnit());">
-                                                </span>
-                                                <span v-if="getCurrentUnit()?.hasAvailableStyleButCannotActivate()">
-                                                    <input type="button"
-                                                           disabled
-                                                           class="fehButtonDisabled map-control-button map-activate-style-button"
-                                                           >
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </table>
+                                    <control-buttons
+                                            :get-app="getApp"
+                                            :get-attacker="getAttacker"
+                                            :get-current-unit="getCurrentUnit"
+                                            :map="map"
+                                            :update-map="updateMap"
+                                            :end-turn="endTurn"
+                                            :save-settings="saveSettings"
+                                            :global-battle-context="globalBattleContext"
+                                            :show-setting-dialog="showSettingDialog"
+                                            :show-import-dialog="showImportDialog"
+                                            :show-export-dialog="showExportDialog"
+                                            :audio-manager="audioManager"
+                                            :bgm-enabled-changed="bgmEnabledChanged"
+                                            :load-lazy-images="loadLazyImages"
+                                    >
+                                    </control-buttons>
                                     <!-- <label for='currentTurnSlider'>現在のターン:</label> -->
                                     <!-- <input type='number' id='currentTurn' v-model='globalBattleContext.currentTurn' min='0' max='7' step='1'
                                         style='width:30px' @change="currentTurnChanged" readonly='readonly' /> -->
