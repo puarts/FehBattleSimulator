@@ -364,6 +364,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.UnitMakesAGuaranteedFollowUpAttackDuringCombat, ["GuaranteedFollowUp.webp", "戦闘中、絶対追撃", "戦闘中、絶対追撃"]],
     [StatusEffectType.Imbue, ["Imbue.webp", "治癒", "回復不可半分無効、戦闘開始後に最大HPの40%回復"]],
     [StatusEffectType.Reflex, ["Reflex.webp", "反射", "初撃のダメージ-7、軽減値を次の攻撃のダメージに+"]],
+    [StatusEffectType.ShareSpoils, ["ShareSpoilsPlus.webp", "戦果移譲・広域", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
