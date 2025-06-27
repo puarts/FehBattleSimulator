@@ -13,7 +13,7 @@ class CustomSkill {
      * funcIdから動的スキル登録を行う関数のマップ
      * @type {Map<string, function(number|string, Object)>}
      */
-    static FUNC_MAP = new Map();
+    static FUNC_ID_TO_FUNC = new Map();
 
     /**
      * 動的に登録済みのスキルIDの集合
@@ -130,8 +130,8 @@ class CustomSkill {
         static registerOptionsByNode(nodeToOptions, node, nodeList) {
             nodeList.forEach(([_, text], index) => {
                 const option = index === 0
-                    ? { id: '', text, disabled: true }
-                    : { id: index, text };
+                    ? {id: '', text, disabled: true}
+                    : {id: index, text};
                 nodeToOptions.addValue(node, option);
             });
         }
@@ -170,8 +170,8 @@ class CustomSkill {
             const addEnumOptions = (nodeType, enumObj, getText) => {
                 for (const [, value] of Object.entries(enumObj)) {
                     const option = value === enumObj.None
-                        ? { id: '', text: '-- 選択してください --', disabled: true }
-                        : { id: value, text: getText(value) };
+                        ? {id: '', text: '-- 選択してください --', disabled: true}
+                        : {id: value, text: getText(value)};
                     this.NODE_TO_OPTIONS.addValue(nodeType, option);
                 }
             };
@@ -208,7 +208,7 @@ class CustomSkill {
     static setFuncId(funcId, text, func, args) {
         this.OPTIONS.push({id: funcId, text: text});
         // 関数登録
-        this.FUNC_MAP.set(funcId, func);
+        this.FUNC_ID_TO_FUNC.set(funcId, func);
         // 名前登録
         this.FUNC_ID_TO_NAME.set(funcId, text);
         // 引数設定
@@ -551,13 +551,6 @@ CustomSkill.setFuncId('attack-range-2-during-combat', "スキル効果の射程�
     []
 );
 
-// setFuncId('XXX', "YYY",
-//     (skillId, args) => {
-//     },
-//     [
-//     ],
-// );
-
 /// 引数
 // // オブジェクトから選択するタイプの引数。XXX, YYY, ZZZを変更
 // for (let [_key, value] of Object.entries(XXX)) {
@@ -567,368 +560,434 @@ CustomSkill.setFuncId('attack-range-2-during-combat', "スキル効果の射程�
 //     ARG_TYPE_TO_OPTIONS_MAP.addValue(CustomSkill.Arg.Node.ZZZ, option);
 // }
 
-{
-    let funcId = 'accelerates-special-trigger-cooldown-count–1';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "奥義が発動しやすい（最低1）"});
-    ACCELERATES_SPECIAL_TRIGGER_SET.add(skillId);
-}
+CustomSkill.setFuncId(
+    'accelerates-special-trigger-cooldown-count–1',
+    "奥義が発動しやすい（最低1）",
+    (skillId, args) => {
+        ACCELERATES_SPECIAL_TRIGGER_SET.add(skillId);
+    },
+    []
+);
 
-{
-    let funcId = 'reflex-foes-first-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "最初の攻撃を反射"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'reflex-foes-first-attack',
+    "最初の攻撃を反射",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
+        ));
+    },
+    []
+);
 
-/// 祈り
-{
-    let funcId = 'non-special-miracle';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "奥義以外の祈り"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(0),
-    ));
-}
+CustomSkill.setFuncId(
+    'non-special-miracle',
+    "奥義以外の祈り",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(0),
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'neutralizes-foes-non-special-miracle';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "奥義以外の祈り無効"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        NEUTRALIZES_TARGET_FOES_NON_SPECIAL_MIRACLE,
-    ));
-}
+CustomSkill.setFuncId(
+    'neutralizes-foes-non-special-miracle',
+    "奥義以外の祈り無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_TARGET_FOES_NON_SPECIAL_MIRACLE,
+        ));
+    },
+    []
+);
 
-/// 竜眼
-{
-    let funcId = 'unconditional-scowl';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "無条件竜眼"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
-    ));
-}
-
-{
-    let funcId = 'conditional-scowl';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "竜眼（相手攻撃奥義+魔防比較あり）"});
-    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        IF_NODE(
-            AND_NODE(
-                CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
-                GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(5, FOES_EVAL_RES_DURING_COMBAT_NODE))
-            ),
+CustomSkill.setFuncId(
+    'unconditional-scowl',
+    "無条件竜眼",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
-        ),
-    ));
-}
+        ));
+    },
+    []
+);
 
-/// 奥義カウント
-{
-    let funcId = 'inflicts-special-charge-1-on-foe';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵の奥義発動カウント変動量-1"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'conditional-scowl',
+    "竜眼（相手攻撃奥義+魔防比較あり）",
+    (skillId, args) => {
+        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(
+                AND_NODE(
+                    CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                    GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(5, FOES_EVAL_RES_DURING_COMBAT_NODE))
+                ),
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+            ),
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'grants-special-charge-1-to-unit-per-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "戦闘中、自身の奥義発動カウント変動量+1"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'inflicts-special-charge-1-on-foe',
+    "敵の奥義発動カウント変動量-1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'neutralizes-special-charge-plus-to-foe';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵の奥義発動カウント変動量+を無効"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
-    ));
-}
+CustomSkill.setFuncId(
+    'grants-special-charge-1-to-unit-per-attack',
+    "戦闘中、自身の奥義発動カウント変動量+1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'neutralizes-special-charge-minus-on-unit';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "自身の奥義発動カウント変動量-を無効"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
-    ));
-}
+CustomSkill.setFuncId(
+    'neutralizes-special-charge-plus-to-foe',
+    "敵の奥義発動カウント変動量+を無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'tempo';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "拍節"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
-        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
-    ));
-}
+CustomSkill.setFuncId(
+    'neutralizes-special-charge-minus-on-unit',
+    "自身の奥義発動カウント変動量-を無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ));
+    },
+    []
+);
 
-/// 追撃
-{
-    let funcId = 'makes-guaranteed-follow-up-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "絶対追撃"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'tempo',
+    "拍節",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'foe-cannot-make-follow-up-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵は追撃不可"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'makes-guaranteed-follow-up-attack',
+    "絶対追撃",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'neutralizes-guarantee-foes-follow-up-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵の絶対追撃を無効"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'foe-cannot-make-follow-up-attack',
+    "敵は追撃不可",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'neutralizes-prevent-follow-up-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "自身の追撃不可を無効"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_NEUTRALIZES_EFFECTS_THAT_PREVENT_UNITS_FOLLOW_UP_ATTACKS_DURING_COMBAT,
-    ));
-}
+CustomSkill.setFuncId(
+    'neutralizes-guarantee-foes-follow-up-attack',
+    "敵の絶対追撃を無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+        ));
+    },
+    []
+);
 
-/// 反撃
-{
-    let funcId = 'foe-cannot-counterattack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵は反撃不可"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        FOE_CANNOT_COUNTERATTACK_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'neutralizes-prevent-follow-up-attack',
+    "自身の追撃不可を無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_NEUTRALIZES_EFFECTS_THAT_PREVENT_UNITS_FOLLOW_UP_ATTACKS_DURING_COMBAT,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'neutralizes-prevent-counterattack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "自身の反撃不可を無効"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'foe-cannot-counterattack',
+    "敵は反撃不可",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            FOE_CANNOT_COUNTERATTACK_NODE,
+        ));
+    },
+    []
+);
 
-/// 攻撃順序
-{
-    let funcId = 'can-make-follow-up-attack-before-foes-next-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "攻め立て"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'neutralizes-prevent-counterattack',
+    "自身の反撃不可を無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'counterattack-before-foes-first-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "先制攻撃（待ち伏せ）"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'can-make-follow-up-attack-before-foes-next-attack',
+    "攻め立て",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+        ));
+    },
+    []
+);
 
-/// 2回攻撃
-{
-    let funcId = 'attacks-twice-when-initiates-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "攻撃時、2回攻撃"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'counterattack-before-foes-first-attack',
+    "先制攻撃（待ち伏せ）",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'attacks-twice-when-foe-initiates-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "攻撃された時、2回攻撃"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'attacks-twice-when-initiates-combat',
+    "攻撃時、2回攻撃",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'attacks-twice-even-if-foe-initiates-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "2回攻撃（受けの時も2回攻撃）"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'attacks-twice-when-foe-initiates-combat',
+    "攻撃された時、2回攻撃",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        ));
+    },
+    []
+);
 
-/// 移動
-{
-    let funcId = 'can-move-through-foes-spaces';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "すり抜け"});
-    CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
-}
+CustomSkill.setFuncId(
+    'attacks-twice-even-if-foe-initiates-combat',
+    "2回攻撃（受けの時も2回攻撃）",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
+        ));
+    },
+    []
+);
 
-/// 奥義発動
-{
-    let funcId = 'prevent-a-special-during-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "戦闘中、敵は攻撃奥義を発動できない"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL,
-    ));
-}
+CustomSkill.setFuncId(
+    'can-move-through-foes-spaces',
+    "すり抜け",
+    (skillId, args) => {
+        CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
+    },
+    []
+);
 
-{
-    let funcId = 'foe-prevent-a-special-during-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "戦闘中、自分は攻撃奥義を発動できない"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL,
-    ));
-}
+CustomSkill.setFuncId(
+    'prevent-a-special-during-combat',
+    "戦闘中、敵は攻撃奥義を発動できない",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'prevent-d-special-during-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "戦闘中、敵は防御奥義を発動できない"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
-    ));
-}
+CustomSkill.setFuncId(
+    'foe-prevent-a-special-during-combat',
+    "戦闘中、自分は攻撃奥義を発動できない",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'foe-prevent-d-special-during-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "戦闘中、自分は防御奥義を発動できない"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL,
-    ));
-}
+CustomSkill.setFuncId(
+    'prevent-d-special-during-combat',
+    "戦闘中、敵は防御奥義を発動できない",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'prevent-special-during-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "戦闘中、敵は奥義を発動できない"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'foe-prevent-d-special-during-combat',
+    "戦闘中、自分は防御奥義を発動できない",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'foe-prevent-special-during-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "戦闘中、自分は奥義を発動できない"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'prevent-special-during-combat',
+    "戦闘中、敵は奥義を発動できない",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'prevent-aoe-special';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵は範囲奥義を発動できない"});
-    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        FOE_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'foe-prevent-special-during-combat',
+    "戦闘中、自分は奥義を発動できない",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'foe-prevent-aoe-special';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "自分は範囲奥義を発動できない"});
-    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'prevent-aoe-special',
+    "敵は範囲奥義を発動できない",
+    (skillId, args) => {
+        BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            FOE_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+        ));
+    },
+    []
+);
 
-/// 攻撃前の奥義カウント変動
-{
-    let funcId = 'grants-special-count-before-first-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "自分の最初の攻撃前に自身の奥義発動カウント-1"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'foe-prevent-aoe-special',
+    "自分は範囲奥義を発動できない",
+    (skillId, args) => {
+        BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'grants-special-count-before-first-follow-up-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "自分の最初の追撃前に自身の奥義発動カウント-1"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE(1),
-    ));
-}
+CustomSkill.setFuncId(
+    'grants-special-count-before-first-attack',
+    "自分の最初の攻撃前に自身の奥義発動カウント-1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            UNIT_GRANTS_SPECIAL_COOLDOWN_MINUS_1_TO_UNIT_BEFORE_UNITS_FIRST_ATTACK_NODE,
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'inflicts-special-count-before-foes-first-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵の最初の攻撃前に敵の奥義カウント-1"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
-    ));
-}
+CustomSkill.setFuncId(
+    'grants-special-count-before-first-follow-up-attack',
+    "自分の最初の追撃前に自身の奥義発動カウント-1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_FOLLOW_UP_ATTACK_DURING_COMBAT_NODE(1),
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'inflicts-special-count-before-foes-second-strike';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵の最初の2回攻撃の2回目の攻撃前に敵の奥義カウント-1"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_SECOND_STRIKE_NODE(1),
-    ));
-}
+CustomSkill.setFuncId(
+    'inflicts-special-count-before-foes-first-attack',
+    "敵の最初の攻撃前に敵の奥義カウント-1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'inflicts-special-count-before-foes-first-follow-up-attack';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵の最初の追撃前に敵の奥義カウント-1"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_FOLLOW_UP_ATTACK_NODE(1),
-    ));
-}
+CustomSkill.setFuncId(
+    'inflicts-special-count-before-foes-second-strike',
+    "敵の最初の2回攻撃の2回目の攻撃前に敵の奥義カウント-1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_SECOND_STRIKE_NODE(1),
+        ));
+    },
+    []
+);
 
-/// 弱化・強化
-{
-    let funcId = 'neutralizes-penalties';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "自身の弱化を無効"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'inflicts-special-count-before-foes-first-follow-up-attack',
+    "敵の最初の追撃前に敵の奥義カウント-1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_FOLLOW_UP_ATTACK_NODE(1),
+        ));
+    },
+    []
+);
 
-{
-    let funcId = 'neutralizes-foes-bonuses';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "相手の強化を無効"});
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
-    ));
-}
+CustomSkill.setFuncId(
+    'neutralizes-penalties',
+    "自身の弱化を無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+        ));
+    },
+    []
+);
 
-/// 回復
-{
-    let funcId = 'foe-cannot-recover-hp-during-combat';
-    let skillId = getCustomSkillId(funcId, {});
-    CustomSkill.OPTIONS.push({id: funcId, text: "敵は戦闘中HPを回復できない"});
-    AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
-        FOE_CANNOT_RECOVER_HP_DURING_COMBAT_NODE
-    ));
-}
+CustomSkill.setFuncId(
+    'neutralizes-foes-bonuses',
+    "相手の強化を無効",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+        ));
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'foe-cannot-recover-hp-during-combat',
+    "敵は戦闘中HPを回復できない",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
+            FOE_CANNOT_RECOVER_HP_DURING_COMBAT_NODE,
+        ));
+    },
+    []
+);

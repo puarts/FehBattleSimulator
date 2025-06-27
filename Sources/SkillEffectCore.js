@@ -116,7 +116,7 @@ class SkillEffectHooks {
             let funcId = str.slice(firstUnderscore + 1, secondUnderscore);
             let args = str.slice(secondUnderscore + 1);
 
-            let func = CustomSkill.FUNC_MAP.get(funcId);
+            let func = CustomSkill.FUNC_ID_TO_FUNC.get(funcId);
             if (func && !CustomSkill.registeredSkillIds.has(skillId)) {
                 func(skillId, JSON.parse(args));
                 CustomSkill.registeredSkillIds.add(skillId);
