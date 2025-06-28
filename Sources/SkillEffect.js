@@ -5920,3 +5920,17 @@ class DistanceBetweenTargetAndTargetsFoeNode extends PositiveNumberNode {
 }
 
 const DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE = new DistanceBetweenTargetAndTargetsFoeNode();
+
+class EndsTargetsActionByStatusEffectNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.endActionByStatusEffect();
+        env.debug(`${unit.nameWithGroup}はステータス効果により行動済みになる`);
+    }
+}
+
+const ENDS_TARGETS_ACTION_BY_STATUS_EFFECT_NODE = new EndsTargetsActionByStatusEffectNode();

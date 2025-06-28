@@ -65,6 +65,20 @@ const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS = new SkillEffec
 const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
 
 /**
+ * 攻撃キャンセル
+ * ターゲットは攻撃したユニット
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const CANCEL_FOES_ATTACK_HOOKS = new SkillEffectHooks();
+
+/**
+ * 攻撃キャンセル後のスキル効果
+ * ターゲットは攻撃したユニット
+ * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>}
+ */
+const AFTER_CANCEL_FOES_ATTACK_HOOKS = new SkillEffectHooks();
+
+/**
  * 範囲奥義判定前(主に範囲奥義を発動するかどうかの判定など)
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS = new SkillEffectHooks();

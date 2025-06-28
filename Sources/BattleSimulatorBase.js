@@ -7852,13 +7852,35 @@ class BattleSimulatorBase {
                 return;
             }
 
+            if (usesStyle) {
+                attackerUnit.activateStyle();
+            }
+
+            // 予知の罠などによる行動終了判定
+            let env = new NodeEnv().setTarget(attackerUnit).setTargetFoe(targetUnit)
+                .setSkillOwner(targetUnit)
+                .setName('攻撃開始前').setLogLevel(getSkillLogLevel());
+            let isAttackCanceled = CANCEL_FOES_ATTACK_HOOKS.evaluateSomeWithUnit(targetUnit, env);
+            if (isAttackCanceled) {
+                self.writeSimpleLogLine(`${attackerUnit.nameWithGroup}の攻撃はキャンセル`);
+                env.setName('攻撃キャンセル後');
+                AFTER_CANCEL_FOES_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
+                // 戦闘には入っていないので初めての戦闘判定、戦闘回数などには反映されない
+                // 一方スタイルは使用したことになる
+                if (attackerUnit.isStyleActive) {
+                    attackerUnit.isStyleActivatedInThisTurn = true;
+                    attackerUnit.styleActivationsCount++;
+                }
+                env = new BattleSimulatorBaseEnv(this, attackerUnit);
+                env.setName('行動時[攻撃キャンセル]').setLogLevel(getSkillLogLevel());
+                AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(attackerUnit, env);
+                return;
+            }
+
             if (attackerUnit.weaponInfo?.attackCount === 2) {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.DoubleAttack);
             } else {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);
-            }
-            if (usesStyle) {
-                attackerUnit.activateStyle();
             }
             self.updateDamageCalculation(attackerUnit, targetUnit, tile);
             attackerUnit.deactivateStyle();

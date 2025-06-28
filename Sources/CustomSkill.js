@@ -551,15 +551,6 @@ CustomSkill.setFuncId('attack-range-2-during-combat', "スキル効果の射程�
     []
 );
 
-/// 引数
-// // オブジェクトから選択するタイプの引数。XXX, YYY, ZZZを変更
-// for (let [_key, value] of Object.entries(XXX)) {
-//     let option = value === XXX.None ?
-//         {id: '', text: '選択してください', disabled: true} :
-//         {id: value, text: YYY};
-//     ARG_TYPE_TO_OPTIONS_MAP.addValue(CustomSkill.Arg.Node.ZZZ, option);
-// }
-
 CustomSkill.setFuncId(
     'accelerates-special-trigger-cooldown-count–1',
     "奥義が発動しやすい（最低1）",
@@ -987,6 +978,27 @@ CustomSkill.setFuncId(
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
             FOE_CANNOT_RECOVER_HP_DURING_COMBAT_NODE,
+        ));
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'cancels-foes-attack',
+    "敵の攻撃をキャンセル",
+    (skillId, args) => {
+        CANCEL_FOES_ATTACK_HOOKS.addSkillIfAbsent(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'cancels-foes-attack-ending-their-action',
+    "敵の攻撃をキャンセルし、行動済みに",
+    (skillId, args) => {
+        CANCEL_FOES_ATTACK_HOOKS.addSkillIfAbsent(skillId, () => TRUE_NODE);
+        AFTER_CANCEL_FOES_ATTACK_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
+            ENDS_TARGETS_ACTION_BY_STATUS_EFFECT_NODE
         ));
     },
     []
