@@ -365,6 +365,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Imbue, ["Imbue.webp", "治癒", "回復不可半分無効、戦闘開始後に最大HPの40%回復"]],
     [StatusEffectType.Reflex, ["Reflex.webp", "反射", "初撃のダメージ-7、軽減値を次の攻撃のダメージに+"]],
     [StatusEffectType.ShareSpoilsPlus, ["ShareSpoilsPlus.webp", "戦果移譲・広域", ""]],
+    [StatusEffectType.ForesightSnare, ["ForesightSnare.webp", "予知の罠", "「予知の罠」により、敵からの攻撃をキャンセルできる"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

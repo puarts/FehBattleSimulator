@@ -1319,6 +1319,7 @@ const StatusEffectType = {
     Imbue: 84, // 治癒
     Reflex: 85, // 反射
     ShareSpoilsPlus: 86, // 戦果移譲・広域
+    ForesightSnare: 87, // 予知の罠
     // 1. STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 2. 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // 3. POSITIVE_STATUS_EFFECT_ARRAYまたはNEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1451,6 +1452,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.EssenceDrain,
 // 縁
     StatusEffectType.Bonded,
+    // 予知の罠
+    StatusEffectType.ForesightSnare,
 ];
 const POSITIVE_STATUS_EFFECT_ORDER_MAP = new Map();
 POSITIVE_STATUS_EFFECT_ARRAY.forEach((v, i) => POSITIVE_STATUS_EFFECT_ORDER_MAP.set(v, i));
