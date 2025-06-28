@@ -102,31 +102,59 @@
     ));
 
     // Unit can use the following【Style】:
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ASTRA_STORM);
+}
+
+{
+    let style = STYLE_TYPE.ASTRA_STORM;
+    let skillId = getStyleSkillId(style);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // ――――― Astra Storm Style ―――――
     // Unit can attack foes within 6 spaces of unit and 3 rows or 3 columns centered on unit regardless of unit's range.
-    // Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 2,
-    // foe can counterattack regardless of unit's range, or foe's Range is the same as the distance between unit and foe.
-    // Unit cannot move or attack structures, after-combat movement effects do not occur,
-    // and remaining movement granted from Canto is treated as 0. Skill effect's Range is treated as 2,
-    // including by skill effects determined by attack Range, like Pavise and Aegis.
-    // This Style can be used only once per turn.
-    // ――――――――――――――――――――
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ASTRA_STORM);
-    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.ASTRA_STORM);
     CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
         SPACES_OF_TARGET_NODE(AND_NODE(
             IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(6),
             IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3))
         ),
     );
-    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(STYLE_TYPE.ASTRA_STORM);
+
+    // Unit suffers a counterattack if any of the following conditions are met:
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // foe is armored with Range = 2,
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_2_NODE),
+            // foe can counterattack regardless of unit's range,
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // or foe's Range is the same as the distance between unit and foe.
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
+    // Unit cannot move
+    CANNOT_MOVE_STYLES.add(style);
+    // or attack structures,
+    CANNOT_ATTACK_STRUCTURE_STYLES.add(style);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After-combat movement effects do not occur.
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
+    ));
+    // TODO: 実装する
+    // and remaining movement granted from Canto is treated as 0.
+
+    // Skill effect's Range is treated as 2,
+    // including by skill effects determined by attack Range, like Pavise and Aegis.
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
+    // This Style can be used only once per turn.
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
+    // ――――――――――――――――――――
 }
 
 // 紋章士リン
 {
+    let style = STYLE_TYPE.EMBLEM_LYN;
     let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.EMBLEM_LYN);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, style);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
         AND_NODE(
             GTE_NODE(CURRENT_TURN_NODE, 2),
@@ -136,7 +164,18 @@
     STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
     ));
-    CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.EMBLEM_LYN);
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // foe is armored with Range = 2,
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_2_NODE),
+            // foe can counterattack regardless of unit's range,
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // or foe's Range is the same as the distance between unit and foe.
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
+    CANNOT_MOVE_STYLES.add(style);
+    CANNOT_ATTACK_STRUCTURE_STYLES.add(style);
     CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
         SPACES_OF_TARGET_NODE(AND_NODE(
             IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(5),
@@ -148,8 +187,15 @@
         new BoostsDamageWhenSpecialTriggersNode(
             MULT_NODE(new TargetsMaxSpecialCountNode(), 4),
         ),
+        AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
     ));
-    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(STYLE_TYPE.EMBLEM_LYN);
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+        ),
+    ));
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
 }
 
 // 比翼リュール

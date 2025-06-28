@@ -436,9 +436,6 @@ class DamageCalculatorWrapper {
         let target = isTargetFoe ? "敵" : "周囲";
         env.setName(`範囲奥義前(${target})`).setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.evaluateWithUnit(atkUnit, env);
-        if (atkUnit.isCannotMoveStyleActive()) {
-            atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
-        }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Queensblade:
@@ -14302,21 +14299,7 @@ class DamageCalculatorWrapper {
             return true;
         }
 
-        if (atkUnit.isCannotMoveStyleActive()) {
-            // 条件A: 敵が2距離の重装
-            if (defUnit.moveType === MoveType.Armor && defUnit.isRangedWeaponType()) return true;
-            // 条件B: 敵が全距離反撃を持つ
-            if (defUnit.battleContext.canCounterattackToAllDistance) return true;
-            // 条件C: 敵の射程が自分と敵の距離と同じ
-            if (defUnit.attackRange === atkUnit.distance(defUnit)) return true;
-        } else if (atkUnit.isRangedStyleForMeleeActive()) {
-            // 条件A: 敵が1距離の重装
-            if (defUnit.moveType === MoveType.Armor && defUnit.isMeleeWeaponType()) return true;
-            // 条件B: 敵が全距離反撃を持つ
-            if (defUnit.battleContext.canCounterattackToAllDistance) return true;
-            // 条件C: 敵の射程が自分と敵の距離と同じ
-            if (defUnit.attackRange === atkUnit.distance(defUnit)) return true;
-        } else if (atkUnit.isStyleActive) {
+        if (atkUnit.isStyleActive) {
             let env = new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, calcPotentialDamage);
             env.setName('スタイル時に反撃可能を受ける').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
             if (SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.evaluateSomeWithUnit(atkUnit, env)) {

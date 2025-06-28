@@ -3109,6 +3109,8 @@ class FoesRangeNode extends TargetsRangeNode {
     }
 }
 
+const FOES_RANGE_NODE = new FoesRangeNode();
+
 class TargetsWeaponTypeNode extends NumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -5902,3 +5904,19 @@ class IsInCombatPhaseNode extends BoolNode {
 }
 
 const IS_IN_COMBAT_PHASE_NODE = new IsInCombatPhaseNode();
+
+class DistanceBetweenTargetAndTargetsFoeNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let distance = unit.distance(foe);
+        env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}は${distance}マス離れている`);
+        return distance;
+    }
+}
+
+const DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE = new DistanceBetweenTargetAndTargetsFoeNode();

@@ -4520,23 +4520,38 @@
 
 // Wind Sword Style
 {
-    let skillId = getStyleSkillId(STYLE_TYPE.WIND_SWORD);
+    let style = STYLE_TYPE.WIND_SWORD;
+    let skillId = getStyleSkillId(style);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // Unit can attack foes 2 spaces away (unit cannot attack adjacent foes).
-    // Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 1,
-    // foe can counterattack regardless of unit's range,
-    // or foe's Range is the same as the distance between unit and foe.
-    // After-combat movement effects do not occur.
-    // Skill effect's Range is treated as 1, including by skill effects determined by attack Range, like Pavise and Aegis.
-    // This Style can be used only once per turn.
-    RANGED_STYLE_FOR_MELEE_SET.add(STYLE_TYPE.WIND_SWORD);
+    CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        CONSTANT_NUMBER_NODE(2)
+    );
+    // Unit suffers a counterattack if any of the following conditions are met:
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // foe is armored with Range = 1,
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_1_NODE),
+            // foe can counterattack regardless of unit's range,
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // or foe's Range is the same as the distance between unit and foe.
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        IF_NODE(EQ_NODE(TARGETS_CURRENT_STYLE_NODE, STYLE_TYPE.WIND_SWORD),
+        // After-combat movement effects do not occur.
+        AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+    ));
+    // Skill effect's Range is treated as 1, including by skill effects determined by attack Range, like Pavise and Aegis.
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(style);
+    // This Style can be used only once per turn.
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
             // Calculates damage using the lower of foe's Def or Res during combat (excluding area-of-effect Specials).
             CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
         ),
     ));
-    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(STYLE_TYPE.WIND_SWORD);
 }
 
 // Azure Twin Edge

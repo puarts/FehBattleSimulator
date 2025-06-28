@@ -2418,6 +2418,7 @@ class BattleMap {
 
                 for (let skillId of enemyUnit.enumerateSkills()) {
                     let canWarp = getSkillFunc(skillId, canWarpFuncMap)?.call(this, targetTile, warpUnit, enemyUnit) ?? true;
+                    // 移動不可ならワープも不可
                     if (warpUnit.isCannotMoveStyleActive()) {
                         canWarp = false;
                     }
@@ -2622,8 +2623,14 @@ class BattleMap {
         for (let neighborTile of this.enumerateMovableTilesForEnemyThreat(unit, true, true, true)) {
             let attackRanges = [unit.attackRangeOnMapForAttackingUnit];
             // かぜの剣スタイルは2距離で脅威度を計算
-            if (unit.canActivateStyle() && unit.hasRangedStyleForMelee()) {
-                attackRanges.push(2);
+            if (unit.canActivateStyle() && !unit.hasCannotMoveStyle()) {
+                let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
+                    // .setName('スタイルでの脅威度判定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                    .setName('スタイルでの脅威度判定時').setLogLevel(LoggerBase.LOG_LEVEL.ALL);
+                let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
+                if (range > 0) {
+                    attackRanges.push(range);
+                }
             }
             for (let attackRange of attackRanges) {
                 for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, attackRange)) {
@@ -2652,7 +2659,7 @@ class BattleMap {
         // リンスタイル
         if (unit.canActivateStyle() && unit.hasCannotMoveStyle()) {
             let env = new BattleMapEnv(this, unit);
-            env.setName("脅威度判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            env.setName("スタイルでの脅威度判定時").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
             let tiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
             for (let tile of tiles) {
                 if (!doneTiles.includes(tile)) {
@@ -2670,8 +2677,6 @@ class BattleMap {
         unit.movableTiles = [];
         unit.movableTilesIgnoringWarpBubble = [];
         unit.attackableTiles = [];
-        unit.attackableTilesInCannotMoveStyle = [];
-        unit.attackableTilesInRangedForMeleeStyle = [];
         unit.attackableTilesInStyle = [];
         unit.assistableTiles = [];
         unit.teleportOnlyTiles = [];
@@ -2701,26 +2706,9 @@ class BattleMap {
                     // プレーヤーサイド
                     // 通常・スタイルで分けてタイルを更新
                     if (unit.isCannotMoveStyleActive()) {
-                        let env = new BattleMapEnv(this, unit).setTile(unit.placedTile);
-                        env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
-                        let attackableTiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
-                        for (let attackableTile of attackableTiles) {
-                            if (!unit.attackableTilesInCannotMoveStyle.includes(attackableTile)) {
-                                unit.attackableTilesInCannotMoveStyle.push(attackableTile);
-                            }
-                        }
-                    } else if (unit.isRangedStyleForMeleeActive()) {
-                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, 2)) {
-                            if (!unit.attackableTilesInRangedForMeleeStyle.includes(attackableTile)) {
-                                unit.attackableTilesInRangedForMeleeStyle.push(attackableTile);
-                            }
-                        }
-                    } else if (unit.getCurrentStyle() === STYLE_TYPE.ECHO) {
-                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, 3)) {
-                            if (!unit.attackableTilesInStyle.includes(attackableTile)) {
-                                unit.attackableTilesInStyle.push(attackableTile);
-                            }
-                        }
+                        this.setAttackableTilesInCannotMoveStyle(unit);
+                    } else if (unit.isStyleActive) {
+                        this.setAttackableTilesInStyle(unit, tile);
                     } else {
                         for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRangeOnMapForAttackingUnit)) {
                             if (!unit.attackableTiles.includes(attackableTile)) {
@@ -2741,37 +2729,10 @@ class BattleMap {
                     // スタイル可能もしくはスタイル中
                     if ((unit.hasCannotMoveStyle() && unit.canActivateStyle()) ||
                         unit.isCannotMoveStyleActive()) {
-                        let env = new BattleMapEnv(this, unit).setTile(unit.placedTile);
-                        env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
-                        let attackableTiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
-                        for (let attackableTile of attackableTiles) {
-                            if (!unit.attackableTilesInCannotMoveStyle.includes(attackableTile)) {
-                                unit.attackableTilesInCannotMoveStyle.push(attackableTile);
-                            }
-                        }
-                    }
-                    if ((unit.hasRangedStyleForMelee && unit.canActivateStyle()) ||
-                        unit.isRangedStyleForMeleeActive()) {
-                        let tiles = this.enumerateTilesInSpecifiedDistanceFrom(tile, 2);
-                        for (let attackableTile of tiles) {
-                            if (!unit.attackableTilesInRangedForMeleeStyle.includes(attackableTile)) {
-                                unit.attackableTilesInRangedForMeleeStyle.push(attackableTile);
-                            }
-                        }
+                        this.setAttackableTilesInCannotMoveStyle(unit);
                     }
                     if (unit.canActivateStyle() || unit.isStyleActive) {
-                        let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
-                            .setName('敵のスタイルでの攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
-                        let range =
-                            CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
-                        if (range > 0) {
-                            let tiles = this.enumerateTilesInSpecifiedDistanceFrom(tile, range);
-                            for (let attackableTile of tiles) {
-                                if (!unit.attackableTilesInStyle.includes(attackableTile)) {
-                                    unit.attackableTilesInStyle.push(attackableTile);
-                                }
-                            }
-                        }
+                        this.setAttackableTilesInStyle(unit, tile);
                     }
                 }
             }
@@ -2788,6 +2749,31 @@ class BattleMap {
                         unit.assistableTiles.push(assistableTile);
                     }
                 }
+            }
+        }
+    }
+
+    setAttackableTilesInStyle(unit, attackingTile) {
+        let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
+            .setName('敵のスタイルでの攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
+        if (range <= 0) {
+            return;
+        }
+        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(attackingTile, range)) {
+            if (!unit.attackableTilesInStyle.includes(attackableTile)) {
+                unit.attackableTilesInStyle.push(attackableTile);
+            }
+        }
+    }
+
+    setAttackableTilesInCannotMoveStyle(unit) {
+        let env = new BattleMapEnv(this, unit).setTile(unit.placedTile);
+        env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        let attackableTiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
+        for (let attackableTile of attackableTiles) {
+            if (!unit.attackableTilesInStyle.includes(attackableTile)) {
+                unit.attackableTilesInStyle.push(attackableTile);
             }
         }
     }
@@ -2822,12 +2808,6 @@ class BattleMap {
                 for (let tile of unit.attackableTiles) {
                     tile.isAttackableForEnemy = true;
                 }
-                for (let tile of unit.attackableTilesInCannotMoveStyle) {
-                    tile.isAttackableForEnemy = true;
-                }
-                for (let tile of unit.attackableTilesInRangedForMeleeStyle) {
-                    tile.isAttackableForEnemy = true;
-                }
                 for (let tile of unit.attackableTilesInStyle) {
                     tile.isAttackableForEnemy = true;
                 }
@@ -2839,18 +2819,6 @@ class BattleMap {
                     tile.isAttackableForAlly = true;
                 }
                 // unitが味方の場合は処理を変える
-                if (g_appData.gameMode === GameMode.SummonerDuels ||
-                    unit.isCannotMoveStyleActive()) {
-                    for (let tile of unit.attackableTilesInCannotMoveStyle) {
-                        tile.isAttackableForAlly = true;
-                    }
-                }
-                if (g_appData.gameMode === GameMode.SummonerDuels ||
-                    unit.isRangedStyleForMeleeActive()) {
-                    for (let tile of unit.attackableTilesInRangedForMeleeStyle) {
-                        tile.isAttackableForAlly = true;
-                    }
-                }
                 if (g_appData.gameMode === GameMode.SummonerDuels ||
                     unit.isStyleActive) {
                     for (let tile of unit.attackableTilesInStyle) {

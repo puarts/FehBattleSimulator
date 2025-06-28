@@ -4041,12 +4041,12 @@ const SKILL_ID_TO_STYLE_TYPE = new Map();
 /**
  * @type {Set<number>}
  */
-const CANNOT_MOVE_STYLE_SET = new Set();
+const CANNOT_MOVE_STYLES = new Set();
 
 /**
  * @type {Set<number>}
  */
-const RANGED_STYLE_FOR_MELEE_SET = new Set();
+const CANNOT_ATTACK_STRUCTURE_STYLES= new Set();
 
 const STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN = new Set();
 

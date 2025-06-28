@@ -3695,9 +3695,8 @@ class BattleSimulatorBase {
         if (isMoveSkillEnabled &&
             atkUnit.isAlive &&
             !atkUnit.battleContext.isAfterCombatMovementDisabled &&
-            !defUnit.battleContext.isAfterCombatMovementDisabled &&
-            !atkUnit.isCannotMoveStyleActive() &&
-            !atkUnit.isRangedStyleForMeleeActive()) {
+            !defUnit.battleContext.isAfterCombatMovementDisabled
+        ) {
             this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
         }
 
@@ -8874,11 +8873,14 @@ class BattleSimulatorBase {
                 }
             }
         }
-        if (unit.canActivateStyle() && unit.hasRangedStyleForMelee()) {
-            this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, 2, true);
-        }
-        if (unit.canActivateStyle() && unit.getAvailableStyle() === STYLE_TYPE.ECHO) {
-            this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, 3, true);
+        if (unit.canActivateStyle() &&
+            !unit.hasCannotMoveStyle()) {
+            let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
+                .setName('攻撃可能ユニット設定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
+            if (range > 0) {
+                this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, range, true);
+            }
         }
     }
 
