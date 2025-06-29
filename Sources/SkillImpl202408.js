@@ -2424,7 +2424,7 @@
             new UnitDealsDamageExcludingAoeSpecialsNode(
                 // (Y = total number of Bonuses and Penalties active on foe and any foe within 2 spaces of foe,
                 // excluding stat bonuses and stat penalties, x 3;
-                MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
+                MULT_NODE(TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE(2), 3),
                 // excluding when dealing damage with an area-of-effect Special),
             ),
             // reduces damage from attacks by 40%,

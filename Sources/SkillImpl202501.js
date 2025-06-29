@@ -4245,7 +4245,7 @@
                     // (Y = total number of Bonuses and Penalties active on foe and any foe within 2 spaces of foe,
                     // excluding stat bonuses and stat penalties,
                     // x 3; excluding area-of-effect Specials),
-                    MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
+                    MULT_NODE(TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE(2), 3),
                 ),
                 // and grants Special cooldown charge + 1 to unit per attack during combat (only highest value applied; does not stack),
                 GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
@@ -9642,7 +9642,7 @@
             // and number of Penalty effects, excluding stat penalties,
             // active on foe and foes within 2 spaces of that foe × 3; excluding area-of-effect Specials),
             UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(
-                MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
+                MULT_NODE(TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE(2), 3),
             ),
 
             // reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),

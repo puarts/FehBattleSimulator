@@ -630,10 +630,14 @@ class UnitsOfBothAssistTargetingAndAssistTargetNode extends UnitsNode {
 
     evaluate(env) {
         let targetAndAlliesNode = this._unitsNode;
-        return IterUtil.unique(IterUtil.concat(
-            targetAndAlliesNode.evaluate(env.copy().setTarget(env.assistTargeting)),
-            targetAndAlliesNode.evaluate(env.copy().setTarget(env.assistTarget)),
-        ));
+        if (env.assistTargeting && env.assistTarget) {
+            return IterUtil.unique(IterUtil.concat(
+                targetAndAlliesNode.evaluate(env.copy().setTarget(env.assistTargeting)),
+                targetAndAlliesNode.evaluate(env.copy().setTarget(env.assistTarget)),
+            ));
+        } else {
+            return UnitsNode.EMPTY_UNITS_NODE.evaluate(env);
+        }
     }
 }
 
@@ -1080,6 +1084,7 @@ const ARE_TARGET_AND_SKILL_OWNER_IN_DIFFERENT_GROUP_NODE = new class extends Boo
 
 const ARE_TARGET_AND_ASSIST_UNIT_IN_SAME_GROUP_NODE = new class extends BoolNode {
     evaluate(env) {
+        if (!env.assistTargeting) return false;
         return env.target.groupId === env.assistTargeting.groupId;
     }
 }();
@@ -4174,6 +4179,9 @@ class IsTargetWithinNSpacesOfAssistTargetNode extends IsInRangeNNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let spaces = this._nNode.evaluate(env);
+        if (!env.assistTarget) {
+            return false;
+        }
         let result = unit.distance(env.assistTarget) <= spaces;
         env.debug(`${env.assistTarget.nameWithGroup}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
         return result;
@@ -4188,6 +4196,9 @@ class IsTargetWithinNSpacesOfAssistTargetingNode extends IsInRangeNNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let spaces = this._nNode.evaluate(env);
+        if (!env.assistTargeting) {
+            return false;
+        }
         let result = unit.distance(env.assistTargeting) <= spaces;
         env.debug(`${env.assistTargeting.nameWithGroup}の周囲${spaces}マス以内に${unit.nameWithGroup}がいるか: ${result}`);
         return result;

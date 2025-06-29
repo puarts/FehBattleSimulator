@@ -647,10 +647,10 @@ function sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n, unitValueNo
     ));
 }
 
-function totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(n) {
-    return sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n,
-        NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
-}
+const TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE =
+    n => sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(
+        n, NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE
+    );
 
 function setSpecialCount(skillId, n) {
     switch (n) {
