@@ -238,6 +238,10 @@ const BOOST_3_NODE =
 
 /// ステータス
 const TARGETS_STAT_ON_MAP = index => new TargetsStatOnMapNode(index);
+const TARGETS_ATK_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Atk);
+const TARGETS_SPD_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Spd);
+const TARGETS_DEF_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Def);
+const TARGETS_RES_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Res);
 
 const TARGETS_EVAL_STAT_ON_MAP = index => new TargetsEvalStatOnMapNode(index);
 const TARGETS_EVAL_ATK_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Atk);
@@ -809,7 +813,7 @@ const ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET = (n) =>
 
 /**
  * @param {number|NumberNode} n
- * @param {...number} statusEffectType
+ * @param {...(number|NumberNode)} statusEffectType
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -820,7 +824,7 @@ const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_N
         );
 
 /**
- * @param {...number} statusEffectType
+ * @param {...(number|NumberNode)} statusEffectType
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -829,7 +833,7 @@ const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_N
         GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2, ...statusEffectType);
 
 /**
- * @param {...number} statusEffectType
+ * @param {...number|NumberNode} statusEffectType
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -887,7 +891,7 @@ const GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_W
 
 /**
  * @param {number|NumberNode} n
- * @param {...number} statusEffectTypes
+ * @param {...number|NumberNode} statusEffectTypes
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -898,7 +902,7 @@ const INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPA
         );
 
 /**
- * @param {...number} statusEffectTypes
+ * @param {...number|NumberNode} statusEffectTypes
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -1347,11 +1351,11 @@ function setBeforeAoeSpecialAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
     }
 }
 
-function setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId, condNode, statsNode, effectNode) {
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+function setForFoesSkillsDuringCombatHooks(skillId, condNode, statsNode, effectNode) {
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode, statsNode),
     ));
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode, effectNode),
     ));
 }

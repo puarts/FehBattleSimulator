@@ -2625,8 +2625,7 @@ class BattleMap {
             // かぜの剣スタイルは2距離で脅威度を計算
             if (unit.canActivateStyle() && !unit.hasCannotMoveStyle()) {
                 let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
-                    // .setName('スタイルでの脅威度判定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
-                    .setName('スタイルでの脅威度判定時').setLogLevel(LoggerBase.LOG_LEVEL.ALL);
+                    .setName('スタイルでの脅威度判定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
                 let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
                 if (range > 0) {
                     attackRanges.push(range);

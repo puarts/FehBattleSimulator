@@ -188,6 +188,8 @@ class UnitsNode extends SkillEffectNode {
         }
     }
 
+    static EMPTY_UNITS_NODE = new class extends UnitsNode {}
+
     /**
      * @param {...UnitNode} units
      * @return {UnitsNode}
@@ -318,6 +320,9 @@ class TargetsAlliesWithinNSpacesNode extends UnitsNode {
 
 const TARGETS_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(n, includesTarget);
 const TARGETS_ALLIES_WITHIN_2_SPACES_NODE = (includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(2, includesTarget);
+
+const TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE =
+    n => TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n, TRUE_NODE);
 
 class FoesAlliesWithinNSpacesNode extends TargetsAlliesWithinNSpacesNode {
     static {
@@ -450,6 +455,8 @@ class MinUnitsNode extends UnitsNode {
         return minUnits;
     }
 }
+
+const MIN_UNITS_NODE = (unitsNode, funcNode) => new MinUnitsNode(unitsNode, funcNode);
 
 class UniteUnitsNode extends UnitsNode {
     /**
@@ -5934,3 +5941,25 @@ class EndsTargetsActionByStatusEffectNode extends SkillEffectNode {
 }
 
 const ENDS_TARGETS_ACTION_BY_STATUS_EFFECT_NODE = new EndsTargetsActionByStatusEffectNode();
+
+class MinDistanceToTargetsFoesNode extends PositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foes;
+        if (env.unitManager) {
+            foes = Array.from(env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit));
+        } else if (env.battleMap) {
+            foes = Array.from(env.battleMap.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(unit, 99));
+        }
+        env.debug(`${unit.nameWithGroup}の敵: ${foes.map(u => u.nameWithGroup).join(", ")}`);
+        let minDistance = IterUtil.minValue(foes, foe => unit.distance(foe), 1000);
+        env.debug(`${unit.nameWithGroup}の敵との最小距離: ${minDistance}`);
+        return minDistance;
+    }
+}
+
+const MIN_DISTANCE_TO_TARGETS_FOES_NODE = new MinDistanceToTargetsFoesNode();

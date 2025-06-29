@@ -1950,7 +1950,7 @@
         AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc)
 
         // noinspection JSCheckFunctionSignatures
-        WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
             // on the map with the 【Exposure】effect active and
             IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
                 // Inflicts Spd/Def-5 on foes
@@ -1958,7 +1958,7 @@
             ),
         ));
 
-        WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
             // on the map with the 【Exposure】effect active and
             IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
                 // neutralizes bonuses to Spd/Def for those foes during combat.
@@ -1979,7 +1979,7 @@
 // 赤の呪い
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.Anathema);
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // Inflicts Spd/Def/Res-4 on foes within 3 spaces of unit during combat.
             new InflictsStatsMinusOnTargetDuringCombatNode(0, 4, 4, 4),
@@ -5103,7 +5103,7 @@ function setDiscord(skillId, statsRatios) {
     // Accelerates Special trigger (cooldown count-1).
     // Unit attacks twice (even if foe initiates combat, unit attacks twice).
     // Effect:【Dagger ７】
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts penalty on Atk/Spd/Def/Res
         // for foes within 3 rows or 3 columns centered on unit during combat
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
@@ -6315,7 +6315,7 @@ function setDiscord(skillId, statsRatios) {
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(1));
     FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             new InflictsStatsMinusOnUnitDuringCombatNode(0, 5, 5, 0),
         ),

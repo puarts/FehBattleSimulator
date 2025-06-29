@@ -1,4 +1,80 @@
 // スキル実装
+// Foresight Snare
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.ForesightSnare);
+    CANCEL_FOES_ATTACK_HOOKS.addSkill(skillId, () =>
+        EQ_NODE(NUM_OF_COMBAT_ON_CURRENT_TURN_NODE, 0),
+    );
+    AFTER_CANCEL_FOES_ATTACK_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
+        ENDS_TARGETS_ACTION_BY_STATUS_EFFECT_NODE,
+        INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Isolation),
+        INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.CounterattacksDisrupted),
+        FOR_EACH_UNIT_NODE(TARGETS_FOES_ON_MAP_NODE,
+            CANCEL_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE(StatusEffectType.ForesightSnare),
+        ),
+    ));
+}
+
+// Gjallarhorn
+{
+    let skillId = Weapon.Gjallarhorn;
+    // Accelerates Special trigger (cooldown count-1).
+    //
+
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // grants Special cooldown count-1 to unit.
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+    ));
+    let units =
+        CACHE_NODE(
+            `${skillId}_max-units-node`,
+            MAX_UNITS_NODE(
+                MIN_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, MIN_DISTANCE_TO_TARGETS_FOES_NODE),
+                TARGETS_DEF_ON_MAP
+            ),
+        );
+    // At start of enemy phase,
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // if there is only one ally with the highest Def
+        // among allies closest to foe,
+        IF_NODE(EQ_NODE(COUNT_UNITS_NODE(units), 1),
+            // grants 【Foresight Snare】 to that ally for 1 turn.
+            FOR_EACH_UNIT_NODE(
+                units,
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ForesightSnare),
+            ),
+        ),
+    ));
+    setForFoesSkillsDuringCombatHooks(skillId,
+        // For foes within 3 rows or 3 columns centered on unit,
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        // inflicts Atk/Def/Res-5 and
+        INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE(5),
+        // neutralizes foe's bonuses to Atk/Def/Res during combat.
+        NEUTRALIZES_FOES_EACH_BONUSES_TO_STATS_DURING_COMBAT_NODE(true, false, true, true),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // inflicts penalty on foe's Atk/Res = 20% of unit's Res at start of combat,
+            INFLICTS_ATK_RES_ON_FOE_DURING_COMBAT_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE)),
+            X_NUM_NODE(
+                // unit deals +X damage (excluding area-of-effect Specials), and
+                DEALS_DAMAGE_X_NODE(READ_NUM_NODE),
+                // reduces damage from foe's attacks by X during combat
+                // (excluding area-of-effect Specials;
+                REDUCES_DAMAGE_BY_N_NODE(READ_NUM_NODE),
+                // X = number of allies within 3 rows or 3 columns centered on unit × 5; max 15), and
+                MULT_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 5, 15),
+            ),
+            // restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
 // 🪩 Bouncin’ Ball
 {
     let skillId = Weapon.BouncinBall;
@@ -945,7 +1021,7 @@
 // 🅲 Blood & Thunder
 {
     let skillId = PassiveC.BloodAndThunder;
-    setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId,
+    setForFoesSkillsDuringCombatHooks(skillId,
         // For foes within 3 rows or 3 columns centered on unit,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // inflicts Atk/Spd/Def/Res–5
@@ -1209,7 +1285,7 @@
 // ❎ Crux Echo
 {
     let skillId = PassiveX.CruxEcho;
-    setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId,
+    setForFoesSkillsDuringCombatHooks(skillId,
         // on foes within 3 rows or 3 columns centered on unit,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // Inflicts Atk/Spd/Def/Res-3
@@ -1854,7 +1930,7 @@
     // Enables【Canto (Dist. +2; Max ５)】during turns 1 through 4.
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => LTE_NODE(CURRENT_TURN_NODE, 4));
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => CANTO_DIST_PLUS_2_MAX_5_NODE);
-    setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId,
+    setForFoesSkillsDuringCombatHooks(skillId,
         // For foes within 3 rows or 3 columns centered on unit,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // inflicts Atk/Spd/Def-5,
@@ -2199,7 +2275,7 @@
 {
     let skillId = Weapon.NobleBow;
     // Effective against flying foes.
-    setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId,
+    setForFoesSkillsDuringCombatHooks(skillId,
         // For foes within 3 rows or 3 columns centered on unit,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // inflicts Atk/Spd/Def/Res–5,
@@ -2618,7 +2694,7 @@
 {
     let skillId = Weapon.FellChildsBlade;
     // Accelerates Special trigger (cooldown count–1).
-    setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId,
+    setForFoesSkillsDuringCombatHooks(skillId,
         // For foes within 3 rows or 3 columns centered on unit,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // inflicts Atk/Spd/Def/Res–5
@@ -2893,7 +2969,7 @@
         ),
     ));
 
-    setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId,
+    setForFoesSkillsDuringCombatHooks(skillId,
         // For foes within 3 rows or 3 columns centered on unit,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // inflicts Atk/Spd/Def/Res-5 and
@@ -3164,7 +3240,7 @@
     // Unit can move to a space
     // within 2 spaces of any ally within 2 spaces.
     setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, 2, 2);
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // on foes within 3 spaces of unit during combat.
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // Inflicts Spd/Def-4
@@ -4329,13 +4405,13 @@
     // Enables【Canto (Rem. +1; Min ２)】.
     enablesCantoRemPlusMin(skillId, 1, 2);
     // For foes within 3 rows or 3 columns centered on unit,
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // inflicts Atk/Spd/Def-5,
             INFLICTS_ATK_SPD_DEF_ON_FOE_DURING_COMBAT_NODE(5),
         ),
     ));
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // neutralizes effects that grant "Special cooldown charge +X" to foe,
             NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
@@ -4401,14 +4477,14 @@
 }
 {
     let skillId = getSpecialRefinementSkillId(Weapon.TailwindShuriken);
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // For foes within 3 rows or 3 columns centered on unit,
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // inflicts Spd/Def-5,
             INFLICTS_SPD_DEF_ON_FOE_DURING_COMBAT_NODE(5),
         ),
     ));
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // For foes within 3 rows or 3 columns centered on unit, inflicts Spd/Def-5,
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials),
@@ -5126,7 +5202,7 @@
     // Mt: 14
     // Rng: 1
     // Accelerates Special trigger (cooldown count-1).
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // For foes within 3 rows or 3 columns centered on unit,
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // inflicts Atk/Spd/Def/Res-5
@@ -5141,7 +5217,7 @@
             ),
         ),
     ));
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // For foes within 3 rows or 3 columns centered on unit,
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // and Special cooldown charge -1 on those foes per attack during combat (only highest value applied; does not stack),
@@ -5256,12 +5332,12 @@
     let setSkill = skillId => {
         // Mt: 12 Rng:2
         // on foes within 3 rows or 3 columns centered on unit
-        WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             // Inflicts Atk/Spd/Def/Res-5
             INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
         ));
         // on foes within 3 rows or 3 columns centered on unit
-        WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             // and neutralizes effects that grant "Special cooldown charge +X" to those foes during their combat.
             NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
         ));
@@ -5357,7 +5433,7 @@
 // SpringAirAxePlus
 {
     let skillId = Weapon.SpringAirAxePlus;
-    setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId,
+    setForFoesSkillsDuringCombatHooks(skillId,
         // on foes within 3 rows or 3 columns centered on unit and
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // Inflicts Atk/Spd/Def/Res-5
@@ -5667,13 +5743,13 @@
     // Enables [Canto (2)]
     enablesCantoN(skillId, 2);
     // on foes within 3 rows or 3 columns centered on unit,
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // Inflicts Spd/Def-5
             INFLICTS_SPD_DEF_ON_FOE_DURING_COMBAT_NODE(5),
         ),
     ));
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // neutralizes those foes’ bonuses to Spd/Def,
             NEUTRALIZES_FOES_EACH_BONUSES_TO_STATS_DURING_COMBAT_NODE(false, true, true, false),
@@ -5817,13 +5893,13 @@
 {
     let skillId = getSpecialRefinementSkillId(Weapon.KiaStaff);
     // For allies within 3 rows or 3 columns centered on unit,
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // grants Atk/Spd+5 during their combat,
             GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(5),
         ),
     ));
-    WHEN_INFLICTS_EFFECTS_TO_FOES_AFTER_OTHER_SKILLS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_EFFECTS_AFTER_OTHER_SKILLS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // and also, if ally’s Spd > foe’s Spd,
             IF_NODE(GT_NODE(UNITS_EVAL_SPD_NODE, FOES_EVAL_SPD_NODE),
@@ -6269,7 +6345,7 @@
 // Protective
 {
     let skillId = PassiveA.Protective;
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For foes within 3 rows or 3 columns centered on unit,
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // inflicts Atk/Spd/Def/Res-5 on foe and
@@ -8661,13 +8737,13 @@
 {
     let skillId = getRefinementSkillId(Weapon.DazzlingBreath);
     // Grants Atk+3. If foe's Range = 2, calculates damage using the lower of foe's Def or Res.
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts Atk/Spd/Def/Res-5 on foes within 3 rows or 3 columns centered on unit and
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
         ),
     ));
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // on foes within 3 rows or 3 columns centered on unit and
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // neutralizes those foes' bonuses (from skills like Fortify, Rally, etc.) during combat.

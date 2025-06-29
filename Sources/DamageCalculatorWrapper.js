@@ -10075,7 +10075,7 @@ class DamageCalculatorWrapper {
             }
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
             env.setName('周囲の敵からのデバフ').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
-            WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
+            FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.evaluateWithUnit(enemyAlly, env);
         }
     }
 
@@ -10363,7 +10363,7 @@ class DamageCalculatorWrapper {
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
             env.setName('周囲の敵からのスキル効果').setLogLevel(getSkillLogLevel())
                 .setDamageType(damageType).setCombatPhase(this.combatPhase);
-            WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
+            FOR_FOES_INFLICTS_EFFECTS_HOOKS.evaluateWithUnit(enemyAlly, env);
 
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySkillEffectFromEnemyAlliesFuncMap);
@@ -10454,7 +10454,7 @@ class DamageCalculatorWrapper {
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
             env.setName('周囲の敵からのスキル効果（適用後）').setLogLevel(getSkillLogLevel())
                 .setDamageType(damageType).setCombatPhase(this.combatPhase);
-            WHEN_INFLICTS_EFFECTS_TO_FOES_AFTER_OTHER_SKILLS_HOOKS.evaluateWithUnit(enemyAlly, env);
+            FOR_FOES_INFLICTS_EFFECTS_AFTER_OTHER_SKILLS_HOOKS.evaluateWithUnit(enemyAlly, env);
         }
     }
 

@@ -236,6 +236,7 @@ const NEGATIVE_STATUS_EFFECT_SET = new Set([
     StatusEffectType.HushSpectrum,
     StatusEffectType.ShareSpoils,
     StatusEffectType.Frozen,
+    StatusEffectType.ShareSpoilsPlus,
 ]);
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。

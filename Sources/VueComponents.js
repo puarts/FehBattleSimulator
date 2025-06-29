@@ -257,17 +257,44 @@ function initVueComponents() {
                 ></select2>
                 <!-- 引数 -->
                 <span v-for="argNode in CustomSkill.Arg.FUNC_ID_TO_NODES.getValues(funcId)">
+                    <!-- br -->
+                    <br
+                        v-if="argNode === CustomSkill.Arg.Node.BR"
+                    />
                     <!-- + -->
                     <span
                         v-if="argNode === CustomSkill.Arg.Node.PLUS"
+                        class="normal"
                     >
                       &plus;
                     </span>
                     <!-- x -->
                     <span
                         v-if="argNode === CustomSkill.Arg.Node.MULT"
+                        class="normal"
                     >
                       &times;
+                    </span>
+                    <!-- マス -->
+                    <span
+                        v-if="argNode === CustomSkill.Arg.Node.SPACES_LABEL"
+                        class="normal"
+                    >
+                        マス
+                    </span>
+                    <!-- 対象 -->
+                    <span
+                        v-if="argNode === CustomSkill.Arg.Node.TARGET_LABEL"
+                        class="normal"
+                    >
+                        対象:&nbsp;
+                    </span>
+                    <!-- 付与 -->
+                    <span
+                        v-if="argNode === CustomSkill.Arg.Node.STATUS_EFFECT_LABEL"
+                        class="normal"
+                    >
+                        付与:&nbsp;
                     </span>
 
                     <!-- 数値 -->

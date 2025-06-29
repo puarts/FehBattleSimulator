@@ -1451,7 +1451,7 @@ class IterUtil {
      * @returns {number}
      */
     static minValue(iterable, valueFunc, initValue) {
-        return this.maxValue(iterable, e => -valueFunc(e), initValue);
+        return -this.maxValue(iterable, e => -valueFunc(e), -initValue);
     }
 
     /**

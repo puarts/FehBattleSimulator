@@ -7857,9 +7857,9 @@ class BattleSimulatorBase {
             }
 
             // 予知の罠などによる行動終了判定
-            let env = new NodeEnv().setTarget(attackerUnit).setTargetFoe(targetUnit)
+            let env = new BattleSimulatorBaseEnv(self, attackerUnit).setTargetFoe(targetUnit)
                 .setSkillOwner(targetUnit)
-                .setName('攻撃開始前').setLogLevel(getSkillLogLevel());
+                .setName('攻撃キャンセル判定').setLogLevel(getSkillLogLevel());
             let isAttackCanceled = CANCEL_FOES_ATTACK_HOOKS.evaluateSomeWithUnit(targetUnit, env);
             if (isAttackCanceled) {
                 self.writeSimpleLogLine(`${attackerUnit.nameWithGroup}の攻撃はキャンセル`);
@@ -7871,9 +7871,15 @@ class BattleSimulatorBase {
                     attackerUnit.isStyleActivatedInThisTurn = true;
                     attackerUnit.styleActivationsCount++;
                 }
+                // 攻撃キャンセル時も行動後の再行動の対象になる
                 env = new BattleSimulatorBaseEnv(this, attackerUnit);
                 env.setName('行動時[攻撃キャンセル]').setLogLevel(getSkillLogLevel());
                 AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(attackerUnit, env);
+                // TODO: 攻撃キャンセル後と行動後が同じタイミングか確認する
+                for (let unit of self.enumerateAllUnitsOnMap()) {
+                    unit.applyReservedState(false);
+                }
+                self.map.applyReservedDivineVein();
                 return;
             }
 

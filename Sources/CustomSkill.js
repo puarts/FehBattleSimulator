@@ -24,13 +24,18 @@ class CustomSkill {
     static Arg = class {
         static Node = {
             NON_NEGATIVE_INTEGER: "non_negative_integer",
+            BR: "br",
             PLUS: "plus",
             MULT: "mult",
+            SPACES_LABEL: "spaces_label",
+            TARGET_LABEL: "target_label",
+            STATUS_EFFECT_LABEL: "status_effect_label",
             VARIABLE: "variable",
             VARIABLE_PERCENTAGE: "variable_percentage",
             PERCENTAGE: "percentage",
             EFFECTIVE_TYPE: "effective_type",
             STATUS_EFFECT_TYPE: "status_effect_type",
+            UNITS: "units",
             STAT: "stat",
         }
 
@@ -52,6 +57,7 @@ class CustomSkill {
             [this.Node.PERCENTAGE, this.NodeType.PERCENTAGE],
             [this.Node.EFFECTIVE_TYPE, this.NodeType.ID],
             [this.Node.STATUS_EFFECT_TYPE, this.NodeType.ID],
+            [this.Node.UNITS, this.NodeType.ID],
             [this.Node.STAT, this.NodeType.ID],
         ]);
 
@@ -66,14 +72,19 @@ class CustomSkill {
         static NODE_TO_OPTIONS = new MultiValueMap();
 
         /**
-         * @type {[NumberNode, string][]}
+         * @type {Map<string, [NumberNode, string]>}
          */
-        static STAT_NODE_LIST = [];
+        static STAT_NODES = [];
 
         /**
-         * @type {[NumberNode, string][]}
+         * @type {Map<string, [NumberNode, string]>}
          */
-        static VARIABLE_NODE_LIST = [];
+        static VARIABLE_NODES = [];
+
+        /**
+         * @type {Map<string, [UnitsNode, string]>}
+         */
+        static UNITS_NODES;
 
         static initArgs(customSkill) {
             const {NON_NEGATIVE_INTEGER, PERCENTAGE, VARIABLE_PERCENTAGE} = this.Node;
@@ -103,18 +114,27 @@ class CustomSkill {
             return NumberNode.makeNumberNodeFrom(args[this.Node.PERCENTAGE] ?? 0);
         }
 
+        static getStatusEffectTypeNode(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.STATUS_EFFECT_TYPE] ?? 0);
+        }
+
+        static getUnitsNode(args) {
+            let id = args[this.Node.UNITS];
+            return id ? this.UNITS_NODES.get(id)[0] : UnitsNode.EMPTY_UNITS_NODE;
+        }
+
         static getVariablePercentageNode(args) {
             return NumberNode.makeNumberNodeFrom(args[this.Node.VARIABLE_PERCENTAGE] ?? 0);
         }
 
         static getStatNode(args) {
             let id = args[this.Node.STAT];
-            return id ? this.STAT_NODE_LIST[id][0] : ZERO_NUMBER_NODE;
+            return id ? this.STAT_NODES[id][0] : ZERO_NUMBER_NODE;
         }
 
         static getVariableNode(args) {
             let id = args[this.Node.VARIABLE];
-            return id ? this.VARIABLE_NODE_LIST[id][0] : ZERO_NUMBER_NODE;
+            return id ? this.VARIABLE_NODES[id][0] : ZERO_NUMBER_NODE;
         }
 
         static getStatPercentNode(args) {
@@ -122,50 +142,72 @@ class CustomSkill {
         }
 
         /**
-         * nodeList の内容を tree.addValue に登録するヘルパー
          * @param {MultiValueMap} nodeToOptions
-         * @param {number} node
-         * @param {[NumberNode, string][]} nodeList
+         * @param {string} node
+         * @param {Map<string, [SkillEffectNode, string]>} nodes
          */
-        static registerOptionsByNode(nodeToOptions, node, nodeList) {
-            nodeList.forEach(([_, text], index) => {
-                const option = index === 0
-                    ? {id: '', text, disabled: true}
-                    : {id: index, text};
+        static registerOptionsByNode(nodeToOptions, node, nodes) {
+            for (const [id, [_, text]] of nodes.entries()) {
+                const option = id === ''
+                    ? {id: id, text, disabled: true}
+                    : {id: id, text};
                 nodeToOptions.addValue(node, option);
-            });
+            }
         }
 
         static {
-            this.STAT_NODE_LIST = [
-                [ZERO_NUMBER_NODE, '-- 選択してください --'],
-                [UNITS_ATK_AT_START_OF_COMBAT_NODE, '戦闘開始時の攻撃'],
-                [UNITS_SPD_AT_START_OF_COMBAT_NODE, '戦闘開始時の速さ'],
-                [UNITS_DEF_AT_START_OF_COMBAT_NODE, '戦闘開始時の守備'],
-                [UNITS_RES_AT_START_OF_COMBAT_NODE, '戦闘開始時の魔防'],
+            this.STAT_NODES = new Map([
+                ['', [ZERO_NUMBER_NODE, '-- 選択してください --']],
 
-                [FOES_ATK_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の攻撃'],
-                [FOES_SPD_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の速さ'],
-                [FOES_DEF_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の守備'],
-                [FOES_RES_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の魔防'],
+                ['atk-at-start-of-combat', [UNITS_ATK_AT_START_OF_COMBAT_NODE, '戦闘開始時の攻撃']],
+                ['spd-at-start-of-combat', [UNITS_SPD_AT_START_OF_COMBAT_NODE, '戦闘開始時の速さ']],
+                ['def-at-start-of-combat', [UNITS_DEF_AT_START_OF_COMBAT_NODE, '戦闘開始時の守備']],
+                ['res-at-start-of-combat', [UNITS_RES_AT_START_OF_COMBAT_NODE, '戦闘開始時の魔防']],
 
-                [UNITS_ATK_NODE, '攻撃'],
-                [UNITS_SPD_NODE, '速さ'],
-                [UNITS_DEF_NODE, '守備'],
-                [UNITS_RES_NODE, '魔防'],
+                ['foe-atk-at-start-of-combat', [FOES_ATK_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の攻撃']],
+                ['foe-spd-at-start-of-combat', [FOES_SPD_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の速さ']],
+                ['foe-def-at-start-of-combat', [FOES_DEF_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の守備']],
+                ['foe-res-at-start-of-combat', [FOES_RES_AT_START_OF_COMBAT_NODE, '戦闘開始時の敵の魔防']],
 
-                [FOES_ATK_NODE, '敵の攻撃'],
-                [FOES_SPD_NODE, '敵の速さ'],
-                [FOES_DEF_NODE, '敵の守備'],
-                [FOES_RES_NODE, '敵の魔防'],
-            ];
+                ['atk', [UNITS_ATK_NODE, '攻撃']],
+                ['spd', [UNITS_SPD_NODE, '速さ']],
+                ['def', [UNITS_DEF_NODE, '守備']],
+                ['res', [UNITS_RES_NODE, '魔防']],
 
-            this.VARIABLE_NODE_LIST = [...this.STAT_NODE_LIST];
+                ['foe-atk', [FOES_ATK_NODE, '敵の攻撃']],
+                ['foe-spd', [FOES_SPD_NODE, '敵の速さ']],
+                ['foe-def', [FOES_DEF_NODE, '敵の守備']],
+                ['foe-res', [FOES_RES_NODE, '敵の魔防']],
+            ]);
+            this.VARIABLE_NODES = new Map(this.STAT_NODES);
             // TODO: 追加
             // フレスベルグ、子供カミラ
 
-            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT, this.STAT_NODE_LIST);
-            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.VARIABLE, this.VARIABLE_NODE_LIST);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT, this.STAT_NODES);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.VARIABLE, this.VARIABLE_NODES);
+
+            this.UNITS_NODES = new Map([
+                ['', [UnitsNode.EMPTY_UNITS_NODE, '-- 選択してください --']],
+                ['target', [UnitsNode.makeFromUnit(TARGET_NODE), '自分']],
+                ['target-and-targets-allies-within-1-spaces', [TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(1), '自分と周囲1マス以内の味方']],
+                ['target-and-targets-allies-within-2-spaces', [TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(2), '自分と周囲2マス以内の味方']],
+                ['target-and-targets-allies-within-3-spaces', [TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(3), '自分と周囲3マス以内の味方']],
+                ['target-and-targets-allies-within-4-spaces', [TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(4), '自分と周囲4マス以内の味方']],
+                ['target-and-targets-allies-within-5-spaces', [TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(5), '自分と周囲5マス以内の味方']],
+
+                ['closest-foes', [TARGETS_CLOSEST_FOES_NODE, '最も近い敵']],
+
+                ['closest-foes-and-those-allies-within-1-spaces', [TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(1, TRUE_NODE), '最も近い敵とその周囲1マス以内の敵']],
+                ['closest-foes-and-those-allies-within-2-spaces', [TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(2, TRUE_NODE), '最も近い敵とその周囲2マス以内の敵']],
+                ['closest-foes-and-those-allies-within-3-spaces', [TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(3, TRUE_NODE), '最も近い敵とその周囲3マス以内の敵']],
+                ['closest-foes-and-those-allies-within-4-spaces', [TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(4, TRUE_NODE), '最も近い敵とその周囲4マス以内の敵']],
+                ['closest-foes-and-those-allies-within-5-spaces', [TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(5, TRUE_NODE), '最も近い敵とその周囲5マス以内の敵']],
+
+                ['target-and-targets-allies-on-map', [TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE, '味方全員']],
+                ['foes-on-map', [TARGETS_FOES_ON_MAP_NODE, '敵全員']],
+                ['units-on-map', [UNITS_ON_MAP_NODE, '全員']],
+            ]);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.UNITS, this.UNITS_NODES);
 
             const addEnumOptions = (nodeType, enumObj, getText) => {
                 for (const [, value] of Object.entries(enumObj)) {
@@ -457,7 +499,7 @@ CustomSkill.setFuncId('neutralizes-non-special-damage-reduction-when-special',
 CustomSkill.setFuncId('effective-against', "特効",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
-            EFFECTIVE_AGAINST_NODE(args[CustomSkill.Arg.Node.EFFECTIVE_TYPE] ?? EffectiveType.None),
+            EFFECTIVE_AGAINST_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
         ));
     },
     [
@@ -470,9 +512,7 @@ CustomSkill.setFuncId('neutralizes-effective-against-bonuses', "特効無効",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             // Neutralizes "effective against" bonuses for all movement types.
-            TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE(
-                args[CustomSkill.Arg.Node.EFFECTIVE_TYPE] ?? EffectiveType.None
-            ),
+            TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
         ));
     },
     [
@@ -1002,4 +1042,54 @@ CustomSkill.setFuncId(
         ));
     },
     []
+);
+
+// ターン開始時
+let ADD_STATUS_EFFECT_TO_TARGET_ARGS = [
+    CustomSkill.Arg.Node.TARGET_LABEL,
+    CustomSkill.Arg.Node.UNITS,
+    CustomSkill.Arg.Node.BR,
+    CustomSkill.Arg.Node.STATUS_EFFECT_LABEL,
+    CustomSkill.Arg.Node.STATUS_EFFECT_TYPE,
+];
+CustomSkill.setFuncId(
+    'at-start-of-turn-grants-status-effect-on-unit',
+    "ターン開始時、対象にステータスを付与",
+    (skillId, args) => {
+        AT_START_OF_TURN_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
+            ),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'at-start-of-enemy-phase-grants-status-effect-on-unit',
+    "敵軍ターン開始時、対象にステータスを付与",
+    (skillId, args) => {
+        AT_START_OF_ENEMY_PHASE_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
+            ),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'at-start-of-player-or-enemy-phase-grants-status-effect-on-unit',
+    "自軍、敵軍ターン開始時、対象にステータスを付与",
+    (skillId, args) => {
+        setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
+            ),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
 );

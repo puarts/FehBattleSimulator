@@ -2550,3 +2550,20 @@ class AfterCombatMovementEffectsDoNotOccurBecauseOfTargetNode extends SkillEffec
 
 const AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE =
     new AfterCombatMovementEffectsDoNotOccurBecauseOfTargetNode();
+
+class CancelsStatusEffectsGrantedToTargetNode extends FromNumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        this.evaluateChildren(env).forEach(e => {
+            let unit = this.getUnit(env);
+            env.debug(`${unit.nameWithGroup}の${getStatusEffectName(e)}を解除予約`);
+            unit.reservedStatusEffectSetToNeutralize.add(e);
+        });
+    }
+}
+
+const CANCEL_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE =
+    (...effects) => new CancelsStatusEffectsGrantedToTargetNode(...effects);

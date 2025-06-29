@@ -86,6 +86,10 @@ class NodeEnv {
     /** @type {number[]} */
     #numValues = [];
     /**
+     * @type {Map<string, any>}
+     */
+    #caches = new Map();
+    /**
      * TODO: 削除する
      * @type {boolean|null} */
     isStatusFixedNullable = null;
@@ -99,6 +103,8 @@ class NodeEnv {
 
     setName(name) {
         this.name = name;
+        // 名前を変えて使い回す場合にキャッシュをクリアする
+        this.clearCache();
         return this;
     }
 
@@ -121,6 +127,7 @@ class NodeEnv {
         copyInstance.setLogLevel(this.getLogLevel());
         copyInstance.setLogFunc(this.#logFunc);
         copyInstance.#numValues = this.#numValues;
+        copyInstance.#caches = new Map(this.#caches);
 
         // 引数で渡されたオーバーライドのプロパティで上書き
         Object.assign(copyInstance, overrides);
@@ -411,6 +418,22 @@ class NodeEnv {
     setIsStatusFixed(isStatusFixed) {
         this.isStatusFixedNullable = isStatusFixed;
         return this;
+    }
+
+    getCache(key) {
+        return this.#caches.get(key);
+    }
+
+    hasCache(key) {
+        return this.#caches.has(key);
+    }
+
+    setCache(key, value) {
+        this.#caches.set(key, value);
+    }
+
+    clearCache() {
+        this.#caches.clear();
     }
 
     /**

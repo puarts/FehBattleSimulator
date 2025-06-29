@@ -133,17 +133,17 @@ const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS = new SkillEffectHo
 /**
  * 周囲の敵から受ける紋章効果。targetがデバフを受けるユニット
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS = new SkillEffectHooks();
+const FOR_FOES_INFLICTS_STATS_MINUS_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲の敵から受けるスキル効果
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS = new SkillEffectHooks();
+const FOR_FOES_INFLICTS_EFFECTS_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲の敵から受けるスキル効果（適用後）
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const WHEN_INFLICTS_EFFECTS_TO_FOES_AFTER_OTHER_SKILLS_HOOKS = new SkillEffectHooks();
+const FOR_FOES_INFLICTS_EFFECTS_AFTER_OTHER_SKILLS_HOOKS = new SkillEffectHooks();
 
 /**
  * ボタンを押したときのスキル効果
@@ -420,8 +420,3 @@ const CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<NumberNode, NodeEnv>}
  */
 const CAN_ATTACK_FOES_N_SPACES_AWAY_HOOKS = new SkillEffectHooks();
-
-/**
- * @type {SkillEffectHooks<NumberNode, NodeEnv>}
- */
-const SKILLS_EFFECTS_RANGE_IS_TREATED_AS_N_HOOKS = new SkillEffectHooks();

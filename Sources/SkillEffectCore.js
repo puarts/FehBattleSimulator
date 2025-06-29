@@ -1250,3 +1250,32 @@ class ApplyXNode extends SkillEffectNode {
  * @returns {T}
  */
 const APPLY_X_NODE = (xNode, node) => new ApplyXNode(xNode, node);
+
+class CacheNode extends SkillEffectNode {
+    constructor(key, node) {
+        super(node);
+        this._key = key;
+    }
+
+    evaluate(env) {
+        if (env.hasCache(this._key)) {
+            let cache = env.getCache(this._key);
+            env.trace(`return cache: ${cache}`);
+            return cache;
+        }
+
+        const [value] = this.evaluateChildren(env);
+        env.trace(`cache value: ${value}`);
+
+        env.setCache(this._key, value);
+        return value;
+    }
+}
+
+/**
+ * @param {string} key
+ * @param {SkillEffectNode} node
+ * @returns {CacheNode}
+ * @constructor
+ */
+const CACHE_NODE = (key, node) => new CacheNode(key, node);
