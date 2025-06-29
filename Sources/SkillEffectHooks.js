@@ -324,6 +324,15 @@ const AFTER_MOVEMENT_ASSIST_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
 const AFTER_MOVEMENT_ASSIST_ENDED_BY_OTHER_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const CAN_RALLY_FORCIBLY_HOOKS = new SkillEffectHooks();
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const CAN_RALLIED_FORCIBLY_HOOKS = new SkillEffectHooks();
+
+/**
  * TODO: rename
  * AIの天脈処理
  */

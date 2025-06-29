@@ -67,6 +67,8 @@
             REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(40),
         )
     ));
+    CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // If a Rally or movement Assist skill is used by unit,
     setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, () => SKILL_EFFECT_NODE(
         // restores 20 HP to allies within 2 spaces of both unit and target ally after movement
@@ -136,6 +138,7 @@
             MULT_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 4),
         ),
     ));
+    CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // If a Rally or movement Assist skill is used by unit,
     setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, () => SKILL_EFFECT_NODE(
         FOR_UNIT_NODE(

@@ -9493,6 +9493,12 @@ class BattleSimulatorBase {
             env = new BattleSimulatorBaseEnv(this, targetUnit);
             env.setName('移動補助を使用された時').setLogLevel(getSkillLogLevel()).setAssistUnits(unit, targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+
+            for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedState(false);
+                unit.applyReservedHp(true);
+            }
+            this.map.applyReservedDivineVein();
         }
 
         return true;
@@ -10149,6 +10155,7 @@ class BattleSimulatorBase {
             this.__applySkillsAfterRally(supporterUnit, targetUnit);
             for (let unit of this.enumerateUnitsOnMap()) {
                 unit.applyReservedState(false);
+                unit.applyReservedHp(true);
             }
         }
         this.map.applyReservedDivineVein();

@@ -837,6 +837,11 @@ function canRallyForcibly(skill, unit) {
     if (func?.call(this, unit) ?? false) {
         return true;
     }
+    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTargeting(unit)
+        .setName('強制的に応援可能判定').setLogLevel(getSkillLogLevel());
+    if (CAN_RALLY_FORCIBLY_HOOKS.evaluate(unit, env)) {
+        return true;
+    }
     switch (skill) {
         case Support.GoldSerpent:
             // TODO: 調査する
@@ -868,6 +873,11 @@ function canRallyForcibly(skill, unit) {
 
 function canRalliedForcibly(skillId, unit) {
     if (getSkillFunc(skillId, canRalliedForciblyFuncMap)?.call(this, unit) ?? false) {
+        return true;
+    }
+    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTarget(unit)
+        .setName('強制的に被応援可能判定').setLogLevel(getSkillLogLevel());
+    if (CAN_RALLIED_FORCIBLY_HOOKS.evaluate(unit, env)) {
         return true;
     }
     switch (skillId) {
