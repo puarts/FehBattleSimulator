@@ -1,4 +1,25 @@
 // スキル実装
+// RaudrsparrowPlus
+{
+    let skillId = Weapon.RaudrsparrowPlus;
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If unit initiates combat or is within 2 spaces of an ally,
+        OR_NODE(DOES_TARGET_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        // grants Atk/Spd/Def/Res+5 to unit, and
+        GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+        SKILL_EFFECT_NODE(
+            // deals damage = 10% of unit's Atk during combat
+            // (excluding area-of-effect Specials), and also,
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(10, UNITS_ATK_NODE)),
+            // when unit's Special triggers,
+            // neutralizes foe's "reduces damage by X%" effects
+            // from foe's non-Special skills
+            // (excluding area-of-effect Specials).
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        ),
+    );
+}
+
 // Foresight Snare
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.ForesightSnare);
