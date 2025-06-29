@@ -3951,6 +3951,7 @@ const EmblemHero = {
     Sigurd: 1177,
     Lyn: 1216,
     Eirika: 1255,
+    Micaiah: 100000,
     Debug: 100000,
 };
 

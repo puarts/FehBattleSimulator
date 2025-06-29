@@ -1,4 +1,171 @@
 // スキル実装
+// 📕 Maiden’s Tome
+{
+    let skillId = Weapon.MaidensTome;
+    // Mt: 14 Rng: 2 Eff: ![Armored],[Cavalry]
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against armored and cavalry foes.
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId,
+        () => SKILL_EFFECT_NODE(
+            // inflicts Atk/Spd/Def/Res-6 and 【Exposure】 on closest foes within 5 spaces
+            // of both unit and target ally or unit and targeting ally after movement
+            // and on foes within 2 spaces of those foes through their next actions.
+            FOR_EACH_UNIT_NODE(
+                CLOSEST_FOES_WITHIN_5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE,
+                INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(STATS_NODE(6, 6, 6, 6)),
+                INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Exposure),
+            ),
+        ),
+    );
+
+    setForFoesSkillsDuringCombatHooks(skillId,
+        HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Exposure),
+        // Inflicts Atk/Spd/Def/Res-5 on foes on the map with the 【Exposure】 effect active,
+        STATS_NODE(5, 5, 5, 5),
+        // and those foes suffer guaranteed follow-up attacks during combat.
+        FOE_SUFFERS_GUARANTEED_FOLLOW_UP_ATTACKS_DURING_COMBAT,
+    );
+
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants bonus to unit’s Atk/Spd/Def/Res =
+            GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
+                // number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+                MULT_ADD_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
+            ),
+            X_NUM_NODE(
+                // unit deals +X damage (excluding area-of-effect Specials;
+                DEALS_DAMAGE_X_NODE(READ_NUM_NODE),
+                // X = highest total penalties among target and foes within 2 spaces of target),
+                HIGHEST_TOTAL_PENALTIES_AMONG_TARGET_AND_FOES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
+            ),
+            // reduces damage from foe’s attacks by 7 (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_BY_N_NODE(7),
+            // and grants Special cooldown count-1 to unit before unit’s first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    ));
+}
+
+// 🌙 Great Sacrifice ⏳3
+{
+    let skillId = Special.GreatSacrifice;
+    setSpecialCountAndType(skillId, 3, true, false);
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // boosts damage by 60% of unit’s Res
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_RES_NODE)),
+        // and neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills.
+        WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        IF_NODE(
+            // If unit’s or foe’s Special is ready,
+            // or unit’s or foe’s Special triggered before or during this combat,
+            IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+            // reduces damage from foe’s next attack by 40% (once per combat; excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(40),
+        )
+    ));
+    // If a Rally or movement Assist skill is used by unit,
+    setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, () => SKILL_EFFECT_NODE(
+        // restores 20 HP to allies within 2 spaces of both unit and target ally after movement
+        // (including target ally; excluding unit),
+        // and neutralizes any [Penalty] on those allies
+        // (does not stack even if effect ranges of unit and target overlap),
+        FOR_EACH_UNIT_NODE(
+            ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2),
+            RESTORE_TARGETS_HP_ON_MAP_NODE(20),
+            NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
+        ),
+    ));
+    // and grants another action to unit
+    // (additional action granted once per turn only;
+    // if another effect that grants additional action to unit has been triggered at the same time,
+    // this effect is also considered to have been triggered).
+    setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+    ));
+}
+
+// 🅲 Silence Ward 4
+{
+    let skillId = PassiveC.SilenceWard;
+    // For allies within 2 spaces of unit,
+    setForAlliesHooks(skillId,
+        IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+        // grants Atk/Res+4
+        GRANTS_ATK_RES_TO_TARGET_DURING_COMBAT_NODE(4),
+        SKILL_EFFECT_NODE(
+            // and neutralizes effects that prevent ally’s counterattacks during combat,
+            NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
+            // and also,
+            // if ally’s attack can trigger ally’s Special,
+            // grants Special cooldown count-1 to ally before ally’s first attack during combat.
+            IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            ),
+        ),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // grants Atk/Res+4 to unit
+            GRANTS_ATK_RES_TO_TARGET_DURING_COMBAT_NODE(4),
+            // and neutralizes effects that prevent unit’s counterattacks during combat,
+            NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
+            // and also,
+            // if unit’s attack can trigger unit’s Special,
+            // grants Special cooldown count-1 to unit before unit’s first attack during combat.
+            IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            ),
+        ),
+    ));
+}
+
+// 🌀 Emblem Effect
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Micaiah);
+    // Enhanced Engaged Special:
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // boosts damage by unit’s max Special cooldown count value × 4
+        // (excluding area-of-effect Specials).
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            MULT_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 4),
+        ),
+    ));
+    // If a Rally or movement Assist skill is used by unit,
+    setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, () => SKILL_EFFECT_NODE(
+        FOR_UNIT_NODE(
+            ASSIST_TARGET_NODE,
+            // restores 20 HP to target ally
+            RESTORE_TARGETS_HP_ON_MAP_NODE(20),
+            // and neutralizes any [Penalty] on that ally,
+            NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
+        ),
+        // and grants another action to unit
+        // and inflicts 【Isolation】 on unit and Pair Up cohort through their next action,
+        // and also,
+        // if unit’s or Pair Up Cohort’s Range = 2,
+        // inflicts “restricts movement to 1 space” on unit and Pair Up cohort, respectively,
+        // through their next action
+        // (“grants another action” effect and onward is once per turn;
+        // if another effect that grants additional action to unit has been triggered at the same time,
+        // this effect is also considered to have been triggered).
+        GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_EFFECTS_NODE(
+            FOR_UNIT_NODE(
+                ASSIST_TARGETING_NODE,
+                INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Isolation),
+                IF_NODE(IS_TARGET_RANGED_WEAPON_NODE,
+                    INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Gravity),
+                ),
+            ),
+        ),
+    ));
+}
+
 // RaudrsparrowPlus
 {
     let skillId = Weapon.RaudrsparrowPlus;

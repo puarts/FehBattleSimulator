@@ -3565,7 +3565,20 @@ class ForEachUnitNode extends ForEachNode {
     }
 }
 
+/**
+ * @param {UnitsNode} unitsNode
+ * @param {...SkillEffectNode} nodes
+ * @returns {ForEachUnitNode}
+ * @constructor
+ */
 const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNode, TRUE_NODE, ...nodes);
+/**
+ * @param {UnitNode} unit
+ * @param {...SkillEffectNode} nodes
+ * @returns {ForEachUnitNode}
+ * @constructor
+ */
+const FOR_UNIT_NODE = (unit, ...nodes) => FOR_EACH_UNIT_NODE(UnitsNode.makeFromUnit(unit), ...nodes);
 
 class TargetsFoesNode extends UnitsNode {
     static {
@@ -4995,11 +5008,19 @@ class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
+    constructor(nodeAfterAnotherAction = null) {
+        super();
+        this._nodeAfterAnotherAction = nodeAfterAnotherAction;
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let success = unit.grantAnotherActionOnAssistIfPossible();
         if (success) {
             env.debug(`${unit.nameWithGroup}は再行動`);
+            if (this._nodeAfterAnotherAction) {
+                this._nodeAfterAnotherAction.evaluate(env);
+            }
         } else {
             env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
         }
@@ -5007,6 +5028,8 @@ class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
 }
 
 const GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE = new GrantsAnotherActionToTargetOnAssistNode();
+const GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_EFFECTS_NODE =
+    node => new GrantsAnotherActionToTargetOnAssistNode(node);
 
 class GrantsAnotherActionToAssistTargetingOnAssistNode extends GrantsAnotherActionToTargetOnAssistNode {
     static {
@@ -5038,6 +5061,8 @@ class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
         }
     }
 }
+
+const GRANTS_ANOTHER_ACTION_AND_INFLICTS_ISOLATION_NODE = new GrantsAnotherActionAndInflictsIsolationNode();
 
 class GrantsAnotherActionAndInflictsIsolationAfterTargetInitiatedCombatNode extends GrantsAnotherActionAndInflictsIsolationNode {
     static {

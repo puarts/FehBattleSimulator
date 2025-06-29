@@ -1393,3 +1393,20 @@ function setCondHooks(skillId, condNode, ...hooksAndNodeFuncs) {
         ));
     }
 }
+
+function setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, nodeFunc) {
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+}
+
+function setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, nodeFunc) {
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_RALLY_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc);
+}
+
+function setIfRallyOrMovementAssistSkillEndedByUnit(skillId, nodeFunc) {
+    AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+}
