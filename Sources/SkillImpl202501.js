@@ -145,6 +145,8 @@
             // and neutralizes any [Penalty] on that ally,
             NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
         ),
+    ));
+    setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
         // and grants another action to unit
         // and inflicts 【Isolation】 on unit and Pair Up cohort through their next action,
         // and also,
