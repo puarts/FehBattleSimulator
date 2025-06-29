@@ -180,8 +180,18 @@ class CustomSkill {
                 ['foe-res', [FOES_RES_NODE, '敵の魔防']],
             ]);
             this.VARIABLE_NODES = new Map(this.STAT_NODES);
-            // TODO: 追加
-            // フレスベルグ、子供カミラ
+            this.VARIABLE_NODES.set(
+                'highest-total-penalties-among-foe-and-foes-allies-within-2-spaces-of-target-node',
+                [
+                    HIGHEST_TOTAL_PENALTIES_AMONG_TARGET_AND_FOES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
+                    '敵とその周囲2マス以内の弱化の合計の最大値'
+                ]);
+            this.VARIABLE_NODES.set(
+                'total-number-of-bonuses-and-penalties-active-on-foe-and-any-foe-within-2-spaces-of-foe-mult-3',
+                [
+                    MULT_NODE(TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE(2), 3),
+                    '敵とその周囲2マス以内の敵の【有利な状態】と【不利な状態異常】の数×3'
+                ]);
 
             this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT, this.STAT_NODES);
             this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.VARIABLE, this.VARIABLE_NODES);
@@ -202,6 +212,16 @@ class CustomSkill {
                 ['closest-foes-and-those-allies-within-3-spaces', [TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(3, TRUE_NODE), '最も近い敵とその周囲3マス以内の敵']],
                 ['closest-foes-and-those-allies-within-4-spaces', [TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(4, TRUE_NODE), '最も近い敵とその周囲4マス以内の敵']],
                 ['closest-foes-and-those-allies-within-5-spaces', [TARGETS_CLOSEST_FOES_AND_FOES_ALLIES_WITHIN_N_SPACES_OF_THOSE_FOES_NODE(5, TRUE_NODE), '最も近い敵とその周囲5マス以内の敵']],
+
+                ['closest-foes-within-5-spaces-and-foes-allies-within-2-spaces',
+                    [CLOSEST_FOES_WITHIN_5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE,
+                        '自分と補助対象の周囲5マス以内の最も近い敵と周囲2マス以内の敵']],
+                ['unit-and-target-and-those-allies-within-2-spaces',
+                    [ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2),
+                        '自分と補助対象の周囲2マス以内の味方']],
+                ['unit-and-target-and-those-allies-within-2-spaces-except-self',
+                    [REMOVE_UNITS_NODE(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2), SKILL_OWNER_NODE),
+                        '自分と補助対象の周囲2マス以内の味方（自分を除く）']],
 
                 ['target-and-targets-allies-on-map', [TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE, '味方全員']],
                 ['foes-on-map', [TARGETS_FOES_ON_MAP_NODE, '敵全員']],
@@ -471,6 +491,27 @@ CustomSkill.setFuncId('reduces-damage-by-x-percent-by-special-excluding-aoe', "�
         CustomSkill.Arg.Node.PERCENTAGE,
     ],
 );
+
+CustomSkill.setFuncId(
+    'reduces-damage-from-foes-next-attack-by-x-percent-once-per-combat',
+    "奥義条件を満たした時、受けた攻撃のダメージをn%軽減（1戦闘1回のみ）",
+    (skillId, args) => {
+        AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(
+                // If unit’s or foe’s Special is ready,
+                // or unit’s or foe’s Special triggered before or during this combat,
+                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                // reduces damage from foe’s next attack by 40% (once per combat; excluding area-of-effect Specials).
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(
+                    CustomSkill.Arg.getPercentageNode(args)
+                ),
+            )
+        ));
+    },
+    [
+        CustomSkill.Arg.Node.PERCENTAGE,
+    ]
+)
 
 CustomSkill.setFuncId('reduces-percentage-of-non-special-damage-reduction', "奥義以外のダメージ軽減をn%無効",
     (skillId, args) => {
