@@ -3172,7 +3172,7 @@
         // reduces the percentage
         // of foe's non-Special "reduce damage by X%" skills by 50% during combat
         // (excluding area-of-effect Specials).
-        REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // At start of combat, if unit's HP ≥ 25%,
