@@ -59,6 +59,8 @@
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_RES_NODE)),
         // and neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills.
         WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+    ));
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(
             // If unit’s or foe’s Special is ready,
             // or unit’s or foe’s Special triggered before or during this combat,
