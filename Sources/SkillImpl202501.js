@@ -78,7 +78,7 @@
         // and neutralizes any [Penalty] on those allies
         // (does not stack even if effect ranges of unit and target overlap),
         FOR_EACH_UNIT_NODE(
-            ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2),
+            REMOVE_UNITS_NODE(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2), SKILL_OWNER_NODE),
             RESTORE_TARGETS_HP_ON_MAP_NODE(20),
             NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
         ),

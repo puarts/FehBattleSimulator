@@ -546,6 +546,33 @@ class FilterUnitsNode extends UnitsNode {
 
 const FILTER_UNITS_NODE = (unitsNode, predNode) => new FilterUnitsNode(unitsNode, predNode);
 
+class RemoveUnitsNode extends UnitsNode {
+    /**
+     *
+     * @param {UnitNode|UnitsNode} units
+     * @param {UnitNode|UnitsNode} removeTargets
+     */
+    constructor(units, removeTargets) {
+        super();
+        this._unitsNode = UnitsNode.makeFromUnit(units);
+        this._removeTargetsNode = UnitsNode.makeFromUnit(removeTargets);
+    }
+
+    evaluate(env) {
+        let units = this._unitsNode.evaluate(env);
+        let removeTargets = new Set(this._removeTargetsNode.evaluate(env));
+        return IterUtil.filter(units, u => !removeTargets.has(u));
+    }
+}
+
+/**
+ * @param {UnitNode|UnitsNode} units
+ * @param {UnitNode|UnitsNode} removeTargets
+ * @returns {RemoveUnitsNode}
+ * @constructor
+ */
+const REMOVE_UNITS_NODE = (units, removeTargets) => new RemoveUnitsNode(units, removeTargets);
+
 class CountUnitsNode extends PositiveNumberNode {
     /**
      * @param {UnitsNode} unitsNode
