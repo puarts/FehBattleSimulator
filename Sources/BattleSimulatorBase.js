@@ -288,7 +288,6 @@ class BattleSimulatorBase {
 
                 appData.initializeByHeroInfo(currentUnit, currentUnit.heroIndex);
                 appData.__updateStatusBySkillsAndMergeForAllHeroes();
-                console.log("heroIndexChanged");
                 updateAllUi();
             },
             buffChanged: function () {
@@ -321,6 +320,12 @@ class BattleSimulatorBase {
 
                 updateAllUi();
                 return [unit, currentUnit];
+            },
+            initSkills: function () {
+                let unit = this.tryGetCurrentUnit();
+                if (unit) {
+                    unit.initializeSkillsToDefault();
+                }
             },
             passiveChanged: function () {
                 this.updateCurrentUnit();
