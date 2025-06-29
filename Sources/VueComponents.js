@@ -330,7 +330,7 @@ function initVueComponents() {
                             class="custom-skill-args"
                         >
                         </input>
-                        %
+                        <span class="normal">%</span>
                     </span>
 
                     <!-- カテゴリー -->

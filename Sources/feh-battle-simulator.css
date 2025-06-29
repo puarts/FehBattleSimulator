@@ -1221,7 +1221,7 @@ td.enemy {
 /* 追加スキル行 */
 .additional-skill-row {
     --cols: 25px var(--select-width) 15px 60px 1fr;
-    --bg:   #00000010;
+    --bg:   #00000008;
 }
 
 /* カスタムスキル行 */
