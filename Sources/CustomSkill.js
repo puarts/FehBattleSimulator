@@ -1095,7 +1095,7 @@ let ADD_STATUS_EFFECT_TO_TARGET_ARGS = [
 ];
 CustomSkill.setFuncId(
     'at-start-of-turn-grants-status-effect-on-unit',
-    "ターン開始時、対象にステータスを付与",
+    "ターン開始時、対象に状態を付与",
     (skillId, args) => {
         AT_START_OF_TURN_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
             FOR_EACH_UNIT_NODE(
@@ -1109,7 +1109,7 @@ CustomSkill.setFuncId(
 
 CustomSkill.setFuncId(
     'at-start-of-enemy-phase-grants-status-effect-on-unit',
-    "敵軍ターン開始時、対象にステータスを付与",
+    "敵軍ターン開始時、対象に状態を付与",
     (skillId, args) => {
         AT_START_OF_ENEMY_PHASE_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
             FOR_EACH_UNIT_NODE(
@@ -1123,7 +1123,7 @@ CustomSkill.setFuncId(
 
 CustomSkill.setFuncId(
     'at-start-of-player-or-enemy-phase-grants-status-effect-on-unit',
-    "自軍、敵軍ターン開始時、対象にステータスを付与",
+    "自軍、敵軍ターン開始時、対象に状態を付与",
     (skillId, args) => {
         setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
             FOR_EACH_UNIT_NODE(
@@ -1133,4 +1133,49 @@ CustomSkill.setFuncId(
         ));
     },
     ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-grants-status-effect-on-unit',
+    "応援、移動系補助を使用した時、時、対象に状態を付与",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
+            ),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-or-target-grants-status-effect-on-unit',
+    "応援、移動系補助を使用した時、または自分に使用された時、対象に状態を付与",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
+            ),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'grants-another-action-after-rally-or-movement-is-used-by-unit',
+    "応援、移動系補助を使用した時、自分を行動可能にする（再行動）",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+        ));
+    },
+    []
 );
