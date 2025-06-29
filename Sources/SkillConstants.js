@@ -3892,6 +3892,7 @@ Weapon.DevDagger1 = G_WEAPON_ID_BASE + WeaponType.Dagger * 100 + 1;
 Weapon.DevRedTome1 = G_WEAPON_ID_BASE + WeaponType.RedTome * 100 + 1;
 Weapon.DevBlueTome1 = G_WEAPON_ID_BASE + WeaponType.BlueTome * 100 + 1;
 Weapon.DevGreenTome1 = G_WEAPON_ID_BASE + WeaponType.GreenTome * 100 + 1;
+Weapon.DevColorlessTome1 = G_WEAPON_ID_BASE + WeaponType.ColorlessTome * 100 + 1;
 Support.DevAssist1 = G_ASSIST_ID_BASE + 1;
 Special.DevSpecial1 = G_SPECIAL_ID_BASE + 1;
 Special.DevSpecial2 = G_SPECIAL_ID_BASE + 2;

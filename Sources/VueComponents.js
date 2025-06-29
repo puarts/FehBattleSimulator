@@ -125,13 +125,13 @@ function initVueComponents() {
                 }
             },
 
-            options(newOptions) {
-                // options が変更されたら再初期化
+            options(newOptions, oldOptions) {
                 $(this.$el)
                     .empty()
                     .select2({data: newOptions})
                     .val(this.value)
                     .trigger('change');
+                this.$emit('options-changed', newOptions, oldOptions);
             },
         },
 
@@ -376,6 +376,7 @@ function initVueComponents() {
                     :name="unit.id + '-weapon'"
                     v-model="unit.weapon"
                     @input="vm.weaponChanged"
+                    @options-changed="vm.initSkills"
                     class="skill">
                 </select2>
               </div>
@@ -421,6 +422,7 @@ function initVueComponents() {
                     class="skill"
                     v-model="unit.support"
                     @input="vm.supportChanged"
+                    @options-changed="vm.initSkills"
                     :options="vm.enableAllSkillOptions
                               ? vm.supportOptions
                               : (unit.heroInfo ? unit.heroInfo.supportOptions : [])"
@@ -456,6 +458,7 @@ function initVueComponents() {
                     class="skill"
                     v-model="unit.special"
                     @input="vm.specialChanged"
+                    @options-changed="vm.initSkills"
                     :options="vm.enableAllSkillOptions
                                 ? vm.specialOptions
                                 : (unit.heroInfo ? unit.heroInfo.specialOptions : [])"
@@ -523,6 +526,7 @@ function initVueComponents() {
                                 : null"
                     v-model="unit['passive' + slot]"
                     @input="vm['passive' + slot + 'Changed']"
+                    @options-changed="vm.initSkills"
                     class="skill"
                 />
               </div>
