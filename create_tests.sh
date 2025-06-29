@@ -34,6 +34,7 @@ SOURCE_FILE_NAMES=(
     SampleSkillInfos
     SampleHeroInfos
     SkillEffectAliases
+    CustomSkill
     SkillImpl
     SkillImpl202408
     SkillImpl202501

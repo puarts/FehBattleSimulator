@@ -16,10 +16,28 @@ class MultiValueMap extends Map {
     }
 
     /**
+     * @param {K} key
      * @returns {V[]}
      */
     getValues(key) {
         return this.get(key) || [];
+    }
+
+    /**
+     * @param {K} key
+     * @returns {Set<V>}
+     */
+    getValueSet(key) {
+        return new Set(this.getValues(key));
+    }
+
+    /**
+     * @param {K} key
+     * @param {V} value
+     * @returns {boolean}
+     */
+    hasValue(key, value) {
+        return this.getValueSet(key).has(value);
     }
 }
 
@@ -54,6 +72,22 @@ class SkillEffectHooks {
 
     /**
      * @param {number|string} skillId
+     * @param {() => N} nodeFunc
+     * @returns {boolean} 既に登録されている場合はfalse
+     */
+    addSkillIfAbsent(skillId, nodeFunc) {
+        if (typeof nodeFunc !== 'function') {
+            throw new Error('Argument nodeFunc must be a function');
+        }
+        if (this.#delayedMap.has(skillId) || this.#instantiatedMap.has(skillId)) {
+            return false;
+        }
+        this.#delayedMap.addValue(skillId, nodeFunc);
+        return true;
+    }
+
+    /**
+     * @param {number|string} skillId
      * @return N[]
      */
     getSkills(skillId) {
@@ -73,6 +107,19 @@ class SkillEffectHooks {
             this.#skillNameLog(skillId, env);
             if (skills.length >= 2) {
                 env?.info(`登録スキル数: ${skills.length}`);
+            }
+        }
+        if (String(skillId).startsWith('custom_')) {
+            let str = skillId;
+            let firstUnderscore = str.indexOf('_');
+            let secondUnderscore = str.indexOf('_', firstUnderscore + 1);
+            let funcId = str.slice(firstUnderscore + 1, secondUnderscore);
+            let args = str.slice(secondUnderscore + 1);
+
+            let func = CustomSkill.FUNC_ID_TO_FUNC.get(funcId);
+            if (func && !CustomSkill.registeredSkillIds.has(skillId)) {
+                func(skillId, JSON.parse(args));
+                CustomSkill.registeredSkillIds.add(skillId);
             }
         }
         return skills.map(skillNode => skillNode.evaluate(env));
@@ -107,6 +154,9 @@ class SkillEffectHooks {
             case 'duo-or-harmonized':
                 type = '比翼・双界スキル'
                 break;
+            case 'custom':
+                type = 'カスタムスキル'
+                break;
         }
         let name;
         if (prefix === 'e') {
@@ -117,6 +167,9 @@ class SkillEffectHooks {
             name = ObjectUtil.getKeyName(STYLE_TYPE, Number(suffix));
         } else if (prefix === 'duo-or-harmonized') {
             name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
+        } else if (prefix === 'custom') {
+            let funcId = skillId.split('_')[1];
+            name = CustomSkill.FUNC_ID_TO_NAME.get(funcId) ?? skillId;
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }
@@ -246,6 +299,8 @@ class SkillEffectNode {
 }
 
 const SKILL_EFFECT_NODE = (...nodes) => new SkillEffectNode(...nodes);
+
+const NODE_FUNC = (...nodes) => () => SKILL_EFFECT_NODE(...nodes);
 
 /**
  * @abstract
@@ -476,6 +531,8 @@ class ConstantNumberNode extends NumberNode {
 
 const CONSTANT_NUMBER_NODE = value => new ConstantNumberNode(value);
 
+const ZERO_NUMBER_NODE = CONSTANT_NUMBER_NODE(0);
+
 /**
  * @template T
  * @abstract
@@ -564,6 +621,11 @@ class AndNode extends BoolNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
+/**
+ * @param {BoolNode} nodes
+ * @returns {AndNode}
+ * @constructor
+ */
 const AND_NODE = (...nodes) => new AndNode(...nodes);
 
 class OrNode extends BoolNode {
@@ -575,6 +637,11 @@ class OrNode extends BoolNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
+/**
+ * @param {BoolNode} nodes
+ * @returns {OrNode}
+ * @constructor
+ */
 const OR_NODE = (...nodes) => new OrNode(...nodes);
 
 class NotNode extends BoolNode {
@@ -713,6 +780,12 @@ class EnsureMaxNode extends NumberOperationNode {
     }
 }
 
+/**
+ * @param child
+ * @param max
+ * @returns {EnsureMaxNode}
+ * @constructor
+ */
 const ENSURE_MAX_NODE = (child, max) => new EnsureMaxNode(child, max);
 
 class EnsureMinMaxNode extends NumberOperationNode {
@@ -820,10 +893,39 @@ class MultCeilNode extends NumberOperationNode {
 
 const MULT_CEIL_NODE = (...node) => new MultCeilNode(...node);
 
+/**
+ * @param mult1
+ * @param mult2
+ * @param add
+ * @returns {AddNode}
+ * @constructor
+ */
 const MULT_ADD_NODE = (mult1, mult2, add) => ADD_NODE(MULT_NODE(mult1, mult2), add);
+/**
+ * @param mult1
+ * @param mult2
+ * @param max
+ * @returns {EnsureMaxNode}
+ * @constructor
+ */
 const MULT_MAX_NODE = (mult1, mult2, max) => ENSURE_MAX_NODE(MULT_NODE(mult1, mult2), max);
+/**
+ * @param mult1
+ * @param mult2
+ * @param add
+ * @param max
+ * @returns {EnsureMaxNode}
+ * @constructor
+ */
 const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
     ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(mult1, mult2), add), max);
+/**
+ * @param add1
+ * @param add2
+ * @param max
+ * @returns {EnsureMaxNode}
+ * @constructor
+ */
 const ADD_MAX_NODE = (add1, add2, max) => ENSURE_MAX_NODE(ADD_NODE(add1, add2), max);
 
 class MinNode extends NumberOperationNode {
@@ -1148,3 +1250,32 @@ class ApplyXNode extends SkillEffectNode {
  * @returns {T}
  */
 const APPLY_X_NODE = (xNode, node) => new ApplyXNode(xNode, node);
+
+class CacheNode extends SkillEffectNode {
+    constructor(key, node) {
+        super(node);
+        this._key = key;
+    }
+
+    evaluate(env) {
+        if (env.hasCache(this._key)) {
+            let cache = env.getCache(this._key);
+            env.trace(`return cache: ${cache}`);
+            return cache;
+        }
+
+        const [value] = this.evaluateChildren(env);
+        env.trace(`cache value: ${value}`);
+
+        env.setCache(this._key, value);
+        return value;
+    }
+}
+
+/**
+ * @param {string} key
+ * @param {SkillEffectNode} node
+ * @returns {CacheNode}
+ * @constructor
+ */
+const CACHE_NODE = (key, node) => new CacheNode(key, node);

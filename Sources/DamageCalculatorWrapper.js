@@ -436,9 +436,6 @@ class DamageCalculatorWrapper {
         let target = isTargetFoe ? "敵" : "周囲";
         env.setName(`範囲奥義前(${target})`).setLogLevel(getSkillLogLevel()).setDamageType(damageType);
         BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.evaluateWithUnit(atkUnit, env);
-        if (atkUnit.isCannotMoveStyleActive()) {
-            atkUnit.battleContext.cannotTriggerPrecombatSpecial = true;
-        }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.Queensblade:
@@ -644,7 +641,7 @@ class DamageCalculatorWrapper {
         // self.profile.profile("__applySkillEffect 3", () => {
         // 敵が反撃可能か判定
         this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_CAN_COUNTER;
-        defUnit.battleContext.canCounterattack = self.canCounterAttack(atkUnit, defUnit);
+        defUnit.battleContext.canCounterattack = self.canCounterAttack(atkUnit, defUnit, calcPotentialDamage, damageType);
         // self.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
 
         // 追撃可能か判定
@@ -1842,11 +1839,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        self._applySkillEffectForDefUnitFuncDict[Weapon.TwinCrestPower] = (defUnit) => {
-            if (defUnit.isTransformed) {
-                defUnit.battleContext.canCounterattackToAllDistance = true;
-            }
-        };
         self._applySkillEffectForDefUnitFuncDict[Weapon.OgonNoTanken] = (defUnit) => {
             if (defUnit.isSpecialCharged) {
                 defUnit.battleContext.canCounterattackToAllDistance = true;
@@ -2728,23 +2720,8 @@ class DamageCalculatorWrapper {
                     // 最初に受けた攻撃のダメージを軽減
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.5, enemyUnit);
                     // ダメージ軽減分を保存
-                    targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                        (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
-                            if (!context.isFirstAttack(atkUnit)) return;
-                            defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                        }
-                    );
                     // 攻撃ごとの固定ダメージに軽減した分を加算
-                    targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                        if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                            atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                            let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                            return addDamage;
-                        }
-                        return 0;
-                    });
+                    targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 }
             }
         }
@@ -2994,24 +2971,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(4);
                 // 最初に受けた攻撃のダメージを軽減
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(30 / 100.0, enemyUnit);
-                // ダメージ軽減分を保存
-                targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                    (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
-                        if (!context.isFirstAttack(atkUnit)) return;
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                    }
-                );
-                // 攻撃ごとの固定ダメージに軽減した分を加算
-                targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                        atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                        let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                        return addDamage;
-                    }
-                    return 0;
-                });
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }
             if (targetUnit.isWeaponSpecialRefined) {
@@ -3612,6 +3572,7 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpdDefSpurs(-5);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 if (this.__countAlliesWithinSpecifiedSpaces(targetUnit, 1) <= 1) {
                     targetUnit.battleContext.passiveBSkillCondSatisfied = true;
                 }
@@ -4475,6 +4436,7 @@ class DamageCalculatorWrapper {
                 targetUnit.addSpurs(6, 6, 0, 0);
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.ShintakuNoBreath] = (targetUnit, enemyUnit) => {
@@ -6161,6 +6123,7 @@ class DamageCalculatorWrapper {
             if (enemyUnit.battleContext.restHpPercentage >= 50) {
                 enemyUnit.addAllSpur(-4);
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DamiellBow] = (targetUnit) => {
@@ -6811,6 +6774,7 @@ class DamageCalculatorWrapper {
                 if (targetUnit.battleContext.initiatesCombat ||
                     (enemyUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
+                    targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 }
             }
         };
@@ -7045,9 +7009,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Ladyblade] = (targetUnit) => {
-            targetUnit.battleContext.refersMinOfDefOrRes = true;
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.RohyouNoKnife] = (targetUnit, enemyUnit) => {
             if (targetUnit.isWeaponSpecialRefined) {
                 if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyInSpecifiedSpaces(targetUnit, 2)) {
@@ -7121,14 +7082,6 @@ class DamageCalculatorWrapper {
                 ) {
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
                 }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.TwinCrestPower] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.defSpur -= 6;
-                targetUnit.battleContext.followupAttackPriorityDecrement--;
-                enemyUnit.battleContext.followupAttackPriorityDecrement--;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.FatalSmoke3] = (targetUnit, enemyUnit) => {
@@ -7453,16 +7406,6 @@ class DamageCalculatorWrapper {
             if (enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.spdSpur += 5;
                 enemyUnit.spdSpur -= 5;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.RenewedFang] = (targetUnit, enemyUnit) => {
-            if (self.__isThereAllyInSpecifiedSpaces(targetUnit, 2,
-                (u) =>
-                    targetUnit.partnerHeroIndex === u.heroIndex ||
-                    targetUnit.heroIndex === u.partnerHeroIndex)) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.spdSpur -= 6;
-                targetUnit.battleContext.increaseCooldownCountForBoth();
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfFavors] = (targetUnit, enemyUnit) => {
@@ -10132,7 +10075,7 @@ class DamageCalculatorWrapper {
             }
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
             env.setName('周囲の敵からのデバフ').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
-            WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
+            FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.evaluateWithUnit(enemyAlly, env);
         }
     }
 
@@ -10271,12 +10214,6 @@ class DamageCalculatorWrapper {
                         case Weapon.RespitePlus:
                         case Weapon.TannenbatonPlus:
                             targetUnit.battleContext.reducesCooldownCount = true;
-                            break;
-                        case Weapon.RenewedFang:
-                            if (targetUnit.partnerHeroIndex === allyUnit.heroIndex ||
-                                targetUnit.heroIndex === allyUnit.partnerHeroIndex) {
-                                targetUnit.battleContext.increaseCooldownCountForBoth();
-                            }
                             break;
                         case Weapon.Flykoogeru:
                             if (!targetUnit.isWeaponRefined) {
@@ -10426,7 +10363,7 @@ class DamageCalculatorWrapper {
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
             env.setName('周囲の敵からのスキル効果').setLogLevel(getSkillLogLevel())
                 .setDamageType(damageType).setCombatPhase(this.combatPhase);
-            WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.evaluateWithUnit(enemyAlly, env);
+            FOR_FOES_INFLICTS_EFFECTS_HOOKS.evaluateWithUnit(enemyAlly, env);
 
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySkillEffectFromEnemyAlliesFuncMap);
@@ -10517,7 +10454,7 @@ class DamageCalculatorWrapper {
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, calcPotentialDamage);
             env.setName('周囲の敵からのスキル効果（適用後）').setLogLevel(getSkillLogLevel())
                 .setDamageType(damageType).setCombatPhase(this.combatPhase);
-            WHEN_INFLICTS_EFFECTS_TO_FOES_AFTER_OTHER_SKILLS_HOOKS.evaluateWithUnit(enemyAlly, env);
+            FOR_FOES_INFLICTS_EFFECTS_AFTER_OTHER_SKILLS_HOOKS.evaluateWithUnit(enemyAlly, env);
         }
     }
 
@@ -10796,6 +10733,14 @@ class DamageCalculatorWrapper {
                 return;
             }
         }
+
+        for (let effective of atkUnit.battleContext.effectivesAgainst) {
+            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, effective)) {
+                atkUnit.battleContext.isEffectiveToOpponent = true;
+                return;
+            }
+        }
+
         if (atkUnit.hasStatusEffect(StatusEffectType.EffectiveAgainstDragons)) {
             if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, EffectiveType.Dragon)) {
                 atkUnit.battleContext.isEffectiveToOpponent = true;
@@ -14118,8 +14063,8 @@ class DamageCalculatorWrapper {
         }
     }
 
-    canCounterAttack(atkUnit, defUnit) {
-        return this.__examinesCanCounterattackBasically(atkUnit, defUnit)
+    canCounterAttack(atkUnit, defUnit, calcPotentialDamage = true, damageType = DamageType.PotentialDamage) {
+        return this.__examinesCanCounterattackBasically(atkUnit, defUnit, calcPotentialDamage, damageType)
             && !this.__canDisableCounterAttack(atkUnit, defUnit);
     }
 
@@ -14337,7 +14282,7 @@ class DamageCalculatorWrapper {
         return false;
     }
 
-    __examinesCanCounterattackBasically(atkUnit, defUnit) {
+    __examinesCanCounterattackBasically(atkUnit, defUnit, calcPotentialDamage, damageType) {
         if (!defUnit.hasWeapon) {
             return false;
         }
@@ -14354,20 +14299,12 @@ class DamageCalculatorWrapper {
             return true;
         }
 
-        if (atkUnit.isCannotMoveStyleActive()) {
-            // 条件A: 敵が2距離の重装
-            if (defUnit.moveType === MoveType.Armor && defUnit.isRangedWeaponType()) return true;
-            // 条件B: 敵が全距離反撃を持つ
-            if (defUnit.battleContext.canCounterattackToAllDistance) return true;
-            // 条件C: 敵の射程が自分と敵の距離と同じ
-            if (defUnit.attackRange === atkUnit.distance(defUnit)) return true;
-        } else if (atkUnit.isRangedStyleForMeleeActive()) {
-            // 条件A: 敵が1距離の重装
-            if (defUnit.moveType === MoveType.Armor && defUnit.isMeleeWeaponType()) return true;
-            // 条件B: 敵が全距離反撃を持つ
-            if (defUnit.battleContext.canCounterattackToAllDistance) return true;
-            // 条件C: 敵の射程が自分と敵の距離と同じ
-            if (defUnit.attackRange === atkUnit.distance(defUnit)) return true;
+        if (atkUnit.isStyleActive) {
+            let env = new DamageCalculatorWrapperEnv(this, atkUnit, defUnit, calcPotentialDamage);
+            env.setName('スタイル時に反撃可能を受ける').setLogLevel(getSkillLogLevel()).setDamageType(damageType);
+            if (SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.evaluateSomeWithUnit(atkUnit, env)) {
+                return true;
+            }
         } else {
             if (atkUnit.attackRange === defUnit.attackRange) {
                 return true;

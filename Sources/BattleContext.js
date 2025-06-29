@@ -84,6 +84,7 @@ class BattleContext {
         this.#damageReductionRatiosByChainGuard = [];
         this.isEffectiveToOpponent = false;
         this.isEffectiveToOpponentForciblly = false; // スキルを無視して強制的に特効を付与します(ダメージ計算器用)
+        this.effectivesAgainst = [];
         this.attackCount = 1;
         this.counterattackCount = 1;
         this.canCounterattackToAllDistance = false;
@@ -178,6 +179,10 @@ class BattleContext {
         this.additionalDamageOfNextAttack = 0;
 
         this.canAddDamageReductionToNextAttackFromEnemiesFirstAttack = false;
+        // 最初の攻撃の反射ダメージの反射割合(2025年6月時点で実装されているのは100% = 1のみ)
+        this.firstAttackReflexDamageRates = [];
+        /** type {[number, number]} */
+        this.reflexDamagesAndRatesForNextAttack = [];
         this.canAddDamageReductionToNextAttackAfterSpecial = false;
         this.nextAttackMinAdditionAfterSpecial = Number.MIN_SAFE_INTEGER;
 
@@ -491,6 +496,9 @@ class BattleContext {
         this._potentOverwriteRatio = null;
         this._potentOverwriteRatioPerAttack = null;
 
+        // 与えるダメージをn%で計算
+        this.damageCalculationRatios = [];
+
         // 戦闘中に一度しか発動しない奥義のスキル効果が発動したか
         this.isOneTimeSpecialSkillEffectActivatedDuringCombat = false;
 
@@ -511,6 +519,10 @@ class BattleContext {
         // 特攻無効
         this.invalidatedEffectives = [];
 
+        // 戦闘後移動スキル無効(切り込みなど)
+        // After-combat movement effects do not occur.
+        this.isAfterCombatMovementDisabled = false;
+
         //
         // フック関数
         // 固定ダメージ
@@ -523,10 +535,6 @@ class BattleContext {
         this.canActivateNonSpecialOneTimePerMapMiracleFuncs = [];
         // 無効スキル
         this.applyInvalidationSkillEffectFuncs = [];
-        // 攻撃ごとのダメージ加算
-        this.calcFixedAddDamagePerAttackFuncs = [];
-        // 軽減分のダメージを次の攻撃に加算
-        this.addReducedDamageForNextAttackFuncs = [];
         // ステータス決定後の戦闘中バフ
         this.applySpurForUnitAfterCombatStatusFixedFuncs = [];
         /** @type {SkillEffectNode[]} */
@@ -890,16 +898,6 @@ class BattleContext {
         );
     }
 
-    /**
-     * @param {Unit} enemyUnit
-     * @param {number} ratio
-     */
-    reduceAndAddDamage(enemyUnit, ratio) {
-        // 最初に受けた攻撃のダメージを軽減
-        this.multDamageReductionRatioOfFirstAttack(ratio, enemyUnit);
-        this.addReducedDamageForNextAttack();
-    }
-
     addDamageByStatus(statusFlags, ratio) {
         this.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -980,28 +978,6 @@ class BattleContext {
             }
         );
     }
-
-    addReducedDamageForNextAttack() {
-        // ダメージ軽減分を保存
-        this.addReducedDamageForNextAttackFuncs.push(
-            (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
-                if (!context.isFirstAttack(atkUnit)) return;
-                defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-            }
-        );
-        // 攻撃ごとの固定ダメージに軽減した分を加算
-        this.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-            if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                return addDamage;
-            }
-            return 0;
-        });
-    }
-
     applyFoesPenaltyDoubler() {
         this.applySpurForUnitAfterCombatStatusFixedFuncs.push(
             (targetUnit, enemyUnit, calcPotentialDamage) => {

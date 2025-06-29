@@ -276,10 +276,8 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                 const alpha = "a0";
                 if (unit.groupId === UnitGroupType.Ally) {
                     let tiles = unit.attackableTiles;
-                    if (unit.isCannotMoveStyleActive()) {
-                        tiles = unit.attackableTilesInCannotMoveStyle;
-                    } else if (unit.isRangedStyleForMeleeActive()) {
-                        tiles = unit.attackableTilesInRangedForMeleeStyle;
+                    if (unit.isStyleActive) {
+                        tiles = unit.attackableTilesInStyle;
                     }
                     let color = "#feccc5";
                     color = "#ff8888" + alpha;
@@ -292,10 +290,7 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
                     for (let tile of unit.attackableTiles) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
-                    for (let tile of unit.attackableTilesInCannotMoveStyle) {
-                        updateCellBgColor(tile.posX, tile.posY, color);
-                    }
-                    for (let tile of unit.attackableTilesInRangedForMeleeStyle) {
+                    for (let tile of unit.attackableTilesInStyle) {
                         updateCellBgColor(tile.posX, tile.posY, color);
                     }
                 }
@@ -545,6 +540,9 @@ function dropToUnitImpl(unit, dropTargetId) {
             }
         } else {
             let isTargetBreakable = targetTile.obj != null || targetTile.hasEnemyBreakableDivineVein(unit.groupId);
+            if (CANNOT_ATTACK_STRUCTURE_STYLES.has(unit.getCurrentStyle())) {
+                return;
+            }
             if (isTargetBreakable) {
                 let obj = targetTile.obj;
                 if (examinesCanBreak(unit, obj, targetTile)) {

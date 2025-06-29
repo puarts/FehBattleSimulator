@@ -146,6 +146,15 @@ function getDuoOrHarmonizedSkillId(id) {
     return `duo-or-harmonized_${id}`;
 }
 
+/**
+ * @param {string} funcId
+ * @param {Object} args
+ * @returns {string}
+ */
+function getCustomSkillId(funcId, args) {
+    return `custom_${funcId}_${JSON.stringify(args)}`;
+}
+
 const EMBLEM_HERO_SET = new Set(Object.values(EmblemHero));
 
 const PHYSICAL_WEAPON_TYPE_SET = new Set([
@@ -828,6 +837,11 @@ function canRallyForcibly(skill, unit) {
     if (func?.call(this, unit) ?? false) {
         return true;
     }
+    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTargeting(unit)
+        .setName('強制的に応援可能判定').setLogLevel(getSkillLogLevel());
+    if (CAN_RALLY_FORCIBLY_HOOKS.evaluate(unit, env)) {
+        return true;
+    }
     switch (skill) {
         case Support.GoldSerpent:
             // TODO: 調査する
@@ -859,6 +873,11 @@ function canRallyForcibly(skill, unit) {
 
 function canRalliedForcibly(skillId, unit) {
     if (getSkillFunc(skillId, canRalliedForciblyFuncMap)?.call(this, unit) ?? false) {
+        return true;
+    }
+    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTarget(unit)
+        .setName('強制的に被応援可能判定').setLogLevel(getSkillLogLevel());
+    if (CAN_RALLIED_FORCIBLY_HOOKS.evaluate(unit, env)) {
         return true;
     }
     switch (skillId) {
@@ -1054,7 +1073,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.EbonPirateClaw,
     Weapon.CrossbonesClaw,
     Weapon.RefreshedFang,
-    Weapon.RenewedFang,
     Weapon.RaydreamHorn,
     Weapon.BrightmareHorn,
     Weapon.NightmareHorn,
@@ -1076,7 +1094,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.ShirasagiNoTsubasa,
     Weapon.SeijuNoKeshinHiko,
     Weapon.GroomsWings,
-    Weapon.TwinCrestPower,
     Weapon.IlluminatingHorn,
 ]);
 
@@ -1118,7 +1135,6 @@ const BEAST_COMMON_SKILL_MAP = new Map([
     [Weapon.TrasenshiNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
 
     // 旧世代歩行
-    [Weapon.RenewedFang, BeastCommonSkillType.Infantry],
     [Weapon.GroomsWings, BeastCommonSkillType.Infantry],
 
     // 次世代騎馬
@@ -1312,6 +1328,8 @@ const StatusEffectType = {
     UnitMakesAGuaranteedFollowUpAttackDuringCombat: 83, // 戦闘中、絶対追撃
     Imbue: 84, // 治癒
     Reflex: 85, // 反射
+    ShareSpoilsPlus: 86, // 戦果移譲・広域
+    ForesightSnare: 87, // 予知の罠
     // 1. STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 2. 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // 3. POSITIVE_STATUS_EFFECT_ARRAYまたはNEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1444,6 +1462,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.EssenceDrain,
 // 縁
     StatusEffectType.Bonded,
+    // 予知の罠
+    StatusEffectType.ForesightSnare,
 ];
 const POSITIVE_STATUS_EFFECT_ORDER_MAP = new Map();
 POSITIVE_STATUS_EFFECT_ARRAY.forEach((v, i) => POSITIVE_STATUS_EFFECT_ORDER_MAP.set(v, i));
@@ -1459,6 +1479,7 @@ const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Discord,
     StatusEffectType.HushSpectrum,
     StatusEffectType.ShareSpoils,
+    StatusEffectType.ShareSpoilsPlus,
     StatusEffectType.FalseStart,
     StatusEffectType.CounterattacksDisrupted,
     StatusEffectType.Isolation,

@@ -76,7 +76,7 @@ const Hero = {
     HarmonizedPlumeria: 1248,
     DuoCorrinM: 1259,
     DuoMarth: 1266,
-    DuoJulia: 0,
+    DuoJulia: 1276,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -236,6 +236,7 @@ const NEGATIVE_STATUS_EFFECT_SET = new Set([
     StatusEffectType.HushSpectrum,
     StatusEffectType.ShareSpoils,
     StatusEffectType.Frozen,
+    StatusEffectType.ShareSpoilsPlus,
 ]);
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
@@ -364,6 +365,8 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.UnitMakesAGuaranteedFollowUpAttackDuringCombat, ["GuaranteedFollowUp.webp", "戦闘中、絶対追撃", "戦闘中、絶対追撃"]],
     [StatusEffectType.Imbue, ["Imbue.webp", "治癒", "回復不可半分無効、戦闘開始後に最大HPの40%回復"]],
     [StatusEffectType.Reflex, ["Reflex.webp", "反射", "初撃のダメージ-7、軽減値を次の攻撃のダメージに+"]],
+    [StatusEffectType.ShareSpoilsPlus, ["ShareSpoilsPlus.webp", "戦果移譲・広域", ""]],
+    [StatusEffectType.ForesightSnare, ["ForesightSnare.webp", "予知の罠", "「予知の罠」により、敵からの攻撃をキャンセルできる"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

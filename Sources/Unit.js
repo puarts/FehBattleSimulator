@@ -515,6 +515,13 @@ class Unit extends BattleMapElement {
         this.passiveC = -1;
         this.passiveS = -1;
         this.passiveX = -1;
+        this.additionalPassives = [];
+        this.initAdditionalPassives();
+        /**
+         * @type {Array<[string, Object, boolean]>}
+         */
+        this.customSkills = [];
+        this.initCustomSkills();
         this.captain = -1;
 
         /**
@@ -595,6 +602,8 @@ class Unit extends BattleMapElement {
         this.passiveXInfo = null;
         /** @type {SkillInfo} */
         this.captainInfo = null;
+        /** @type {SkillInfo[]} */
+        this.additionalPassiveInfos = [];
 
         // indexが0の英雄が存在するので-1で初期化する
         this.partnerHeroIndex = -1;
@@ -698,8 +707,7 @@ class Unit extends BattleMapElement {
         this.movableTiles = [];
         this.movableTilesIgnoringWarpBubble = [];
         this.attackableTiles = [];
-        this.attackableTilesInCannotMoveStyle = [];
-        this.attackableTilesInRangedForMeleeStyle = [];
+        this.attackableTilesInStyle = [];
         this.assistableTiles = [];
         this.teleportOnlyTiles = [];
         this.precombatSpecialTiles = [];
@@ -759,6 +767,7 @@ class Unit extends BattleMapElement {
 
         this._isStyleActive = false;
         this.isStyleActivatedInThisTurn = false;
+        this.styleActivationsCount = 0;
     }
 
     /**
@@ -767,6 +776,26 @@ class Unit extends BattleMapElement {
      */
     get canHavePairUpUnit() {
         return this.heroInfo != null && this.heroInfo.canHavePairUpUnit;
+    }
+
+    initAdditionalPassives() {
+        this.additionalPassives = Unit.getInitAdditionalPassives();
+    }
+
+    initCustomSkills() {
+        this.customSkills = Unit.getInitCustomSkills();
+    }
+
+    static getInitAdditionalPassives() {
+        return [[-2, {}, true]];
+    }
+
+    static getInitCustomSkills() {
+        return [["", {}, true]];
+    }
+
+    static getInitCustomSkillsStr() {
+        return JSON.stringify(Unit.getInitCustomSkills());
     }
 
     /**
@@ -934,38 +963,40 @@ class Unit extends BattleMapElement {
         return calcGrowthValue(growthRate, this.rarity, this.level);
     }
 
-
+    // TODO: 削除する
     clearReservedSkills() {
-        this.reservedWeapon = NotReserved;
-        this.reservedSupport = NotReserved;
-        this.reservedSpecial = NotReserved;
-        this.reservedPassiveA = NotReserved;
-        this.reservedPassiveB = NotReserved;
-        this.reservedPassiveC = NotReserved;
-        this.reservedPassiveS = NotReserved;
-        this.reservedPassiveX = NotReserved;
+        // this.reservedWeapon = NotReserved;
+        // this.reservedSupport = NotReserved;
+        // this.reservedSpecial = NotReserved;
+        // this.reservedPassiveA = NotReserved;
+        // this.reservedPassiveB = NotReserved;
+        // this.reservedPassiveC = NotReserved;
+        // this.reservedPassiveS = NotReserved;
+        // this.reservedPassiveX = NotReserved;
     }
 
+    // TODO: 削除する
     reserveCurrentSkills() {
-        this.reservedWeapon = this.weapon;
-        this.reservedSupport = this.support;
-        this.reservedSpecial = this.special;
-        this.reservedPassiveA = this.passiveA;
-        this.reservedPassiveB = this.passiveB;
-        this.reservedPassiveC = this.passiveC;
-        this.reservedPassiveS = this.passiveS;
-        this.reservedPassiveX = this.passiveX;
+        // this.reservedWeapon = this.weapon;
+        // this.reservedSupport = this.support;
+        // this.reservedSpecial = this.special;
+        // this.reservedPassiveA = this.passiveA;
+        // this.reservedPassiveB = this.passiveB;
+        // this.reservedPassiveC = this.passiveC;
+        // this.reservedPassiveS = this.passiveS;
+        // this.reservedPassiveX = this.passiveX;
     }
 
+    // TODO: 削除する
     restoreReservedSkills() {
-        this.restoreReservedWeapon();
-        this.restoreReservedSupport();
-        this.restoreReservedSpecial();
-        this.restoreReservedPassiveA();
-        this.restoreReservedPassiveB();
-        this.restoreReservedPassiveC();
-        this.restoreReservedPassiveS();
-        this.restoreReservedPassiveX();
+        // this.restoreReservedWeapon();
+        // this.restoreReservedSupport();
+        // this.restoreReservedSpecial();
+        // this.restoreReservedPassiveA();
+        // this.restoreReservedPassiveB();
+        // this.restoreReservedPassiveC();
+        // this.restoreReservedPassiveS();
+        // this.restoreReservedPassiveX();
     }
 
     hasReservedWeapon() {
@@ -1087,17 +1118,8 @@ class Unit extends BattleMapElement {
     /**
      * スタイル時の攻撃可能なユニットを列挙します。
      */
-    * enumerateAttackableUnitsInCannotMoveStyle() {
-        for (let tile of this.attackableTilesInCannotMoveStyle) {
-            let existsEnemyOnTile = tile.placedUnit != null && this.isDifferentGroup(tile.placedUnit);
-            if (existsEnemyOnTile) {
-                yield tile.placedUnit;
-            }
-        }
-    }
-
-    * enumerateAttackableUnitsInRangedForMeleeStyle() {
-        for (let tile of this.attackableTilesInRangedForMeleeStyle) {
+    * enumerateAttackableUnitsInStyle() {
+        for (let tile of this.attackableTilesInStyle) {
             let existsEnemyOnTile = tile.placedUnit != null && this.isDifferentGroup(tile.placedUnit);
             if (existsEnemyOnTile) {
                 yield tile.placedUnit;
@@ -1205,6 +1227,7 @@ class Unit extends BattleMapElement {
         this.passiveSInfo = null;
         this.passiveXInfo = null;
         this.captainInfo = null;
+        this.additionalPassiveInfos = [];
     }
 
     resetStatusAdd() {
@@ -1353,6 +1376,8 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.passiveX
             + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
             + ValueDelimiter + this.reinforcementMerge
+            + ValueDelimiter + Base62.encode(JSON.stringify(this.additionalPassives))
+            + ValueDelimiter + Base62.encode(JSON.stringify(this.customSkills))
             + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
@@ -1423,6 +1448,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + boolToInt(this.isAttackedDone)
             + ValueDelimiter + this.restSpecialSkillAvailableTurn
             + ValueDelimiter + this.actionCount
+            + ValueDelimiter + this.styleActivationsCount
             ;
     }
 
@@ -1486,6 +1512,8 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.reinforcementMerge = Number(values[i]); ++i; }
+        if (values[i]) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
+        if (values[i]) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
         if (i < elemCount) {
             this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
@@ -1573,6 +1601,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.isAttackedDone = intToBool(Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restSpecialSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.actionCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.styleActivationsCount = Number(values[i]); ++i; }
     }
 
 
@@ -1636,6 +1665,8 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.spdAdd
             + ValueDelimiter + this.defAdd
             + ValueDelimiter + this.resAdd
+            + ValueDelimiter + Base62.encode(JSON.stringify(this.additionalPassives))
+            + ValueDelimiter + Base62.encode(JSON.stringify(this.customSkills))
             ;
     }
 
@@ -1705,6 +1736,8 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.spdAdd = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.defAdd = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.resAdd = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
+        if (values[i] !== undefined) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
     }
 
     // 応援を強制的に実行可能かどうか
@@ -1961,6 +1994,7 @@ class Unit extends BattleMapElement {
         this.snapshot.passiveSInfo = this.passiveSInfo;
         this.snapshot.passiveXInfo = this.passiveXInfo;
         this.snapshot.captainInfo = this.captainInfo;
+        this.snapshot.additionalPassiveInfos = [...this.additionalPassiveInfos];
         this.snapshot.fromString(this.toString());
         this.snapshot._greatTalents = [...this.getGreatTalents()];
         return this.snapshot;
@@ -2529,11 +2563,15 @@ class Unit extends BattleMapElement {
         if (this.isCantoActivated()) {
             return 0;
         }
-        if (this.isCannotMoveStyleActive()) {
+        if (STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.has(this.getCurrentStyle())) {
+            return 1;
+        }
+        if (STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.has(this.getCurrentStyle())) {
             return 2;
         }
-        if (this.isRangedStyleForMeleeActive()) {
-            return 1;
+        for (let skillId of this.enumerateSkills()) {
+            if (SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.has(skillId)) return 1;
+            if (SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.has(skillId)) return 2;
         }
 
         return calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);
@@ -2839,6 +2877,7 @@ class Unit extends BattleMapElement {
         this.isAttackedDone = false;
         // TODO: リセットの場所がここで良いか検証する
         this.isStyleActivatedInThisTurn = false;
+        this.styleActivationsCount = 0;
         this.neutralizeBuffsAtStartOfAction();
         this.setMoveCountFromMoveType();
         this.neutralizePositiveStatusEffectsAtStartOfTurn();
@@ -3674,8 +3713,17 @@ class Unit extends BattleMapElement {
     }
 
     get attackRangeOnMapForAttackingUnit() {
-        if (this.isRangedStyleForMeleeActive()) {
-            return 2;
+        if (this.isStyleActive) {
+            let env = new NodeEnv().setTarget(this).setSkillOwner(this)
+                .setName('スタイル時の射程').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(this, env);
+            if (range > 0) return range;
+        }
+        if (this.attackRange > 0) {
+            let env = new NodeEnv().setTarget(this).setSkillOwner(this)
+                .setName('射程').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            let range = CAN_ATTACK_FOES_N_SPACES_AWAY_HOOKS.evaluateMaxWithUnit(this, env);
+            if (range > 0) return range;
         }
         return this.attackRange;
     }
@@ -5071,6 +5119,9 @@ class Unit extends BattleMapElement {
         if (this.isCaptain) {
             yield* this.#enumerateSkillInfo(this.captainInfo);
         }
+        for (let info of this.additionalPassiveInfos) {
+            yield* this.#enumerateSkillInfo(info);
+        }
     }
 
     /**
@@ -5118,6 +5169,20 @@ class Unit extends BattleMapElement {
         yield* this.#enumerateSkills(this.special);
         // passiveA-X
         yield* this.enumeratePassiveSkills()
+        if (this.additionalPassives) {
+            for (let [skillId, _args, isEnable] of this.additionalPassives) {
+                if (isEnable) {
+                    yield skillId;
+                }
+            }
+        }
+        if (this.customSkills) {
+            for (let [funcId, args, isEnable] of this.customSkills) {
+                if (isEnable) {
+                    yield getCustomSkillId(funcId, args);
+                }
+            }
+        }
         if (this.isCaptain) {
             yield* this.#enumerateSkills(this.captain);
         }
@@ -5930,16 +5995,27 @@ class Unit extends BattleMapElement {
                 }
             }
         }
-        // リンスタイル
-        for (let unit of this.enumerateAttackableUnitsInCannotMoveStyle()) {
-            yield [unit, this.placedTile];
-        }
-        // かぜの剣スタイル
-        for (let unit of this.enumerateAttackableUnitsInRangedForMeleeStyle()) {
-            for (let tile of this.enumerateMovableTiles(false)) {
-                let dist = tile.calculateDistanceToUnit(unit);
-                if (dist === 2) {
-                    yield [unit, tile];
+
+        /// スタイル時
+        // 攻撃可能なユニットから攻撃可能なユニットとタイルの組み合わせを作成する
+        if (this.hasCannotMoveStyle()) {
+            // リンスタイル
+            for (let unit of this.enumerateAttackableUnitsInStyle()) {
+                yield [unit, this.placedTile];
+            }
+        } else if (this.hasAvailableStyle()) {
+            // その他のスタイル
+            for (let unit of this.enumerateAttackableUnitsInAttackChangingStyle()) {
+                for (let tile of this.enumerateMovableTiles(false)) {
+                    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
+                        .setName('実際に攻撃可能な対象決定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                    let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
+                    if (range > 0) {
+                        let dist = tile.calculateDistanceToUnit(unit);
+                        if (dist === range) {
+                            yield [unit, tile];
+                        }
+                    }
                 }
             }
         }
@@ -6299,7 +6375,6 @@ class Unit extends BattleMapElement {
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
-                case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                 case Weapon.BlazingPolearms:
                     moveCountForCanto = Math.max(moveCountForCanto, 2);
@@ -6568,8 +6643,8 @@ class Unit extends BattleMapElement {
     getStyles() {
         let styles = [];
         for (let skillId of this.enumerateEquippedSkills()) {
-            if (SKILL_STYLE_MAP.has(skillId)) {
-                styles.push(SKILL_STYLE_MAP.get(skillId));
+            if (SKILL_ID_TO_STYLE_TYPE.has(skillId)) {
+                styles.push(SKILL_ID_TO_STYLE_TYPE.get(skillId));
             }
         }
         return styles;
@@ -6598,11 +6673,7 @@ class Unit extends BattleMapElement {
     }
 
     isCannotMoveStyleActive() {
-        return this.isAnyStyleActive(...CANNOT_MOVE_STYLE_SET);
-    }
-
-    isRangedStyleForMeleeActive() {
-        return this.isAnyStyleActive(...RANGED_STYLE_FOR_MELEE_SET);
+        return this.isAnyStyleActive(...CANNOT_MOVE_STYLES);
     }
 
     /**
@@ -6631,8 +6702,10 @@ class Unit extends BattleMapElement {
         if (!this.hasAvailableStyle() || this.isStyleActive) {
             return false;
         }
-        if (this.isStyleActivatedInThisTurn) {
-            return true;
+        if (STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.has(this.getAvailableStyle())) {
+            if (this.styleActivationsCount > 0) {
+                return true;
+            }
         }
         let env = new NodeEnv().setTarget(this).setSkillOwner(this);
         env.setName("スタイル発動可能判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
@@ -6641,11 +6714,7 @@ class Unit extends BattleMapElement {
     }
 
     hasCannotMoveStyle() {
-        return this.hasAvailableStyle() && CANNOT_MOVE_STYLE_SET.has(this.getAvailableStyle());
-    }
-
-    hasRangedStyleForMelee() {
-        return this.hasAvailableStyle() && RANGED_STYLE_FOR_MELEE_SET.has(this.getAvailableStyle());
+        return this.hasAvailableStyle() && CANNOT_MOVE_STYLES.has(this.getAvailableStyle());
     }
 }
 

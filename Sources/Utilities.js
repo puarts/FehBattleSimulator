@@ -1451,7 +1451,7 @@ class IterUtil {
      * @returns {number}
      */
     static minValue(iterable, valueFunc, initValue) {
-        return this.maxValue(iterable, e => -valueFunc(e), initValue);
+        return -this.maxValue(iterable, e => -valueFunc(e), -initValue);
     }
 
     /**
@@ -1975,5 +1975,104 @@ class HtmlUtil {
         let groupClass = isAlly ? "log-ally" : "log-enemy";
         let groupName = isAlly ? "自" : "敵";
         return `<span class="${groupClass}">${groupName}</span>`
+    }
+}
+
+/**
+ * A utility class for Base62 encoding and decoding of arbitrary strings.
+ * Uses UTF-8 encoding internally and BigInt for precision.
+ */
+class Base62 {
+    // noinspection SpellCheckingInspection
+    /** @private @constant {string} The Base62 character set (0-9, A-Z, a-z) */
+    static #CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    /** @private @constant {bigint} The base (62) as BigInt */
+    static #BASE = BigInt(Base62.#CHARS.length);
+
+    /**
+     * Encodes an arbitrary UTF-8 string into a Base62 string.
+     *
+     * @param {string} str - The input string to encode.
+     * @returns {string} The Base62-encoded string.
+     *
+     * @example
+     * const encoded = Base62.encode("Hello🌸");
+     * console.log(encoded); // => e.g., "9Hnd82..." (Base62)
+     */
+    static encode(str) {
+        const utf8 = new TextEncoder().encode(str);
+        let num = BigInt(0);
+        for (let byte of utf8) {
+            num = (num << 8n) + BigInt(byte);
+        }
+
+        if (num === 0n) return Base62.#CHARS[0];
+
+        let result = '';
+        while (num > 0n) {
+            result = Base62.#CHARS[num % Base62.#BASE] + result;
+            num /= Base62.#BASE;
+        }
+        return result;
+    }
+
+    /**
+     * Decodes a Base62 string back to the original UTF-8 string.
+     *
+     * @param {string} base62Str - A valid Base62-encoded string.
+     * @returns {string} The original decoded string.
+     *
+     * @throws {Error} If the input contains invalid Base62 characters.
+     *
+     * @example
+     * const decoded = Base62.decode("9Hnd82...");
+     * console.log(decoded); // => "Hello🌸"
+     */
+    static decode(base62Str) {
+        let num = BigInt(0);
+        for (let c of base62Str) {
+            const index = Base62.#CHARS.indexOf(c);
+            if (index === -1) throw new Error(`Invalid character: ${c}`);
+            num = num * Base62.#BASE + BigInt(index);
+        }
+
+        const bytes = [];
+        while (num > 0n) {
+            bytes.unshift(Number(num & 0xFFn));
+            num >>= 8n;
+        }
+
+        return new TextDecoder().decode(new Uint8Array(bytes));
+    }
+
+    static tryDecode(base62Str, defaultValue = null) {
+        let result = defaultValue;
+        try {
+            result = this.decode(base62Str);
+        } catch (e) {
+            return result;
+        }
+        return result;
+    }
+}
+
+class Base62Util {
+    static encodeSet(set) {
+        return Base62.encode(JSON.stringify(Array.from(set)));
+    }
+
+    static decodeSet(str) {
+        return new Set(JSON.parse(Base62.decode(str)));
+    }
+}
+
+class JsonUtil {
+    static tryParse(str, defaultValue = null) {
+        try {
+            return JSON.parse(str);
+        } catch (e) {
+            return null;
+        }
     }
 }

@@ -564,7 +564,7 @@ class Tile extends BattleMapElement {
     }
 
     calculateDistanceToClosestEnemyTile(moveUnit) {
-        let alreadyTraced = [this];
+        let alreadyTraced = new Set([this]);
         let maxDepth = this.__getMaxDepth();
         // 氷は無視されるので気にしなくて良い
         let ignoresBreakableWalls = moveUnit.hasWeapon;
@@ -599,7 +599,7 @@ class Tile extends BattleMapElement {
 
         // 武器がない時には氷に対して処理を行わなければいけないかもしれない
         let ignoresBreakableWalls = moveUnit.hasWeapon;
-        let alreadyTraced = [fromTile];
+        let alreadyTraced = new Set([fromTile]);
 
         let maxDepth = inputMaxDepth;
         if (maxDepth < 0) {
@@ -647,10 +647,10 @@ class Tile extends BattleMapElement {
         let neighbors = this._neighbors;
         sortNeighborsFunc(neighbors);
         for (let neighborTile of neighbors) {
-            if (alreadyTraced.includes(neighborTile)) {
+            if (alreadyTraced.has(neighborTile)) {
                 continue;
             }
-            alreadyTraced.push(neighborTile);
+            alreadyTraced.add(neighborTile);
 
             let weight = neighborTile.getMoveWeight(
                 moveUnit, ignoresUnits, ignoresBreakableWalls, isUnitIgnoredFunc, isPathfinderEnabled);
@@ -683,7 +683,7 @@ class Tile extends BattleMapElement {
                 continue;
             }
 
-            let nextAlreadyTraced = alreadyTraced.slice(0, alreadyTraced.length);
+            let nextAlreadyTraced = new Set(alreadyTraced);
             let distance = neighborTile._calculateDistanceToClosestTile(
                 nextAlreadyTraced,
                 moveUnit,

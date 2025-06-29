@@ -80,7 +80,7 @@ const IS_THERE_UNITS_IF = (units, pred) => GT_NODE(
 const IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE =
     AND_NODE(DOES_TARGET_INITIATE_COMBAT_NODE, NOT_NODE(HAS_TARGET_ATTACKED_NODE));
 const IS_IT_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE =
-    AND_NODE(NOT_NODE(DOES_TARGET_INITIATE_COMBAT_NODE), NOT_NODE(HAS_TARGET_BEEN_ATTACKED_NODE));
+    AND_NODE(DOES_FOE_INITIATE_COMBAT_NODE, NOT_NODE(HAS_TARGET_BEEN_ATTACKED_NODE));
 // if it is unit's first combat initiated by unit or first combat initiated by foe in player phase or enemy phase,
 const IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE =
     OR_NODE(
@@ -123,6 +123,9 @@ const PERCENTAGE_CEIL_NODE = (percentage, num) =>
 
 const PERCENTAGE_ADD_NODE = (percentage, num, add) =>
     ADD_NODE(PERCENTAGE_NODE(percentage, num), add);
+
+const PERCENTAGE_SUB_NODE = (percentage, num, sub) =>
+    SUB_NODE(PERCENTAGE_NODE(percentage, num), sub);
 
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpacesNode(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
@@ -235,6 +238,10 @@ const BOOST_3_NODE =
 
 /// ステータス
 const TARGETS_STAT_ON_MAP = index => new TargetsStatOnMapNode(index);
+const TARGETS_ATK_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Atk);
+const TARGETS_SPD_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Spd);
+const TARGETS_DEF_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Def);
+const TARGETS_RES_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Res);
 
 const TARGETS_EVAL_STAT_ON_MAP = index => new TargetsEvalStatOnMapNode(index);
 const TARGETS_EVAL_ATK_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Atk);
@@ -363,6 +370,12 @@ const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_C
         new GrantsSpecialCooldownCountMinusOnTargetNode(n),
     );
 
+const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE =
+    n => IF_NODE(EQ_NODE(TARGETS_SPECIAL_COOLDOWN_COUNT_ON_MAP_NODE, SUB_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 1)),
+        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(n),
+    );
+
+
 /**
  * 敵の射程が1であるか
  * @type {EqNode}
@@ -389,6 +402,15 @@ const IS_FOE_ARMOR_NODE = new IsFoeArmorNode();
 const FOE_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE = new SkillEffectNode(
     FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL,
     FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL,
+);
+
+/**
+ * 戦闘中に奥義が発動できない
+ * @type {SkillEffectNode}
+ */
+const UNIT_CANNOT_TRIGGER_SPECIALS_DURING_COMBAT_NODE = new SkillEffectNode(
+    UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL,
+    UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL,
 );
 
 /**
@@ -625,10 +647,10 @@ function sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n, unitValueNo
     ));
 }
 
-function totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(n) {
-    return sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(n,
-        NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
-}
+const TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE =
+    n => sumValueAmongTargetAndTargetsAlliesWithinNSpacesOfTarget(
+        n, NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE
+    );
 
 function setSpecialCount(skillId, n) {
     switch (n) {
@@ -644,6 +666,16 @@ function setSpecialCount(skillId, n) {
             COUNT4_SPECIALS.push(skillId);
             INHERITABLE_COUNT4_SPECIALS.push(skillId);
             break;
+    }
+}
+
+function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense) {
+    setSpecialCount(skillId, n);
+    if (isNormalAttack) {
+        NORMAL_ATTACK_SPECIAL_SET.add(skillId);
+    }
+    if (isDefense) {
+        DEFENSE_SPECIAL_SET.add(skillId);
     }
 }
 
@@ -781,7 +813,7 @@ const ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET = (n) =>
 
 /**
  * @param {number|NumberNode} n
- * @param {...number} statusEffectType
+ * @param {...(number|NumberNode)} statusEffectType
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -792,7 +824,7 @@ const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_N
         );
 
 /**
- * @param {...number} statusEffectType
+ * @param {...(number|NumberNode)} statusEffectType
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -801,13 +833,25 @@ const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_N
         GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2, ...statusEffectType);
 
 /**
- * @param {...number} statusEffectType
+ * @param {...number|NumberNode} statusEffectType
  * @returns {SkillEffectNode}
  * @constructor
  */
 const GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_3_SPACES_NODE =
     (...statusEffectType) =>
         GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(3, ...statusEffectType);
+
+/**
+ * @param {number|NumberNode} n
+ * @param {StatsNode} statsNode
+ * @returns {SkillEffectNode}
+ * @constructor
+ */
+const GRANTS_STATS_BONUS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+    (n, statsNode) =>
+        FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_N_SPACES_OF_TARGET_NODE(n,
+            GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(statsNode),
+        );
 
 /**
  * @param {number|NumberNode} n
@@ -847,7 +891,7 @@ const GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_W
 
 /**
  * @param {number|NumberNode} n
- * @param {...number} statusEffectTypes
+ * @param {...number|NumberNode} statusEffectTypes
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -858,7 +902,7 @@ const INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPA
         );
 
 /**
- * @param {...number} statusEffectTypes
+ * @param {...number|NumberNode} statusEffectTypes
  * @returns {SkillEffectNode}
  * @constructor
  */
@@ -1307,11 +1351,11 @@ function setBeforeAoeSpecialAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
     }
 }
 
-function setAllEffectsForSkillOwnersEnemiesDuringCombatHooks(skillId, condNode, statsNode, effectNode) {
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+function setForFoesSkillsDuringCombatHooks(skillId, condNode, statsNode, effectNode) {
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode, statsNode),
     ));
-    WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode, effectNode),
     ));
 }
@@ -1348,4 +1392,21 @@ function setCondHooks(skillId, condNode, ...hooksAndNodeFuncs) {
             IF_NODE(condNode, nodeFunc()),
         ));
     }
+}
+
+function setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, nodeFunc) {
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+}
+
+function setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, nodeFunc) {
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_RALLY_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc);
+}
+
+function setIfRallyOrMovementAssistSkillEndedByUnit(skillId, nodeFunc) {
+    AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
 }

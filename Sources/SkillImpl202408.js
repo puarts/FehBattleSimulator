@@ -102,30 +102,59 @@
     ));
 
     // Unit can use the following【Style】:
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ASTRA_STORM);
+}
+
+{
+    let style = STYLE_TYPE.ASTRA_STORM;
+    let skillId = getStyleSkillId(style);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // ――――― Astra Storm Style ―――――
     // Unit can attack foes within 6 spaces of unit and 3 rows or 3 columns centered on unit regardless of unit's range.
-    // Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 2,
-    // foe can counterattack regardless of unit's range, or foe's Range is the same as the distance between unit and foe.
-    // Unit cannot move or attack structures, after-combat movement effects do not occur,
-    // and remaining movement granted from Canto is treated as 0. Skill effect's Range is treated as 2,
-    // including by skill effects determined by attack Range, like Pavise and Aegis.
-    // This Style can be used only once per turn.
-    // ――――――――――――――――――――
-    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.ASTRA_STORM);
-    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.ASTRA_STORM);
     CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
         SPACES_OF_TARGET_NODE(AND_NODE(
             IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(6),
             IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3))
         ),
     );
+
+    // Unit suffers a counterattack if any of the following conditions are met:
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // foe is armored with Range = 2,
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_2_NODE),
+            // foe can counterattack regardless of unit's range,
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // or foe's Range is the same as the distance between unit and foe.
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
+    // Unit cannot move
+    CANNOT_MOVE_STYLES.add(style);
+    // or attack structures,
+    CANNOT_ATTACK_STRUCTURE_STYLES.add(style);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After-combat movement effects do not occur.
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
+    ));
+    // TODO: 実装する
+    // and remaining movement granted from Canto is treated as 0.
+
+    // Skill effect's Range is treated as 2,
+    // including by skill effects determined by attack Range, like Pavise and Aegis.
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
+    // This Style can be used only once per turn.
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
+    // ――――――――――――――――――――
 }
 
 // 紋章士リン
 {
+    let style = STYLE_TYPE.EMBLEM_LYN;
     let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
-    SKILL_STYLE_MAP.set(skillId, STYLE_TYPE.EMBLEM_LYN);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, style);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
         AND_NODE(
             GTE_NODE(CURRENT_TURN_NODE, 2),
@@ -135,7 +164,18 @@
     STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
     ));
-    CANNOT_MOVE_STYLE_SET.add(STYLE_TYPE.EMBLEM_LYN);
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // foe is armored with Range = 2,
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_2_NODE),
+            // foe can counterattack regardless of unit's range,
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // or foe's Range is the same as the distance between unit and foe.
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
+    CANNOT_MOVE_STYLES.add(style);
+    CANNOT_ATTACK_STRUCTURE_STYLES.add(style);
     CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
         SPACES_OF_TARGET_NODE(AND_NODE(
             IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(5),
@@ -147,7 +187,15 @@
         new BoostsDamageWhenSpecialTriggersNode(
             MULT_NODE(new TargetsMaxSpecialCountNode(), 4),
         ),
+        AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
     ));
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE,
+        ),
+    ));
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
 }
 
 // 比翼リュール
@@ -1502,7 +1550,7 @@
             new AppliesSkillEffectsAfterStatusFixedNode(
                 new ReducesDamageExcludingAoeSpecialsNode(PERCENTAGE_NODE(15, UNITS_ATK_DURING_COMBAT_NODE)),
             ),
-            new TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode(),
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
             WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
         )
     ));
@@ -1902,7 +1950,7 @@
         AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, nodeFunc)
 
         // noinspection JSCheckFunctionSignatures
-        WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
             // on the map with the 【Exposure】effect active and
             IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
                 // Inflicts Spd/Def-5 on foes
@@ -1910,7 +1958,7 @@
             ),
         ));
 
-        WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
             // on the map with the 【Exposure】effect active and
             IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
                 // neutralizes bonuses to Spd/Def for those foes during combat.
@@ -1931,7 +1979,7 @@
 // 赤の呪い
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.Anathema);
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // Inflicts Spd/Def/Res-4 on foes within 3 spaces of unit during combat.
             new InflictsStatsMinusOnTargetDuringCombatNode(0, 4, 4, 4),
@@ -2376,7 +2424,7 @@
             new UnitDealsDamageExcludingAoeSpecialsNode(
                 // (Y = total number of Bonuses and Penalties active on foe and any foe within 2 spaces of foe,
                 // excluding stat bonuses and stat penalties, x 3;
-                MULT_NODE(totalNumberOfBonusesAndPenaltiesActiveOnFoeAndAnyFoeWithinNSpacesOfFoe(2), 3),
+                MULT_NODE(TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE(2), 3),
                 // excluding when dealing damage with an area-of-effect Special),
             ),
             // reduces damage from attacks by 40%,
@@ -3121,8 +3169,9 @@ function setDiscord(skillId, statsRatios) {
     setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
 }
 
-// 護り手・遠・茨
+// 護り手・X・茨
 {
+    setBriarSave(PassiveC.ARBriarNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
     setBriarSave(PassiveC.ADBriarFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
 }
 
@@ -3582,7 +3631,8 @@ function setDiscord(skillId, statsRatios) {
     // grants another action to unit after combat (once per turn).
     AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(new DoesTargetDealDamageTo2OrMoreTargetsFoesAtTheSameTimeUsingSpecialNode(),
-            new GrantsAnotherActionNode(),
+            // grants another action to unit,
+            TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(`${skillId}-再行動`, GRANTS_ANOTHER_ACTION_NODE),
         ),
     ));
 
@@ -3911,7 +3961,7 @@ function setDiscord(skillId, statsRatios) {
             new ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode(70),
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
             // and unit's next attack deals damage = total damage reduced from foe's first attack (by any source,
-            new TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttackNode(),
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
             // including other skills). Resets at end of combat.
         ),
     ));
@@ -5053,7 +5103,7 @@ function setDiscord(skillId, statsRatios) {
     // Accelerates Special trigger (cooldown count-1).
     // Unit attacks twice (even if foe initiates combat, unit attacks twice).
     // Effect:【Dagger ７】
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts penalty on Atk/Spd/Def/Res
         // for foes within 3 rows or 3 columns centered on unit during combat
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
@@ -5695,7 +5745,7 @@ function setDiscord(skillId, statsRatios) {
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             new IfNode(new OrNode(DOES_UNIT_INITIATE_COMBAT_NODE,
-                    new IsStatusEffectActiveOnUnitNode(StatusEffectType.DeepStar)),
+                    IS_STATUS_EFFECT_ACTIVE_ON_TARGET_NODE(StatusEffectType.DeepStar)),
                 new InflictsStatsMinusOnFoeDuringCombatNode(0, 5, 5, 0),
                 new UnitDealsDamageExcludingAoeSpecialsNode(
                     new EnsureMaxNode(
@@ -6265,7 +6315,7 @@ function setDiscord(skillId, statsRatios) {
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(1));
     FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             new InflictsStatsMinusOnUnitDuringCombatNode(0, 5, 5, 0),
         ),

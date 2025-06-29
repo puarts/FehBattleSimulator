@@ -756,7 +756,8 @@
                     }
                 );
                 // 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに+(その戦闘中のみ。軽減値はスキルによる軽減効果も含む)
-                targetUnit.battleContext.addReducedDamageForNextAttack();
+                // targetUnit.battleContext.addReducedDamageForNextAttack();
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
             }
         }
     );
@@ -1986,7 +1987,7 @@
                 // - 最初に受けた攻撃と2回攻撃のダメージー速さの25％（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
                 targetUnit.battleContext.addDamageReductionValueOfFirstAttacks(STATUS_INDEX.Spd, 0.25);
                 // - 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。軽減値はスキルによる軽減効果も含む）、
-                targetUnit.battleContext.addReducedDamageForNextAttack();
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 // - 戦闘後、7回復
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }
@@ -2433,24 +2434,7 @@
 
                 // 戦闘開始時、自身のHPが25%以上なら、
                 // 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。軽減値はスキルによる軽減効果も含む）
-                // [ダメージ軽減分を保存]
-                targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                    (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
-                        if (!context.isFirstAttack(atkUnit)) return;
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                    }
-                );
-                // [攻撃ごとの固定ダメージに軽減した分を加算]
-                targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                        atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                        let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                        return addDamage;
-                    }
-                    return 0;
-                });
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
             }
         }
     );
@@ -3265,7 +3249,9 @@
                 // 敵の攻撃、速さ、魔防が敵が受けている攻撃、速さ、魔防の強化の値の2倍だけ減少(能力値ごとに計算)(例えば、攻撃+7の強化を受けていれば、+7-14-4で、攻撃-11となる)、
                 enemyUnit.battleContext.setAllBonusReversal();
                 // 最初に受けた攻撃のダメージを30%軽減、かつ最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)
-                targetUnit.battleContext.reduceAndAddDamage(enemyUnit, 0.3);
+                targetUnit.battleContext.addDamageReductionRatioOfFirstAttack(0.3);
+                targetUnit.battleContext.reducedRatioForNextAttack =
+                    Math.max(0.3, targetUnit.battleContext.reducedRatioForNextAttack);
             }
         }
     );
@@ -5954,7 +5940,7 @@ function setLantern(skillId) {
                 // 自分が最初に受けた攻撃のダメージを30%軽減し、軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。
                 // 軽減値はスキルによる軽減効果も含む）、
                 // 最初に受けた攻撃のダメージを軽減
-                targetUnit.battleContext.reduceAndAddDamage(enemyUnit, 0.3);
+                targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 // 戦闘後、7回復
                 targetUnit.battleContext.healedHpAfterCombat += 7;
             }
@@ -7603,24 +7589,7 @@ function setLantern(skillId) {
                         targetUnit.battleContext.healedHpByAttack += 7;
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
                     }
-                    // ダメージ軽減分を保存
-                    targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                        (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
-                            if (!context.isFirstAttack(atkUnit)) return;
-                            defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                        }
-                    );
-                    // 攻撃ごとの固定ダメージに軽減した分を加算
-                    targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                        if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                            atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                            let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                            return addDamage;
-                        }
-                        return 0;
-                    });
+                    targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 }
             }
         }
@@ -11534,24 +11503,7 @@ function setLantern(skillId) {
                         targetUnit.addAllSpur(4);
                         // 最初に受けた攻撃のダメージを軽減
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.3, enemyUnit);
-                        // ダメージ軽減分を保存
-                        targetUnit.battleContext.addReducedDamageForNextAttackFuncs.push(
-                            (defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context) => {
-                                if (!context.isFirstAttack(atkUnit)) return;
-                                defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                            }
-                        );
-                        // 攻撃ごとの固定ダメージに軽減した分を加算
-                        targetUnit.battleContext.calcFixedAddDamagePerAttackFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                            if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                                atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                                let addDamage = atkUnit.battleContext.reducedDamageForNextAttack;
-                                atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                                return addDamage;
-                            }
-                            return 0;
-                        });
+                        targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                         targetUnit.battleContext.healedHpAfterCombat += 7;
                     }
                 }
@@ -12136,6 +12088,14 @@ function setLantern(skillId) {
 // 邪竜の救済
 {
     let skillId = PassiveC.FellProtection;
+    // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+    // 戦闘中、攻撃魔防+5、かつ魔防が敵より5以上高い時、
+    // 戦闘中、攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)、かつ、
+    // 敵が攻撃時に発動する奥義を装備している時、戦闘中、敵の最初の攻撃前に敷の奥義発動カウント+1(奥義発動カウントの最大値は超えない)
+    // 周囲2マス以内の味方は、戦闘中、攻撃魔防+4
+    // 周囲2マス以内の味方は、戦闘開始時、スキル所持者の魔防が敵より5以上高い時、
+    // 戦闘中、攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)、
+    // かつ敵が攻撃時に発動する奥義を装備している時、戦闘中、敵の最初の攻撃前に敵の奥義発動カウント+1(奥義発動カウントの最大値は超えない)
     applySkillEffectForUnitFuncMap.set(skillId,
         function (targetUnit, enemyUnit, calcPotentialDamage) {
             if (targetUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(targetUnit)) {
@@ -12161,7 +12121,7 @@ function setLantern(skillId) {
         function (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) {
             if (targetUnit.distance(allyUnit) <= 2) {
                 targetUnit.addAtkResSpurs(4);
-                if (targetUnit.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + 5) {
+                if (allyUnit.getEvalResInPrecombat() >= enemyUnit.getEvalResInPrecombat() + 5) {
                     targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
                         return 0.3;
                     });

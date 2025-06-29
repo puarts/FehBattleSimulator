@@ -65,6 +65,20 @@ const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS = new SkillEffec
 const AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS = new SkillEffectHooks();
 
 /**
+ * 攻撃キャンセル
+ * ターゲットは攻撃したユニット
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const CANCEL_FOES_ATTACK_HOOKS = new SkillEffectHooks();
+
+/**
+ * 攻撃キャンセル後のスキル効果
+ * ターゲットは攻撃したユニット
+ * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>}
+ */
+const AFTER_CANCEL_FOES_ATTACK_HOOKS = new SkillEffectHooks();
+
+/**
  * 範囲奥義判定前(主に範囲奥義を発動するかどうかの判定など)
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS = new SkillEffectHooks();
@@ -119,17 +133,17 @@ const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS = new SkillEffectHo
 /**
  * 周囲の敵から受ける紋章効果。targetがデバフを受けるユニット
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const WHEN_INFLICTS_STATS_MINUS_TO_FOES_HOOKS = new SkillEffectHooks();
+const FOR_FOES_INFLICTS_STATS_MINUS_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲の敵から受けるスキル効果
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const WHEN_INFLICTS_EFFECTS_TO_FOES_HOOKS = new SkillEffectHooks();
+const FOR_FOES_INFLICTS_EFFECTS_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲の敵から受けるスキル効果（適用後）
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const WHEN_INFLICTS_EFFECTS_TO_FOES_AFTER_OTHER_SKILLS_HOOKS = new SkillEffectHooks();
+const FOR_FOES_INFLICTS_EFFECTS_AFTER_OTHER_SKILLS_HOOKS = new SkillEffectHooks();
 
 /**
  * ボタンを押したときのスキル効果
@@ -228,6 +242,12 @@ const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();
 const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
+ * 戦闘後の再行動評価時
+ * 敵（攻撃者）から見た視点になる（targetはatkUnit、skill ownerはdefUnit）。
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
  * 戦闘以外の行動後の再行動評価時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
@@ -302,6 +322,15 @@ const AFTER_MOVEMENT_ASSIST_ENDED_BY_ALLY_HOOKS = new SkillEffectHooks();
  * 自分以外の誰かが移動補助を使用して行動を終えた後（敵味方問わず）
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_MOVEMENT_ASSIST_ENDED_BY_OTHER_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const CAN_RALLY_FORCIBLY_HOOKS = new SkillEffectHooks();
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const CAN_RALLIED_FORCIBLY_HOOKS = new SkillEffectHooks();
 
 /**
  * TODO: rename
@@ -384,3 +413,19 @@ const CAN_ACTIVATE_STYLE_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>}
  */
 const STYLE_ACTIVATED_HOOKS = new SkillEffectHooks();
+
+/**
+ * スタイル時に反撃を受ける条件
+ * @type {SkillEffectHooks<BoolNode, DamageCalculatorWrapperEnv>}
+ */
+const SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>}
+ */
+const CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>}
+ */
+const CAN_ATTACK_FOES_N_SPACES_AWAY_HOOKS = new SkillEffectHooks();

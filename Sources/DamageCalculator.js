@@ -544,33 +544,12 @@ class DamageCalculator {
             atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio = 0;
         }
 
-        for (let func of atkUnit.battleContext.calcFixedAddDamagePerAttackFuncs) {
-            fixedAddDamage += func(atkUnit, defUnit, isPrecombat);
-        }
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
-                case PassiveB.FruitOfLife:
-                    if (atkUnit.battleContext.restHpPercentage >= 25) {
-                        if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                            atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                            fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-                            atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                        }
-                    }
-                    break;
                 case Weapon.ArcaneGrima:
                     if (atkUnit.battleContext.restHpPercentage >= 25) {
                         let atk = isPrecombat ? atkUnit.getAtkInPrecombat() : atkUnit.getAtkInCombat(defUnit);
                         atkUnit.battleContext.additionalDamage += Math.trunc(atk * 0.15);
-                    }
-                    break;
-                case Weapon.Aurgelmir:
-                case PassiveB.DivineRecreation:
-                case Weapon.Ginnungagap:
-                    if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-                        atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
-                        fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
-                        atkUnit.battleContext.reducedDamageForNextAttack = 0;
                     }
                     break;
             }
@@ -881,8 +860,12 @@ class DamageCalculator {
             fixedAddDamage += func?.call(this, atkUnit, defUnit) ?? 0;
         }
         // 通常ダメージに加算
+        for (let [damage, rate] of atkUnit.battleContext.reflexDamagesAndRatesForNextAttack) {
+            fixedAddDamage += Math.trunc(damage * rate);
+        }
+        atkUnit.battleContext.reflexDamagesAndRatesForNextAttack = [];
+
         if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
-            atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
             fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
             atkUnit.battleContext.reducedDamageForNextAttack = 0;
         }
@@ -898,7 +881,6 @@ class DamageCalculator {
                 if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
                     fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
                     atkUnit.battleContext.reducedDamageForNextAttack = 0;
-                    atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
                 }
                 break;
             case Special.NegatingFang:
@@ -910,6 +892,7 @@ class DamageCalculator {
             default:
                 break;
         }
+        atkUnit.battleContext.isNextAttackAddReducedDamageActivating = false;
         return fixedAddDamage;
     }
 
@@ -1253,7 +1236,7 @@ class DamageCalculator {
             this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
 
             // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
-            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context);
+            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial, context);
 
             // 防御系奥義によるダメージ軽減
             let isDefenderSpecialActivated =
@@ -1273,6 +1256,7 @@ class DamageCalculator {
             DamageCalculator.#applyDamageReductionValues(damageReductionValues, defUnit, context);
 
             let currentDamage = 0;
+            let reducedDamage = 0;
             let additionalDamagePerAttack =
                 atkUnit.battleContext.additionalDamagePerAttack +
                 this.#getFixedAddDamagePerAttack(atkUnit, defUnit, context);
@@ -1302,23 +1286,25 @@ class DamageCalculator {
                         specialDamageOfThisAttack = defUnit.restHp - 1;
                     }
                 }
-                let atkSpecialCountBefore = atkUnit.tmpSpecialCount
-                let defSpecialCountBefore = defUnit.tmpSpecialCount
-                currentDamage = this.__calcUnitAttackDamage(
+                let atkSpecialCountBefore = atkUnit.tmpSpecialCount;
+                let defSpecialCountBefore = defUnit.tmpSpecialCount;
+                [currentDamage, reducedDamage] = this.__calcUnitAttackDamage(
                     defUnit, atkUnit,
                     specialDamageOfThisAttack,
+                    additionalDamagePerAttack,
                     damageReductionRatiosAfterNeutralization,
                     damageReductionRatiosByDefenderSpecial,
                     damageReductionRatiosByNonDefenderSpecial,
                     damageReductionValues,
                     potentRatio,
+                    atkUnit.battleContext.damageCalculationRatios,
                     activatesDefenderSpecial, context
                 );
                 this.__restoreMaxSpecialCount(atkUnit);
                 // 奥義発動直後のスキル効果（奥義カウント変動など）
                 this.applySkillEffectAfterSpecialActivated(atkUnit, defUnit, context);
-                let atkSpecialCountAfter = atkUnit.tmpSpecialCount
-                let defSpecialCountAfter = defUnit.tmpSpecialCount
+                let atkSpecialCountAfter = atkUnit.tmpSpecialCount;
+                let defSpecialCountAfter = defUnit.tmpSpecialCount;
                 let specialSpan = n => `<span class='log-special'>${n}</span>`;
                 let unitStr = unit => unit.groupId === UnitGroupType.Ally ?
                     `<span class="log-ally">自</span>` :
@@ -1364,14 +1350,16 @@ class DamageCalculator {
                         normalDamageOfThisAttack = defUnit.restHp - 1;
                     }
                 }
-                currentDamage = this.__calcUnitAttackDamage(
+                [currentDamage, reducedDamage] = this.__calcUnitAttackDamage(
                     defUnit, atkUnit,
                     normalDamageOfThisAttack,
+                    additionalDamagePerAttack,
                     damageReductionRatiosAfterNeutralization,
                     damageReductionRatiosByDefenderSpecial,
                     damageReductionRatiosByNonDefenderSpecial,
                     damageReductionValues,
                     potentRatio,
+                    atkUnit.battleContext.damageCalculationRatios,
                     activatesDefenderSpecial, context
                 );
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
@@ -1397,7 +1385,13 @@ class DamageCalculator {
 
             // 祈り処理
             // TODO: リファクタリング
-            totalDamage = this.#activateMiracle(atkUnit, defUnit, currentDamage, totalDamage);
+            let reducedDamageByMiracle = 0;
+            [totalDamage, reducedDamageByMiracle] = this.#activateMiracle(atkUnit, defUnit, currentDamage, totalDamage);
+            this.#applyReducedDamageForNextAttack(
+                atkUnit, defUnit,
+                reducedDamage + reducedDamageByMiracle,
+                activatesDefenderSpecial, context
+            );
 
             if (!isDefenderSpecialActivated) {
                 this.__reduceSpecialCount(defUnit, defReduceSpCount);
@@ -1460,6 +1454,7 @@ class DamageCalculator {
     }
 
     #activateMiracle(atkUnit, defUnit, currentDamage, totalDamage) {
+        let reducedDamageByMiracle = 0;
         // 奥義による祈り
         let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
         // 奥義以外による祈り
@@ -1561,6 +1556,8 @@ class DamageCalculator {
                 let miracleReducedDamage = currentDamage - miracleDamage;
                 defUnit.battleContext.reducedDamageForNextAttack += miracleReducedDamage;
             }
+            let currentHp = defUnit.restHp - totalDamage;
+            reducedDamageByMiracle += currentDamage - (currentHp - 1);
 
             totalDamage += defUnit.restHp - totalDamage - 1;
 
@@ -1575,7 +1572,7 @@ class DamageCalculator {
         } else {
             totalDamage += currentDamage;
         }
-        return totalDamage;
+        return [totalDamage, reducedDamageByMiracle];
     }
 
     static #applyDamageReductionValues(damageReductionValues, defUnit, context) {
@@ -1663,8 +1660,8 @@ class DamageCalculator {
         return isDefenderSpecialActivated;
     }
 
-    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, context) {
-        let env = new DamageCalculatorEnv(this, defUnit, atkUnit);
+    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial ,context) {
+        let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context);
         env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
         for (let skillId of defUnit.enumerateSkills()) {
@@ -2071,21 +2068,25 @@ class DamageCalculator {
      * @param {Unit} defUnit
      * @param {Unit} atkUnit
      * @param {number} damage
+     * @param {number} additionalDamage
      * @param {number[]} damageReductionRatiosAfterNeutralization
      * @param {number[]} damageReductionRatiosByDefenderSpecial
      * @param {number[]} damageReductionRatiosByNonDefenderSpecial
      * @param {number[]} damageReductionValues
      * @param {number} potentRatio
+     * @param {number[]} damageCalculationRatios
      * @param {boolean} activatesDefenderSpecial
      * @param {DamageCalcContext} context
      */
     __calcUnitAttackDamage(defUnit, atkUnit,
                            damage,
+                           additionalDamage,
                            damageReductionRatiosAfterNeutralization,
                            damageReductionRatiosByDefenderSpecial,
                            damageReductionRatiosByNonDefenderSpecial,
                            damageReductionValues,
                            potentRatio,
+                           damageCalculationRatios,
                            activatesDefenderSpecial, context) {
         // 軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする
         // （巨影など一部の敵を除く）
@@ -2102,10 +2103,14 @@ class DamageCalculator {
         let reduceRatio = 1 - damageRatio;
         // let reducedDamage = Math.trunc(damage * (1 - ratio)) + damageReductionValue;
         let reducedDamage = Math.trunc(damage * reduceRatio) + damageReductionValue;
-        let currentDamage = Math.max(damage - reducedDamage, 0);
+        let currentDamage = Math.trunc(Math.max(damage - reducedDamage, 0) * potentRatio);
+        for (let ratio of damageCalculationRatios) {
+            currentDamage = Math.trunc(currentDamage * ratio);
+        }
         if (this.isLogEnabled) {
             this.writeDebugLog(`ダメージ軽減計算開始`);
             this.writeDebugLog(`軽減前ダメージ: ${damage}`);
+            this.writeDebugLog(`固定ダメージ: ${additionalDamage}`);
             this.writeDebugLog(`ダメージ軽減率(奥義以外): [${damageReductionRatiosAfterNeutralization}]`);
             this.writeDebugLog(`ダメージ軽減率(守備奥義): [${damageReductionRatiosByDefenderSpecial}]`);
             this.writeDebugLog(`ダメージ軽減率(奥義扱い): [${damageReductionRatiosByNonDefenderSpecial}]`);
@@ -2137,6 +2142,8 @@ class DamageCalculator {
         }
 
         // 自分の次の攻撃の時にダメージ軽減加算をするための処理
+        // 差し違え4などの相手のダメージだけで決まる軽減ダメージ追加はここで計算する
+        // 祈りも考慮した軽減ダメージ追加は祈りの処理の時に行う
         if (defUnit.battleContext.reducedRatioForNextAttack > 0) {
             if (context.isFirstAttack(atkUnit)) {
                 defUnit.battleContext.additionalDamageOfNextAttackByDamageRatio =
@@ -2144,20 +2151,27 @@ class DamageCalculator {
             }
         }
 
-        for (let func of defUnit.battleContext.addReducedDamageForNextAttackFuncs) {
-            func(defUnit, atkUnit, damage, currentDamage, activatesDefenderSpecial, context);
-        }
+        return [currentDamage, damage - currentDamage];
+    }
+
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {number} reducedDamage
+     * @param {boolean} activatesDefenderSpecial
+     * @param {DamageCalcContext} context
+     */
+    #applyReducedDamageForNextAttack(atkUnit, defUnit, reducedDamage, activatesDefenderSpecial, context) {
         // ダメージ反射
         if (context.isFirstAttack(atkUnit)) {
-            if (defUnit.battleContext.canAddDamageReductionToNextAttackFromEnemiesFirstAttack) {
-                defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+            for (let rate of defUnit.battleContext.firstAttackReflexDamageRates) {
+                defUnit.battleContext.reflexDamagesAndRatesForNextAttack.push([reducedDamage, rate]);
             }
         }
         if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
             if (defUnit.battleContext.canAddDamageReductionToNextAttackAfterSpecial) {
                 defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                let addition = damage - currentDamage;
+                let addition = reducedDamage;
                 addition = MathUtil.ensureMin(addition, defUnit.battleContext.nextAttackMinAdditionAfterSpecial);
                 defUnit.battleContext.reducedDamageForNextAttack = addition;
             }
@@ -2166,49 +2180,10 @@ class DamageCalculator {
             case Special.FrostbiteMirror:
                 if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
                     defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                    defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
+                    defUnit.battleContext.reducedDamageForNextAttack = reducedDamage;
                 }
                 break;
         }
-
-        for (let skillId of defUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveB.FruitOfLife:
-                    if (atkUnit.battleContext.restHpPercentage >= 25) {
-                        if (!context.isFirstAttack(atkUnit)) break;
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                    }
-                    break;
-                case Weapon.Aurgelmir:
-                    if (!context.isFirstAttack(atkUnit)) break;
-                    if (defUnit.battleContext.weaponSkillCondSatisfied) {
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                    }
-                    break;
-                case Weapon.Ginnungagap:
-                    // @TODO: ギンヌンガガプ発動条件についてきちんと検証する
-                    if (!context.isFirstAttack(atkUnit)) break;
-                    if (defUnit.battleContext.restHpPercentage >= 25) {
-                        let isTomeOrStaff = atkUnit.isTome || (atkUnit.weaponType === WeaponType.Staff);
-                        if (defUnit.battleContext.initiatesCombat ||
-                            (atkUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
-                            defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                            defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                        }
-                    }
-                    break;
-                case PassiveB.DivineRecreation:
-                    if (!context.isFirstAttack(atkUnit)) break;
-                    if (atkUnit.battleContext.restHpPercentage >= 50) {
-                        defUnit.battleContext.isNextAttackAddReducedDamageActivating = true;
-                        defUnit.battleContext.reducedDamageForNextAttack = damage - currentDamage;
-                    }
-                    break;
-            }
-        }
-        return currentDamage;
     }
 
     __restoreMaxSpecialCount(unit) {

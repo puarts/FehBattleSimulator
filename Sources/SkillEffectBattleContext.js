@@ -105,6 +105,14 @@ class TargetsHpOnMapNode extends PositiveNumberNode {
 
 const TARGETS_HP_ON_MAP_NODE = new TargetsHpOnMapNode();
 
+class FoesHpOnMapNode extends TargetsHpOnMapNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOES_HP_ON_MAP_NODE = new FoesHpOnMapNode();
+
 class FoesHpAtStartOfTurnNode extends TargetsHpAtStartOfTurnNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -402,11 +410,23 @@ const UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffec
 
 const FOE_SUFFERS_GUARANTEED_FOLLOW_UP_ATTACKS_DURING_COMBAT = UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE;
 
-const FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffectNode {
+class TargetCannotMakeFollowUpAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
-        let unit = env.foeDuringCombat;
+        let unit = this.getUnit(env);
         unit.battleContext.followupAttackPriorityDecrement--;
         env.debug(`${unit.nameWithGroup}は追撃不可: ${unit.battleContext.followupAttackPriorityDecrement}`);
+    }
+}
+
+const TARGET_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new TargetCannotMakeFollowUpAttackNode();
+
+const FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new class extends TargetCannotMakeFollowUpAttackNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }();
 
@@ -1099,6 +1119,8 @@ class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends From
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(n);
 
+const REDUCES_DAMAGE_BY_N_PERCENT_NODE = REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE;
+
 class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1146,6 +1168,9 @@ class ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode extend
     }
 }
 
+const REDUCES_DAMAGE_FROM_TARGET_FOES_FOLLOW_UP_ATTACK_BY_X_PERCENT_DURING_COMBAT_NODE =
+    percentage => new ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode(percentage);
+
 /**
  * reduces damage from foe's first attack by X% during combat
  * ("First attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes.)
@@ -1175,6 +1200,23 @@ class ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTw
 
 const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_BY_SPECIAL_DURING_COMBAT_INCLUDING_TWICE_NODE =
     n => new ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTwiceNode(n);
+
+class ReducesDamageFromTargetFoesConsecutiveAttacksByXPercentDuringCombatNode extends ApplyingNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let ratio = n / 100.0;
+        unit.battleContext.addDamageReductionRatioOfConsecutiveAttacks(ratio);
+        env.debug(`${unit.nameWithGroup}は連撃のダメージを${n}%軽減`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_CONSECUTIVE_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
+    percentage => new ReducesDamageFromTargetFoesConsecutiveAttacksByXPercentDuringCombatNode(percentage);
 
 /**
  * reduces damage from foe's first attack by X during combat
@@ -1268,6 +1310,7 @@ class RestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
     }
 }
 
+const RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE = n => new RestoresHpToUnitAfterCombatNode(n);
 const RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(7);
 const RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(10);
 
@@ -1366,6 +1409,37 @@ class TargetCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
 }
 
 const TARGET_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new TargetCanCounterattackRegardlessOfRangeNode();
+
+class FoeCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOE_CAN_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new FoeCanCounterattackRegardlessOfRangeNode();
+
+class CanTargetCounterattackRegardlessOfRangeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canCounterattackToAllDistance;
+        env.debug(`${unit.nameWithGroup}は距離に関係なく反撃するか: ${result}`);
+        return result;
+    }
+}
+
+const CAN_TARGET_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new CanTargetCounterattackRegardlessOfRangeNode();
+
+class CanFoeCounterattackRegardlessOfRangeNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new CanFoeCounterattackRegardlessOfRangeNode();
 
 /**
  * Calculates damage using the lower of foe's Def or Res.
@@ -1634,7 +1708,13 @@ class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
     }
 }
 
-const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = threshold => new TargetCanActivateNonSpecialMiracleNode(threshold);
+/**
+ * HP n%以上の時奥義以外の祈り
+ * @param {number} thresholdPercentage %
+ * @returns {TargetCanActivateNonSpecialMiracleNode}
+ * @constructor
+ */
+const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = thresholdPercentage => new TargetCanActivateNonSpecialMiracleNode(thresholdPercentage);
 
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 
@@ -1649,14 +1729,9 @@ class EffectiveAgainstNode extends BoolNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let foe = env.foeDuringCombat;
-        let type = this.evaluateChildren(env)[0];
-        // noinspection JSCheckFunctionSignatures
-        if (DamageCalculationUtility.isEffectiveAttackEnabled(foe, type)) {
-            unit.battleContext.isEffectiveToOpponent = true;
-            env.debug(`${unit.nameWithGroup}は相手に対して特攻`);
-        } else {
-            env.debug(`${foe.nameWithGroup}は特攻無効`);
-        }
+        let effective = this.evaluateChildren(env)[0];
+        unit.battleContext.effectivesAgainst.push(effective);
+        env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(effective)}特効`);
     }
 }
 
@@ -1805,7 +1880,7 @@ class TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttack
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        unit.battleContext.canAddDamageReductionToNextAttackFromEnemiesFirstAttack = true;
+        unit.battleContext.firstAttackReflexDamageRates.push(1.0);
         env.debug(`${unit.nameWithGroup}は敵の最初の攻撃で軽減した値を、自身の次の攻撃のダメージに+`);
     }
 }
@@ -2379,6 +2454,14 @@ class TargetCannotRecoverHpDuringCombatNode extends SkillEffectNode {
 
 const TARGET_CANNOT_RECOVER_HP_DURING_COMBAT_NODE = new TargetCannotRecoverHpDuringCombatNode();
 
+class FoeCannotRecoverHpDuringCombatNode extends TargetCannotRecoverHpDuringCombatNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOE_CANNOT_RECOVER_HP_DURING_COMBAT_NODE = new FoeCannotRecoverHpDuringCombatNode();
+
 class TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2393,6 +2476,13 @@ class TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode extends SkillEffec
 
 const TARGET_CANNOT_RECOVER_HP_AFTER_COMBAT_NEUTRALIZED_WHEN_FEUD_NODE =
     new TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode();
+
+const FOE_CANNOT_RECOVER_HP_AFTER_COMBAT_NEUTRALIZED_WHEN_FEUD_NODE =
+    new class extends TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode {
+        static {
+            Object.assign(this.prototype, GetFoeDuringCombatMixin);
+        }
+    }
 
 class ReducesEffectOfDeepWoundsOnTargetByNPercentNode extends FromPositiveNumberNode {
     static {
@@ -2413,3 +2503,67 @@ const REDUCES_EFFECT_OF_DEEP_WOUNDS_ON_TARGET_BY_N_PERCENT_NODE =
 
 const NEUTRALIZES_TARGETS_DEEP_WOUNDS_DURING_COMBAT_NODE =
     new ReducesEffectOfDeepWoundsOnTargetByNPercentNode(100);
+
+class NeutralizesTargetFoesNonSpecialMiracle extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.neutralizesNonSpecialMiracle = true;
+        env.debug(`${unit.nameWithGroup}は相手の奥義以外の祈りを無効`);
+    }
+}
+
+const NEUTRALIZES_TARGET_FOES_NON_SPECIAL_MIRACLE = new NeutralizesTargetFoesNonSpecialMiracle();
+
+class CalculatesDamageAtNPercentNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.damageCalculationRatios.push(percentage / 100.0);
+        env.debug(`${unit.nameWithGroup}は与えるダメージを${percentage}%で計算`);
+    }
+}
+
+/**
+ * @param {number|NumberNode} n
+ */
+const CALCULATES_DAMAGE_AT_N_PERCENT_NODE = (n) => new CalculatesDamageAtNPercentNode(n);
+
+class AfterCombatMovementEffectsDoNotOccurBecauseOfTargetNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.isAfterCombatMovementDisabled = true;
+        env.debug(`${unit.nameWithGroup}は戦闘後移動スキルを無効にする`);
+    }
+}
+
+const AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE =
+    new AfterCombatMovementEffectsDoNotOccurBecauseOfTargetNode();
+
+class CancelsStatusEffectsGrantedToTargetNode extends FromNumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        this.evaluateChildren(env).forEach(e => {
+            let unit = this.getUnit(env);
+            env.debug(`${unit.nameWithGroup}の${getStatusEffectName(e)}を解除予約`);
+            unit.reservedStatusEffectSetToNeutralize.add(e);
+        });
+    }
+}
+
+const CANCEL_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE =
+    (...effects) => new CancelsStatusEffectsGrantedToTargetNode(...effects);

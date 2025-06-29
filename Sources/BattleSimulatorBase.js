@@ -120,6 +120,9 @@ class BattleSimulatorBase {
         this.data = appData;
 
         this.methods = {
+            getApp: function () {
+                return self;
+            },
             bgmEnabledChanged: function () {
                 if (self.audioManager.isBgmEnabled) {
                     self.vm.audioManager.isSoundEffectEnabled = true;
@@ -301,8 +304,7 @@ class BattleSimulatorBase {
                 }
                 updateAllUi();
             },
-            weaponChanged: function () {
-                console.log("weaponChanged");
+            updateCurrentUnit: function () {
                 if (g_app == null) {
                     return;
                 }
@@ -312,52 +314,31 @@ class BattleSimulatorBase {
                 }
                 let currentUnit = self.__getCurrentUnit();
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
-                unit.resetMaxSpecialCount();
-                self.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
-            },
-            weaponOptionChanged: function () {
-                console.log("weaponOptionChanged");
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                unit.resetMaxSpecialCount();
+                currentUnit.resetMaxSpecialCount();
                 g_app.updateAllUnitSpur();
                 appData.updateArenaScore(unit);
+                appData.__showStatusToAttackerInfo();
+
+                updateAllUi();
+                return [unit, currentUnit];
+            },
+            passiveChanged: function () {
+                this.updateCurrentUnit();
+            },
+            weaponChanged: function () {
+                this.passiveChanged();
+            },
+            weaponOptionChanged: function () {
+                this.passiveChanged();
             },
             supportChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                appData.__updateUnitSkillInfo(unit);
-                appData.updateArenaScore(unit);
-                appData.__showStatusToAttackerInfo();
+                this.passiveChanged();
             },
             specialChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                appData.__updateUnitSkillInfo(unit);
-                unit.resetMaxSpecialCount();
-                appData.updateArenaScore(unit);
-                updateAllUi();
-                appData.__showStatusToAttackerInfo();
+                this.passiveChanged();
             },
             specialCountChanged: function () {
+                // console.log("specialCountChanged");
                 if (g_app == null) {
                     return;
                 }
@@ -368,6 +349,7 @@ class BattleSimulatorBase {
                 updateAllUi();
             },
             hpChanged: function () {
+                // console.log("hpChanged");
                 if (g_app == null) {
                     return;
                 }
@@ -375,89 +357,61 @@ class BattleSimulatorBase {
                 updateAllUi();
             },
             passiveAChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                unit.resetMaxSpecialCount();
-                g_app.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
+                this.passiveChanged();
             },
             passiveBChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                appData.__updateUnitSkillInfo(unit);
-                appData.updateArenaScore(unit);
-
-                // 救援等に変わったら移動可能範囲の更新が必要
-                updateAllUi();
+                this.passiveChanged();
             },
             passiveCChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                g_app.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
+                this.passiveChanged();
             },
             passiveSChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                g_app.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
-
-                // 曲技飛行等で移動範囲が変わる
-                updateAllUi();
+                this.passiveChanged();
             },
             passiveXChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
+                this.passiveChanged();
+            },
+            additionalSkillChanged: function () {
+                this.updateCurrentUnit();
+            },
+            initCustomSkillArgs: function (index) {
+                // TODO: funcIdから適切な初期化を行うようにする
                 let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
+                CustomSkill.Arg.initArgs(unit?.customSkills[index]);
+                this.updateCurrentUnit();
+            },
+            customSkillChanged: function () {
+                this.updateCurrentUnit();
+            },
+            isSkillEnabledChanged: function (index, type) {
+                let currentUnit = this.tryGetCurrentUnit();
+                if (currentUnit == null) {
                     return;
                 }
-                let currentUnit = self.__getCurrentUnit();
-                appData.__updateStatusBySkillsAndMerges(currentUnit);
-                g_app.updateAllUnitSpur();
-                appData.updateArenaScore(unit);
 
-                // 曲技飛行等で移動範囲が変わる
-                updateAllUi();
+                switch (type) {
+                    case 'additional':
+                        currentUnit.additionalPassives[index][2] = !currentUnit.additionalPassives[index][2];
+                        if (currentUnit.additionalPassives[index][2]) {
+                            this.showFlash("追加スキルを有効にしました", 'success', true);
+                        } else {
+                            this.showFlash("追加スキルを無効にしました", 'secondary', true);
+                        }
+                        break;
+                    case 'custom':
+                        currentUnit.customSkills[index][2] = !currentUnit.customSkills[index][2];
+                        if (currentUnit.customSkills[index][2]) {
+                            this.showFlash("カスタムスキルを有効にしました", 'success', true);
+                        } else {
+                            this.showFlash("カスタムスキルを無効にしました", 'secondary', true);
+                        }
+                        break;
+                }
+
+                this.updateCurrentUnit();
             },
             captainChanged: function () {
-                if (g_app == null) {
-                    return;
-                }
-                let unit = g_app.__getEditingTargetUnit();
-                if (unit == null) {
-                    return;
-                }
-                appData.__updateStatusBySkillsAndMerges(unit);
-                g_app.updateAllUnitSpur();
-                updateAllUi();
+                this.passiveChanged();
             },
             mergeChanged: function () {
                 if (g_app == null) {
@@ -859,7 +813,16 @@ class BattleSimulatorBase {
                 return 'ー';
             },
             getCurrentUnit() {
-                return g_appData.currentUnit;
+                return g_appData?.currentUnit;
+            },
+            isCurrentUnitPresent() {
+                return Boolean(
+                    g_app?.__getEditingTargetUnit() &&
+                    self?.__getCurrentUnit()
+                );
+            },
+            tryGetCurrentUnit() {
+                return (g_app?.__getEditingTargetUnit() && self?.__getCurrentUnit()) || null;
             },
             onDivineVeinImageVisibilityChanged() {
                 updateMap();
@@ -949,6 +912,20 @@ class BattleSimulatorBase {
                 updateAllUi();
                 appData.__showStatusToAttackerInfo();
             },
+            showFlash(text, type = 'info', autoClose = true, duration = 3000) {
+                const msg = { text, type: type.toLowerCase(), autoClose };
+                this.flashMessages.push(msg);
+
+                if (autoClose) {
+                    setTimeout(() => {
+                        const i = this.flashMessages.indexOf(msg);
+                        if (i >= 0) this.flashMessages.splice(i, 1);
+                    }, duration);
+                }
+            },
+            removeFlash(index) {
+                this.flashMessages.splice(index, 1);
+            }
         };
 
         if (additionalMethods != null) {
@@ -1222,6 +1199,10 @@ class BattleSimulatorBase {
         }
 
         if (duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn) {
+            return false;
+        }
+
+        if (duoUnit.hasAvailableStyle()) {
             return false;
         }
 
@@ -3697,11 +3678,12 @@ class BattleSimulatorBase {
 
         let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack, this.data.gameMode);
         atkUnit.isAttackDone = true;
-        defUnit.isAttackedDone = true;
+        result.defUnit.isAttackedDone = true;
         atkUnit.isCombatDone = true;
-        defUnit.isCombatDone = true;
+        result.defUnit.isCombatDone = true;
         if (atkUnit.isStyleActive) {
             atkUnit.isStyleActivatedInThisTurn = true;
+            atkUnit.styleActivationsCount++;
         }
 
         // this.clearSimpleLog();
@@ -3712,8 +3694,9 @@ class BattleSimulatorBase {
         let isMoveSkillEnabled = defUnit === result.defUnit;
         if (isMoveSkillEnabled &&
             atkUnit.isAlive &&
-            !atkUnit.isCannotMoveStyleActive() &&
-            !atkUnit.isRangedStyleForMeleeActive()) {
+            !atkUnit.battleContext.isAfterCombatMovementDisabled &&
+            !defUnit.battleContext.isAfterCombatMovementDisabled
+        ) {
             this.__applyMovementSkillAfterCombat(atkUnit, defUnit);
         }
 
@@ -3777,7 +3760,11 @@ class BattleSimulatorBase {
             if (defUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
                 // さらに、敵から攻撃された戦闘で撃破された時、
                 if (defUnit.isDead) {
-                   // 戦闘後、敵を行動可能な状態にする（この効果は「時は光」を含む、他の同系統効果より優先する、その際、他の同系統効果は発動していない扱いとする）
+                    // 戦闘後、敵を行動可能な状態にする（この効果は「時は光」を含む、他の同系統効果より優先する、その際、他の同系統効果は発動していない扱いとする）
+                    // 戦果移譲・広域も発動したものとする
+                    let skillSet =
+                        g_appData.globalBattleContext.oncePerTurnSkillsForTheEntireMapInCurrentTurn[atkUnit.groupId];
+                    skillSet.add(`${getStatusEffectSkillId(StatusEffectType.ShareSpoilsPlus)}-再行動`);
                     if (atkUnit.isActionDone) {
                         atkUnit.isActionDone = false;
                     }
@@ -3794,9 +3781,15 @@ class BattleSimulatorBase {
         }
 
         // 優先度が高いスキルの後かつ奥義の再行動の前
-        let env = new BattleSimulatorBaseEnv(this, atkUnit);
+        let env = new BattleSimulatorBaseEnv(this, atkUnit).setUnitsDuringCombat(atkUnit, defUnit);
         env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
+        let foeEnv =
+            new BattleSimulatorBaseEnv(this, atkUnit)
+                .setUnitsDuringCombat(atkUnit, defUnit)
+                .setSkillOwner(defUnit)
+                .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
+        AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         if (atkUnit.isAlive) {
@@ -3833,17 +3826,6 @@ class BattleSimulatorBase {
                             atkUnit.battleContext.initiatesCombat &&
                             !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1) &&
                             atkUnit.isActionDone) {
-                            atkUnit.isActionDone = false;
-                            atkUnit.isOneTimeActionActivatedForWeapon = true;
-                        }
-                        break;
-                    case Weapon.TwinCrestPower:
-                        if (!atkUnit.isOneTimeActionActivatedForWeapon
-                            && atkUnit.battleContext.restHpPercentage >= 25
-                            && atkUnit.isTransformed
-                            && atkUnit.isActionDone
-                        ) {
-                            this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.weaponInfo.name + "により再行動");
                             atkUnit.isActionDone = false;
                             atkUnit.isOneTimeActionActivatedForWeapon = true;
                         }
@@ -4688,7 +4670,8 @@ class BattleSimulatorBase {
     #resetDuoOrHarmonizedSkill(unit) {
         unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
         let heroIndex = unit.heroIndex;
-        if (RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET.has(heroIndex) ||
+        let skillId = getDuoOrHarmonizedSkillId(heroIndex);
+        if (RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET.has(skillId) ||
             heroIndex === Hero.YoungPalla ||
             heroIndex === Hero.DuoSigurd ||
             heroIndex === Hero.DuoEirika ||
@@ -4697,7 +4680,7 @@ class BattleSimulatorBase {
             if (this.isOddTurn) {
                 unit.duoOrHarmonizedSkillActivationCount = 0;
             }
-        } else if (RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.has(heroIndex) ||
+        } else if (RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.has(skillId) ||
             heroIndex === Hero.SummerMia ||
             heroIndex === Hero.SummerByleth ||
             heroIndex === Hero.PirateVeronica ||
@@ -5933,7 +5916,7 @@ class BattleSimulatorBase {
 
         return isActionActivated;
     }
-    
+
     simulatePostCombatCantoAssist(cantoUnit, assistEnemyUnits, enemyUnits, allyUnits) {
         // コンテキスト初期化
         this.__prepareActionContextForAssist(enemyUnits, allyUnits, false);
@@ -6108,7 +6091,7 @@ class BattleSimulatorBase {
 
         return isActionActivated;
     }
-    
+
     simulatePrecombatCantoAssist(cantoUnit, assistableUnits, enemyUnits, allyUnits) {
         // TODO: 移動以外が実装された場合は以下を修正して実装
         return false;
@@ -7492,6 +7475,7 @@ class BattleSimulatorBase {
             }
             if (unit.isStyleActive) {
                 unit.isStyleActivatedInThisTurn = true;
+                unit.styleActivationsCount++;
             }
 
             unit.deactivateStyle();
@@ -7560,6 +7544,7 @@ class BattleSimulatorBase {
             targetTile.removeDivineVein();
             if (unit.isStyleActive) {
                 unit.isStyleActivatedInThisTurn = true;
+                unit.styleActivationsCount++;
             }
 
             unit.deactivateStyle();
@@ -7720,7 +7705,6 @@ class BattleSimulatorBase {
                 case PassiveB.MoonlightBangle:
                 case PassiveB.MoonlitBangleF:
                 case Weapon.DolphinDiveAxe:
-                case Weapon.Ladyblade:
                 case Weapon.FlowerLance:
                 case Weapon.BlazingPolearms:
                 case PassiveB.AtkSpdNearTrace3:
@@ -7868,13 +7852,41 @@ class BattleSimulatorBase {
                 return;
             }
 
+            if (usesStyle) {
+                attackerUnit.activateStyle();
+            }
+
+            // 予知の罠などによる行動終了判定
+            let env = new BattleSimulatorBaseEnv(self, attackerUnit).setTargetFoe(targetUnit)
+                .setSkillOwner(targetUnit)
+                .setName('攻撃キャンセル判定').setLogLevel(getSkillLogLevel());
+            let isAttackCanceled = CANCEL_FOES_ATTACK_HOOKS.evaluateSomeWithUnit(targetUnit, env);
+            if (isAttackCanceled) {
+                self.writeSimpleLogLine(`${attackerUnit.nameWithGroup}の攻撃はキャンセル`);
+                env.setName('攻撃キャンセル後');
+                AFTER_CANCEL_FOES_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
+                // 戦闘には入っていないので初めての戦闘判定、戦闘回数などには反映されない
+                // 一方スタイルは使用したことになる
+                if (attackerUnit.isStyleActive) {
+                    attackerUnit.isStyleActivatedInThisTurn = true;
+                    attackerUnit.styleActivationsCount++;
+                }
+                // 攻撃キャンセル時も行動後の再行動の対象になる
+                env = new BattleSimulatorBaseEnv(this, attackerUnit);
+                env.setName('行動時[攻撃キャンセル]').setLogLevel(getSkillLogLevel());
+                AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(attackerUnit, env);
+                // TODO: 攻撃キャンセル後と行動後が同じタイミングか確認する
+                for (let unit of self.enumerateAllUnitsOnMap()) {
+                    unit.applyReservedState(false);
+                }
+                self.map.applyReservedDivineVein();
+                return;
+            }
+
             if (attackerUnit.weaponInfo?.attackCount === 2) {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.DoubleAttack);
             } else {
                 self.audioManager.playSoundEffectImmediately(SoundEffectId.Attack);
-            }
-            if (usesStyle) {
-                attackerUnit.activateStyle();
             }
             self.updateDamageCalculation(attackerUnit, targetUnit, tile);
             attackerUnit.deactivateStyle();
@@ -8889,8 +8901,14 @@ class BattleSimulatorBase {
                 }
             }
         }
-        if (unit.canActivateStyle() && unit.hasRangedStyleForMelee()) {
-            this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, 2, true);
+        if (unit.canActivateStyle() &&
+            !unit.hasCannotMoveStyle()) {
+            let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
+                .setName('攻撃可能ユニット設定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
+            if (range > 0) {
+                this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, range, true);
+            }
         }
     }
 
@@ -9475,6 +9493,12 @@ class BattleSimulatorBase {
             env = new BattleSimulatorBaseEnv(this, targetUnit);
             env.setName('移動補助を使用された時').setLogLevel(getSkillLogLevel()).setAssistUnits(unit, targetUnit);
             AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.evaluateWithUnit(targetUnit, env);
+
+            for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedState(false);
+                unit.applyReservedHp(true);
+            }
+            this.map.applyReservedDivineVein();
         }
 
         return true;
@@ -10131,6 +10155,7 @@ class BattleSimulatorBase {
             this.__applySkillsAfterRally(supporterUnit, targetUnit);
             for (let unit of this.enumerateUnitsOnMap()) {
                 unit.applyReservedState(false);
+                unit.applyReservedHp(true);
             }
         }
         this.map.applyReservedDivineVein();
@@ -11684,6 +11709,7 @@ function updateAllUi() {
     g_trashArea.updateUi();
     updateMapUi();
     addTouchEventToDraggableElements();
+    g_appData.__showStatusToAttackerInfo();
 }
 
 function __updateChaseTargetTilesForAllUnits() {

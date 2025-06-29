@@ -135,6 +135,8 @@ const WeaponRefinementType = {
     DazzlingStaff: 12, // 幻惑の杖
 };
 
+const NONE_ID = 'none';
+
 const Weapon = {
     None: -1,
 
@@ -3852,12 +3854,42 @@ Weapon.FinalSword = 3283; // 終着の剣
 Special.PitchDarkLuna = 3284; // 漆闇の月光
 PassiveA.DistantADForm = 3285; // 遠反・攻守の密集
 PassiveB.CounterFighter = 3286; // 反攻隊形
+Weapon.ArcaneHexBow = 3287; // 魔器・呪術の秘弓
+PassiveA.AtkSpdHexedge = 3288; // 攻撃速さの呪刃
+PassiveC.BloodAndThunder = 3289; // あの世に行くが良い
+Weapon.DespairingBreath = 3290; // 深き絶望のブレス
+Special.ArmoredGlacier = 3291; // 重装の大氷
+PassiveC.ARBriarNSave = 3292; // 兜の護り手・近・茨
+Weapon.ObstinateBreathPlus = 3293; // 堅牢のブレス+
+Weapon.KindredTome = 3294; // 母娘の呪術書
+PassiveA.AlreadyDead = 3295; // あの世行きよ…
+PassiveB.SpdResHavoc = 3296; // 速さ魔防の大混乱
+PassiveX.CruxEcho = 3297; // 響・十字牽制
+Weapon.Gjallarhorn = 3298; // ギャラルホルン
+Weapon.RaudrsparrowPlus = 3299; // ラウアスパロー
+Weapon.VisionOfDaein = 3300; // デインの後継の書
+Weapon.GeneralToBe = 3301; // 魔道軍将の器の書
+Weapon.BouncinBall = 3302; // 夏の海に弾む球
+PassiveB.SRLullFinish = 3303; // 秘奥・速魔凪
+PassiveC.BlackFangBond = 3304; // 黒い牙の絆
+Weapon.HaulinHarpoon = 3305; // 大漁呼ぶ魚獲りの鉤
+PassiveC.PulseTempestF = 3306; // 迅雷風烈・追撃鼓動
+Weapon.FanninFoliagePlus = 3307; // ヤシの葉+
+Weapon.PiousOffering = 3308; // 敬虔なる信徒の供物
+Special.MagicLight = 3309; // 魔光
+PassiveB.HolySoulOfZofia = 3310; // ソフィアの聖魂
+Weapon.NanGuoNoguoZhiPlus = 3311; // 南国の果汁+
+PassiveB.ADNearTrace4 = 3312; // 攻撃守備の近影4
+Weapon.MaidensTome = 3313; // 暁の巫女の書
+Special.GreatSacrifice = 3314; // 大いなる癒しの手
+PassiveC.SilenceWard = 3315; // サイレスガード4
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
 Weapon.DevLance1 = G_WEAPON_ID_BASE + WeaponType.Lance * 100 + 1;
 Weapon.DevAxe1 = G_WEAPON_ID_BASE + WeaponType.Axe * 100 + 1;
 Weapon.DevDagger1 = G_WEAPON_ID_BASE + WeaponType.Dagger * 100 + 1;
+Weapon.DevRedTome1 = G_WEAPON_ID_BASE + WeaponType.RedTome * 100 + 1;
 Weapon.DevBlueTome1 = G_WEAPON_ID_BASE + WeaponType.BlueTome * 100 + 1;
 Weapon.DevGreenTome1 = G_WEAPON_ID_BASE + WeaponType.GreenTome * 100 + 1;
 Support.DevAssist1 = G_ASSIST_ID_BASE + 1;
@@ -3919,6 +3951,7 @@ const EmblemHero = {
     Sigurd: 1177,
     Lyn: 1216,
     Eirika: 1255,
+    Micaiah: 100000,
     Debug: 100000,
 };
 
@@ -3998,23 +4031,32 @@ const STYLE_TYPE = {
     ASTRA_STORM: 0,
     EMBLEM_LYN: 1,
     WIND_SWORD: 2,
+    ECHO: 3,
 }
 
 /**
  * skill id => style type
  * @type {Map<number|string, number>}
  */
-const SKILL_STYLE_MAP = new Map();
+const SKILL_ID_TO_STYLE_TYPE = new Map();
 
 /**
  * @type {Set<number>}
  */
-const CANNOT_MOVE_STYLE_SET = new Set();
+const CANNOT_MOVE_STYLES = new Set();
 
 /**
  * @type {Set<number>}
  */
-const RANGED_STYLE_FOR_MELEE_SET = new Set();
+const CANNOT_ATTACK_STRUCTURE_STYLES= new Set();
+
+const STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN = new Set();
+
+const STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1 = new Set();
+const STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2 = new Set();
+
+const SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1 = new Set();
+const SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2 = new Set();
 
 const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
 const REDUCE_SPECIAL_COUNT_WHEN_NO_WEAPON_SKILL_INFO_SET = new Set();
