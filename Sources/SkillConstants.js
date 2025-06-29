@@ -3880,6 +3880,9 @@ Special.MagicLight = 3309; // 魔光
 PassiveB.HolySoulOfZofia = 3310; // ソフィアの聖魂
 Weapon.NanGuoNoguoZhiPlus = 3311; // 南国の果汁+
 PassiveB.ADNearTrace4 = 3312; // 攻撃守備の近影4
+Weapon.MaidensTome = 3313; // 暁の巫女の書
+Special.GreatSacrifice = 3314; // 大いなる癒しの手
+PassiveC.SilenceWard = 3315; // サイレスガード4
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
