@@ -74,12 +74,12 @@ class CustomSkill {
         /**
          * @type {Map<string, [NumberNode, string]>}
          */
-        static STAT_NODES = [];
+        static STAT_NODES;
 
         /**
          * @type {Map<string, [NumberNode, string]>}
          */
-        static VARIABLE_NODES = [];
+        static VARIABLE_NODES;
 
         /**
          * @type {Map<string, [UnitsNode, string]>}
@@ -129,12 +129,12 @@ class CustomSkill {
 
         static getStatNode(args) {
             let id = args[this.Node.STAT];
-            return id ? this.STAT_NODES[id][0] : ZERO_NUMBER_NODE;
+            return id ? this.STAT_NODES.get(id)[0] : ZERO_NUMBER_NODE;
         }
 
         static getVariableNode(args) {
             let id = args[this.Node.VARIABLE];
-            return id ? this.VARIABLE_NODES[id][0] : ZERO_NUMBER_NODE;
+            return id ? this.VARIABLE_NODES.get(id)[0] : ZERO_NUMBER_NODE;
         }
 
         static getStatPercentNode(args) {
