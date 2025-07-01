@@ -28,6 +28,8 @@
     );
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        EFFECTIVE_AGAINST_NODE(EffectiveType.Armor),
+        EFFECTIVE_AGAINST_NODE(EffectiveType.Cavalry),
         // If unit initiates combat or is within 2 spaces of an ally,
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
             // grants bonus to unit’s Atk/Spd/Def/Res =
