@@ -330,13 +330,19 @@ class BattleSimulatorBase {
             passiveChanged: function () {
                 this.updateCurrentUnit();
             },
-            weaponChanged: function () {
+            weaponChanged: function (unit, v) {
+                if (unit) {
+                    unit.weapon = v;
+                }
                 this.passiveChanged();
             },
             weaponOptionChanged: function () {
                 this.passiveChanged();
             },
-            supportChanged: function () {
+            supportChanged: function (unit, v) {
+                if (unit) {
+                    unit.support = v;
+                }
                 this.passiveChanged();
             },
             specialChanged: function () {
@@ -360,6 +366,12 @@ class BattleSimulatorBase {
                 }
                 appData.__showStatusToAttackerInfo();
                 updateAllUi();
+            },
+            passiveSlotChanged: function (unit, v, slot) {
+                if (unit) {
+                    unit[`passive${slot}`] = v;
+                }
+                this.passiveChanged();
             },
             passiveAChanged: function () {
                 this.passiveChanged();
@@ -385,7 +397,7 @@ class BattleSimulatorBase {
                 CustomSkill.Arg.initArgs(unit?.customSkills[index]);
                 this.updateCurrentUnit();
             },
-            customSkillChanged: function () {
+            customSkillChanged: function (unit, value) {
                 this.updateCurrentUnit();
             },
             isSkillEnabledChanged: function (index, type) {
@@ -633,10 +645,12 @@ class BattleSimulatorBase {
                 appData.__showStatusToAttackerInfo();
                 updateAllUi();
             },
-            debugMenuEnabledChanged: function () {
+            debugMenuEnabledChanged: function (value) {
+                this.isDebugMenuEnabled = value;
                 appData.applyDebugMenuVisibility();
             },
-            developModeChanged: function () {
+            developModeChanged: function (value) {
+                appData.isDevelopmentMode = value;
                 LocalStorageUtil.setNumber('isDevelopmentMode', appData.isDevelopmentMode ? 1 : 0);
                 const userConfirmed = window.confirm("設定を完全に反映するためにはリロードが必要です。今すぐリロードしますか？");
                 if (userConfirmed) {

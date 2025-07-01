@@ -396,6 +396,9 @@ class PositiveNumberNode extends NumberNode {
 }
 
 class IntPercentageNumberNode extends NumberNode {
+    /**
+     * @param {number|NumberNode} n
+     */
     constructor(n) {
         super();
         this._nNode = NumberNode.makeNumberNodeFrom(n);
@@ -409,7 +412,12 @@ class IntPercentageNumberNode extends NumberNode {
     }
 }
 
-const INT_PERCENTAGE_NUMBER_NODE = n => new IntPercentageNumberNode(n);
+/**
+ * @param {number|NumberNode} n
+ * @returns {IntPercentageNumberNode}
+ * @constructor
+ */
+const INT_PERCENTAGE_NUMBER_NODE = (n) => new IntPercentageNumberNode(n);
 
 /**
  * @abstract
@@ -789,18 +797,18 @@ class EnsureMaxNode extends NumberOperationNode {
 const ENSURE_MAX_NODE = (child, max) => new EnsureMaxNode(child, max);
 
 class EnsureMinMaxNode extends NumberOperationNode {
-    #min = Number.MIN_SAFE_INTEGER;
-    #max = Number.MAX_SAFE_INTEGER;
+    #min = CONSTANT_NUMBER_NODE(Number.MIN_SAFE_INTEGER);
+    #max = CONSTANT_NUMBER_NODE(Number.MAX_SAFE_INTEGER);
 
     /**
      * @param {number|NumberNode} child
-     * @param {number} min
-     * @param {number} max
+     * @param {number|NumberNode} min
+     * @param {number|NumberNode} max
      */
     constructor(child, min, max) {
         super(child);
-        this.#min = min;
-        this.#max = max;
+        this.#min = NumberNode.makeNumberNodeFrom(min);
+        this.#max = NumberNode.makeNumberNodeFrom(max);
     }
 
     evaluateChildren(env) {
@@ -809,13 +817,29 @@ class EnsureMinMaxNode extends NumberOperationNode {
 
     evaluate(env) {
         let value = this.evaluateChildren(env);
-        let result = MathUtil.ensureMinMax(value, this.#min, this.#max);
-        env?.trace(`[EnsureMinMaxNode] (min: ${this.#min}, value: ${value}, max: ${this.#max}) => ${result}`);
+        let min = this.#min.evaluate(env);
+        let max = this.#max.evaluate(env);
+        let result = MathUtil.ensureMinMax(value, min, max);
+        env?.trace(`[EnsureMinMaxNode] (min: ${min}, value: ${value}, max: ${max}) => ${result}`);
         return result;
     }
 }
 
+/**
+ * @param {number|NumberNode} child
+ * @param {number|NumberNode} min
+ * @param {number|NumberNode} max
+ * @returns {EnsureMinMaxNode}
+ * @constructor
+ */
 const ENSURE_MIN_MAX_NODE = (child, min, max) => new EnsureMinMaxNode(child, min, max);
+/**
+ * @param {number|NumberNode} child
+ * @param {number|NumberNode} min
+ * @param {number|NumberNode} max
+ * @returns {EnsureMinMaxNode}
+ * @constructor
+ */
 const ENSURE_MAX_MIN_NODE = (child, max, min) => ENSURE_MIN_MAX_NODE(child, min, max);
 
 class AddNode extends NumberOperationNode {

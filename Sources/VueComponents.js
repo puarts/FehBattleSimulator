@@ -103,6 +103,8 @@ function initVueComponents() {
                 type: [Number, String],
                 required: false,
             },
+            fallbackValue: {type: [Number, String], default: -1, required: false},
+            isDebugMode: {type: Boolean, default: false, required: false},
         },
 
         mounted() {
@@ -113,25 +115,69 @@ function initVueComponents() {
                 .on('change', (event) => {
                     const raw = event.target.value;
                     const parsed = parseInt(raw, 10);
-                    this.$emit('input', isNaN(parsed) ? raw : parsed);
+                    let newVar = isNaN(parsed) ? raw : parsed;
+                    if (newVar === 0 || newVar) {
+                        this.$emit('input', newVar);
+                    }
                 });
         },
 
         watch: {
             value(newVal, oldVal) {
-                // 外部から value が変更されたときに select2 に反映
-                if (String(oldVal) !== String(newVal)) {
-                    $(this.$el).val(newVal).trigger('change');
+                // console.log(`select2: value changed: ${oldVal} -> ${newVal}`);
+                // 1. 現在の UI 側 select2 の値を取得
+                const uiVal = $(this.$el).val();
+                // console.log(`select2: UI val = ${uiVal}, prop newVal = ${newVal}`);
+
+                // 2. UI とプロップが異なる場合のみ反映して change を起こす
+                if (String(uiVal) !== String(newVal)) {
+                    // console.log('update with new value: ' + newVal);
+                    $(this.$el)
+                        .val(newVal)
+                        .trigger('change');
                 }
             },
 
             options(newOptions, oldOptions) {
-                $(this.$el)
-                    .empty()
-                    .select2({data: newOptions})
-                    .val(this.value)
-                    .trigger('change');
-                this.$emit('options-changed', newOptions, oldOptions);
+                // まず、現在の this.value が newOptions に含まれているかチェック
+                const hasCurrent = newOptions.some(opt => String(opt.id) === String(this.value));
+                // デバッグモードならオプションにない値が含まれても元の値を保持する
+                // その際に警告を表示する
+                // そうでない場合は元の値に-1をセットする
+                if (this.isDebugMode) {
+                    let effectiveOptions = newOptions.slice();
+
+                    if (!hasCurrent) {
+                        // 「不正な値」用のダミーオプションを作成
+                        effectiveOptions.push({
+                            id:    this.value,
+                            text:  `（不正な値: ${this.value}）`,
+                            disabled: true
+                        });
+                    }
+                    // select2 を再初期化し、必ず currentValue を選択
+                    $(this.$el)
+                        .empty()
+                        .select2({ data: effectiveOptions })
+                        .val(this.value)
+                        .trigger('change');
+
+                    // 不正値表示用にスタイルを付与（任意）
+                    const container = $(this.$el).next('.select2-container');
+                    if (!hasCurrent) {
+                        container.addClass('invalid-value');
+                    } else {
+                        container.removeClass('invalid-value');
+                    }
+                } else {
+                    // オプションにない要素は -1（fallbackValue 使用）
+                    const selectedValue = hasCurrent ? this.value : this.fallbackValue;
+                    $(this.$el)
+                        .empty()
+                        .select2({data: newOptions})
+                        .val(selectedValue)
+                        .trigger('change');
+                }
             },
         },
 
@@ -252,6 +298,7 @@ function initVueComponents() {
                 <select2
                     :options="CustomSkill.OPTIONS"
                     v-model="unit.customSkills[index][0]"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
                     @input="vm.initCustomSkillArgs(index);vm.customSkillChanged();"
                     class="custom-skill"
                 ></select2>
@@ -340,7 +387,7 @@ function initVueComponents() {
                           <select2
                               :options="CustomSkill.Arg.NODE_TO_OPTIONS.getValues(argNode)"
                               v-model="unit.customSkills[index][1][argNode]"
-                              @input="vm.customSkillChanged"
+                              @input="v => vm.customSkillChanged(unit, v)"
                               class="custom-skill-args"
                           ></select2>
                     </span>
@@ -374,8 +421,9 @@ function initVueComponents() {
                     :options="vm.enableAllSkillOptions ?
                                 vm.weaponOptions : (unit.heroInfo && unit.heroInfo.weaponOptions)"
                     :name="unit.id + '-weapon'"
-                    v-model="unit.weapon"
-                    @input="vm.weaponChanged"
+                    :value="unit.weapon"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
+                    @input="v => vm.weaponChanged(unit, v)"
                     @options-changed="vm.initSkills"
                     class="skill">
                 </select2>
@@ -420,8 +468,9 @@ function initVueComponents() {
               <div class="skill-content">
                 <select2
                     class="skill"
-                    v-model="unit.support"
-                    @input="vm.supportChanged"
+                    :value="unit.support"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
+                    @input="v => vm.supportChanged(unit, v)"
                     @options-changed="vm.initSkills"
                     :options="vm.enableAllSkillOptions
                               ? vm.supportOptions
@@ -456,8 +505,9 @@ function initVueComponents() {
               <div class="skill-content">
                 <select2
                     class="skill"
-                    v-model="unit.special"
-                    @input="vm.specialChanged"
+                    :value="unit.special"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
+                    @input="v => vm.specialChanged(unit, v)"
                     @options-changed="vm.initSkills"
                     :options="vm.enableAllSkillOptions
                                 ? vm.specialOptions
@@ -524,8 +574,9 @@ function initVueComponents() {
                     :name="!vm.enableAllSkillOptions && unit.heroInfo
                                 ? unit.id + '-passive' + slot
                                 : null"
-                    v-model="unit['passive' + slot]"
-                    @input="vm['passive' + slot + 'Changed']"
+                    :value="unit['passive' + slot]"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
+                    @input="v => vm.passiveSlotChanged(unit, v, slot)"
                     @options-changed="vm.initSkills"
                     class="skill"
                 />
@@ -558,7 +609,9 @@ function initVueComponents() {
                 <span class="skillTypeText" style="font-size:10px">隊長</span>
               </div>
               <div class="skill-content">
-                <select2 :options="vm.captainOptions" v-model="unit.captain"
+                <select2 :options="vm.captainOptions" 
+                         v-model="unit.captain"
+                         :is-debug-mode="vm.isDebugMenuEnabled"
                          @input="vm.captainChanged"
                          class="skill">
                 </select2>
@@ -591,6 +644,7 @@ function initVueComponents() {
               <div class="skill-content">
                 <select2 :options="vm.additionalPassiveOptions"
                          v-model="unit.additionalPassives[index][0]"
+                         :is-debug-mode="vm.isDebugMenuEnabled"
                          @input="vm.additionalSkillChanged" class="skill">
                 </select2>
               </div>
@@ -1130,7 +1184,47 @@ function initVueComponents() {
             </span>
         </span>
         `
-    })
+    });
+
+    Vue.component('DebugSettings', {
+        name: 'DebugSettings',
+        props: {
+            isDebugMenuEnabled: {type: Boolean, required: true},
+            isDevelopmentMode: {type: Boolean, required: true}
+        },
+        template: `
+            <div style="float:right">
+              <input
+                :id="debugId"
+                type="checkbox"
+                :checked="isDebugMenuEnabled"
+                @change="$emit('is-debug-changed', $event.target.checked)"
+              />
+              <label class="normal" :for="debugId">
+                デバッグモード有効(開発者用)
+              </label>
+
+              <input
+                :id="devId"
+                type="checkbox"
+                :checked="isDevelopmentMode"
+                @change="$emit('is-dev-mode-changed', $event.target.checked)"
+              />
+              <label class="normal" :for="devId">
+                開発モード有効(開発者用)
+              </label>
+            </div>
+        `,
+        computed: {
+            // ラベルの for 属性と input の id の衝突を避けるために乱数を付与
+            debugId() {
+                return 'debugMenuEnabled-' + this._uid;
+            },
+            devId() {
+                return 'isDevelopmentMode-' + this._uid;
+            }
+        }
+    });
 }
 
 initVueComponents();

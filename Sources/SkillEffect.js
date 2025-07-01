@@ -1973,6 +1973,9 @@ class GrantsStatsPlusToFoeDuringCombatNode extends GrantsStatsPlusToTargetDuring
 }
 
 class GrantsAllStatsPlusNToTargetDuringCombatNode extends GrantsStatsPlusToTargetDuringCombatNode {
+    /**
+     * @param {number|NumberNode} n
+     */
     constructor(n) {
         super(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE);
         this._n = NumberNode.makeNumberNodeFrom(n);
@@ -1985,6 +1988,11 @@ class GrantsAllStatsPlusNToTargetDuringCombatNode extends GrantsStatsPlusToTarge
     }
 }
 
+/**
+ * @param {number|NumberNode} n
+ * @returns {GrantsAllStatsPlusNToTargetDuringCombatNode}
+ * @constructor
+ */
 const GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE = (n) => new GrantsAllStatsPlusNToTargetDuringCombatNode(n);
 
 class GrantsAllStatsPlusNToUnitDuringCombatNode extends GrantsAllStatsPlusNToTargetDuringCombatNode {

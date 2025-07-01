@@ -115,6 +115,12 @@ const ASSIST_TARGETING_AND_TARGET_NODE = UnitsNode.makeFromUnits(ASSIST_TARGETIN
 const TOTAL_DAMAGE_DEALT_TO_TARGET_DURING_COMBAT_NODE = SUB_NODE(TARGETS_MAX_HP_NODE, TARGETS_HP_DURING_COMBAT_NODE);
 const TOTAL_DAMAGE_DEALT_TO_FOE_DURING_COMBAT_NODE = SUB_NODE(new FoesMaxHpNode(), new FoesHpDuringCombatNode());
 
+/**
+ * @param {number|NumberNode} percentage
+ * @param {number|NumberNode} num
+ * @returns {MultTruncNode}
+ * @constructor
+ */
 const PERCENTAGE_NODE = (percentage, num) =>
     MULT_TRUNC_NODE(MULT_NODE(INT_PERCENTAGE_NUMBER_NODE(percentage), 0.01), num);
 
@@ -124,6 +130,13 @@ const PERCENTAGE_CEIL_NODE = (percentage, num) =>
 const PERCENTAGE_ADD_NODE = (percentage, num, add) =>
     ADD_NODE(PERCENTAGE_NODE(percentage, num), add);
 
+/**
+ * @param {number} percentage
+ * @param {number|NumberNode} num
+ * @param {number|NumberNode} sub
+ * @returns {SubNode}
+ * @constructor
+ */
 const PERCENTAGE_SUB_NODE = (percentage, num, sub) =>
     SUB_NODE(PERCENTAGE_NODE(percentage, num), sub);
 

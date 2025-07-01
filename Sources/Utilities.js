@@ -234,6 +234,10 @@ class LocalStorageUtil {
         return value !== null ? value === 'true' : defaultValue;
     }
 
+    /**
+     * @param {string} key
+     * @param {boolean} value
+     */
     static setBoolean(key, value) {
         localStorage.setItem(key, value ? 'true' : 'false');
     }

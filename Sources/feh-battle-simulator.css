@@ -1261,6 +1261,36 @@ td.enemy {
     width: 100%;
 }
 
+.invalid-value {
+    color: red;
+}
+
+/* 選択中の表示文字色を赤に */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    /*color: #e74c3c; !important;!* 好きな色に *!*/
+}
+
+/* ドロップダウンリスト内の項目文字色を青に */
+.select2-container--default .select2-results__option {
+    /*color: #3498db; !* 好きな色に *!*/
+}
+
+/* ホバー時に色を変えたい場合 */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    /*background-color: #ecf0f1;*/
+    /*color: #2c3e50;*/
+}
+
+.select2-container--default.invalid-value .select2-selection--single .select2-selection__rendered {
+    color: red;
+    line-height: 28px;
+}
+
+/*.select2-container--default .select2-selection--single .select2-selection__rendered {*/
+/*    color: #444;*/
+/*    line-height: 28px;*/
+/*}*/
+
 /*.debugInfo {*/
 /*    display: block;*/
 /*    margin-top: 0.25rem;*/

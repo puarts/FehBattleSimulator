@@ -297,7 +297,7 @@ class AppData extends UnitManager {
         this.beginningOfTurnSkillHanderLogger = new HtmlLogger();
         this.beginningOfTurnSkillHanderLogger.logLevel = this.simulatorLogLevel;
 
-        this.isDebugMenuEnabled = DebugModeDefault;
+        this.isDebugMenuEnabled = LocalStorageUtil.getBoolean('isDebugMenuEnabled', DebugModeDefault);
         this.isDevelopmentMode = LocalStorageUtil.getNumber('isDevelopmentMode', 0) === 1;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
@@ -2267,10 +2267,10 @@ class AppData extends UnitManager {
         this.debugMenuStyle = "";
     }
     applyDebugMenuVisibility() {
+        LocalStorageUtil.setBoolean('isDebugMenuEnabled', this.isDebugMenuEnabled);
         if (this.isDebugMenuEnabled) {
             this.showDebugMenu();
-        }
-        else {
+        } else {
             this.hideDebugMenu();
         }
     }

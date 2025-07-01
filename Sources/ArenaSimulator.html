@@ -506,15 +506,12 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <div style="float:right">
-                        <input id="debugMenuEnabled" type="checkbox" v-model="isDebugMenuEnabled"
-                            @change="debugMenuEnabledChanged"><label class="normal"
-                            for="debugMenuEnabled">デバッグモード有効(開発者用)</label>
-
-                        <input id="isDevelopmentMode" type="checkbox" v-model="isDevelopmentMode"
-                               @change="developModeChanged">
-                        <label class="normal" for="isDevelopmentMode">開発モード有効(開発者用)</label>
-                    </div>
+                    <debug-settings
+                            :is-debug-menu-enabled="isDebugMenuEnabled"
+                            :is-development-mode="isDevelopmentMode"
+                            @is-debug-changed="debugMenuEnabledChanged"
+                            @is-dev-mode-changed="developModeChanged"
+                    ></debug-settings>
                 </td>
             </tr>
             <tr>
