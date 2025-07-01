@@ -5054,6 +5054,9 @@ class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
+    /**
+     * @param {SkillEffectNode} nodeAfterAnotherAction 再行動後に発動する効果
+     */
     constructor(nodeAfterAnotherAction = null) {
         super();
         this._nodeAfterAnotherAction = nodeAfterAnotherAction;
