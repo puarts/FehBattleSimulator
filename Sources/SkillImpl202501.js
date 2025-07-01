@@ -1146,6 +1146,7 @@
                 GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
                     ENSURE_MAX_MIN_NODE(
                         PERCENTAGE_SUB_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE, 4),
+                        14, 5,
                     ),
                 ),
             ),
