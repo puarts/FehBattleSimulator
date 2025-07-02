@@ -394,10 +394,28 @@ class BattleSimulatorBase {
             initCustomSkillArgs: function (index) {
                 // TODO: funcIdから適切な初期化を行うようにする
                 let unit = g_app.__getEditingTargetUnit();
-                CustomSkill.Arg.initArgs(unit?.customSkills[index]);
+                CustomSkill.Arg.initArgs(this, unit?.customSkills[index]);
+                // this.$set(unit.customSkills[index][1], [CustomSkill.Arg.Node.EFFECTIVE_TYPES], ['']);
                 this.updateCurrentUnit();
             },
             customSkillChanged: function (unit, value) {
+                this.updateCurrentUnit();
+            },
+            customSkillArgsArrayChanged: function (values, i, value) {
+                if (value === -1) {
+                    // なしが設定
+                    // 削除しない条件
+                    // 一番後ろの要素 or 要素数が1つしかない
+                    if (!(i === values.length - 1 || values.length === 1)) {
+                        values.splice(i, 1);
+                    }
+                } else if (value !== -1) {
+                    // なし以外が設定
+                    this.$set(values, i, value);
+                    if (values.length === i + 1) {
+                        this.$set(values, i + 1, '');
+                    }
+                }
                 this.updateCurrentUnit();
             },
             isSkillEnabledChanged: function (index, type) {

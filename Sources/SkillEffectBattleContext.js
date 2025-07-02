@@ -1721,21 +1721,21 @@ const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = thresholdPercentage => new 
 /**
  * Effective against
  */
-class EffectiveAgainstNode extends BoolNode {
-    constructor(n) {
-        super(NumberNode.makeNumberNodeFrom(n));
+class EffectiveAgainstNode extends SkillEffectNode {
+    constructor(...n) {
+        super(...n.filter(n => n).map(n => NumberNode.makeNumberNodeFrom(n)));
     }
 
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        let foe = env.foeDuringCombat;
-        let effective = this.evaluateChildren(env)[0];
-        unit.battleContext.effectivesAgainst.push(effective);
-        env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(effective)}特効`);
+        for (let effective of this.evaluateChildren(env)) {
+            unit.battleContext.effectivesAgainst.push(effective);
+            env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(effective)}特効`);
+        }
     }
 }
 
-const EFFECTIVE_AGAINST_NODE = n => new EffectiveAgainstNode(n);
+const EFFECTIVE_AGAINST_NODE = (...n) => new EffectiveAgainstNode(...n);
 
 /**
  * If foe's attack triggers unit's Special and Special has the "reduces damage by X%" effect, Special triggers twice, then reduces damage by N.
@@ -2366,20 +2366,23 @@ class TargetCanCounterattackBeforeTargetsFoesFirstAttackNode extends SkillEffect
 const TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE =
     new TargetCanCounterattackBeforeTargetsFoesFirstAttackNode()
 
-class TargetNeutralizesEffectiveAgainstXNode extends FromPositiveNumberNode {
+class TargetNeutralizesEffectiveAgainstXNode extends FromPositiveNumbersNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let e = this.evaluateChildren(env);
-        unit.battleContext.invalidatedEffectives.push(e);
-        env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(e)}特攻を無効`);
+        let es = this.evaluateChildren(env);
+        for (let e of es) {
+            unit.battleContext.invalidatedEffectives.push(e);
+            env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(e)}特攻を無効`);
+        }
     }
 }
 
-const TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE = e => new TargetNeutralizesEffectiveAgainstXNode(e);
+const TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE =
+    (...e) => new TargetNeutralizesEffectiveAgainstXNode(...e);
 
 class SetTargetsBanePerAttackNode extends SkillEffectNode {
     static {

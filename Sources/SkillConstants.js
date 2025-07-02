@@ -3999,7 +3999,7 @@ const EffectiveType = {
 }
 
 const EFFECTIVE_TYPE_NAMES = new Map([
-    [EffectiveType.None, "-"],
+    [EffectiveType.None, "なし"],
     [EffectiveType.Armor, "重装"],
     [EffectiveType.Infantry, "歩行"],
     [EffectiveType.Cavalry, "騎馬"],

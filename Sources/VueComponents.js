@@ -303,7 +303,10 @@ function initVueComponents() {
                     class="custom-skill"
                 ></select2>
                 <!-- 引数 -->
-                <span v-for="argNode in CustomSkill.Arg.FUNC_ID_TO_NODES.getValues(funcId)">
+                <span 
+                    v-for="(argNode, argIndex) in CustomSkill.Arg.FUNC_ID_TO_NODES.getValues(funcId)"
+                    :key="'for-arg-' + funcId + '-' + argNode + '-' + argIndex"
+                >
                     <!-- br -->
                     <br
                         v-if="argNode === CustomSkill.Arg.Node.BR"
@@ -322,26 +325,12 @@ function initVueComponents() {
                     >
                       &times;
                     </span>
-                    <!-- マス -->
+                    <!-- 文字列 -->
                     <span
-                        v-if="argNode === CustomSkill.Arg.Node.SPACES_LABEL"
+                        v-if="CustomSkill.Arg.getNodeType(argNode) === CustomSkill.Arg.NodeType.STRING"
                         class="normal"
+                        v-html="CustomSkill.Arg.StringNodeToStrings.get(argNode)"
                     >
-                        マス
-                    </span>
-                    <!-- 対象 -->
-                    <span
-                        v-if="argNode === CustomSkill.Arg.Node.TARGET_LABEL"
-                        class="normal"
-                    >
-                        対象:&nbsp;
-                    </span>
-                    <!-- 付与 -->
-                    <span
-                        v-if="argNode === CustomSkill.Arg.Node.STATUS_EFFECT_LABEL"
-                        class="normal"
-                    >
-                        付与:&nbsp;
                     </span>
 
                     <!-- 数値 -->
@@ -357,7 +346,7 @@ function initVueComponents() {
                             placeholder="0以上の整数"
                             v-model.number="unit.customSkills[index][1][argNode]"
                             @input="vm.customSkillChanged"
-                            class="custom-skill-args"
+                            class="custom-skill-num-args"
                         />
                     </span>
 
@@ -374,7 +363,7 @@ function initVueComponents() {
                             placeholder="0以上の整数"
                             v-model.number="unit.customSkills[index][1][argNode]"
                             @input="vm.customSkillChanged"
-                            class="custom-skill-args"
+                            class="custom-skill-num-args"
                         >
                         </input>
                         <span class="normal">%</span>
@@ -386,10 +375,32 @@ function initVueComponents() {
                     >
                           <select2
                               :options="CustomSkill.Arg.NODE_TO_OPTIONS.getValues(argNode)"
-                              v-model="unit.customSkills[index][1][argNode]"
+                              v-model="unit.getCustomSkillArgs(index)[argNode]"
                               @input="v => vm.customSkillChanged(unit, v)"
                               class="custom-skill-args"
+                              style="width: 220px"
                           ></select2>
+                    </span>
+                    <span
+                        v-if="CustomSkill.Arg.getNodeType(argNode) === CustomSkill.Arg.NodeType.IDS"
+                    >
+                        <span class="normal"
+                              style="display: inline-block; vertical-align: middle;" 
+                        >
+                            <div
+                                v-for="(v, i) in unit.getCustomSkillArgs(index)[argNode]"
+                                :key="'ids-' + unit.id + '-' + funcId + '-' + index + '-' + i"
+                                class="skill-arg-row"
+                            >
+                                <select2
+                                  :options="CustomSkill.Arg.NODE_TO_OPTIONS.getValues(argNode)"
+                                  @input="v => {vm.customSkillArgsArrayChanged(unit.getCustomSkillArgs(index)[argNode], i, v);}"
+                                  :value="unit.getCustomSkillArgs(index)[argNode][i]"
+                                  class="custom-skill-args"
+                                >
+                                </select2>
+                            </div>
+                        </span>
                     </span>
                 </span>
             </span>
@@ -550,7 +561,7 @@ function initVueComponents() {
 
             <!-- パッシブスキル -->
             <div v-for="slot in ['A', 'B', 'C', 'S', 'X']"
-                 :key="slot"
+                 :key="'passive-' + slot"
                  class="skill-row"
                  :class="{
                                 'passive-s-skill-row': slot === 'S',
@@ -677,7 +688,7 @@ function initVueComponents() {
 
             <!-- カスタムスキル -->
             <div v-for="([funcId, args, isEnabled], index) of unit.customSkills"
-                 :key="'additional-passives-' + unit.id + '-' + index + '-' + String(funcId)"
+                 :key="'custom-skills-' + unit.id + '-' + index + '-' + String(funcId)"
                  class="skill-row custom-skill-row"
             >
               <div class="skill-icon">
@@ -754,18 +765,6 @@ function initVueComponents() {
             </button>
           </div>
         `
-    });
-
-    Vue.component('TestComponent', {
-        name: 'TestComponent',
-        props: {
-        },
-        template: `
-            <span>
-                <div>test1</div>
-                <div>test2</div>
-            </span>
-        `,
     });
 
     Vue.component('MapButton', {

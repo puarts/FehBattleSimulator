@@ -5074,7 +5074,7 @@ function setDiscord(skillId, statsRatios) {
         // If ally has entered combat during the current turn,
         // unit can move through foes' spaces.
         new IsThereUnitOnMapNode(AND_NODE(
-            ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE,
+            ARE_TARGET_AND_SKILL_OWNER_ALLIES_NODE,
             HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE)
         ),
     ));

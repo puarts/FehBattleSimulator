@@ -466,6 +466,10 @@ input[class="fehButton"]:not(:checked) + label {
     width: var(--select-width);
 }
 
+.custom-skill-num-args {
+    width: 8em;
+}
+
 .icon-disabled {
     color: gray;
     opacity: 0.5;
@@ -1257,8 +1261,10 @@ td.enemy {
     justify-self: center;  /* 横方向中央揃え */
 }
 
-.custom-skill-test {
-    width: 100%;
+.skill-arg-row {
+    display: flex;
+    align-items: center;
+    /*margin-bottom: 4px; !* 行間を少し空けたいとき *!*/
 }
 
 .invalid-value {

@@ -292,6 +292,14 @@ class TargetsFoesOnMapNode extends UnitsNode {
 
 const TARGETS_FOES_ON_MAP_NODE = new TargetsFoesOnMapNode();
 
+class SkillOwnersFoesOnMapNode extends TargetsFoesOnMapNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const SKILL_OWNERS_FOES_ON_MAP_NODE = new SkillOwnersFoesOnMapNode();
+
 class TargetsAlliesWithinNSpacesNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1070,7 +1078,7 @@ const TARGET_GROUP_NODE = new TargetGroupNode();
 /**
  * ターゲットとスキル所有者が同じ場合はfalse
  */
-const ARE_TARGET_AND_SKILL_OWNER_IN_SAME_GROUP_NODE = new class extends BoolNode {
+const ARE_TARGET_AND_SKILL_OWNER_ALLIES_NODE = new class extends BoolNode {
     evaluate(env) {
         return env.target.groupId === env.skillOwner.groupId && env.target !== env.skillOwner;
     }
@@ -2105,6 +2113,7 @@ class StatsNode extends NumbersNode {
 }
 
 const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
+const ZERO_STATS_NODE = STATS_NODE(0, 0, 0, 0);
 
 const ATK_NODE = n => StatsNode.makeStatsNodeFrom(n, 0, 0, 0);
 const SPD_NODE = n => StatsNode.makeStatsNodeFrom(0, n, 0, 0);
@@ -2122,6 +2131,8 @@ const ATK_SPD_DEF_NODE = (atk, spd = atk, def = atk) => StatsNode.makeStatsNodeF
 const ATK_SPD_RES_NODE = (atk, spd = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, res);
 const ATK_DEF_RES_NODE = (atk, def = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, res);
 const SPD_DEF_RES_NODE = (spd, def = spd, res = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, res);
+
+const ATK_SPD_DEF_RES_NODE = (atk, spd = atk, def = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
 
 class MultStatsNode extends StatsNode {
     constructor(...statsNodes) {
@@ -3888,8 +3899,10 @@ class IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode extends BoolNode {
     }
 }
 
+const IS_TARGET_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
+    n => new IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode(n);
 const IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
-    new IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode(3);
+    IS_TARGET_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(3);
 
 class IsTargetWithinNRowsOrNColumnsCenteredOnFoeNode extends IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode {
     static {

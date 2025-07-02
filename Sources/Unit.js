@@ -786,6 +786,14 @@ class Unit extends BattleMapElement {
         this.customSkills = Unit.getInitCustomSkills();
     }
 
+    /**
+     * @param {number} index
+     * @returns {Object}
+     */
+    getCustomSkillArgs(index) {
+        return this.customSkills[index][1];
+    }
+
     static getInitAdditionalPassives() {
         return [[-2, {}, true]];
     }

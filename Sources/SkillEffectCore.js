@@ -455,11 +455,11 @@ class FromNumbersNode extends SkillEffectNode {
     constructor(...values) {
         let isNumbersNode = values[0] && values[0] instanceof NumbersNode;
         if (!isNumbersNode) {
-            super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
+            super(...values.filter(v => v).map(v => NumberNode.makeNumberNodeFrom(v)));
         } else {
             super();
             /** @type {NumbersNode} */
-            this._numbesNode = values[0];
+            this._numbersNode = values[0];
         }
     }
 
@@ -468,8 +468,8 @@ class FromNumbersNode extends SkillEffectNode {
      * @returns {number[]}
      */
     evaluateChildren(env) {
-        if (this._numbesNode) {
-            return this._numbesNode.evaluate(env);
+        if (this._numbersNode) {
+            return this._numbersNode.evaluate(env);
         }
         return super.evaluateChildren(env);
     }
@@ -479,8 +479,8 @@ class FromNumbersNode extends SkillEffectNode {
      * @abstract
      */
     evaluate(env) {
-        if (this._numbesNode) {
-            return this._numbesNode.evaluateChildren(env);
+        if (this._numbersNode) {
+            return this._numbersNode.evaluateChildren(env);
         }
         return super.evaluateChildren(env);
     }
