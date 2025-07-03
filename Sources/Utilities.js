@@ -242,6 +242,11 @@ class LocalStorageUtil {
         localStorage.setItem(key, value ? 'true' : 'false');
     }
 
+    static toggleBoolean(key) {
+        const value = this.getBoolean(key);
+        this.setBoolean(key, !value);
+    }
+
     static getJson(key, defaultValue = null) {
         const value = localStorage.getItem(key);
         return value !== null ? JSON.parse(value) : defaultValue;

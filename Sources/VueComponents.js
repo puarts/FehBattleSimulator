@@ -1238,6 +1238,7 @@ function initVueComponents() {
 
     Vue.component('SimulationControls', {
         props: {
+            getApp: {type: Function, required: true},
             isEnemyActionTriggered: Boolean,
             simulatesEnemyActionOneByOne: Boolean,
             isIconOverlayDisabled: Boolean,
@@ -1267,7 +1268,16 @@ function initVueComponents() {
             },
             openEditMapDialog() {
                 this.$emit('open-edit-map');
-            }
+            },
+            onCookieSettingChange(event) {
+                const isChecked = event.target.checked;
+                LocalStorageUtil.setBoolean('uses-cookie-for-storing-settings', isChecked);
+                if (isChecked) {
+                    this.showFlash('状態の保存先をCookie（旧設定）に変更しました。カスタムスキルを設定していると状態が保存されない場合があります。', 'warning', false);
+                } else {
+                    this.showFlash('状態の保存先をローカルストレージ（新設定）に変更しました', 'info', true);
+                }
+            },
         },
         template: `
             <div>
@@ -1308,6 +1318,16 @@ function initVueComponents() {
                        @click="LocalStorageUtil.removeKey('settings');
                                showFlash('保存されている状態をリセットしました', 'success', true);"
                 >
+                <br/>
+                <span style="width: 140px">
+                    <input type="checkbox" 
+                           class="buttonUi"
+                           id="uses-cookie-for-storing-settings"
+                           :checked="LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false)"
+                           @change="onCookieSettingChange"
+                    >
+                    <label for="uses-cookie-for-storing-settings" class="normal">状態の保存先にCookieを使う（旧設定）</label>
+                </span>
               </div>
             </div>
         `

@@ -11759,7 +11759,13 @@ function __updateChaseTargetTilesForAllUnits() {
 function loadSettings() {
     console.log("loading..");
     console.log("current cookie:" + document.cookie);
-    g_appData.settings.loadSettings();
+    let fromCookies = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+    if (fromCookies) {
+        console.log('load settings from cookies');
+    } else {
+        console.log('load settings from local storage');
+    }
+    g_appData.settings.loadSettings(fromCookies);
     if (g_appData.gameMode === GameMode.ResonantBattles) {
         g_app.__setUnitsForResonantBattles();
     }
@@ -11797,7 +11803,13 @@ function loadSettingsFromDict(
 
 function saveSettings() {
     console.log("saving..");
-    g_appData.settings.saveSettings();
+    let toCookie = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+    if (toCookie) {
+        console.log('save settings to cookies');
+    } else {
+        console.log('save settings to local storage');
+    }
+    g_appData.settings.saveSettings(toCookie);
     console.log("current cookie:" + document.cookie);
     g_app.writeSimpleLogLine(`<div class="log-action-header">ターン${g_appData.currentTurn}の設定を保存しました。</div>`);
 }
