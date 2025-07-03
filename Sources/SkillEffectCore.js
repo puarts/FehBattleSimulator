@@ -455,7 +455,7 @@ class FromNumbersNode extends SkillEffectNode {
     constructor(...values) {
         let isNumbersNode = values[0] && values[0] instanceof NumbersNode;
         if (!isNumbersNode) {
-            super(...values.filter(v => v).map(v => NumberNode.makeNumberNodeFrom(v)));
+            super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
         } else {
             super();
             /** @type {NumbersNode} */

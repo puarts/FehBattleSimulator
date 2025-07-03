@@ -154,6 +154,10 @@ class CustomSkill {
             });
         }
 
+        static idsToNodes(args, key) {
+            return (args[key] ?? []).filter(v => v !== '' && v !== -1).map(et => NumberNode.makeNumberNodeFrom(et));
+        }
+
         static getNodeType(node) {
             return this.NODE_TO_NODE_TYPE.get(node);
         }
@@ -178,7 +182,7 @@ class CustomSkill {
         }
 
         static getEffectiveTypes(args) {
-            return (args[this.Node.EFFECTIVE_TYPES] ?? []).map(et => NumberNode.makeNumberNodeFrom(et));
+            return this.idsToNodes(args, this.Node.EFFECTIVE_TYPES);
         }
 
         static getStatusEffectTypeNode(args) {
@@ -186,7 +190,7 @@ class CustomSkill {
         }
 
         static getStatusEffectTypesNode(args) {
-            return (args[this.Node.STATUS_EFFECT_TYPES] ?? []).map(et => NumberNode.makeNumberNodeFrom(et));
+            return this.idsToNodes(args, this.Node.STATUS_EFFECT_TYPES);
         }
 
         static getUnitsNode(args) {

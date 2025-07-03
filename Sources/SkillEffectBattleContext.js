@@ -1723,7 +1723,7 @@ const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = thresholdPercentage => new 
  */
 class EffectiveAgainstNode extends SkillEffectNode {
     constructor(...n) {
-        super(...n.filter(n => n).map(n => NumberNode.makeNumberNodeFrom(n)));
+        super(...n.map(n => NumberNode.makeNumberNodeFrom(n)));
     }
 
     evaluate(env) {
