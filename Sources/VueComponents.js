@@ -875,6 +875,7 @@ function initVueComponents() {
             audioManager: {type: AudioManager, required: true},
             bgmEnabledChanged: {type: Function, required: true},
             loadLazyImages: {type: Function, required: true},
+            showFlash: {type: Function, required: true},
         },
         methods: {},
         mounted() {
@@ -897,6 +898,7 @@ function initVueComponents() {
                         :audio-manager="audioManager"
                         :bgm-enabled-changed="bgmEnabledChanged"
                         :load-lazy-images="loadLazyImages"
+                        :show-flash="showFlash"
                 >
                 </upper-buttons>
                 <lower-buttons
@@ -929,8 +931,36 @@ function initVueComponents() {
             endTurn: {type: Function, required: true},
             globalBattleContext: {type: GlobalBattleContext, required: true},
             loadLazyImages: {type: Function, required: true},
+            showFlash: {type: Function, required: true},
         },
-        methods: {},
+        methods: {
+            onSaveSettings() {
+                let app = this.getApp();
+                if (app) {
+                    app.clearSimpleLog();
+                    saveSettings();
+                    let toCookie = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+                    if (toCookie) {
+                        this.showFlash('設定を保存しました', 'warning', true);
+                    } else {
+                        this.showFlash('設定を保存しました', 'success', true);
+                    }
+                }
+            },
+            onLoadSettings() {
+                let app = this.getApp();
+                if (app) {
+                    app.clearSimpleLog();
+                    loadSettings();
+                    let fromCookies = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+                    if (fromCookies) {
+                        this.showFlash('設定を読み込みました', 'warning', true);
+                    } else {
+                        this.showFlash('設定を読み込みました', 'success', true);
+                    }
+                }
+            },
+        },
         mounted() {
             this.loadLazyImages();
         },
@@ -952,11 +982,11 @@ function initVueComponents() {
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/SaveState.png"
-                    @click="getApp?.().clearSimpleLog();saveSettings();">
+                    @click="onSaveSettings">
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/LoadState.png"
-                    @click="getApp?.().clearSimpleLog();loadSettings();">
+                    @click="onLoadSettings">
 
                 <span
                     v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
