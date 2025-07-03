@@ -568,33 +568,26 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <div style="float:right">
-                        <input id="debugMenuEnabled" type="checkbox" v-model="isDebugMenuEnabled"
-                            @change="debugMenuEnabledChanged"><label class="normal"
-                            for="debugMenuEnabled">デバッグモード有効(開発者用)</label>
-
-                        <input id="isDevelopmentMode" type="checkbox" v-model="isDevelopmentMode"
-                               @change="developModeChanged">
-                        <label class="normal" for="isDevelopmentMode">開発モード有効(開発者用)</label>
-                    </div>
+                    <debug-settings
+                            :is-debug-menu-enabled="isDebugMenuEnabled"
+                            :is-development-mode="isDevelopmentMode"
+                            @is-debug-changed="debugMenuEnabledChanged"
+                            @is-dev-mode-changed="developModeChanged"
+                    ></debug-settings>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-                    <label for="simulatorLogLevel" style="font-size:12px"><b>ログレベル</b></label>
-                    <select id="simulatorLogLevel" v-model="simulatorLogLevel" @change="saveSimulatorLogLevel">
-                        <option v-for="option in simulatorLogLevelOption" :key="option.value" :value="option.value">
-                            {{ option.text }}
-                        </option>
-                    </select>
-                    <input type="button" @click="g_app.clearLog()" value="クリア" style="font-size: 8px;"/>
-                    <input type="button" @click="copyDebugLogToClipboard()" value="コピー" style="font-size: 8px;"/>
-                    <label for="skillLogLevel" style="font-size:12px"><b>スキル効果ログレベル</b></label>
-                    <select id="skillLogLevel" v-model="skillLogLevel" @change="saveSkillLogLevel">
-                        <option v-for="option in skillLogLevelOption" :key="option.value" :value="option.value">
-                            {{ option.text }}
-                        </option>
-                    </select>
+                    <log-panel
+                            :get-app="getApp"
+                            :simulator-log-level="simulatorLogLevel"
+                            :skill-log-level="skillLogLevel"
+                            :simulator-log-level-option="simulatorLogLevelOption"
+                            :save-simulator-log-level="saveSimulatorLogLevel"
+                            :skill-log-level-option="skillLogLevelOption"
+                            :save-skill-log-level="saveSkillLogLevel"
+                            :copy-debug-log-to-clipboard="copyDebugLogToClipboard"
+                    ></log-panel>
                     <div v-html="damageCalcLog" id="debugLogPanel"
                          style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
                     </div>

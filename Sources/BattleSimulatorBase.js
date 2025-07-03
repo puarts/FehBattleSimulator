@@ -626,13 +626,13 @@ class BattleSimulatorBase {
             slotOrderChanged: function () {
                 updateMapUi();
             },
-            saveSimulatorLogLevel: function() {
-                LocalStorageUtil.setNumber('simulatorLogLevel', this.simulatorLogLevel);
-                this.damageCalcLogger.logLevel = this.simulatorLogLevel;
-                this.beginningOfTurnSkillHanderLogger.logLevel = this.simulatorLogLevel;
+            saveSimulatorLogLevel: function(simulatorLogLevel) {
+                LocalStorageUtil.setNumber('simulatorLogLevel', simulatorLogLevel);
+                this.damageCalcLogger.logLevel = simulatorLogLevel;
+                this.beginningOfTurnSkillHanderLogger.logLevel = simulatorLogLevel;
             },
-            saveSkillLogLevel: function() {
-                LocalStorageUtil.setNumber('skillLogLevel', this.skillLogLevel);
+            saveSkillLogLevel: function(skillLogLevel) {
+                LocalStorageUtil.setNumber('skillLogLevel', skillLogLevel);
             },
             resetUnitRandom: function () {
                 if (g_app == null) {

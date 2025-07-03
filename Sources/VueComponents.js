@@ -1362,6 +1362,59 @@ function initVueComponents() {
             </div>
           `
     });
+
+    Vue.component('log-panel', {
+        props: {
+            getApp: { type: Function, required: true },
+            simulatorLogLevel: { type: Number, required: true },
+            simulatorLogLevelOption: { type: Array, required: true },
+            saveSimulatorLogLevel: { type: Function, required: true },
+            skillLogLevel: { type: Number, required: true },
+            skillLogLevelOption: { type: Array, required: true },
+            saveSkillLogLevel: { type: Function, required: true },
+            copyDebugLogToClipboard: { type: Function, required: true },
+        },
+        methods: {
+            clearLog() {
+                if (this.getApp) {
+                    this.getApp().clearLog();
+                }
+            },
+            onSimulatorLogLevelChange(e) {
+                const value = Number(e.target.value);
+                this.$emit('update:simulatorLogLevel', value);
+                this.saveSimulatorLogLevel(value);
+            },
+            onSkillLogLevelChange(e) {
+                const value = Number(e.target.value);
+                this.$emit('update:skillLogLevel', value);
+                this.saveSkillLogLevel(value);
+            }
+        },
+        template: `
+            <div>
+              <label for="simulatorLogLevel" style="font-size:12px"><b>ログレベル</b></label>
+              <select id="simulatorLogLevel"
+                      :value="simulatorLogLevel"
+                      @change="onSimulatorLogLevelChange">
+                <option v-for="option in simulatorLogLevelOption" :key="option.value" :value="option.value">
+                  {{ option.text }}
+                </option>
+              </select>
+              <input type="button" @click="clearLog" value="クリア" style="font-size: 8px;" />
+              <input type="button" @click="copyDebugLogToClipboard" value="コピー" style="font-size: 8px;" />
+
+              <label for="skillLogLevel" style="font-size:12px"><b>スキル効果ログレベル</b></label>
+              <select id="skillLogLevel"
+                      :value="skillLogLevel"
+                      @change="onSkillLogLevelChange">
+                <option v-for="option in skillLogLevelOption" :key="option.value" :value="option.value">
+                  {{ option.text }}
+                </option>
+              </select>
+            </div>
+        `
+    });
 }
 
 initVueComponents();
