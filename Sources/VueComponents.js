@@ -1071,30 +1071,26 @@ function initVueComponents() {
             unit: {type: Unit, required: true},
             g_app: {required: true},
         },
+        methods: {
+            getSkillButtonStyle(unit) {
+                const canActivate = this.g_app.canActivateDuoSkillOrHarmonizedSkill(unit);
+                const base = unit.isDuoAllyHero ? 'DuoSkill' : 'HarmonizedSkill';
+                const suffix = canActivate ? '' : '_Disabled';
+                return {
+                    backgroundImage: `url(/AetherRaidTacticsBoard/images/Activate${base}${suffix}.png)`
+                };
+            }
+        },
         template: `
           <div style="padding:5px">
-            <span v-if="unit.isDuoAllyHero && g_app.canActivateDuoSkillOrHarmonizedSkill(unit)">
-                <input type="button"
-                       style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
-                       class="fehButton"
-                       @click="g_app.activateDuoOrHarmonizedSkill(unit);">
-            </span>
-            <span v-if="unit.isDuoAllyHero && !g_app.canActivateDuoSkillOrHarmonizedSkill(unit)">
-                <input type="button" v-if="unit.isDuoAllyHero " disabled
-                       style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
-                       class="fehButtonDisabled">
-            </span>
-
-            <span v-if="unit.isHarmonicAllyHero && g_app.canActivateDuoSkillOrHarmonizedSkill(unit)">
-                <input type="button"
-                       style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
-                       class="fehButton"
-                       @click="g_app.activateDuoOrHarmonizedSkill(unit);">
-            </span>
-            <span v-if="unit.isHarmonicAllyHero && !g_app.canActivateDuoSkillOrHarmonizedSkill(unit)">
-                <input type="button" v-if="unit.isHarmonicAllyHero" disabled
-                       style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
-                       class="fehButtonDisabled">
+            <span v-if="unit.isDuoAllyHero || unit.isHarmonicAllyHero">
+              <input
+                type="button"
+                :disabled="!g_app.canActivateDuoSkillOrHarmonizedSkill(unit)"
+                :style="getSkillButtonStyle(unit)"
+                :class="g_app.canActivateDuoSkillOrHarmonizedSkill(unit) ? 'fehButton' : 'fehButtonDisabled'"
+                @click="g_app.canActivateDuoSkillOrHarmonizedSkill(unit) && g_app.activateDuoOrHarmonizedSkill(unit)"
+              />
             </span>
 
             <span v-if="unit.canActivateStyle()">

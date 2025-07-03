@@ -628,10 +628,12 @@ class BattleSimulatorBase {
             },
             saveSimulatorLogLevel: function(simulatorLogLevel) {
                 LocalStorageUtil.setNumber('simulatorLogLevel', simulatorLogLevel);
+                this.simulatorLogLevel = simulatorLogLevel;
                 this.damageCalcLogger.logLevel = simulatorLogLevel;
                 this.beginningOfTurnSkillHanderLogger.logLevel = simulatorLogLevel;
             },
             saveSkillLogLevel: function(skillLogLevel) {
+                this.skillLogLevel = skillLogLevel;
                 LocalStorageUtil.setNumber('skillLogLevel', skillLogLevel);
             },
             resetUnitRandom: function () {
