@@ -459,7 +459,13 @@ class SettingManager {
     loadSettings() {
         let currentTurn = this._appData.currentTurn;
         let turnSetting = new TurnSetting(currentTurn);
-        let dict = LocalStorageUtil.getJson('settings');
+        let dict = LocalStorageUtil.getJson('settings') || {};
+        if (!dict[TurnWideCookieId]) {
+            dict[TurnWideCookieId] = '';
+        }
+        if (!dict[turnSetting.serialId]) {
+            dict[turnSetting.serialId] = '';
+        }
         if (dict[TurnWideCookieId] == null && dict[turnSetting.serialId] == null) {
             console.log("ターン" + currentTurn + "の設定なし");
             return;
