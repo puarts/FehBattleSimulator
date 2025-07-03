@@ -1322,6 +1322,7 @@ let ADD_STATUS_EFFECT_TO_TARGET_ARGS = [
 let GRANTS_OR_INFLICTS_ON_MAP_NODE = args =>
     FOR_EACH_UNIT_NODE(
         CustomSkill.Arg.getUnitsNode(args),
+        // TODO: 不利な状態もこのノードでつけてしまっているので修正する
         GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(...CustomSkill.Arg.getStatusEffectTypesNode(args)),
         GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(
             CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getStatBonus(args)),
@@ -1366,7 +1367,7 @@ CustomSkill.setFuncId(
 
 CustomSkill.setFuncId(
     'if-rally-or-movement-is-used-by-unit-grants-status-effect-on-unit',
-    "応援、移動系補助を使用した時、時、対象に状態を付与",
+    "応援、移動系補助を使用した時、対象に状態を付与",
     (skillId, args) => {
         CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
         CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
