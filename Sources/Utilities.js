@@ -259,6 +259,10 @@ class LocalStorageUtil {
         localStorage.removeItem(key);
     }
 
+    static removeKey(key) {
+        localStorage.removeItem(key);
+    }
+
     /**
      * ローカルストレージの全ての数値をクリアします。
      */

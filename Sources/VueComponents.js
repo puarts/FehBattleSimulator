@@ -122,6 +122,18 @@ function initVueComponents() {
                 });
         },
 
+        methods: {
+            applyInvalidValueClass(hasCurrent) {
+                // 不正値表示用にスタイルを付与（任意）
+                const container = $(this.$el).next('.select2-container');
+                if (!hasCurrent) {
+                    container.addClass('invalid-value');
+                } else {
+                    container.removeClass('invalid-value');
+                }
+            },
+        },
+
         watch: {
             value(newVal, oldVal) {
                 // console.log(`select2: value changed: ${oldVal} -> ${newVal}`);
@@ -135,6 +147,10 @@ function initVueComponents() {
                     $(this.$el)
                         .val(newVal)
                         .trigger('change');
+                }
+                if (this.isDebugMode) {
+                    const hasCurrent = this.options.some(opt => String(opt.id) === String(this.value));
+                    this.applyInvalidValueClass(hasCurrent);
                 }
             },
 
@@ -163,12 +179,7 @@ function initVueComponents() {
                         .trigger('change');
 
                     // 不正値表示用にスタイルを付与（任意）
-                    const container = $(this.$el).next('.select2-container');
-                    if (!hasCurrent) {
-                        container.addClass('invalid-value');
-                    } else {
-                        container.removeClass('invalid-value');
-                    }
+                    this.applyInvalidValueClass(hasCurrent);
                 } else {
                     // オプションにない要素は -1（fallbackValue 使用）
                     const selectedValue = hasCurrent ? this.value : this.fallbackValue;
