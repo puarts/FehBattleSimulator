@@ -10663,6 +10663,7 @@ class BattleSimulatorBase {
 
             // 予約反映
             for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedHp(true);
                 unit.applyReservedState(false);
             }
             // 同時タイミングに付与された天脈を消滅させる
