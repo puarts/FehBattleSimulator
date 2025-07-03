@@ -6862,11 +6862,21 @@ function calcHealAmount(assistUnit, targetUnit) {
 /// Tier 1 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 // noinspection JSUnusedLocalSymbols
 function isDebufferTier1(attackUnit, targetUnit) {
+    let env = new NodeEnv().setUnitsDuringCombat(attackUnit, targetUnit).setSkillOwner(attackUnit)
+        .setName('Tier1のデバッファー判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+    if (IS_DEBUFFER_TIER_1_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
+        return true;
+    }
     return attackUnit.weapon === Weapon.Hlidskjalf;
 }
 
 /// Tier 2 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 function isDebufferTier2(attackUnit, targetUnit) {
+    let env = new NodeEnv().setUnitsDuringCombat(attackUnit, targetUnit).setSkillOwner(attackUnit)
+        .setName('Tier2のデバッファー判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+    if (IS_DEBUFFER_TIER_2_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
+        return true;
+    }
     for (let skillId of attackUnit.enumerateSkills()) {
         switch (skillId) {
             case Weapon.RogueDagger:
@@ -6907,6 +6917,12 @@ function isDebufferTier2(attackUnit, targetUnit) {
  * @return {boolean}
  */
 function isAfflictor(attackUnit, lossesInCombat, result) {
+    // TODO: envにlossesInCombat, resultを取れるようにする
+    let env = new NodeEnv().setUnitsDuringCombat(attackUnit).setSkillOwner(attackUnit)
+        .setName('アフリクター判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+    if (IS_AFFLICTOR_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
+        return true;
+    }
     for (let skillId of attackUnit.enumerateSkills()) {
         let func = getSkillFunc(skillId, isAfflictorFuncMap);
         if (func?.call(this, attackUnit, lossesInCombat, result) ?? false) {

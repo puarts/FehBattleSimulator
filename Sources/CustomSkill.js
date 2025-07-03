@@ -1403,3 +1403,32 @@ CustomSkill.setFuncId(
     },
     []
 );
+
+// デバッファー、アフリクター
+
+CustomSkill.setFuncId(
+    'is-debuffer-1',
+    'Tier 1 デバッファー',
+    (skillId, args) => {
+        IS_DEBUFFER_TIER_1_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'is-debuffer-2',
+    'Tier 2 デバッファー',
+    (skillId, args) => {
+        IS_DEBUFFER_TIER_2_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'is-afflictor',
+    'アフリクター',
+    (skillId, args) => {
+        IS_AFFLICTOR_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
