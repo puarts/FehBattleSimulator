@@ -345,7 +345,10 @@ class BattleSimulatorBase {
                 }
                 this.passiveChanged();
             },
-            specialChanged: function () {
+            specialChanged: function (unit, v) {
+                if (unit) {
+                    unit.special = v;
+                }
                 this.passiveChanged();
             },
             specialCountChanged: function () {
