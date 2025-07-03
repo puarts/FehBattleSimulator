@@ -345,34 +345,22 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <input type="checkbox" id="isEnemyActionTriggered"
-                                    v-model="isEnemyActionTriggered"><label for="isEnemyActionTriggered"
-                                    class="normal">敵の行動制限解除</label>
-                                <input type="checkbox" id="simulatesEnemyActionOneByOne"
-                                    v-model="simulatesEnemyActionOneByOne"><label for="simulatesEnemyActionOneByOne"
-                                    class="normal">敵の行動再現を1行動ずつ行う</label>
-                                <input type="checkbox" id="isIconOverlayDisabled" v-model="map.isIconOverlayDisabled"
-                                    @change="iconOverlayDisabledChanged"><label for="isIconOverlayDisabled"
-                                    class="normal">アイコン上の状態表示無効</label>
-                                <input type="checkbox" id="isTrapIconOverlayDisabled"
-                                    v-model="map.isTrapIconOverlayDisabled" @change="iconOverlayDisabledChanged"><label
-                                    for="isTrapIconOverlayDisabled" class="normal">罠のLV表示無効</label>
-                                <div>
-                                    <input type="button" value="全員状態リセット" style="width:140px" class="buttonUi"
-                                        @click="healHpFullForAllUnits">
-                                    <input type="button" value="配置リセット" style="width:140px" class="buttonUi"
-                                        onclick="resetPlacement()">
-                                    <input v-if="gameMode==GameMode.AetherRaid" type="button" value="模擬戦..."
-                                        style="width:140px" class="buttonUi"
-                                        @click="$('#aetherRaidDefensePresetDialog').dialog('open');">
-                                    <input v-if="gameMode==GameMode.ResonantBattles" type="button" value="アイテム..."
-                                        style="width:140px" class="buttonUi" @click="$('#itemDialog').dialog('open');">
-                                    <input v-if="gameMode==GameMode.AetherRaid" type="button" value="耐久/殲滅力テスト..."
-                                        style="width:140px" class="buttonUi"
-                                        @click="$('#durabilityTestDialog').dialog('open');">
-                                    <input type="button" value="マップ編集..." style="width:140px" class="buttonUi"
-                                        @click="$('#editMapDialog').dialog('open');">
-                                </div>
+                                <simulation-controls
+                                        :is-enemy-action-triggered.sync="isEnemyActionTriggered"
+                                        :simulates-enemy-action-one-by-one.sync="simulatesEnemyActionOneByOne"
+                                        :is-icon-overlay-disabled.sync="map.isIconOverlayDisabled"
+                                        :is-trap-icon-overlay-disabled.sync="map.isTrapIconOverlayDisabled"
+                                        :is-aether-raid="gameMode == GameMode.AetherRaid"
+                                        :is-resonant="GameMode == GameMode.ResonantBattles"
+                                        @icon-overlay-disabled-changed="iconOverlayDisabledChanged"
+                                        @heal-hp-full="healHpFullForAllUnits"
+                                        @reset-placement="resetPlacement"
+                                        @open-aether-raid-dialog="$('#aetherRaidDefensePresetDialog').dialog('open')"
+                                        @open-item-dialog="$('#itemDialog').dialog('open')"
+                                        @open-durability-test="$('#durabilityTestDialog').dialog('open')"
+                                        @open-edit-map="$('#editMapDialog').dialog('open')"
+                                >
+                                </simulation-controls>
                             </td>
                         </tr>
                         <tr v-bind:style="debugMenuStyle">

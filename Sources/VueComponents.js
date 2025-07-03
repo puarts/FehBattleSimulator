@@ -1224,6 +1224,83 @@ function initVueComponents() {
             }
         }
     });
+
+    Vue.component('SimulationControls', {
+        props: {
+            isEnemyActionTriggered: Boolean,
+            simulatesEnemyActionOneByOne: Boolean,
+            isIconOverlayDisabled: Boolean,
+            isTrapIconOverlayDisabled: Boolean,
+            isAetherRaid: Boolean,
+            isResonant: Boolean,
+            showFlash: Function,
+        },
+        methods: {
+            onIconOverlayChange() {
+                this.$emit('icon-overlay-disabled-changed');
+            },
+            onHealHp() {
+                this.$emit('heal-hp-full');
+            },
+            onResetPlacement() {
+                this.$emit('reset-placement');
+            },
+            openAetherRaidDialog() {
+                this.$emit('open-aether-raid-dialog');
+            },
+            openItemDialog() {
+                this.$emit('open-item-dialog');
+            },
+            openDurabilityTestDialog() {
+                this.$emit('open-durability-test');
+            },
+            openEditMapDialog() {
+                this.$emit('open-edit-map');
+            }
+        },
+        template: `
+            <div>
+              <input type="checkbox" id="isEnemyActionTriggered"
+                     :checked="isEnemyActionTriggered"
+                     @change="$emit('update:isEnemyActionTriggered', $event.target.checked)">
+              <label for="isEnemyActionTriggered" class="normal">敵の行動制限解除</label>
+
+              <input type="checkbox" id="simulatesEnemyActionOneByOne"
+                     :checked="simulatesEnemyActionOneByOne"
+                     @change="$emit('update:simulatesEnemyActionOneByOne', $event.target.checked)">
+              <label for="simulatesEnemyActionOneByOne" class="normal">敵の行動再現を1行動ずつ行う</label>
+
+              <input type="checkbox" id="isIconOverlayDisabled"
+                     :checked="isIconOverlayDisabled"
+                     @change="$emit('update:isIconOverlayDisabled', $event.target.checked); onIconOverlayChange()">
+              <label for="isIconOverlayDisabled" class="normal">アイコン上の状態表示無効</label>
+
+              <input type="checkbox" id="isTrapIconOverlayDisabled"
+                     :checked="isTrapIconOverlayDisabled"
+                     @change="$emit('update:isTrapIconOverlayDisabled', $event.target.checked); onIconOverlayChange()">
+              <label for="isTrapIconOverlayDisabled" class="normal">罠のLV表示無効</label>
+
+              <div>
+                <input type="button" value="全員状態リセット" style="width:140px" class="buttonUi"
+                       @click="onHealHp">
+                <input type="button" value="配置リセット" style="width:140px" class="buttonUi"
+                       @click="onResetPlacement">
+                <input v-if="isAetherRaid" type="button" value="模擬戦..." style="width:140px"
+                       class="buttonUi" @click="openAetherRaidDialog">
+                <input v-if="isResonant" type="button" value="アイテム..."
+                       style="width:140px" class="buttonUi" @click="openItemDialog">
+                <input v-if="isAetherRaid" type="button" value="耐久/殲滅力テスト..."
+                       style="width:140px" class="buttonUi" @click="openDurabilityTestDialog">
+                <input type="button" value="マップ編集..." style="width:140px" class="buttonUi"
+                       @click="openEditMapDialog">
+                <input type="button" value="保存状態リセット" style="width:140px" class="buttonUi"
+                       @click="LocalStorageUtil.removeKey('settings');
+                               showFlash('保存されている状態をリセットしました', 'success', true);"
+                >
+              </div>
+            </div>
+        `
+    });
 }
 
 initVueComponents();
