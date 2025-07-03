@@ -6093,7 +6093,9 @@ class Unit extends BattleMapElement {
                 return true;
             }
         }
-        return false;
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this)
+            .setName('天駆の道判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        return HAS_PATHFINDER_HOOKS.evaluateSomeWithUnit(this, env);
     }
 
     get isTome() {

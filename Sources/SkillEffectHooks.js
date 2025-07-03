@@ -444,3 +444,8 @@ const IS_DEBUFFER_TIER_2_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<BoolNode, NodeEnv>}
  */
 const IS_AFFLICTOR_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const HAS_PATHFINDER_HOOKS = new SkillEffectHooks();

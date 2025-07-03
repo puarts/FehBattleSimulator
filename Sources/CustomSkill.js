@@ -338,6 +338,7 @@ class CustomSkill {
                     [CLOSEST_FOES_WITHIN_5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE,
                         '自分と補助対象の周囲5マス以内の最も近い敵と周囲2マス以内の敵']],
 
+                ['assist-target', [UnitsNode.makeFromUnit(ASSIST_TARGET_NODE), '補助対象']],
                 ['unit-and-target-and-those-allies-within-2-spaces',
                     [ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2),
                         '自分と補助対象の周囲2マス以内の味方']],
@@ -1392,6 +1393,92 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-restores-hp',
+    "応援、移動系補助を使用した時、対象を回復",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                RESTORE_TARGETS_HP_ON_MAP_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)),
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+        ...NON_NEGATIVE_INTEGER_ARGS
+    ],
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-or-target-restores-hp',
+    "応援、移動系補助を使用した時、または自分に使用された時、対象を回復",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                RESTORE_TARGETS_HP_ON_MAP_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)),
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+        ...NON_NEGATIVE_INTEGER_ARGS
+    ],
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-neutralizes-penalties',
+    "応援、移動系補助を使用した時、対象の不利な状態異常を解除",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+    ],
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-or-target-neutralizes-penalties',
+    "応援、移動系補助を使用した時、または自分に使用された時、対象の不利な状態異常を解除",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+    ],
+);
+
+CustomSkill.setFuncId(
     'grants-another-action-after-rally-or-movement-is-used-by-unit',
     "応援、移動系補助を使用した時、自分を行動可能にする（再行動）",
     (skillId, args) => {
@@ -1400,6 +1487,15 @@ CustomSkill.setFuncId(
         setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
             GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
         ));
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'has-pathfinder',
+    "天駆の道",
+    (skillId, args) => {
+        HAS_PATHFINDER_HOOKS.addSkill(skillId, () => TRUE_NODE);
     },
     []
 );
@@ -1429,6 +1525,24 @@ CustomSkill.setFuncId(
     'アフリクター',
     (skillId, args) => {
         IS_AFFLICTOR_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'can-rally-forcibly',
+    'バフをかけられなくても応援可能になる',
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'can-rallied-forcibly',
+    'バフをかけられなくても応援可能を受けられるようになる',
+    (skillId, args) => {
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
     },
     []
 );
