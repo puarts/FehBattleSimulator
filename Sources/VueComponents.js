@@ -1312,6 +1312,56 @@ function initVueComponents() {
             </div>
         `
     });
+
+    Vue.component('debug-buttons', {
+        props: {
+            getApp: {type: Function, required: true},
+            resetUnitRandom: { type: Function, required: true },
+            activateAllUnit: { type: Function, required: true },
+            resetUnitForTesting: { type: Function, required: true },
+            openAutoClearDialog: { type: Function, required: true },
+        },
+        template: `
+            <div>
+              <input
+                type="button"
+                value="敵の動きを1ターンシミュレート"
+                class="buttonUi debug-button"
+                @click="getApp?.().simulateEnemiesForCurrentTurn();"
+              />
+              <input
+                type="button"
+                value="キャラをランダム設定"
+                class="buttonUi debug-button"
+                @click="resetUnitRandom"
+              />
+              <input
+                type="button"
+                value="全員行動可能に"
+                class="buttonUi debug-button"
+                @click="activateAllUnit"
+              />
+              <input
+                type="button"
+                value="キャラをテスト用に設定"
+                class="buttonUi debug-button"
+                @click="resetUnitForTesting"
+              />
+              <input
+                type="button"
+                value="お助けツール(開発中)..."
+                class="buttonUi debug-button"
+                @click="openAutoClearDialog"
+              />
+              <input
+                type="button"
+                value="全アイテム情報出力"
+                class="buttonUi debug-button"
+                @click="getApp?.().logAllItemInfos();"
+              />
+            </div>
+          `
+    });
 }
 
 initVueComponents();

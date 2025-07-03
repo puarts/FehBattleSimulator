@@ -365,18 +365,14 @@
                         </tr>
                         <tr v-bind:style="debugMenuStyle">
                             <td colspan="2">
-                                <input type="button" value="敵の動きを1ターンシミュレート" style="width:140px" class="buttonUi"
-                                    @click="g_app.simulateEnemiesForCurrentTurn()">
-                                <input type="button" value="キャラをランダム設定" style="width:140px" class="buttonUi"
-                                    @click="resetUnitRandom">
-                                <input type="button" value="全員行動可能に" style="width:140px" class="buttonUi"
-                                    @click="activateAllUnit">
-                                <input type="button" value="キャラをテスト用に設定" style="width:140px" class="buttonUi"
-                                    @click="resetUnitForTesting">
-                                <input type="button" value="お助けツール(開発中)..." style="width:140px" class="buttonUi"
-                                    @click="$('#autoClearDialog').dialog('open');">
-                                <input type="button" value="全アイテム情報出力" style="width:140px" class="buttonUi"
-                                    @click="g_app.logAllItemInfos()">
+                                <debug-buttons
+                                        :get-app="getApp"
+                                        :reset-unit-random="resetUnitRandom"
+                                        :activate-all-unit="activateAllUnit"
+                                        :reset-unit-for-testing="resetUnitForTesting"
+                                        :open-auto-clear-dialog="() => $('#autoClearDialog').dialog('open')"
+                                >
+                                </debug-buttons>
                             </td>
                         </tr>
                     </table>
