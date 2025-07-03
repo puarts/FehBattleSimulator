@@ -555,7 +555,7 @@ function initVueComponents() {
                                 :max="unit['maxSpecialCount']"
                                 v-model="unit['specialCount']"
                                 class="numeric"
-                                @input="vm.specialCountChanged"
+                                @input="e => vm.specialCountChanged(unit, Number(e.target.value))"
                             /> / {{ unit['maxSpecialCount'] }}
                         </span>
               </div>

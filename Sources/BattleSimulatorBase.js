@@ -351,12 +351,15 @@ class BattleSimulatorBase {
                 }
                 this.passiveChanged();
             },
-            specialCountChanged: function () {
+            specialCountChanged: function (unit, v) {
+                if (unit) {
+                    unit.specialCount = v;
+                }
                 // console.log("specialCountChanged");
                 if (g_app == null) {
                     return;
                 }
-                let unit = g_app.__getEditingTargetUnit();
+                unit = g_app.__getEditingTargetUnit();
                 if (unit == null) {
                     return;
                 }
