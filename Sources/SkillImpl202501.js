@@ -28,6 +28,8 @@
     );
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        EFFECTIVE_AGAINST_NODE(EffectiveType.Armor),
+        EFFECTIVE_AGAINST_NODE(EffectiveType.Cavalry),
         // If unit initiates combat or is within 2 spaces of an ally,
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
             // grants bonus to unit’s Atk/Spd/Def/Res =
@@ -150,26 +152,22 @@
             // and neutralizes any [Penalty] on that ally,
             NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
         ),
-    ));
-    setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
-        // and grants another action to unit
         // and inflicts 【Isolation】 on unit and Pair Up cohort through their next action,
+        INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Isolation),
         // and also,
         // if unit’s or Pair Up Cohort’s Range = 2,
         // inflicts “restricts movement to 1 space” on unit and Pair Up cohort, respectively,
         // through their next action
+        IF_NODE(IS_TARGET_RANGED_WEAPON_NODE,
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Gravity),
+        ),
+    ));
+    setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+        // and grants another action to unit
         // (“grants another action” effect and onward is once per turn;
         // if another effect that grants additional action to unit has been triggered at the same time,
         // this effect is also considered to have been triggered).
-        GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_EFFECTS_NODE(
-            FOR_UNIT_NODE(
-                ASSIST_TARGETING_NODE,
-                INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Isolation),
-                IF_NODE(IS_TARGET_RANGED_WEAPON_NODE,
-                    INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Gravity),
-                ),
-            ),
-        ),
+        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
     ));
 }
 
@@ -1146,6 +1144,7 @@
                 GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
                     ENSURE_MAX_MIN_NODE(
                         PERCENTAGE_SUB_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE, 4),
+                        14, 5,
                     ),
                 ),
             ),

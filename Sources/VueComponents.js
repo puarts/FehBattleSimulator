@@ -103,6 +103,8 @@ function initVueComponents() {
                 type: [Number, String],
                 required: false,
             },
+            fallbackValue: {type: [Number, String], default: -1, required: false},
+            isDebugMode: {type: Boolean, default: false, required: false},
         },
 
         mounted() {
@@ -113,25 +115,80 @@ function initVueComponents() {
                 .on('change', (event) => {
                     const raw = event.target.value;
                     const parsed = parseInt(raw, 10);
-                    this.$emit('input', isNaN(parsed) ? raw : parsed);
+                    let newVar = isNaN(parsed) ? raw : parsed;
+                    if (newVar === 0 || newVar) {
+                        this.$emit('input', newVar);
+                    }
                 });
+        },
+
+        methods: {
+            applyInvalidValueClass(hasCurrent) {
+                // 不正値表示用にスタイルを付与（任意）
+                const container = $(this.$el).next('.select2-container');
+                if (!hasCurrent) {
+                    container.addClass('invalid-value');
+                } else {
+                    container.removeClass('invalid-value');
+                }
+            },
         },
 
         watch: {
             value(newVal, oldVal) {
-                // 外部から value が変更されたときに select2 に反映
-                if (String(oldVal) !== String(newVal)) {
-                    $(this.$el).val(newVal).trigger('change');
+                // console.log(`select2: value changed: ${oldVal} -> ${newVal}`);
+                // 1. 現在の UI 側 select2 の値を取得
+                const uiVal = $(this.$el).val();
+                // console.log(`select2: UI val = ${uiVal}, prop newVal = ${newVal}`);
+
+                // 2. UI とプロップが異なる場合のみ反映して change を起こす
+                if (String(uiVal) !== String(newVal)) {
+                    // console.log('update with new value: ' + newVal);
+                    $(this.$el)
+                        .val(newVal)
+                        .trigger('change');
+                }
+                if (this.isDebugMode) {
+                    const hasCurrent = this.options.some(opt => String(opt.id) === String(this.value));
+                    this.applyInvalidValueClass(hasCurrent);
                 }
             },
 
             options(newOptions, oldOptions) {
-                $(this.$el)
-                    .empty()
-                    .select2({data: newOptions})
-                    .val(this.value)
-                    .trigger('change');
-                this.$emit('options-changed', newOptions, oldOptions);
+                // まず、現在の this.value が newOptions に含まれているかチェック
+                const hasCurrent = newOptions.some(opt => String(opt.id) === String(this.value));
+                // デバッグモードならオプションにない値が含まれても元の値を保持する
+                // その際に警告を表示する
+                // そうでない場合は元の値に-1をセットする
+                if (this.isDebugMode) {
+                    let effectiveOptions = newOptions.slice();
+
+                    if (!hasCurrent) {
+                        // 「不正な値」用のダミーオプションを作成
+                        effectiveOptions.push({
+                            id:    this.value,
+                            text:  `（不正な値: ${this.value}）`,
+                            disabled: true
+                        });
+                    }
+                    // select2 を再初期化し、必ず currentValue を選択
+                    $(this.$el)
+                        .empty()
+                        .select2({ data: effectiveOptions })
+                        .val(this.value)
+                        .trigger('change');
+
+                    // 不正値表示用にスタイルを付与（任意）
+                    this.applyInvalidValueClass(hasCurrent);
+                } else {
+                    // オプションにない要素は -1（fallbackValue 使用）
+                    const selectedValue = hasCurrent ? this.value : this.fallbackValue;
+                    $(this.$el)
+                        .empty()
+                        .select2({data: newOptions})
+                        .val(selectedValue)
+                        .trigger('change');
+                }
             },
         },
 
@@ -252,11 +309,15 @@ function initVueComponents() {
                 <select2
                     :options="CustomSkill.OPTIONS"
                     v-model="unit.customSkills[index][0]"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
                     @input="vm.initCustomSkillArgs(index);vm.customSkillChanged();"
                     class="custom-skill"
                 ></select2>
                 <!-- 引数 -->
-                <span v-for="argNode in CustomSkill.Arg.FUNC_ID_TO_NODES.getValues(funcId)">
+                <span 
+                    v-for="(argNode, argIndex) in CustomSkill.Arg.FUNC_ID_TO_NODES.getValues(funcId)"
+                    :key="'for-arg-' + funcId + '-' + argNode + '-' + argIndex"
+                >
                     <!-- br -->
                     <br
                         v-if="argNode === CustomSkill.Arg.Node.BR"
@@ -275,26 +336,12 @@ function initVueComponents() {
                     >
                       &times;
                     </span>
-                    <!-- マス -->
+                    <!-- 文字列 -->
                     <span
-                        v-if="argNode === CustomSkill.Arg.Node.SPACES_LABEL"
+                        v-if="CustomSkill.Arg.getNodeType(argNode) === CustomSkill.Arg.NodeType.STRING"
                         class="normal"
+                        v-html="CustomSkill.Arg.StringNodeToStrings.get(argNode)"
                     >
-                        マス
-                    </span>
-                    <!-- 対象 -->
-                    <span
-                        v-if="argNode === CustomSkill.Arg.Node.TARGET_LABEL"
-                        class="normal"
-                    >
-                        対象:&nbsp;
-                    </span>
-                    <!-- 付与 -->
-                    <span
-                        v-if="argNode === CustomSkill.Arg.Node.STATUS_EFFECT_LABEL"
-                        class="normal"
-                    >
-                        付与:&nbsp;
                     </span>
 
                     <!-- 数値 -->
@@ -310,7 +357,7 @@ function initVueComponents() {
                             placeholder="0以上の整数"
                             v-model.number="unit.customSkills[index][1][argNode]"
                             @input="vm.customSkillChanged"
-                            class="custom-skill-args"
+                            class="custom-skill-num-args"
                         />
                     </span>
 
@@ -327,7 +374,7 @@ function initVueComponents() {
                             placeholder="0以上の整数"
                             v-model.number="unit.customSkills[index][1][argNode]"
                             @input="vm.customSkillChanged"
-                            class="custom-skill-args"
+                            class="custom-skill-num-args"
                         >
                         </input>
                         <span class="normal">%</span>
@@ -339,10 +386,32 @@ function initVueComponents() {
                     >
                           <select2
                               :options="CustomSkill.Arg.NODE_TO_OPTIONS.getValues(argNode)"
-                              v-model="unit.customSkills[index][1][argNode]"
-                              @input="vm.customSkillChanged"
+                              v-model="unit.getCustomSkillArgs(index)[argNode]"
+                              @input="v => vm.customSkillChanged(unit, v)"
                               class="custom-skill-args"
+                              style="width: 220px"
                           ></select2>
+                    </span>
+                    <span
+                        v-if="CustomSkill.Arg.getNodeType(argNode) === CustomSkill.Arg.NodeType.IDS"
+                    >
+                        <span class="normal"
+                              style="display: inline-block; vertical-align: middle;" 
+                        >
+                            <div
+                                v-for="(v, i) in unit.getCustomSkillArgs(index)[argNode]"
+                                :key="'ids-' + unit.id + '-' + funcId + '-' + index + '-' + i"
+                                class="skill-arg-row"
+                            >
+                                <select2
+                                  :options="CustomSkill.Arg.NODE_TO_OPTIONS.getValues(argNode)"
+                                  @input="v => {vm.customSkillArgsArrayChanged(unit.getCustomSkillArgs(index)[argNode], i, v);}"
+                                  :value="unit.getCustomSkillArgs(index)[argNode][i]"
+                                  class="custom-skill-args"
+                                >
+                                </select2>
+                            </div>
+                        </span>
                     </span>
                 </span>
             </span>
@@ -374,8 +443,9 @@ function initVueComponents() {
                     :options="vm.enableAllSkillOptions ?
                                 vm.weaponOptions : (unit.heroInfo && unit.heroInfo.weaponOptions)"
                     :name="unit.id + '-weapon'"
-                    v-model="unit.weapon"
-                    @input="vm.weaponChanged"
+                    :value="unit.weapon"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
+                    @input="v => vm.weaponChanged(unit, v)"
                     @options-changed="vm.initSkills"
                     class="skill">
                 </select2>
@@ -420,8 +490,9 @@ function initVueComponents() {
               <div class="skill-content">
                 <select2
                     class="skill"
-                    v-model="unit.support"
-                    @input="vm.supportChanged"
+                    :value="unit.support"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
+                    @input="v => vm.supportChanged(unit, v)"
                     @options-changed="vm.initSkills"
                     :options="vm.enableAllSkillOptions
                               ? vm.supportOptions
@@ -456,8 +527,9 @@ function initVueComponents() {
               <div class="skill-content">
                 <select2
                     class="skill"
-                    v-model="unit.special"
-                    @input="vm.specialChanged"
+                    :value="unit.special"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
+                    @input="v => vm.specialChanged(unit, v)"
                     @options-changed="vm.initSkills"
                     :options="vm.enableAllSkillOptions
                                 ? vm.specialOptions
@@ -483,7 +555,7 @@ function initVueComponents() {
                                 :max="unit['maxSpecialCount']"
                                 v-model="unit['specialCount']"
                                 class="numeric"
-                                @input="vm.specialCountChanged"
+                                @input="e => vm.specialCountChanged(unit, Number(e.target.value))"
                             /> / {{ unit['maxSpecialCount'] }}
                         </span>
               </div>
@@ -500,7 +572,7 @@ function initVueComponents() {
 
             <!-- パッシブスキル -->
             <div v-for="slot in ['A', 'B', 'C', 'S', 'X']"
-                 :key="slot"
+                 :key="'passive-' + slot"
                  class="skill-row"
                  :class="{
                                 'passive-s-skill-row': slot === 'S',
@@ -524,8 +596,9 @@ function initVueComponents() {
                     :name="!vm.enableAllSkillOptions && unit.heroInfo
                                 ? unit.id + '-passive' + slot
                                 : null"
-                    v-model="unit['passive' + slot]"
-                    @input="vm['passive' + slot + 'Changed']"
+                    :value="unit['passive' + slot]"
+                    :is-debug-mode="vm.isDebugMenuEnabled"
+                    @input="v => vm.passiveSlotChanged(unit, v, slot)"
                     @options-changed="vm.initSkills"
                     class="skill"
                 />
@@ -558,7 +631,9 @@ function initVueComponents() {
                 <span class="skillTypeText" style="font-size:10px">隊長</span>
               </div>
               <div class="skill-content">
-                <select2 :options="vm.captainOptions" v-model="unit.captain"
+                <select2 :options="vm.captainOptions" 
+                         v-model="unit.captain"
+                         :is-debug-mode="vm.isDebugMenuEnabled"
                          @input="vm.captainChanged"
                          class="skill">
                 </select2>
@@ -591,6 +666,7 @@ function initVueComponents() {
               <div class="skill-content">
                 <select2 :options="vm.additionalPassiveOptions"
                          v-model="unit.additionalPassives[index][0]"
+                         :is-debug-mode="vm.isDebugMenuEnabled"
                          @input="vm.additionalSkillChanged" class="skill">
                 </select2>
               </div>
@@ -623,7 +699,7 @@ function initVueComponents() {
 
             <!-- カスタムスキル -->
             <div v-for="([funcId, args, isEnabled], index) of unit.customSkills"
-                 :key="'additional-passives-' + unit.id + '-' + index + '-' + String(funcId)"
+                 :key="'custom-skills-' + unit.id + '-' + index + '-' + String(funcId)"
                  class="skill-row custom-skill-row"
             >
               <div class="skill-icon">
@@ -700,18 +776,6 @@ function initVueComponents() {
             </button>
           </div>
         `
-    });
-
-    Vue.component('TestComponent', {
-        name: 'TestComponent',
-        props: {
-        },
-        template: `
-            <span>
-                <div>test1</div>
-                <div>test2</div>
-            </span>
-        `,
     });
 
     Vue.component('MapButton', {
@@ -811,6 +875,7 @@ function initVueComponents() {
             audioManager: {type: AudioManager, required: true},
             bgmEnabledChanged: {type: Function, required: true},
             loadLazyImages: {type: Function, required: true},
+            showFlash: {type: Function, required: true},
         },
         methods: {},
         mounted() {
@@ -833,6 +898,7 @@ function initVueComponents() {
                         :audio-manager="audioManager"
                         :bgm-enabled-changed="bgmEnabledChanged"
                         :load-lazy-images="loadLazyImages"
+                        :show-flash="showFlash"
                 >
                 </upper-buttons>
                 <lower-buttons
@@ -865,8 +931,36 @@ function initVueComponents() {
             endTurn: {type: Function, required: true},
             globalBattleContext: {type: GlobalBattleContext, required: true},
             loadLazyImages: {type: Function, required: true},
+            showFlash: {type: Function, required: true},
         },
-        methods: {},
+        methods: {
+            onSaveSettings() {
+                let app = this.getApp();
+                if (app) {
+                    app.clearSimpleLog();
+                    saveSettings();
+                    let toCookie = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+                    if (toCookie) {
+                        this.showFlash('設定を保存しました', 'warning', true);
+                    } else {
+                        this.showFlash('設定を保存しました', 'success', true);
+                    }
+                }
+            },
+            onLoadSettings() {
+                let app = this.getApp();
+                if (app) {
+                    app.clearSimpleLog();
+                    loadSettings();
+                    let fromCookies = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+                    if (fromCookies) {
+                        this.showFlash('設定を読み込みました', 'warning', true);
+                    } else {
+                        this.showFlash('設定を読み込みました', 'success', true);
+                    }
+                }
+            },
+        },
         mounted() {
             this.loadLazyImages();
         },
@@ -888,11 +982,11 @@ function initVueComponents() {
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/SaveState.png"
-                    @click="getApp?.().clearSimpleLog();saveSettings();">
+                    @click="onSaveSettings">
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/LoadState.png"
-                    @click="getApp?.().clearSimpleLog();loadSettings();">
+                    @click="onLoadSettings">
 
                 <span
                     v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
@@ -977,30 +1071,26 @@ function initVueComponents() {
             unit: {type: Unit, required: true},
             g_app: {required: true},
         },
+        methods: {
+            getSkillButtonStyle(unit) {
+                const canActivate = this.g_app.canActivateDuoSkillOrHarmonizedSkill(unit);
+                const base = unit.isDuoAllyHero ? 'DuoSkill' : 'HarmonizedSkill';
+                const suffix = canActivate ? '' : '_Disabled';
+                return {
+                    backgroundImage: `url(/AetherRaidTacticsBoard/images/Activate${base}${suffix}.png)`
+                };
+            }
+        },
         template: `
           <div style="padding:5px">
-            <span v-if="unit.isDuoAllyHero && g_app.canActivateDuoSkillOrHarmonizedSkill(unit)">
-                <input type="button"
-                       style="background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill.png)"
-                       class="fehButton"
-                       @click="g_app.activateDuoOrHarmonizedSkill(unit);">
-            </span>
-            <span v-if="unit.isDuoAllyHero && !g_app.canActivateDuoSkillOrHarmonizedSkill(unit)">
-                <input type="button" v-if="unit.isDuoAllyHero " disabled
-                       style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateDuoSkill_Disabled.png)"
-                       class="fehButtonDisabled">
-            </span>
-
-            <span v-if="unit.isHarmonicAllyHero && g_app.canActivateDuoSkillOrHarmonizedSkill(unit)">
-                <input type="button"
-                       style="background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill.png)"
-                       class="fehButton"
-                       @click="g_app.activateDuoOrHarmonizedSkill(unit);">
-            </span>
-            <span v-if="unit.isHarmonicAllyHero && !g_app.canActivateDuoSkillOrHarmonizedSkill(unit)">
-                <input type="button" v-if="unit.isHarmonicAllyHero" disabled
-                       style=" background-image: url(/AetherRaidTacticsBoard/images/ActivateHarmonizedSkill_Disabled.png)"
-                       class="fehButtonDisabled">
+            <span v-if="unit.isDuoAllyHero || unit.isHarmonicAllyHero">
+              <input
+                type="button"
+                :disabled="!g_app.canActivateDuoSkillOrHarmonizedSkill(unit)"
+                :style="getSkillButtonStyle(unit)"
+                :class="g_app.canActivateDuoSkillOrHarmonizedSkill(unit) ? 'fehButton' : 'fehButtonDisabled'"
+                @click="g_app.canActivateDuoSkillOrHarmonizedSkill(unit) && g_app.activateDuoOrHarmonizedSkill(unit)"
+              />
             </span>
 
             <span v-if="unit.canActivateStyle()">
@@ -1130,7 +1220,247 @@ function initVueComponents() {
             </span>
         </span>
         `
-    })
+    });
+
+    Vue.component('DebugSettings', {
+        name: 'DebugSettings',
+        props: {
+            isDebugMenuEnabled: {type: Boolean, required: true},
+            isDevelopmentMode: {type: Boolean, required: true}
+        },
+        template: `
+            <div style="float:right">
+              <input
+                :id="debugId"
+                type="checkbox"
+                :checked="isDebugMenuEnabled"
+                @change="$emit('is-debug-changed', $event.target.checked)"
+              />
+              <label class="normal" :for="debugId">
+                デバッグモード有効(開発者用)
+              </label>
+
+              <input
+                :id="devId"
+                type="checkbox"
+                :checked="isDevelopmentMode"
+                @change="$emit('is-dev-mode-changed', $event.target.checked)"
+              />
+              <label class="normal" :for="devId">
+                開発モード有効(開発者用)
+              </label>
+            </div>
+        `,
+        computed: {
+            // ラベルの for 属性と input の id の衝突を避けるために乱数を付与
+            debugId() {
+                return 'debugMenuEnabled-' + this._uid;
+            },
+            devId() {
+                return 'isDevelopmentMode-' + this._uid;
+            }
+        }
+    });
+
+    Vue.component('SimulationControls', {
+        props: {
+            getApp: {type: Function, required: true},
+            isEnemyActionTriggered: Boolean,
+            simulatesEnemyActionOneByOne: Boolean,
+            isIconOverlayDisabled: Boolean,
+            isTrapIconOverlayDisabled: Boolean,
+            isAetherRaid: Boolean,
+            isResonant: Boolean,
+            showFlash: Function,
+        },
+        methods: {
+            onIconOverlayChange() {
+                this.$emit('icon-overlay-disabled-changed');
+            },
+            onHealHp() {
+                this.$emit('heal-hp-full');
+            },
+            onResetPlacement() {
+                this.$emit('reset-placement');
+            },
+            openAetherRaidDialog() {
+                this.$emit('open-aether-raid-dialog');
+            },
+            openItemDialog() {
+                this.$emit('open-item-dialog');
+            },
+            openDurabilityTestDialog() {
+                this.$emit('open-durability-test');
+            },
+            openEditMapDialog() {
+                this.$emit('open-edit-map');
+            },
+            onCookieSettingChange(event) {
+                const isChecked = event.target.checked;
+                LocalStorageUtil.setBoolean('uses-cookie-for-storing-settings', isChecked);
+                if (isChecked) {
+                    this.showFlash('状態の保存先をCookie（旧設定）に変更しました。カスタムスキルを設定していると状態が保存されない場合があります。', 'warning', false);
+                } else {
+                    this.showFlash('状態の保存先をローカルストレージ（新設定）に変更しました', 'info', true);
+                }
+            },
+        },
+        template: `
+            <div>
+              <input type="checkbox" id="isEnemyActionTriggered"
+                     :checked="isEnemyActionTriggered"
+                     @change="$emit('update:isEnemyActionTriggered', $event.target.checked)">
+              <label for="isEnemyActionTriggered" class="normal">敵の行動制限解除</label>
+
+              <input type="checkbox" id="simulatesEnemyActionOneByOne"
+                     :checked="simulatesEnemyActionOneByOne"
+                     @change="$emit('update:simulatesEnemyActionOneByOne', $event.target.checked)">
+              <label for="simulatesEnemyActionOneByOne" class="normal">敵の行動再現を1行動ずつ行う</label>
+
+              <input type="checkbox" id="isIconOverlayDisabled"
+                     :checked="isIconOverlayDisabled"
+                     @change="$emit('update:isIconOverlayDisabled', $event.target.checked); onIconOverlayChange()">
+              <label for="isIconOverlayDisabled" class="normal">アイコン上の状態表示無効</label>
+
+              <input type="checkbox" id="isTrapIconOverlayDisabled"
+                     :checked="isTrapIconOverlayDisabled"
+                     @change="$emit('update:isTrapIconOverlayDisabled', $event.target.checked); onIconOverlayChange()">
+              <label for="isTrapIconOverlayDisabled" class="normal">罠のLV表示無効</label>
+
+              <div>
+                <input type="button" value="全員状態リセット" style="width:140px" class="buttonUi"
+                       @click="onHealHp">
+                <input type="button" value="配置リセット" style="width:140px" class="buttonUi"
+                       @click="onResetPlacement">
+                <input v-if="isAetherRaid" type="button" value="模擬戦..." style="width:140px"
+                       class="buttonUi" @click="openAetherRaidDialog">
+                <input v-if="isResonant" type="button" value="アイテム..."
+                       style="width:140px" class="buttonUi" @click="openItemDialog">
+                <input v-if="isAetherRaid" type="button" value="耐久/殲滅力テスト..."
+                       style="width:140px" class="buttonUi" @click="openDurabilityTestDialog">
+                <input type="button" value="マップ編集..." style="width:140px" class="buttonUi"
+                       @click="openEditMapDialog">
+                <input type="button" value="保存状態リセット" style="width:140px" class="buttonUi"
+                       @click="LocalStorageUtil.removeKey('settings');
+                               showFlash('保存されている状態をリセットしました', 'success', true);"
+                >
+                <br/>
+                <span style="width: 140px">
+                    <input type="checkbox" 
+                           class="buttonUi"
+                           id="uses-cookie-for-storing-settings"
+                           :checked="LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false)"
+                           @change="onCookieSettingChange"
+                    >
+                    <label for="uses-cookie-for-storing-settings" class="normal">状態の保存先にCookieを使う（旧設定）</label>
+                </span>
+              </div>
+            </div>
+        `
+    });
+
+    Vue.component('debug-buttons', {
+        props: {
+            getApp: {type: Function, required: true},
+            resetUnitRandom: { type: Function, required: true },
+            activateAllUnit: { type: Function, required: true },
+            resetUnitForTesting: { type: Function, required: true },
+            openAutoClearDialog: { type: Function, required: true },
+        },
+        template: `
+            <div>
+              <input
+                type="button"
+                value="敵の動きを1ターンシミュレート"
+                class="buttonUi debug-button"
+                @click="getApp?.().simulateEnemiesForCurrentTurn();"
+              />
+              <input
+                type="button"
+                value="キャラをランダム設定"
+                class="buttonUi debug-button"
+                @click="resetUnitRandom"
+              />
+              <input
+                type="button"
+                value="全員行動可能に"
+                class="buttonUi debug-button"
+                @click="activateAllUnit"
+              />
+              <input
+                type="button"
+                value="キャラをテスト用に設定"
+                class="buttonUi debug-button"
+                @click="resetUnitForTesting"
+              />
+              <input
+                type="button"
+                value="お助けツール(開発中)..."
+                class="buttonUi debug-button"
+                @click="openAutoClearDialog"
+              />
+              <input
+                type="button"
+                value="全アイテム情報出力"
+                class="buttonUi debug-button"
+                @click="getApp?.().logAllItemInfos();"
+              />
+            </div>
+          `
+    });
+
+    Vue.component('log-panel', {
+        props: {
+            getApp: { type: Function, required: true },
+            simulatorLogLevel: { type: Number, required: true },
+            simulatorLogLevelOption: { type: Array, required: true },
+            saveSimulatorLogLevel: { type: Function, required: true },
+            skillLogLevel: { type: Number, required: true },
+            skillLogLevelOption: { type: Array, required: true },
+            saveSkillLogLevel: { type: Function, required: true },
+            copyDebugLogToClipboard: { type: Function, required: true },
+        },
+        methods: {
+            clearLog() {
+                if (this.getApp) {
+                    this.getApp().clearLog();
+                }
+            },
+            onSimulatorLogLevelChange(e) {
+                const value = Number(e.target.value);
+                this.$emit('update:simulatorLogLevel', value);
+                this.saveSimulatorLogLevel(value);
+            },
+            onSkillLogLevelChange(e) {
+                const value = Number(e.target.value);
+                this.$emit('update:skillLogLevel', value);
+                this.saveSkillLogLevel(value);
+            }
+        },
+        template: `
+            <div>
+              <label for="simulatorLogLevel" style="font-size:12px"><b>ログレベル</b></label>
+              <select id="simulatorLogLevel"
+                      :value="simulatorLogLevel"
+                      @change="onSimulatorLogLevelChange">
+                <option v-for="option in simulatorLogLevelOption" :key="option.value" :value="option.value">
+                  {{ option.text }}
+                </option>
+              </select>
+              <input type="button" @click="clearLog" value="クリア" style="font-size: 8px;" />
+              <input type="button" @click="copyDebugLogToClipboard" value="コピー" style="font-size: 8px;" />
+
+              <label for="skillLogLevel" style="font-size:12px"><b>スキル効果ログレベル</b></label>
+              <select id="skillLogLevel"
+                      :value="skillLogLevel"
+                      @change="onSkillLogLevelChange">
+                <option v-for="option in skillLogLevelOption" :key="option.value" :value="option.value">
+                  {{ option.text }}
+                </option>
+              </select>
+            </div>
+        `
+    });
 }
 
 initVueComponents();

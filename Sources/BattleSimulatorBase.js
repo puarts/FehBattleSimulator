@@ -330,24 +330,36 @@ class BattleSimulatorBase {
             passiveChanged: function () {
                 this.updateCurrentUnit();
             },
-            weaponChanged: function () {
+            weaponChanged: function (unit, v) {
+                if (unit) {
+                    unit.weapon = v;
+                }
                 this.passiveChanged();
             },
             weaponOptionChanged: function () {
                 this.passiveChanged();
             },
-            supportChanged: function () {
+            supportChanged: function (unit, v) {
+                if (unit) {
+                    unit.support = v;
+                }
                 this.passiveChanged();
             },
-            specialChanged: function () {
+            specialChanged: function (unit, v) {
+                if (unit) {
+                    unit.special = v;
+                }
                 this.passiveChanged();
             },
-            specialCountChanged: function () {
+            specialCountChanged: function (unit, v) {
+                if (unit) {
+                    unit.specialCount = v;
+                }
                 // console.log("specialCountChanged");
                 if (g_app == null) {
                     return;
                 }
-                let unit = g_app.__getEditingTargetUnit();
+                unit = g_app.__getEditingTargetUnit();
                 if (unit == null) {
                     return;
                 }
@@ -360,6 +372,12 @@ class BattleSimulatorBase {
                 }
                 appData.__showStatusToAttackerInfo();
                 updateAllUi();
+            },
+            passiveSlotChanged: function (unit, v, slot) {
+                if (unit) {
+                    unit[`passive${slot}`] = v;
+                }
+                this.passiveChanged();
             },
             passiveAChanged: function () {
                 this.passiveChanged();
@@ -382,10 +400,28 @@ class BattleSimulatorBase {
             initCustomSkillArgs: function (index) {
                 // TODO: funcIdから適切な初期化を行うようにする
                 let unit = g_app.__getEditingTargetUnit();
-                CustomSkill.Arg.initArgs(unit?.customSkills[index]);
+                CustomSkill.Arg.initArgs(this, unit?.customSkills[index]);
+                // this.$set(unit.customSkills[index][1], [CustomSkill.Arg.Node.EFFECTIVE_TYPES], ['']);
                 this.updateCurrentUnit();
             },
-            customSkillChanged: function () {
+            customSkillChanged: function (unit, value) {
+                this.updateCurrentUnit();
+            },
+            customSkillArgsArrayChanged: function (values, i, value) {
+                if (value === -1) {
+                    // なしが設定
+                    // 削除しない条件
+                    // 一番後ろの要素 or 要素数が1つしかない
+                    if (!(i === values.length - 1 || values.length === 1)) {
+                        values.splice(i, 1);
+                    }
+                } else if (value !== -1) {
+                    // なし以外が設定
+                    this.$set(values, i, value);
+                    if (values.length === i + 1) {
+                        this.$set(values, i + 1, '');
+                    }
+                }
                 this.updateCurrentUnit();
             },
             isSkillEnabledChanged: function (index, type) {
@@ -596,13 +632,15 @@ class BattleSimulatorBase {
             slotOrderChanged: function () {
                 updateMapUi();
             },
-            saveSimulatorLogLevel: function() {
-                LocalStorageUtil.setNumber('simulatorLogLevel', this.simulatorLogLevel);
-                this.damageCalcLogger.logLevel = this.simulatorLogLevel;
-                this.beginningOfTurnSkillHanderLogger.logLevel = this.simulatorLogLevel;
+            saveSimulatorLogLevel: function(simulatorLogLevel) {
+                LocalStorageUtil.setNumber('simulatorLogLevel', simulatorLogLevel);
+                this.simulatorLogLevel = simulatorLogLevel;
+                this.damageCalcLogger.logLevel = simulatorLogLevel;
+                this.beginningOfTurnSkillHanderLogger.logLevel = simulatorLogLevel;
             },
-            saveSkillLogLevel: function() {
-                LocalStorageUtil.setNumber('skillLogLevel', this.skillLogLevel);
+            saveSkillLogLevel: function(skillLogLevel) {
+                this.skillLogLevel = skillLogLevel;
+                LocalStorageUtil.setNumber('skillLogLevel', skillLogLevel);
             },
             resetUnitRandom: function () {
                 if (g_app == null) {
@@ -633,10 +671,12 @@ class BattleSimulatorBase {
                 appData.__showStatusToAttackerInfo();
                 updateAllUi();
             },
-            debugMenuEnabledChanged: function () {
+            debugMenuEnabledChanged: function (value) {
+                this.isDebugMenuEnabled = value;
                 appData.applyDebugMenuVisibility();
             },
-            developModeChanged: function () {
+            developModeChanged: function (value) {
+                appData.isDevelopmentMode = value;
                 LocalStorageUtil.setNumber('isDevelopmentMode', appData.isDevelopmentMode ? 1 : 0);
                 const userConfirmed = window.confirm("設定を完全に反映するためにはリロードが必要です。今すぐリロードしますか？");
                 if (userConfirmed) {
@@ -10623,6 +10663,7 @@ class BattleSimulatorBase {
 
             // 予約反映
             for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedHp(true);
                 unit.applyReservedState(false);
             }
             // 同時タイミングに付与された天脈を消滅させる
@@ -11727,7 +11768,13 @@ function __updateChaseTargetTilesForAllUnits() {
 function loadSettings() {
     console.log("loading..");
     console.log("current cookie:" + document.cookie);
-    g_appData.settings.loadSettings();
+    let fromCookies = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+    if (fromCookies) {
+        console.log('load settings from cookies');
+    } else {
+        console.log('load settings from local storage');
+    }
+    g_appData.settings.loadSettings(fromCookies);
     if (g_appData.gameMode === GameMode.ResonantBattles) {
         g_app.__setUnitsForResonantBattles();
     }
@@ -11765,7 +11812,13 @@ function loadSettingsFromDict(
 
 function saveSettings() {
     console.log("saving..");
-    g_appData.settings.saveSettings();
+    let toCookie = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+    if (toCookie) {
+        console.log('save settings to cookies');
+    } else {
+        console.log('save settings to local storage');
+    }
+    g_appData.settings.saveSettings(toCookie);
     console.log("current cookie:" + document.cookie);
     g_app.writeSimpleLogLine(`<div class="log-action-header">ターン${g_appData.currentTurn}の設定を保存しました。</div>`);
 }

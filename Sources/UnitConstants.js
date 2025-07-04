@@ -279,6 +279,7 @@ function getNegativeStatusEffectTypesInOrder() {
  * @type {Map<number, [string, string, string]>}
  */
 const STATUS_EFFECT_INFO_MAP = new Map([
+    [StatusEffectType.None, ["", "なし", "なし"]],
     [StatusEffectType.Panic, ["Panic.png", "パニック", "強化を+でなく-とする"]],
     [StatusEffectType.Gravity, ["MobilityDecreased.png", "グラビティ", "移動が最大1マスに制限される"]],
     [StatusEffectType.MobilityIncreased, ["MobilityIncreased.png", "移動+1", "移動+1"]],

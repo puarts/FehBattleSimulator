@@ -22,43 +22,89 @@ class CustomSkill {
     static registeredSkillIds = new Set();
 
     static Arg = class {
+        // Nodeに登録したものは
+        // 1. NODE_TO_NODE_TYPEにNodeTypeを設定すること
+        // 2. 必要であれば値を取得する関数を作成
+        // 3. 新しいNodeTypeがあればCustomSkillFormに登録する
         static Node = {
-            NON_NEGATIVE_INTEGER: "non_negative_integer",
             BR: "br",
+
             PLUS: "plus",
             MULT: "mult",
+
             SPACES_LABEL: "spaces_label",
             TARGET_LABEL: "target_label",
             STATUS_EFFECT_LABEL: "status_effect_label",
+            STAT_BONUS_LABEL: "stat_bonus_label",
+            STAT_PENALTY_LABEL: "stat_penalty_label",
+            STAT_LABEL: "stat_label",
+
+            NON_NEGATIVE_INTEGER: "non_negative_integer",
             VARIABLE: "variable",
             VARIABLE_PERCENTAGE: "variable_percentage",
             PERCENTAGE: "percentage",
             EFFECTIVE_TYPE: "effective_type",
+            EFFECTIVE_TYPES: "effective_types",
             STATUS_EFFECT_TYPE: "status_effect_type",
+            STATUS_EFFECT_TYPES: "status_effect_types",
             UNITS: "units",
             STAT: "stat",
+            STAT_N: "stat_n",
+            STAT_N_BONUS: "stat_n_bonus",
+            STAT_N_PENALTY: "stat_n_penalty",
+            STAT_BONUS: "stat_bonus",
+            STAT_PENALTY: "stat_penalty",
         }
+
+        static StringNodeToStrings = new Map(
+            [
+                [this.Node.SPACES_LABEL, 'マス'],
+                [this.Node.TARGET_LABEL, '対象: '],
+                [this.Node.STATUS_EFFECT_LABEL, '付与: '],
+                [this.Node.STAT_BONUS_LABEL, '強化: '],
+                [this.Node.STAT_PENALTY_LABEL, '弱化: '],
+                [this.Node.STAT_LABEL, 'ステ: '],
+            ]
+        );
 
         static NodeType = {
             INTEGER: "integer",
             NON_NEGATIVE_INTEGER: "non_negative_integer",
             PERCENTAGE: "percentage",
             ID: "id",
+            IDS: "ids",
             SKILL_ID: "skill_id",
             OPERATION: "operation",
+            STRING: "string",
         }
 
         static NODE_TO_NODE_TYPE = new Map([
-            [this.Node.NON_NEGATIVE_INTEGER, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.PLUS, this.NodeType.OPERATION],
             [this.Node.MULT, this.NodeType.OPERATION],
+
+            [this.Node.SPACES_LABEL, this.NodeType.STRING],
+            [this.Node.TARGET_LABEL, this.NodeType.STRING],
+            [this.Node.STATUS_EFFECT_LABEL, this.NodeType.STRING],
+            [this.Node.STAT_BONUS_LABEL, this.NodeType.STRING],
+            [this.Node.STAT_PENALTY_LABEL, this.NodeType.STRING],
+            [this.Node.STAT_LABEL, this.NodeType.STRING],
+
+            [this.Node.NON_NEGATIVE_INTEGER, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.VARIABLE, this.NodeType.ID],
             [this.Node.VARIABLE_PERCENTAGE, this.NodeType.PERCENTAGE],
             [this.Node.PERCENTAGE, this.NodeType.PERCENTAGE],
             [this.Node.EFFECTIVE_TYPE, this.NodeType.ID],
+            [this.Node.EFFECTIVE_TYPES, this.NodeType.IDS],
             [this.Node.STATUS_EFFECT_TYPE, this.NodeType.ID],
+            [this.Node.STATUS_EFFECT_TYPES, this.NodeType.IDS],
             [this.Node.UNITS, this.NodeType.ID],
             [this.Node.STAT, this.NodeType.ID],
+            [this.Node.STAT_N, this.NodeType.ID],
+            [this.Node.STAT_N_BONUS, this.NodeType.ID],
+            [this.Node.STAT_N_PENALTY, this.NodeType.ID],
+            [this.Node.STAT_N_BONUS, this.NodeType.ID],
+            [this.Node.STAT_BONUS, this.NodeType.NON_NEGATIVE_INTEGER],
+            [this.Node.STAT_PENALTY, this.NodeType.NON_NEGATIVE_INTEGER],
         ]);
 
         /**
@@ -77,6 +123,11 @@ class CustomSkill {
         static STAT_NODES;
 
         /**
+         * @type {Map<string, [function(*): NumberNode, string]>}
+         */
+        static STAT_N_NODES;
+
+        /**
          * @type {Map<string, [NumberNode, string]>}
          */
         static VARIABLE_NODES;
@@ -86,13 +137,25 @@ class CustomSkill {
          */
         static UNITS_NODES;
 
-        static initArgs(customSkill) {
-            const {NON_NEGATIVE_INTEGER, PERCENTAGE, VARIABLE_PERCENTAGE} = this.Node;
-            customSkill[1] = {
+        static initArgs(vm, customSkill) {
+            const {
+                NON_NEGATIVE_INTEGER,
+                PERCENTAGE,
+                VARIABLE_PERCENTAGE,
+                EFFECTIVE_TYPES,
+                STATUS_EFFECT_TYPES
+            } = this.Node;
+            vm.$set(customSkill, 1, {
                 [NON_NEGATIVE_INTEGER]: 0,
                 [PERCENTAGE]: 100,
-                [VARIABLE_PERCENTAGE]: 100
-            };
+                [VARIABLE_PERCENTAGE]: 100,
+                [EFFECTIVE_TYPES]: [''],
+                [STATUS_EFFECT_TYPES]: [''],
+            });
+        }
+
+        static idsToNodes(args, key) {
+            return (args[key] ?? []).filter(v => v !== '' && v !== -1).map(et => NumberNode.makeNumberNodeFrom(et));
         }
 
         static getNodeType(node) {
@@ -114,8 +177,20 @@ class CustomSkill {
             return NumberNode.makeNumberNodeFrom(args[this.Node.PERCENTAGE] ?? 0);
         }
 
+        static getEffectiveType(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.EFFECTIVE_TYPE] ?? 0);
+        }
+
+        static getEffectiveTypes(args) {
+            return this.idsToNodes(args, this.Node.EFFECTIVE_TYPES);
+        }
+
         static getStatusEffectTypeNode(args) {
             return NumberNode.makeNumberNodeFrom(args[this.Node.STATUS_EFFECT_TYPE] ?? 0);
+        }
+
+        static getStatusEffectTypesNode(args) {
+            return this.idsToNodes(args, this.Node.STATUS_EFFECT_TYPES);
         }
 
         static getUnitsNode(args) {
@@ -132,6 +207,21 @@ class CustomSkill {
             return id ? this.STAT_NODES.get(id)[0] : ZERO_NUMBER_NODE;
         }
 
+        static getStatNNode(args) {
+            let id = args[this.Node.STAT_N];
+            return id ? this.STAT_N_NODES.get(id)[0] : _ => ZERO_STATS_NODE;
+        }
+
+        static getStatNBonusNode(args) {
+            let id = args[this.Node.STAT_N_BONUS];
+            return id ? this.STAT_N_NODES.get(id)[0] : _ => ZERO_STATS_NODE;
+        }
+
+        static getStatNPenaltyNode(args) {
+            let id = args[this.Node.STAT_N_PENALTY];
+            return id ? this.STAT_N_NODES.get(id)[0] : _ => ZERO_STATS_NODE;
+        }
+
         static getVariableNode(args) {
             let id = args[this.Node.VARIABLE];
             return id ? this.VARIABLE_NODES.get(id)[0] : ZERO_NUMBER_NODE;
@@ -141,10 +231,18 @@ class CustomSkill {
             return PERCENTAGE_NODE(this.getPercentageNode(args), this.getStatNode(args));
         }
 
+        static getStatBonus(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.STAT_BONUS] ?? 0);
+        }
+
+        static getStatPenalty(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.STAT_PENALTY] ?? 0);
+        }
+
         /**
          * @param {MultiValueMap} nodeToOptions
          * @param {string} node
-         * @param {Map<string, [SkillEffectNode, string]>} nodes
+         * @param {Map<string, [*, string]>} nodes
          */
         static registerOptionsByNode(nodeToOptions, node, nodes) {
             for (const [id, [_, text]] of nodes.entries()) {
@@ -196,6 +294,29 @@ class CustomSkill {
             this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT, this.STAT_NODES);
             this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.VARIABLE, this.VARIABLE_NODES);
 
+            this.STAT_N_NODES = new Map([
+                ['', [_ => ZERO_STATS_NODE, '-- 選択してください --']],
+                ['nothing', [_ => ZERO_STATS_NODE, 'なし']],
+                ['atk-n', [ATK_NODE, '攻撃']],
+                ['spd-n', [SPD_NODE, '速さ']],
+                ['def-n', [DEF_NODE, '守備']],
+                ['res-n', [RES_NODE, '魔防']],
+                ['atk-spd-n', [ATK_SPD_NODE, '攻撃、速さ']],
+                ['atk-def-n', [ATK_DEF_NODE, '攻撃、守備']],
+                ['atk-res-n', [ATK_RES_NODE, '攻撃、魔防']],
+                ['spd-def-n', [SPD_DEF_NODE, '速さ、守備']],
+                ['spd-res-n', [SPD_RES_NODE, '速さ、魔防']],
+                ['def-res-n', [DEF_RES_NODE, '守備、魔防']],
+                ['atk-spd-def-n', [ATK_SPD_DEF_NODE, '攻撃、速さ、守備']],
+                ['atk-spd-res-n', [ATK_SPD_RES_NODE, '攻撃、速さ、魔防']],
+                ['atk-def-res-n', [ATK_DEF_RES_NODE, '攻撃、守備、魔防']],
+                ['spd-def-res-n', [SPD_DEF_RES_NODE, '速さ、守備、魔防']],
+                ['atk-spd-def-res-n', [ATK_SPD_DEF_RES_NODE, '攻撃、速さ、守備、魔防']],
+            ]);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT_N, this.STAT_N_NODES);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT_N_BONUS, this.STAT_N_NODES);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT_N_PENALTY, this.STAT_N_NODES);
+
             this.UNITS_NODES = new Map([
                 ['', [UnitsNode.EMPTY_UNITS_NODE, '-- 選択してください --']],
                 ['target', [UnitsNode.makeFromUnit(TARGET_NODE), '自分']],
@@ -216,6 +337,8 @@ class CustomSkill {
                 ['closest-foes-within-5-spaces-and-foes-allies-within-2-spaces',
                     [CLOSEST_FOES_WITHIN_5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE,
                         '自分と補助対象の周囲5マス以内の最も近い敵と周囲2マス以内の敵']],
+
+                ['assist-target', [UnitsNode.makeFromUnit(ASSIST_TARGET_NODE), '補助対象']],
                 ['unit-and-target-and-those-allies-within-2-spaces',
                     [ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2),
                         '自分と補助対象の周囲2マス以内の味方']],
@@ -223,18 +346,52 @@ class CustomSkill {
                     [REMOVE_UNITS_NODE(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2), SKILL_OWNER_NODE),
                         '自分と補助対象の周囲2マス以内の味方（自分を除く）']],
 
+                ['skill-owner-and-allies-within-3-rows-3-columns-centered-on-skill-owner',
+                    [SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(3),
+                        '自分と自分を中心とした縦3列と横3列の味方']],
+                ['skill-owner-and-allies-within-4-rows-4-columns-centered-on-skill-owner',
+                    [SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(4),
+                        '自分と自分を中心とした縦4列と横4列の味方']],
+                ['skill-owner-and-allies-within-5-rows-5-columns-centered-on-skill-owner',
+                    [SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(5),
+                        '自分と自分を中心とした縦5列と横5列の味方']],
+
+                ['allies-within-3-rows-3-columns-centered-on-skill-owner',
+                    [SKILL_OWNERS_ALLIES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(3),
+                        '自分を中心とした縦3列と横3列の味方']],
+                ['allies-within-4-rows-4-columns-centered-on-skill-owner',
+                    [SKILL_OWNERS_ALLIES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(4),
+                        '自分を中心とした縦4列と横4列の味方']],
+                ['allies-within-5-rows-5-columns-centered-on-skill-owner',
+                    [SKILL_OWNERS_ALLIES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(5),
+                        '自分を中心とした縦5列と横5列の味方']],
+
+                ['foes-within-3-rows-3-columns-centered-on-skill-owner',
+                    [SKILL_OWNERS_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(3),
+                        '自分を中心とした縦3列と横3列の敵']],
+                ['foes-within-4-rows-4-columns-centered-on-skill-owner',
+                    [SKILL_OWNERS_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(4),
+                        '自分を中心とした縦4列と横4列の敵']],
+                ['foes-within-5-rows-5-columns-centered-on-skill-owner',
+                    [SKILL_OWNERS_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(5),
+                        '自分を中心とした縦5列と横5列の敵']],
+
                 ['target-and-targets-allies-on-map', [TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE, '味方全員']],
                 ['foes-on-map', [TARGETS_FOES_ON_MAP_NODE, '敵全員']],
                 ['units-on-map', [UNITS_ON_MAP_NODE, '全員']],
             ]);
             this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.UNITS, this.UNITS_NODES);
 
+            /**
+             * enumObjは-1が選択されていない状態を表す必要がある
+             * @param nodeType
+             * @param enumObj
+             * @param getText
+             */
             const addEnumOptions = (nodeType, enumObj, getText) => {
+                this.NODE_TO_OPTIONS.addValue(nodeType, {id: '', text: '-- 選択してください --', disabled: true});
                 for (const [, value] of Object.entries(enumObj)) {
-                    const option = value === enumObj.None
-                        ? {id: '', text: '-- 選択してください --', disabled: true}
-                        : {id: value, text: getText(value)};
-                    this.NODE_TO_OPTIONS.addValue(nodeType, option);
+                    this.NODE_TO_OPTIONS.addValue(nodeType, {id: value, text: getText(value)});
                 }
             };
 
@@ -244,10 +401,20 @@ class CustomSkill {
                 EffectiveType,
                 value => EFFECTIVE_TYPE_NAMES.get(value)
             );
+            addEnumOptions(
+                this.Node.EFFECTIVE_TYPES,
+                EffectiveType,
+                value => EFFECTIVE_TYPE_NAMES.get(value)
+            );
 
             // ステータス状態
             addEnumOptions(
                 this.Node.STATUS_EFFECT_TYPE,
+                StatusEffectType,
+                value => STATUS_EFFECT_INFO_MAP.get(value)[1]
+            );
+            addEnumOptions(
+                this.Node.STATUS_EFFECT_TYPES,
                 StatusEffectType,
                 value => STATUS_EFFECT_INFO_MAP.get(value)[1]
             );
@@ -286,6 +453,47 @@ class CustomSkill {
 //     [
 //     ],
 // );
+
+CustomSkill.setFuncId(
+    'grants-stat-bonuses',
+    "戦闘中、ステータス+n",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(
+                CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getStatBonus(args)),
+            ),
+        );
+    },
+    [
+        // 強化
+        CustomSkill.Arg.Node.STAT_LABEL,
+        CustomSkill.Arg.Node.STAT_N_BONUS,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.STAT_BONUS_LABEL,
+        CustomSkill.Arg.Node.STAT_BONUS,
+        CustomSkill.Arg.Node.BR,
+    ],
+);
+
+CustomSkill.setFuncId(
+    'inflicts-foes-stat-penalties',
+    "戦闘中、敵のステータス-n",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
+            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(
+                CustomSkill.Arg.getStatNPenaltyNode(args)(CustomSkill.Arg.getStatPenalty(args)),
+            ),
+        );
+    },
+    [
+        // 弱化
+        CustomSkill.Arg.Node.STAT_LABEL,
+        CustomSkill.Arg.Node.STAT_N_PENALTY,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.STAT_PENALTY_LABEL,
+        CustomSkill.Arg.Node.STAT_PENALTY,
+    ],
+);
 
 const NON_NEGATIVE_INTEGER_ARGS = [
     CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
@@ -537,14 +745,14 @@ CustomSkill.setFuncId('neutralizes-non-special-damage-reduction-when-special',
 );
 
 // 特効
-CustomSkill.setFuncId('effective-against', "特効",
+CustomSkill.setFuncId('effective-against-n', "特効",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
-            EFFECTIVE_AGAINST_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
+            EFFECTIVE_AGAINST_NODE(...CustomSkill.Arg.getEffectiveTypes(args)),
         ));
     },
     [
-        CustomSkill.Arg.Node.EFFECTIVE_TYPE,
+        CustomSkill.Arg.Node.EFFECTIVE_TYPES,
     ],
 );
 
@@ -553,11 +761,11 @@ CustomSkill.setFuncId('neutralizes-effective-against-bonuses', "特効無効",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             // Neutralizes "effective against" bonuses for all movement types.
-            TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
+            TARGET_NEUTRALIZES_EFFECTIVE_AGAINST_X_NODE(...CustomSkill.Arg.getEffectiveTypes(args)),
         ));
     },
     [
-        CustomSkill.Arg.Node.EFFECTIVE_TYPE,
+        CustomSkill.Arg.Node.EFFECTIVE_TYPES,
     ],
 );
 
@@ -1087,21 +1295,50 @@ CustomSkill.setFuncId(
 
 // ターン開始時
 let ADD_STATUS_EFFECT_TO_TARGET_ARGS = [
+    // 対象
     CustomSkill.Arg.Node.TARGET_LABEL,
     CustomSkill.Arg.Node.UNITS,
     CustomSkill.Arg.Node.BR,
+
+    // 状態
     CustomSkill.Arg.Node.STATUS_EFFECT_LABEL,
-    CustomSkill.Arg.Node.STATUS_EFFECT_TYPE,
+    CustomSkill.Arg.Node.STATUS_EFFECT_TYPES,
+    CustomSkill.Arg.Node.BR,
+
+    // 強化
+    CustomSkill.Arg.Node.STAT_LABEL,
+    CustomSkill.Arg.Node.STAT_N_BONUS,
+    CustomSkill.Arg.Node.BR,
+    CustomSkill.Arg.Node.STAT_BONUS_LABEL,
+    CustomSkill.Arg.Node.STAT_BONUS,
+    CustomSkill.Arg.Node.BR,
+
+    // 弱化
+    CustomSkill.Arg.Node.STAT_LABEL,
+    CustomSkill.Arg.Node.STAT_N_PENALTY,
+    CustomSkill.Arg.Node.BR,
+    CustomSkill.Arg.Node.STAT_PENALTY_LABEL,
+    CustomSkill.Arg.Node.STAT_PENALTY,
 ];
+let GRANTS_OR_INFLICTS_ON_MAP_NODE = args =>
+    FOR_EACH_UNIT_NODE(
+        CustomSkill.Arg.getUnitsNode(args),
+        // TODO: 不利な状態もこのノードでつけてしまっているので修正する
+        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(...CustomSkill.Arg.getStatusEffectTypesNode(args)),
+        GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE(
+            CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getStatBonus(args)),
+        ),
+        INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(
+            CustomSkill.Arg.getStatNPenaltyNode(args)(CustomSkill.Arg.getStatPenalty(args)),
+        ),
+    );
+
 CustomSkill.setFuncId(
     'at-start-of-turn-grants-status-effect-on-unit',
     "ターン開始時、対象に状態を付与",
     (skillId, args) => {
         AT_START_OF_TURN_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
-            FOR_EACH_UNIT_NODE(
-                CustomSkill.Arg.getUnitsNode(args),
-                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
-            ),
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
         ));
     },
     ADD_STATUS_EFFECT_TO_TARGET_ARGS
@@ -1112,10 +1349,7 @@ CustomSkill.setFuncId(
     "敵軍ターン開始時、対象に状態を付与",
     (skillId, args) => {
         AT_START_OF_ENEMY_PHASE_HOOKS.addSkillIfAbsent(skillId, () => SKILL_EFFECT_NODE(
-            FOR_EACH_UNIT_NODE(
-                CustomSkill.Arg.getUnitsNode(args),
-                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
-            ),
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
         ));
     },
     ADD_STATUS_EFFECT_TO_TARGET_ARGS
@@ -1126,10 +1360,7 @@ CustomSkill.setFuncId(
     "自軍、敵軍ターン開始時、対象に状態を付与",
     (skillId, args) => {
         setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
-            FOR_EACH_UNIT_NODE(
-                CustomSkill.Arg.getUnitsNode(args),
-                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
-            ),
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
         ));
     },
     ADD_STATUS_EFFECT_TO_TARGET_ARGS
@@ -1137,15 +1368,12 @@ CustomSkill.setFuncId(
 
 CustomSkill.setFuncId(
     'if-rally-or-movement-is-used-by-unit-grants-status-effect-on-unit',
-    "応援、移動系補助を使用した時、時、対象に状態を付与",
+    "応援、移動系補助を使用した時、対象に状態を付与",
     (skillId, args) => {
         CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
         CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
         setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, () => SKILL_EFFECT_NODE(
-            FOR_EACH_UNIT_NODE(
-                CustomSkill.Arg.getUnitsNode(args),
-                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
-            ),
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
         ));
     },
     ADD_STATUS_EFFECT_TO_TARGET_ARGS
@@ -1158,13 +1386,96 @@ CustomSkill.setFuncId(
         CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
         CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
         setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, () => SKILL_EFFECT_NODE(
-            FOR_EACH_UNIT_NODE(
-                CustomSkill.Arg.getUnitsNode(args),
-                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(CustomSkill.Arg.getStatusEffectTypeNode(args)),
-            ),
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
         ));
     },
     ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-restores-hp',
+    "応援、移動系補助を使用した時、対象を回復",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                RESTORE_TARGETS_HP_ON_MAP_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)),
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+        ...NON_NEGATIVE_INTEGER_ARGS
+    ],
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-or-target-restores-hp',
+    "応援、移動系補助を使用した時、または自分に使用された時、対象を回復",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                RESTORE_TARGETS_HP_ON_MAP_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)),
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+        ...NON_NEGATIVE_INTEGER_ARGS
+    ],
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-neutralizes-penalties',
+    "応援、移動系補助を使用した時、対象の不利な状態異常を解除",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+    ],
+);
+
+CustomSkill.setFuncId(
+    'if-rally-or-movement-is-used-by-unit-or-target-neutralizes-penalties',
+    "応援、移動系補助を使用した時、または自分に使用された時、対象の不利な状態異常を解除",
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+    ],
 );
 
 CustomSkill.setFuncId(
@@ -1176,6 +1487,62 @@ CustomSkill.setFuncId(
         setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
             GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
         ));
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'has-pathfinder',
+    "天駆の道",
+    (skillId, args) => {
+        HAS_PATHFINDER_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+// デバッファー、アフリクター
+
+CustomSkill.setFuncId(
+    'is-debuffer-1',
+    'Tier 1 デバッファー',
+    (skillId, args) => {
+        IS_DEBUFFER_TIER_1_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'is-debuffer-2',
+    'Tier 2 デバッファー',
+    (skillId, args) => {
+        IS_DEBUFFER_TIER_2_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'is-afflictor',
+    'アフリクター',
+    (skillId, args) => {
+        IS_AFFLICTOR_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'can-rally-forcibly',
+    'バフをかけられなくても応援可能になる',
+    (skillId, args) => {
+        CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'can-rallied-forcibly',
+    'バフをかけられなくても応援可能を受けられるようになる',
+    (skillId, args) => {
+        CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
     },
     []
 );

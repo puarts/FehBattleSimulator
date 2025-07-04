@@ -429,3 +429,23 @@ const CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<NumberNode, NodeEnv>}
  */
 const CAN_ATTACK_FOES_N_SPACES_AWAY_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const IS_DEBUFFER_TIER_1_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const IS_DEBUFFER_TIER_2_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const IS_AFFLICTOR_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const HAS_PATHFINDER_HOOKS = new SkillEffectHooks();

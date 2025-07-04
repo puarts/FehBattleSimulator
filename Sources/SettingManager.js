@@ -257,19 +257,23 @@ class SettingManager {
         return result;
     }
 
-    saveSettings() {
+    saveSettings(toCookie = false) {
         let dict = this.convertCurrentSettingsToDict(true, true, true, true, true);
-        for (let key in dict) {
-            console.log("delete " + key + "..");
-            this._cookieWriter.delete(key);
-            let settingText = dict[key];
-            console.log(document.cookie);
-            console.log("save " + key + "..");
-            console.log("value = " + settingText);
-            let compressed = LZString.compressToBase64(settingText);
-            // let compressed = LZString.compressToBase64(settingText);
-            console.log(`compressed: ${compressed}`);
-            this._cookieWriter.write(key, compressed);
+        if (toCookie) {
+            for (let key in dict) {
+                console.log("delete " + key + "..");
+                this._cookieWriter.delete(key);
+                let settingText = dict[key];
+                console.log(document.cookie);
+                console.log("save " + key + "..");
+                console.log("value = " + settingText);
+                let compressed = LZString.compressToBase64(settingText);
+                // let compressed = LZString.compressToBase64(settingText);
+                console.log(`compressed: ${compressed}`);
+                this._cookieWriter.write(key, compressed);
+            }
+        } else {
+            LocalStorageUtil.setJson('settings', dict);
         }
     }
 
@@ -467,17 +471,26 @@ class SettingManager {
         this._appData.map.createTileSnapshots();
     }
 
-    loadSettings() {
+    loadSettings(fromCookie = false) {
         let currentTurn = this._appData.currentTurn;
         let turnSetting = new TurnSetting(currentTurn);
-        let dict = {};
-        dict[TurnWideCookieId] = null;
-        dict[turnSetting.serialId] = null;
-        for (let key in dict) {
-            let readText = this._cookieWriter.read(key);
-            let decompressed = LZString.decompressFromBase64(readText);
-            console.log(`decompressed: ${decompressed}`);
-            dict[key] = decompressed;
+        let dict = LocalStorageUtil.getJson('settings') || {};
+        if (!dict[TurnWideCookieId]) {
+            dict[TurnWideCookieId] = '';
+        }
+        if (!dict[turnSetting.serialId]) {
+            dict[turnSetting.serialId] = '';
+        }
+        if (fromCookie) {
+            dict = {};
+            dict[TurnWideCookieId] = null;
+            dict[turnSetting.serialId] = null;
+            for (let key in dict) {
+                let readText = this._cookieWriter.read(key);
+                let decompressed = LZString.decompressFromBase64(readText);
+                console.log(`decompressed: ${decompressed}`);
+                dict[key] = decompressed;
+            }
         }
         if (dict[TurnWideCookieId] == null && dict[turnSetting.serialId] == null) {
             console.log("ターン" + currentTurn + "の設定なし");

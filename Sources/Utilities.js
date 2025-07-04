@@ -234,8 +234,17 @@ class LocalStorageUtil {
         return value !== null ? value === 'true' : defaultValue;
     }
 
+    /**
+     * @param {string} key
+     * @param {boolean} value
+     */
     static setBoolean(key, value) {
         localStorage.setItem(key, value ? 'true' : 'false');
+    }
+
+    static toggleBoolean(key) {
+        const value = this.getBoolean(key);
+        this.setBoolean(key, !value);
     }
 
     static getJson(key, defaultValue = null) {
@@ -252,6 +261,10 @@ class LocalStorageUtil {
      * @param {string} key - 削除するためのキー。
      */
     static removeNumber(key) {
+        localStorage.removeItem(key);
+    }
+
+    static removeKey(key) {
         localStorage.removeItem(key);
     }
 

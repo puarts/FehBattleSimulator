@@ -3952,7 +3952,7 @@ const EmblemHero = {
     Sigurd: 1177,
     Lyn: 1216,
     Eirika: 1255,
-    Micaiah: 100000,
+    Micaiah: 1290,
     Debug: 100000,
 };
 
@@ -3968,6 +3968,8 @@ EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Ec
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_engagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Eirika] = `${g_debugEngagedSpecialIconRoot}Eirika_Of_The_Sacred_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Micaiah] = `${g_imageRootPath}Special.png`;
+// EngagedSpecialIcon[EmblemHero.Micaiah] = `${g_debugEngagedSpecialIconRoot}Micaiah_Of_Dawn_ES.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_imageRootPath}Special.png`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_debugEngagedSpecialIconRoot}XXX.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_engagedSpecialIconRoot}XXX.webp`;
@@ -3997,7 +3999,7 @@ const EffectiveType = {
 }
 
 const EFFECTIVE_TYPE_NAMES = new Map([
-    [EffectiveType.None, "-"],
+    [EffectiveType.None, "なし"],
     [EffectiveType.Armor, "重装"],
     [EffectiveType.Infantry, "歩行"],
     [EffectiveType.Cavalry, "騎馬"],
