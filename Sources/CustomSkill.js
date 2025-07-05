@@ -1540,7 +1540,7 @@ CustomSkill.setFuncId(
 
 CustomSkill.setFuncId(
     'can-rallied-forcibly',
-    'バフをかけられなくても応援可能を受けられるようになる',
+    'バフをかけられなくても応援を受けられるようになる',
     (skillId, args) => {
         CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
     },
