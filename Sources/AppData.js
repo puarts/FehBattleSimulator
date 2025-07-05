@@ -603,11 +603,12 @@ class AppData extends UnitManager {
     deleteUnit(index) {
         if (this.confirmDeleteSavedUnit) {
             if (!confirm("削除しますか？")) {
-                return;
+                return false;
             }
         }
         this.savedUnits.splice(index, 1);
         LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
+        return true;
     }
     downloadSavedUnits() {
         const blob = new Blob([JSON.stringify(this.savedUnits)], { type: "application/json" });

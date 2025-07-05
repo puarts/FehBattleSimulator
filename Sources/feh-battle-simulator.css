@@ -1071,8 +1071,12 @@ td.enemy {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 16px;
     margin: 0px;
+}
+
+.saving-units-icon {
+    text-align: center;
+    width: 2em;
 }
 
 .download-button {
@@ -1112,7 +1116,9 @@ td.enemy {
 
 .edit-input {
     height: 100%;
+    width: 100%;
     border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 .load-button {

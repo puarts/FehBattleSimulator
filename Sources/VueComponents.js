@@ -1464,6 +1464,155 @@ function initVueComponents() {
             </div>
         `
     });
+
+    Vue.component('UnitStorageDialog', {
+        props: {
+            getAppData: { type: Function, required: true },
+            confirmDeleteSavedUnit: { type: Boolean, required: true },
+            savedUnits: { type: Array, required: true },
+            weaponTypeIconPath: { type: Function, required: true },
+            moveTypeIconPath: { type: Function, required: true },
+            showFlash: { type: Function, required: true },
+        },
+        data() {
+            return {
+                isEditingSavedUnits: false,
+            };
+        },
+        methods: {
+            saveUnitName() {
+                this.getAppData().saveCurrentUnit();
+                this.showFlash(
+                    `${document.getElementById('saveUnitNameInput').value}を保存しました`, 'success', true
+                );
+            },
+            restoreUnit() {
+                this.getAppData().restoreUnit();
+                this.showFlash('ユニットを復元しました', 'success', true);
+            },
+            tryDeleteUnit(index) {
+                if (this.getAppData().deleteUnit(index)) {
+                    this.showFlash('ユニットの設定を削除しました', 'success', true);
+                } else {
+                    this.showFlash('削除をキャンセルしました', 'success', true);
+                }
+            },
+        },
+        template: `
+          <div>
+            <div class="input-box">
+              <input class="text-input" type="text" id="saveUnitNameInput" placeholder="名前を入力"
+                     @keydown.enter="saveUnitName"
+                     aria-label="ユニット名">
+              <button class="save-box-button" @click="saveUnitName">
+                <i class="fa-solid fa-save" title="保存"></i>
+              </button>
+            </div>
+
+            <div class="action-container">
+              <button class="icon-button load-button" @click="restoreUnit">
+                <i class="fa-solid fa-rotate-left" title="元に戻す"></i>
+              </button>
+            </div>
+
+            <h3>保存ユニット一覧</h3>
+
+            <div class="action-container">
+              <span class="saving-units-icon">
+                <input
+                  type="checkbox"
+                  id="toggleEdit"
+                  v-model="isEditingSavedUnits"
+                  style="display: none;"
+                >
+                <label for="toggleEdit" class="button icon-button-small">
+                  <i
+                    class="fa-solid"
+                    :class="isEditingSavedUnits ? ['fa-save', 'save-button'] : ['fa-edit', 'upload-button']"
+                    :title="isEditingSavedUnits ? '保存' : '編集'"
+                  ></i>
+                </label>
+              </span>
+              <span class="saving-units-icon">
+                <button class="icon-button-small download-button" @click="getAppData().downloadSavedUnits()">
+                  <i class="fa-solid fa-download" title="ダウンロード"></i>
+                </button>
+              </span>
+              <span class="saving-units-icon">
+                <input type="file" id="uploadSavedUnits" style="display: none;" @change="getAppData().uploadSavedUnits()"/>
+                <button class="icon-button-small upload-button" @click="getAppData().selectUploadFile()">
+                  <i class="fa-solid fa-upload" title="アップロード（追加）"></i>
+                </button>
+              </span>
+              <span class="saving-units-icon">
+                <input type="file" id="uploadAndReplaceSavedUnits" style="display: none;" @change="getAppData().uploadSavedUnits(true)"/>
+                <button class="icon-button-small upload-and-replace-button" @click="getAppData().selectUploadFile(true)">
+                  <i class="fa-solid fa-upload" title="アップロード（置き換え）"></i>
+                </button>
+              </span>
+              <div class="action-item-right">
+                <input id="confirmDeleteSavedUnit" 
+                       type="checkbox" 
+                       :checked="confirmDeleteSavedUnit"
+                       @change="$emit('update-confirm-delete-saved-unit', $event.target.checked)"
+                >
+                <label for="confirmDeleteSavedUnit">削除確認</label>
+              </div>
+            </div>
+
+            <table class="unit-dialog">
+              <thead>
+                <tr>
+                  <th class="col-type"></th>
+                  <th>名前</th>
+                  <th class="col-load"></th>
+                  <th class="col-save"></th>
+                  <th class="col-delete"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(unitObj, index) in savedUnits" :key="index"
+                    draggable="true"
+                    @dragstart="getAppData().savedUnitListDragStart(index)"
+                    @dragover.prevent
+                    @drop="getAppData().savedUnitListDrop(index)">
+                  <td>
+                    <img class="unit-dialog-icon" :src="weaponTypeIconPath(unitObj.weaponType)" alt="武器種">
+                    <img class="unit-dialog-icon" :src="moveTypeIconPath(unitObj.moveType)" alt="移動タイプ">
+                  </td>
+                  <td>
+                    <span v-if="!isEditingSavedUnits">{{ unitObj.name }}</span>
+                    <input v-else class="edit-input" v-model="unitObj.name" type="text"
+                           @keydown.enter="getAppData().saveChangesSavedUnits()" />
+                  </td>
+                  <td class="col-load">
+                    <button 
+                      class="icon-button load-button" 
+                      @click="getAppData().loadUnit(unitObj); showFlash('設定を読み込みました', 'success', true)"
+                    >
+                      <i class="fa-solid fa-book-open" title="読み込む"></i>
+                    </button>
+                  </td>
+                  <td class="col-save">
+                    <button class="icon-button save-button"
+                            @click="getAppData().saveUnitAt(index)
+                                    ? showFlash('上書き保存しました', 'success', true)
+                                    : showFlash('キャンセルしました', 'success', true)">
+                      <i class="fa-solid fa-save" title="上書き保存"></i>
+                    </button>
+                  </td>
+                  <td class="col-delete">
+                    <button class="icon-button delete-button" 
+                            @click="tryDeleteUnit(index)">
+                      <i class="fa-solid fa-trash-can" title="削除"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `
+    });
 }
 
 initVueComponents();
