@@ -874,7 +874,7 @@ class BattleSimulatorBase {
             },
             onChangeEnemyIceColor() {
                 let writer = new CookieWriter();
-                writer.write('change_enemy_ice_color', g_appData.changeEnemyIceColor);
+                LocalStorageUtil.setBoolean('change_enemy_ice_color', g_appData.changeEnemyIceColor);
                 updateMap();
             },
             statusEffectChanged(statusEffect) {

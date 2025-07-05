@@ -749,7 +749,7 @@ class BattleMap {
             this._walls.push(new Wall(idGenerator == null ? "" : idGenerator.generate()));
         }
 
-        this._showEnemyAttackRange = toBoolean(new CookieWriter().read('show_enemy_attack_range') ?? 'false');
+        this._showEnemyAttackRange = LocalStorageUtil.getBoolean('show_enemy_attack_range', false);
         this._showAllyAttackRange = false;
         this._showClosestDistanceToEnemy = false;
         /** @type {Table} */
@@ -1318,7 +1318,7 @@ class BattleMap {
 
     switchEnemyAttackRange() {
         this._showEnemyAttackRange = !this._showEnemyAttackRange;
-        new CookieWriter().write('show_enemy_attack_range', this._showEnemyAttackRange);
+        LocalStorageUtil.setBoolean('show_enemy_attack_range', this._showEnemyAttackRange);
     }
     /**
      * @param  {Number} x
