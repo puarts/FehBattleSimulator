@@ -1468,7 +1468,6 @@ function initVueComponents() {
     Vue.component('UnitStorageDialog', {
         props: {
             getAppData: { type: Function, required: true },
-            confirmDeleteSavedUnit: { type: Boolean, required: true },
             savedUnits: { type: Array, required: true },
             weaponTypeIconPath: { type: Function, required: true },
             moveTypeIconPath: { type: Function, required: true },
@@ -1477,6 +1476,9 @@ function initVueComponents() {
         data() {
             return {
                 isEditingSavedUnits: false,
+                savedUnitsDraggedIndex: null,
+                confirmDeleteSavedUnit: true,
+                filterText: '',
             };
         },
         methods: {
@@ -1491,16 +1493,53 @@ function initVueComponents() {
                 this.showFlash('ユニットを復元しました', 'success', true);
             },
             tryDeleteUnit(index) {
-                if (this.getAppData().deleteUnit(index)) {
+                if (this.getAppData().deleteUnit(index, this.confirmDeleteSavedUnit)) {
                     this.showFlash('ユニットの設定を削除しました', 'success', true);
                 } else {
                     this.showFlash('削除をキャンセルしました', 'success', true);
                 }
             },
+            filterUnits() {
+                let filteredUnits = this.savedUnits
+                    .map((unitObj, index) => ({unitObj, originalIndex: index}))
+                    .filter(({unitObj}) => unitObj.name.includes(this.filterText));
+                return filteredUnits;
+            },
+            isFiltering() {
+                return this.filterText && this.filterText.trim() !== '';
+            },
+            resetFilter() {
+                this.filterText = '';
+            },
+            savedUnitListDragStart(index) {
+                this.savedUnitsDraggedIndex = index;
+            },
+            savedUnitListDrop(index) {
+                if (this.savedUnitsDraggedIndex !== null &&
+                    this.savedUnitsDraggedIndex !== index) {
+                    const draggedItem = this.savedUnits[this.savedUnitsDraggedIndex];
+                    this.savedUnits.splice(this.savedUnitsDraggedIndex, 1);
+                    this.savedUnits.splice(index, 0, draggedItem);
+                    this.savedUnitsDraggedIndex = null;
+                    this.getAppData().saveUnitsToStorage();
+                }
+            },
+            saveChangesSavedUnits() {
+                this.isEditingSavedUnits = false;
+                this.getAppData().saveUnitsToStorage();
+            },
+            onEditModeChanged() {
+                if (!this.isEditingSavedUnits) {
+                    this.getAppData().saveUnitsToStorage();
+                }
+            },
+            startEditing() {
+                this.isEditingSavedUnits = true;
+            },
         },
         template: `
           <div>
-            <div class="input-box">
+            <div class="input-box box-common">
               <input class="text-input" type="text" id="saveUnitNameInput" placeholder="名前を入力"
                      @keydown.enter="saveUnitName"
                      aria-label="ユニット名">
@@ -1524,6 +1563,7 @@ function initVueComponents() {
                   id="toggleEdit"
                   v-model="isEditingSavedUnits"
                   style="display: none;"
+                  @change="onEditModeChanged"
                 >
                 <label for="toggleEdit" class="button icon-button-small">
                   <i
@@ -1553,13 +1593,20 @@ function initVueComponents() {
               <div class="action-item-right">
                 <input id="confirmDeleteSavedUnit" 
                        type="checkbox" 
-                       :checked="confirmDeleteSavedUnit"
-                       @change="$emit('update-confirm-delete-saved-unit', $event.target.checked)"
+                       v-model="confirmDeleteSavedUnit"
                 >
                 <label for="confirmDeleteSavedUnit">削除確認</label>
               </div>
             </div>
 
+            <span>
+              <input type="text" class="box-common name-filter" v-model="filterText" placeholder="名前で絞り込み" />
+              <button type="reset"
+                      class="icon-button load-button" 
+                      @click="resetFilter">
+                <i class="fa fa-eraser" aria-hidden="true"></i>
+              </button>
+            </span>
             <table class="unit-dialog">
               <thead>
                 <tr>
@@ -1571,19 +1618,26 @@ function initVueComponents() {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(unitObj, index) in savedUnits" :key="index"
-                    draggable="true"
-                    @dragstart="getAppData().savedUnitListDragStart(index)"
+                <tr v-for="({ unitObj, originalIndex }, index) in filterUnits()" :key="originalIndex"
+                    :draggable="!isFiltering()"
+                    @dragstart="!isFiltering() && savedUnitListDragStart(originalIndex)"
                     @dragover.prevent
-                    @drop="getAppData().savedUnitListDrop(index)">
+                    @drop="!isFiltering() && savedUnitListDrop(originalIndex)"
+                    :style="{ cursor: isFiltering() ? 'not-allowed' : '' }"
+                >
                   <td>
                     <img class="unit-dialog-icon" :src="weaponTypeIconPath(unitObj.weaponType)" alt="武器種">
                     <img class="unit-dialog-icon" :src="moveTypeIconPath(unitObj.moveType)" alt="移動タイプ">
                   </td>
                   <td>
-                    <span v-if="!isEditingSavedUnits">{{ unitObj.name }}</span>
+                    <span 
+                      v-if="!isEditingSavedUnits"
+                      @dblclick="startEditing"
+                    >
+                      {{ unitObj.name }}
+                    </span>
                     <input v-else class="edit-input" v-model="unitObj.name" type="text"
-                           @keydown.enter="getAppData().saveChangesSavedUnits()" />
+                           @keydown.enter="saveChangesSavedUnits" />
                   </td>
                   <td class="col-load">
                     <button 
@@ -1595,7 +1649,7 @@ function initVueComponents() {
                   </td>
                   <td class="col-save">
                     <button class="icon-button save-button"
-                            @click="getAppData().saveUnitAt(index)
+                            @click="getAppData().saveUnitAt(originalIndex)
                                     ? showFlash('上書き保存しました', 'success', true)
                                     : showFlash('キャンセルしました', 'success', true)">
                       <i class="fa-solid fa-save" title="上書き保存"></i>
@@ -1603,7 +1657,7 @@ function initVueComponents() {
                   </td>
                   <td class="col-delete">
                     <button class="icon-button delete-button" 
-                            @click="tryDeleteUnit(index)">
+                            @click="tryDeleteUnit(originalIndex)">
                       <i class="fa-solid fa-trash-can" title="削除"></i>
                     </button>
                   </td>

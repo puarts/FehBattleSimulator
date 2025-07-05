@@ -260,9 +260,6 @@ class AppData extends UnitManager {
         this.aetherRaidOffensePresetIndex = 0;
 
         this.savedUnits = LocalStorageUtil.getJson('savedUnitList') || [];
-        this.confirmDeleteSavedUnit = true;
-        this.savedUnitsDraggedIndex = null;
-        this.isEditingSavedUnits = false;
 
         // その他
         this.changesBgmRandomly = true;
@@ -548,6 +545,9 @@ class AppData extends UnitManager {
         });
         LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
     }
+    saveUnitsToStorage() {
+        LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
+    }
     saveUnitAt(index) {
         const currentUnit = this.currentUnit;
         if (currentUnit == null) {
@@ -600,8 +600,8 @@ class AppData extends UnitManager {
         this.updateSlotOrders();
         $('#saveUnitNameInput').val(this.currentUnit.name);
     }
-    deleteUnit(index) {
-        if (this.confirmDeleteSavedUnit) {
+    deleteUnit(index, isConfirm = true) {
+        if (isConfirm) {
             if (!confirm("削除しますか？")) {
                 return false;
             }
@@ -656,24 +656,6 @@ class AppData extends UnitManager {
 
         // ファイルの読み込み（テキストファイルとして読み込む）
         reader.readAsText(file);
-    }
-    savedUnitListDragStart(index) {
-        this.savedUnitsDraggedIndex = index;
-    }
-    savedUnitListDrop(index) {
-        if (this.savedUnitsDraggedIndex !== null && this.savedUnitsDraggedIndex !== index) {
-            const draggedItem = this.savedUnits[this.savedUnitsDraggedIndex];
-            this.savedUnits.splice(this.savedUnitsDraggedIndex, 1);
-            this.savedUnits.splice(index, 0, draggedItem);
-            this.savedUnitsDraggedIndex = null;
-            LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
-        }
-    }
-    saveChangesSavedUnits() {
-        this.isEditingSavedUnits = false;
-    }
-    enableEditingSavedUnits() {
-        this.isEditingSavedUnits = true;
     }
     copyCurrentUnit() {
         const currentUnit = this.currentUnit;
