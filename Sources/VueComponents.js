@@ -1286,6 +1286,9 @@ function initVueComponents() {
             onResetPlacement() {
                 this.$emit('reset-placement');
             },
+            openTeamFormationDialog() {
+                this.$emit('open-team-formation-dialog');
+            },
             openAetherRaidDialog() {
                 this.$emit('open-aether-raid-dialog');
             },
