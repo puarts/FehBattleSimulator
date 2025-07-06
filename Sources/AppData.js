@@ -259,8 +259,6 @@ class AppData extends UnitManager {
         this.resetCurrentAetherRaidDefensePreset();
         this.aetherRaidOffensePresetIndex = 0;
 
-        this.savedUnits = LocalStorageUtil.getJson('savedUnitList') || [];
-
         // その他
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;
@@ -531,43 +529,6 @@ class AppData extends UnitManager {
         this.updateTargetInfoTdStyle();
     }
 
-    saveCurrentUnit() {
-        const currentUnit = this.currentUnit;
-        if (currentUnit == null) {
-            return;
-        }
-        const name = document.getElementById('saveUnitNameInput').value;
-        this.savedUnits.push({
-            name: name,
-            weaponType: currentUnit.weaponType,
-            moveType: currentUnit.moveType,
-            data: currentUnit.turnWideStatusToString()
-        });
-        LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
-    }
-    saveUnitsToStorage() {
-        LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
-    }
-    saveUnitAt(index) {
-        const currentUnit = this.currentUnit;
-        if (currentUnit == null) {
-            return false;
-        }
-        const name = document.getElementById('saveUnitNameInput').value;
-        const savedUnit = this.savedUnits[index];
-        const result = window.confirm(`${savedUnit.name}を${name}で上書きして良いですか？`);
-        if (result) {
-            this.savedUnits[index] = {
-                name: name,
-                weaponType: currentUnit.weaponType,
-                moveType: currentUnit.moveType,
-                data: currentUnit.turnWideStatusToString()
-            };
-            LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
-            return true;
-        }
-        return false;
-    }
     loadUnit(unitObj) {
         const currentUnit = this.currentUnit;
         if (currentUnit == null || unitObj.data === "") {
@@ -578,7 +539,6 @@ class AppData extends UnitManager {
         // this.currentUnit.reserveCurrentSkills();
         // this.currentUnit.restoreReservedSkills();
         this.updateSlotOrders();
-        $('#saveUnitNameInput').val(unitObj.name);
     }
     storeUnit() {
         const currentUnit = this.currentUnit;
@@ -598,64 +558,6 @@ class AppData extends UnitManager {
         this.currentUnit.reserveCurrentSkills();
         this.currentUnit.restoreReservedSkills();
         this.updateSlotOrders();
-        $('#saveUnitNameInput').val(this.currentUnit.name);
-    }
-    deleteUnit(index, isConfirm = true) {
-        if (isConfirm) {
-            if (!confirm("削除しますか？")) {
-                return false;
-            }
-        }
-        this.savedUnits.splice(index, 1);
-        LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
-        return true;
-    }
-    downloadSavedUnits() {
-        const blob = new Blob([JSON.stringify(this.savedUnits)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "savedUnits.json";
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-    selectUploadFile(replace = false) {
-        if (replace) {
-            if (confirm('現在保存されているユニットが全て上書きされます。アップロードしますか？')) {
-                document.getElementById('uploadAndReplaceSavedUnits').click();
-            }
-        } else {
-            document.getElementById('uploadSavedUnits').click();
-        }
-    }
-    uploadSavedUnits(replace = false) {
-        let elementId = replace ? 'uploadAndReplaceSavedUnits' : 'uploadSavedUnits';
-        const fileInput = document.getElementById(elementId);
-
-        // ファイルが選択されていない場合は処理を終了
-        if (fileInput.files.length === 0) {
-            alert("ファイルを選択してください");
-            return;
-        }
-
-        // 選択されたファイルを取得
-        const file = fileInput.files[0];
-
-        // FileReaderを使ってファイルを読み込む
-        const reader = new FileReader();
-        reader.onload = event=>  {
-            // ファイルの内容を取得
-            let results = JSON.parse(event.target.result);
-            if (replace) {
-                this.savedUnits = results;
-            } else {
-                results.forEach(x => {this.savedUnits.push(x);})
-            }
-            LocalStorageUtil.setJson('savedUnitList', this.savedUnits);
-        };
-
-        // ファイルの読み込み（テキストファイルとして読み込む）
-        reader.readAsText(file);
     }
     copyCurrentUnit() {
         const currentUnit = this.currentUnit;

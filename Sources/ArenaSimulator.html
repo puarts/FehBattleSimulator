@@ -1025,8 +1025,8 @@
         </div>
         <div id="saveUnitDialog" class="unit-dialog">
             <unit-storage-dialog
+                    ref="unitStorageDialog"
                     :get-app-data="getAppData"
-                    :saved-units="savedUnits"
                     :weapon-type-icon-path="weaponTypeIconPath"
                     :move-type-icon-path="moveTypeIconPath"
                     :show-flash="showFlash"
@@ -1759,7 +1759,7 @@
         function showSaveUnitDialog() {
             showDialog('#saveUnitDialog');
             g_appData.storeUnit();
-            $('#saveUnitNameInput').val(g_appData.currentUnit.name);
+            g_app.vm.$refs.unitStorageDialog.setUnitName(g_appData.currentUnit.name);
         }
         function createDialog(elem, title, width = 370, height = 500, positionOf = "#unitSettings") {
             elem.dialog({
