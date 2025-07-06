@@ -1475,8 +1475,9 @@ function initVueComponents() {
         },
         data() {
             return {
-                isEditingSavedUnits: false,
-                savedUnitsDraggedIndex: null,
+                isEditing: false,
+                draggedIndex: null,
+                downloadFileName: 'data',
                 confirmDeleteSavedUnit: true,
                 filterText: '',
             };
@@ -1491,6 +1492,15 @@ function initVueComponents() {
             restoreUnit() {
                 this.getAppData().restoreUnit();
                 this.showFlash('ユニットを復元しました', 'success', true);
+            },
+            downloadTableData() {
+                const blob = new Blob([JSON.stringify(this.savedUnits)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${this.downloadFileName}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
             },
             tryDeleteUnit(index) {
                 if (this.getAppData().deleteUnit(index, this.confirmDeleteSavedUnit)) {
@@ -1512,29 +1522,29 @@ function initVueComponents() {
                 this.filterText = '';
             },
             savedUnitListDragStart(index) {
-                this.savedUnitsDraggedIndex = index;
+                this.draggedIndex = index;
             },
             savedUnitListDrop(index) {
-                if (this.savedUnitsDraggedIndex !== null &&
-                    this.savedUnitsDraggedIndex !== index) {
-                    const draggedItem = this.savedUnits[this.savedUnitsDraggedIndex];
-                    this.savedUnits.splice(this.savedUnitsDraggedIndex, 1);
+                if (this.draggedIndex !== null &&
+                    this.draggedIndex !== index) {
+                    const draggedItem = this.savedUnits[this.draggedIndex];
+                    this.savedUnits.splice(this.draggedIndex, 1);
                     this.savedUnits.splice(index, 0, draggedItem);
-                    this.savedUnitsDraggedIndex = null;
+                    this.draggedIndex = null;
                     this.getAppData().saveUnitsToStorage();
                 }
             },
             saveChangesSavedUnits() {
-                this.isEditingSavedUnits = false;
+                this.isEditing = false;
                 this.getAppData().saveUnitsToStorage();
             },
             onEditModeChanged() {
-                if (!this.isEditingSavedUnits) {
+                if (!this.isEditing) {
                     this.getAppData().saveUnitsToStorage();
                 }
             },
             startEditing() {
-                this.isEditingSavedUnits = true;
+                this.isEditing = true;
             },
         },
         template: `
@@ -1561,20 +1571,21 @@ function initVueComponents() {
                 <input
                   type="checkbox"
                   id="toggleEdit"
-                  v-model="isEditingSavedUnits"
+                  v-model="isEditing"
                   style="display: none;"
                   @change="onEditModeChanged"
                 >
                 <label for="toggleEdit" class="button icon-button-small">
                   <i
                     class="fa-solid"
-                    :class="isEditingSavedUnits ? ['fa-save', 'save-button'] : ['fa-edit', 'upload-button']"
-                    :title="isEditingSavedUnits ? '保存' : '編集'"
+                    :class="isEditing ? ['fa-save', 'save-button'] : ['fa-edit', 'upload-button']"
+                    :title="isEditing ? '保存' : '編集'"
                   ></i>
                 </label>
               </span>
               <span class="saving-units-icon">
-                <button class="icon-button-small download-button" @click="getAppData().downloadSavedUnits()">
+                <button class="icon-button-small download-button" 
+                        @click="downloadTableData">
                   <i class="fa-solid fa-download" title="ダウンロード"></i>
                 </button>
               </span>
@@ -1631,7 +1642,7 @@ function initVueComponents() {
                   </td>
                   <td>
                     <span 
-                      v-if="!isEditingSavedUnits"
+                      v-if="!isEditing"
                       @dblclick="startEditing"
                     >
                       {{ unitObj.name }}
