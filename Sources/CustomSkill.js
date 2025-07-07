@@ -1709,6 +1709,20 @@ CustomSkill.setFuncId(
     []
 );
 
+CustomSkill.setFuncId(
+    'when-cant-ally-within-6-can-move-to-a-space-within-2',
+    "味方は再移動時、スキル所有者の6マス以内にいればスキル所有者の2マス以内に移動可能",
+    (skillId, args) => {
+        WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+            SPACES_IF_NODE(
+                IS_TARGET_WITHIN_6_SPACES_OF_SKILL_OWNER_NODE,
+                SPACES_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(2),
+            ),
+        );
+    },
+    []
+);
+
 // デバッファー、アフリクター
 
 CustomSkill.setFuncId(
