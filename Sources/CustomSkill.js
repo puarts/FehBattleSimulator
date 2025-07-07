@@ -1380,6 +1380,17 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'after-acts-if-canto-after-canto',
+    "行動後（再移動後）、対象に状態を付与",
+    (skillId, args) => {
+        AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
     'at-start-of-player-phase-or-after-acts-if-canto-after-canto',
     "ターン開始時、および行動後（再移動後）、対象に状態を付与",
     (skillId, args) => {
