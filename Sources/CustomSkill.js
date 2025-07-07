@@ -1582,6 +1582,81 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'canto-assist-reposition',
+    "再移動時、引き戻しを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Move,
+                CantoSupport.Reposition,
+                1,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-remote-swap',
+    "再移動時、遠隔入れ替えを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Move,
+                CantoSupport.Swap,
+                2,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-smite',
+    "再移動時、ぶちかましを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Move,
+                CantoSupport.Smite,
+                1,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-trick',
+    "再移動時、トリックを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Move,
+                CantoSupport.Swap,
+                3,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-sing-dance',
+    "再移動時、歌う・踊るを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Refresh,
+                CantoSupport.SingDance,
+                1,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
     'has-pathfinder',
     "天駆の道",
     (skillId, args) => {
