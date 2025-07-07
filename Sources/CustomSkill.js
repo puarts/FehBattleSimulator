@@ -1380,6 +1380,17 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'at-start-of-player-phase-or-after-acts-if-canto-after-canto',
+    "ターン開始時、および行動後（再移動後）、対象に状態を付与",
+    (skillId, args) => {
+        setAtStartOfPlayerPhaseOrAfterActsIfCantoAfterCanto(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
     'if-rally-or-movement-is-used-by-unit-grants-status-effect-on-unit',
     "応援、移動系補助を使用した時、対象に状態を付与",
     (skillId, args) => {
