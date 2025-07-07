@@ -1571,6 +1571,15 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'divine-nectar-another-action',
+    "蜜による再行動効果（ヘイズルーン効果）",
+    (skillId, args) => {
+        setDivineNectarAnotherActionSkill(skillId);
+    },
+    []
+)
+
+CustomSkill.setFuncId(
     'canto-assist',
     "再移動時、nを発動可能",
     (skillId, args) => {
