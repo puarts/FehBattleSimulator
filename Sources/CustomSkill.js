@@ -38,6 +38,9 @@ class CustomSkill {
             STAT_BONUS_LABEL: "stat_bonus_label",
             STAT_PENALTY_LABEL: "stat_penalty_label",
             STAT_LABEL: "stat_label",
+            ASSIST_LABEL: "assist_label",
+            CANTO_ASSIST_LABEL: "canto_assist_label",
+            RANGE_LABEL: "range_label",
 
             NON_NEGATIVE_INTEGER: "non_negative_integer",
             VARIABLE: "variable",
@@ -47,6 +50,8 @@ class CustomSkill {
             EFFECTIVE_TYPES: "effective_types",
             STATUS_EFFECT_TYPE: "status_effect_type",
             STATUS_EFFECT_TYPES: "status_effect_types",
+            ASSIST_TYPE: "assist_type",
+            CANTO_ASSIST_TYPE: "canto_assist_type",
             UNITS: "units",
             STAT: "stat",
             STAT_N: "stat_n",
@@ -64,6 +69,9 @@ class CustomSkill {
                 [this.Node.STAT_BONUS_LABEL, '強化: '],
                 [this.Node.STAT_PENALTY_LABEL, '弱化: '],
                 [this.Node.STAT_LABEL, 'ステ: '],
+                [this.Node.ASSIST_LABEL, '補助: '],
+                [this.Node.CANTO_ASSIST_LABEL, '補助: '],
+                [this.Node.RANGE_LABEL, '射程: '],
             ]
         );
 
@@ -88,6 +96,9 @@ class CustomSkill {
             [this.Node.STAT_BONUS_LABEL, this.NodeType.STRING],
             [this.Node.STAT_PENALTY_LABEL, this.NodeType.STRING],
             [this.Node.STAT_LABEL, this.NodeType.STRING],
+            [this.Node.ASSIST_LABEL, this.NodeType.STRING],
+            [this.Node.CANTO_ASSIST_LABEL, this.NodeType.STRING],
+            [this.Node.RANGE_LABEL, this.NodeType.STRING],
 
             [this.Node.NON_NEGATIVE_INTEGER, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.VARIABLE, this.NodeType.ID],
@@ -97,6 +108,8 @@ class CustomSkill {
             [this.Node.EFFECTIVE_TYPES, this.NodeType.IDS],
             [this.Node.STATUS_EFFECT_TYPE, this.NodeType.ID],
             [this.Node.STATUS_EFFECT_TYPES, this.NodeType.IDS],
+            [this.Node.ASSIST_TYPE, this.NodeType.ID],
+            [this.Node.CANTO_ASSIST_TYPE, this.NodeType.ID],
             [this.Node.UNITS, this.NodeType.ID],
             [this.Node.STAT, this.NodeType.ID],
             [this.Node.STAT_N, this.NodeType.ID],
@@ -173,6 +186,14 @@ class CustomSkill {
             );
         }
 
+        static getTotalStatValueNode(args) {
+            return ADD_NODE(
+                this.getStatBonus(args),
+                this.getStatPenalty(args),
+                this.getTotalNonNegativeIntegerNode(args),
+            );
+        }
+
         static getPercentageNode(args) {
             return NumberNode.makeNumberNodeFrom(args[this.Node.PERCENTAGE] ?? 0);
         }
@@ -191,6 +212,14 @@ class CustomSkill {
 
         static getStatusEffectTypesNode(args) {
             return this.idsToNodes(args, this.Node.STATUS_EFFECT_TYPES);
+        }
+
+        static getAssistTypeNode(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.ASSIST_TYPE] ?? 0);
+        }
+
+        static getCantoAssistTypesNode(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.CANTO_ASSIST_TYPE] ?? 0);
         }
 
         static getUnitsNode(args) {
@@ -418,6 +447,16 @@ class CustomSkill {
                 StatusEffectType,
                 value => STATUS_EFFECT_INFO_MAP.get(value)[1]
             );
+            addEnumOptions(
+                this.Node.ASSIST_TYPE,
+                AssistType,
+                value => getAssistTypeName(value)
+            );
+            addEnumOptions(
+                this.Node.CANTO_ASSIST_TYPE,
+                CantoSupport,
+                value => getCantoAssistName(value)
+            );
         }
     }
 
@@ -454,24 +493,34 @@ class CustomSkill {
 //     ],
 // );
 
+const NON_NEGATIVE_INTEGER_ARGS = [
+    CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
+    CustomSkill.Arg.Node.PLUS,
+    CustomSkill.Arg.Node.VARIABLE,
+    CustomSkill.Arg.Node.MULT,
+    CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
+];
+
 CustomSkill.setFuncId(
     'grants-stat-bonuses',
     "戦闘中、ステータス+n",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(
-                CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getStatBonus(args)),
+                CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getTotalStatValueNode(args)),
             ),
         );
     },
     [
         // 強化
-        CustomSkill.Arg.Node.STAT_LABEL,
         CustomSkill.Arg.Node.STAT_N_BONUS,
         CustomSkill.Arg.Node.BR,
-        CustomSkill.Arg.Node.STAT_BONUS_LABEL,
         CustomSkill.Arg.Node.STAT_BONUS,
+        CustomSkill.Arg.Node.PLUS,
         CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.VARIABLE,
+        CustomSkill.Arg.Node.MULT,
+        CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
     ],
 );
 
@@ -481,27 +530,22 @@ CustomSkill.setFuncId(
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(
-                CustomSkill.Arg.getStatNPenaltyNode(args)(CustomSkill.Arg.getStatPenalty(args)),
+                CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getTotalStatValueNode(args)),
             ),
         );
     },
     [
         // 弱化
-        CustomSkill.Arg.Node.STAT_LABEL,
-        CustomSkill.Arg.Node.STAT_N_PENALTY,
+        CustomSkill.Arg.Node.STAT_N_BONUS,
         CustomSkill.Arg.Node.BR,
-        CustomSkill.Arg.Node.STAT_PENALTY_LABEL,
         CustomSkill.Arg.Node.STAT_PENALTY,
+        CustomSkill.Arg.Node.PLUS,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.VARIABLE,
+        CustomSkill.Arg.Node.MULT,
+        CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
     ],
 );
-
-const NON_NEGATIVE_INTEGER_ARGS = [
-    CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
-    CustomSkill.Arg.Node.PLUS,
-    CustomSkill.Arg.Node.VARIABLE,
-    CustomSkill.Arg.Node.MULT,
-    CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
-];
 
 /// ダメージ+
 
@@ -1367,6 +1411,63 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'after-start-of-turn-skills-on-player-or-enemy-phase',
+    "自軍、敵軍ターン開始時スキル発動後、対象に状態を付与",
+    (skillId, args) => {
+        setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'after-start-of-turn-skills-on-player-or-enemy-phase-neutralizes-penalties',
+    "自軍、敵軍ターン開始時スキル発動後、弱化を解除",
+    (skillId, args) => {
+        setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
+        ));
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'after-acts-if-canto-after-canto',
+    "行動後（再移動後）、対象に状態を付与",
+    (skillId, args) => {
+        AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'at-start-of-player-phase-or-after-acts-if-canto-after-canto',
+    "ターン開始時、および行動後（再移動後）、対象に状態を付与",
+    (skillId, args) => {
+        setAtStartOfPlayerPhaseOrAfterActsIfCantoAfterCanto(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'after-start-of-player-phase-if-has-stall-cancel-move-plus-1',
+    "ターン開始時スキル後、空転が付与されている場合、移動+1を解除",
+    (skillId, args) => {
+        AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Stall),
+                CANCEL_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE(StatusEffectType.MobilityIncreased),
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
     'if-rally-or-movement-is-used-by-unit-grants-status-effect-on-unit',
     "応援、移動系補助を使用した時、対象に状態を付与",
     (skillId, args) => {
@@ -1492,10 +1593,132 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'divine-nectar-another-action',
+    "蜜による再行動効果（ヘイズルーン効果）",
+    (skillId, args) => {
+        setDivineNectarAnotherActionSkill(skillId);
+    },
+    []
+)
+
+CustomSkill.setFuncId(
+    'canto-assist',
+    "再移動時、nを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                CustomSkill.Arg.getAssistTypeNode(args),
+                CustomSkill.Arg.getCantoAssistTypesNode(args),
+                CustomSkill.Arg.getTotalNonNegativeIntegerNode(args),
+            ),
+        ));
+    },
+    [
+        CustomSkill.Arg.Node.ASSIST_LABEL,
+        CustomSkill.Arg.Node.ASSIST_TYPE,
+
+        CustomSkill.Arg.Node.CANTO_ASSIST_LABEL,
+        CustomSkill.Arg.Node.CANTO_ASSIST_TYPE,
+
+        CustomSkill.Arg.Node.RANGE_LABEL,
+        CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
+    ],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-reposition',
+    "再移動時、引き戻しを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Move,
+                CantoSupport.Reposition,
+                1,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-remote-swap',
+    "再移動時、遠隔入れ替えを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Move,
+                CantoSupport.Swap,
+                2,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-smite',
+    "再移動時、ぶちかましを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Move,
+                CantoSupport.Smite,
+                1,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-trick',
+    "再移動時、トリックを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Move,
+                CantoSupport.Swap,
+                3,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
+    'canto-assist-sing-dance',
+    "再移動時、歌う・踊るを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                AssistType.Refresh,
+                CantoSupport.SingDance,
+                1,
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
     'has-pathfinder',
     "天駆の道",
     (skillId, args) => {
         HAS_PATHFINDER_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'when-cant-ally-within-6-can-move-to-a-space-within-2',
+    "味方は再移動時、スキル所有者の6マス以内にいればスキル所有者の2マス以内に移動可能",
+    (skillId, args) => {
+        WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+            SPACES_IF_NODE(
+                IS_TARGET_WITHIN_6_SPACES_OF_SKILL_OWNER_NODE,
+                SPACES_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(2),
+            ),
+        );
     },
     []
 );
@@ -1540,7 +1763,7 @@ CustomSkill.setFuncId(
 
 CustomSkill.setFuncId(
     'can-rallied-forcibly',
-    'バフをかけられなくても応援可能を受けられるようになる',
+    'バフをかけられなくても応援を受けられるようになる',
     (skillId, args) => {
         CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
     },

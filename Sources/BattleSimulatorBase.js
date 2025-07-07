@@ -123,6 +123,9 @@ class BattleSimulatorBase {
             getApp: function () {
                 return self;
             },
+            getAppData: function () {
+                return g_appData;
+            },
             bgmEnabledChanged: function () {
                 if (self.audioManager.isBgmEnabled) {
                     self.vm.audioManager.isSoundEffectEnabled = true;
@@ -874,7 +877,7 @@ class BattleSimulatorBase {
             },
             onChangeEnemyIceColor() {
                 let writer = new CookieWriter();
-                writer.write('change_enemy_ice_color', g_appData.changeEnemyIceColor);
+                LocalStorageUtil.setBoolean('change_enemy_ice_color', g_appData.changeEnemyIceColor);
                 updateMap();
             },
             statusEffectChanged(statusEffect) {

@@ -3932,6 +3932,20 @@ const AssistType = {
     Move: 6,
 };
 
+const ASSIST_TYPE_NAMES = [
+    'なし',
+    '再行動',
+    'ヒール',
+    'ドナーヒール',
+    '回復',
+    '応援',
+    '移動',
+];
+
+function getAssistTypeName(assistType) {
+    return ASSIST_TYPE_NAMES[assistType] ?? 'なし';
+}
+
 const CantoSupport = {
     None: 0,
     Reposition: 1,
@@ -3942,6 +3956,21 @@ const CantoSupport = {
     Pivot: 6,
     SingDance: 7,
 };
+
+const CANTO_ASSIST_NAMES = [
+    'なし',
+    '引き戻し',
+    '体当たり',
+    'ぶちかまし',
+    '引き戻し',
+    '入れ替え',
+    '回り込み',
+    '歌う・踊る'
+];
+
+function getCantoAssistName(cantoAssist) {
+    return CANTO_ASSIST_NAMES[cantoAssist] ?? 'なし';
+}
 
 // 紋章士
 const EmblemHero = {
@@ -3967,9 +3996,8 @@ EngagedSpecialIcon[EmblemHero.Ike] = `${g_engagedSpecialIconRoot}Ike_Of_Radiance
 EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Echoes_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_engagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Eirika] = `${g_debugEngagedSpecialIconRoot}Eirika_Of_The_Sacred_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Micaiah] = `${g_imageRootPath}Special.png`;
-// EngagedSpecialIcon[EmblemHero.Micaiah] = `${g_debugEngagedSpecialIconRoot}Micaiah_Of_Dawn_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Eirika] = `${g_engagedSpecialIconRoot}Eirika_Of_The_Sacred_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Micaiah] = `${g_debugEngagedSpecialIconRoot}Micaiah_Of_Dawn_ES.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_imageRootPath}Special.png`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_debugEngagedSpecialIconRoot}XXX.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_engagedSpecialIconRoot}XXX.webp`;

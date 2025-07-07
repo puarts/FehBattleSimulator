@@ -556,7 +556,10 @@ function initVueComponents() {
                                 v-model="unit['specialCount']"
                                 class="numeric"
                                 @input="e => vm.specialCountChanged(unit, Number(e.target.value))"
-                            /> / {{ unit['maxSpecialCount'] }}
+                            /> 
+                            <span>
+                                / {{ unit['maxSpecialCount'] }}
+                            </span>
                         </span>
               </div>
 
@@ -1283,6 +1286,9 @@ function initVueComponents() {
             onResetPlacement() {
                 this.$emit('reset-placement');
             },
+            openTeamFormationDialog() {
+                this.$emit('open-team-formation-dialog');
+            },
             openAetherRaidDialog() {
                 this.$emit('open-aether-raid-dialog');
             },
@@ -1459,6 +1465,373 @@ function initVueComponents() {
                 </option>
               </select>
             </div>
+        `
+    });
+
+    Vue.component('EditableTable', {
+        model: {
+            prop: 'rows',
+            event: 'update:rows'
+        },
+        props: {
+            rows: { type: Array, required: true },
+            storageKey: { type: String, required: true },
+        },
+        data() {
+            return {
+                isEditing: false,
+                draggedIndex: null,
+                downloadFileName: 'data',
+                uploadAndReplaceId: 'uploadAndReplaceId',
+                uploadId: 'uploadId',
+                confirmDeleteItem: true,
+                filterText: '',
+            };
+        },
+        methods: {
+            downloadTableData() {
+                const blob = new Blob([JSON.stringify(this.rows)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${this.downloadFileName}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+            uploadTableData(replace = false) {
+                let elementId = replace ? this.uploadAndReplaceId : this.uploadId;
+                const fileInput = document.getElementById(elementId);
+
+                // ファイルが選択されていない場合は処理を終了
+                if (fileInput.files.length === 0) {
+                    alert("ファイルを選択してください");
+                    return;
+                }
+
+                // 選択されたファイルを取得
+                const file = fileInput.files[0];
+
+                // FileReaderを使ってファイルを読み込む
+                const reader = new FileReader();
+                reader.onload = event=>  {
+                    // ファイルの内容を取得
+                    let results = JSON.parse(event.target.result);
+                    if (replace) {
+                        this.$set(this, 'rows', results);
+                    } else {
+                        results.forEach(x => {this.rows.push(x);})
+                    }
+                    LocalStorageUtil.setJson(this.storageKey, this.rows);
+                    this.$emit('update:rows', this.rows);
+                    fileInput.value = ''
+                };
+
+                // ファイルの読み込み（テキストファイルとして読み込む）
+                reader.readAsText(file);
+            },
+            selectUploadFile(replace = false) {
+                if (replace) {
+                    if (confirm('現在保存されているユニットが全て上書きされます。アップロードしますか？')) {
+                        document.getElementById(this.uploadAndReplaceId).click();
+                    }
+                } else {
+                    document.getElementById(this.uploadId).click();
+                }
+            },
+            deleteItem(index) {
+                if (this.confirmDeleteItem) {
+                    if (!confirm("削除しますか？")) {
+                        return false;
+                    }
+                }
+                this.rows.splice(index, 1);
+                this.$emit('update:rows', this.rows);
+                LocalStorageUtil.setJson(this.storageKey, this.rows);
+                return true;
+            },
+            saveTable() {
+                LocalStorageUtil.setJson(this.storageKey, this.rows);
+            },
+            filteredItems() {
+                return this.rows
+                    .map((item, index) => ({item, originalIndex: index}))
+                    .filter(({item}) => item.name.includes(this.filterText));
+            },
+            isFiltering() {
+                return this.filterText && this.filterText.trim() !== '';
+            },
+            resetFilter() {
+                this.filterText = '';
+            },
+            onItemDragStart(index) {
+                this.draggedIndex = index;
+            },
+            onItemDrop(index) {
+                if (this.draggedIndex !== null &&
+                    this.draggedIndex !== index) {
+                    const draggedItem = this.rows[this.draggedIndex];
+                    this.rows.splice(this.draggedIndex, 1);
+                    this.rows.splice(index, 0, draggedItem);
+                    this.draggedIndex = null;
+                    this.$emit('update:rows', this.rows);
+                    this.saveTable();
+                }
+            },
+            onEditModeChanged() {
+                if (!this.isEditing) {
+                    this.saveTable();
+                }
+            },
+            startEditing() {
+                this.isEditing = true;
+            },
+            endEditingAndSave() {
+                this.isEditing = false;
+                this.saveTable();
+            },
+        },
+        template: `
+          <div>
+            <div class="action-container">
+              <span class="editable-table-icon">
+                <input
+                  type="checkbox"
+                  id="toggleEdit"
+                  v-model="isEditing"
+                  style="display: none;"
+                  @change="onEditModeChanged"
+                >
+                <label for="toggleEdit" class="button icon-button-small">
+                  <i
+                    class="fa-solid"
+                    :class="isEditing ? ['fa-save', 'save-button'] : ['fa-edit', 'upload-button']"
+                    :title="isEditing ? '保存' : '編集'"
+                  ></i>
+                </label>
+              </span>
+              <span class="editable-table-icon">
+                <button class="icon-button-small download-button" 
+                        @click="downloadTableData">
+                  <i class="fa-solid fa-download" title="ダウンロード"></i>
+                </button>
+              </span>
+              <span class="editable-table-icon">
+                <input type="file" 
+                       :id="uploadId" 
+                       style="display: none;" 
+                       @change="uploadTableData(false);"/>
+                <button class="icon-button-small upload-button" 
+                        @click="selectUploadFile(false);">
+                  <i class="fa-solid fa-upload" title="アップロード（追加）"></i>
+                </button>
+              </span>
+              <span class="editable-table-icon">
+                <input type="file" 
+                       :id="uploadAndReplaceId" 
+                       style="display: none;" 
+                       @change="uploadTableData(true);"/>
+                <button class="icon-button-small upload-and-replace-button" 
+                        @click="selectUploadFile(true);">
+                  <i class="fa-solid fa-upload" title="アップロード（置き換え）"></i>
+                </button>
+              </span>
+              <div class="action-item-right">
+                <input id="confirmDeleteItem" 
+                       type="checkbox" 
+                       v-model="confirmDeleteItem"
+                >
+                <label for="confirmDeleteItem">削除確認</label>
+              </div>
+            </div>
+
+            <span>
+              <input type="text" class="box-common name-filter" v-model="filterText" placeholder="名前で絞り込み" />
+              <button type="reset"
+                      class="icon-button load-button" 
+                      @click="resetFilter">
+                <i class="fa fa-eraser" aria-hidden="true"></i>
+              </button>
+            </span>
+            <table class="unit-dialog">
+              <thead>
+                <slot name="table-head">
+                </slot>
+              </thead>
+              <tbody>
+                <tr v-for="({ item, originalIndex }, index) in filteredItems()" :key="originalIndex"
+                    :draggable="!isFiltering()"
+                    @dragstart="!isFiltering() && onItemDragStart(originalIndex)"
+                    @dragover.prevent
+                    @drop="!isFiltering() && onItemDrop(originalIndex)"
+                    :style="{ cursor: isFiltering() ? 'not-allowed' : '' }"
+                >
+                  <slot 
+                    name="table-body" 
+                    :item="item" 
+                    :original-index="originalIndex"
+                    :index="index"
+                    :start-editing="startEditing"
+                    :end-editing-and-save="endEditingAndSave"
+                    :is-editing="isEditing"
+                    :delete-item="deleteItem"
+                  >
+                  </slot>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `,
+    });
+
+    Vue.component('UnitStorageDialog', {
+        props: {
+            getAppData: { type: Function, required: true },
+            weaponTypeIconPath: { type: Function, required: true },
+            moveTypeIconPath: { type: Function, required: true },
+            showFlash: { type: Function, required: true },
+        },
+        data() {
+            return {
+                rows: [],
+                unitName: '',
+                storageKey: 'savedUnitList',
+                saveUnitInputId: 'saveUnitInputId',
+            };
+        },
+        methods: {
+            setUnitName(name) {
+                this.unitName = name;
+            },
+            saveUnit() {
+                const currentUnit = this.getAppData().currentUnit;
+                if (currentUnit == null) {
+                    return;
+                }
+                const name = document.getElementById(this.saveUnitInputId).value;
+                this.rows.push({
+                    name: name,
+                    weaponType: currentUnit.weaponType,
+                    moveType: currentUnit.moveType,
+                    data: currentUnit.turnWideStatusToString()
+                });
+                LocalStorageUtil.setJson(this.storageKey, this.rows);
+                this.$emit('update:rows', this.rows);
+                this.showFlash(`${name}を保存しました`, 'success', true);
+            },
+            saveUnitAt(originalIndex) {
+                const currentUnit = this.getAppData().currentUnit;
+                if (currentUnit == null) {
+                    return false;
+                }
+                const name = document.getElementById(this.saveUnitInputId).value;
+                const savedUnit = this.rows[originalIndex];
+                const result = window.confirm(`${savedUnit.name}を${name}で上書きして良いですか？`);
+                if (result) {
+                    Vue.set(this.rows, originalIndex, {
+                        name: name,
+                        weaponType: currentUnit.weaponType,
+                        moveType: currentUnit.moveType,
+                        data: currentUnit.turnWideStatusToString()
+                    });
+                    LocalStorageUtil.setJson(this.storageKey, this.rows);
+                    return true;
+                }
+                return false;
+            },
+            restoreUnit() {
+                this.getAppData().restoreUnit();
+                this.showFlash('ユニットを復元しました', 'success', true);
+            },
+            showDeleteMessage(deleted = true) {
+                if (deleted) {
+                    this.showFlash('ユニットの設定を削除しました', 'success', true);
+                } else {
+                    this.showFlash('削除をキャンセルしました', 'success', true);
+                }
+            },
+        },
+        created() {
+            this.rows = LocalStorageUtil.getJson(this.storageKey, []);
+        },
+        template: `
+          <div>
+            <div class="input-box box-common">
+              <input class="text-input" 
+                     type="text" 
+                     :id="saveUnitInputId" 
+                     placeholder="名前を入力"
+                     :value="unitName"
+                     @keydown.enter="saveUnit"
+                     aria-label="ユニット名">
+              <button class="save-box-button" @click="saveUnit">
+                <i class="fa-solid fa-save" title="保存"></i>
+              </button>
+            </div>
+
+            <div class="action-container">
+              <button class="icon-button load-button" @click="restoreUnit">
+                <i class="fa-solid fa-rotate-left" title="元に戻す"></i>
+              </button>
+            </div>
+
+            <h3>保存ユニット一覧</h3>
+
+            <editable-table v-model="rows" 
+                            :storage-key="storageKey"
+            >
+              <template slot="table-head">
+                <tr>
+                  <th class="col-type"></th>
+                  <th>名前</th>
+                  <th class="col-load"></th>
+                  <th class="col-save"></th>
+                  <th class="col-delete"></th>
+                </tr>
+              </template>
+              
+              <template 
+                slot="table-body" 
+                slot-scope="{ item, originalIndex, index, isEditing, startEditing, endEditingAndSave, deleteItem }"
+              >
+                <td>
+                  <img class="unit-dialog-icon" :src="weaponTypeIconPath(item.weaponType)" alt="武器種">
+                  <img class="unit-dialog-icon" :src="moveTypeIconPath(item.moveType)" alt="移動タイプ">
+                </td>
+                <td>
+                  <span 
+                    v-if="!isEditing"
+                    @dblclick="startEditing"
+                  >
+                    {{ item.name }}
+                  </span>
+                  <input v-else class="edit-input" v-model="item.name" type="text"
+                         @keydown.enter="endEditingAndSave" />
+                </td>
+                <td class="col-load">
+                  <button 
+                    class="icon-button load-button" 
+                    @click="getAppData().loadUnit(item); showFlash('設定を読み込みました', 'success', true)"
+                  >
+                    <i class="fa-solid fa-book-open" title="読み込む"></i>
+                  </button>
+                </td>
+                <td class="col-save">
+                  <button class="icon-button save-button"
+                          @click="getAppData().saveUnitAt(originalIndex)
+                                  ? showFlash('上書き保存しました', 'success', true)
+                                  : showFlash('キャンセルしました', 'success', true)">
+                    <i class="fa-solid fa-save" title="上書き保存"></i>
+                  </button>
+                </td>
+                <td class="col-delete">
+                  <button class="icon-button delete-button" 
+                          @click="showDeleteMessage(deleteItem(originalIndex));">
+                    <i class="fa-solid fa-trash-can" title="削除"></i>
+                  </button>
+                </td>
+              </template>
+            </editable-table>
+          </div>
         `
     });
 }
