@@ -1411,6 +1411,28 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'after-start-of-turn-skills-on-player-or-enemy-phase',
+    "自軍、敵軍ターン開始時スキル発動後、対象に状態を付与",
+    (skillId, args) => {
+        setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_OR_INFLICTS_ON_MAP_NODE(args),
+        ));
+    },
+    ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'after-start-of-turn-skills-on-player-or-enemy-phase-neutralizes-penalties',
+    "自軍、敵軍ターン開始時スキル発動後、弱化を解除",
+    (skillId, args) => {
+        setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, () => SKILL_EFFECT_NODE(
+            NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
+        ));
+    },
+    []
+);
+
+CustomSkill.setFuncId(
     'after-acts-if-canto-after-canto',
     "行動後（再移動後）、対象に状態を付与",
     (skillId, args) => {

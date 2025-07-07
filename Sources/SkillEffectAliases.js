@@ -1414,6 +1414,11 @@ function setAtStartOfPlayerPhaseOrAfterActsIfCantoAfterCanto(skillId, nodeFunc) 
     AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
 }
 
+function setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, nodeFunc) {
+    AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+}
+
 /**
  * @param {number|string} skillId
  * @param {BoolNode} condNode
