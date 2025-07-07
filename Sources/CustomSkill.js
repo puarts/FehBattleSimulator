@@ -173,6 +173,14 @@ class CustomSkill {
             );
         }
 
+        static getTotalStatValueNode(args) {
+            return ADD_NODE(
+                this.getStatBonus(args),
+                this.getStatPenalty(args),
+                this.getTotalNonNegativeIntegerNode(args),
+            );
+        }
+
         static getPercentageNode(args) {
             return NumberNode.makeNumberNodeFrom(args[this.Node.PERCENTAGE] ?? 0);
         }
@@ -454,24 +462,34 @@ class CustomSkill {
 //     ],
 // );
 
+const NON_NEGATIVE_INTEGER_ARGS = [
+    CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
+    CustomSkill.Arg.Node.PLUS,
+    CustomSkill.Arg.Node.VARIABLE,
+    CustomSkill.Arg.Node.MULT,
+    CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
+];
+
 CustomSkill.setFuncId(
     'grants-stat-bonuses',
     "戦闘中、ステータス+n",
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(
-                CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getStatBonus(args)),
+                CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getTotalStatValueNode(args)),
             ),
         );
     },
     [
         // 強化
-        CustomSkill.Arg.Node.STAT_LABEL,
         CustomSkill.Arg.Node.STAT_N_BONUS,
         CustomSkill.Arg.Node.BR,
-        CustomSkill.Arg.Node.STAT_BONUS_LABEL,
         CustomSkill.Arg.Node.STAT_BONUS,
+        CustomSkill.Arg.Node.PLUS,
         CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.VARIABLE,
+        CustomSkill.Arg.Node.MULT,
+        CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
     ],
 );
 
@@ -481,27 +499,22 @@ CustomSkill.setFuncId(
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
             INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(
-                CustomSkill.Arg.getStatNPenaltyNode(args)(CustomSkill.Arg.getStatPenalty(args)),
+                CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getTotalStatValueNode(args)),
             ),
         );
     },
     [
         // 弱化
-        CustomSkill.Arg.Node.STAT_LABEL,
-        CustomSkill.Arg.Node.STAT_N_PENALTY,
+        CustomSkill.Arg.Node.STAT_N_BONUS,
         CustomSkill.Arg.Node.BR,
-        CustomSkill.Arg.Node.STAT_PENALTY_LABEL,
         CustomSkill.Arg.Node.STAT_PENALTY,
+        CustomSkill.Arg.Node.PLUS,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.VARIABLE,
+        CustomSkill.Arg.Node.MULT,
+        CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
     ],
 );
-
-const NON_NEGATIVE_INTEGER_ARGS = [
-    CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
-    CustomSkill.Arg.Node.PLUS,
-    CustomSkill.Arg.Node.VARIABLE,
-    CustomSkill.Arg.Node.MULT,
-    CustomSkill.Arg.Node.VARIABLE_PERCENTAGE,
-];
 
 /// ダメージ+
 
