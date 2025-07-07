@@ -1433,6 +1433,19 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'after-start-of-player-phase-if-has-stall-cancel-move-plus-1',
+    "ターン開始時スキル後、空転が付与されている場合、移動+1を解除",
+    (skillId, args) => {
+        AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Stall),
+                CANCEL_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE(StatusEffectType.MobilityIncreased),
+            ),
+        ));
+    },
+    [],
+);
+
+CustomSkill.setFuncId(
     'if-rally-or-movement-is-used-by-unit-grants-status-effect-on-unit',
     "応援、移動系補助を使用した時、対象に状態を付与",
     (skillId, args) => {
