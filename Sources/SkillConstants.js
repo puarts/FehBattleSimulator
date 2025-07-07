@@ -3932,6 +3932,20 @@ const AssistType = {
     Move: 6,
 };
 
+const ASSIST_TYPE_NAMES = [
+    'なし',
+    '再行動',
+    'ヒール',
+    'ドナーヒール',
+    '回復',
+    '応援',
+    '移動',
+];
+
+function getAssistTypeName(assistType) {
+    return ASSIST_TYPE_NAMES[assistType] ?? 'なし';
+}
+
 const CantoSupport = {
     None: 0,
     Reposition: 1,
@@ -3942,6 +3956,21 @@ const CantoSupport = {
     Pivot: 6,
     SingDance: 7,
 };
+
+const CANTO_ASSIST_NAMES = [
+    'なし',
+    '引き戻し',
+    '体当たり',
+    'ぶちかまし',
+    '引き戻し',
+    '入れ替え',
+    '回り込み',
+    '歌う・踊る'
+];
+
+function getCantoAssistName(cantoAssist) {
+    return CANTO_ASSIST_NAMES[cantoAssist] ?? 'なし';
+}
 
 // 紋章士
 const EmblemHero = {

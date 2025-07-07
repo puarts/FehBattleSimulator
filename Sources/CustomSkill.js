@@ -38,6 +38,9 @@ class CustomSkill {
             STAT_BONUS_LABEL: "stat_bonus_label",
             STAT_PENALTY_LABEL: "stat_penalty_label",
             STAT_LABEL: "stat_label",
+            ASSIST_LABEL: "assist_label",
+            CANTO_ASSIST_LABEL: "canto_assist_label",
+            RANGE_LABEL: "range_label",
 
             NON_NEGATIVE_INTEGER: "non_negative_integer",
             VARIABLE: "variable",
@@ -47,6 +50,8 @@ class CustomSkill {
             EFFECTIVE_TYPES: "effective_types",
             STATUS_EFFECT_TYPE: "status_effect_type",
             STATUS_EFFECT_TYPES: "status_effect_types",
+            ASSIST_TYPE: "assist_type",
+            CANTO_ASSIST_TYPE: "canto_assist_type",
             UNITS: "units",
             STAT: "stat",
             STAT_N: "stat_n",
@@ -64,6 +69,9 @@ class CustomSkill {
                 [this.Node.STAT_BONUS_LABEL, '強化: '],
                 [this.Node.STAT_PENALTY_LABEL, '弱化: '],
                 [this.Node.STAT_LABEL, 'ステ: '],
+                [this.Node.ASSIST_LABEL, '補助: '],
+                [this.Node.CANTO_ASSIST_LABEL, '補助: '],
+                [this.Node.RANGE_LABEL, '射程: '],
             ]
         );
 
@@ -88,6 +96,9 @@ class CustomSkill {
             [this.Node.STAT_BONUS_LABEL, this.NodeType.STRING],
             [this.Node.STAT_PENALTY_LABEL, this.NodeType.STRING],
             [this.Node.STAT_LABEL, this.NodeType.STRING],
+            [this.Node.ASSIST_LABEL, this.NodeType.STRING],
+            [this.Node.CANTO_ASSIST_LABEL, this.NodeType.STRING],
+            [this.Node.RANGE_LABEL, this.NodeType.STRING],
 
             [this.Node.NON_NEGATIVE_INTEGER, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.VARIABLE, this.NodeType.ID],
@@ -97,6 +108,8 @@ class CustomSkill {
             [this.Node.EFFECTIVE_TYPES, this.NodeType.IDS],
             [this.Node.STATUS_EFFECT_TYPE, this.NodeType.ID],
             [this.Node.STATUS_EFFECT_TYPES, this.NodeType.IDS],
+            [this.Node.ASSIST_TYPE, this.NodeType.ID],
+            [this.Node.CANTO_ASSIST_TYPE, this.NodeType.ID],
             [this.Node.UNITS, this.NodeType.ID],
             [this.Node.STAT, this.NodeType.ID],
             [this.Node.STAT_N, this.NodeType.ID],
@@ -199,6 +212,14 @@ class CustomSkill {
 
         static getStatusEffectTypesNode(args) {
             return this.idsToNodes(args, this.Node.STATUS_EFFECT_TYPES);
+        }
+
+        static getAssistTypeNode(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.ASSIST_TYPE] ?? 0);
+        }
+
+        static getCantoAssistTypesNode(args) {
+            return NumberNode.makeNumberNodeFrom(args[this.Node.CANTO_ASSIST_TYPE] ?? 0);
         }
 
         static getUnitsNode(args) {
@@ -425,6 +446,16 @@ class CustomSkill {
                 this.Node.STATUS_EFFECT_TYPES,
                 StatusEffectType,
                 value => STATUS_EFFECT_INFO_MAP.get(value)[1]
+            );
+            addEnumOptions(
+                this.Node.ASSIST_TYPE,
+                AssistType,
+                value => getAssistTypeName(value)
+            );
+            addEnumOptions(
+                this.Node.CANTO_ASSIST_TYPE,
+                CantoSupport,
+                value => getCantoAssistName(value)
             );
         }
     }
@@ -1524,6 +1555,30 @@ CustomSkill.setFuncId(
         ));
     },
     []
+);
+
+CustomSkill.setFuncId(
+    'canto-assist',
+    "再移動時、nを発動可能",
+    (skillId, args) => {
+        WHEN_CANTO_TRIGGERS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE(
+                CustomSkill.Arg.getAssistTypeNode(args),
+                CustomSkill.Arg.getCantoAssistTypesNode(args),
+                CustomSkill.Arg.getTotalNonNegativeIntegerNode(args),
+            ),
+        ));
+    },
+    [
+        CustomSkill.Arg.Node.ASSIST_LABEL,
+        CustomSkill.Arg.Node.ASSIST_TYPE,
+
+        CustomSkill.Arg.Node.CANTO_ASSIST_LABEL,
+        CustomSkill.Arg.Node.CANTO_ASSIST_TYPE,
+
+        CustomSkill.Arg.Node.RANGE_LABEL,
+        CustomSkill.Arg.Node.NON_NEGATIVE_INTEGER,
+    ],
 );
 
 CustomSkill.setFuncId(
