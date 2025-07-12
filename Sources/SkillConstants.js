@@ -3883,6 +3883,22 @@ PassiveB.ADNearTrace4 = 3312; // 攻撃守備の近影4
 Weapon.MaidensTome = 3313; // 暁の巫女の書
 Special.GreatSacrifice = 3314; // 大いなる癒しの手
 PassiveC.SilenceWard = 3315; // サイレスガード4
+Weapon.TangySundae = 3316; // 冷涼な果の氷菓子
+PassiveA.AtkSpdWaylay = 3317; // 攻撃速さの奇襲
+PassiveC.TheTrueDromi = 3318; // 真・ドローミの錬環
+Weapon.TropicalNectar = 3319; // 南国の蜜の角
+PassiveA.DefResFortune = 3320; // 守備魔防の共栄
+PassiveC.SweetNectar = 3321; // 神獣の甘き蜜
+Weapon.OceanFitAntler = 3322; // 夏鍛える体の角
+PassiveA.AtkDefWild = 3323; // 攻撃守備の野性
+PassiveB.DivineBrawn = 3324; // 神獣の逞しき肉体
+Weapon.SummerChilling = 3325; // 夏涼む二人の夏氷
+PassiveB.SRFarResound = 3326; // 共鳴・速魔遠影
+Weapon.RuiGuNoqiangPlus = 3327; // 鋭骨の槍+
+Weapon.ReclusesTome = 3328; // 隠遁者の書
+Weapon.CardinalsTome = 3329; // 枢機卿の書
+PassiveB.Hodrszeal2 = 3330; // ヘズルの聖戦士・承
+PassiveC.SeverancePlus = 3331; // すべてが閉じ…・神
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

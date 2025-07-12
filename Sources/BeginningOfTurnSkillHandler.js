@@ -153,7 +153,7 @@ class BeginningOfTurnSkillHandler {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             let env = new AtStartOfTurnEnv(this, skillOwner);
             env.setName('化身スキル').setLogLevel(getSkillLogLevel());
-            let canTransform = CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.evaluateSomeWithUnit(skillOwner, env);
+            let canTransform = CAN_TRANSFORM_AT_START_OF_TURN_HOOKS.evaluateSomeWithUnit(skillOwner, env);
             for (let skillId of skillOwner.enumerateSkills()) {
                 let func = getSkillFunc(skillId, hasTransformSkillsFuncMap);
                 canTransform |= func?.call(this) ?? false;
@@ -199,7 +199,7 @@ class BeginningOfTurnSkillHandler {
         if (isWeaponTypeBeast(skillOwner.weaponType) && skillOwner.hasWeapon) {
             let env = new AtStartOfTurnEnv(this, skillOwner);
             env.setName('敵化身スキル').setLogLevel(getSkillLogLevel());
-            if (CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.evaluateSomeWithUnit(skillOwner, env)) {
+            if (CAN_TRANSFORM_AT_START_OF_ENEMY_TURN_HOOKS.evaluateSomeWithUnit(skillOwner, env)) {
                 this.applyTransformSkillForBeginningOfTurn(skillOwner);
             }
         }
@@ -1438,13 +1438,6 @@ class BeginningOfTurnSkillHandler {
                 for (let unit of this.__findNearestEnemies(skillOwner, 5)) {
                     unit.reserveToApplyResDebuff(-6);
                     unit.reserveToAddStatusEffect(StatusEffectType.CounterattacksDisrupted);
-                }
-                break;
-            case Weapon.TomeOfReglay:
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                    if (unit.isTome) {
-                        unit.reserveToReduceSpecialCount(1);
-                    }
                 }
                 break;
             case Weapon.BansheeTheta:

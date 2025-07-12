@@ -1460,7 +1460,7 @@ CustomSkill.setFuncId(
     (skillId, args) => {
         AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Stall),
-                CANCEL_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE(StatusEffectType.MobilityIncreased),
+                CANCELS_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE(StatusEffectType.MobilityIncreased),
             ),
         ));
     },

@@ -2568,5 +2568,6 @@ class CancelsStatusEffectsGrantedToTargetNode extends FromNumbersNode {
     }
 }
 
-const CANCEL_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE =
+const CANCELS_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE =
     (...effects) => new CancelsStatusEffectsGrantedToTargetNode(...effects);
+const NEUTRALIZES_STATUS_EFFECT_GRANTED_TO_TARGET_NODE = CANCELS_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE;
