@@ -1474,6 +1474,34 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
             setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => nodeFunc(args));
         },
     ],
+    [
+        'after-combat',
+        '戦闘後',
+        (skillId, nodeFunc, args) => {
+            AFTER_COMBAT_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        },
+    ],
+    [
+        'after-combat-even-if-the-unit-is-defeated',
+        '戦闘後（死んでも発動）',
+        (skillId, nodeFunc, args) => {
+            AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        },
+    ],
+    [
+        'after-combat-if-attacked',
+        '攻撃していれば、戦闘後',
+        (skillId, nodeFunc, args) => {
+            AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        },
+    ],
+    [
+        'after-combat-for-another-action',
+        '戦闘後（再行動用）',
+        (skillId, nodeFunc, args) => {
+            AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        },
+    ]
 ];
 
 /**
