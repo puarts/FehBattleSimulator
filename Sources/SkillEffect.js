@@ -3544,6 +3544,21 @@ const NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE = new class extends SkillEffectNode
     }
 }();
 
+class NeutralizesAnyBonusesOnTargetNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.reservedBuffFlagsToNeutralize = [true, true, true, true];
+        unit.getPositiveStatusEffects().forEach(e => unit.reservedStatusEffectSetToNeutralize.add(e));
+        env.debug(`${unit.nameWithGroup}の有利な状態を解除`);
+    }
+}
+
+const NEUTRALIZES_ANY_BONUSES_ON_TARGET_NODE = new NeutralizesAnyBonusesOnTargetNode();
+
 class RestoreTargetsHpOnMapNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
