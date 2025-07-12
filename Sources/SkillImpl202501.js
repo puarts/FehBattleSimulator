@@ -867,12 +867,14 @@
     AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // If unit is within 2 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
-            // and if unit or allies within 2 spaces of unit have bonuses to Atk/Spd/Def/Res
-            // after start-of-turn skills trigger,
-            // grants an additional +3 to each corresponding stat
-            // for unit and those allies for 1 turn
-            // (calculates each stat bonus independently; max 10).
-            GRANTS_ADDITIONAL_STAT_BONUS_TO_EACH_STAT_NODE(3, 10),
+            FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+                // and if unit or allies within 2 spaces of unit have bonuses to Atk/Spd/Def/Res
+                // after start-of-turn skills trigger,
+                // grants an additional +3 to each corresponding stat
+                // for unit and those allies for 1 turn
+                // (calculates each stat bonus independently; max 10).
+                GRANTS_ADDITIONAL_STAT_BONUS_TO_EACH_STAT_NODE(3, 10),
+            ),
         ),
     ));
     setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,

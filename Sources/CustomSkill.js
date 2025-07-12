@@ -41,8 +41,12 @@ class CustomSkill {
             ASSIST_LABEL: "assist_label",
             CANTO_ASSIST_LABEL: "canto_assist_label",
             RANGE_LABEL: "range_label",
+            MIN_LABEL: "min_label",
+            MAX_LABEL: "max_label",
 
             NON_NEGATIVE_INTEGER: "non_negative_integer",
+            MIN: "min",
+            MAX: "max",
             VARIABLE: "variable",
             VARIABLE_PERCENTAGE: "variable_percentage",
             PERCENTAGE: "percentage",
@@ -72,6 +76,8 @@ class CustomSkill {
                 [this.Node.ASSIST_LABEL, '補助: '],
                 [this.Node.CANTO_ASSIST_LABEL, '補助: '],
                 [this.Node.RANGE_LABEL, '射程: '],
+                [this.Node.MIN_LABEL, '最小: '],
+                [this.Node.MAX_LABEL, '最大: '],
             ]
         );
 
@@ -99,8 +105,12 @@ class CustomSkill {
             [this.Node.ASSIST_LABEL, this.NodeType.STRING],
             [this.Node.CANTO_ASSIST_LABEL, this.NodeType.STRING],
             [this.Node.RANGE_LABEL, this.NodeType.STRING],
+            [this.Node.MIN_LABEL, this.NodeType.STRING],
+            [this.Node.MAX_LABEL, this.NodeType.STRING],
 
             [this.Node.NON_NEGATIVE_INTEGER, this.NodeType.NON_NEGATIVE_INTEGER],
+            [this.Node.MIN, this.NodeType.NON_NEGATIVE_INTEGER],
+            [this.Node.MAX, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.VARIABLE, this.NodeType.ID],
             [this.Node.VARIABLE_PERCENTAGE, this.NodeType.PERCENTAGE],
             [this.Node.PERCENTAGE, this.NodeType.PERCENTAGE],
@@ -177,6 +187,20 @@ class CustomSkill {
 
         static getNonNegativeIntegerNode(args) {
             return NumberNode.makeNumberNodeFrom(args[this.Node.NON_NEGATIVE_INTEGER] ?? 0);
+        }
+
+        static getNumberNode(args, node) {
+            return NumberNode.makeNumberNodeFrom(args[node] ?? 0);
+        }
+
+        static ensureMinMax(args, numberNode) {
+            let min = args[this.Node.MIN] ?
+                this.getNumberNode(args, this.Node.MIN) :
+                CONSTANT_NUMBER_NODE(Number.MIN_SAFE_INTEGER);
+            let max = args[this.Node.MAX] ?
+                this.getNumberNode(args, this.Node.MAX) :
+                CONSTANT_NUMBER_NODE(Number.MAX_SAFE_INTEGER);
+            return ENSURE_MIN_MAX_NODE(numberNode, min, max);
         }
 
         static getTotalNonNegativeIntegerNode(args) {
@@ -1491,6 +1515,37 @@ CustomSkill.setFuncId(
         ));
     },
     ADD_STATUS_EFFECT_TO_TARGET_ARGS
+);
+
+CustomSkill.setFuncId(
+    'grants-additional-stat-bonus-to-each-stat-node',
+    "ターン開始スキル後、強化を受けていれば強化を+nした値を付与（上限m）",
+    (skillId, args) => {
+        AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            FOR_EACH_UNIT_NODE(
+                CustomSkill.Arg.getUnitsNode(args),
+                GRANTS_ADDITIONAL_STAT_BONUS_TO_EACH_STAT_NODE(
+                    CustomSkill.Arg.getStatBonus(args),
+                    CustomSkill.Arg.getNumberNode(args, CustomSkill.Arg.Node.MAX)
+                ),
+            ),
+        ));
+    },
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+
+        // 強化
+        CustomSkill.Arg.Node.STAT_BONUS_LABEL,
+        CustomSkill.Arg.Node.STAT_BONUS,
+        CustomSkill.Arg.Node.BR,
+
+        // 最大
+        CustomSkill.Arg.Node.MAX_LABEL,
+        CustomSkill.Arg.Node.MAX,
+    ],
 );
 
 CustomSkill.setFuncId(
