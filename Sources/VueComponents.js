@@ -1567,9 +1567,16 @@ function initVueComponents() {
                 LocalStorageUtil.setJson(this.storageKey, this.rows);
             },
             filteredItems() {
+                const keywords = this.filterText
+                    .trim()
+                    .replace(/\u3000/g, ' ') // 全角スペースを半角に変換
+                    .split(/\s+/);       // 空白で分割
+
                 return this.rows
-                    .map((item, index) => ({item, originalIndex: index}))
-                    .filter(({item}) => item.name.includes(this.filterText));
+                    .map((item, index) => ({ item, originalIndex: index }))
+                    .filter(({ item }) =>
+                        keywords.every(keyword => item.name.includes(keyword))
+                    );
             },
             isFiltering() {
                 return this.filterText && this.filterText.trim() !== '';
