@@ -109,7 +109,10 @@ function initVueComponents() {
 
         mounted() {
             $(this.$el)
-                .select2({data: this.options})
+                .select2({
+                    data: this.options,
+                    matcher: this.matchMultiWords
+                })
                 .val(this.value)
                 .trigger('change')
                 .on('change', (event) => {
@@ -131,6 +134,17 @@ function initVueComponents() {
                 } else {
                     container.removeClass('invalid-value');
                 }
+            },
+            matchMultiWords(params, data) {
+                if ($.trim(params.term) === '') return data;
+                if (typeof data.text === 'undefined') return null;
+
+                // 全角スペースを半角スペースに変換して分割
+                const keywords = params.term.replace(/\u3000/g, ' ').toLowerCase().split(/\s+/);
+                const text = data.text.toLowerCase();
+
+                const isMatch = keywords.every(word => text.includes(word));
+                return isMatch ? $.extend({}, data, true) : null;
             },
         },
 
