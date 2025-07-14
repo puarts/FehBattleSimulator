@@ -111,6 +111,11 @@ const SKILL_OWNERS_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE 
     n => FILTER_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE,
         IS_TARGET_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(n));
 
+const IS_THERE_SKILL_OWNERS_FOE_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
+    (n, m) =>
+        GT_NODE(COUNT_UNITS_NODE(SKILL_OWNERS_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(n, m)), 0)
+
+
 const NUM_OF_PENALTY_ON_FOE_AND_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_THAT_FOE_EXCLUDING_STAT_NODE =
     n => SUM_NODE(
         MAP_UNITS_TO_NUM_NODE(
@@ -566,6 +571,10 @@ function enablesCantoDist(skillId, n, max) {
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new CantoDistNode(n, max));
 }
 
+/**
+ * @param skillId
+ * @param {number} n
+ */
 function enablesCantoN(skillId, n) {
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(n));
@@ -610,7 +619,7 @@ function setBeastSkill(skillId, beastCommonSkillType) {
 
 const CALC_POTENTIAL_DAMAGE_NODE = new CalcPotentialDamageNode();
 
-const IS_NOT_TARGET_ADJACENT_TO_AN_ALLY = () =>
+const IS_NOT_TARGET_ADJACENT_TO_AN_ALLY =
     OR_NODE(CALC_POTENTIAL_DAMAGE_NODE, NOT_NODE(GT_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1), 0)));
 
 const NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET =
@@ -1032,7 +1041,7 @@ function setFortune(skillId, neutralizesBonusFlags, bonuses) {
     // If unit can transform,
     // transformation effects gain "if unit is within 2 spaces of a beast or dragon ally,
     // or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
-    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
+    CAN_TRANSFORM_AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         OR_NODE(
             new IsTargetWithinNSpacesOfTargetsAllyNode(2, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE),
             LTE_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1, NOT_NODE(IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE)), 2),
@@ -1043,7 +1052,7 @@ function setFortune(skillId, neutralizesBonusFlags, bonuses) {
     // at the start of enemy turn 1,
     // if conditions for transforming are met,
     // unit transforms.
-    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
+    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN_HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is transformed or if foe initiates combat,
@@ -1095,7 +1104,7 @@ function setSlyEffect(skillId, atk, spd, def, res) {
 // If unit can transform, transformation effects gain "if unit is within 2 spaces of a beast or dragon ally, or if number of adjacent allies other than beast or dragon allies ≤ 2" as a trigger condition (in addition to existing conditions).
 function setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillId) {
     // If unit can transform, transformation effects gain
-    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
+    CAN_TRANSFORM_AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         OR_NODE(
             // "if unit is within 2 spaces of a beast or dragon ally,
             new IsTargetWithinNSpacesOfTargetsAllyNode(2, IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE),
@@ -1110,7 +1119,7 @@ function setEffectThatTransformationEffectsGainAdditionalTriggerCondition(skillI
 // if conditions for transforming are met,
 // unit transforms.
 function setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId) {
-    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
+    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN_HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
 }
 
 /**

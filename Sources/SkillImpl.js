@@ -9745,6 +9745,7 @@ function setLantern(skillId) {
     };
     // 攻撃速さの野生
     applySkillEffectForUnitFuncMap.set(PassiveA.AtkSpdWild, generatePrimeFunc(u => u.addAtkSpdSpurs(7)));
+    applySkillEffectForUnitFuncMap.set(PassiveA.AtkDefWild, generatePrimeFunc(u => u.addAtkDefSpurs(7)));
 }
 
 // 地の女神の折り鶴

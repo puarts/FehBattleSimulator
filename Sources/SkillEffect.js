@@ -1316,6 +1316,9 @@ class IsThereSpaceWithinNSpacesSatisfyCondNode extends BoolNode {
     }
 }
 
+const IS_THERE_SPACE_WITHIN_N_SPACES_SATISFY_COND_NODE =
+    (n, pred) => new IsThereSpaceWithinNSpacesSatisfyCondNode(n, pred);
+
 class IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode extends IsThereSpaceWithinNSpacesSatisfyCondNode {
     /**
      * @param {number} distance
@@ -1644,8 +1647,8 @@ class EnablesTargetToUseCantoAssistOnTargetsAllyNode extends SkillEffectNode {
 }
 
 const ENABLES_TARGET_TO_USE_CANTO_ASSIST_ON_TARGETS_ALLY_NODE =
-    (cantoAssist, cantoSupport, range) =>
-        new EnablesTargetToUseCantoAssistOnTargetsAllyNode(cantoAssist, cantoSupport, range);
+    (assistType, cantoSupport, range) =>
+        new EnablesTargetToUseCantoAssistOnTargetsAllyNode(assistType, cantoSupport, range);
 
 class IsBonusActiveOnTargetNode extends BoolNode {
     static {
@@ -3541,6 +3544,21 @@ const NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE = new class extends SkillEffectNode
     }
 }();
 
+class NeutralizesAnyBonusesOnTargetNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.reservedBuffFlagsToNeutralize = [true, true, true, true];
+        unit.getPositiveStatusEffects().forEach(e => unit.reservedStatusEffectSetToNeutralize.add(e));
+        env.debug(`${unit.nameWithGroup}の有利な状態を解除`);
+    }
+}
+
+const NEUTRALIZES_ANY_BONUSES_ON_TARGET_NODE = new NeutralizesAnyBonusesOnTargetNode();
+
 class RestoreTargetsHpOnMapNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -3630,6 +3648,32 @@ const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNod
  * @constructor
  */
 const FOR_UNIT_NODE = (unit, ...nodes) => FOR_EACH_UNIT_NODE(UnitsNode.makeFromUnit(unit), ...nodes);
+
+class ForTargetNode extends SkillEffectNode {
+    /**
+     * @param {UnitNode} unitNode
+     * @param node
+     */
+    constructor(unitNode, node) {
+        super();
+        this._unitNode = unitNode;
+        this._node = node;
+    }
+
+    evaluate(env) {
+        let newEnv = env.copy().setTarget(this._unitNode.evaluate(env));
+        return this._node.evaluate(newEnv);
+    }
+}
+
+/**
+ * @template T
+ * @param {UnitNode} unitNode
+ * @param {T} node
+ * @returns {T}
+ * @constructor
+ */
+const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
 
 class TargetsFoesNode extends UnitsNode {
     static {
@@ -4829,6 +4873,8 @@ class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
 const INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE =
     (...stats) => new InflictsStatsMinusOnTargetOnMapNode(...stats);
 
+const INFLICTS_SPD_DEF_ON_TARGET_ON_MAP_NODE =
+    (spd, def = spd) => new InflictsStatsMinusOnTargetOnMapNode(0, spd, def, 0);
 const INFLICTS_SPD_RES_ON_TARGET_ON_MAP_NODE =
     (spd, res = spd) => new InflictsStatsMinusOnTargetOnMapNode(0, spd, 0, res);
 const INFLICTS_ATK_SPD_ON_TARGET_ON_MAP_NODE =
@@ -6050,3 +6096,29 @@ class MinDistanceToTargetsFoesNode extends PositiveNumberNode {
 }
 
 const MIN_DISTANCE_TO_TARGETS_FOES_NODE = new MinDistanceToTargetsFoesNode();
+
+// grants an additional +3 to each corresponding stat
+// for unit and those allies for 1 turn
+// (calculates each stat bonus independently; max 10).
+class GrantsAdditionalStatBonusToEachStatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(buffAmount, max) {
+        super();
+        this._buffAmountNode = NumberNode.makeNumberNodeFrom(buffAmount);
+        this._maxNode = NumberNode.makeNumberNodeFrom(max);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let amount = this._buffAmountNode.evaluate(env);
+        let max = this._maxNode.evaluate(env);
+        unit.reserveToIncreaseAllBuffs(amount, max);
+        env.debug(`${unit.nameWithGroup}は強化を受けていれば強化を+${amount}した値を付与（上限${max}）`);
+    }
+}
+
+const GRANTS_ADDITIONAL_STAT_BONUS_TO_EACH_STAT_NODE =
+    (buffAmount, max) => new GrantsAdditionalStatBonusToEachStatNode(buffAmount, max);

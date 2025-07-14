@@ -499,11 +499,6 @@ class PostCombatSkillHander {
                     }
                     break;
                 }
-                case Weapon.LandsSword:
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        targetUnit.reserveHeal(7);
-                    }
-                    break;
                 case Weapon.AscendingBlade:
                     if (targetUnit.battleContext.restHpPercentage >= 25) {
                         targetUnit.reserveToReduceSpecialCount(1);

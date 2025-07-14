@@ -4535,28 +4535,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.EnclosingClaw] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAllSpur(5);
-                let func = unit => {
-                    let xDiff = Math.abs(targetUnit.posX - unit.posX);
-                    let yDiff = Math.abs(targetUnit.posY - unit.posY);
-                    return xDiff <= 1 || yDiff <= 1;
-                }
-                let count = 0;
-                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(targetUnit)) {
-                    if (unit.isInCrossWithOffset(targetUnit, 1)) {
-                        count++;
-                    }
-                }
-                let amount = Math.min(count * 3, 9);
-                enemyUnit.addSpurs(-amount, -amount, -amount, 0);
-                if (count >= 2) {
-                    targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                    targetUnit.battleContext.reducesCooldownCount = true;
-                }
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.EnclosingDark] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
                 targetUnit.addSpurs(6, 6, 0, 0);
@@ -5627,15 +5605,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.SharpWarSword] = (targetUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(5);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.LandsSword] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                enemyUnit.battleContext.preventedDefenderSpecial = true;
-                targetUnit.battleContext.invalidatesDamageReductionExceptSpecial = true;
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.AscendingBlade] = (targetUnit) => {
@@ -7209,12 +7178,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.TomeOfReglay] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[PassiveB.MoonTwinWing] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.atkSpur -= 5;
@@ -7400,12 +7363,6 @@ class DamageCalculatorWrapper {
                     targetUnit.defSpur += 6;
                     targetUnit.battleContext.reducesCooldownCount = true;
                 }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.RefreshedFang] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.spdSpur += 5;
-                enemyUnit.spdSpur -= 5;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.TomeOfFavors] = (targetUnit, enemyUnit) => {
@@ -13759,16 +13716,6 @@ class DamageCalculatorWrapper {
                     atkUnit.battleContext.additionalDamage += additionalDamage;
                 }
                 break;
-            case Weapon.RefreshedFang:
-                if (defUnit.battleContext.restHpPercentage >= 75) {
-                    let additionalDamage = DamageCalculatorWrapper.__calcAddDamageForDiffOfNPercent(
-                        atkUnit, defUnit, isPrecombat,
-                        x => x.getEvalSpdInPrecombat(),
-                        (x, y) => x.getEvalSpdInCombat(y),
-                        0.7, 7);
-                    atkUnit.battleContext.additionalDamage += additionalDamage;
-                }
-                break;
             default:
                 break;
         }
@@ -14654,18 +14601,6 @@ class DamageCalculatorWrapper {
         env.setName('追撃判定後').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
             .setCombatPhase(this.combatPhase);
         AFTER_FOLLOW_UP_CONFIGURED_HOOKS.evaluateWithUnit(targetUnit, env);
-        for (let skillId of targetUnit.enumerateSkills()) {
-            let func = getSkillFunc(skillId, applySkillEffectRelatedToFollowupAttackPossibilityFuncMap);
-            func?.call(this, targetUnit, enemyUnit);
-            switch (skillId) {
-                case Weapon.VengefulLance:
-                    if (!this.__isThereAllyInSpecifiedSpaces(targetUnit, 1) &&
-                        !targetUnit.battleContext.canFollowupAttackIncludingPotent()) {
-                        targetUnit.battleContext.rateOfAtkMinusDefForAdditionalDamage = 0.5;
-                    }
-                    break;
-            }
-        }
     }
     /**
      * @param  {Unit} targetUnit
@@ -14803,11 +14738,6 @@ class DamageCalculatorWrapper {
                         enemyUnit.battleContext.reducesCooldownCount = false;
                         enemyUnit.battleContext.increaseCooldownCountForAttack = false;
                         enemyUnit.battleContext.increaseCooldownCountForDefense = false;
-                    }
-                    break;
-                case Weapon.EnclosingClaw:
-                    if (targetUnit.battleContext.restHpPercentage >= 25) {
-                        enemyUnit.battleContext.reducesCooldownCount = false;
                     }
                     break;
                 case Special.Enclosure:
@@ -16245,9 +16175,6 @@ class DamageCalculatorWrapper {
                     if (!targetUnit.isWeaponRefined) {
                         targetUnit.addAllSpur(4);
                     }
-                    break;
-                case Weapon.VengefulLance:
-                    targetUnit.atkSpur += 6; targetUnit.spdSpur += 6;
                     break;
                 case Weapon.KurokiChiNoTaiken:
                     if (targetUnit.isWeaponSpecialRefined) {

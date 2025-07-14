@@ -2336,6 +2336,8 @@
     setFortune(PassiveA.AtkDefFortune, [true, false, true, false], [8, 0, 8, 0]);
     // 攻撃魔防の共栄
     setFortune(PassiveA.AtkResFortune, [true, false, true, false], [8, 0, 0, 8]);
+    // 守備魔防の共栄
+    setFortune(PassiveA.DefResFortune, [false, false, true, true], [0, 0, 8, 8]);
 }
 
 // 敏捷なる獣
@@ -2984,7 +2986,7 @@ function setDiscord(skillId, statsRatios) {
     // Accelerates Special trigger (cooldown count-1).
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is not adjacent to an ally,
-        IF_NODE(IS_NOT_TARGET_ADJACENT_TO_AN_ALLY(),
+        IF_NODE(IS_NOT_TARGET_ADJACENT_TO_AN_ALLY,
             // grants Def/Res+5 to unit and inflicts Def/Res-5 on foe during combat and unit makes a guaranteed follow-up attack.
             new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 5, 5),
             new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 5, 5),
@@ -3343,7 +3345,7 @@ function setDiscord(skillId, statsRatios) {
     let skillId = PassiveC.ConnectedWorld;
     // If unit can transform,
     // transformation effects gain "if unit is within 2 spaces of any allies from a different title than unit" as a trigger condition (in addition to existing conditions).
-    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () =>
+    CAN_TRANSFORM_AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         new IsTargetWithinNSpacesOfTargetsAllyNode(2, new IsDifferentOriginNode()),
     );
 
@@ -3351,7 +3353,7 @@ function setDiscord(skillId, statsRatios) {
     // at the start of enemy turn 1,
     // if conditions for transforming are met,
     // unit transforms.
-    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN__HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
+    CAN_TRANSFORM_AT_START_OF_ENEMY_TURN_HOOKS.addSkill(skillId, () => EQ_NODE(CURRENT_TURN_NODE, 1));
 
     let skillEffectNode = new SkillEffectNode(
         // if unit is within 3 spaces of any allies from a different title than unit,
@@ -5137,7 +5139,7 @@ function setDiscord(skillId, statsRatios) {
 {
     let skillId = PassiveS.Beast;
     // Removes the condition to transform
-    CAN_TRANSFORM_AT_START_OF_TURN__HOOKS.addSkill(skillId, () => new TraceBoolNode(TRUE_NODE));
+    CAN_TRANSFORM_AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new TraceBoolNode(TRUE_NODE));
 }
 
 // 重歩傭兵の槍
