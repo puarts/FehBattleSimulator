@@ -1218,16 +1218,17 @@
         // (“grants another action” effect and onward is once per turn;
         // if another effect that grants additional action to unit has been triggered at the same time,
         // this effect is also considered to have been triggered).
-        GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_NODE(
-            // and inflicts 【Isolation】 on unit and Pair Up cohort through their next action,
-            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Isolation),
-            // and also,
-            // if unit’s or Pair Up Cohort’s Range = 2,
-            // inflicts “restricts movement to 1 space” on unit and Pair Up cohort, respectively,
-            // through their next action
-            IF_NODE(IS_TARGET_RANGED_WEAPON_NODE,
-                INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Gravity),
-            ),
+        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+    ));
+    AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // and inflicts 【Isolation】 on unit and Pair Up cohort through their next action,
+        INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Isolation),
+        // and also,
+        // if unit’s or Pair Up Cohort’s Range = 2,
+        // inflicts “restricts movement to 1 space” on unit and Pair Up cohort, respectively,
+        // through their next action
+        IF_NODE(IS_TARGET_RANGED_WEAPON_NODE,
+            INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Gravity),
         ),
     ));
 }
