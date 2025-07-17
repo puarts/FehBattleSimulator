@@ -108,24 +108,32 @@ function initVueComponents() {
         },
 
         mounted() {
-            $(this.$el)
-                .select2({
-                    data: this.options,
-                    matcher: this.matchMultiWords
-                })
-                .val(this.value)
-                .trigger('change')
-                .on('change', (event) => {
-                    const raw = event.target.value;
-                    const parsed = parseInt(raw, 10);
-                    let newVar = isNaN(parsed) ? raw : parsed;
-                    if (newVar === 0 || newVar) {
-                        this.$emit('input', newVar);
-                    }
-                });
+            this.initSelect2(this.options, this.value);
         },
 
         methods: {
+            resetData(options, value) {
+                $(this.$el)
+                    .empty()
+                    .select2({
+                        data: options,
+                        matcher: this.matchMultiWords
+                    })
+                    .val(value)
+                    .trigger('change')
+            },
+            initSelect2(options, value) {
+                this.resetData(options, value);
+                $(this.$el)
+                    .on('change', event => {
+                        const raw = event.target.value;
+                        const parsed = parseInt(raw, 10);
+                        const newVar = isNaN(parsed) ? raw : parsed;
+                        if (newVar === 0 || newVar) {
+                            this.$emit('input', newVar);
+                        }
+                    });
+            },
             applyInvalidValueClass(hasCurrent) {
                 // 不正値表示用にスタイルを付与（任意）
                 const container = $(this.$el).next('.select2-container');
@@ -180,28 +188,19 @@ function initVueComponents() {
                     if (!hasCurrent) {
                         // 「不正な値」用のダミーオプションを作成
                         effectiveOptions.push({
-                            id:    this.value,
-                            text:  `（不正な値: ${this.value}）`,
+                            id: this.value,
+                            text: `（不正な値: ${this.value}）`,
                             disabled: true
                         });
                     }
-                    // select2 を再初期化し、必ず currentValue を選択
-                    $(this.$el)
-                        .empty()
-                        .select2({ data: effectiveOptions })
-                        .val(this.value)
-                        .trigger('change');
+                    this.resetData(effectiveOptions, this.value);
 
                     // 不正値表示用にスタイルを付与（任意）
                     this.applyInvalidValueClass(hasCurrent);
                 } else {
                     // オプションにない要素は -1（fallbackValue 使用）
                     const selectedValue = hasCurrent ? this.value : this.fallbackValue;
-                    $(this.$el)
-                        .empty()
-                        .select2({data: newOptions})
-                        .val(selectedValue)
-                        .trigger('change');
+                    this.resetData(newOptions, selectedValue);
                 }
             },
         },
@@ -1045,8 +1044,7 @@ function initVueComponents() {
             bgmEnabledChanged: {type: Function, required: true},
             loadLazyImages: {type: Function, required: true},
         },
-        methods: {
-        },
+        methods: {},
         mounted() {
             this.loadLazyImages();
         },
@@ -1382,10 +1380,10 @@ function initVueComponents() {
     Vue.component('debug-buttons', {
         props: {
             getApp: {type: Function, required: true},
-            resetUnitRandom: { type: Function, required: true },
-            activateAllUnit: { type: Function, required: true },
-            resetUnitForTesting: { type: Function, required: true },
-            openAutoClearDialog: { type: Function, required: true },
+            resetUnitRandom: {type: Function, required: true},
+            activateAllUnit: {type: Function, required: true},
+            resetUnitForTesting: {type: Function, required: true},
+            openAutoClearDialog: {type: Function, required: true},
         },
         template: `
             <div>
@@ -1431,14 +1429,14 @@ function initVueComponents() {
 
     Vue.component('log-panel', {
         props: {
-            getApp: { type: Function, required: true },
-            simulatorLogLevel: { type: Number, required: true },
-            simulatorLogLevelOption: { type: Array, required: true },
-            saveSimulatorLogLevel: { type: Function, required: true },
-            skillLogLevel: { type: Number, required: true },
-            skillLogLevelOption: { type: Array, required: true },
-            saveSkillLogLevel: { type: Function, required: true },
-            copyDebugLogToClipboard: { type: Function, required: true },
+            getApp: {type: Function, required: true},
+            simulatorLogLevel: {type: Number, required: true},
+            simulatorLogLevelOption: {type: Array, required: true},
+            saveSimulatorLogLevel: {type: Function, required: true},
+            skillLogLevel: {type: Number, required: true},
+            skillLogLevelOption: {type: Array, required: true},
+            saveSkillLogLevel: {type: Function, required: true},
+            copyDebugLogToClipboard: {type: Function, required: true},
         },
         methods: {
             clearLog() {
@@ -1488,8 +1486,8 @@ function initVueComponents() {
             event: 'update:rows'
         },
         props: {
-            rows: { type: Array, required: true },
-            storageKey: { type: String, required: true },
+            rows: {type: Array, required: true},
+            storageKey: {type: String, required: true},
         },
         data() {
             return {
@@ -1504,7 +1502,7 @@ function initVueComponents() {
         },
         methods: {
             downloadTableData() {
-                const blob = new Blob([JSON.stringify(this.rows)], { type: "application/json" });
+                const blob = new Blob([JSON.stringify(this.rows)], {type: "application/json"});
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
@@ -1527,13 +1525,15 @@ function initVueComponents() {
 
                 // FileReaderを使ってファイルを読み込む
                 const reader = new FileReader();
-                reader.onload = event=>  {
+                reader.onload = event => {
                     // ファイルの内容を取得
                     let results = JSON.parse(event.target.result);
                     if (replace) {
                         this.$set(this, 'rows', results);
                     } else {
-                        results.forEach(x => {this.rows.push(x);})
+                        results.forEach(x => {
+                            this.rows.push(x);
+                        })
                     }
                     LocalStorageUtil.setJson(this.storageKey, this.rows);
                     this.$emit('update:rows', this.rows);
@@ -1573,8 +1573,8 @@ function initVueComponents() {
                     .split(/\s+/);       // 空白で分割
 
                 return this.rows
-                    .map((item, index) => ({ item, originalIndex: index }))
-                    .filter(({ item }) =>
+                    .map((item, index) => ({item, originalIndex: index}))
+                    .filter(({item}) =>
                         keywords.every(keyword => item.name.includes(keyword))
                     );
             },
@@ -1706,10 +1706,10 @@ function initVueComponents() {
 
     Vue.component('UnitStorageDialog', {
         props: {
-            getAppData: { type: Function, required: true },
-            weaponTypeIconPath: { type: Function, required: true },
-            moveTypeIconPath: { type: Function, required: true },
-            showFlash: { type: Function, required: true },
+            getAppData: {type: Function, required: true},
+            weaponTypeIconPath: {type: Function, required: true},
+            moveTypeIconPath: {type: Function, required: true},
+            showFlash: {type: Function, required: true},
         },
         data() {
             return {

@@ -253,6 +253,11 @@ const AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
+ * 再行動後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS = new SkillEffectHooks();
+
+/**
  * 範囲奥義前（範囲奥義発動直前）
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const BEFORE_AOE_SPECIAL_HOOKS = new SkillEffectHooks();

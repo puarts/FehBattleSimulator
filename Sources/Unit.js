@@ -6545,6 +6545,11 @@ class Unit extends BattleMapElement {
     }
 
     grantsAnotherActionOnAssist() {
+        if (this.isActionDone) {
+            let env = new NodeEnv().setTarget(this).setAssistTargeting(this).setSkillOwner(this)
+                .setName('再行動後').setLogLevel(getSkillLogLevel());
+            AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.evaluateWithUnit(this, env);
+        }
         this.isActionDone = false;
         g_appData.globalBattleContext.reservedIsAnotherActionByAssistActivatedInCurrentTurn[this.groupId] = true;
     }

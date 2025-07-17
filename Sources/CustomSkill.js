@@ -1275,6 +1275,17 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'grants-special-count-before-foes-first-attack',
+    "敵の最初の攻撃前に自身の奥義カウント-1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ));
+    },
+    []
+);
+
+CustomSkill.setFuncId(
     'inflicts-special-count-before-foes-first-attack',
     "敵の最初の攻撃前に敵の奥義カウント-1",
     (skillId, args) => {
@@ -1415,6 +1426,12 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
             AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, () => nodeFunc(args)),
     ],
     [
+        'at-start-of-player-or-enemy-phase',
+        '自軍、および敵軍ターン開始時',
+        (skillId, nodeFunc, args) =>
+            setAtStartOfPlayerPhaseOrEnemyPhase(skillId, nodeFunc(args)),
+    ],
+    [
         'after-start-of-turn-skills-on-player-phase',
         '自軍ターン開始時スキル発動後',
         (skillId, nodeFunc, args) =>
@@ -1501,6 +1518,13 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         (skillId, nodeFunc, args) => {
             AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => nodeFunc(args));
         },
+    ],
+    [
+        'after-being-granted-another-action',
+        '再行動後',
+        (skillId, nodeFunc, args) => {
+            AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        }
     ]
 ];
 

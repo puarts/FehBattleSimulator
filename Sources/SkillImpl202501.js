@@ -1212,6 +1212,15 @@
             // and neutralizes any [Penalty] on that ally,
             NEUTRALIZES_ANY_PENALTY_ON_TARGET_NODE,
         ),
+    ));
+    setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
+        // and grants another action to unit
+        // (“grants another action” effect and onward is once per turn;
+        // if another effect that grants additional action to unit has been triggered at the same time,
+        // this effect is also considered to have been triggered).
+        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+    ));
+    AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // and inflicts 【Isolation】 on unit and Pair Up cohort through their next action,
         INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Isolation),
         // and also,
@@ -1221,13 +1230,6 @@
         IF_NODE(IS_TARGET_RANGED_WEAPON_NODE,
             INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Gravity),
         ),
-    ));
-    setIfRallyOrMovementAssistSkillEndedByUnit(skillId, () => SKILL_EFFECT_NODE(
-        // and grants another action to unit
-        // (“grants another action” effect and onward is once per turn;
-        // if another effect that grants additional action to unit has been triggered at the same time,
-        // this effect is also considered to have been triggered).
-        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
     ));
 }
 
@@ -4904,6 +4906,7 @@
 // Dragon Flame (Special, Cooldown: 4)
 {
     let skillId = Special.DragonFlame;
+    setSpecialCountAndType(skillId, 4, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by 80% of unit’s Def and restores 30% of unit’s maximum HP when Special triggers.
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(80, UNITS_DEF_NODE)),

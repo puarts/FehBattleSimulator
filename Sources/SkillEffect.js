@@ -5108,7 +5108,7 @@ class ReEnablesCantoToAssistTargetOnMapNode extends ReEnablesCantoToTargetOnMapN
 
 const RE_ENABLES_CANTO_TO_ASSIST_TARGET_ON_MAP_NODE = new ReEnablesCantoToAssistTargetOnMapNode();
 
-class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
+class GrantsAnotherActionToTargetOnAssistNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -5132,10 +5132,16 @@ class GrantsAnotherActionToTargetOnAssistNode extends SkillEffectNode {
         } else {
             env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
         }
+        return success;
     }
 }
 
 const GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE = new GrantsAnotherActionToTargetOnAssistNode();
+const GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_NODE = (...nodes) =>
+    IF_NODE(
+        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+        ...nodes,
+    );
 const GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_EFFECTS_NODE =
     node => new GrantsAnotherActionToTargetOnAssistNode(node);
 
