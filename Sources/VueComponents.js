@@ -108,24 +108,32 @@ function initVueComponents() {
         },
 
         mounted() {
-            $(this.$el)
-                .select2({
-                    data: this.options,
-                    matcher: this.matchMultiWords
-                })
-                .val(this.value)
-                .trigger('change')
-                .on('change', (event) => {
-                    const raw = event.target.value;
-                    const parsed = parseInt(raw, 10);
-                    let newVar = isNaN(parsed) ? raw : parsed;
-                    if (newVar === 0 || newVar) {
-                        this.$emit('input', newVar);
-                    }
-                });
+            this.initSelect2(this.options, this.value);
         },
 
         methods: {
+            resetData(options, value) {
+                $(this.$el)
+                    .empty()
+                    .select2({
+                        data: options,
+                        matcher: this.matchMultiWords
+                    })
+                    .val(value)
+                    .trigger('change')
+            },
+            initSelect2(options, value) {
+                this.resetData(options, value);
+                $(this.$el)
+                    .on('change', event => {
+                        const raw = event.target.value;
+                        const parsed = parseInt(raw, 10);
+                        const newVar = isNaN(parsed) ? raw : parsed;
+                        if (newVar === 0 || newVar) {
+                            this.$emit('input', newVar);
+                        }
+                    });
+            },
             applyInvalidValueClass(hasCurrent) {
                 // 不正値表示用にスタイルを付与（任意）
                 const container = $(this.$el).next('.select2-container');
@@ -180,28 +188,19 @@ function initVueComponents() {
                     if (!hasCurrent) {
                         // 「不正な値」用のダミーオプションを作成
                         effectiveOptions.push({
-                            id:    this.value,
-                            text:  `（不正な値: ${this.value}）`,
+                            id: this.value,
+                            text: `（不正な値: ${this.value}）`,
                             disabled: true
                         });
                     }
-                    // select2 を再初期化し、必ず currentValue を選択
-                    $(this.$el)
-                        .empty()
-                        .select2({ data: effectiveOptions })
-                        .val(this.value)
-                        .trigger('change');
+                    this.resetData(effectiveOptions, this.value);
 
                     // 不正値表示用にスタイルを付与（任意）
                     this.applyInvalidValueClass(hasCurrent);
                 } else {
                     // オプションにない要素は -1（fallbackValue 使用）
                     const selectedValue = hasCurrent ? this.value : this.fallbackValue;
-                    $(this.$el)
-                        .empty()
-                        .select2({data: newOptions})
-                        .val(selectedValue)
-                        .trigger('change');
+                    this.resetData(newOptions, selectedValue);
                 }
             },
         },
@@ -1045,8 +1044,7 @@ function initVueComponents() {
             bgmEnabledChanged: {type: Function, required: true},
             loadLazyImages: {type: Function, required: true},
         },
-        methods: {
-        },
+        methods: {},
         mounted() {
             this.loadLazyImages();
         },
