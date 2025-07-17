@@ -4904,6 +4904,7 @@
 // Dragon Flame (Special, Cooldown: 4)
 {
     let skillId = Special.DragonFlame;
+    setSpecialCountAndType(skillId, 4, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by 80% of unit’s Def and restores 30% of unit’s maximum HP when Special triggers.
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(80, UNITS_DEF_NODE)),
