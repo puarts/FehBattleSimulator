@@ -1501,6 +1501,13 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         (skillId, nodeFunc, args) => {
             AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => nodeFunc(args));
         },
+    ],
+    [
+        'after-being-granted-another-action',
+        '再行動後',
+        (skillId, nodeFunc, args) => {
+            AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        }
     ]
 ];
 
