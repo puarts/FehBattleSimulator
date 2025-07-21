@@ -667,6 +667,17 @@ CustomSkill.setFuncId('deals-damage-including-aoe', "ダメージ+（範囲含�
     NON_NEGATIVE_INTEGER_ARGS,
 );
 
+CustomSkill.setFuncId('boost-special-damage', "奥義ダメージ+（範囲除）",
+    (skillId, args) => {
+        WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+            BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+                CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
+            ),
+        );
+    },
+    NON_NEGATIVE_INTEGER_ARGS,
+);
+
 /// ダメージ-
 
 CustomSkill.setFuncId('reduces-damage-excluding-aoe', "ダメージ-（範囲除）",
