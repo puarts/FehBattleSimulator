@@ -51,6 +51,7 @@ class Table {
         this._onDragOverEvent = null;
         this.onDragEndEvent = null;
         this._cellVerticalAlign = null;
+        /** @type {HTMLTableElement} */
         this._tableElem = null;
         /** @type {BackgroundImageInfo[]} */
         this.backgroundImages = [];

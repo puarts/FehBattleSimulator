@@ -851,7 +851,7 @@ CustomSkill.setFuncId(
             IF_NODE(
                 // If unit’s or foe’s Special is ready,
                 // or unit’s or foe’s Special triggered before or during this combat,
-                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
                 // reduces damage from foe’s next attack by 40% (once per combat; excluding area-of-effect Specials).
                 REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(
                     CustomSkill.Arg.getPercentageNode(args)

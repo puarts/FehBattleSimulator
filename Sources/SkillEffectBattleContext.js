@@ -104,6 +104,8 @@ class TargetsHpOnMapNode extends PositiveNumberNode {
 }
 
 const TARGETS_HP_ON_MAP_NODE = new TargetsHpOnMapNode();
+const IS_TARGET_ALIVE = GT_NODE(TARGETS_HP_ON_MAP_NODE, 0);
+const IS_TARGET_DEAD = NOT_NODE(IS_TARGET_ALIVE);
 
 class FoesHpOnMapNode extends TargetsHpOnMapNode {
     static {

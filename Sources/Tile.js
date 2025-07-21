@@ -49,6 +49,9 @@ const DivineVeinType = {
     Ice: 6,
 };
 const DIVINE_VEIN_STRINGS = ['', '護', '炎', '緑', '瘴', '水', '氷'];
+function getDivineVeinName(divineVein) {
+    return DIVINE_VEIN_STRINGS[divineVein] ?? 'なし';
+}
 
 function divineVeinColor(divineVeinGroup) {
     switch (divineVeinGroup) {

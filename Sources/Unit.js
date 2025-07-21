@@ -6532,6 +6532,16 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
     }
 
+    grantsAnotherActionAfterCombat() {
+        if (this.isActionDone) {
+            let env = new NodeEnv().setTarget(this).setAssistTargeting(this).setSkillOwner(this)
+                .setUnitManager(g_appData)
+                .setName('再行動後（戦闘後）').setLogLevel(getSkillLogLevel());
+            AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS.evaluateWithUnit(this, env);
+        }
+        this.isActionDone = false;
+    }
+
     reEnablesCantoOnMap() {
         this.isCantoActivatedInCurrentTurn = false;
     }
@@ -6925,7 +6935,7 @@ function isDebufferTier2(attackUnit, targetUnit) {
  */
 function isAfflictor(attackUnit, lossesInCombat, result) {
     // TODO: envにlossesInCombat, resultを取れるようにする
-    let env = new NodeEnv().setUnitsDuringCombat(attackUnit).setSkillOwner(attackUnit)
+    let env = new NodeEnv().setTarget(attackUnit).setUnitsDuringCombat(attackUnit).setSkillOwner(attackUnit)
         .setName('アフリクター判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
     if (IS_AFFLICTOR_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
         return true;

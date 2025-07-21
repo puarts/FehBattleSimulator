@@ -1294,7 +1294,7 @@
 
     // 自分または敵が奥義発動可能状態の時、または、この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時、戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ） （範囲奥義を除く）
     AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+        IF_NODE(IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
             new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
         ),
     ));
@@ -1785,7 +1785,7 @@
 
     AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's or foe's Special is ready or triggered before or during this combat,
-        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+        IF_NODE(IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
             // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
             new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
         ),
@@ -2097,7 +2097,7 @@
             AND_NODE(
                 // If unit's or foe's Special is ready,
                 // or unit's or foe's Special triggered before or during this combat,
-                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
                 // and also,
                 // if unit's Def ≥ foe's Def-4 during combat,
                 GTE_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, SUB_NODE(FOES_EVAL_DEF_DURING_COMBAT_NODE, 4)),
@@ -2365,7 +2365,7 @@
                 //   - Unit's or foe's Special is ready, or unit's
                 //     or foe's Special triggered before or during
                 //     this combat.
-                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
                 //   - Unit is transformed or unit's Spd ≥ foe's
                 //     Spd-4.
                 // (Once per combat; excluding area-of-effect Specials).
@@ -3174,6 +3174,7 @@ function setDiscord(skillId, statsRatios) {
 // 護り手・X・茨
 {
     setBriarSave(PassiveC.ARBriarNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
+    setBriarSave(PassiveC.ADBriarNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
     setBriarSave(PassiveC.ADBriarFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
 }
 
@@ -3435,7 +3436,7 @@ function setDiscord(skillId, statsRatios) {
                 //   - Unit's or foe's Special is ready, or unit's
                 //     or foe's Special triggered before or during
                 //     this combat.
-                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
                 //   - Unit is transformed or unit's Def ≥ foe's
                 //     Def-4.
                 // (Once per combat; excluding area-of-effect Specials).
@@ -3640,7 +3641,7 @@ function setDiscord(skillId, statsRatios) {
 
     AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's or foe's Special is ready or triggered before or during this combat,
-        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+        IF_NODE(IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
             // reduces damage from foe's next attack by 40% during combat (once per combat; excluding area-of-effect Specials).
             new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
         ),
@@ -3814,7 +3815,7 @@ function setDiscord(skillId, statsRatios) {
 
     AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's or foe's Special is ready or triggered before or during this combat,
-        IF_NODE(IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+        IF_NODE(IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
             // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
             new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
         ),
@@ -5061,7 +5062,7 @@ function setDiscord(skillId, statsRatios) {
 // 無間の瞬動
 {
     let skillId = PassiveB.ShadowSlide;
-    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
+    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => UNITE_SPACES_NODE(
         // Unit can move to a space within 2 spaces of any ally that has entered combat during the current turn.
         new ForEachAllyForSpacesNode(new HasTargetEnteredCombatDuringTheCurrentTurnNode,
             new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
@@ -5400,7 +5401,7 @@ function setDiscord(skillId, statsRatios) {
         // and if unit can attack during combat,
         // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
         IF_NODE(AND_NODE(
-                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
                 TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
             ),
             new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),

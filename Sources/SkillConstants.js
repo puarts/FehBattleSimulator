@@ -3895,10 +3895,21 @@ PassiveB.DivineBrawn = 3324; // 神獣の逞しき肉体
 Weapon.SummerChilling = 3325; // 夏涼む二人の夏氷
 PassiveB.SRFarResound = 3326; // 共鳴・速魔遠影
 Weapon.RuiGuNoqiangPlus = 3327; // 鋭骨の槍+
+Weapon.WanderingHorn = 3328; // 漂う者の角
 Weapon.ReclusesTome = 3329; // 隠遁者の書
 Weapon.CardinalsTome = 3330; // 枢機卿の書
 PassiveB.Hodrszeal2 = 3331; // ヘズルの聖戦士・承
 PassiveC.SeverancePlus = 3332; // すべてが閉じ…・神
+Weapon.ArcaneRenegade = 3333; // 魔器・マギ団の剣
+PassiveB.HotBlooded = 3334; // 熱血
+PassiveC.AtkSpdFaith = 3335; // 攻撃速さの信念
+Weapon.InTheFoldPlus = 3336; // グループ+
+PassiveC.ADBriarNSave = 3338; // 鎧の護り手・近・茨
+Weapon.BowOfLoyalty = 3339; // 忠臣との絆の弓
+Special.TheTrueNjorun = 3340; // 真・ノヴァの聖戦士
+PassiveA.SturdyFlare = 3341; // 鬼神金剛の炎撃
+PassiveB.ArcFortBreath = 3342; // 強弓・呼吸
+PassiveX.SlyEcho = 3343; // 響・掩撃
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

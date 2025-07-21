@@ -403,6 +403,7 @@ class IntPercentageNumberNode extends NumberNode {
         super();
         this._nNode = NumberNode.makeNumberNodeFrom(n);
     }
+
     evaluate(env) {
         let n = this._nNode.evaluate(env);
         if (!Number.isInteger(n)) {
@@ -998,6 +999,156 @@ class SumNode extends NumberOperationNode {
 const SUM_NODE = (...node) => new SumNode(...node);
 
 /**
+ * @template {SkillEffectNode} T
+ * @template R
+ */
+class CollectionNode extends SkillEffectNode {
+    /**
+     * @param {...T} nodes
+     */
+    constructor(...nodes) {
+        super(...nodes);
+    }
+
+    /**
+     * @param env
+     * @returns {Iterable<R>}
+     */
+    evaluate(env) {
+        let result = this.evaluateChildren(env);
+        env?.trace(`[Collection Node] ${result}`);
+        return result;
+    }
+}
+
+/**
+ * @template {SkillEffectNode} T
+ * @param {...T} nodes
+ * @returns {CollectionNode<T>}
+ * @constructor
+ */
+const COLLECTION_NODE = (...nodes) => new CollectionNode(...nodes);
+
+/**
+ * @template {SkillEffectNode} T
+ * @template R
+ * @extends {CollectionNode<*, R>}
+ */
+class UniqueCollectionNode extends CollectionNode {
+    /**
+     * @param {CollectionNode<T, R>} collectionNode
+     */
+    constructor(collectionNode) {
+        super();
+        this._collectionNode = collectionNode;
+    }
+
+    /**
+     * @param env
+     * @returns {Iterable<R>}
+     */
+    evaluate(env) {
+        let results = this._collectionNode.evaluate(env);
+        let resultSet = new Set(results);
+        env?.trace(`[UnionNode] ${resultSet}`);
+        console.log(`[UnionNode] ${Array.from(resultSet)}`);
+        return resultSet;
+    }
+}
+
+/**
+ * @param {CollectionNode} collectionNode
+ * @returns {UniqueCollectionNode}
+ * @constructor
+ */
+const UNIQUE_COLLECTION_NODE = (collectionNode) => new UniqueCollectionNode(collectionNode);
+
+class FlattenCollectionNode extends CollectionNode {
+    /**
+     * @param {CollectionNode} collectionNode
+     */
+    constructor(collectionNode) {
+        super();
+        this._collectionNode = collectionNode;
+    }
+
+    evaluate(env) {
+        let results = this._collectionNode.evaluate(env);
+        return Array.from(IterUtil.concat(...results));
+    }
+}
+
+const FLATTEN_COLLECTION_NODE = (collectionNode) => new FlattenCollectionNode(collectionNode);
+
+/**
+ * @template T
+ * @template R
+ */
+class MapCollectionNode extends CollectionNode {
+    /**
+     * @param {CollectionNode} collectionNode
+     * @param {T} funcNode
+     */
+    constructor(collectionNode, funcNode) {
+        super();
+        this._collectionNode = collectionNode;
+        this._funcNode = funcNode;
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @returns {R[]}
+     */
+    evaluate(env) {
+        let results = Array.from(this._collectionNode.evaluate(env));
+        let resultArray = results.map(_ => this._funcNode.evaluate(env));
+        env?.trace(`[Map Node] ${resultArray}`);
+        return resultArray;
+    }
+}
+
+/**
+ * @template T
+ * @template R
+ * @param {CollectionNode} collectionNode
+ * @param {T} funcNode
+ * @returns {CollectionNode<T, R>}
+ */
+// TODO: 動作確認
+const MAP_COLLECTION_NODE =
+    (collectionNode, funcNode) => new MapCollectionNode(collectionNode, funcNode);
+
+/**
+ * @template {SkillEffectNode} T
+ * @template R
+ */
+class FilterCollectionNode extends CollectionNode {
+    /**
+     * @param {CollectionNode<T, R>} collectionNode
+     * @param {BoolNode} predNode
+     */
+    constructor(collectionNode, predNode) {
+        super();
+        this._collectionNode = collectionNode;
+        this._predNode = predNode;
+    }
+
+    /**
+     * @param env
+     * @returns {Iterable<R>}
+     */
+    evaluate(env) {
+        let results = Array.from(this._collectionNode.evaluate(env));
+        let resultArray = results.filter(_ => this._predNode.evaluate(env));
+        env?.trace(`[Filter Node] ${resultArray}`);
+        return resultArray;
+    }
+}
+
+// TODO: 動作確認
+const FILTER_COLLECTION_NODE = (collectionNode, predNode) => new FilterCollectionNode(collectionNode, predNode);
+
+/**
  * @abstract
  */
 class CompareNode extends BoolNode {
@@ -1200,6 +1351,7 @@ class ReadNumNode extends NumberNode {
         super();
         this._nNode = NumberNode.makeNumberNodeFrom(n);
     }
+
     evaluate(env) {
         let n = this._nNode.evaluate(env);
         let result = env.readValueAt(n);
@@ -1257,6 +1409,7 @@ class ApplyXNode extends SkillEffectNode {
         this._xNode = xNode;
         this._node = node;
     }
+
     evaluate(env) {
         let value = this._xNode.evaluate(env);
         env.storeValue(value);
