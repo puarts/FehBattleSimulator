@@ -11790,6 +11790,7 @@ function loadSettings() {
     g_appData.commandQueuePerAction.clear();
     __updateChaseTargetTilesForAllUnits();
     updateAllUi();
+    g_app.enumerateAllUnits().forEach(unit => unit.resetMaxSpecialCount());
 }
 
 function loadSettingsFromDict(
