@@ -2573,3 +2573,40 @@ class CancelsStatusEffectsGrantedToTargetNode extends FromNumbersNode {
 const CANCELS_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE =
     (...effects) => new CancelsStatusEffectsGrantedToTargetNode(...effects);
 const NEUTRALIZES_STATUS_EFFECT_GRANTED_TO_TARGET_NODE = CANCELS_STATUS_EFFECTS_GRANTED_TO_TARGET_NODE;
+
+class HasTargetActivatedSpecialMiracleNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.hasSpecialMiracleActivated;
+        env.debug(`${unit.nameWithGroup}は奥義の祈りを発動したか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_ACTIVATED_SPECIAL_MIRACLE_NODE = new HasTargetActivatedSpecialMiracleNode();
+
+class ReducesDamageFromTargetFoeToZeroNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.reducesDamageFromFoeToZeroDuringCombat = true;
+        env.debug(`${unit.nameWithGroup}はダメージを0に軽減`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_TARGET_FOE_TO_ZERO_NODE = new ReducesDamageFromTargetFoeToZeroNode();
+
+class ReducesDamageFromTargetToZeroNode extends ReducesDamageFromTargetFoeToZeroNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_TARGET_TO_ZERO_NODE = new ReducesDamageFromTargetToZeroNode();

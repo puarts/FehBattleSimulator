@@ -1456,3 +1456,5 @@ class CacheNode extends SkillEffectNode {
  * @constructor
  */
 const CACHE_NODE = (key, node) => new CacheNode(key, node);
+
+const SET_SKILL_FUNCS = new Map();

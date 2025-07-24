@@ -217,6 +217,11 @@ const WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS = new SkillEffectHoo
 const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
 
 /**
+ * 攻撃後(攻撃ごとのスキル効果)
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorEnv>} */
+const AFTER_ATTACK_HOOKS = new SkillEffectHooks();
+
+/**
  * 行動後or再移動後
  * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>} */
 const AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS = new SkillEffectHooks();

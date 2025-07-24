@@ -1661,17 +1661,20 @@
 
 // 強化反転の槍+
 {
-    let skillId = Weapon.ReversalLancePlus;
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // If unit initiates combat or is within 2 spaces of an ally,
-        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
-            // grants Atk/Spd/Def/Res+4 to unit during combat and
-            GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
-            // inflicts penalty on foe's Atk/Spd/Def/Res during combat = current bonus on each of foe's stats × 2
-            // (calculates each stat penalty independently; example: if foe has +7 bonus to Atk, inflicts Atk-14, for a net penalty of Atk-7).
-            new InflictsBonusReversalPenaltyOnTargetsFoeNode(true, true, true, true),
-        ),
-    ));
+    let setSkill = skillId => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // If unit initiates combat or is within 2 spaces of an ally,
+            IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+                // grants Atk/Spd/Def/Res+4 to unit during combat and
+                GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE,
+                // inflicts penalty on foe's Atk/Spd/Def/Res during combat = current bonus on each of foe's stats × 2
+                // (calculates each stat penalty independently; example: if foe has +7 bonus to Atk, inflicts Atk-14, for a net penalty of Atk-7).
+                new InflictsBonusReversalPenaltyOnTargetsFoeNode(true, true, true, true),
+            ),
+        ));
+    };
+    setSkill(Weapon.ReversalLancePlus);
+    setSkill(Weapon.Reversalaxeplus);
 }
 
 // 獰猛かつ残忍

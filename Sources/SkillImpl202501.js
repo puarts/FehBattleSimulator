@@ -1,4 +1,122 @@
 // スキル実装
+// 復讐の神形
+{
+    let skillId = Weapon.VengefulGod;
+    let setSkill = skillId => {
+        // 奥義が発動しやすい（発動カウントー1）
+        // 敵から攻撃された時、距離に関係なく反撃する
+        // 自軍ターン開始時、および、敵軍ターン開始時、
+        setAtStartOfPlayerPhaseOrEnemyPhase(skillId,
+            NODE_FUNC(
+                // 自分が奥義「祈り」を装備していれば、
+                IF_NODE(IS_TARGET_EQUIPPED_WITH_MIRACLE_NODE,
+                    // 奥義発動カウントー4、
+                    GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(4),
+                    // HP40回復
+                    RESTORE_TARGETS_HP_ON_MAP_NODE(40),
+                ),
+            ),
+        );
+        setCondHooks(skillId,
+            // 戦闘開始時、自身のHPが25%以上の時、
+            AND_NODE(
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                // かつ戦闘中に自分が奥義「祈り」を発動した時、
+                IS_TARGET_EQUIPPED_WITH_MIRACLE_NODE,
+                HAS_TARGET_ACTIVATED_SPECIAL_MIRACLE_NODE,
+            ),
+            [
+                AFTER_ATTACK_HOOKS,
+                // 「祈り」の効果の後、その戦闘中に自分が攻撃で与えるダメージと敵の攻撃で受けるダメージを0にし（巨影の最低ダメージ1は受ける）、
+                NODE_FUNC(
+                    TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
+                        `${skillId}-「祈り」後、戦闘中、ダメージ0効果`,
+                        REDUCES_DAMAGE_FROM_TARGET_FOE_TO_ZERO_NODE,
+                        REDUCES_DAMAGE_FROM_TARGET_TO_ZERO_NODE,
+                    ),
+                )
+            ],
+            [
+                AFTER_COMBAT_HOOKS,
+                NODE_FUNC(
+                    TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
+                        `${skillId}-戦闘後効果`,
+                        // 戦闘後、奥義発動カウントー4、
+                        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(4),
+                        // HP40回復、
+                        RESTORE_TARGETS_HP_ON_MAP_NODE(40),
+                        // 自分の攻撃、速さの【大器】＋10、
+                        GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
+                            ATK_SPD_NODE(10),
+                            ATK_SPD_NODE(20),
+                        ),
+                    ),
+                )
+            ],
+            // かつ自分から攻撃していれば、自分を行動可能にする
+            [
+                AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS,
+                NODE_FUNC(
+                    TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
+                        `${skillId}-再行動`,
+                        GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_NODE,
+                    ),
+                ),
+            ],
+        );
+        // （上記の効果は、各自軍ターン、各敵軍ターンそれぞれについて、 1ターンに1回のみ）
+
+        // 戦闘開始時、自身のHPが25%以上なら、
+        setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+            IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // 戦闘中、攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列の敵の数✕3＋5だけ増加（最大14）、
+            GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                MULT_ADD_MAX_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
+            ),
+            SKILL_EFFECT_NODE(
+                // ダメージ＋〇（範囲奥義を除く）（〇は、速さの20％＋攻撃と速さの【大器】の合計値）、
+                DEALS_DAMAGE_X_NODE(
+                    ADD_NODE(
+                        PERCENTAGE_NODE(20, UNITS_SPD_NODE),
+                        ADD_NODE(UNITS_ATK_GREAT_TALENT_NODE, UNITS_SPD_GREAT_TALENT_NODE),
+                    ),
+                ),
+                // 最初に受けた攻撃と2回攻撃のダメージー速さの20%、
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                    PERCENTAGE_NODE(20, UNITS_SPD_NODE),
+                ),
+                // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+                NULL_UNIT_FOLLOW_UP_NODE,
+            ),
+        );
+        // （このスキルによる【大器】の上限は20）
+    };
+    setSkill(skillId);
+    SET_SKILL_FUNCS.set(skillId, setSkill);
+}
+
+// crab
+{
+    let setSkill = skillId => {
+        AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+                GRANTS_ATK_TO_TARGET_ON_MAP_NODE(6),
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FollowUpAttackPlus),
+            ),
+        ));
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+                GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+                DEALS_DAMAGE_X_NODE(
+                    ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 25)
+                )
+            ),
+        ));
+    };
+    setSkill(Weapon.RaudrcrabPlus);
+    setSkill(Weapon.BlarcrabPlus);
+}
+
 // 🗡️ Arcane Renegade
 {
     let skillId = Weapon.ArcaneRenegade;

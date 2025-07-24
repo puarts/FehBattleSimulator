@@ -646,6 +646,7 @@ class Unit extends BattleMapElement {
         this.isOneTimeActionActivatedForWeaponPerGame2 = false;
 
         /**
+         * 味方、敵ターンそれぞれでリセットされるターンで1回の効果
          * @type {Set<string>}
          */
         this.oneTimeActionPerTurnActivatedSet = new Set();

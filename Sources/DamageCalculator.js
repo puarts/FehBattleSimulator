@@ -313,7 +313,7 @@ class DamageCalculator {
     * __enumerateCombatFuncs(atkUnit, defUnit, result, context) {
         let self = this;
         if (defUnit.battleContext.isVantageActivated) {
-            let message = `【待ち伏せ】${HtmlUtil.groupNameSpan(defUnit)}`;
+            let message = `【待ち伏せ】${HtmlLogUtil.groupNameSpan(defUnit)}`;
             this.writeDebugLog(message);
             this.writeSimpleLog(message);
 
@@ -321,7 +321,7 @@ class DamageCalculator {
             yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
             if (defUnit.battleContext.isDefDesperationActivated) {
-                let message = `【攻め立て】${HtmlUtil.groupNameSpan(defUnit)}`;
+                let message = `【攻め立て】${HtmlLogUtil.groupNameSpan(defUnit)}`;
                 this.writeDebugLog(message);
                 this.writeSimpleLog(message);
 
@@ -344,7 +344,7 @@ class DamageCalculator {
                 yield () => self.__attack(atkUnit, defUnit, result, context);
 
                 if (atkUnit.battleContext.isDesperationActivated) {
-                    let message = `【攻め立て】${HtmlUtil.groupNameSpan(atkUnit)}`;
+                    let message = `【攻め立て】${HtmlLogUtil.groupNameSpan(atkUnit)}`;
                     this.writeDebugLog(message);
                     this.writeSimpleLog(message);
 
@@ -378,7 +378,7 @@ class DamageCalculator {
             yield () => self.__attack(atkUnit, defUnit, result, context);
 
             if (atkUnit.battleContext.isDesperationActivated) { // 攻め立て
-                let message = `【攻め立て】${HtmlUtil.groupNameSpan(atkUnit)}`;
+                let message = `【攻め立て】${HtmlLogUtil.groupNameSpan(atkUnit)}`;
                 this.writeDebugLog(message);
                 this.writeSimpleLog(message);
 
@@ -401,7 +401,7 @@ class DamageCalculator {
                 yield () => self.__counterattack(atkUnit, defUnit, result, context);
 
                 if (defUnit.battleContext.isDefDesperationActivated) {
-                    let message = `【攻め立て】${HtmlUtil.groupNameSpan(defUnit)}`;
+                    let message = `【攻め立て】${HtmlLogUtil.groupNameSpan(defUnit)}`;
                     this.writeDebugLog(message);
                     this.writeSimpleLog(message);
 
@@ -841,6 +841,12 @@ class DamageCalculator {
         return new OneAttackResult(damage, specialAddDamage, atkCountPerCombat);
     }
 
+    applySkillEffectsAfterAttack(targetUnit, enemyUnit, context) {
+        let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit, false, context);
+        env.setName('攻撃後').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
+        AFTER_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
+    }
+
     /**
      * @param {number} fixedAddDamage
      * @param {Unit} atkUnit
@@ -1167,9 +1173,6 @@ class DamageCalculator {
 
         // ダメカを半分無効
         let neutralizationRatiosOfDamageReduction = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
-        if (atkUnit.hasStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent)) {
-            neutralizationRatiosOfDamageReduction.push(0.5);
-        }
 
         let isFirstAttack = context.isFirstAttack(atkUnit);
         let totalDamage = 0;
@@ -1306,14 +1309,14 @@ class DamageCalculator {
                 let atkSpecialCountAfter = atkUnit.tmpSpecialCount;
                 let defSpecialCountAfter = defUnit.tmpSpecialCount;
                 let specialSpan = n => `<span class='log-special'>${n}</span>`;
-                let unitStr = unit => unit.groupId === UnitGroupType.Ally ?
-                    `<span class="log-ally">自</span>` :
-                    `<span class="log-enemy">敵</span>`;
                 let specialInfo =
-                    `${unitStr(atkUnit)}: ${specialSpan(atkSpecialCountBefore)} → ${specialSpan(atkSpecialCountAfter)}, 
-                     ${unitStr(defUnit)}: ${specialSpan(defSpecialCountBefore)} → ${specialSpan(defSpecialCountAfter)}`;
-                if (this.isLogEnabled) this.writeLog(`<span class="log-special-str">奥義</span>によるダメージ<span class="log-damage">${currentDamage}</span>`);
-                this.writeSimpleLog(`<div class="log-damage-line"><span class="log-damage"">${currentDamage}</span>（<span class="log-special-str">奥義</span>）${specialInfo}</div>`);
+                    `${HtmlLogUtil.groupNameSpan(atkUnit)}: ${specialSpan(atkSpecialCountBefore)} → ${specialSpan(atkSpecialCountAfter)}, 
+                     ${HtmlLogUtil.groupNameSpan(defUnit)}: ${specialSpan(defSpecialCountBefore)} → ${specialSpan(defSpecialCountAfter)}`;
+                if (this.isLogEnabled) {
+                    this.writeLog(`${HtmlLogUtil.specialSpan('奥義')}によるダメージ${HtmlLogUtil.damageSpan(currentDamage)}`);
+                }
+                this.writeSimpleLog(`<div class="log-damage-line">${HtmlLogUtil.damageSpan(currentDamage)}
+                （${HtmlLogUtil.specialSpan('奥義')}）${specialInfo}</div>`);
 
                 // 奥義発動時の回復
                 {
@@ -1366,13 +1369,10 @@ class DamageCalculator {
                 let atkSpecialCountAfter = atkUnit.tmpSpecialCount
                 let defSpecialCountAfter = defUnit.tmpSpecialCount
                 let specialSpan = n => `<span class='log-special'>${n}</span>`;
-                let unitStr = unit => unit.groupId === UnitGroupType.Ally ?
-                    `<span class="log-ally">自</span>` :
-                    `<span class="log-enemy">敵</span>`;
-                let specialInfo = `${unitStr(atkUnit)}: ${specialSpan(atkSpecialCountBefore)} → ${specialSpan(atkSpecialCountAfter)}, 
-                                          ${unitStr(defUnit)}: ${specialSpan(defSpecialCountBefore)} → ${specialSpan(defSpecialCountAfter)}`;
+                let specialInfo = `${HtmlLogUtil.groupNameSpan(atkUnit)}: ${specialSpan(atkSpecialCountBefore)} → ${specialSpan(atkSpecialCountAfter)}, 
+                                          ${HtmlLogUtil.groupNameSpan(defUnit)}: ${specialSpan(defSpecialCountBefore)} → ${specialSpan(defSpecialCountAfter)}`;
                 if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ<span class="log-damage">${currentDamage}</span>`);
-                this.writeSimpleLog(`<div class="log-damage-line"><span class="log-damage">${currentDamage}</span>（通常）${specialInfo}</div>`);
+                this.writeSimpleLog(`<div class="log-damage-line">${HtmlLogUtil.damageSpan(currentDamage)}（通常）${specialInfo}</div>`);
             }
 
             {
@@ -1397,6 +1397,9 @@ class DamageCalculator {
                 this.__reduceSpecialCount(defUnit, defReduceSpCount);
             }
             context.damageHistory.push(new DamageLog(atkUnit, defUnit, currentDamage).setAttackType(context));
+
+            this.applySkillEffectsAfterAttack(atkUnit, defUnit, context);
+            this.applySkillEffectsAfterAttack(defUnit, atkUnit, context);
 
             if (this.isLogEnabled) {
                 this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + Math.max(0, defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
@@ -1517,20 +1520,22 @@ class DamageCalculator {
             isRestHpGreaterOne &&
             isDeadWithoutMiracle) {
             let logMiracle = message => {
+                let result = `${message} ${HtmlLogUtil.groupNameSpan(defUnit)} ${currentDamage} → 
+                ${HtmlLogUtil.damageSpan(defUnit.restHp - totalDamage - 1)}`;
                 if (this.isLogEnabled) {
-                    this.writeLog(message);
-                    this.writeSimpleLog(message);
+                    this.writeLog(result);
+                    this.writeSimpleLog(result);
                 }
             }
             // どの祈りが発動するのか判定する
             if (canActivateNonSpecialMiracleAndHeal) {
-                logMiracle(`【奥義以外の祈り+99回復】 ${defUnit.groupChar}`);
+                logMiracle(`【奥義以外の祈り+99回復】 `);
                 defUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated = true;
             } else if (canActivateNonSpecialMiracle) {
-                logMiracle(`【奥義以外の祈り】 ${defUnit.groupChar}`);
+                logMiracle(`【奥義以外の祈り】`);
                 defUnit.battleContext.hasNonSpecialMiracleActivated = true;
             } else if (canActivateNonSpecialOneTimePerMapMiracle) {
-                logMiracle(`【奥義以外の祈り(1マップ1回)】 ${defUnit.groupChar}`);
+                logMiracle(`【奥義以外の祈り(1マップ1回)】`);
                 // TODO: リファクタリング(現状使用していない)
                 defUnit.battleContext.hasNonSpecialOneTimePerMapMiracleAcitivated = true;
                 // TODO: リファクタリング
@@ -1538,13 +1543,13 @@ class DamageCalculator {
                 // 1マップ1回でない奥義以外の祈りも発動したとみなす
                 defUnit.battleContext.hasNonSpecialMiracleActivated = true;
             } else if (canActivateSpecialMiracleAndHeal) {
-                logMiracle(`【奥義による祈り+99回復】 ${defUnit.groupChar}`);
+                logMiracle(`【奥義による祈り+99回復】`);
                 defUnit.battleContext.hasSpecialMiracleAndHealAcitivated = true;
             } else if (canActivateSpecialMiracle) {
-                logMiracle(`【奥義による祈り】 ${defUnit.groupChar}`);
+                logMiracle(`【奥義による祈り】`);
                 defUnit.battleContext.hasSpecialMiracleActivated = true;
             } else if (canActivateSpecialOneTimePerMapMiracle) {
-                logMiracle(`【奥義による祈り(1マップ1回)】 ${defUnit.groupChar}`);
+                logMiracle(`【奥義による祈り(1マップ1回)】`);
                 defUnit.battleContext.hasSpecialOneTimePerMapMiracleAcitivated = true;
             }
 
@@ -1795,6 +1800,7 @@ class DamageCalculator {
             damageReductionRatiosAfterNeutralization.fill(0);
         }
         this.writeDebugLog(`ダメージ軽減: [${damageReductionRatios}]`);
+        this.writeDebugLog(`ダメージ軽減をn%無効: [${neutralizationRatiosOfDamageReduction}]`)
         this.writeDebugLog(`軽減無効後のダメージ軽減: [${damageReductionRatiosAfterNeutralization}]`);
         return damageReductionRatiosAfterNeutralization;
     }
@@ -2107,6 +2113,9 @@ class DamageCalculator {
         for (let ratio of damageCalculationRatios) {
             currentDamage = Math.trunc(currentDamage * ratio);
         }
+        if (defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat) {
+            currentDamage = 0;
+        }
         if (this.isLogEnabled) {
             this.writeDebugLog(`ダメージ軽減計算開始`);
             this.writeDebugLog(`軽減前ダメージ: ${damage}`);
@@ -2122,6 +2131,7 @@ class DamageCalculator {
             this.writeDebugLog(`ダメージ計算2: ((${damage} - ${Math.trunc(damage * reduceRatio)}) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
             this.writeDebugLog(`ダメージ計算3: (${damage - Math.trunc(damage * reduceRatio)} - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
             this.writeDebugLog(`実質ダメージ軽減値: ${damageReductionValue} * ${1/damageRatio} = ${Math.trunc(damageReductionValue / damageRatio)}`);
+            this.writeDebugLog(`0ダメージに軽減: ${defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat}`);
             this.writeDebugLog(`ダメージ変化: ${damage}→${currentDamage} (${damage - currentDamage}軽減)`);
         }
 

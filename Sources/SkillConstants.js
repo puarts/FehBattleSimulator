@@ -3910,6 +3910,9 @@ Special.TheTrueNjorun = 3340; // 真・ノヴァの聖戦士
 PassiveA.SturdyFlare = 3341; // 鬼神金剛の炎撃
 PassiveB.ArcFortBreath = 3342; // 強弓・呼吸
 PassiveX.SlyEcho = 3343; // 響・掩撃
+Weapon.BlarcrabPlus = 3344; // ブラークラブ+
+Weapon.Reversalaxeplus = 3345; // 強化反転の斧+
+Weapon.VengefulGod = 3346; // 復讐の神形
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

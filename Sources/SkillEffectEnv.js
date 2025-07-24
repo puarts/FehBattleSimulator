@@ -590,6 +590,13 @@ class NodeEnv {
     isReservationNeededInThisPhase() {
         return [NodeEnv.PHASE.AT_START_OF_TURN, NodeEnv.PHASE.AFTER_COMBAT].includes(this.phase);
     }
+
+    isInDamageCalculation() {
+        if (this.damageType) return true;
+        if (this.damageCalculator) return true;
+        if (this.damageCalculatorWrapper) return true;
+        return false;
+    }
 }
 
 // TODO: rename. ex) DuringCombatEnv, AtStartOfCombatEnv

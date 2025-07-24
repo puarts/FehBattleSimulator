@@ -1941,3 +1941,12 @@ CustomSkill.setFuncId(
     },
     []
 );
+
+CustomSkill.setFuncId(
+    'vengeful-god',
+    '復讐の神形',
+    (skillId, args) => {
+        SET_SKILL_FUNCS.get(Weapon.VengefulGod)?.(skillId);
+    },
+    []
+);

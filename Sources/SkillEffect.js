@@ -5676,12 +5676,29 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        if (!unit.oneTimeActionPerTurnActivatedSet.has(this._id)) {
-            unit.oneTimeActionPerTurnActivatedSet.add(this._id);
-            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）をこのターン初めて発動`);
+        // 保存する可能性がある値なのでエンコードする
+        let encodedId = Base62.encode(this._id);
+        let activatedSkills;
+        let isActivated = false;
+        let phase;
+        if (env.isInDamageCalculation()) {
+            phase = '戦闘中';
+            // 戦闘中のコンテキストだけではなくユニットに保存されている情報も参照する
+            isActivated =
+                unit.battleContext.activatedSkillsPerTurn.has(encodedId) ||
+                unit.oneTimeActionPerTurnActivatedSet.has(encodedId);
+            activatedSkills = unit.battleContext.activatedSkillsPerTurn;
+        } else {
+            phase = '戦闘外'
+            isActivated = unit.oneTimeActionPerTurnActivatedSet.has(encodedId);
+            activatedSkills = unit.oneTimeActionPerTurnActivatedSet;
+        }
+        if (!isActivated) {
+            activatedSkills.add(encodedId);
+            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）をこのターン初めて発動（${phase}）`);
             return this.evaluateChildren(env);
         } else {
-            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）を発動済み`);
+            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）を発動済み（${phase}）`);
         }
     }
 }
@@ -6229,3 +6246,18 @@ class GrantsAdditionalStatBonusToEachStatNode extends SkillEffectNode {
 
 const GRANTS_ADDITIONAL_STAT_BONUS_TO_EACH_STAT_NODE =
     (buffAmount, max) => new GrantsAdditionalStatBonusToEachStatNode(buffAmount, max);
+
+class IsTargetEquippedWithMiracleNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.special === Special.Miracle;
+        env.debug(`${unit.nameWithGroup}は奥義祈りを装備しているか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_EQUIPPED_WITH_MIRACLE_NODE = new IsTargetEquippedWithMiracleNode();

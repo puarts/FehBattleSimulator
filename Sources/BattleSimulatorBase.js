@@ -3729,6 +3729,8 @@ class BattleSimulatorBase {
         result.defUnit.isAttackedDone = true;
         atkUnit.isCombatDone = true;
         result.defUnit.isCombatDone = true;
+        SetUtil.addAll(atkUnit.oneTimeActionPerTurnActivatedSet, atkUnit.battleContext.activatedSkillsPerTurn);
+        SetUtil.addAll(result.defUnit.oneTimeActionPerTurnActivatedSet, result.defUnit.battleContext.activatedSkillsPerTurn);
         if (atkUnit.isStyleActive) {
             atkUnit.isStyleActivatedInThisTurn = true;
             atkUnit.styleActivationsCount++;

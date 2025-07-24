@@ -1423,6 +1423,10 @@ function setWhenUnitIsInCombatFoesSaviorEffectsWillNotTriggerNode(skillId) {
     ));
 }
 
+/**
+ * @param skillId
+ * @param {Function} nodeFunc
+ */
 function setAtStartOfPlayerPhaseOrEnemyPhase(skillId, nodeFunc) {
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
