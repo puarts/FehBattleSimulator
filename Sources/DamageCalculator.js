@@ -2133,6 +2133,9 @@ class DamageCalculator {
             this.writeDebugLog(`実質ダメージ軽減値: ${damageReductionValue} * ${1/damageRatio} = ${Math.trunc(damageReductionValue / damageRatio)}`);
             this.writeDebugLog(`0ダメージに軽減: ${defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat}`);
             this.writeDebugLog(`ダメージ変化: ${damage}→${currentDamage} (${damage - currentDamage}軽減)`);
+            if (defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat) {
+                this.writeSimpleLog(`【ダメージを0に】`);
+            }
         }
 
         if (activatesDefenderSpecial && !defUnit.battleContext.preventedDefenderSpecial) {
