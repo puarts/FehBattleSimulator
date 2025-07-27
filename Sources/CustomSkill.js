@@ -1667,6 +1667,72 @@ makeCustomSkillsOnMap(
     ]
 );
 
+makeCustomSkillsOnMap(
+    'converts-penalties-into-bonuses',
+    '対象の弱化を強化に変換する',
+    args =>
+        FOR_EACH_UNIT_NODE(
+            CustomSkill.Arg.getUnitsNode(args),
+            CONVERTS_PENALTIES_ON_TARGET_INTO_BONUSES_NODE,
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+    ]
+);
+
+makeCustomSkillsOnMap(
+    'converts-bonuses-into-penalties',
+    '対象の強化を弱化に変換する',
+    args =>
+        FOR_EACH_UNIT_NODE(
+            CustomSkill.Arg.getUnitsNode(args),
+            CONVERTS_BONUSES_ON_TARGET_INTO_PENALTIES_NODE,
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+    ]
+);
+
+makeCustomSkillsOnMap(
+    'neutralizes-targets-n-penalty-effects-node',
+    '不利な状態異常をn個解除',
+    args =>
+        FOR_EACH_UNIT_NODE(
+            CustomSkill.Arg.getUnitsNode(args),
+            NEUTRALIZES_TARGETS_N_PENALTY_EFFECTS_NODE(CustomSkill.Arg.getNumberNode(args, CustomSkill.Arg.Node.NUMBER_ARG_1)),
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.NUMBER_ARG_1,
+    ]
+);
+
+makeCustomSkillsOnMap(
+    'neutralizes-targets-n-bonus-effects-node',
+    '有利な状態異常をn個解除',
+    args =>
+        FOR_EACH_UNIT_NODE(
+            CustomSkill.Arg.getUnitsNode(args),
+            NEUTRALIZES_TARGETS_N_BONUS_EFFECTS_NODE(CustomSkill.Arg.getNumberNode(args, CustomSkill.Arg.Node.NUMBER_ARG_1)),
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.NUMBER_ARG_1,
+    ]
+);
+
 CustomSkill.setFuncId(
     'after-start-of-player-phase-if-has-stall-cancel-move-plus-1',
     "ターン開始時スキル後、空転が付与されている場合、移動+1を解除",
