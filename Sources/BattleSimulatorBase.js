@@ -4582,13 +4582,6 @@ class BattleSimulatorBase {
             return;
         }
 
-        let enemyUnitsAgainstTarget = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
-
-        this.__initializeUnitsPerTurn(targetUnits);
-        this.__initializeAllUnitsOnMapPerTurn(targetUnits);
-        this.__initializeAllUnitsOnMapPerTurn(enemyTurnSkillTargetUnits);
-        this.__initializeTilesPerTurn(this.map._tiles, group);
-
         // 増援処理
         if (group === UnitGroupType.Ally) {
             let reinforcementUnit = this._callReinforcement(UnitGroupType.Ally);
@@ -4600,6 +4593,13 @@ class BattleSimulatorBase {
                 enemyTurnSkillTargetUnits.push(reinforcementEnemy);
             }
         }
+
+        let enemyUnitsAgainstTarget = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
+
+        this.__initializeUnitsPerTurn(targetUnits);
+        this.__initializeAllUnitsOnMapPerTurn(targetUnits);
+        this.__initializeAllUnitsOnMapPerTurn(enemyTurnSkillTargetUnits);
+        this.__initializeTilesPerTurn(this.map._tiles, group);
 
         if (this.data.gameMode !== GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
