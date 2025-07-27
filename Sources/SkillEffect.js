@@ -5641,6 +5641,8 @@ class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
     }
 }
 
+const NEUTRALIZES_TARGETS_N_PENALTY_EFFECTS_NODE = n => new NeutralizesTargetsNPenaltyEffectsNode(n);
+
 class NeutralizesTargetsNBonusEffectsNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -6261,3 +6263,50 @@ class IsTargetEquippedWithMiracleNode extends BoolNode {
 }
 
 const IS_TARGET_EQUIPPED_WITH_MIRACLE_NODE = new IsTargetEquippedWithMiracleNode();
+
+class ConvertsPenaltiesOnTargetIntoBonusesNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let buffs = unit.getDebuffs().map(i => Math.abs(i));
+        unit.reserveToApplyBuffs(...buffs);
+        unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+        env.debug(`${unit.nameWithGroup}の弱化を強化に変換: [${buffs}]`);
+    }
+}
+
+const CONVERTS_PENALTIES_ON_TARGET_INTO_BONUSES_NODE = new ConvertsPenaltiesOnTargetIntoBonusesNode();
+
+class ConvertsBonusesOnTargetIntoPenaltiesNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let buffs = unit.getBuffs(false).map(i => Math.abs(i));
+        unit.reserveToApplyDebuffs(...buffs);
+        unit.reservedBuffFlagsToNeutralize = [true, true, true, true];
+        env.debug(`${unit.nameWithGroup}の強化を弱化に変換: [${buffs}]`);
+    }
+}
+
+const CONVERTS_BONUSES_ON_TARGET_INTO_PENALTIES_NODE = new ConvertsBonusesOnTargetIntoPenaltiesNode();
+
+class TargetsColorNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.color;
+        env.debug(`${unit.nameWithGroup}の色: ${ObjectUtil.getKeyName(ColorType, result)}`);
+        return result;
+    }
+}
+
+const TARGETS_COLOR_NODE = new TargetsColorNode();

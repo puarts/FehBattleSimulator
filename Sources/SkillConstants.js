@@ -3727,6 +3727,9 @@ Weapon.SwordOfIsaach = 3152; // イザークの守護剣
 Special.CrusadersAstra = 3153; // 剣聖の流星雨
 PassiveC.BrutalTempest = 3154; // 迅雷風烈・鬼没
 Weapon.Spear = 3155; // スレンドスピア
+// TODO: 修正する
+Weapon.Tmp1 = 3156; // 天日の神剣
+Weapon.Tmp2 = 3157; // 夕影の神弓
 Weapon.EaglesHeart = 3160; // 黒鷲の愛の斧
 PassiveA.SlySturdyBlow = 3161; // 鬼神金剛の掩撃
 PassiveB.PureStorm = 3162; // 正真狂嵐

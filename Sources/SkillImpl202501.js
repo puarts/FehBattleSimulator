@@ -1,4 +1,104 @@
 // スキル実装
+// 天日の神剣
+{
+    let skillId = Weapon.Tmp1;
+    // 飛行特効無効
+    // 奥義が発動しやすい(発動カウント-1)
+    // 敵軍ターンの開始時スキル発動後、
+    AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 最も近い敵とその周囲2マス以内の敵が受けている強化の+を無効化し、
+        // 弱化に変換する(同時に付与される強化は解除されない)
+        FOR_EACH_TARGETS_CLOSEST_FOE_AND_ANY_FOE_WITHIN_2_SPACES_OF_THOSE_FOES_NODE(
+            CONVERTS_BONUSES_ON_TARGET_INTO_PENALTIES_NODE,
+        ),
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        SKILL_EFFECT_NODE(
+            // 戦闘中、攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列にいる敵の数×3+5だけ増加(最大14)、
+            GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                MULT_ADD_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
+            ),
+            // 自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)、
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+        ),
+        SKILL_EFFECT_NODE(
+            // ダメージ+速さの20％(範囲奥義を除く)、
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            X_NUM_NODE(
+                // 受けるダメージ-○(範囲奥義を除く)、
+                REDUCES_DAMAGE_BY_N_NODE(READ_NUM_NODE),
+                // かつ敵の奥義による攻撃の時、
+                // さらに、受けるダメージ-○(範囲奥義を除く)
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(READ_NUM_NODE),
+                // (○は、敵が赤、緑、無属性の時は速さの50％、(そうでない時は速さの20%)
+                PERCENTAGE_NODE(
+                    IF_VALUE_NODE(EQ_NODE(FOR_TARGET_NODE(FOE_NODE, TARGETS_COLOR_NODE), ColorType.Blue), 20, 50),
+                    UNITS_SPD_NODE,
+                ),
+            ),
+        ),
+    );
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 自分から攻撃した時、戦闘後、
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // 敵のマスとその後方1マス、自分から見たその2マスの左右それぞれ2マスに【天脈・炎】を付与(1ターン)
+            FOR_EACH_SPACES_NODE(
+                N_SPACES_IN_A_LINE_CENTERED_ON_TARGETS_FOES_SPACE_ORIENTED_LEFT_TO_RIGHT_BASED_ON_THE_DIRECTION_TARGET_IS_FACING_NODE(5),
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Flame, TARGET_GROUP_NODE, 1),
+            ),
+        ),
+    ));
+}
+
+// 夕影の神弓
+{
+    let skillId = Weapon.Tmp2;
+    // 飛行特効
+    // 奥義が発動しやすい(発動カウント-1)
+    // 自軍ターン開始時、および、敵軍ターン開始時、
+    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId,
+        NODE_FUNC(
+            // 自分と周囲2マス以内の味方の
+            // 魔防+6、
+            // 【強化増幅】、
+            // 「戦闘中、敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)」を付与(1ターン)
+            GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                RES_NODE(6),
+                StatusEffectType.BonusDoubler,
+                StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
+            ),
+        ),
+    );
+    // 敵軍ターンの開始時スキル発動後、
+    AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_2_SPACES_OF_TARGET_NODE(
+            // 自分と周囲2マス以内にいる味方が受けている弱化を無効化し、強化に変換する、
+            CONVERTS_PENALTIES_ON_TARGET_INTO_BONUSES_NODE,
+            // さらに、【不利な状態異常】を2個解除(同タイミングで付与される【不利な状態異常】は解除されない、
+            // 解除される、【不利な状態異常】は、受けている効果の一覧で、上に記載される状態を優先)
+            NEUTRALIZES_TARGETS_N_PENALTY_EFFECTS_NODE(2),
+        ),
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        // 戦闘中、攻撃、速さ、守備、魔防が自身を中心とした縦3列と横3列の味方の数×3+5だけ増加(最大14)、
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+            MULT_ADD_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
+        ),
+        SKILL_EFFECT_NODE(
+            // ダメージ+魔防の20%(範囲奥義を除く)、
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE)),
+            // 絶対追撃、
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // 自分の最初の攻撃前に奥義発動カウント-1
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
+    );
+}
+
 // 復讐の神形
 {
     let skillId = Weapon.VengefulGod;
