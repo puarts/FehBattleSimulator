@@ -8254,7 +8254,7 @@
             // foe's Atk at start of combat - 4 (max 14; min 5),
             GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
                 ENSURE_MAX_MIN_NODE(
-                    PERCENTAGE_NODE(25, UNITS_ATK_AT_START_OF_COMBAT_NODE),
+                    SUB_NODE(PERCENTAGE_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE), 4),
                     14, 5)
             ),
             // deals damage = 15% of unit's Atk
