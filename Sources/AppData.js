@@ -781,6 +781,8 @@ class AppData extends UnitManager {
         __registerPassiveSOptions(this.passiveSOptions, passiveAs);
         __registerPassiveSOptions(this.passiveSOptions, passiveBs);
         __registerPassiveSOptions(this.passiveSOptions, passiveCs);
+        __registerSkillOptions(this.additionalPassiveOptions, weapons);
+        __registerSkillOptions(this.additionalPassiveOptions, specials);
         __registerSkillOptions(this.additionalPassiveOptions, passiveAs);
         __registerSkillOptions(this.additionalPassiveOptions, passiveBs);
         __registerSkillOptions(this.additionalPassiveOptions, passiveCs);

@@ -169,9 +169,10 @@ class AssistTargetNode extends TargetNode {
 const ASSIST_TARGET_NODE = new AssistTargetNode();
 
 /**
+ * @extends {CollectionNode<*, Unit>}
  * @abstract
  */
-class UnitsNode extends SkillEffectNode {
+class UnitsNode extends CollectionNode {
     /**
      * @param {UnitNode|UnitsNode} unitNode
      * @returns {UnitsNode}
@@ -512,6 +513,13 @@ class MapUnionUnitsNode extends SkillEffectNode {
     }
 }
 
+/**
+ * @template T
+ * @param {UnitsNode} unitsNode
+ * @param {SetNode<T>} funcNode
+ * @returns {MapUnionUnitsNode<T>}
+ * @constructor
+ */
 const MAP_UNION_UNITS_NODE = (unitsNode, funcNode) => new MapUnionUnitsNode(unitsNode, funcNode);
 
 class MapUnitsToNumNode extends NumbersNode {
@@ -534,6 +542,37 @@ class MapUnitsToNumNode extends NumbersNode {
 }
 
 const MAP_UNITS_TO_NUM_NODE = (unitsNode, funcNode) => new MapUnitsToNumNode(unitsNode, funcNode);
+
+/**
+ * @template T
+ * @template R
+ */
+class MapUnitsNode extends MapCollectionNode {
+    /**
+     * @param {UnitsNode} unitsNode
+     * @param {T} funcNode
+     */
+    constructor(unitsNode, funcNode) {
+        super(unitsNode, funcNode);
+    }
+
+    evaluate(env) {
+        /** @type {Unit[]} */
+        let units = Array.from(this._collectionNode.evaluate(env));
+        let results = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
+        env.trace(`Map units: ${units.map(u => u.nameWithGroup)} => results: [${results}]`);
+        return results;
+    }
+}
+
+/**
+ * @template T
+ * @param {UnitsNode} unitsNode
+ * @param {T} funcNode
+ * @returns {CollectionNode<T, *>}
+ * @constructor
+ */
+const MAP_UNITS_NODE = (unitsNode, funcNode) => new MapUnitsNode(unitsNode, funcNode);
 
 class FilterUnitsNode extends UnitsNode {
     /**
@@ -650,9 +689,10 @@ class UnitsOfBothAssistTargetingAndAssistTargetNode extends UnitsNode {
 }
 
 /**
+ * @extends {CollectionNode<*, Tile>}
  * @abstract
  */
-class SpacesNode extends SkillEffectNode {
+class SpacesNode extends CollectionNode {
     /**
      * @abstract
      * @param {NodeEnv} env
@@ -669,6 +709,7 @@ class NoSpacesNode extends SpacesNode {
 }
 
 const NO_SPACES_NODE = new NoSpacesNode();
+const EMPTY_SPACES_NODE = NO_SPACES_NODE;
 
 class SpacesIfNode extends SpacesNode {
     /**
@@ -690,25 +731,38 @@ class SpacesIfNode extends SpacesNode {
     }
 }
 
+/**
+ * @param {BoolNode} pred
+ * @param {SpacesNode} spacesNode
+ * @returns {SpacesNode}
+ * @constructor
+ */
 const SPACES_IF_NODE = (pred, spacesNode) => new SpacesIfNode(pred, spacesNode);
 
+/**
+ * @template {SpacesNode} T
+ * @extends {SpacesNode<*, Tile>}
+ */
 class UniteSpacesNode extends SpacesNode {
     /**
-     * @param {...SpacesNode} children
+     * @param {...T} children
      */
     constructor(...children) {
         super(...children);
     }
 
-    /**
-     * @param {NodeEnv} env
-     * @returns {Iterable<Tile>}
-     */
     evaluate(env) {
-        return [...new Set(Array.from(IterUtil.concat(...this.evaluateChildren(env))))];
+        let spaces = Array.from(IterUtil.concat(...this.evaluateChildren(env)));
+        return [...new Set(spaces)];
     }
 }
 
+/**
+ * @template {CollectionNode<*, Tile>} T
+ * @param {T} children
+ * @returns {UniteSpacesNode}
+ * @constructor
+ */
 const UNITE_SPACES_NODE = (...children) => new UniteSpacesNode(...children);
 
 class UniteSpacesIfNode extends SpacesNode {
@@ -864,6 +918,11 @@ class SpacesOfTargetNode extends SpacesNode {
     }
 }
 
+/**
+ * @param predNode
+ * @returns {CollectionNode<*, Tile>}
+ * @constructor
+ */
 const SPACES_OF_TARGET_NODE = (predNode) => new SpacesOfTargetNode(predNode);
 
 class TargetsPlacedSpaceNode extends SpacesNode {
@@ -897,6 +956,22 @@ class PlacedSpacesNode extends SpacesNode {
 }
 
 const PLACED_SPACES_NODE = unitsNode => new PlacedSpacesNode(unitsNode);
+
+class CanPlaceTargetOnSpaceNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin, GetTargetTileMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let tile = this.getTile(env);
+        let result = tile.isUnitPlacableForUnit(unit);
+        env.debug(`${unit.nameWithGroup}は${tile}に配置可能か: ${result}`);
+        return result;
+    }
+}
+
+const CAN_PLACE_TARGET_ON_SPACE_NODE = new CanPlaceTargetOnSpaceNode();
 
 class SpacesWithinNSpacesOfSpacesNode extends SpacesNode {
     /**
@@ -2937,7 +3012,7 @@ class IfTargetsSpecialIsReadyOrHasTriggeredDuringCombatNode extends BoolNode {
 const IF_TARGETS_SPECIAL_IS_READY_OR_HAS_TRIGGERED_DURING_COMBAT_NODE =
     new IfTargetsSpecialIsReadyOrHasTriggeredDuringCombatNode();
 
-const IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE = new class extends BoolNode {
+const IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT = new class extends BoolNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
         let foe = env.foeDuringCombat;
@@ -4664,6 +4739,12 @@ class ForEachAllyForSpacesNode extends ForEachTargetForSpacesNode {
     }
 }
 
+/**
+ * @param predNode
+ * @param children
+ * @returns {ForEachAllyForSpacesNode}
+ * @constructor
+ */
 const FOR_EACH_ALLY_FOR_SPACES_NODE =
     (predNode, ...children) => new ForEachAllyForSpacesNode(predNode, ...children);
 
@@ -4740,6 +4821,12 @@ class SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode extends TargetsPlacable
     }
 }
 
+/**
+ * @param n
+ * @param spacesNode
+ * @returns {SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode}
+ * @constructor
+ */
 const SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
     (n, spacesNode) => new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
@@ -5085,6 +5172,20 @@ class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
 }
 
 const GRANTS_ANOTHER_ACTION_TO_TARGET_ON_MAP_NODE = new GrantsAnotherActionToTargetOnMapNode();
+
+class GrantsAnotherActionToTargetAfterCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.grantsAnotherActionAfterCombat();
+        env.debug(`${unit.nameWithGroup}は行動可能な状態になる`);
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_NODE = new GrantsAnotherActionToTargetAfterCombatNode();
 
 class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
     static {
@@ -5540,6 +5641,8 @@ class NeutralizesTargetsNPenaltyEffectsNode extends FromPositiveNumberNode {
     }
 }
 
+const NEUTRALIZES_TARGETS_N_PENALTY_EFFECTS_NODE = n => new NeutralizesTargetsNPenaltyEffectsNode(n);
+
 class NeutralizesTargetsNBonusEffectsNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -5575,12 +5678,29 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        if (!unit.oneTimeActionPerTurnActivatedSet.has(this._id)) {
-            unit.oneTimeActionPerTurnActivatedSet.add(this._id);
-            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）をこのターン初めて発動`);
+        // 保存する可能性がある値なのでエンコードする
+        let encodedId = Base62.encode(this._id);
+        let activatedSkills;
+        let isActivated = false;
+        let phase;
+        if (env.isInDamageCalculation()) {
+            phase = '戦闘中';
+            // 戦闘中のコンテキストだけではなくユニットに保存されている情報も参照する
+            isActivated =
+                unit.battleContext.activatedSkillsPerTurn.has(encodedId) ||
+                unit.oneTimeActionPerTurnActivatedSet.has(encodedId);
+            activatedSkills = unit.battleContext.activatedSkillsPerTurn;
+        } else {
+            phase = '戦闘外'
+            isActivated = unit.oneTimeActionPerTurnActivatedSet.has(encodedId);
+            activatedSkills = unit.oneTimeActionPerTurnActivatedSet;
+        }
+        if (!isActivated) {
+            activatedSkills.add(encodedId);
+            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）をこのターン初めて発動（${phase}）`);
             return this.evaluateChildren(env);
         } else {
-            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）を発動済み`);
+            env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${this._id}）を発動済み（${phase}）`);
         }
     }
 }
@@ -6128,3 +6248,65 @@ class GrantsAdditionalStatBonusToEachStatNode extends SkillEffectNode {
 
 const GRANTS_ADDITIONAL_STAT_BONUS_TO_EACH_STAT_NODE =
     (buffAmount, max) => new GrantsAdditionalStatBonusToEachStatNode(buffAmount, max);
+
+class IsTargetEquippedWithMiracleNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.special === Special.Miracle;
+        env.debug(`${unit.nameWithGroup}は奥義祈りを装備しているか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_EQUIPPED_WITH_MIRACLE_NODE = new IsTargetEquippedWithMiracleNode();
+
+class ConvertsPenaltiesOnTargetIntoBonusesNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let buffs = unit.getDebuffs().map(i => Math.abs(i));
+        unit.reserveToApplyBuffs(...buffs);
+        unit.reservedDebuffFlagsToNeutralize = [true, true, true, true];
+        env.debug(`${unit.nameWithGroup}の弱化を強化に変換: [${buffs}]`);
+    }
+}
+
+const CONVERTS_PENALTIES_ON_TARGET_INTO_BONUSES_NODE = new ConvertsPenaltiesOnTargetIntoBonusesNode();
+
+class ConvertsBonusesOnTargetIntoPenaltiesNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let buffs = unit.getBuffs(false).map(i => Math.abs(i));
+        unit.reserveToApplyDebuffs(...buffs);
+        unit.reservedBuffFlagsToNeutralize = [true, true, true, true];
+        env.debug(`${unit.nameWithGroup}の強化を弱化に変換: [${buffs}]`);
+    }
+}
+
+const CONVERTS_BONUSES_ON_TARGET_INTO_PENALTIES_NODE = new ConvertsBonusesOnTargetIntoPenaltiesNode();
+
+class TargetsColorNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.color;
+        env.debug(`${unit.nameWithGroup}の色: ${ObjectUtil.getKeyName(ColorType, result)}`);
+        return result;
+    }
+}
+
+const TARGETS_COLOR_NODE = new TargetsColorNode();

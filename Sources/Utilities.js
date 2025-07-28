@@ -1836,6 +1836,17 @@ class SetUtil {
         });
     }
 
+    /**
+     * @template T
+     * @param {Set<T>} targetSet
+     * @param {Iterable<T>} items
+     */
+    static addAll(targetSet, items) {
+        for (const item of items) {
+            targetSet.add(item);
+        }
+    }
+
     static toString(set) {
         return `{${Array.from(set).join(',')}}`;
     }
@@ -1978,7 +1989,7 @@ class MapUtil {
     }
 }
 
-class HtmlUtil {
+class HtmlLogUtil {
     /**
      * @param {Unit} unit
      * @returns {string}
@@ -1988,6 +1999,14 @@ class HtmlUtil {
         let groupClass = isAlly ? "log-ally" : "log-enemy";
         let groupName = isAlly ? "自" : "敵";
         return `<span class="${groupClass}">${groupName}</span>`
+    }
+
+    static damageSpan(damage) {
+        return `<span class="log-damage">${damage}</span>`;
+    }
+
+    static specialSpan(text) {
+        return `<span class="log-special-str">${text}</span>`;
     }
 }
 

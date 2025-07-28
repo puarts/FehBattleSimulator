@@ -2393,6 +2393,10 @@ class DamageCalculatorWrapper {
                 enemyUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += 1;
             }
         }
+        // 軽減を半分無効
+        if (targetUnit.hasStatusEffect(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent)) {
+            targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
+        }
         // 【戦果移譲】
         if (targetUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
             // 戦闘中、攻撃、速さ、守備、魔防ー5となる状態異常

@@ -27,42 +27,49 @@ class CustomSkill {
         // 2. 必要であれば値を取得する関数を作成
         // 3. 新しいNodeTypeがあればCustomSkillFormに登録する
         static Node = {
-            BR: "br",
+            BR: 'br',
 
-            PLUS: "plus",
-            MULT: "mult",
+            PLUS: 'plus',
+            MULT: 'mult',
 
-            SPACES_LABEL: "spaces_label",
-            TARGET_LABEL: "target_label",
-            STATUS_EFFECT_LABEL: "status_effect_label",
-            STAT_BONUS_LABEL: "stat_bonus_label",
-            STAT_PENALTY_LABEL: "stat_penalty_label",
-            STAT_LABEL: "stat_label",
-            ASSIST_LABEL: "assist_label",
-            CANTO_ASSIST_LABEL: "canto_assist_label",
-            RANGE_LABEL: "range_label",
-            MIN_LABEL: "min_label",
-            MAX_LABEL: "max_label",
+            SPACES_LABEL: 'spaces_label',
+            TARGET_LABEL: 'target_label',
+            STATUS_EFFECT_LABEL: 'status_effect_label',
+            STAT_BONUS_LABEL: 'stat_bonus_label',
+            STAT_PENALTY_LABEL: 'stat_penalty_label',
+            STAT_LABEL: 'stat_label',
+            ASSIST_LABEL: 'assist_label',
+            CANTO_ASSIST_LABEL: 'canto_assist_label',
+            RANGE_LABEL: 'range_label',
+            MIN_LABEL: 'min_label',
+            MAX_LABEL: 'max_label',
+            TURN_LABEL: 'turn_label',
 
-            NON_NEGATIVE_INTEGER: "non_negative_integer",
-            MIN: "min",
-            MAX: "max",
-            VARIABLE: "variable",
-            VARIABLE_PERCENTAGE: "variable_percentage",
-            PERCENTAGE: "percentage",
-            EFFECTIVE_TYPE: "effective_type",
-            EFFECTIVE_TYPES: "effective_types",
-            STATUS_EFFECT_TYPE: "status_effect_type",
-            STATUS_EFFECT_TYPES: "status_effect_types",
-            ASSIST_TYPE: "assist_type",
-            CANTO_ASSIST_TYPE: "canto_assist_type",
-            UNITS: "units",
-            STAT: "stat",
-            STAT_N: "stat_n",
-            STAT_N_BONUS: "stat_n_bonus",
-            STAT_N_PENALTY: "stat_n_penalty",
-            STAT_BONUS: "stat_bonus",
-            STAT_PENALTY: "stat_penalty",
+            NON_NEGATIVE_INTEGER: 'non_negative_integer',
+            NUMBER_ARG_1: 'number_arg_1',
+            NUMBER_ARG_2: 'number_arg_2',
+            MIN: 'min',
+            MAX: 'max',
+            VARIABLE: 'variable',
+            VARIABLE_PERCENTAGE: 'variable_percentage',
+            PERCENTAGE: 'percentage',
+            EFFECTIVE_TYPE: 'effective_type',
+            EFFECTIVE_TYPES: 'effective_types',
+            STATUS_EFFECT_TYPE: 'status_effect_type',
+            STATUS_EFFECT_TYPES: 'status_effect_types',
+            ASSIST_TYPE: 'assist_type',
+            CANTO_ASSIST_TYPE: 'canto_assist_type',
+            DIVINE_VEIN_TYPE: 'divine_vein_type',
+            UNITS: 'units',
+            STAT: 'stat',
+            // TODO: rename
+            // 攻撃、攻撃速さ守備魔防などのこと
+            STAT_N: 'stat_n',
+            STAT_N_BONUS: 'stat_n_bonus',
+            STAT_N_PENALTY: 'stat_n_penalty',
+            STAT_BONUS: 'stat_bonus',
+            STAT_PENALTY: 'stat_penalty',
+            TARGET_SPACES: 'target_spaces',
         }
 
         static StringNodeToStrings = new Map(
@@ -78,6 +85,7 @@ class CustomSkill {
                 [this.Node.RANGE_LABEL, '射程: '],
                 [this.Node.MIN_LABEL, '最小: '],
                 [this.Node.MAX_LABEL, '最大: '],
+                [this.Node.TURN_LABEL, 'ターン: '],
             ]
         );
 
@@ -107,8 +115,11 @@ class CustomSkill {
             [this.Node.RANGE_LABEL, this.NodeType.STRING],
             [this.Node.MIN_LABEL, this.NodeType.STRING],
             [this.Node.MAX_LABEL, this.NodeType.STRING],
+            [this.Node.TURN_LABEL, this.NodeType.STRING],
 
             [this.Node.NON_NEGATIVE_INTEGER, this.NodeType.NON_NEGATIVE_INTEGER],
+            [this.Node.NUMBER_ARG_1, this.NodeType.NON_NEGATIVE_INTEGER],
+            [this.Node.NUMBER_ARG_2, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.MIN, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.MAX, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.VARIABLE, this.NodeType.ID],
@@ -120,12 +131,14 @@ class CustomSkill {
             [this.Node.STATUS_EFFECT_TYPES, this.NodeType.IDS],
             [this.Node.ASSIST_TYPE, this.NodeType.ID],
             [this.Node.CANTO_ASSIST_TYPE, this.NodeType.ID],
+            [this.Node.DIVINE_VEIN_TYPE, this.NodeType.ID],
             [this.Node.UNITS, this.NodeType.ID],
             [this.Node.STAT, this.NodeType.ID],
             [this.Node.STAT_N, this.NodeType.ID],
             [this.Node.STAT_N_BONUS, this.NodeType.ID],
             [this.Node.STAT_N_PENALTY, this.NodeType.ID],
             [this.Node.STAT_N_BONUS, this.NodeType.ID],
+            [this.Node.TARGET_SPACES, this.NodeType.ID],
             [this.Node.STAT_BONUS, this.NodeType.NON_NEGATIVE_INTEGER],
             [this.Node.STAT_PENALTY, this.NodeType.NON_NEGATIVE_INTEGER],
         ]);
@@ -218,6 +231,10 @@ class CustomSkill {
             );
         }
 
+        static getNumber(args, node) {
+            return NumberNode.makeNumberNodeFrom(args[node] ?? 0);
+        }
+
         static getPercentageNode(args) {
             return NumberNode.makeNumberNodeFrom(args[this.Node.PERCENTAGE] ?? 0);
         }
@@ -290,6 +307,11 @@ class CustomSkill {
 
         static getStatPenalty(args) {
             return NumberNode.makeNumberNodeFrom(args[this.Node.STAT_PENALTY] ?? 0);
+        }
+
+        static getSpacesFuncNode(args) {
+            let id = args[this.Node.TARGET_SPACES];
+            return id ? this.TARGET_SPACES_FUNC_NODES.get(id)[0] : _ => () => EMPTY_SPACES_NODE;
         }
 
         /**
@@ -369,6 +391,43 @@ class CustomSkill {
             this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT_N, this.STAT_N_NODES);
             this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT_N_BONUS, this.STAT_N_NODES);
             this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.STAT_N_PENALTY, this.STAT_N_NODES);
+
+            this.TARGET_SPACES_FUNC_NODES = new Map([
+                ['', [_ => ZERO_STATS_NODE, '-- 選択してください --']],
+                [
+                    'n-spaces-in-a-line',
+                    [
+                        n =>
+                            N_SPACES_IN_A_LINE_CENTERED_ON_TARGETS_FOES_SPACE_ORIENTED_LEFT_TO_RIGHT_BASED_ON_THE_DIRECTION_TARGET_IS_FACING_NODE(
+                                ADD_NODE(MULT_NODE(n, 2), 1),
+                                n * 2 + 1
+                            ),
+                        '自分から見た敵のマスの左右それぞれのnマス',
+                    ],
+                ],
+                [
+                    'spaces-within-n-spaces-of-target',
+                    [
+                        SPACES_WITHIN_N_SPACES_OF_TARGET_NODE,
+                        '自分の周囲nマス'
+                    ]
+                ],
+                [
+                    'spaces-within-n-spaces-of-foe',
+                    [
+                        SPACES_WITHIN_N_SPACES_OF_FOE_NODE,
+                        '敵の周囲nマス'
+                    ]
+                ],
+                [
+                    'spaces-within-n-spaces-of-closest-foes',
+                    [
+                        n => SPACES_WITHIN_N_SPACES_OF_SPACES_NODE(n, PLACED_SPACES_NODE(TARGETS_CLOSEST_FOES_NODE)),
+                        '最も近い敵の周囲nマス'
+                    ]
+                ],
+            ]);
+            this.registerOptionsByNode(this.NODE_TO_OPTIONS, this.Node.TARGET_SPACES, this.TARGET_SPACES_FUNC_NODES);
 
             this.UNITS_NODES = new Map([
                 ['', [UnitsNode.EMPTY_UNITS_NODE, '-- 選択してください --']],
@@ -480,6 +539,11 @@ class CustomSkill {
                 this.Node.CANTO_ASSIST_TYPE,
                 CantoSupport,
                 value => getCantoAssistName(value)
+            );
+            addEnumOptions(
+                this.Node.DIVINE_VEIN_TYPE,
+                DivineVeinType,
+                value => getDivineVeinName(value)
             );
         }
     }
@@ -598,6 +662,17 @@ CustomSkill.setFuncId('deals-damage-including-aoe', "ダメージ+（範囲含�
         );
         BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
             DEALS_DAMAGE_X_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
+        );
+    },
+    NON_NEGATIVE_INTEGER_ARGS,
+);
+
+CustomSkill.setFuncId('boost-special-damage', "奥義ダメージ+（範囲除）",
+    (skillId, args) => {
+        WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+            BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+                CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
+            ),
         );
     },
     NON_NEGATIVE_INTEGER_ARGS,
@@ -776,7 +851,7 @@ CustomSkill.setFuncId(
             IF_NODE(
                 // If unit’s or foe’s Special is ready,
                 // or unit’s or foe’s Special triggered before or during this combat,
-                IF_UNITS_OR_FOES_SPECIAL_IS_READY_OR_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_COMBAT_NODE,
+                IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
                 // reduces damage from foe’s next attack by 40% (once per combat; excluding area-of-effect Specials).
                 REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(
                     CustomSkill.Arg.getPercentageNode(args)
@@ -1432,6 +1507,12 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
             setAtStartOfPlayerPhaseOrEnemyPhase(skillId, nodeFunc(args)),
     ],
     [
+        'at-start-of-player-and-enemy-phase-except-for-in-summoners-duels',
+        '自軍、および決闘を除く敵軍ターン開始時',
+        (skillId, nodeFunc, args) =>
+            setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, nodeFunc(args)),
+    ],
+    [
         'after-start-of-turn-skills-on-player-phase',
         '自軍ターン開始時スキル発動後',
         (skillId, nodeFunc, args) =>
@@ -1586,6 +1667,72 @@ makeCustomSkillsOnMap(
     ]
 );
 
+makeCustomSkillsOnMap(
+    'converts-penalties-into-bonuses',
+    '対象の弱化を強化に変換する',
+    args =>
+        FOR_EACH_UNIT_NODE(
+            CustomSkill.Arg.getUnitsNode(args),
+            CONVERTS_PENALTIES_ON_TARGET_INTO_BONUSES_NODE,
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+    ]
+);
+
+makeCustomSkillsOnMap(
+    'converts-bonuses-into-penalties',
+    '対象の強化を弱化に変換する',
+    args =>
+        FOR_EACH_UNIT_NODE(
+            CustomSkill.Arg.getUnitsNode(args),
+            CONVERTS_BONUSES_ON_TARGET_INTO_PENALTIES_NODE,
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+    ]
+);
+
+makeCustomSkillsOnMap(
+    'neutralizes-targets-n-penalty-effects-node',
+    '不利な状態異常をn個解除',
+    args =>
+        FOR_EACH_UNIT_NODE(
+            CustomSkill.Arg.getUnitsNode(args),
+            NEUTRALIZES_TARGETS_N_PENALTY_EFFECTS_NODE(CustomSkill.Arg.getNumberNode(args, CustomSkill.Arg.Node.NUMBER_ARG_1)),
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.NUMBER_ARG_1,
+    ]
+);
+
+makeCustomSkillsOnMap(
+    'neutralizes-targets-n-bonus-effects-node',
+    '有利な状態異常をn個解除',
+    args =>
+        FOR_EACH_UNIT_NODE(
+            CustomSkill.Arg.getUnitsNode(args),
+            NEUTRALIZES_TARGETS_N_BONUS_EFFECTS_NODE(CustomSkill.Arg.getNumberNode(args, CustomSkill.Arg.Node.NUMBER_ARG_1)),
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.UNITS,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.NUMBER_ARG_1,
+    ]
+);
+
 CustomSkill.setFuncId(
     'after-start-of-player-phase-if-has-stall-cancel-move-plus-1',
     "ターン開始時スキル後、空転が付与されている場合、移動+1を解除",
@@ -1654,6 +1801,32 @@ makeCustomSkillsOnMap(
         CustomSkill.Arg.Node.TARGET_LABEL,
         CustomSkill.Arg.Node.UNITS,
         CustomSkill.Arg.Node.BR,
+    ],
+);
+
+makeCustomSkillsOnMap(
+    'applies-divine-vein-on-n-spaces-in-a-line-centered-on-foes-space',
+    '天脈を付与',
+    args =>
+        FOR_EACH_SPACES_NODE(
+            CustomSkill.Arg.getSpacesFuncNode(args)(CustomSkill.Arg.getNumber(args, CustomSkill.Arg.Node.NUMBER_ARG_1)),
+            APPLY_DIVINE_VEIN_NODE(
+                CustomSkill.Arg.getNumber(args, CustomSkill.Arg.Node.DIVINE_VEIN_TYPE),
+                TARGET_GROUP_NODE,
+                CustomSkill.Arg.getNumber(args, CustomSkill.Arg.Node.NUMBER_ARG_2),
+            ),
+        ),
+    [
+        // 対象
+        CustomSkill.Arg.Node.TARGET_LABEL,
+        CustomSkill.Arg.Node.TARGET_SPACES,
+        CustomSkill.Arg.Node.DIVINE_VEIN_TYPE,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.SPACES_LABEL,
+        CustomSkill.Arg.Node.NUMBER_ARG_1,
+        CustomSkill.Arg.Node.BR,
+        CustomSkill.Arg.Node.TURN_LABEL,
+        CustomSkill.Arg.Node.NUMBER_ARG_2,
     ],
 );
 
@@ -1831,6 +2004,15 @@ CustomSkill.setFuncId(
     'バフをかけられなくても応援を受けられるようになる',
     (skillId, args) => {
         CAN_RALLIED_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'vengeful-god',
+    '復讐の神形',
+    (skillId, args) => {
+        SET_SKILL_FUNCS.get(Weapon.VengefulGod)?.(skillId);
     },
     []
 );

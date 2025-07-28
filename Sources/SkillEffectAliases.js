@@ -580,10 +580,29 @@ function enablesCantoN(skillId, n) {
     CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => new ConstantNumberNode(n));
 }
 
+// enables canto (adjacent to allies within n spaces of target)
 function enablesCantoAlly(skillId, n) {
     CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
     WHEN_CANTO_UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
         SPACES_ADJACENT_TO_ANY_TARGETS_ALLY_WITHIN_N_SPACES_NODE(n),
+    );
+}
+
+// enables canto (ally within n spaces of allies within m spaces of target)
+function enablesCantoAllyNM(skillId, n, m) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    WHEN_CANTO_UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        UNIQUE_COLLECTION_NODE(
+            FILTER_SPACES_NODE(
+                FLATTEN_COLLECTION_NODE(
+                    MAP_UNITS_NODE(
+                        SKILL_OWNERS_ALLIES_WITHIN_N_SPACES(n),
+                        SPACES_OF_TARGET_NODE(IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(m))
+                    ),
+                ),
+                CAN_PLACE_TARGET_ON_SPACE_NODE,
+            ),
+        ),
     );
 }
 
@@ -641,7 +660,7 @@ let SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE =
  * Unit can move to any space within 2 spaces of an ally within 2 spaces of unit.
  */
 function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, n, m) {
-    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => new UniteSpacesNode(
+    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => UNITE_SPACES_NODE(
         FOR_EACH_ALLY_FOR_SPACES_NODE(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
             SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(n, TARGETS_PLACED_SPACE_NODE),
         ),
@@ -1404,6 +1423,10 @@ function setWhenUnitIsInCombatFoesSaviorEffectsWillNotTriggerNode(skillId) {
     ));
 }
 
+/**
+ * @param skillId
+ * @param {Function} nodeFunc
+ */
 function setAtStartOfPlayerPhaseOrEnemyPhase(skillId, nodeFunc) {
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);

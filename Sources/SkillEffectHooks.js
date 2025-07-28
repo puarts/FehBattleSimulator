@@ -21,7 +21,7 @@ const CALCULATES_DISTANCE_OF_CANTO_WHEN_CANTO_CONTROL_IS_APPLIED_HOOKS = new Ski
 
 /**
  * ワープでの再移動
- * @type {SkillEffectHooks<SpacesNode, BattleMapEnv>} */
+ * @type {SkillEffectHooks<CollectionNode<*, Tile>, BattleMapEnv>} */
 const WHEN_CANTO_UNIT_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 
 /**
@@ -217,6 +217,11 @@ const WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS = new SkillEffectHoo
 const AT_START_OF_ATTACK_HOOKS = new SkillEffectHooks();
 
 /**
+ * 攻撃後(攻撃ごとのスキル効果)
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorEnv>} */
+const AFTER_ATTACK_HOOKS = new SkillEffectHooks();
+
+/**
  * 行動後or再移動後
  * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>} */
 const AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS = new SkillEffectHooks();
@@ -251,6 +256,11 @@ const AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
  * 戦闘以外の行動後の再行動評価時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 再行動後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
  * 再行動後

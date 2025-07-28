@@ -442,6 +442,9 @@ class BattleContext {
         // 奥義による祈りが発動したかどうか(1マップ1回)
         this.hasSpecialOneTimePerMapMiracleAcitivated = false;
 
+        // ダメージ0
+        this.reducesDamageFromFoeToZeroDuringCombat = false;
+
         // 範囲奥義を発動できない
         this.cannotTriggerPrecombatSpecial = false;
 
@@ -522,6 +525,8 @@ class BattleContext {
         // 戦闘後移動スキル無効(切り込みなど)
         // After-combat movement effects do not occur.
         this.isAfterCombatMovementDisabled = false;
+
+        this.activatedSkillsPerTurn = new Set();
 
         //
         // フック関数

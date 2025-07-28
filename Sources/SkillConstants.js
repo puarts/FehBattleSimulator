@@ -3727,6 +3727,9 @@ Weapon.SwordOfIsaach = 3152; // イザークの守護剣
 Special.CrusadersAstra = 3153; // 剣聖の流星雨
 PassiveC.BrutalTempest = 3154; // 迅雷風烈・鬼没
 Weapon.Spear = 3155; // スレンドスピア
+// TODO: 修正する
+Weapon.Tmp1 = 3156; // 天日の神剣
+Weapon.Tmp2 = 3157; // 夕影の神弓
 Weapon.EaglesHeart = 3160; // 黒鷲の愛の斧
 PassiveA.SlySturdyBlow = 3161; // 鬼神金剛の掩撃
 PassiveB.PureStorm = 3162; // 正真狂嵐
@@ -3895,10 +3898,24 @@ PassiveB.DivineBrawn = 3324; // 神獣の逞しき肉体
 Weapon.SummerChilling = 3325; // 夏涼む二人の夏氷
 PassiveB.SRFarResound = 3326; // 共鳴・速魔遠影
 Weapon.RuiGuNoqiangPlus = 3327; // 鋭骨の槍+
+Weapon.WanderingHorn = 3328; // 漂う者の角
 Weapon.ReclusesTome = 3329; // 隠遁者の書
 Weapon.CardinalsTome = 3330; // 枢機卿の書
 PassiveB.Hodrszeal2 = 3331; // ヘズルの聖戦士・承
 PassiveC.SeverancePlus = 3332; // すべてが閉じ…・神
+Weapon.ArcaneRenegade = 3333; // 魔器・マギ団の剣
+PassiveB.HotBlooded = 3334; // 熱血
+PassiveC.AtkSpdFaith = 3335; // 攻撃速さの信念
+Weapon.InTheFoldPlus = 3336; // グループ+
+PassiveC.ADBriarNSave = 3338; // 鎧の護り手・近・茨
+Weapon.BowOfLoyalty = 3339; // 忠臣との絆の弓
+Special.TheTrueNjorun = 3340; // 真・ノヴァの聖戦士
+PassiveA.SturdyFlare = 3341; // 鬼神金剛の炎撃
+PassiveB.ArcFortBreath = 3342; // 強弓・呼吸
+PassiveX.SlyEcho = 3343; // 響・掩撃
+Weapon.BlarcrabPlus = 3344; // ブラークラブ+
+Weapon.Reversalaxeplus = 3345; // 強化反転の斧+
+Weapon.VengefulGod = 3346; // 復讐の神形
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
