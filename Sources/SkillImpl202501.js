@@ -131,7 +131,7 @@
     // X = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5).
 
 // Silver Spoon
-    // Mt: 16　Rng: 1
+    // Mt: 16 Rng: 1
     // Accelerates Special trigger (cooldown count−1).
     // If a Rally or movement Assist skill is used by unit,
     // grants another action to unit (once per turn).
