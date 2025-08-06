@@ -196,6 +196,8 @@ const AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
 const FOR_ALLIES_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
 
+const AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS = new SkillEffectHooks();
+
 /**
  * 戦闘ステータス決定後のバフ
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */

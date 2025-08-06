@@ -189,7 +189,8 @@ class UnitsNode extends CollectionNode {
         }
     }
 
-    static EMPTY_UNITS_NODE = new class extends UnitsNode {}
+    static EMPTY_UNITS_NODE = new class extends UnitsNode {
+    }
 
     /**
      * @param {...UnitNode} units
@@ -895,6 +896,9 @@ class SpacesWithinNSpacesOfFoeNode extends SpacesWithinNSpacesOfTargetNode {
 
 const SPACES_WITHIN_N_SPACES_OF_FOE_NODE = n => new SpacesWithinNSpacesOfFoeNode(n);
 
+const SPACES_WITHIN_N_SPACES_OF_TARGET_OR_TARGET_FOE_NODE =
+    n => UNITE_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(n), SPACES_WITHIN_N_SPACES_OF_FOE_NODE(n));
+
 class SpacesOfTargetNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1408,6 +1412,40 @@ class IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExclud
 
 const IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
     new IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode(2);
+
+class HasDivineVeinNode extends BoolNode {
+    evaluate(env) {
+        let tile = env.tile;
+        let result = tile.hasDivineVein();
+        env.debug(`${tile}に天脈が付与されているか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_DIVINE_VEIN_NODE = new HasDivineVeinNode();
+
+class IsDefensiveTerrainNode extends BoolNode {
+    evaluate(env) {
+        let tile = env.tile;
+        let result = tile.isDefensiveTile;
+        env.debug(`${tile}は防御地形か: ${result}`);
+        return result;
+    }
+}
+
+const IS_DEFENSIVE_TERRAIN_NODE = new IsDefensiveTerrainNode();
+
+class CountsAsDifficultOrImPassableTerrainNodeForUnitsOtherThanFlying extends BoolNode {
+    evaluate(env) {
+        let tile = env.tile;
+        let result = tile.countsAsDifficultOrImPassableTerrainNodeForUnitsOtherThanFlying();
+        env.debug(`${tile}は飛行が侵入可能かつそれ以外の移動タイプが平地のように移動できない地形（侵入不可を含む）か: ${result}`);
+        return result;
+    }
+}
+
+const COUNTS_AS_DIFFICULT_OR_IM_PASSABLE_TERRAIN_NODE_FOR_UNITS_OTHER_THAN_FLYING_NODE =
+    new CountsAsDifficultOrImPassableTerrainNodeForUnitsOtherThanFlying();
 
 // TODO: 条件を指定できるようにする
 /**
@@ -2383,7 +2421,7 @@ class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTarget
 }
 
 const INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE =
-    (atk, spd, def, res) => new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, res);
+    (atkOrStats, spd, def, res) => new InflictsStatsMinusOnFoeDuringCombatNode(atkOrStats, spd, def, res);
 
 const INFLICTS_ALL_STATS_MINUS_2_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(2, 2, 2, 2);
 const INFLICTS_ALL_STATS_MINUS_3_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(3, 3, 3, 3);
@@ -3039,6 +3077,36 @@ const IS_NOT_SUMMONER_DUELS_MODE_NODE = new class extends BoolNode {
         return result;
     }
 }();
+
+class IsSeasonNode extends BoolNode {
+    constructor(seasonNode) {
+        super();
+        this._seasonNode = NumberNode.makeNumberNodeFrom(seasonNode);
+    }
+
+    evaluate(env) {
+        let seasons = Array.from(g_appData.globalBattleContext.enumerateCurrentSeasons());
+        env.debug(`シーズン: ${seasons}`);
+        return seasons.includes(this._seasonNode.evaluate(env));
+    }
+}
+
+const IS_SEASON_NODE = (seasonNode) => new IsSeasonNode(seasonNode);
+
+class DestroysOffenceSafetyFenceNode extends SkillEffectNode {
+    // destroys foe's Safety Fence (O) structure
+    // (triggers even if unit or ally is defeated in combat).
+    evaluate(env) {
+        for (let st of g_appData.getOffenseStructures()) {
+            if (st instanceof SafetyFence) {
+                env.debug('攻撃の安全柵を破壊');
+                moveStructureToTrashBox(st);
+            }
+        }
+    }
+}
+
+const DESTROYS_OFFENCE_SAFETY_FENCE_NODE = new DestroysOffenceSafetyFenceNode();
 
 class IsPenaltyActiveOnTargetNode extends BoolNode {
     static {
@@ -3749,6 +3817,7 @@ class ForTargetNode extends SkillEffectNode {
  * @constructor
  */
 const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
+const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
 
 class TargetsFoesNode extends UnitsNode {
     static {
@@ -4189,6 +4258,13 @@ class AppliesPotentEffectNode extends FromNumbersNode {
 }
 
 const APPLY_POTENT_EFFECT_NODE = new AppliesPotentEffectNode();
+/**
+ * @param {number|NumberNode} percentage
+ * @param {number|NumberNode} spdDiff
+ * @param {boolean|BoolNode} isFixed
+ * @returns {AppliesPotentEffectNode}
+ * @constructor
+ */
 const POTENT_FOLLOW_N_PERCENT_NODE =
     (percentage = 40, spdDiff = -25, isFixed = false) =>
         new AppliesPotentEffectNode(percentage, spdDiff, isFixed);

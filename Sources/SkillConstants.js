@@ -3727,9 +3727,6 @@ Weapon.SwordOfIsaach = 3152; // イザークの守護剣
 Special.CrusadersAstra = 3153; // 剣聖の流星雨
 PassiveC.BrutalTempest = 3154; // 迅雷風烈・鬼没
 Weapon.Spear = 3155; // スレンドスピア
-// TODO: 修正する
-Weapon.Tmp1 = 3156; // 天日の神剣
-Weapon.Tmp2 = 3157; // 夕影の神弓
 Weapon.EaglesHeart = 3160; // 黒鷲の愛の斧
 PassiveA.SlySturdyBlow = 3161; // 鬼神金剛の掩撃
 PassiveB.PureStorm = 3162; // 正真狂嵐
@@ -3916,6 +3913,14 @@ PassiveX.SlyEcho = 3343; // 響・掩撃
 Weapon.BlarcrabPlus = 3344; // ブラークラブ+
 Weapon.Reversalaxeplus = 3345; // 強化反転の斧+
 Weapon.VengefulGod = 3346; // 復讐の神形
+PassiveA.AtkResMastery = 3347; // 攻撃魔防の制空
+PassiveB.AtkDefDiscord = 3348; // 攻撃守備の不和
+PassiveC.TruthKeeper = 3349; // 真実の弁護者
+Special.CelestialForm = 3350; // 天風
+PassiveB.JusticeEnforcer = 3351; // 正義の執行者
+PassiveC.ASHoldGuide = 3352; // 攻速大牽制・導き手
+Weapon.SunSword = 3156; // 天日の神剣
+Weapon.DuskRifle = 3157; // 夕影の神弓
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

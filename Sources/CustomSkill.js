@@ -1587,6 +1587,13 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         },
     ],
     [
+        'after-combat-for-allies',
+        '味方の戦闘後',
+        (skillId, nodeFunc, args) => {
+            AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        },
+    ],
+    [
         'after-combat-if-attacked',
         '攻撃していれば、戦闘後',
         (skillId, nodeFunc, args) => {
@@ -1732,6 +1739,13 @@ makeCustomSkillsOnMap(
         CustomSkill.Arg.Node.NUMBER_ARG_1,
     ]
 );
+
+makeCustomSkillsOnMap(
+    'destroys-offence-safety-fence',
+    '攻撃の安全柵を破壊する',
+    args => DESTROYS_OFFENCE_SAFETY_FENCE_NODE,
+    []
+)
 
 CustomSkill.setFuncId(
     'after-start-of-player-phase-if-has-stall-cancel-move-plus-1',

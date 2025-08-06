@@ -1,7 +1,192 @@
 // スキル実装
+// Justice Enforcer
+{
+    let skillId = PassiveB.JusticeEnforcer;
+    // If defending in Aether Raids during Dark or Chaos season,
+    // after combat for unit or allies on the map,
+    // destroys foe's Safety Fence (0) structure
+    // (triggers even if unit or ally is defeated in combat).
+    AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(
+            AND_NODE(
+                WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
+                IS_SEASON_NODE(SeasonType.Dark),
+                IS_SEASON_NODE(SeasonType.Chaos),
+            ),
+            DESTROYS_OFFENCE_SAFETY_FENCE_NODE,
+        ),
+    ));
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // inflicts (Exposure) on closest foes and foes within 2 spaces of those foes
+            // through their next actions.
+            INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                StatusEffectType.Exposure,
+            ),
+        ),
+    ));
+    // At start of combat,
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // inflicts Atk/Spd/Def-5 on foe,
+            INFLICTS_ATK_SPD_DEF_ON_FOE_DURING_COMBAT_NODE(5),
+            // unit deals +Y damage
+            // (max 15; excluding area-of-effect Specials;
+            // Y = number of foes within 3 rows or 3 columns centered on unit × 5),
+            DEALS_DAMAGE_X_NODE(
+                MULT_MAX_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 5, 15)
+            ),
+            // reduces damage from foe's attacks by 7
+            // (excluding area-of-effect Specials), and
+            REDUCES_DAMAGE_BY_N_NODE(7),
+            // neutralizes effects that guarantee foe's follow-up attacks and
+            // effects that prevent unit's follow-up attacks during combat.
+            NULL_UNIT_FOLLOW_UP_NODE,
+        ),
+    ));
+    WHEN_APPLIES_POTENT_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // if decreasing the Spd difference necessary to make a follow-up attack by 25
+            // would allow unit to trigger a follow-up attack
+            // (excluding guaranteed or prevented follow-ups),
+            // triggers [Potent Follow X%] during combat
+            // (if (Exposure) is active on foe, X = 100; otherwise, X = 40).
+            POTENT_FOLLOW_N_PERCENT_NODE(
+                /** @type {number} */
+                IF_VALUE_NODE(
+                    FOR_FOE_NODE(IS_STATUS_EFFECT_ACTIVE_ON_TARGET_NODE(StatusEffectType.Exposure)),
+                    100,
+                    40,
+                ),
+            ),
+        ),
+    ));
+}
+
+// Celestial Form
+{
+    let skillId = Special.CelestialForm;
+    setSpecialCountAndType(skillId, 3, true, false);
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Boosts damage by X% of unit's Spd when Special triggers
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            X_NUM_NODE(
+                PERCENTAGE_NODE(READ_NUM_NODE, UNITS_SPD_NODE),
+            ),
+            // (if any space within 2 spaces of unit or foe has a Divine Vein effect applied,
+            // is defensive terrain, or counts as difficult or impassable terrain for units other than flying,
+            // X = 60; otherwise, X = 40).
+            IF_VALUE_NODE(
+                SOME_NODE(
+                    MAP_COLLECTION_NODE(
+                        SPACES_WITHIN_N_SPACES_OF_TARGET_OR_TARGET_FOE_NODE(2),
+                        OR_NODE(
+                            HAS_DIVINE_VEIN_NODE,
+                            IS_DEFENSIVE_TERRAIN_NODE,
+                            COUNTS_AS_DIFFICULT_OR_IM_PASSABLE_TERRAIN_NODE_FOR_UNITS_OTHER_THAN_FLYING_NODE,
+                        )
+                    )
+                ),
+                60,
+                40,
+            ),
+        ),
+    ));
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit's or foe's Special is ready,
+        // or unit's or foe's Special triggered before or during this combat, and also,
+        IF_NODE(
+            IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
+            IF_NODE(
+                OR_NODE(
+                    // if unit's Spd ≥ foe's Spd - 4
+                    GTE_NODE(UNITS_SPD_NODE, SUB_NODE(FOES_SPD_NODE, 4)),
+                    // or any space within 2 spaces of unit or foe has a Divine Vein effect applied,
+                    // is defensive terrain, or counts as difficult or impassable terrain for units other than flying,
+                    SOME_NODE(
+                        MAP_COLLECTION_NODE(
+                            SPACES_WITHIN_N_SPACES_OF_TARGET_OR_TARGET_FOE_NODE(2),
+                            OR_NODE(
+                                HAS_DIVINE_VEIN_NODE,
+                                IS_DEFENSIVE_TERRAIN_NODE,
+                                COUNTS_AS_DIFFICULT_OR_IM_PASSABLE_TERRAIN_NODE_FOR_UNITS_OTHER_THAN_FLYING_NODE,
+                            )
+                        )
+                    ),
+                ),
+                // reduces damage from foe's next attack by 40%
+                // (once per combat; excluding area-of-effect Specials).
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(40),
+            ),
+        )
+    ));
+}
+
+// C Truth Keeper
+{
+    let skillId = PassiveC.TruthKeeper;
+    AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If defending in Aether Raids during Anima or Chaos season,
+        IF_NODE(
+            AND_NODE(
+                WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
+                IS_SEASON_NODE(SeasonType.Anima),
+                IS_SEASON_NODE(SeasonType.Chaos),
+            ),
+            // after combat for unit or allies on the map,
+            // destroys foe's Safety Fence (O) structure
+            // (triggers even if unit or ally is defeated in combat).
+            DESTROYS_OFFENCE_SAFETY_FENCE_NODE,
+        ),
+    ));
+    setForAlliesHooks(skillId,
+        // For allies within 3 rows or 3 columns centered on unit,
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        // grants Atk/Res+5 and
+        GRANTS_ATK_RES_TO_TARGET_DURING_COMBAT_NODE(5),
+        SKILL_EFFECT_NODE(
+            // reduces damage from foe's first attack by 7 during combat
+            // ("first attack" normally means only the first strike;
+            // for effects that grant "unit attacks twice,"
+            // it means the first and second strikes), and
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // restores 7 HP to ally after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If there is an ally within 3 rows or 3 columns centered on unit,
+        IF_NODE(IS_THERE_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            // grants Atk/Res+5 to unit,
+            GRANTS_ATK_RES_TO_TARGET_DURING_COMBAT_NODE(5),
+            X_NUM_NODE(
+                // unit deals +X × 5 damage (max 15; excluding area-of-effect Specials),
+                DEALS_DAMAGE_X_NODE(MULT_MAX_NODE(READ_NUM_NODE, 5, 15)),
+                // reduces damage from foe's attacks by 7
+                // (excluding area-of-effect Specials), and
+                REDUCES_DAMAGE_BY_N_NODE(7),
+                // grants Special cooldown count-X to unit
+                // before unit's first attack during combat (max 2;
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(
+                    ENSURE_MAX_NODE(READ_NUM_NODE, 2),
+                ),
+                // X = number of allies within 3 rows or 3 columns centered on unit), and
+                NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+            ),
+            // restores 7 HP to unit after combat.
+            RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    ));
+}
+
 // 天日の神剣
 {
-    let skillId = Weapon.Tmp1;
+    let skillId = Weapon.SunSword;
     // 飛行特効無効
     // 奥義が発動しやすい(発動カウント-1)
     // 敵軍ターンの開始時スキル発動後、
@@ -54,7 +239,7 @@
 
 // 夕影の神弓
 {
-    let skillId = Weapon.Tmp2;
+    let skillId = Weapon.DuskRifle;
     // 飛行特効
     // 奥義が発動しやすい(発動カウント-1)
     // 自軍ターン開始時、および、敵軍ターン開始時、
@@ -1611,16 +1796,16 @@
         // At start of combat,
         // if unit’s Atk ≥ foe’s Atk-5,
         IF_NODE(GTE_NODE(
-            UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE,
-            SUB_NODE(FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE, 5)),
+                UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE,
+                SUB_NODE(FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE, 5)),
             // inflicts Atk/Def-7 on foe during combat.
             INFLICTS_ATK_DEF_ON_FOE_DURING_COMBAT_NODE(7),
         ),
         // At start of combat,
         // if unit’s Def ≥ foe’s Def-5,
         IF_NODE(GTE_NODE(
-            UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE,
-            SUB_NODE(FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE, 5)),
+                UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE,
+                SUB_NODE(FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE, 5)),
             // inflicts Atk/Def-7 on foe during combat.
             INFLICTS_ATK_DEF_ON_FOE_DURING_COMBAT_NODE(7),
         ),
@@ -5167,20 +5352,23 @@
 
 // S/D Hold Guide
 {
-    let skillId = PassiveC.SDHoldGuide;
-    // Allies within 2 spaces of unit
-    // can move to any space within 2 spaces of unit.
-    setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, 2, 2);
-    // Unit can move to a space
-    // within 2 spaces of any ally within 2 spaces.
-    setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, 2, 2);
-    FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        // on foes within 3 spaces of unit during combat.
-        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
-            // Inflicts Spd/Def-4
-            INFLICTS_SPD_DEF_ON_FOE_DURING_COMBAT_NODE(4),
-        ),
-    ));
+    let setSkill = (skillId, statsNode) => {
+        // Allies within 2 spaces of unit
+        // can move to any space within 2 spaces of unit.
+        setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, 2, 2);
+        // Unit can move to a space
+        // within 2 spaces of any ally within 2 spaces.
+        setSkillThatAlliesWithinNSpacesOfUnitCanMoveToAnySpaceWithinMSpacesOfUnit(skillId, 2, 2);
+        FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            // on foes within 3 spaces of unit during combat.
+            IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
+                // Inflicts Spd/Def-4
+                INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(statsNode),
+            ),
+        ));
+    };
+    setSkill(PassiveC.ASHoldGuide, ATK_SPD_NODE(4));
+    setSkill(PassiveC.SDHoldGuide, SPD_DEF_NODE(4));
 }
 
 // Duo Skill
