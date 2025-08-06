@@ -1,4 +1,212 @@
 // スキル実装
+
+// 🗡️ Princess Teapot
+    // Mt: 14 Rng: 2
+    // Enables [Canto (Rem.; Min 1)].
+    // Accelerates Special trigger (cooldown count–1).
+    // If a Rally or movement Assist skill is used by unit,
+    // grants another action to unit (once per turn).
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    // grants [Resonance: Blades], [Resonance: Shields],
+    // and “Special cooldown charge +1 per attack during combat
+    // (only highest value applied; does not stack)”
+    // to allies within 2 spaces of both unit and target ally
+    // or unit and targeting ally after movement for 1 turn
+    // (including unit and target).
+    // If unit initiates combat or if unit is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns centered on unit × 3,
+    //
+    // 5 (max 14),
+    // unit deals +X × 5 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by X × 3 during combat
+    // (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit, excluding stat bonuses
+    //
+    // number of Penalty effects active on foe, excluding stat penalties; max 5).
+
+// 🔮 Immurement
+    // Cooldown: 5
+    // When Special triggers, boosts damage by 70% of unit’s Atk
+    // and neutralizes “reduces damage by X%” effects
+    // from foe’s non-Special skills.
+    // At start of turn and after unit acts (if Canto triggers, after Canto),
+    // inflicts Spd/Res–7, [Feud], and [Discord]
+    // on closest foes and foes within 2 spaces of those foes
+    // through their next actions.
+    // Neutralizes effects that inflict
+    // “Special cooldown charge –X” on unit during combat.
+    // If unit initiates combat,
+    // reduces damage from attacks by percentage =
+    // number of foes within 2 spaces of target with [Feud] active,
+    // including target, × 10, + 40 (max 80%; excluding area-of-effect Specials).
+
+// 🅱️ Spd/Res Detect
+    // Inflicts Spd/Res–4 on foe during combat.
+    // If a movement Assist skill (like Reposition, Shove, Pivot, etc.)
+    // is used by unit or targets unit,
+    // inflicts [Exposure] on closest foes within 5 spaces of both unit and target ally
+    // or unit and targeting ally after movement
+    // and foes within 2 spaces of those foes through their next actions.
+    // Inflicts Spd/Res–5 on foes on the map
+    // with the [Exposure] effect active
+    // and neutralizes bonuses to Spd/Res for those foes during combat.
+
+// 🗡️ Teatime Lance
+    // Mt: 16 Rng: 1
+    // Accelerates Special trigger (cooldown count–2; max cooldown count value cannot be reduced below 1).
+    //
+    // At start of turn and after unit acts (if Canto triggers, after Canto),
+    // inflicts Spd/Def–7, [Sabotage],
+    // and [Discord] on closest foes
+    // and foes within 2 spaces of those foes
+    // through their next actions.
+    //
+    // At start of combat,
+    // if foe’s HP ≥ 75%
+    // or if number of allies adjacent to unit ≤ 1,
+    // grants bonus to unit’s Atk/Spd/Def/Res
+    // = number of foes within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // unit deals +X × 5 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by X × 3 during combat (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe,
+    // excluding stat penalties; max 5),
+    // and restores 7 HP to unit after combat.
+
+// 🅱️ True Lone Wolf
+    // If a skill compares unit’s Spd to a foe’s or ally’s Spd,
+    // treats unit’s Spd as if granted +7.
+    //
+    // If unit has not used or been the target of an Assist skill during the current turn,
+    // grants another action to unit
+    // and inflicts [Isolation] on unit and Pair Up cohort through their next action
+    // in the following cases:
+    // A) unit initiated combat,
+    // or
+    // B) unit took action without entering combat
+    // (takes priority over Canto; once per turn,
+    // with A and B counted separately;
+    // does not trigger when affected by effects of Foresight Snare or traps in Aether Raids).
+    //
+    // At start of combat,
+    // if unit’s HP ≥ 25%
+    // or if number of allies adjacent to unit ≤ 1,
+    // inflicts Atk/Spd/Def/Res–5 on foe,
+    // deals damage = 20% of unit’s Spd
+    // (including when dealing damage with a Special triggered before combat),
+    // and reduces damage from foe’s attacks by 20% of unit’s Spd during combat
+    // (including when taking damage from a Special triggered before combat),
+    // and reduces damage by an additional 20% of unit’s Spd
+    // when foe’s attack triggers foe’s Special
+    // (including when taking damage from a Special triggered before combat),
+    // and neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills
+    // when unit’s Special triggers (excluding area-of-effect Specials).
+
+// 🌀 Tempest Burst
+    // At start of turn,
+    // unit can move 1 extra space (that turn only; does not stack).
+    //
+    // Grants bonus to unit’s Atk/Spd/Def/Res during combat
+    // = number of spaces from start position to end position of whoever initiated combat (max 3),
+    // and also,
+    // if unit’s attack can trigger unit’s Special,
+    // grants Special cooldown count–1 to unit before unit’s first attack during combat.
+
+// 🗡️ Teapot+
+    // Mt: 12 Rng: 2
+    // If a Rally or movement Assist skill is used by unit,
+    // grants another action to unit (once per turn;
+    // if another effect that grants action to unit has been activated at the same time,
+    // this effect is also considered to have been triggered).
+    //
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    // grants [Incited]
+    // and
+    // “Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)”
+    // to allies within 2 spaces of both unit and target ally or unit and targeting ally after movement for 1 turn (including unit and target).
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit
+    // and unit deals +X × 5 damage during combat (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5).
+
+// Silver Spoon
+    // Mt: 16　Rng: 1
+    // Accelerates Special trigger (cooldown count−1).
+    // If a Rally or movement Assist skill is used by unit,
+    // grants another action to unit (once per turn).
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    // grants【Reflex】,【Dodge】,
+    // and【Null Follow-Up】to allies within 2 spaces
+    // of both unit and target ally
+    // or unit and targeting ally after movement
+    // (including unit and target).
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // unit deals +X × 5 damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by X × 3
+    // (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit,
+    // excluding stat bonuses + number of Penalty effects active on foe,
+    // excluding stat penalties; max 5),
+    // and grants Special cooldown count−1 to unit
+    // before unit’s first attack during combat,
+    // and restores 7 HP to unit after combat.
+
+// Lady Knight
+    // Enables【Canto (Dist. +1; Max 4)】.
+    // If unit initiates combat or if unit is within 2 spaces of an ally,
+    // if Potent Follow X% has triggered,
+    // and X ≤ 99,
+    // then X = 100 during combat.
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // deals 7 damage to foe as combat begins
+    // (activates only when unit can attack in combat;
+    // effects that reduce damage “during combat” do not apply;
+    // will not reduce foe’s HP below 1),
+    // grants Atk/Spd/Def/Res+8+Y to unit,
+    // unit deals +Y × 4 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by Y × 4
+    // (excluding area-of-effect Specials),
+    // and also,
+    // when foe’s attack triggers foe’s Special,
+    // reduces damage by an additional Y × 4
+    // (excluding area-of-effect Specials;
+    // Y = number of spaces from start position to end position
+    // of whoever initiated combat; max 3).
+    // If unit initiates combat,
+    // applies【Divine Vein (Flame)】on 5 spaces
+    // in a line centered on foe’s space
+    // (oriented left to right based on the direction unit is facing)
+    // for 1 turn after combat.
+
+// A/S Outcry Dull
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // grants Atk/Spd+6
+    // and “neutralizes foe’s bonuses during combat”
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    // Grants bonus to unit’s Atk/Spd =
+    // number of allies on the map
+    // with the “neutralizes foe’s bonuses during combat” status effect active + 2
+    // (excluding unit; max 5)
+    // and deals damage =
+    // number of spaces from start position to end position
+    // of whoever initiated combat × 2 during combat
+    // (max 8; excluding area-of-effect Specials).
+
+// Harmonized Skill
+    // Grants “unit can move 1 extra space” to unit
+    // (that turn only; does not stack).
+    // Grants【Resonance: Blades】and【Empathy】to unit
+    // and allies from the same titles as unit for 1 turn.
+    //
+    // Once used, Harmonized Skill cannot be activated again right away.
+    // At start of every third turn,
+    // if Harmonized Skill has already been used,
+    // unit can use Harmonized Skill again.
+
 // Justice Enforcer
 {
     let skillId = PassiveB.JusticeEnforcer;

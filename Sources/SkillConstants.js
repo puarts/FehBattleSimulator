@@ -3921,6 +3921,19 @@ PassiveB.JusticeEnforcer = 3351; // 正義の執行者
 PassiveC.ASHoldGuide = 3352; // 攻速大牽制・導き手
 Weapon.SunSword = 3156; // 天日の神剣
 Weapon.DuskRifle = 3157; // 夕影の神弓
+Weapon.PrincessTeapot = 3353; // 皇女のティーポット
+Special.Immurement = 3354; // 真・閉界
+PassiveB.SpdResDetect = 3355; // 速さ魔防の看破
+Weapon.TeatimeLance = 3356; // お茶会の給仕の槍
+PassiveB.TrueLoneWolf = 3357; // 真・一匹狼
+PassiveC.TempestBurst = 3358; // 迅雷風烈・初撃鼓動
+Weapon.TeapotPlus = 3359; // 紅茶のポット+
+Weapon.SilverSpoon = 3360; // 高貴な淑女の銀匙
+PassiveA.LadyKnight = 3361; // 女騎士
+PassiveC.ASOutcryDull = 3362; // 攻速鼓舞・強化無効
+// TODO: 修正
+Weapon.GeiShiNonaihuPlus = 3363; // 給仕のナイフ+
+Weapon.LangQiShiTuanNogong = 3364; // 狼騎士団の弓
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
