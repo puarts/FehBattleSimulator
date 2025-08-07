@@ -214,12 +214,14 @@
     // after combat for unit or allies on the map,
     // destroys foe's Safety Fence (0) structure
     // (triggers even if unit or ally is defeated in combat).
-    AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(
             AND_NODE(
                 WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
-                IS_SEASON_NODE(SeasonType.Dark),
-                IS_SEASON_NODE(SeasonType.Chaos),
+                OR_NODE(
+                    IS_SEASON_NODE(SeasonType.Anima),
+                    IS_SEASON_NODE(SeasonType.Chaos),
+                ),
             ),
             DESTROYS_OFFENCE_SAFETY_FENCE_NODE,
         ),
@@ -338,13 +340,15 @@
 // C Truth Keeper
 {
     let skillId = PassiveC.TruthKeeper;
-    AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // If defending in Aether Raids during Anima or Chaos season,
         IF_NODE(
             AND_NODE(
                 WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
-                IS_SEASON_NODE(SeasonType.Anima),
-                IS_SEASON_NODE(SeasonType.Chaos),
+                OR_NODE(
+                    IS_SEASON_NODE(SeasonType.Anima),
+                    IS_SEASON_NODE(SeasonType.Chaos),
+                ),
             ),
             // after combat for unit or allies on the map,
             // destroys foe's Safety Fence (O) structure
