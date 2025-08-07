@@ -3066,7 +3066,11 @@ const IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGE
 const WHEN_DEFENDING_IN_AETHER_RAIDS_NODE = new class extends BoolNode {
     evaluate(env) {
         // TODO: 値を渡すようにする
-        return g_appData.gameMode === GameMode.AetherRaid && env.skillOwner.groupId === UnitGroupType.Enemy;
+        let isAetherRaid = g_appData.gameMode === GameMode.AetherRaid;
+        let result = isAetherRaid && env.skillOwner.groupId === UnitGroupType.Enemy;
+        // env.debug(`飛空城か: ${isAetherRaid}`);
+        env.debug(`飛空城の防衛か: ${result}`);
+        return result;
     }
 }();
 
@@ -3086,8 +3090,12 @@ class IsSeasonNode extends BoolNode {
 
     evaluate(env) {
         let seasons = Array.from(g_appData.globalBattleContext.enumerateCurrentSeasons());
-        env.debug(`シーズン: ${seasons}`);
-        return seasons.includes(this._seasonNode.evaluate(env));
+        env.debug(`シーズン: [${seasons}]`);
+        let targetSeason = this._seasonNode.evaluate(env);
+        env.debug(`対象のシーズン: ${targetSeason}`);
+        let result = seasons.includes(targetSeason);
+        env.debug(`対象のシーズンを含むか: ${result}`);
+        return result;
     }
 }
 
