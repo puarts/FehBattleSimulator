@@ -820,6 +820,41 @@ class FilterSpacesNode extends SpacesNode {
 
 const FILTER_SPACES_NODE = (n, predNode) => new FilterSpacesNode(n, predNode);
 
+/**
+ * @template T
+ */
+class MapSpacesNode extends CollectionNode {
+    /**
+     * @param {SpacesNode} spacesNode
+     * @param {T} funcNode
+     */
+    constructor(spacesNode, funcNode) {
+        super();
+        this._spacesNode = spacesNode;
+        this._funcNode = funcNode;
+    }
+
+    /**
+     * @param env
+     * @returns {T[]}
+     */
+    evaluate(env) {
+        let tiles = Array.from(this._spacesNode.evaluate(env));
+        let results = tiles.map(t => this._funcNode.evaluate(env.copy().setTile(t)));
+        env.trace(`Map tiles: ${tiles.map(s => s.positionToString()).join(', ')} => results: [${results}]`);
+        return results;
+    }
+}
+
+/**
+ * @template T
+ * @param {SpacesNode} spacesNode
+ * @param {T} funcNode
+ * @returns {CollectionNode<*, T>}
+ * @constructor
+ */
+const MAP_SPACES_NODE = (spacesNode, funcNode) => new MapSpacesNode(spacesNode, funcNode);
+
 class CountSpacesNode extends PositiveNumberNode {
     constructor(spacesNode) {
         super();
@@ -6394,3 +6429,16 @@ class TargetsColorNode extends NumberNode {
 }
 
 const TARGETS_COLOR_NODE = new TargetsColorNode();
+
+class HasAttackCanceledNode extends BoolNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = env.hasAttackCanceled;
+        env.debug(`${unit.nameWithGroup}は攻撃をキャンセルされたか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_ATTACK_CANCELED_NODE = new HasAttackCanceledNode();
+
+// TODO: 罠にかかったか？

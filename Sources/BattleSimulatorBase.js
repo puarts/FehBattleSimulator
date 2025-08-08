@@ -7808,6 +7808,7 @@ class BattleSimulatorBase {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let func = function () {
+            let moveResult = MoveResult.Success;
             let isCantoEndAction = unit.isCantoActivating;
             unit.isActionDoneDuringMoveCommand = false;
             if (enableSoundEffect) {
@@ -7840,7 +7841,7 @@ class BattleSimulatorBase {
                     if (self.isCommandLogEnabled) {
                         self.writeLogLine(unit.getNameWithGroup() + "は" + tileToMove.positionToString() + "に移動");
                     }
-                    moveUnit(unit, tileToMove, unit.groupId === UnitGroupType.Ally);
+                    moveResult = moveUnit(unit, tileToMove, unit.groupId === UnitGroupType.Ally);
                 }
                 self.updateAllUnitSpur();
             }
@@ -7864,7 +7865,7 @@ class BattleSimulatorBase {
 
             self.__updateDistanceFromClosestEnemy(unit);
 
-            let env = new BattleSimulatorBaseEnv(this, unit);
+            let env = new BattleSimulatorBaseEnv(this, unit).setMoveResult(moveResult);
             env.setName('奥義以外の再行動時[移動]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
             unit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
@@ -7922,7 +7923,7 @@ class BattleSimulatorBase {
                     attackerUnit.styleActivationsCount++;
                 }
                 // 攻撃キャンセル時も行動後の再行動の対象になる
-                env = new BattleSimulatorBaseEnv(this, attackerUnit);
+                env = new BattleSimulatorBaseEnv(this, attackerUnit).setHasAttackCanceled(true);
                 env.setName('行動時[攻撃キャンセル]').setLogLevel(getSkillLogLevel());
                 AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(attackerUnit, env);
                 // TODO: 攻撃キャンセル後と行動後が同じタイミングか確認する

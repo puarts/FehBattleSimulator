@@ -81,6 +81,10 @@ class NodeEnv {
     damageType = null;
     /** @type {Tile|null} */
     tile = null;
+    /** @type {number|null} */
+    _moveResult = null;
+    /** @type {boolean} */
+    _hasAttackCanceled = false;
     /** @type {BattleMap} */
     battleMap = null;
     /** @type {number[]} */
@@ -466,6 +470,24 @@ class NodeEnv {
 
     isAtOrAfterCombatPhase(phase) {
         return this.combatPhase >= phase;
+    }
+
+    get moveResult() {
+        return this._moveResult;
+    }
+
+    setMoveResult(moveResult) {
+        this._moveResult = moveResult;
+        return this;
+    }
+
+    get hasAttackCanceled() {
+        return this._hasAttackCanceled;
+    }
+
+    setHasAttackCanceled(hasAttackCanceled) {
+        this._hasAttackCanceled = hasAttackCanceled;
+        return this;
     }
 
     /**
