@@ -5328,7 +5328,7 @@ class ReEnablesCantoToAssistTargetOnMapNode extends ReEnablesCantoToTargetOnMapN
 
 const RE_ENABLES_CANTO_TO_ASSIST_TARGET_ON_MAP_NODE = new ReEnablesCantoToAssistTargetOnMapNode();
 
-class GrantsAnotherActionToTargetOnAssistNode extends BoolNode {
+class GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -5343,6 +5343,47 @@ class GrantsAnotherActionToTargetOnAssistNode extends BoolNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
+        env.debug(`${unit.nameWithGroup}が再行動可能か判定（他の再行動効果が発動した場合、この効果も発動済みとする）`);
+        let success = unit.grantAnotherActionOnAssistIfAnotherActionEffectIsNotActivatedThisTurn();
+        if (success) {
+            env.debug(`${unit.nameWithGroup}は再行動`);
+            if (this._nodeAfterAnotherAction) {
+                this._nodeAfterAnotherAction.evaluate(env);
+            }
+        } else {
+            env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
+        }
+        return success;
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_IF_ANOTHER_ACTION_EFFECT_IS_NOT_ACTIVATED_NODE =
+    new GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode();
+
+class GrantsAnotherActionToAssistTargetingOnAssistNode extends GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetingMixin);
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_TO_ASSIST_TARGETING_ON_ASSIST_NODE = new GrantsAnotherActionToAssistTargetingOnAssistNode();
+
+class GrantsAnotherActionToTargetOncePerTurnOnAssistNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {SkillEffectNode} nodeAfterAnotherAction 再行動後に発動する効果
+     */
+    constructor(nodeAfterAnotherAction = null) {
+        super();
+        this._nodeAfterAnotherAction = nodeAfterAnotherAction;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.debug(`${unit.nameWithGroup}が再行動可能か判定`);
         let success = unit.grantAnotherActionOnAssistIfPossible();
         if (success) {
             env.debug(`${unit.nameWithGroup}は再行動`);
@@ -5356,22 +5397,8 @@ class GrantsAnotherActionToTargetOnAssistNode extends BoolNode {
     }
 }
 
-const GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE = new GrantsAnotherActionToTargetOnAssistNode();
-const GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_NODE = (...nodes) =>
-    IF_NODE(
-        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
-        ...nodes,
-    );
-const GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_EFFECTS_NODE =
-    node => new GrantsAnotherActionToTargetOnAssistNode(node);
-
-class GrantsAnotherActionToAssistTargetingOnAssistNode extends GrantsAnotherActionToTargetOnAssistNode {
-    static {
-        Object.assign(this.prototype, GetAssistTargetingMixin);
-    }
-}
-
-const GRANTS_ANOTHER_ACTION_TO_ASSIST_TARGETING_ON_ASSIST_NODE = new GrantsAnotherActionToAssistTargetingOnAssistNode();
+const GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE =
+    new GrantsAnotherActionToTargetOncePerTurnOnAssistNode();
 
 class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
     evaluate(env) {
@@ -5807,12 +5834,12 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
             // 戦闘中のコンテキストだけではなくユニットに保存されている情報も参照する
             isActivated =
                 unit.battleContext.activatedSkillsPerTurn.has(encodedId) ||
-                unit.oneTimeActionPerTurnActivatedSet.has(encodedId);
+                unit.activatedOncePerTurnSkillEffectIdsThisTurn.has(encodedId);
             activatedSkills = unit.battleContext.activatedSkillsPerTurn;
         } else {
             phase = '戦闘外'
-            isActivated = unit.oneTimeActionPerTurnActivatedSet.has(encodedId);
-            activatedSkills = unit.oneTimeActionPerTurnActivatedSet;
+            isActivated = unit.activatedOncePerTurnSkillEffectIdsThisTurn.has(encodedId);
+            activatedSkills = unit.activatedOncePerTurnSkillEffectIdsThisTurn;
         }
         if (!isActivated) {
             activatedSkills.add(encodedId);
@@ -6439,6 +6466,15 @@ class HasAttackCanceledNode extends BoolNode {
     }
 }
 
-const HAS_ATTACK_CANCELED_NODE = new HasAttackCanceledNode();
+const IS_AFFECTED_BY_FORESIGHT_SNARE_NODE = new HasAttackCanceledNode();
 
-// TODO: 罠にかかったか？
+class IsAffectedByTrapNode extends BoolNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = isTrapActivationResult(env.moveResult);
+        env.debug(`${unit.nameWithGroup}は罠にかかったか: ${result}`);
+        return result;
+    }
+}
+
+ const IS_AFFECTED_BY_TRAP_NODE = new IsAffectedByTrapNode();

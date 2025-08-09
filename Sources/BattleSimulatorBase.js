@@ -11,12 +11,17 @@ function hasTargetOptionValue(targetOptionId, options) {
     return false;
 }
 
-const MoveResult = {
+const MoveResult = Object.freeze({
     Success: 0,
     Failure: 1,
-    BoltTrapActivated: 2,
-    HeavyTrapActivated: 3,
-    HexTrapActivated: 4,
+    TrapMask: 1 << 8,
+    BoltTrapActivated: (1 << 8) | 1,
+    HeavyTrapActivated: (1 << 8) | 2,
+    HexTrapActivated: (1 << 8) | 3,
+});
+
+function isTrapActivationResult(moveResult) {
+    return (moveResult & MoveResult.TrapMask) !== 0;
 }
 
 class MovementAssistResult {
@@ -3729,8 +3734,8 @@ class BattleSimulatorBase {
         result.defUnit.isAttackedDone = true;
         atkUnit.isCombatDone = true;
         result.defUnit.isCombatDone = true;
-        SetUtil.addAll(atkUnit.oneTimeActionPerTurnActivatedSet, atkUnit.battleContext.activatedSkillsPerTurn);
-        SetUtil.addAll(result.defUnit.oneTimeActionPerTurnActivatedSet, result.defUnit.battleContext.activatedSkillsPerTurn);
+        SetUtil.addAll(atkUnit.activatedOncePerTurnSkillEffectIdsThisTurn, atkUnit.battleContext.activatedSkillsPerTurn);
+        SetUtil.addAll(result.defUnit.activatedOncePerTurnSkillEffectIdsThisTurn, result.defUnit.battleContext.activatedSkillsPerTurn);
         if (atkUnit.isStyleActive) {
             atkUnit.isStyleActivatedInThisTurn = true;
             atkUnit.styleActivationsCount++;

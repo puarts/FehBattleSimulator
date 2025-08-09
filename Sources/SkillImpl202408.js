@@ -382,7 +382,7 @@
             // (Effects that can trigger on turn 2 onward will not trigger again for 2 turns after triggering;
             // using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
             TARGETS_REST_SUPPORT_SKILL_AVAILABLE_TURN_NODE(2,
-                GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+                GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE,
                 new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.Gravity),
             ),
         ),
@@ -1977,6 +1977,7 @@
     };
     setSkill(PassiveB.AtkResDetect, [true, false, false, true]);
     setSkill(PassiveB.SpdDefDetect, [false, true, true, false]);
+    setSkill(PassiveB.SpdResDetect, [false, true, false, true]);
 }
 
 // 赤の呪い
@@ -2030,7 +2031,7 @@
     ));
 
     // and grants another action to unit (once per turn).
-    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionToTargetOnAssistNode());
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode());
 }
 
 // 聖王国の父娘の忍弓
@@ -3910,7 +3911,7 @@ function setDiscord(skillId, statsRatios) {
     AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, () => node);
 
     // If a Rally or movement Assist skill is used by unit, grants another action to unit (once per turn).
-    let anotherActionNode = new GrantsAnotherActionToTargetOnAssistNode();
+    let anotherActionNode = new GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode();
     AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
     AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
 

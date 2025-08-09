@@ -1805,11 +1805,12 @@ makeCustomSkillsOnMap(
     ],
 );
 
+// TODO: 他の再行動が発動した場合発動済みになる再行動も実装する(GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_IF_ANOTHER_ACTION_EFFECT_IS_NOT_ACTIVATED_NODE)
 makeCustomSkillsOnMap(
     'grants-another-action',
     '対象を行動可能にする（再行動）',
     args =>
-        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+        GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE,
     [
         // 対象
         CustomSkill.Arg.Node.TARGET_LABEL,
