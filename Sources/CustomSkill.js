@@ -1613,6 +1613,13 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         (skillId, nodeFunc, args) => {
             AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.addSkill(skillId, () => nodeFunc(args));
         }
+    ],
+    [
+        'after-action-without-combat-for-another-action',
+        '戦闘をしていない時の行動後（再行動用）',
+        (skillId, nodeFunc, args) => {
+            AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        },
     ]
 ];
 
