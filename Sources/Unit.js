@@ -1450,7 +1450,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.cantoAssistRange
             + ValueDelimiter + this.cantoSupport
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForCantoRefresh)
-            + ValueDelimiter + Base62Util.encodeSet(this.activatedOncePerTurnSkillEffectIdsThisTurn)
+            + ValueDelimiter + ''
             + ValueDelimiter + this.anotherActionTurnForCallingCircle
             + ValueDelimiter + this.restStyleSkillAvailableTurn
             + ValueDelimiter + boolToInt(this.isStyleActive)
@@ -1459,6 +1459,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restSpecialSkillAvailableTurn
             + ValueDelimiter + this.actionCount
             + ValueDelimiter + this.styleActivationsCount
+            + ValueDelimiter + Base62Util.encodeSet(this.activatedOncePerTurnSkillEffectIdsThisTurn)
             ;
     }
 
@@ -1603,7 +1604,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.cantoAssistRange = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.cantoSupport = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForCantoRefresh = intToBool(Number(values[i])); ++i; }
-        if (values[i] !== undefined) { this.activatedOncePerTurnSkillEffectIdsThisTurn = Base62Util.decodeSet(values[i]); ++i; }
+        if (values[i] !== undefined) { ++i; }
         if (Number.isInteger(Number(values[i]))) { this.anotherActionTurnForCallingCircle = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restStyleSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isStyleActive = intToBool(Number(values[i])); ++i; }
@@ -1612,6 +1613,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.restSpecialSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.actionCount = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.styleActivationsCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.activatedOncePerTurnSkillEffectIdsThisTurn = Base62Util.decodeSet(values[i]); ++i; }
     }
 
 
