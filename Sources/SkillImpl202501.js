@@ -1,5 +1,413 @@
 // スキル実装
 
+{
+    let skillId = getNormalSkillId(Weapon.HotshotLance);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            IF_NODE(EQ_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 3),
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(5)
+            ),
+            IF_NODE(EQ_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 4),
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(6)
+            ),
+            IF_NODE(GTE_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 5),
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(7)
+            ),
+            IF_NODE(LTE_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 2),
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(4)
+            ),
+            IF_NODE(GTE_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 3),
+                NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.HotshotLance);
+    // Enables [Canto (2)] •
+    enablesCantoN(skillId, 2);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Accelerates Special trigger (cooldown count-1).
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // grants bonus to unit's Atk/Spd/Def/Res
+            // based on the number of times unit has been enhanced using Dragonflowers during combat
+            // (five or more times grants +12,
+            // four times grants +10,
+            // three times grants +8, and
+            // two or fewer times grants +6).
+            IF_NODE(GTE_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 5),
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(12),
+            ),
+            IF_NODE(GTE_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 4),
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(10),
+            ),
+            IF_NODE(GTE_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 3),
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(8),
+            ),
+            IF_NODE(LTE_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 2),
+                GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(6),
+            ),
+            // At start of combat,
+            // if unit's HP ≥ 25% and
+            // unit has been enhanced using Dragonflowers three or more times,
+            // neutralizes foe's bonuses (from skills like Fortify, Rally, etc.)
+            // during combat.
+            IF_NODE(GTE_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 3),
+                NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.HotshotLance);
+    // For foes within 3 rows or 3 columns centered on unit,
+    setForFoesSkillsDuringCombatHooks(skillId,
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        // inflicts Atk/Spd/Def-5 and
+        INFLICTS_ATK_SPD_DEF_ON_FOE_DURING_COMBAT_NODE(5),
+        // reduces the percentage of foe's non-Special
+        // "reduce damage by X%" skills by 50% during combat
+        // (excluding area-of-effect Specials).
+        REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        // If unit initiates combat or is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            // deals damage = number of times unit has been enhanced using Dragonflowers × 2 + 5
+            // (max 25; excluding area-of-effect Specials), and
+            DEALS_DAMAGE_X_NODE(MULT_ADD_MAX_NODE(NUM_OF_TARGETS_DRAGONFLOWERS_NODE, 2, 5, 25)),
+            // reduces damage from foe's attacks by 7 during combat
+            // (excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(7),
+        ),
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.FellFlambeau);
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        OR_NODE(EQ_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE, 0), CALC_POTENTIAL_DAMAGE_NODE),
+        INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE(5),
+        INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(FOE_PENALTIES_NODE),
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.FellFlambeau);
+    // Enables [Canto (Rem.; Min 1)] •
+    enablesCantoRemPlusMin(skillId, 0, 1);
+    // Accelerates Special trigger (cooldown count-1).
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // At start of combat,
+        // if unit's HP ≥ 25% or if number of allies adjacent to unit ≤ 1,
+        OR_NODE(
+            IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            LTE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE, 1)
+        ),
+        // inflicts Atk/Spd/Def/Res-5 on foe,
+        INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+        SKILL_EFFECT_NODE(
+            FOR_EACH_STAT_INDEX_NODE(
+                // inflicts penalty on foe's Atk/Spd/Def/Res =
+                INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(
+                    READ_NUM_NODE,
+                    // highest penalty on each stat between target and foes within 2 spaces of target
+                    // (calculates each stat penalty independently), and
+                    FOR_FOE_NODE(
+                        HIGHEST_PENALTY_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(
+                            READ_NUM_NODE, 2
+                        ),
+                    ),
+                ),
+            ),
+            // deals damage = 20% of unit's Spd during combat
+            // (excluding area-of-effect Specials).
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+        ),
+    );
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.FellFlambeau);
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // inflicts Spd/Res-7, [Panic], and [Share Spoils+]
+            // on closest foes and foes within 2 spaces of those foes
+            // through their next actions.
+            INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                SPD_RES_NODE(7),
+                StatusEffectType.Panic,
+                StatusEffectType.ShareSpoilsPlus,
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 7
+            // ("first attack" normally means only the first strike;
+            // for effects that grant "unit attacks twice,"
+            // it means the first and second strikes), and
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // neutralizes effects that guarantee foe's follow-up attacks and
+            // effects that prevent unit's follow-up attacks during combat.
+            NULL_UNIT_FOLLOW_UP_NODE,
+        ),
+    ));
+}
+
+{
+    let skillId = Weapon.LangQiShiTuanNogong;
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // inflicts Spd/Def-7, [Discord], and a penalty that neutralizes
+            // non-Special "if foe would reduce unit's HP to 0, unit survives with 1 HP" effects
+            // on closest foes and foes within 2 spaces of those foes
+            // through their next actions.
+            INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                SPD_DEF_NODE(7),
+                StatusEffectType.Discord,
+                StatusEffectType.NeutralizeUnitSurvivesWith1HP,
+            ),
+        ),
+    ));
+    // At start of combat,
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 7
+            // ("first attack" normally means only the first strike;
+            // for effects that grant "unit attacks twice,"
+            // it means the first and second strikes), and
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+            // neutralizes effects that guarantee foe's follow-up attacks and
+            // effects that prevent unit's follow-up attacks during combat.
+            NULL_UNIT_FOLLOW_UP_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.LangQiShiTuanNogong);
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If unit initiates combat or is within 2 spaces of an ally,
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        SKILL_EFFECT_NODE(
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            // neutralizes foe's bonuses to Spd/Def,
+            NEUTRALIZES_FOES_EACH_BONUSES_TO_STATS_DURING_COMBAT_NODE(false, true, true, false),
+        ),
+        SKILL_EFFECT_NODE(
+            // deals damage = 20% of unit's Spd
+            // (excluding area-of-effect Specials), and
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            // grants Special cooldown charge +1 to unit per attack during combat
+            // (only highest value applied; does not stack).
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+        ),
+    );
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.AxeOfDespair);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        // 戦闘開始時、自身のHPが25%以上なら、戦闘中、敵の攻撃、守備-6、かつ、
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            INFLICTS_ATK_DEF_ON_FOE_DURING_COMBAT_NODE(6),
+        ),
+    ));
+    WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, NODE_FUNC(
+        // 自分の強化の合計値+敵の弱化の合計値によって異なる効果を発動
+        X_NUM_NODE(
+            // (5以上なら、敵は追撃不可、10以上なら、さらに自身は絶対追撃、15以上なら、さらに敵の奥義発動カウント変動量-1)(例えば、自分の強化が攻撃、守備+6、敵の弱化が攻撃、守備-6なら、強化の合計値+弱化の合計値は24となる)
+            IF_NODE(GTE_NODE(READ_NUM_NODE, 5),
+                FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
+            ),
+            IF_NODE(GTE_NODE(READ_NUM_NODE, 10),
+                UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            ),
+            IF_NODE(GTE_NODE(READ_NUM_NODE, 15),
+                INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+            ),
+            ADD_NODE(TARGETS_TOTAL_BONUSES_NODE, FOES_TOTAL_PENALTIES_NODE),
+        ),
+    ))
+}
+{
+    let skillId = getRefinementSkillId(Weapon.AxeOfDespair);
+    // Enables [Canto (2)] •
+    enablesCantoN(skillId, 2);
+    // Accelerates Special trigger (cooldown count-1).
+    // At start of combat,
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // if unit's HP ≥ 25%,
+        IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+        // inflicts Atk/Def-6 on foe and
+        INFLICTS_ATK_DEF_ON_FOE_DURING_COMBAT_NODE(6),
+        SKILL_EFFECT_NODE(
+            X_NUM_NODE(
+                // unit deals +X × 5 damage during combat
+                // (max 25; excluding area-of-effect Specials;
+                DEALS_DAMAGE_X_NODE(MULT_MAX_NODE(READ_NUM_NODE, 5, 25)),
+                // X = number of Bonus effects active on unit, excluding stat bonuses
+                // number of Penalty effects active on foe, excluding stat penalties), and also,
+                NUM_OF_BONUSES_ON_TARGET_AND_PENALTIES_ON_FOE_EXCLUDING_STAT_NODE,
+            ),
+            APPLY_X_NODES(
+                // the following effects will occur based on the value of
+                // total bonuses on unit + value of total penalties on foe:
+                ADD_NODE(TARGETS_TOTAL_BONUSES_NODE, FOES_TOTAL_PENALTIES_NODE),
+                // if ≥ 5, "foe cannot make a follow-up attack";
+                IF_NODE(GTE_NODE(READ_NUM_NODE, 5),
+                    FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
+                ),
+                // and if ≥ 10, "unit makes a guaranteed follow-up attack";
+                IF_NODE(GTE_NODE(READ_NUM_NODE, 10),
+                    UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+                ),
+                // and if ≥ 15, "inflicts Special cooldown charge -1 on foe per attack during combat."
+                IF_NODE(GTE_NODE(READ_NUM_NODE, 15),
+                    INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+                ),
+            ),
+        ),
+    );
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.AxeOfDespair);
+    // At start of player phase or enemy phase,
+    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, NODE_FUNC(
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants Atk/Def+6, [Rally Spectrum], and [Hexblade]
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                ATK_DEF_NODE(6),
+                StatusEffectType.RallySpectrum,
+                StatusEffectType.Hexblade,
+            )
+        ),
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+        // inflicts penalty on foe's Atk/Def =
+        INFLICTS_ATK_DEF_ON_FOE_DURING_COMBAT_NODE(
+            // 10% of unit's Def at start of combat + 6 and
+            PERCENTAGE_ADD_NODE(10, UNITS_DEF_AT_START_OF_COMBAT_NODE, 6),
+        ),
+        // reduces damage from foe's attacks
+        // by 20% of unit's Def during combat
+        // (excluding area-of-effect Specials).
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(PERCENTAGE_NODE(20, UNITS_DEF_NODE)),
+    );
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.Ginnungagap);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(6),
+            IF_NODE(
+                OR_NODE(
+                    DOES_UNIT_INITIATE_COMBAT_NODE,
+                    AND_NODE(
+                        DOES_FOE_INITIATE_COMBAT_NODE,
+                        OR_NODE(IS_TARGET_TOME_TYPE_NODE, IS_TARGET_STAFF_TYPE_NODE),
+                    ),
+                ),
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_NODE(40),
+                TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.Ginnungagap);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd during combat =
+            GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(
+                // 10% of unit's Spd at start of combat + 6.
+                PERCENTAGE_ADD_NODE(10, UNITS_SPD_AT_START_OF_COMBAT_NODE, 6),
+            ),
+        ),
+        // If unit initiates combat or magic or staff foe initiates combat,
+        IF_NODE(
+            AND_NODE(
+                OR_NODE(
+                    DOES_UNIT_INITIATE_COMBAT_NODE,
+                    AND_NODE(
+                        OR_NODE(
+                            IS_TARGET_MAGIC_TYPE_NODE,
+                            IS_TARGET_STAFF_TYPE_NODE,
+                        ),
+                        DOES_FOE_INITIATE_COMBAT_NODE,
+                    ),
+                ),
+                // and if unit's HP ≥ 25% at start of combat,
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            ),
+            // reduces damage from foe's first attack during combat by 40%
+            // ("first attack" normally means only the first strike;
+            // for effects that grant "unit attacks twice,"
+            // it means the first and second strikes), and
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_INCLUDING_TWICE_NODE(40),
+            // unit's next attack deals damage = total damage reduced
+            // (by any source, including other skills; resets at end of combat), and also,
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
+            // if unit's HP > 1 and foe would reduce unit's HP to 0,
+            // unit survives with 1 HP
+            // (once per combat; does not stack with non-Special effects
+            // that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
+            TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(0),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Ginnungagap);
+    // At start of player phase or enemy phase,
+    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, NODE_FUNC(
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants Atk/Spd+6,
+            // [Anathema], and [Null Follow-Up]
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                ATK_SPD_NODE(6),
+                StatusEffectType.Anathema,
+                StatusEffectType.NullFollowUp,
+            ),
+        ),
+    ));
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // grants Atk/Spd+6 to unit and
+    // deals damage = 20% of unit's Spd during combat
+    // (excluding area-of-effect Specials), and
+    // restores 10 HP to unit after combat.
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+        GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(6),
+        SKILL_EFFECT_NODE(
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE,
+        ),
+    );
+}
+
 // 🗡️ Princess Teapot
 {
     let skillId = Weapon.PrincessTeapot;

@@ -168,6 +168,33 @@ class AssistTargetNode extends TargetNode {
 
 const ASSIST_TARGET_NODE = new AssistTargetNode();
 
+class ForTargetNode extends SkillEffectNode {
+    /**
+     * @param {UnitNode} unitNode
+     * @param node
+     */
+    constructor(unitNode, node) {
+        super();
+        this._unitNode = unitNode;
+        this._node = node;
+    }
+
+    evaluate(env) {
+        let newEnv = env.copy().setTarget(this._unitNode.evaluate(env));
+        return this._node.evaluate(newEnv);
+    }
+}
+
+/**
+ * @template T
+ * @param {UnitNode} unitNode
+ * @param {T} node
+ * @returns {T}
+ * @constructor
+ */
+const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
+const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
+
 /**
  * @extends {CollectionNode<*, Unit>}
  * @abstract
@@ -2399,7 +2426,7 @@ class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
         let units = Array.from(this._unitsNode.evaluate(env));
         let evaluated = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
         env.trace(`Units: ${units.map(u => u.nameWithGroup)} => values array: [${evaluated.map(a => `[${a}]`)}]`);
-        let result = ArrayUtil.maxByIndex(...evaluated);
+        let result = ArrayUtil.maxByIndex(...evaluated, [0, 0, 0, 0]);
         env.trace(`Highest values: [${result}]`);
         return result;
     }
@@ -2477,6 +2504,8 @@ const INFLICTS_SPD_ON_FOE_DURING_COMBAT_NODE = spd =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, 0, 0);
 const INFLICTS_DEF_ON_FOE_DURING_COMBAT_NODE = def =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, def, 0);
+const INFLICTS_RES_ON_FOE_DURING_COMBAT_NODE = res =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 0, res);
 
 const INFLICTS_ATK_SPD_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, 0);
@@ -2495,6 +2524,9 @@ const INFLICTS_ATK_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, res = at
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, res);
 const INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk, res = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, res);
+
+const INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, def = atk, res = atk) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, res);
 
 class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
     static {
@@ -3627,6 +3659,16 @@ class TargetsPenaltiesNode extends StatsNode {
     }
 }
 
+const TARGETS_PENALTIES_NODE = new TargetsPenaltiesNode();
+
+class FoePenaltiesNode extends TargetsPenaltiesNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOE_PENALTIES_NODE = new FoePenaltiesNode();
+
 // Unit or BattleContextの値を参照 END
 
 class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
@@ -3834,33 +3876,6 @@ const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNod
  * @constructor
  */
 const FOR_UNIT_NODE = (unit, ...nodes) => FOR_EACH_UNIT_NODE(UnitsNode.makeFromUnit(unit), ...nodes);
-
-class ForTargetNode extends SkillEffectNode {
-    /**
-     * @param {UnitNode} unitNode
-     * @param node
-     */
-    constructor(unitNode, node) {
-        super();
-        this._unitNode = unitNode;
-        this._node = node;
-    }
-
-    evaluate(env) {
-        let newEnv = env.copy().setTarget(this._unitNode.evaluate(env));
-        return this._node.evaluate(newEnv);
-    }
-}
-
-/**
- * @template T
- * @param {UnitNode} unitNode
- * @param {T} node
- * @returns {T}
- * @constructor
- */
-const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
-const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
 
 class TargetsFoesNode extends UnitsNode {
     static {

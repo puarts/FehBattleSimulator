@@ -6739,18 +6739,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.YngviAscendant] = (targetUnit) => {
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.Ginnungagap] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-                let isTomeOrStaff = enemyUnit.isTome || (enemyUnit.weaponType === WeaponType.Staff);
-                if (targetUnit.battleContext.initiatesCombat ||
-                    (enemyUnit.battleContext.initiatesCombat && isTomeOrStaff)) {
-                    targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
-                    targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
-                }
-            }
-        };
         this._applySkillEffectForUnitFuncDict[Weapon.TigerSpirit] = (targetUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
@@ -7033,12 +7021,6 @@ class DamageCalculatorWrapper {
                 }
             }
         };
-        this._applySkillEffectForUnitFuncDict[Weapon.AxeOfDespair] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                enemyUnit.atkSpur -= 6;
-                enemyUnit.defSpur -= 6;
-            }
-        };
         this._applySkillEffectForUnitFuncDict[PassiveB.MurderousLion] = (targetUnit, enemyUnit) => {
             if (!self.__isThereAllyInSpecifiedSpaces(targetUnit, 1)) {
                 enemyUnit.spdSpur -= 3;
@@ -7160,25 +7142,6 @@ class DamageCalculatorWrapper {
                 if (targetUnit.battleContext.initiatesCombat) {
                     targetUnit.defSpur += 10;
                     targetUnit.resSpur += 10;
-                }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.HotshotLance] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                let buffAmount = 4;
-                if (targetUnit.dragonflower === 3) {
-                    buffAmount = 5;
-                }
-                else if (targetUnit.dragonflower === 4) {
-                    buffAmount = 6;
-                }
-                else if (targetUnit.dragonflower === 5) {
-                    buffAmount = 7;
-                }
-                targetUnit.addAllSpur(buffAmount);
-
-                if (targetUnit.dragonflower >= 3) {
-                    targetUnit.battleContext.invalidateAllBuffs();
                 }
             }
         };
@@ -11325,7 +11288,6 @@ class DamageCalculatorWrapper {
                     }
                 }
                     break;
-                case Weapon.AxeOfDespair:
                 case Weapon.Revatein:
                 case Weapon.Blarblade:
                 case Weapon.BlarbladePlus:
@@ -12448,18 +12410,6 @@ class DamageCalculatorWrapper {
                             enemyUnit.defSpur -= 5;
                             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
                             enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
-                        }
-                        break;
-                    case Weapon.FellFlambeau:
-                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
-                            enemyUnit.atkSpur -= 5;
-                            enemyUnit.spdSpur -= 5;
-                            enemyUnit.defSpur -= 5;
-                            enemyUnit.resSpur -= 5;
-                            enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
-                            enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
-                            enemyUnit.defSpur -= Math.abs(enemyUnit.defDebuffTotal);
-                            enemyUnit.resSpur -= Math.abs(enemyUnit.resDebuffTotal);
                         }
                         break;
                     case Weapon.PlegianTorchPlus:

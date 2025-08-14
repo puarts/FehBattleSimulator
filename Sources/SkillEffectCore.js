@@ -1455,6 +1455,8 @@ class ApplyXNode extends SkillEffectNode {
  */
 const APPLY_X_NODE = (xNode, node) => new ApplyXNode(xNode, node);
 
+const APPLY_X_NODES = (xNode, ...nodes) => X_NUM_NODE(...nodes, xNode);
+
 class CacheNode extends SkillEffectNode {
     constructor(key, node) {
         super(node);
