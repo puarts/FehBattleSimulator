@@ -374,6 +374,7 @@ class PrecombatContext {
 class Unit extends BattleMapElement {
     #hpAddAfterEnteringBattle = 0;
     #statusEffects = [];
+    static GRANTS_ANOTHER_ACTION_ON_ASSIST_ID = 'grants-another-action-on-assist';
     constructor(id = "", name = "",
         unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
@@ -649,7 +650,7 @@ class Unit extends BattleMapElement {
          * 味方、敵ターンそれぞれでリセットされるターンで1回の効果
          * @type {Set<string>}
          */
-        this.oneTimeActionPerTurnActivatedSet = new Set();
+        this.activatedOncePerTurnSkillEffectIdsThisTurn = new Set();
 
         // 戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
         //（同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
@@ -1449,7 +1450,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.cantoAssistRange
             + ValueDelimiter + this.cantoSupport
             + ValueDelimiter + boolToInt(this.isOneTimeActionActivatedForCantoRefresh)
-            + ValueDelimiter + JSON.stringify(Array.from(this.oneTimeActionPerTurnActivatedSet))
+            + ValueDelimiter + ''
             + ValueDelimiter + this.anotherActionTurnForCallingCircle
             + ValueDelimiter + this.restStyleSkillAvailableTurn
             + ValueDelimiter + boolToInt(this.isStyleActive)
@@ -1458,6 +1459,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restSpecialSkillAvailableTurn
             + ValueDelimiter + this.actionCount
             + ValueDelimiter + this.styleActivationsCount
+            + ValueDelimiter + Base62Util.encodeSet(this.activatedOncePerTurnSkillEffectIdsThisTurn)
             ;
     }
 
@@ -1602,7 +1604,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.cantoAssistRange = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.cantoSupport = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isOneTimeActionActivatedForCantoRefresh = intToBool(Number(values[i])); ++i; }
-        if (values[i] !== undefined) { this.oneTimeActionPerTurnActivatedSet = new Set(JSON.parse(values[i])); ++i; }
+        if (values[i] !== undefined) { ++i; }
         if (Number.isInteger(Number(values[i]))) { this.anotherActionTurnForCallingCircle = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.restStyleSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isStyleActive = intToBool(Number(values[i])); ++i; }
@@ -1611,6 +1613,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.restSpecialSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.actionCount = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.styleActivationsCount = Number(values[i]); ++i; }
+        if (values[i] !== undefined) { this.activatedOncePerTurnSkillEffectIdsThisTurn = Base62Util.decodeSet(values[i]); ++i; }
     }
 
 
@@ -2840,7 +2843,7 @@ class Unit extends BattleMapElement {
         this.isCantoActivatedInCurrentTurn = false;
         this.isAnotherActionInPostCombatActivated = false;
         this.isOneTimeActionActivatedForCantoRefresh = false;
-        this.oneTimeActionPerTurnActivatedSet = new Set();
+        this.activatedOncePerTurnSkillEffectIdsThisTurn = new Set();
         this.deactivateStyle();
     }
 
@@ -6547,6 +6550,10 @@ class Unit extends BattleMapElement {
         this.isCantoActivatedInCurrentTurn = false;
     }
 
+    /**
+     * 補助を使用したまたは使用された場合の再行動
+     * @param isAssist
+     */
     grantsAnotherActionWhenAssist(isAssist) {
         if (isAssist) {
             this.grantsAnotherActionOnAssist();
@@ -6562,10 +6569,12 @@ class Unit extends BattleMapElement {
             AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.evaluateWithUnit(this, env);
         }
         this.isActionDone = false;
+        this.activatedOncePerTurnSkillEffectIdsThisTurn.add(Unit.GRANTS_ANOTHER_ACTION_ON_ASSIST_ID);
         g_appData.globalBattleContext.reservedIsAnotherActionByAssistActivatedInCurrentTurn[this.groupId] = true;
     }
 
     grantsAnotherActionOnAssisted() {
+        // TODO: 再行動可能かどうかの判定を行う
         this.isActionDone = false;
     }
 
@@ -6577,6 +6586,16 @@ class Unit extends BattleMapElement {
             return true;
         }
         return false;
+    }
+
+    grantAnotherActionOnAssistIfAnotherActionEffectIsNotActivatedThisTurn() {
+        if (!this.isOneTimeActionActivatedForSupport &&
+            this.isActionDone &&
+            !this.activatedOncePerTurnSkillEffectIdsThisTurn.has(Unit.GRANTS_ANOTHER_ACTION_ON_ASSIST_ID)) {
+            this.isOneTimeActionActivatedForSupport = true;
+            this.grantsAnotherActionOnAssist();
+            return true;
+        }
     }
 
     grantAnotherActionByCallingCircleIfPossible(currentTurn = null) {

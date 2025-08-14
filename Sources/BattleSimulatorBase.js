@@ -11,12 +11,17 @@ function hasTargetOptionValue(targetOptionId, options) {
     return false;
 }
 
-const MoveResult = {
+const MoveResult = Object.freeze({
     Success: 0,
     Failure: 1,
-    BoltTrapActivated: 2,
-    HeavyTrapActivated: 3,
-    HexTrapActivated: 4,
+    TrapMask: 1 << 8,
+    BoltTrapActivated: (1 << 8) | 1,
+    HeavyTrapActivated: (1 << 8) | 2,
+    HexTrapActivated: (1 << 8) | 3,
+});
+
+function isTrapActivationResult(moveResult) {
+    return (moveResult & MoveResult.TrapMask) !== 0;
 }
 
 class MovementAssistResult {
@@ -3729,8 +3734,8 @@ class BattleSimulatorBase {
         result.defUnit.isAttackedDone = true;
         atkUnit.isCombatDone = true;
         result.defUnit.isCombatDone = true;
-        SetUtil.addAll(atkUnit.oneTimeActionPerTurnActivatedSet, atkUnit.battleContext.activatedSkillsPerTurn);
-        SetUtil.addAll(result.defUnit.oneTimeActionPerTurnActivatedSet, result.defUnit.battleContext.activatedSkillsPerTurn);
+        SetUtil.addAll(atkUnit.activatedOncePerTurnSkillEffectIdsThisTurn, atkUnit.battleContext.activatedSkillsPerTurn);
+        SetUtil.addAll(result.defUnit.activatedOncePerTurnSkillEffectIdsThisTurn, result.defUnit.battleContext.activatedSkillsPerTurn);
         if (atkUnit.isStyleActive) {
             atkUnit.isStyleActivatedInThisTurn = true;
             atkUnit.styleActivationsCount++;
@@ -3760,7 +3765,100 @@ class BattleSimulatorBase {
         // battleContextが必要なスキル発動後に追跡対象を更新する(追跡対象更新時にbattleContextが初期化されるため)
         // そのために現時点で更新が必要なタイルを保存しておく
         let tilesForUpdateChaseTargetTile = [];
+        this.removeDeadUnit(atkUnit, defUnit, tilesForUpdateChaseTargetTile);
 
+        // 戦果移譲による再行動
+        if (atkUnit.isAlive) {
+            if (defUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
+                // さらに、敵から攻撃された戦闘で撃破された時、
+                if (defUnit.isDead) {
+                    // 戦闘後、敵を行動可能な状態にする（この効果は「時は光」を含む、他の同系統効果より優先する、その際、他の同系統効果は発動していない扱いとする）
+                    // 戦果移譲・広域も発動したものとする
+                    let skillSet =
+                        g_appData.globalBattleContext.oncePerTurnSkillsForTheEntireMapInCurrentTurn[atkUnit.groupId];
+                    skillSet.add(`${getStatusEffectSkillId(StatusEffectType.ShareSpoilsPlus)}-再行動`);
+                    if (atkUnit.isActionDone) {
+                        atkUnit.isActionDone = false;
+                    }
+                }
+            }
+        }
+
+        // 優先度の高い再行動スキルの評価
+        if (atkUnit.isAlive) {
+            for (let skillId of atkUnit.enumerateSkills()) {
+                let func = getSkillFunc(skillId, applyHighPriorityAnotherActionSkillEffectFuncMap);
+                func?.call(this, atkUnit, defUnit, tileToAttack);
+            }
+        }
+
+        // 優先度が高いスキルの後かつ奥義の再行動の前
+        let env = new BattleSimulatorBaseEnv(this, atkUnit).setUnitsDuringCombat(atkUnit, defUnit);
+        env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel());
+        AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
+        let foeEnv =
+            new BattleSimulatorBaseEnv(this, atkUnit)
+                .setUnitsDuringCombat(atkUnit, defUnit)
+                .setSkillOwner(defUnit)
+                .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
+        AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
+
+        // 戦闘後の移動系スキルを加味する必要があるので後段で評価
+        if (atkUnit.isAlive) {
+            this.applySkillEffectAfterMovementSkill(atkUnit, defUnit, tileToAttack);
+        }
+
+        // 戦闘済みであるフラグの有効化
+        {
+            g_appData.isCombatOccuredInCurrentTurn = true;
+        }
+
+        // 戦闘に関係したユニットの紋章系のスキルを戦闘前の状態に戻す
+        {
+            this.damageCalc.updateUnitSpur(atkUnit);
+            this.damageCalc.updateUnitSpur(defUnit);
+            if (result.defUnit !== defUnit) {
+                let saverUnit = result.defUnit;
+                this.damageCalc.updateUnitSpur(saverUnit);
+            }
+        }
+
+        // 再行動奥義
+        if (atkUnit.specialCount === 0 &&
+            !atkUnit.isOneTimeActionActivatedForSpecial &&
+            atkUnit.isActionDone &&
+            atkUnit.isAlive) {
+            this.applyAnotherActionSkillBySpecial(atkUnit);
+        }
+
+        // 魔法陣の増援による再行動
+        atkUnit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
+
+        if (this.data.gameMode === GameMode.SummonerDuels) {
+            this.data.globalBattleContext.addSummonerDuelsKoScore(atkUnit, defUnit);
+        }
+
+        // 再移動の評価
+        let cantoActivated = this.__activateCantoIfPossible(atkUnit);
+        if (!cantoActivated) {
+            atkUnit.applyEndActionSkills();
+            // 同時タイミングに付与された天脈を消滅させる
+            g_appData.map.applyReservedDivineVein();
+        }
+
+        // 追跡対象の更新
+        for (let tile of tilesForUpdateChaseTargetTile) {
+            this.__updateChaseTargetTilesForSpecifiedTile(tile);
+        }
+
+        // 罠は再行動奥義や再移動の後に評価する必要がある(停止罠で迅雷や再移動は無効化される)
+        executeTrapIfPossible(atkUnit);
+
+        // unit.endAction()のタイミングが戦闘後処理の前でなければいけないので、endUnitActionは直接呼べない
+        this.__goToNextPhaseIfPossible(atkUnit.groupId);
+    }
+
+    removeDeadUnit(atkUnit, defUnit, tilesForUpdateChaseTargetTile) {
         if (atkUnit.hp === 0) {
             this.audioManager.playSoundEffect(SoundEffectId.Dead);
             g_appData.globalBattleContext.incrementRemovedUnitCount(atkUnit.groupId);
@@ -3804,181 +3902,98 @@ class BattleSimulatorBase {
                 }
             }
         }
+    }
 
-        // 戦果移譲による再行動
-        if (atkUnit.isAlive) {
-            if (defUnit.hasStatusEffect(StatusEffectType.ShareSpoils)) {
-                // さらに、敵から攻撃された戦闘で撃破された時、
-                if (defUnit.isDead) {
-                    // 戦闘後、敵を行動可能な状態にする（この効果は「時は光」を含む、他の同系統効果より優先する、その際、他の同系統効果は発動していない扱いとする）
-                    // 戦果移譲・広域も発動したものとする
-                    let skillSet =
-                        g_appData.globalBattleContext.oncePerTurnSkillsForTheEntireMapInCurrentTurn[atkUnit.groupId];
-                    skillSet.add(`${getStatusEffectSkillId(StatusEffectType.ShareSpoilsPlus)}-再行動`);
-                    if (atkUnit.isActionDone) {
-                        atkUnit.isActionDone = false;
+    applyAnotherActionSkillBySpecial(atkUnit) {
+        switch (atkUnit.special) {
+            case Special.RequiemDance: {
+                let highestHpUnits = [];
+                let highestHp = 0;
+                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
+                    if (unit.isActionDone) {
+                        if (unit.hp > highestHp) {
+                            highestHpUnits = [unit];
+                            highestHp = unit.hp;
+                        } else if (unit.hp === highestHp) {
+                            highestHpUnits.push(unit);
+                        }
+                    }
+                }
+
+                if (highestHpUnits.length === 1) {
+                    for (let unit of highestHpUnits) {
+                        this.writeLogLine(`${atkUnit.getNameWithGroup()}が${atkUnit.specialInfo.name}を発動、対象は${unit.getNameWithGroup()}`);
+                        atkUnit.isOneTimeActionActivatedForSpecial = true;
+                        atkUnit.specialCount = atkUnit.maxSpecialCount;
+                        unit.isActionDone = false;
+                        // @TODO: 将来飛空城でダブルが使用できるようになった場合はダブル相手にもグラビティ付与
+                        unit.addStatusEffect(StatusEffectType.Gravity);
                     }
                 }
             }
+                break;
+            case Special.NjorunsZeal2:
+            case Special.NjorunsZeal:
+                this.__activateRefreshSpecial(atkUnit);
+                atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                break;
+            case Special.Galeforce:
+                this.__activateRefreshSpecial(atkUnit);
+                break;
         }
+    }
 
-        // 優先度の高い再行動スキルの評価
-        if (atkUnit.isAlive) {
-            for (let skillId of atkUnit.enumerateSkills()) {
-                let func = getSkillFunc(skillId, applyHighPriorityAnotherActionSkillEffectFuncMap);
-                func?.call(this, atkUnit, defUnit, tileToAttack);
-            }
-        }
-
-        // 優先度が高いスキルの後かつ奥義の再行動の前
-        let env = new BattleSimulatorBaseEnv(this, atkUnit).setUnitsDuringCombat(atkUnit, defUnit);
-        env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel());
-        AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
-        let foeEnv =
-            new BattleSimulatorBaseEnv(this, atkUnit)
-                .setUnitsDuringCombat(atkUnit, defUnit)
-                .setSkillOwner(defUnit)
-                .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
-        AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
-
-        // 戦闘後の移動系スキルを加味する必要があるので後段で評価
-        if (atkUnit.isAlive) {
-            for (let skillId of atkUnit.enumerateSkills()) {
-                let func = getSkillFunc(skillId, applySkillEffectAfterMovementSkillsActivatedFuncMap);
-                func?.call(this, atkUnit, defUnit, tileToAttack);
-                switch (skillId) {
-                    case PassiveB.GoldUnwinding: {
-                        let logMessage = `${atkUnit.nameWithGroup}のBスキル効果発動可能まで残り${atkUnit.restPassiveBSkillAvailableTurn}ターン`;
-                        if (atkUnit.restPassiveBSkillAvailableTurn === 0) {
-                            logMessage = `${atkUnit.nameWithGroup}のBスキル効果は現在発動可能`;
-                        }
+    applySkillEffectAfterMovementSkill(atkUnit, defUnit, tileToAttack) {
+        for (let skillId of atkUnit.enumerateSkills()) {
+            let func = getSkillFunc(skillId, applySkillEffectAfterMovementSkillsActivatedFuncMap);
+            func?.call(this, atkUnit, defUnit, tileToAttack);
+            switch (skillId) {
+                case PassiveB.GoldUnwinding: {
+                    let logMessage = `${atkUnit.nameWithGroup}のBスキル効果発動可能まで残り${atkUnit.restPassiveBSkillAvailableTurn}ターン`;
+                    if (atkUnit.restPassiveBSkillAvailableTurn === 0) {
+                        logMessage = `${atkUnit.nameWithGroup}のBスキル効果は現在発動可能`;
+                    }
+                    this.writeLogLine(logMessage);
+                    this.writeSimpleLogLine(logMessage);
+                    if (atkUnit.restPassiveBSkillAvailableTurn !== 0) {
+                        this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
+                    }
+                    if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
+                        atkUnit.isActionDone &&
+                        atkUnit.restPassiveBSkillAvailableTurn === 0) {
+                        logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.passiveBInfo.name}により再行動`;
                         this.writeLogLine(logMessage);
                         this.writeSimpleLogLine(logMessage);
-                        if (atkUnit.restPassiveBSkillAvailableTurn !== 0) {
-                            this.writeLog(`ターン制限により${atkUnit.nameWithGroup}の再行動スキル効果は発動せず`);
-                        }
-                        if (!atkUnit.isOneTimeActionActivatedForPassiveB &&
-                            atkUnit.isActionDone &&
-                            atkUnit.restPassiveBSkillAvailableTurn === 0) {
-                            logMessage = `${atkUnit.getNameWithGroup()}は${atkUnit.passiveBInfo.name}により再行動`;
-                            this.writeLogLine(logMessage);
-                            this.writeSimpleLogLine(logMessage);
-                            atkUnit.restPassiveBSkillAvailableTurn = 2;
-                            atkUnit.isActionDone = false;
-                            atkUnit.addStatusEffect(StatusEffectType.Gravity);
-                            atkUnit.isOneTimeActionActivatedForPassiveB = true;
-                        }
+                        atkUnit.restPassiveBSkillAvailableTurn = 2;
+                        atkUnit.isActionDone = false;
+                        atkUnit.addStatusEffect(StatusEffectType.Gravity);
+                        atkUnit.isOneTimeActionActivatedForPassiveB = true;
                     }
-                        break;
-                    case Weapon.HadoNoSenfu:
-                        if (!atkUnit.isOneTimeActionActivatedForWeapon &&
-                            atkUnit.isWeaponSpecialRefined &&
-                            atkUnit.battleContext.initiatesCombat &&
-                            !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1) &&
-                            atkUnit.isActionDone) {
-                            atkUnit.isActionDone = false;
-                            atkUnit.isOneTimeActionActivatedForWeapon = true;
-                        }
-                        break;
-                    case PassiveB.RagingStorm:
-                    case PassiveB.RagingStorm2:
-                        if (!atkUnit.isOneTimeActionActivatedForPassiveB
-                            && !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)
-                            && atkUnit.isActionDone
-                        ) {
-                            this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動");
-                            atkUnit.isActionDone = false;
-                            atkUnit.isOneTimeActionActivatedForPassiveB = true;
-                        }
-                        break;
                 }
-            }
-        }
-
-        // 戦闘済みであるフラグの有効化
-        {
-            g_appData.isCombatOccuredInCurrentTurn = true;
-        }
-
-        // 戦闘に関係したユニットの紋章系のスキルを戦闘前の状態に戻す
-        {
-            this.damageCalc.updateUnitSpur(atkUnit);
-            this.damageCalc.updateUnitSpur(defUnit);
-            if (result.defUnit !== defUnit) {
-                let saverUnit = result.defUnit;
-                this.damageCalc.updateUnitSpur(saverUnit);
-            }
-        }
-
-        // 再行動奥義
-        if (atkUnit.specialCount === 0 &&
-            !atkUnit.isOneTimeActionActivatedForSpecial &&
-            atkUnit.isActionDone &&
-            atkUnit.isAlive) {
-            switch (atkUnit.special) {
-                case Special.RequiemDance:
-                    {
-                        let highestHpUnits = [];
-                        let highestHp = 0;
-                        for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(atkUnit, 2, false)) {
-                            if (unit.isActionDone) {
-                                if (unit.hp > highestHp) {
-                                    highestHpUnits = [unit];
-                                    highestHp = unit.hp;
-                                } else if (unit.hp === highestHp) {
-                                    highestHpUnits.push(unit);
-                                }
-                            }
-                        }
-
-                        if (highestHpUnits.length === 1) {
-                            for (let unit of highestHpUnits) {
-                                this.writeLogLine(`${atkUnit.getNameWithGroup()}が${atkUnit.specialInfo.name}を発動、対象は${unit.getNameWithGroup()}`);
-                                atkUnit.isOneTimeActionActivatedForSpecial = true;
-                                atkUnit.specialCount = atkUnit.maxSpecialCount;
-                                unit.isActionDone = false;
-                                // @TODO: 将来飛空城でダブルが使用できるようになった場合はダブル相手にもグラビティ付与
-                                unit.addStatusEffect(StatusEffectType.Gravity);
-                            }
-                        }
+                    break;
+                case Weapon.HadoNoSenfu:
+                    if (!atkUnit.isOneTimeActionActivatedForWeapon &&
+                        atkUnit.isWeaponSpecialRefined &&
+                        atkUnit.battleContext.initiatesCombat &&
+                        !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1) &&
+                        atkUnit.isActionDone) {
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForWeapon = true;
                     }
                     break;
-                case Special.NjorunsZeal2:
-                case Special.NjorunsZeal:
-                    this.__activateRefreshSpecial(atkUnit);
-                    atkUnit.addStatusEffect(StatusEffectType.Gravity);
-                    break;
-                case Special.Galeforce:
-                    this.__activateRefreshSpecial(atkUnit);
+                case PassiveB.RagingStorm:
+                case PassiveB.RagingStorm2:
+                    if (!atkUnit.isOneTimeActionActivatedForPassiveB
+                        && !this.__isThereAllyInSpecifiedSpaces(atkUnit, 1)
+                        && atkUnit.isActionDone
+                    ) {
+                        this.writeLogLine(atkUnit.getNameWithGroup() + "は" + atkUnit.passiveBInfo.name + "により再行動");
+                        atkUnit.isActionDone = false;
+                        atkUnit.isOneTimeActionActivatedForPassiveB = true;
+                    }
                     break;
             }
         }
-
-        // 魔法陣の増援による再行動
-        atkUnit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
-
-        if (this.data.gameMode === GameMode.SummonerDuels) {
-            this.data.globalBattleContext.addSummonerDuelsKoScore(atkUnit, defUnit);
-        }
-
-        // 再移動の評価
-        let cantoActivated = this.__activateCantoIfPossible(atkUnit);
-        if (!cantoActivated) {
-            atkUnit.applyEndActionSkills();
-            // 同時タイミングに付与された天脈を消滅させる
-            g_appData.map.applyReservedDivineVein();
-        }
-
-        // 追跡対象の更新
-        for (let tile of tilesForUpdateChaseTargetTile) {
-            this.__updateChaseTargetTilesForSpecifiedTile(tile);
-        }
-
-        // 罠は再行動奥義や再移動の後に評価する必要がある(停止罠で迅雷や再移動は無効化される)
-        executeTrapIfPossible(atkUnit);
-
-        // unit.endAction()のタイミングが戦闘後処理の前でなければいけないので、endUnitActionは直接呼べない
-        this.__goToNextPhaseIfPossible(atkUnit.groupId);
     }
 
     __activateRefreshSpecial(atkUnit) {
@@ -7808,6 +7823,7 @@ class BattleSimulatorBase {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
         }
         let func = function () {
+            let moveResult = MoveResult.Success;
             let isCantoEndAction = unit.isCantoActivating;
             unit.isActionDoneDuringMoveCommand = false;
             if (enableSoundEffect) {
@@ -7840,7 +7856,7 @@ class BattleSimulatorBase {
                     if (self.isCommandLogEnabled) {
                         self.writeLogLine(unit.getNameWithGroup() + "は" + tileToMove.positionToString() + "に移動");
                     }
-                    moveUnit(unit, tileToMove, unit.groupId === UnitGroupType.Ally);
+                    moveResult = moveUnit(unit, tileToMove, unit.groupId === UnitGroupType.Ally);
                 }
                 self.updateAllUnitSpur();
             }
@@ -7864,7 +7880,7 @@ class BattleSimulatorBase {
 
             self.__updateDistanceFromClosestEnemy(unit);
 
-            let env = new BattleSimulatorBaseEnv(this, unit);
+            let env = new BattleSimulatorBaseEnv(this, unit).setMoveResult(moveResult);
             env.setName('奥義以外の再行動時[移動]').setLogLevel(getSkillLogLevel());
             AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(unit, env);
             unit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
@@ -7922,7 +7938,7 @@ class BattleSimulatorBase {
                     attackerUnit.styleActivationsCount++;
                 }
                 // 攻撃キャンセル時も行動後の再行動の対象になる
-                env = new BattleSimulatorBaseEnv(this, attackerUnit);
+                env = new BattleSimulatorBaseEnv(this, attackerUnit).setHasAttackCanceled(true);
                 env.setName('行動時[攻撃キャンセル]').setLogLevel(getSkillLogLevel());
                 AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(attackerUnit, env);
                 // TODO: 攻撃キャンセル後と行動後が同じタイミングか確認する

@@ -382,7 +382,7 @@
             // (Effects that can trigger on turn 2 onward will not trigger again for 2 turns after triggering;
             // using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
             TARGETS_REST_SUPPORT_SKILL_AVAILABLE_TURN_NODE(2,
-                GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+                GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE,
                 new GrantsStatusEffectsOnTargetOnMapNode(StatusEffectType.Gravity),
             ),
         ),
@@ -1977,6 +1977,7 @@
     };
     setSkill(PassiveB.AtkResDetect, [true, false, false, true]);
     setSkill(PassiveB.SpdDefDetect, [false, true, true, false]);
+    setSkill(PassiveB.SpdResDetect, [false, true, false, true]);
 }
 
 // 赤の呪い
@@ -2030,7 +2031,7 @@
     ));
 
     // and grants another action to unit (once per turn).
-    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionToTargetOnAssistNode());
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => new GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode());
 }
 
 // 聖王国の父娘の忍弓
@@ -2666,6 +2667,7 @@ function setDiscord(skillId, statsRatios) {
 
 // 不和
 {
+    setDiscord(PassiveB.AtkDefDiscord, [1, 0, 1, 0]);
     setDiscord(PassiveB.AtkResDiscord, [1, 0, 0, 1]);
     setDiscord(PassiveB.SpdResDiscord, [0, 1, 0, 1]);
     setDiscord(PassiveB.DefResDiscord, [0, 0, 1, 1]);
@@ -3909,7 +3911,7 @@ function setDiscord(skillId, statsRatios) {
     AFTER_MOVEMENT_SKILL_IS_USED_BY_ALLY_HOOKS.addSkill(skillId, () => node);
 
     // If a Rally or movement Assist skill is used by unit, grants another action to unit (once per turn).
-    let anotherActionNode = new GrantsAnotherActionToTargetOnAssistNode();
+    let anotherActionNode = new GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode();
     AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
     AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => anotherActionNode);
 
@@ -5844,25 +5846,29 @@ function setDiscord(skillId, statsRatios) {
 // 攻撃速さの制空
 {
     let skillId = PassiveA.AtkSpdMastery;
-    // 現在のターン中に自分が戦闘を行っている時、【再移動(2)】を発動可能
-    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () =>
-        HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
-    );
-    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(2));
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
-        new SkillEffectNode(
-            // 戦闘開始時、敵のHPが50%以上の時、戦闘中、
-            new IfNode(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
-                // 自分の攻撃、速さ+7、かつ
-                GRANTS_ATK_SPD_PLUS_7_TO_UNIT_DURING_COMBAT_NODE,
-                // 自身の周囲2マス以内に以下のいずれかのマスがある時、戦闘中、さらに、
-                new IfNode(IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
-                    // 自分の攻撃、速さ+4(・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)
-                    GRANTS_ATK_SPD_PLUS_4_TO_UNIT_DURING_COMBAT_NODE
+    let setSkill = (skillId, grantsNode1, grantsNode2) => {
+        // 現在のターン中に自分が戦闘を行っている時、【再移動(2)】を発動可能
+        CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () =>
+            HAS_TARGET_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
+        );
+        CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () => NumberNode.makeNumberNodeFrom(2));
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
+            SKILL_EFFECT_NODE(
+                // 戦闘開始時、敵のHPが50%以上の時、戦闘中、
+                IF_NODE(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
+                    // 自分の攻撃、速さ+7、かつ
+                    GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(grantsNode1),
+                    // 自身の周囲2マス以内に以下のいずれかのマスがある時、戦闘中、さらに、
+                    IF_NODE(IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE,
+                        // 自分の攻撃、速さ+4(・天脈が付与されたマス・いずれかの移動タイプが侵入可能で、平地のように移動できない地形のマス)
+                        GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(grantsNode2),
+                    )
                 )
             )
-        )
-    );
+        );
+    };
+    setSkill(PassiveA.AtkSpdMastery, ATK_SPD_NODE(7), ATK_SPD_NODE(4));
+    setSkill(PassiveA.AtkResMastery, ATK_RES_NODE(7), ATK_RES_NODE(4));
 }
 
 // 人見知りの縁の祭器

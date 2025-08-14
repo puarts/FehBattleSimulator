@@ -168,6 +168,33 @@ class AssistTargetNode extends TargetNode {
 
 const ASSIST_TARGET_NODE = new AssistTargetNode();
 
+class ForTargetNode extends SkillEffectNode {
+    /**
+     * @param {UnitNode} unitNode
+     * @param node
+     */
+    constructor(unitNode, node) {
+        super();
+        this._unitNode = unitNode;
+        this._node = node;
+    }
+
+    evaluate(env) {
+        let newEnv = env.copy().setTarget(this._unitNode.evaluate(env));
+        return this._node.evaluate(newEnv);
+    }
+}
+
+/**
+ * @template T
+ * @param {UnitNode} unitNode
+ * @param {T} node
+ * @returns {T}
+ * @constructor
+ */
+const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
+const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
+
 /**
  * @extends {CollectionNode<*, Unit>}
  * @abstract
@@ -189,7 +216,8 @@ class UnitsNode extends CollectionNode {
         }
     }
 
-    static EMPTY_UNITS_NODE = new class extends UnitsNode {}
+    static EMPTY_UNITS_NODE = new class extends UnitsNode {
+    }
 
     /**
      * @param {...UnitNode} units
@@ -819,6 +847,41 @@ class FilterSpacesNode extends SpacesNode {
 
 const FILTER_SPACES_NODE = (n, predNode) => new FilterSpacesNode(n, predNode);
 
+/**
+ * @template T
+ */
+class MapSpacesNode extends CollectionNode {
+    /**
+     * @param {SpacesNode} spacesNode
+     * @param {T} funcNode
+     */
+    constructor(spacesNode, funcNode) {
+        super();
+        this._spacesNode = spacesNode;
+        this._funcNode = funcNode;
+    }
+
+    /**
+     * @param env
+     * @returns {T[]}
+     */
+    evaluate(env) {
+        let tiles = Array.from(this._spacesNode.evaluate(env));
+        let results = tiles.map(t => this._funcNode.evaluate(env.copy().setTile(t)));
+        env.trace(`Map tiles: ${tiles.map(s => s.positionToString()).join(', ')} => results: [${results}]`);
+        return results;
+    }
+}
+
+/**
+ * @template T
+ * @param {SpacesNode} spacesNode
+ * @param {T} funcNode
+ * @returns {CollectionNode<*, T>}
+ * @constructor
+ */
+const MAP_SPACES_NODE = (spacesNode, funcNode) => new MapSpacesNode(spacesNode, funcNode);
+
 class CountSpacesNode extends PositiveNumberNode {
     constructor(spacesNode) {
         super();
@@ -894,6 +957,9 @@ class SpacesWithinNSpacesOfFoeNode extends SpacesWithinNSpacesOfTargetNode {
 }
 
 const SPACES_WITHIN_N_SPACES_OF_FOE_NODE = n => new SpacesWithinNSpacesOfFoeNode(n);
+
+const SPACES_WITHIN_N_SPACES_OF_TARGET_OR_TARGET_FOE_NODE =
+    n => UNITE_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(n), SPACES_WITHIN_N_SPACES_OF_FOE_NODE(n));
 
 class SpacesOfTargetNode extends SpacesNode {
     static {
@@ -1408,6 +1474,40 @@ class IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExclud
 
 const IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
     new IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode(2);
+
+class HasDivineVeinNode extends BoolNode {
+    evaluate(env) {
+        let tile = env.tile;
+        let result = tile.hasDivineVein();
+        env.debug(`${tile}に天脈が付与されているか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_DIVINE_VEIN_NODE = new HasDivineVeinNode();
+
+class IsDefensiveTerrainNode extends BoolNode {
+    evaluate(env) {
+        let tile = env.tile;
+        let result = tile.isDefensiveTile;
+        env.debug(`${tile}は防御地形か: ${result}`);
+        return result;
+    }
+}
+
+const IS_DEFENSIVE_TERRAIN_NODE = new IsDefensiveTerrainNode();
+
+class CountsAsDifficultOrImPassableTerrainNodeForUnitsOtherThanFlying extends BoolNode {
+    evaluate(env) {
+        let tile = env.tile;
+        let result = tile.countsAsDifficultOrImPassableTerrainNodeForUnitsOtherThanFlying();
+        env.debug(`${tile}は飛行が侵入可能かつそれ以外の移動タイプが平地のように移動できない地形（侵入不可を含む）か: ${result}`);
+        return result;
+    }
+}
+
+const COUNTS_AS_DIFFICULT_OR_IM_PASSABLE_TERRAIN_NODE_FOR_UNITS_OTHER_THAN_FLYING_NODE =
+    new CountsAsDifficultOrImPassableTerrainNodeForUnitsOtherThanFlying();
 
 // TODO: 条件を指定できるようにする
 /**
@@ -2326,7 +2426,7 @@ class HighestValueOnEachStatAmongUnitsNode extends StatsNode {
         let units = Array.from(this._unitsNode.evaluate(env));
         let evaluated = units.map(u => this._funcNode.evaluate(env.copy().setTarget(u)));
         env.trace(`Units: ${units.map(u => u.nameWithGroup)} => values array: [${evaluated.map(a => `[${a}]`)}]`);
-        let result = ArrayUtil.maxByIndex(...evaluated);
+        let result = ArrayUtil.maxByIndex(...evaluated, [0, 0, 0, 0]);
         env.trace(`Highest values: [${result}]`);
         return result;
     }
@@ -2383,7 +2483,7 @@ class InflictsStatsMinusOnFoeDuringCombatNode extends InflictsStatsMinusOnTarget
 }
 
 const INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE =
-    (atk, spd, def, res) => new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, res);
+    (atkOrStats, spd, def, res) => new InflictsStatsMinusOnFoeDuringCombatNode(atkOrStats, spd, def, res);
 
 const INFLICTS_ALL_STATS_MINUS_2_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(2, 2, 2, 2);
 const INFLICTS_ALL_STATS_MINUS_3_ON_FOE_DURING_COMBAT_NODE = new InflictsStatsMinusOnFoeDuringCombatNode(3, 3, 3, 3);
@@ -2404,6 +2504,8 @@ const INFLICTS_SPD_ON_FOE_DURING_COMBAT_NODE = spd =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, 0, 0);
 const INFLICTS_DEF_ON_FOE_DURING_COMBAT_NODE = def =>
     new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, def, 0);
+const INFLICTS_RES_ON_FOE_DURING_COMBAT_NODE = res =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(0, 0, 0, res);
 
 const INFLICTS_ATK_SPD_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, 0);
@@ -2422,6 +2524,9 @@ const INFLICTS_ATK_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, res = at
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, res);
 const INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk, res = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, res);
+
+const INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, def = atk, res = atk) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, res);
 
 class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
     static {
@@ -3028,7 +3133,11 @@ const IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGE
 const WHEN_DEFENDING_IN_AETHER_RAIDS_NODE = new class extends BoolNode {
     evaluate(env) {
         // TODO: 値を渡すようにする
-        return g_appData.gameMode === GameMode.AetherRaid && env.skillOwner.groupId === UnitGroupType.Enemy;
+        let isAetherRaid = g_appData.gameMode === GameMode.AetherRaid;
+        let result = isAetherRaid && env.skillOwner.groupId === UnitGroupType.Enemy;
+        // env.debug(`飛空城か: ${isAetherRaid}`);
+        env.debug(`飛空城の防衛か: ${result}`);
+        return result;
     }
 }();
 
@@ -3039,6 +3148,40 @@ const IS_NOT_SUMMONER_DUELS_MODE_NODE = new class extends BoolNode {
         return result;
     }
 }();
+
+class IsSeasonNode extends BoolNode {
+    constructor(seasonNode) {
+        super();
+        this._seasonNode = NumberNode.makeNumberNodeFrom(seasonNode);
+    }
+
+    evaluate(env) {
+        let seasons = Array.from(g_appData.globalBattleContext.enumerateCurrentSeasons());
+        env.debug(`シーズン: [${seasons}]`);
+        let targetSeason = this._seasonNode.evaluate(env);
+        env.debug(`対象のシーズン: ${targetSeason}`);
+        let result = seasons.includes(targetSeason);
+        env.debug(`対象のシーズンを含むか: ${result}`);
+        return result;
+    }
+}
+
+const IS_SEASON_NODE = (seasonNode) => new IsSeasonNode(seasonNode);
+
+class DestroysOffenceSafetyFenceNode extends SkillEffectNode {
+    // destroys foe's Safety Fence (O) structure
+    // (triggers even if unit or ally is defeated in combat).
+    evaluate(env) {
+        for (let st of g_appData.getOffenseStructures()) {
+            if (st instanceof SafetyFence) {
+                env.debug('攻撃の安全柵を破壊');
+                moveStructureToTrashBox(st);
+            }
+        }
+    }
+}
+
+const DESTROYS_OFFENCE_SAFETY_FENCE_NODE = new DestroysOffenceSafetyFenceNode();
 
 class IsPenaltyActiveOnTargetNode extends BoolNode {
     static {
@@ -3516,6 +3659,16 @@ class TargetsPenaltiesNode extends StatsNode {
     }
 }
 
+const TARGETS_PENALTIES_NODE = new TargetsPenaltiesNode();
+
+class FoePenaltiesNode extends TargetsPenaltiesNode {
+    static {
+        Object.assign(this.prototype, GetFoeDuringCombatMixin);
+    }
+}
+
+const FOE_PENALTIES_NODE = new FoePenaltiesNode();
+
 // Unit or BattleContextの値を参照 END
 
 class IsGteSumOfStatsDuringCombatExcludingPhantomNode extends BoolNode {
@@ -3723,32 +3876,6 @@ const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNod
  * @constructor
  */
 const FOR_UNIT_NODE = (unit, ...nodes) => FOR_EACH_UNIT_NODE(UnitsNode.makeFromUnit(unit), ...nodes);
-
-class ForTargetNode extends SkillEffectNode {
-    /**
-     * @param {UnitNode} unitNode
-     * @param node
-     */
-    constructor(unitNode, node) {
-        super();
-        this._unitNode = unitNode;
-        this._node = node;
-    }
-
-    evaluate(env) {
-        let newEnv = env.copy().setTarget(this._unitNode.evaluate(env));
-        return this._node.evaluate(newEnv);
-    }
-}
-
-/**
- * @template T
- * @param {UnitNode} unitNode
- * @param {T} node
- * @returns {T}
- * @constructor
- */
-const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
 
 class TargetsFoesNode extends UnitsNode {
     static {
@@ -4189,6 +4316,13 @@ class AppliesPotentEffectNode extends FromNumbersNode {
 }
 
 const APPLY_POTENT_EFFECT_NODE = new AppliesPotentEffectNode();
+/**
+ * @param {number|NumberNode} percentage
+ * @param {number|NumberNode} spdDiff
+ * @param {boolean|BoolNode} isFixed
+ * @returns {AppliesPotentEffectNode}
+ * @constructor
+ */
 const POTENT_FOLLOW_N_PERCENT_NODE =
     (percentage = 40, spdDiff = -25, isFixed = false) =>
         new AppliesPotentEffectNode(percentage, spdDiff, isFixed);
@@ -5209,7 +5343,7 @@ class ReEnablesCantoToAssistTargetOnMapNode extends ReEnablesCantoToTargetOnMapN
 
 const RE_ENABLES_CANTO_TO_ASSIST_TARGET_ON_MAP_NODE = new ReEnablesCantoToAssistTargetOnMapNode();
 
-class GrantsAnotherActionToTargetOnAssistNode extends BoolNode {
+class GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -5224,6 +5358,47 @@ class GrantsAnotherActionToTargetOnAssistNode extends BoolNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
+        env.debug(`${unit.nameWithGroup}が再行動可能か判定（他の再行動効果が発動した場合、この効果も発動済みとする）`);
+        let success = unit.grantAnotherActionOnAssistIfAnotherActionEffectIsNotActivatedThisTurn();
+        if (success) {
+            env.debug(`${unit.nameWithGroup}は再行動`);
+            if (this._nodeAfterAnotherAction) {
+                this._nodeAfterAnotherAction.evaluate(env);
+            }
+        } else {
+            env.debug(`${unit.nameWithGroup}は再行動を発動できない(発動済み)`);
+        }
+        return success;
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_IF_ANOTHER_ACTION_EFFECT_IS_NOT_ACTIVATED_NODE =
+    new GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode();
+
+class GrantsAnotherActionToAssistTargetingOnAssistNode extends GrantsAnotherActionToTargetOncePerTurnOnAssistIfAnotherActionEffectIsNotActivatedNode {
+    static {
+        Object.assign(this.prototype, GetAssistTargetingMixin);
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_TO_ASSIST_TARGETING_ON_ASSIST_NODE = new GrantsAnotherActionToAssistTargetingOnAssistNode();
+
+class GrantsAnotherActionToTargetOncePerTurnOnAssistNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {SkillEffectNode} nodeAfterAnotherAction 再行動後に発動する効果
+     */
+    constructor(nodeAfterAnotherAction = null) {
+        super();
+        this._nodeAfterAnotherAction = nodeAfterAnotherAction;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.debug(`${unit.nameWithGroup}が再行動可能か判定`);
         let success = unit.grantAnotherActionOnAssistIfPossible();
         if (success) {
             env.debug(`${unit.nameWithGroup}は再行動`);
@@ -5237,22 +5412,8 @@ class GrantsAnotherActionToTargetOnAssistNode extends BoolNode {
     }
 }
 
-const GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE = new GrantsAnotherActionToTargetOnAssistNode();
-const GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_NODE = (...nodes) =>
-    IF_NODE(
-        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
-        ...nodes,
-    );
-const GRANTS_ANOTHER_ACTION_ON_ASSIST_AND_EFFECTS_NODE =
-    node => new GrantsAnotherActionToTargetOnAssistNode(node);
-
-class GrantsAnotherActionToAssistTargetingOnAssistNode extends GrantsAnotherActionToTargetOnAssistNode {
-    static {
-        Object.assign(this.prototype, GetAssistTargetingMixin);
-    }
-}
-
-const GRANTS_ANOTHER_ACTION_TO_ASSIST_TARGETING_ON_ASSIST_NODE = new GrantsAnotherActionToAssistTargetingOnAssistNode();
+const GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE =
+    new GrantsAnotherActionToTargetOncePerTurnOnAssistNode();
 
 class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
     evaluate(env) {
@@ -5688,12 +5849,12 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
             // 戦闘中のコンテキストだけではなくユニットに保存されている情報も参照する
             isActivated =
                 unit.battleContext.activatedSkillsPerTurn.has(encodedId) ||
-                unit.oneTimeActionPerTurnActivatedSet.has(encodedId);
+                unit.activatedOncePerTurnSkillEffectIdsThisTurn.has(encodedId);
             activatedSkills = unit.battleContext.activatedSkillsPerTurn;
         } else {
             phase = '戦闘外'
-            isActivated = unit.oneTimeActionPerTurnActivatedSet.has(encodedId);
-            activatedSkills = unit.oneTimeActionPerTurnActivatedSet;
+            isActivated = unit.activatedOncePerTurnSkillEffectIdsThisTurn.has(encodedId);
+            activatedSkills = unit.activatedOncePerTurnSkillEffectIdsThisTurn;
         }
         if (!isActivated) {
             activatedSkills.add(encodedId);
@@ -6310,3 +6471,25 @@ class TargetsColorNode extends NumberNode {
 }
 
 const TARGETS_COLOR_NODE = new TargetsColorNode();
+
+class HasAttackCanceledNode extends BoolNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = env.hasAttackCanceled;
+        env.debug(`${unit.nameWithGroup}は攻撃をキャンセルされたか: ${result}`);
+        return result;
+    }
+}
+
+const IS_AFFECTED_BY_FORESIGHT_SNARE_NODE = new HasAttackCanceledNode();
+
+class IsAffectedByTrapNode extends BoolNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = isTrapActivationResult(env.moveResult);
+        env.debug(`${unit.nameWithGroup}は罠にかかったか: ${result}`);
+        return result;
+    }
+}
+
+ const IS_AFFECTED_BY_TRAP_NODE = new IsAffectedByTrapNode();

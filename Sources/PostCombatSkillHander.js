@@ -126,6 +126,10 @@ class PostCombatSkillHander {
         // 死んでも発動するスキル効果
         this.#applySkillEffectsAfterCombatNeverthelessDeadForUnits(atkUnit, defUnit, result);
 
+        // 死んでも発動する味方のスキル
+        this.#applySkillEffectsAfterCombatForAlliesEvenIfDefeated(atkUnit, defUnit);
+        this.#applySkillEffectsAfterCombatForAlliesEvenIfDefeated(defUnit, atkUnit);
+
         // BattleContextに記録された回復・ダメージの予約
         for (let unit of this.enumerateAllUnitsOnMap()) {
             this.__reserveHealOrDamageAfterCombatForUnit(unit);
@@ -153,6 +157,15 @@ class PostCombatSkillHander {
             this.__applyAttackSkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit);
         }
         this.__applySkillEffectAfterCombatNeverthelessDeadForUnit(defUnit, atkUnit, result.defUnit_actualTotalAttackCount);
+    }
+
+    #applySkillEffectsAfterCombatForAlliesEvenIfDefeated(targetUnit, enemyUnit, result) {
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMapIncludingSavedUnit(targetUnit)) {
+            let env = new AfterCombatEnv(this, targetUnit, enemyUnit, this.map);
+            env.setTargetAlly(allyUnit).setSkillOwner(allyUnit);
+            env.setName('戦闘後、味方のスキル').setLogLevel(getSkillLogLevel());
+            AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
     }
 
     #applyReservedEffects() {

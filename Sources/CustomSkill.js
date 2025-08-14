@@ -1587,6 +1587,13 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         },
     ],
     [
+        'after-combat-for-allies',
+        '味方の戦闘後',
+        (skillId, nodeFunc, args) => {
+            AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        },
+    ],
+    [
         'after-combat-if-attacked',
         '攻撃していれば、戦闘後',
         (skillId, nodeFunc, args) => {
@@ -1606,6 +1613,13 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         (skillId, nodeFunc, args) => {
             AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.addSkill(skillId, () => nodeFunc(args));
         }
+    ],
+    [
+        'after-action-without-combat-for-another-action',
+        '戦闘をしていない時の行動後（再行動用）',
+        (skillId, nodeFunc, args) => {
+            AFTER_ACTION_WITHOUT_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, () => nodeFunc(args));
+        },
     ]
 ];
 
@@ -1733,6 +1747,13 @@ makeCustomSkillsOnMap(
     ]
 );
 
+makeCustomSkillsOnMap(
+    'destroys-offence-safety-fence',
+    '攻撃の安全柵を破壊する',
+    args => DESTROYS_OFFENCE_SAFETY_FENCE_NODE,
+    []
+)
+
 CustomSkill.setFuncId(
     'after-start-of-player-phase-if-has-stall-cancel-move-plus-1',
     "ターン開始時スキル後、空転が付与されている場合、移動+1を解除",
@@ -1791,11 +1812,12 @@ makeCustomSkillsOnMap(
     ],
 );
 
+// TODO: 他の再行動が発動した場合発動済みになる再行動も実装する(GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_IF_ANOTHER_ACTION_EFFECT_IS_NOT_ACTIVATED_NODE)
 makeCustomSkillsOnMap(
     'grants-another-action',
     '対象を行動可能にする（再行動）',
     args =>
-        GRANTS_ANOTHER_ACTION_ON_ASSIST_NODE,
+        GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE,
     [
         // 対象
         CustomSkill.Arg.Node.TARGET_LABEL,

@@ -903,6 +903,16 @@ class Tile extends BattleMapElement {
         ].some(tileType => tileType === this.type);
     }
 
+    countsAsDifficultOrImPassableTerrainNodeForUnitsOtherThanFlying() {
+        return [
+            TileType.Forest,
+            TileType.Trench,
+            TileType.Flier,
+            TileType.DefensiveTrench,
+            TileType.DefensiveForest,
+        ].some(tileType => tileType === this.type);
+    }
+
     isNotCountedAsDifficultTerrain() {
         return [
             TileType.Normal,

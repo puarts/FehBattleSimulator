@@ -1705,6 +1705,20 @@ class AppData extends UnitManager {
         return result;
     }
 
+    getOffenseStructures(predicator = null) {
+        let result = [];
+        for (let st of this.offenceStructureStorage.objs) {
+            if (predicator) {
+                if (predicator(st)) {
+                    result.push(st);
+                }
+            } else {
+                result.push(st);
+            }
+        }
+        return result;
+    }
+
     registerTemplateImages() {
         for (let st of this.defenseStructureStorage.objs) {
             if (st instanceof FalseHexTrap || st instanceof FalseBoltTrap || st instanceof FalseHeavyTrap || st instanceof Ornament) {

@@ -1148,6 +1148,28 @@ class FilterCollectionNode extends CollectionNode {
 // TODO: 動作確認
 const FILTER_COLLECTION_NODE = (collectionNode, predNode) => new FilterCollectionNode(collectionNode, predNode);
 
+class SomeNode extends BoolNode {
+    /**
+     * @param {CollectionNode<*, BoolNode>} collectionNode
+     */
+    constructor(collectionNode) {
+        super();
+        this._collectionNode = collectionNode;
+    }
+
+    evaluate(env) {
+        let results = this._collectionNode.evaluate(env);
+        return IterUtil.has(results, true);
+    }
+}
+
+/**
+ * @param {CollectionNode<*, BoolNode>} collectionNode
+ * @returns {SomeNode}
+ * @constructor
+ */
+const SOME_NODE = (collectionNode) => new SomeNode(collectionNode);
+
 /**
  * @abstract
  */
@@ -1336,6 +1358,11 @@ class TernaryConditionalNumberNode extends NumberNode {
 
 const COND_OP =
     (cond, trueNode, falseNode) => new TernaryConditionalNumberNode(cond, trueNode, falseNode);
+// noinspection JSValidateTypes
+/**
+ * @template T
+ * @type {function(BoolNode, T, T): T}
+ */
 const IF_VALUE_NODE = COND_OP;
 
 class StoreNumNode extends FromNumberNode {
@@ -1427,6 +1454,8 @@ class ApplyXNode extends SkillEffectNode {
  * @returns {T}
  */
 const APPLY_X_NODE = (xNode, node) => new ApplyXNode(xNode, node);
+
+const APPLY_X_NODES = (xNode, ...nodes) => X_NUM_NODE(...nodes, xNode);
 
 class CacheNode extends SkillEffectNode {
     constructor(key, node) {
