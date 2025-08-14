@@ -10283,6 +10283,9 @@
                     CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                     GTE_NODE(UNITS_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_RES_DURING_COMBAT_NODE, 5))
                 ),
+                // inflicts Special cooldown count+1 on foe before foe's first attack during combat (cannot exceed the foe's maximum Special cooldown).
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE(1),
             ),
         ),
     ));
