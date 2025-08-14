@@ -1748,8 +1748,8 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.spdAdd = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.defAdd = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.resAdd = Number(values[i]); ++i; }
-        if (values[i] !== undefined) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
-        if (values[i] !== undefined) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
+        if (values[i] !== undefined) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
+        if (values[i] !== undefined) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -4026,7 +4026,7 @@ class Unit extends BattleMapElement {
     }
 
     clearReservedGreatTalents() {
-        this._reservedGreatTalents = [0, 0, 0 ,0];
+        this._reservedGreatTalents = [0, 0, 0, 0];
         this._reservedMaxGreatTalents = [0, 0, 0, 0];
     }
 
@@ -5806,6 +5806,7 @@ class Unit extends BattleMapElement {
                 } else {
                     this.atkWithSkills += weaponInfo.might;
                 }
+                this.maxHpWithSkills += weaponInfo.hp;
                 this.atkWithSkills += weaponInfo.atk;
                 this.spdWithSkills += weaponInfo.spd;
                 this.defWithSkills += weaponInfo.def;
