@@ -1531,3 +1531,9 @@ function setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, nodeFunc) {
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
 }
+
+function setOnceUsedThisStyleCannotBeUsedForNTurns(skillId, n) {
+    STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(n),
+    ));
+}

@@ -158,12 +158,9 @@
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
         AND_NODE(
             GTE_NODE(CURRENT_TURN_NODE, 2),
-            EQ_NODE(TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE, 0),
             IS_TARGET_RANGED_WEAPON_NODE),
     );
-    STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
-    ));
+    setOnceUsedThisStyleCannotBeUsedForNTurns(skillId, 2);
     SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
         OR_NODE(
             // foe is armored with Range = 2,
@@ -195,7 +192,6 @@
         ),
     ));
     STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
-    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
 }
 
 // 比翼リュール

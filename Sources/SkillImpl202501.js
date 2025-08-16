@@ -47,7 +47,7 @@
     ));
     // Unit can use the following [Style]:
     // Sublime Heaven Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ECHO);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.SUBLIME_HEAVEN);
 }
 
 // 🛡️ Prof’s Guidance
@@ -149,33 +149,35 @@
 
 // 🔷 Style
 {
-    let skillId = getStyleSkillId(STYLE_TYPE.SUBLIME_HEAVEN);
+    let style = STYLE_TYPE.SUBLIME_HEAVEN
+    let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // Sublime Heaven Style
-    //
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, NODE_FUNC(TRUE_NODE));
     // Unit can attack foes 3 spaces away (unit cannot attack adjacent foes).
     CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () =>
         CONSTANT_NUMBER_NODE(3)
     );
-    //
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
-        // Grants Special cooldown count-1 to unit before unit’s first attack during combat.
-        GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // Grants Special cooldown count-1 to unit before unit’s first attack during combat.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+        ),
     ));
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
-        // If foe uses dragon or beast damage and unit’s Special triggers,
-        IF_NODE(IS_FOE_BEAST_OR_DRAGON_TYPE_NODE,
-            BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // If foe uses dragon or beast damage and unit’s Special triggers,
+            IF_NODE(IS_FOE_BEAST_OR_DRAGON_TYPE_NODE,
                 // deals damage = 20% of unit’s Atk (excluding area-of-effect Specials).
-                PERCENTAGE_NODE(20, UNITS_ATK_NODE),
+                DEALS_DAMAGE_WHEN_TRIGGERING_SPECIAL_DURING_COMBAT_NODE(PERCENTAGE_NODE(20, UNITS_ATK_NODE)),
             ),
         ),
     ));
     // Cannot move through spaces within 3 spaces of foe that has triggered the [Bulwark] effect
     // (does not apply if unit has a Pass skill).
-    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS.addSkill(skillId, NODE_FUNC(
-        TRUE_NODE,
-    ));
+    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
+        IS_STYLE_ACTIVE(style)
+    );
     // Unit suffers a counterattack if any of the following conditions are met:
     SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, NODE_FUNC(
         OR_NODE(
@@ -186,15 +188,15 @@
         ),
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
-        // After-combat movement effects do not occur.
-        AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After-combat movement effects do not occur.
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
     ));
     // Skill effect’s Range is treated as 1.
-    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(STYLE_TYPE.SUBLIME_HEAVEN);
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(style);
     // Once used, this Style cannot be used for two turns.
-    STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
-    ));
+    setOnceUsedThisStyleCannotBeUsedForNTurns(skillId, 2);
 }
 
 // 🗡 Truth Seeker
@@ -343,7 +345,8 @@
 
 // 🎯 Style
 {
-    let skillId = getStyleSkillId(STYLE_TYPE.WEAPON_TRIANGLE_GREEN);
+    let style = STYLE_TYPE.WEAPON_TRIANGLE_GREEN;
+    let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // Weapon Triangle: Green Style
     //
@@ -354,7 +357,7 @@
         CONSTANT_NUMBER_NODE(ColorType.Green),
     ));
     // This Style can be used only once per turn.
-    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(STYLE_TYPE.WEAPON_TRIANGLE_GREEN);
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
 }
 
 // 🗡️ Tempered Antler
@@ -4177,7 +4180,8 @@
 
 // 🎭 Style
 {
-    let skillId = getStyleSkillId(STYLE_TYPE.ECHO);
+    let style = STYLE_TYPE.ECHO;
+    let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // ――― Echo Style ―――
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
@@ -4187,7 +4191,7 @@
         CONSTANT_NUMBER_NODE(3)
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        IF_NODE(IS_STYLE_ACTIVE(STYLE_TYPE.ECHO),
+        IF_NODE(IS_STYLE_ACTIVE(style),
             // Unit attacks twice
             TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE,
             // and calculates damage at 60% during combat
@@ -4213,10 +4217,10 @@
     // Skill effect’s Range is treated as 2,
     // including by skill effects determined by attack Range,
     // like Pavise and Aegis.
-    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(STYLE_TYPE.ECHO);
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
 
     // This Style can be used only once per turn.
-    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(STYLE_TYPE.ECHO);
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
 
     // TODO: 実装
     // A "Style" function allows you to change that Hero's battle style.
@@ -8375,8 +8379,10 @@
         ),
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        // After-combat movement effects do not occur.
-        AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After-combat movement effects do not occur.
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
     ));
     // Skill effect's Range is treated as 1, including by skill effects determined by attack Range, like Pavise and Aegis.
     STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(style);

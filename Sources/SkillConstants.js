@@ -3937,7 +3937,6 @@ Weapon.LangQiShiTuanNogong = 3364; // 狼騎士団の弓
 Weapon.SublimeCreator = 3365; // 真覇天帝の剣
 PassiveA.ProfsGuidance = 3366; // 師の導き
 PassiveB.NullCAvoid = 3367; // 真回避・見切り反撃
-PassiveC.AtkSpdFaith = 3368; // 攻撃速さの信念
 Weapon.TruthSeeker = 3369; // 天真の神弓
 Special.Archrival = 3370; // 角逐
 PassiveA.HeavensStead = 3371; // 天に代わりて

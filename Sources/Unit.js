@@ -6841,6 +6841,9 @@ class Unit extends BattleMapElement {
                 return true;
             }
         }
+        if (this.restStyleSkillAvailableTurn > 0) {
+            return true;
+        }
         let env = new NodeEnv().setTarget(this).setSkillOwner(this);
         env.setName("スタイル発動可能判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
         // env.setName("スタイル発動可能判定").setLogLevel(getSkillLogLevel());
