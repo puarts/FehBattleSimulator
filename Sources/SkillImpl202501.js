@@ -273,13 +273,14 @@
     // CD: 5
     setSpecialCountAndType(skillId, 5, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        // When Special triggers, boosts damage by X% of the greater of unit’s or foe’s Atk
+        // When Special triggers,
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
-            X_NUM_NODE(
+            USE_X_NODE(
+                // boosts damage by X% of the greater of unit’s or foe’s Atk
                 PERCENTAGE_NODE(READ_NUM_NODE, MAX_NODE(UNITS_ATK_NODE, FOES_ATK_NODE)),
                 // (if unit has weapon-triangle advantage, X = 80; otherwise, X = 70).
                 COND_OP(HAS_TARGET_WEAPON_TRIANGLE_ADVANTAGE_NODE, 80, 70),
-            )
+            ),
         ),
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
@@ -347,15 +348,20 @@
 {
     let style = STYLE_TYPE.WEAPON_TRIANGLE_GREEN;
     let skillId = getStyleSkillId(style);
+    setStyleRange(skillId, TARGETS_RANGE_NODE);
     // Unit can use the following [Style]:
     // Weapon Triangle: Green Style
-    //
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // When determining weapon triangle,
-    GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS.addSkill(skillId, NODE_FUNC(
-        // counts unit as green (does not affect skill effects that trigger based on attribute,
-        // such as "if in combat against a green foe").
-        CONSTANT_NUMBER_NODE(ColorType.Green),
-    ));
+    GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS.addSkill(skillId, () =>
+        COND_OP(
+            IS_STYLE_ACTIVE(style),
+            // counts unit as green (does not affect skill effects that trigger based on attribute,
+            // such as "if in combat against a green foe").
+            CONSTANT_NUMBER_NODE(ColorType.Green),
+            CONSTANT_NUMBER_NODE(-Infinity),
+        ),
+    );
     // This Style can be used only once per turn.
     STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
 }

@@ -6604,6 +6604,11 @@ class HasTargetWeaponTriangleAdvantageNode extends BoolNode {
         let foe = env.getFoeDuringCombatOf(unit);
         let advantage = DamageCalculationUtility.calcAttackerTriangleAdvantage(unit, foe);
         let result = advantage === TriangleAdvantage.Advantageous;
+        env.debug(`${unit.nameWithGroup}の色: ${unit.color}`);
+        env.debug(`${unit.nameWithGroup}の色（比較時）: ${unit.getColorWhenDeterminingWeaponTriangle()}`);
+        env.debug(`${foe.nameWithGroup}の色: ${foe.color}`);
+        env.debug(`${foe.nameWithGroup}の色（比較時）: ${foe.getColorWhenDeterminingWeaponTriangle()}`);
+        env.debug(`アドバンテージタイプ: ${advantage}`);
         env.debug(`${unit.nameWithGroup}は相性有利か: ${result}`);
         return result;
     }

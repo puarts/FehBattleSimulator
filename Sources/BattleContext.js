@@ -788,6 +788,14 @@ class BattleContext {
         return increase - reduction;
     }
 
+    getSpecialCountChangeAmountAbsBeforeFirstAttack() {
+        let increase = this.specialCountIncreaseBeforeFirstAttack;
+        let reduction =
+            this.specialCountReductionBeforeFirstAttack +
+            this.specialCountReductionBeforeFirstAttackPerAttack;
+        return increase + reduction;
+    }
+
     getSpecialCountChangeAmountBeforeSecondStrikeAttack() {
         let increase = this.specialCountIncreaseBeforeSecondStrike;
         let reduction = this.specialCountReductionBeforeSecondStrikeByEnemy;
@@ -798,6 +806,12 @@ class BattleContext {
         let increase = this.specialCountIncreaseBeforeFirstAttackByEnemy;
         let reduction = this.specialCountReductionBeforeFirstAttackByEnemy;
         return increase - reduction;
+    }
+
+    getSpecialCountChangeAmountAbsBeforeFirstAttackByEnemy() {
+        let increase = this.specialCountIncreaseBeforeFirstAttackByEnemy;
+        let reduction = this.specialCountReductionBeforeFirstAttackByEnemy;
+        return increase + reduction;
     }
 
     getSpecialCountReductionBeforeFirstFollowUpAttackByEnemy() {

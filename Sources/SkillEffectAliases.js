@@ -1537,3 +1537,13 @@ function setOnceUsedThisStyleCannotBeUsedForNTurns(skillId, n) {
         SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(n),
     ));
 }
+
+/**
+ * @param skillId
+ * @param {NumberNode} rangeNode
+ */
+function setStyleRange(skillId, rangeNode) {
+    CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        rangeNode,
+    );
+}

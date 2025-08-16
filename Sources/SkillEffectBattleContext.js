@@ -1709,7 +1709,7 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFirstAttackNode 
         let n = this.evaluateChildren(env);
         let foe = env.getFoeDuringCombatOf(unit);
         let result = foe.battleContext.specialCountIncreaseBeforeFirstAttackByEnemy += n;
-        env.debug(`${unit.nameWithGroup}は敵の最初の攻撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
+        env.debug(`${unit.nameWithGroup}は最初の攻撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
     }
 }
 
