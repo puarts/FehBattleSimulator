@@ -314,6 +314,8 @@ const UNITS_RES_GT_FOES_RES_DURING_COMBAT_NODE =
     GT_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
 /// 戦闘中ステータスの差
+const DIFFERENCE_BETWEEN_SPD_STATS_NODE =
+    SUB_NODE(UNITS_EVAL_SPD_DURING_COMBAT_NODE, FOES_EVAL_SPD_DURING_COMBAT_NODE);
 /**
  * 戦闘中の守備の差
  * @type {SubNode}
@@ -492,12 +494,16 @@ const RES_DIFF_AT_START_OF_COMBAT_NODE = SUB_NODE(UNITS_EVAL_RES_AT_START_OF_COM
 const DEF_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
 const RES_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
-function setSaveSkill(skillId, isMelee) {
+function setSaveSkill(skillId, isMelee, isRanged = !isMelee, isMagic = false, isP = false) {
     SAVE_SKILL_SET.add(skillId);
     if (isMelee) {
         CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
-    } else {
+    } else if (isRanged) {
         CAN_SAVE_FROM_RANGED_SKILL_SET.add(skillId);
+    } else if (isMagic) {
+        CAN_SAVE_FROM_MAGIC_SKILL_SET.add(skillId);
+    } else if (isP) {
+        CAN_SAVE_FROM_P_SKILL_SET.add(skillId);
     }
 }
 
@@ -523,16 +529,18 @@ function setTwinSave(skillId, isMelee, grantsNode) {
     );
 }
 
-function setBriarSave(skillId, isMelee, grantsNode) {
+function setBriarSave(skillId, statsNode,
+                      isMelee, isRanged = !isMelee,
+                      isMagic = false, isP = false) {
     // If foe with Range = 2 initiates combat against an ally within 2 spaces of unit, triggers【Savior】on unit.
-    setSaveSkill(skillId, isMelee);
+    setSaveSkill(skillId, isMelee, isRanged, isMagic, isP);
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
             // If foe's Range = 2,
             IF_NODE(isMelee ? FOES_RANGE_IS_1_NODE : FOES_RANGE_IS_2_NODE,
                 // grants Atk/Def+4 to unit and
-                grantsNode,
+                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(statsNode),
                 // reduces damage from foe's first attack by 5 during combat
                 // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
                 new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(5),
@@ -778,7 +786,7 @@ const TOTAL_BONUSES_LIST_OF_TARGETS_ALLIES_ON_MAP_NODE =
 const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n) =>
     MAX_NODE(TOTAL_BONUSES_LIST_OF_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(n));
 
-const HIGHEST_TOTAL_BONUSES_TO_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n, valueNode) =>
+const HIGHEST_TOTAL_BONUSES_TO_TARGET_STATS_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n, valueNode) =>
     MAX_NODE(MAP_UNITS_TO_NUM_NODE(
         new TargetsAndThoseAlliesWithinNSpacesNode(n, TARGET_NODE),
         valueNode));
@@ -824,8 +832,22 @@ const MAX_UNITS_NODE = (unitsNode, funcNode) => new MaxUnitsNode(unitsNode, func
 const HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE =
     index => MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_STAT_ON_MAP(index));
 
+/**
+ * @param {number|NumberNode} index
+ * @returns {UnitsNode}
+ * @constructor
+ */
 const HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE =
     index => MAX_UNITS_NODE(SKILL_OWNERS_ALLIES_ON_MAP_NODE, TARGETS_STAT_ON_MAP(index));
+
+/**
+ * @param {number|NumberNode} index
+ * @param {(number) => NumberNode} funcNode
+ * @returns {UnitsNode}
+ * @constructor
+ */
+const HIGHEST_SKILL_OWNERS_ALLIES_ON_MAP_NODE =
+    (index, funcNode) => MAX_UNITS_NODE(SKILL_OWNERS_ALLIES_ON_MAP_NODE, funcNode(index));
 
 const HIGHEST_TARGETS_ALLIES_WITHIN_N_SPACES_NODE =
     (n, funcNode) => MAX_UNITS_NODE(TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n), funcNode);
@@ -840,10 +862,30 @@ const HIGHEST_HP_AMONG_TARGETS_ALLIES
 const HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES
     = MAX_NODE(MAP_UNITS_TO_NUM_NODE(SKILL_OWNERS_ALLIES_ON_MAP_NODE, TARGETS_MAX_HP_NODE))
 
+/**
+ * @param index
+ * @returns {UnitsNode}
+ * @constructor
+ */
 const PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE = index =>
     IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
         SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
         HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(index),
+    );
+
+/**
+ * @param index
+ * @param statFuncNode
+ * @returns {UnitsNode}
+ * @constructor
+ */
+const PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE = (index, statFuncNode) =>
+    IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
+        SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
+        HIGHEST_SKILL_OWNERS_ALLIES_ON_MAP_NODE(
+            index,
+            statFuncNode,
+        ),
     );
 
 const IS_BONUS_OR_PENALTY_ACTIVE_ON_TARGET_NODE =
@@ -1482,4 +1524,10 @@ function setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, nodeF
 function setIfRallyOrMovementAssistSkillEndedByUnit(skillId, nodeFunc) {
     AFTER_RALLY_ENDED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
     AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, nodeFunc);
+}
+
+// At start of turn, and after unit acts (if Canto triggers, after Canto),
+function setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, nodeFunc) {
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, nodeFunc);
 }

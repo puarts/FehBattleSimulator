@@ -3178,9 +3178,13 @@ function setDiscord(skillId, statsRatios) {
 
 // 護り手・X・茨
 {
-    setBriarSave(PassiveC.ARBriarNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
-    setBriarSave(PassiveC.ADBriarNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
-    setBriarSave(PassiveC.ADBriarFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
+    // 近
+    setBriarSave(PassiveC.ARBriarNSave, ATK_RES_NODE(4), true, false, false, false);
+    setBriarSave(PassiveC.ADBriarNSave, ATK_DEF_NODE(4), true, false, false, false);
+    // 遠
+    setBriarSave(PassiveC.ADBriarFSave, ATK_DEF_NODE(4), false, true, false, false);
+    // 理
+    setBriarSave(PassiveC.ADBriarPSave, ATK_DEF_NODE(4), false, false, false, true);
 }
 
 // 竜の堅鱗
@@ -5579,7 +5583,7 @@ function setDiscord(skillId, statsRatios) {
             // if unit can make a follow-up attack or if unit triggers the "unit attacks twice" effect, X = 10; otherwise, X = 20).
             MULT_TRUNC_NODE(
                 COND_OP(
-                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
+                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
                     0.1,
                     0.2,
                 ),
@@ -5590,7 +5594,7 @@ function setDiscord(skillId, statsRatios) {
         new ReducesDamageExcludingAoeSpecialsNode(
             MULT_TRUNC_NODE(
                 COND_OP(
-                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
+                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
                     0.1,
                     0.2,
                 ),

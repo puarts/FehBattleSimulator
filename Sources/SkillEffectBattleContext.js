@@ -1270,6 +1270,19 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode extends Apply
 const REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_PER_ATTACK_NODE =
     n => new ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode(n);
 
+class DealsDamageWhenTriggeringSpecialDuringCombatNode extends ApplyingNumberNode {
+    evaluate(env) {
+        let n = this.evaluateChildren(env);
+        let unit = env.unitDuringCombat;
+        unit.battleContext.additionalDamageOfSpecial += n;
+        let damage = unit.battleContext.additionalDamageOfSpecial;
+        env.debug(`${unit.nameWithGroup}は戦闘中、自分の奥義によるダメージ+${n}: ${damage - n} => ${damage}`);
+    }
+}
+
+const DEALS_DAMAGE_WHEN_TRIGGERING_SPECIAL_DURING_COMBAT_NODE =
+    n => new DealsDamageWhenTriggeringSpecialDuringCombatNode(n);
+
 class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends ApplyingNumberNode {
     evaluate(env) {
         let n = this.evaluateChildren(env);
@@ -1682,6 +1695,27 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstFollowU
 const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_FOLLOW_UP_ATTACK_NODE =
     n => new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstFollowUpAttackNode(n);
 
+class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFirstAttackNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n) {
+        super(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let result = foe.battleContext.specialCountIncreaseBeforeFirstAttackByEnemy += n;
+        env.debug(`${unit.nameWithGroup}は敵の最初の攻撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
+    }
+}
+
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FIRST_ATTACK_NODE =
+    n => new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFirstAttackNode(n);
+
 class GrantsSpecialCooldownCountMinusNToUnitBeforeFoesFirstAttackDuringCombatNode
     extends GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuringCombatNode {
     static {
@@ -2040,7 +2074,7 @@ class CanTargetsFoeMakeFollowUpIncludingPotentNode extends CanTargetMakeFollowUp
 const CAN_TARGETS_FOE_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetsFoeMakeFollowUpIncludingPotentNode();
 
 // TODO: 命名規則を統一させる
-class IfTargetTriggersAttacksTwiceNode extends BoolNode {
+class DoesTargetTriggerAttacksTwiceNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetValueMixin);
     }
@@ -2052,9 +2086,9 @@ class IfTargetTriggersAttacksTwiceNode extends BoolNode {
     }
 }
 
-const IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE = new IfTargetTriggersAttacksTwiceNode();
+const DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE = new DoesTargetTriggerAttacksTwiceNode();
 
-class IfTargetsFoeTriggersAttacksTwiceNode extends IfTargetTriggersAttacksTwiceNode {
+class DoesTargetsFoeTriggerAttacksTwiceNode extends DoesTargetTriggerAttacksTwiceNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }

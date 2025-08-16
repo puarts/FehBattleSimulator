@@ -250,6 +250,16 @@ const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘後の再行動評価時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 味方の戦闘後の再行動評価時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_ALLIES_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘後の再行動評価時
  * 敵（攻撃者）から見た視点になる（targetはatkUnit、skill ownerはdefUnit）。
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
@@ -408,6 +418,11 @@ const CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHoo
 const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
+ * ユニットが通過できない（敵ではない）
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
+const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
  * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
 const AOE_SPECIAL_SPACES_HOOKS = new SkillEffectHooks();
 
@@ -466,3 +481,8 @@ const IS_AFFLICTOR_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<BoolNode, NodeEnv>}
  */
 const HAS_PATHFINDER_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>}
+ */
+const GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS = new SkillEffectHooks();

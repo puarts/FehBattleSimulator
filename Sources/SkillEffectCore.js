@@ -1317,9 +1317,11 @@ class IfExpressionNode extends SkillEffectNode {
 }
 
 /**
+ * @template T
  * @param {boolean|BoolNode} condNode
- * @param trueNode
- * @param falseNode
+ * @param {T} trueNode
+ * @param {T} falseNode
+ * @returns {T}
  * @constructor
  */
 const IF_EXPRESSION_NODE = (condNode, trueNode, falseNode) =>

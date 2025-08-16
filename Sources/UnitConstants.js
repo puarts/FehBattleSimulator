@@ -371,6 +371,12 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Reflex, ["Reflex.webp", "反射", "初撃のダメージ-7、軽減値を次の攻撃のダメージに+"]],
     [StatusEffectType.ShareSpoilsPlus, ["ShareSpoilsPlus.webp", "戦果移譲・広域", ""]],
     [StatusEffectType.ForesightSnare, ["ForesightSnare.webp", "予知の罠", "「予知の罠」により、敵からの攻撃をキャンセルできる"]],
+    [StatusEffectType.ProfsGuidance, ["ProfsGuidance.webp", "師の導き", ""]],
+    [StatusEffectType.FringeBonus, ["FringeBonus.webp", "真強化増幅", ""]],
+    [StatusEffectType.MagicTwinSave, ["MagicTwinSave.webp", "護り手・魔・双", ""]],
+    [StatusEffectType.SpdShackle, ["SpdShackle.webp", "速さの枷", ""]],
+    [StatusEffectType.ResShackle, ["ResShackle.webp", "魔防の枷", ""]],
+    [StatusEffectType.CreationPulse, ["CreationPulse.webp", "開闢の鼓動", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

@@ -1394,6 +1394,17 @@ CustomSkill.setFuncId(
 );
 
 CustomSkill.setFuncId(
+    'inflicts-special-count-before-first-attack',
+    "最初の攻撃前に敵の奥義カウント-1",
+    (skillId, args) => {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FIRST_ATTACK_NODE(1),
+        ));
+    },
+    []
+);
+
+CustomSkill.setFuncId(
     'neutralizes-penalties',
     "自身の弱化を無効",
     (skillId, args) => {

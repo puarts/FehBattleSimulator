@@ -76,7 +76,8 @@ class DamageCalculationUtility {
                         case ColorType.Red:
                         case ColorType.Blue:
                         case ColorType.Green:
-                            if (defUnit.isAdvantageForColorless() && atkUnit.color === ColorType.Colorless) {
+                            if (defUnit.isAdvantageForColorless() &&
+                                atkUnit.getColorWhenDeterminingWeaponTriangle() === ColorType.Colorless) {
                                 return TriangleAdvantage.None;
                             } else {
                                 return TriangleAdvantage.Advantageous;
@@ -92,7 +93,8 @@ class DamageCalculationUtility {
                         case ColorType.Red:
                         case ColorType.Blue:
                         case ColorType.Green:
-                            if (atkUnit.isAdvantageForColorless() && defUnit.color === ColorType.Colorless) {
+                            if (atkUnit.isAdvantageForColorless() &&
+                                defUnit.getColorWhenDeterminingWeaponTriangle() === ColorType.Colorless) {
                                 return TriangleAdvantage.None;
                             } else {
                                 return TriangleAdvantage.Disadvantageous;
@@ -102,16 +104,20 @@ class DamageCalculationUtility {
             }
         }
         // 無色に有利な効果を持つ場合
-        if (atkUnit.isAdvantageForColorless() && defUnit.color === ColorType.Colorless) {
+        if (atkUnit.isAdvantageForColorless() &&
+            defUnit.getColorWhenDeterminingWeaponTriangle() === ColorType.Colorless) {
             return TriangleAdvantage.Advantageous;
         }
 
-        if (defUnit.isAdvantageForColorless(atkUnit) && atkUnit.color === ColorType.Colorless) {
+        if (defUnit.isAdvantageForColorless(atkUnit) &&
+            atkUnit.getColorWhenDeterminingWeaponTriangle() === ColorType.Colorless) {
             return TriangleAdvantage.Disadvantageous;
         }
 
         // 通常の有利判定
-        let tableIndex = atkUnit.color * 4 + defUnit.color;
+        let tableIndex =
+            atkUnit.getColorWhenDeterminingWeaponTriangle() * 4 +
+            defUnit.getColorWhenDeterminingWeaponTriangle();
         return ColorToTriangleAdvantageTable[tableIndex];
     }
 
