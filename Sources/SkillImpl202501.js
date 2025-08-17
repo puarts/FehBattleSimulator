@@ -1,5 +1,42 @@
 // スキル実装
 
+{
+    let skillId = Weapon.CrypticValaskjalf;
+    // 奥義が発動しやすい(発動カウント-1)
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // 戦闘開始時、自身のHPが25%以上で敵から攻撃された時、先制攻撃
+            IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+                TARGET_CAN_COUNTERATTACK_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE,
+            ),
+            // 戦闘開始時、自身のHPが25%以上の時、戦闘中、追撃可能なら自分の攻撃の直後に追撃を行う
+            UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+            // 戦闘開始時、自身のHPが25%以上なら、戦闘中、
+        ),
+    ));
+    // 自軍ターン開始時、および、敵軍ターン開始時、自身のHPが25%以上なら、
+    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, NODE_FUNC(
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // 自分と周囲2マス以内の味方の攻撃、速さ+6、【赤の呪い】、「戦闘中、絶対追撃」を付与(1ターン)
+            GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                ATK_SPD_NODE(6),
+                StatusEffectType.Anathema,
+                StatusEffectType.UnitMakesAGuaranteedFollowUpAttackDuringCombat,
+            ),
+        ),
+    ));
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
+            // 攻撃、速さが戦闘開始時の速さの20%+6だけ増加、
+            GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(
+                PERCENTAGE_ADD_NODE(20, UNITS_SPD_NODE, 6),
+            ),
+            // ダメージ+速さの20%(範囲奥義を除く)
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+        ),
+    ));
+}
+
 // 🗡️ Sublime Creator
 {
     let skillId = Weapon.SublimeCreator;

@@ -3948,6 +3948,7 @@ Weapon.Gladsbok = 3376; // 王書グラズヘイム
 PassiveA.AtkSpdAria = 3377; // 攻撃速さの詠唱
 PassiveB.SpdResShackle = 3378; // 速さ魔防の枷
 PassiveC.JustLikeMother = 3379; // お母様みたいに
+Weapon.CrypticValaskjalf = 3380; // 異邦ヴラスキャルヴ
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
