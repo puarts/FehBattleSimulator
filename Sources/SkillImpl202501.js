@@ -1700,7 +1700,7 @@
             AND_NODE(
                 WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
                 OR_NODE(
-                    IS_SEASON_NODE(SeasonType.Anima),
+                    IS_SEASON_NODE(SeasonType.Dark),
                     IS_SEASON_NODE(SeasonType.Chaos),
                 ),
             ),
