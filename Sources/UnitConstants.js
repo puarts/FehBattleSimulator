@@ -373,12 +373,12 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Reflex, ["Reflex.webp", "反射", "初撃のダメージ-7、軽減値を次の攻撃のダメージに+"]],
     [StatusEffectType.ShareSpoilsPlus, ["ShareSpoilsPlus.webp", "戦果移譲・広域", ""]],
     [StatusEffectType.ForesightSnare, ["ForesightSnare.webp", "予知の罠", "「予知の罠」により、敵からの攻撃をキャンセルできる"]],
-    [StatusEffectType.ProfsGuidance, ["ProfsGuidance.webp", "師の導き", ""]],
-    [StatusEffectType.FringeBonus, ["FringeBonus.webp", "真強化増幅", ""]],
-    [StatusEffectType.MagicTwinSave, ["MagicTwinSave.webp", "護り手・魔・双", ""]],
-    [StatusEffectType.SpdShackle, ["SpdShackle.webp", "速さの枷", ""]],
-    [StatusEffectType.ResShackle, ["ResShackle.webp", "魔防の枷", ""]],
-    [StatusEffectType.CreationPulse, ["CreationPulse.webp", "開闢の鼓動", ""]],
+    [StatusEffectType.ProfsGuidance, ["ProfsGuidance.webp", "師の導き", "SP2倍、奥義で軽減2回可&戦闘後にカウント-1"]],
+    [StatusEffectType.FringeBonus, ["FringeBonus.webp", "真強化増幅", "攻速守魔が上昇、自分と周囲の味方の強化が最も高い値"]],
+    [StatusEffectType.MagicTwinSave, ["MagicTwinSave.webp", "護り手・魔・双", "魔法攻撃に「護り手」、奥義のダメージ軽減2回発動可"]],
+    [StatusEffectType.SpdShackle, ["SpdShackle.webp", "速さの枷", "速さが減少、自分の不利な状態異常の数+4（最大8）"]],
+    [StatusEffectType.ResShackle, ["ResShackle.webp", "魔防の枷", "魔防が減少、自分の不利な状態異常の数+4（最大8）"]],
+    [StatusEffectType.CreationPulse, ["CreationPulse.webp", "開闢の鼓動", "攻撃前に、奥義発動カウント-敵の不利な状態異常の数"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
