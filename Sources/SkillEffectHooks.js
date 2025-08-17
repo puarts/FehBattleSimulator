@@ -168,7 +168,7 @@ const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
 /**
  * 護り手判定時
  * targetは護られるユニット、護り手はally、攻撃した敵はfoe
- * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+ * @type {SkillEffectHooks<BoolNode, DamageCalculatorWrapperEnv>} */
 const CAN_TRIGGER_SAVIOR_HOOKS = new SkillEffectHooks();
 
 /**
@@ -392,7 +392,7 @@ const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
 
 /**
  * Foes cannot warp into spaces
- * @type {SkillEffectHooks}
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
  */
 const UNIT_CANNOT_WARP_INTO_SPACES_HOOKS = new SkillEffectHooks();
 

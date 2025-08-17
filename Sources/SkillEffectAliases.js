@@ -494,7 +494,7 @@ const RES_DIFF_AT_START_OF_COMBAT_NODE = SUB_NODE(UNITS_EVAL_RES_AT_START_OF_COM
 const DEF_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
 const RES_DIFF_DURING_COMBAT_NODE = SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
 
-function setSaveSkill(skillId, isMelee, isRanged = !isMelee, isMagic = false, isP = false) {
+function setSaveSkill(skillId, isMelee, isRanged = !isMelee, isP = false, isMagic = false) {
     SAVE_SKILL_SET.add(skillId);
     if (isMelee) {
         CAN_SAVE_FROM_MELEE_SKILL_SET.add(skillId);
@@ -529,27 +529,41 @@ function setTwinSave(skillId, isMelee, grantsNode) {
     );
 }
 
-function setBriarSave(skillId, statsNode,
+function setBriarSave(skillId, predNode, statsNode,
                       isMelee, isRanged = !isMelee,
-                      isMagic = false, isP = false) {
+                      isP = false, isMagic = false) {
     // If foe with Range = 2 initiates combat against an ally within 2 spaces of unit, triggers【Savior】on unit.
-    setSaveSkill(skillId, isMelee, isRanged, isMagic, isP);
+    setSaveSkill(skillId, isMelee, isRanged, isP, isMagic);
 
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
-        new SkillEffectNode(
-            // If foe's Range = 2,
-            IF_NODE(isMelee ? FOES_RANGE_IS_1_NODE : FOES_RANGE_IS_2_NODE,
-                // grants Atk/Def+4 to unit and
-                GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(statsNode),
-                // reduces damage from foe's first attack by 5 during combat
-                // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-                new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(5),
-                // and unit's next attack deals damage = 40% of foe's attack damage prior to reductions
-                // (resets at end of combat; only highest value applied; does not stack).
-                TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE(40),
-            ),
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        // If foe's Range = 2,
+        IF_NODE(predNode,
+            // grants Atk/Def+4 to unit and
+            GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(statsNode),
+            // reduces damage from foe's first attack by 5 during combat
+            // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(5),
+            // and unit's next attack deals damage = 40% of foe's attack damage prior to reductions
+            // (resets at end of combat; only highest value applied; does not stack).
+            TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE(40),
         ),
-    );
+    ));
+    if (isP || isMagic) {
+        let nodeFunc = NODE_FUNC(
+            DISABLES_TARGETS_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_DURING_COMBAT_NODE
+        );
+        setCondHooks(skillId,
+            predNode,
+            [
+                AT_START_OF_COMBAT_HOOKS,
+                nodeFunc,
+            ],
+            [
+                BEFORE_AOE_SPECIAL_HOOKS,
+                nodeFunc,
+            ],
+        );
+    }
 }
 
 /**

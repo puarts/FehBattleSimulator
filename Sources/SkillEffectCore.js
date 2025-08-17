@@ -300,6 +300,11 @@ class SkillEffectNode {
 
 const SKILL_EFFECT_NODE = (...nodes) => new SkillEffectNode(...nodes);
 
+/**
+ * @param nodes
+ * @returns {function(): SkillEffectNode}
+ * @constructor
+ */
 const NODE_FUNC = (...nodes) => () => SKILL_EFFECT_NODE(...nodes);
 
 /**

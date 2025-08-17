@@ -3175,12 +3175,16 @@ function setDiscord(skillId, statsRatios) {
 // 護り手・X・茨
 {
     // 近
-    setBriarSave(PassiveC.ARBriarNSave, ATK_RES_NODE(4), true, false, false, false);
-    setBriarSave(PassiveC.ADBriarNSave, ATK_DEF_NODE(4), true, false, false, false);
+    setBriarSave(PassiveC.ARBriarNSave, FOES_RANGE_IS_1_NODE, ATK_RES_NODE(4),
+        true, false, false, false);
+    setBriarSave(PassiveC.ADBriarNSave, FOES_RANGE_IS_1_NODE, ATK_DEF_NODE(4),
+        true, false, false, false);
     // 遠
-    setBriarSave(PassiveC.ADBriarFSave, ATK_DEF_NODE(4), false, true, false, false);
+    setBriarSave(PassiveC.ADBriarFSave, FOES_RANGE_IS_2_NODE, ATK_DEF_NODE(4),
+        false, true, false, false);
     // 理
-    setBriarSave(PassiveC.ADBriarPSave, ATK_DEF_NODE(4), false, false, false, true);
+    setBriarSave(PassiveC.ADBriarPSave, FOR_FOE_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
+        false, false, true, false);
 }
 
 // 竜の堅鱗

@@ -153,7 +153,7 @@
     let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // Sublime Heaven Style
-    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, NODE_FUNC(TRUE_NODE));
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // Unit can attack foes 3 spaces away (unit cannot attack adjacent foes).
     CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () =>
         CONSTANT_NUMBER_NODE(3)
@@ -272,7 +272,7 @@
     let skillId = Special.Archrival;
     // CD: 5
     setSpecialCountAndType(skillId, 5, true, false);
-    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // When Special triggers,
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
             USE_X_NODE(
@@ -283,7 +283,7 @@
             ),
         ),
     ));
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // Reduces damage from foe’s first attack by 40% ("first attack" normally means only the first strike;
         // for effects that grant "unit attacks twice," it means the first and second strikes)
         REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_BY_SPECIAL_DURING_COMBAT_INCLUDING_TWICE_NODE(40),
@@ -448,7 +448,7 @@
 // [Fringe Bonus]
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.FringeBonus);
-    WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, NODE_FUNC(
         // Grants bonus to unit's Atk/Spd/Def/Res
         FOR_EACH_STAT_INDEX_NODE(
             // = highest bonus on each stat between unit and allies within 2 spaces of unit
@@ -544,26 +544,36 @@
     // If a magic, staff, or dragon foe initiates combat against an ally within 2 spaces of unit,
     // triggers Savior on unit (triggers only if unit is not equipped with a skill that can trigger another Savior effect;
     // if unit is granted multiple statuses that enable “Savior” effects to trigger, Savior will not trigger).
-    CAN_TRIGGER_SAVIOR_HOOKS.addSkill(skillId, NODE_FUNC(
+    CAN_TRIGGER_SAVIOR_HOOKS.addSkill(skillId, () =>
         AND_NODE(
             IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
             FOR_FOE_NODE(IS_TARGET_MAGIC_WEAPON_NODE),
         ),
-    ));
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+    );
+    setCondHooks(skillId,
         // If foe uses magic, staff, or dragon damage,
-        IF_NODE(FOR_FOE_NODE(IS_TARGET_MAGIC_WEAPON_NODE),
-            // disables foe’s effects that “calculate damage using the lower of foe’s Def or Res”
-            FOR_FOE_NODE(
+        FOR_FOE_NODE(IS_TARGET_MAGIC_WEAPON_NODE),
+        [
+            AT_START_OF_COMBAT_HOOKS,
+            NODE_FUNC(
+                // disables foe’s effects that “calculate damage using the lower of foe’s Def or Res”
+                // (including area-of-effect Specials),
+                DISABLES_TARGETS_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_DURING_COMBAT_NODE,
+                // and any “reduces damage by X%” effect that can be triggered only once per combat by unit’s equipped Special skill
+                // can be triggered up to twice per combat during combat
+                // (excludes boosted Special effects from engaging; only highest value applied; does not stack).
+                ANY_TARGETS_REDUCE_DAMAGE_EFFECT_ONLY_ONCE_CAN_BE_TRIGGERED_UP_TO_N_TIMES_PER_COMBAT_NODE(1),
+            ),
+        ],
+        [
+            BEFORE_AOE_SPECIAL_HOOKS,
+            NODE_FUNC(
+                // disables foe’s effects that “calculate damage using the lower of foe’s Def or Res”
+                // (including area-of-effect Specials),
                 DISABLES_TARGETS_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_DURING_COMBAT_NODE,
             ),
-            // (including area-of-effect Specials),
-            // and any “reduces damage by X%” effect that can be triggered only once per combat by unit’s equipped Special skill
-            // can be triggered up to twice per combat during combat
-            // (excludes boosted Special effects from engaging; only highest value applied; does not stack).
-            ANY_TARGETS_REDUCE_DAMAGE_EFFECT_ONLY_ONCE_CAN_BE_TRIGGERED_UP_TO_N_TIMES_PER_COMBAT_NODE(1),
-        ),
-    ));
+        ]
+    );
 }
 
 // Glaðsbók

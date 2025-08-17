@@ -884,7 +884,8 @@ class DamageCalculatorWrapper {
                 if (CAN_SAVE_FROM_P_SKILL_SET.has(skillId)) {
                     return true;
                 }
-            } else {
+            }
+            if (atkUnit.isMagicalAttacker()) {
                 if (CAN_SAVE_FROM_MAGIC_SKILL_SET.has(skillId)) {
                     return true;
                 }
