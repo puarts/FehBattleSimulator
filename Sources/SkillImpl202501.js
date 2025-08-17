@@ -1800,7 +1800,7 @@
                     // or any space within 2 spaces of unit or foe has a Divine Vein effect applied,
                     // is defensive terrain, or counts as difficult or impassable terrain for units other than flying,
                     SOME_NODE(
-                        MAP_COLLECTION_NODE(
+                        MAP_SPACES_NODE(
                             SPACES_WITHIN_N_SPACES_OF_TARGET_OR_TARGET_FOE_NODE(2),
                             OR_NODE(
                                 HAS_DIVINE_VEIN_NODE,
