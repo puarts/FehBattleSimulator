@@ -1357,6 +1357,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Incited,
 // 強化増幅
     StatusEffectType.BonusDoubler,
+    // 真強化増幅
+    StatusEffectType.FringeBonus,
     // 敵弱化増幅
     StatusEffectType.FoePenaltyDoubler,
 // 神軍師の策
@@ -1379,6 +1381,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.FireEmblem,
     // 邪竜気
     StatusEffectType.FellSpirit,
+    // 師の導き
+    StatusEffectType.ProfsGuidance,
 // 強化ダメージ+
     StatusEffectType.Treachery,
 // 敵弱化ダメージ+
@@ -1443,6 +1447,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
 // 初撃の鼓動
     StatusEffectType.PreemptPulse,
+    // 開闢の鼓動
+    StatusEffectType.CreationPulse,
 // 自分から攻撃時、絶対追撃
     StatusEffectType.FollowUpAttackPlus,
     // 戦闘中、絶対追撃
@@ -1463,6 +1469,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Bulwark,
 // 囮指名
     StatusEffectType.AssignDecoy,
+    // 護り手・魔・双
+    StatusEffectType.MagicTwinSave,
 // 相性相殺
     StatusEffectType.CancelAffinity,
 // トライアングルアタック
@@ -1488,6 +1496,8 @@ const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Exposure,
     StatusEffectType.Sabotage,
     StatusEffectType.Discord,
+    StatusEffectType.SpdShackle,
+    StatusEffectType.ResShackle,
     StatusEffectType.HushSpectrum,
     StatusEffectType.ShareSpoils,
     StatusEffectType.ShareSpoilsPlus,

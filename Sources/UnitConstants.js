@@ -240,6 +240,8 @@ const NEGATIVE_STATUS_EFFECT_SET = new Set([
     StatusEffectType.ShareSpoils,
     StatusEffectType.Frozen,
     StatusEffectType.ShareSpoilsPlus,
+    StatusEffectType.SpdShackle,
+    StatusEffectType.ResShackle,
 ]);
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
