@@ -3934,6 +3934,21 @@ PassiveC.ASOutcryDull = 3362; // 攻速鼓舞・強化無効
 // TODO: 修正
 Weapon.GeiShiNonaihuPlus = 3363; // 給仕のナイフ+
 Weapon.LangQiShiTuanNogong = 3364; // 狼騎士団の弓
+Weapon.SublimeCreator = 3365; // 真覇天帝の剣
+PassiveA.ProfsGuidance = 3366; // 師の導き
+PassiveB.NullCAvoid = 3367; // 真回避・見切り反撃
+Weapon.TruthSeeker = 3369; // 天真の神弓
+Special.Archrival = 3370; // 角逐
+PassiveA.HeavensStead = 3371; // 天に代わりて
+Weapon.TemperedAntler = 3372; // 心身の鍛錬の角
+Support.SwapGait = 3373; // 入れ替え・歩法
+Special.MightyRoar = 3374; // 肉体の咆哮
+PassiveC.ADBriarPSave = 3375; // 鎧の護り手・理・茨
+Weapon.Gladsbok = 3376; // 王書グラズヘイム
+PassiveA.AtkSpdAria = 3377; // 攻撃速さの詠唱
+PassiveB.SpdResShackle = 3378; // 速さ魔防の枷
+PassiveC.JustLikeMother = 3379; // お母様みたいに
+Weapon.CrypticValaskjalf = 3380; // 異邦ヴラスキャルヴ
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -4114,6 +4129,8 @@ const STYLE_TYPE = {
     EMBLEM_LYN: 1,
     WIND_SWORD: 2,
     ECHO: 3,
+    SUBLIME_HEAVEN: 4,
+    WEAPON_TRIANGLE_GREEN: 5,
 }
 
 /**

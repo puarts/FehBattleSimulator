@@ -2525,8 +2525,8 @@ const INFLICTS_ATK_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, res = at
 const INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk, res = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, res);
 
-const INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, def = atk, res = atk) =>
-    new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, def, res);
+const INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atkOrStats, spd = atkOrStats, def = atkOrStats, res = atkOrStats) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(atkOrStats, spd, def, res);
 
 class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
     static {
@@ -2624,6 +2624,25 @@ class TargetsMaxHpExcludingHpIncreasesFromLegendaryEffectsMythicEffectsBonusHero
 
 const TARGETS_MAX_HP_EXCLUDING_HP_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE =
     new TargetsMaxHpExcludingHpIncreasesFromLegendaryEffectsMythicEffectsBonusHeroesEtc();
+
+class TargetsStatsExcludingIncreasesFromLegendaryEffectsMythicEffectsBonusHeroesEtc extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.statusesWithoutEnteringBattleAdd;
+        env.debug(`${unit.nameWithGroup}の出撃時のステータス: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_STATS_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE =
+    new TargetsStatsExcludingIncreasesFromLegendaryEffectsMythicEffectsBonusHeroesEtc();
+
+const TARGETS_STAT_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE = index =>
+    GET_STAT_AT_NODE(TARGETS_STATS_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE, index);
 
 /**
  * @abstract
@@ -3330,6 +3349,8 @@ class HasFoeStatusEffectNode extends HasTargetStatusEffectNode {
     }
 }
 
+const HAS_FOE_STATUS_EFFECT_NODE = n => new HasFoeStatusEffectNode(n);
+
 class HasAssistTargetingStatusEffectNode extends HasTargetStatusEffectNode {
     static {
         Object.assign(this.prototype, GetAssistTargetingMixin);
@@ -3562,6 +3583,36 @@ class IsFoeRangedWeaponNode extends IsTargetRangedWeaponNode {
 }
 
 const IS_FOE_RANGED_WEAPON_NODE = new IsFoeRangedWeaponNode();
+
+class IsTargetPWeaponNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isPhysicalAttacker();
+        env.debug(`${unit.nameWithGroup}は理の武器か: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_P_WEAPON_NODE = new IsTargetPWeaponNode();
+
+class IsTargetMagicWeaponNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isMagicalAttacker();
+        env.debug(`${unit.nameWithGroup}は魔の武器か: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_MAGIC_WEAPON_NODE = new IsTargetMagicWeaponNode();
 
 class IsTarget2SpacesFromTargetsFoeNode extends BoolNode {
     static {
@@ -4385,6 +4436,28 @@ const IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesO
 const IS_TARGET_WITHIN_5_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(5, TRUE_NODE);
 const IS_TARGET_WITHIN_6_SPACES_OF_SKILL_OWNER_NODE = new IsTargetWithinNSpacesOfSkillOwnerNode(6, TRUE_NODE);
 
+class AreTargetAndTargetAllyWithinNSpacesNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let ally = env.targetAlly;
+        let n = this._nNode.evaluate(env);
+        let result = unit.distance(ally) <= n;
+        env.debug(`${unit.nameWithGroup}は${ally.nameWithGroup}の${n}マス以内か: ${result}`);
+        return result;
+    }
+}
+
+const ARE_TARGET_AND_TARGET_ALLY_WITHIN_N_SPACES_NODE = n => new AreTargetAndTargetAllyWithinNSpacesNode(n);
+
 class IsSpaceWithinNSpacesOfTargetNode extends IsInRangeNNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -5042,6 +5115,8 @@ const GRANTS_STATS_PLUS_TO_TARGET_ON_MAP_NODE =
 
 const GRANTS_ATK_TO_TARGET_ON_MAP_NODE =
     atk => new GrantsStatsPlusToTargetOnMapNode(atk, 0, 0, 0);
+const GRANTS_RES_TO_TARGET_ON_MAP_NODE =
+    res => new GrantsStatsPlusToTargetOnMapNode(0, 0, 0, res);
 
 const GRANTS_ATK_SPD_TO_TARGET_ON_MAP_NODE =
     (atk, spd = atk) => new GrantsStatsPlusToTargetOnMapNode(atk, spd, 0, 0);
@@ -5320,6 +5395,21 @@ class GrantsAnotherActionToTargetAfterCombatNode extends SkillEffectNode {
 }
 
 const GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_NODE = new GrantsAnotherActionToTargetAfterCombatNode();
+
+class GrantsAnotherActionToTargetAfterCombatExceptsTargetsSkillNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.grantsAnotherActionAfterCombatExceptOwnSkills();
+        env.debug(`${unit.nameWithGroup}は自分以外のスキルで行動可能な状態になる`);
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_EXCEPT_TARGETS_SKILLS_NODE =
+    new GrantsAnotherActionToTargetAfterCombatExceptsTargetsSkillNode();
 
 class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
     static {
@@ -6472,6 +6562,60 @@ class TargetsColorNode extends NumberNode {
 
 const TARGETS_COLOR_NODE = new TargetsColorNode();
 
+class TargetsColorWhenDeterminingWeaponTriangleNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getColorWhenDeterminingWeaponTriangle();
+        env.debug(`${unit.nameWithGroup}の3すくみ判定時の色: ${ObjectUtil.getKeyName(ColorType, result)}`);
+        return result;
+    }
+}
+
+const TARGETS_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_NODE = new TargetsColorWhenDeterminingWeaponTriangleNode();
+
+class HasTargetWeaponTriangleDisadvantageNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let advantage = DamageCalculationUtility.calcAttackerTriangleAdvantage(unit, foe);
+        let result = advantage === TriangleAdvantage.Disadvantageous;
+        env.debug(`${unit.nameWithGroup}は相性不利か: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_WEAPON_TRIANGLE_DISADVANTAGE_NODE = new HasTargetWeaponTriangleDisadvantageNode();
+
+class HasTargetWeaponTriangleAdvantageNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let advantage = DamageCalculationUtility.calcAttackerTriangleAdvantage(unit, foe);
+        let result = advantage === TriangleAdvantage.Advantageous;
+        env.debug(`${unit.nameWithGroup}の色: ${unit.color}`);
+        env.debug(`${unit.nameWithGroup}の色（比較時）: ${unit.getColorWhenDeterminingWeaponTriangle()}`);
+        env.debug(`${foe.nameWithGroup}の色: ${foe.color}`);
+        env.debug(`${foe.nameWithGroup}の色（比較時）: ${foe.getColorWhenDeterminingWeaponTriangle()}`);
+        env.debug(`アドバンテージタイプ: ${advantage}`);
+        env.debug(`${unit.nameWithGroup}は相性有利か: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_WEAPON_TRIANGLE_ADVANTAGE_NODE = new HasTargetWeaponTriangleAdvantageNode();
+
 class HasAttackCanceledNode extends BoolNode {
     evaluate(env) {
         let unit = this.getUnit(env);
@@ -6492,4 +6636,34 @@ class IsAffectedByTrapNode extends BoolNode {
     }
 }
 
- const IS_AFFECTED_BY_TRAP_NODE = new IsAffectedByTrapNode();
+const IS_AFFECTED_BY_TRAP_NODE = new IsAffectedByTrapNode();
+
+class IsTargetEquippedWithSaviorEffectsNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasSaveSkills();
+        env.debug(`${unit.nameWithGroup}は護り手スキルを装備しているか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_EQUIPPED_WITH_SAVIOR_EFFECTS_NODE = new IsTargetEquippedWithSaviorEffectsNode();
+
+class IsTargetEquippedWithPSaviorEffectsNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasPSaveSkills();
+        env.debug(`${unit.nameWithGroup}は護り手・理スキルを装備しているか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_EQUIPPED_WITH_P_SAVIOR_EFFECTS_NODE = new IsTargetEquippedWithPSaviorEffectsNode();

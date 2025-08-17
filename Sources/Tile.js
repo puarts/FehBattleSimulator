@@ -825,6 +825,18 @@ class Tile extends BattleMapElement {
                             }
                             return ObstructTile;
                         }
+
+                        // 3マス以内に進軍阻止持ちがいるか確認
+                        // TODO: リファクタリング
+                        for (let tile3Spaces of tile2Spaces.neighbors) {
+                            if (tile3Spaces.existsEnemyUnit(unit) &&
+                                tile3Spaces.placedUnit.canActivateObstructToTilesIn3Spaces(unit)) {
+                                if (weight === CanNotReachTile || this.isWall()) {
+                                    return CanNotReachTile;
+                                }
+                                return ObstructTile;
+                            }
+                        }
                     }
                 }
             }

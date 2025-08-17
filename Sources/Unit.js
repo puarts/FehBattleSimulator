@@ -373,8 +373,11 @@ class PrecombatContext {
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
     #hpAddAfterEnteringBattle = 0;
+    #statusesAddAfterEnteringBattle = [0, 0, 0, 0];
     #statusEffects = [];
     static GRANTS_ANOTHER_ACTION_ON_ASSIST_ID = 'grants-another-action-on-assist';
+    static GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID =
+        'grants-another-action-after-combat-except-own-skills';
     constructor(id = "", name = "",
         unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
@@ -484,6 +487,7 @@ class Unit extends BattleMapElement {
         this.hpAdd = 0;
         this.hpMult = 1.0;
         this.#hpAddAfterEnteringBattle = 0;
+        this.#statusesAddAfterEnteringBattle = [0, 0, 0, 0];
         this._atkBuff = 0;
         this._atkDebuff = 0;
         this.atkSpur = 0;
@@ -1289,6 +1293,14 @@ class Unit extends BattleMapElement {
         return this._maxHpWithSkills - this.hpAddAfterEnteringBattle;
     }
 
+    get statusesAddAfterEnteringBattle() {
+        return this.#statusesAddAfterEnteringBattle;
+    }
+
+    get statusesWithoutEnteringBattleAdd() {
+        return ArrayUtil.sub(this.getStatusesWithSkills(), this.statusesAddAfterEnteringBattle);
+    }
+
     clearBlessingEffects() {
         this.blessingEffects = [];
         this.__clearBlessings();
@@ -1989,6 +2001,7 @@ class Unit extends BattleMapElement {
         this.snapshot._res = this._res;
         this.snapshot._maxHpWithSkills = this._maxHpWithSkills;
         this.snapshot.#hpAddAfterEnteringBattle = this.#hpAddAfterEnteringBattle;
+        this.snapshot.#statusesAddAfterEnteringBattle = this.#statusesAddAfterEnteringBattle;
         this.snapshot.atkWithSkills = this.atkWithSkills;
         this.snapshot.spdWithSkills = this.spdWithSkills;
         this.snapshot.defWithSkills = this.defWithSkills;
@@ -2630,6 +2643,19 @@ class Unit extends BattleMapElement {
             this.passiveB === PassiveB.SpdResBulwark3 ||
             this.passiveB === PassiveB.DetailedReport;
         return hasSkills && moveUnit.isRangedWeaponType();
+    }
+
+    canActivateObstructToTilesIn3Spaces(moveUnit) {
+        let hasSkills = false;
+        let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
+        // env.setName('自分が移動時(3マス以内)').setLogLevel(getSkillLogLevel());
+        env.setName('自分が移動時(3マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
+        hasSkills |=
+            CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(moveUnit, env);
+        let canObstruct =
+            this.canActivateObstructToAdjacentTiles(moveUnit) ||
+            this.canActivateObstructToTilesIn2Spaces(moveUnit);
+        return hasSkills && canObstruct;
     }
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
@@ -3581,6 +3607,16 @@ class Unit extends BattleMapElement {
         return getColorFromWeaponType(this.weaponType);
     }
 
+    getColorWhenDeterminingWeaponTriangle() {
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this)
+            .setName('3すくみ決定時の色').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        let color = GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS.evaluateMaxWithUnit(this, env);
+        if (color >= 0) {
+            return color;
+        }
+        return getColorFromWeaponType(this.weaponType);
+    }
+
     get moveCount() {
         if (this.isCantoActivated()) {
             return this.moveCountForCanto;
@@ -4037,6 +4073,23 @@ class Unit extends BattleMapElement {
             this.defWithSkills,
             this.resWithSkills
         ];
+    }
+
+    addStatusWithSkills(index, value) {
+        switch (index) {
+            case 0:
+                this.atkWithSkills += value;
+                break;
+            case 1:
+                this.spdWithSkills += value;
+                break;
+            case 2:
+                this.defWithSkills += value;
+                break;
+            case 3:
+                this.resWithSkills += value;
+                break;
+        }
     }
 
     getSpdInPrecombatWithoutDebuff() {
@@ -4536,6 +4589,10 @@ class Unit extends BattleMapElement {
         return isPhysicalWeaponType(this.weaponType);
     }
 
+    isMagicalAttacker() {
+        return !this.isPhysicalAttacker();
+    }
+
     updateStatusByWeaponRefinement() {
         switch (this.weaponRefinement) {
             case WeaponRefinementType.None:
@@ -4627,35 +4684,35 @@ class Unit extends BattleMapElement {
         switch (blessing) {
             case BlessingType.Hp5_Atk3:
                 this.addHpAfterEnteringBattle(5);
-                this.atkWithSkills += 3;
+                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Atk, 3);
                 break;
             case BlessingType.Hp5_Spd4:
                 this.addHpAfterEnteringBattle(5);
-                this.spdWithSkills += 4;
+                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Spd, 4);
                 break;
             case BlessingType.Hp5_Def5:
                 this.addHpAfterEnteringBattle(5);
-                this.defWithSkills += 5;
+                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Def, 5);
                 break;
             case BlessingType.Hp5_Res5:
                 this.addHpAfterEnteringBattle(5);
-                this.resWithSkills += 5;
+                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Res, 5);
                 break;
             case BlessingType.Hp3_Atk2:
                 this.addHpAfterEnteringBattle(3);
-                this.atkWithSkills += 2;
+                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Atk, 2);
                 break;
             case BlessingType.Hp3_Spd3:
                 this.addHpAfterEnteringBattle(3);
-                this.spdWithSkills += 3;
+                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Spd, 3);
                 break;
             case BlessingType.Hp3_Def4:
                 this.addHpAfterEnteringBattle(3);
-                this.defWithSkills += 4;
+                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Def, 4);
                 break;
             case BlessingType.Hp3_Res4:
                 this.addHpAfterEnteringBattle(3);
-                this.resWithSkills += 4;
+                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Res, 4);
                 break;
             case BlessingType.Hp3:
                 this.addHpAfterEnteringBattle(3);
@@ -5565,6 +5622,7 @@ class Unit extends BattleMapElement {
         this.heroIndex = -1;
         this._maxHpWithSkills = 0;
         this.#hpAddAfterEnteringBattle = 0;
+        this.#statusesAddAfterEnteringBattle = [0, 0, 0, 0];
         this.atkWithSkills = 0;
         this.spdWithSkills = 0;
         this.defWithSkills = 0;
@@ -5654,6 +5712,7 @@ class Unit extends BattleMapElement {
 
         this.maxHpWithSkillsWithoutAdd = this.hpLvN;
         this.#hpAddAfterEnteringBattle = 0;
+        this.#statusesAddAfterEnteringBattle = [0, 0, 0, 0];
         this.atkWithSkills = Math.floor(Number(this.atkLvN) * Number(this.atkMult) + Number(this.atkAdd));
         this.spdWithSkills = Math.floor(Number(this.spdLvN) * Number(this.spdMult) + Number(this.spdAdd));
         this.defWithSkills = Math.floor(Number(this.defLvN) * Number(this.defMult) + Number(this.defAdd));
@@ -5743,10 +5802,10 @@ class Unit extends BattleMapElement {
         // ボナキャラ補正
         if (this.isBonusChar) {
             this.addHpAfterEnteringBattle(10);
-            this.atkWithSkills += 4;
-            this.spdWithSkills += 4;
-            this.defWithSkills += 4;
-            this.resWithSkills += 4;
+            this.addStatusesAfterEnteringBattle(STATUS_INDEX.Atk, 4);
+            this.addStatusesAfterEnteringBattle(STATUS_INDEX.Spd, 4);
+            this.addStatusesAfterEnteringBattle(STATUS_INDEX.Def, 4);
+            this.addStatusesAfterEnteringBattle(STATUS_INDEX.Res, 4);
         }
 
         // 神装
@@ -6458,9 +6517,18 @@ class Unit extends BattleMapElement {
         return moveCountForCanto;
     }
 
-    __hasSaveSkills() {
+    hasSaveSkills() {
         for (let skillId of this.enumerateSkills()) {
             if (SAVE_SKILL_SET.has(skillId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    hasPSaveSkills() {
+        for (let skillId of this.enumerateSkills()) {
+            if (CAN_SAVE_FROM_P_SKILL_SET.has(skillId)) {
                 return true;
             }
         }
@@ -6485,6 +6553,11 @@ class Unit extends BattleMapElement {
     addHpAfterEnteringBattle(value) {
         this._maxHpWithSkills += value;
         this.#hpAddAfterEnteringBattle += value;
+    }
+
+    addStatusesAfterEnteringBattle(index, value) {
+        this.addStatusWithSkills(index, value)
+        this.#statusesAddAfterEnteringBattle[index] += value;
     }
 
     // 攻撃した側が動いた距離を返す。0ならユニットは移動していない。
@@ -6545,6 +6618,22 @@ class Unit extends BattleMapElement {
             AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS.evaluateWithUnit(this, env);
         }
         this.isActionDone = false;
+    }
+
+    grantsAnotherActionAfterCombatExceptOwnSkills() {
+        if (!this.isActionDone) {
+            return;
+        }
+        if (!this.activatedOncePerTurnSkillEffectIdsThisTurn.has(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID)) {
+            if (this.isActionDone) {
+                let env = new NodeEnv().setTarget(this).setAssistTargeting(this).setSkillOwner(this)
+                    .setUnitManager(g_appData)
+                    .setName('再行動後（戦闘後）').setLogLevel(getSkillLogLevel());
+                AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS.evaluateWithUnit(this, env);
+            }
+            this.isActionDone = false;
+        }
+        this.activatedOncePerTurnSkillEffectIdsThisTurn.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID);
     }
 
     reEnablesCantoOnMap() {
@@ -6752,6 +6841,9 @@ class Unit extends BattleMapElement {
             if (this.styleActivationsCount > 0) {
                 return true;
             }
+        }
+        if (this.restStyleSkillAvailableTurn > 0) {
+            return true;
         }
         let env = new NodeEnv().setTarget(this).setSkillOwner(this);
         env.setName("スタイル発動可能判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);

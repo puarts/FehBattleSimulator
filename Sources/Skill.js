@@ -1237,6 +1237,14 @@ const CAN_SAVE_FROM_MELEE_SKILL_SET = new Set();
  */
 const CAN_SAVE_FROM_RANGED_SKILL_SET = new Set();
 
+/**
+ * 無条件で魔法からの護り手を発動できる
+ * @type {Set<number|string>}
+ */
+const CAN_SAVE_FROM_MAGIC_SKILL_SET = new Set();
+
+const CAN_SAVE_FROM_P_SKILL_SET = new Set();
+
 const StatusEffectType = {
     None: -1,
     Panic: 0, // 強化反転
@@ -1327,6 +1335,12 @@ const StatusEffectType = {
     Reflex: 85, // 反射
     ShareSpoilsPlus: 86, // 戦果移譲・広域
     ForesightSnare: 87, // 予知の罠
+    ProfsGuidance: 88, // 師の導き
+    FringeBonus: 89, // 真強化増幅
+    MagicTwinSave: 90, // 護り手・魔・双
+    SpdShackle: 91, // 速さの枷
+    ResShackle: 92, // 魔防の枷
+    CreationPulse: 93, // 開闢の鼓動
     // 1. STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 2. 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // 3. POSITIVE_STATUS_EFFECT_ARRAYまたはNEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1343,6 +1357,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Incited,
 // 強化増幅
     StatusEffectType.BonusDoubler,
+    // 真強化増幅
+    StatusEffectType.FringeBonus,
     // 敵弱化増幅
     StatusEffectType.FoePenaltyDoubler,
 // 神軍師の策
@@ -1365,6 +1381,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.FireEmblem,
     // 邪竜気
     StatusEffectType.FellSpirit,
+    // 師の導き
+    StatusEffectType.ProfsGuidance,
 // 強化ダメージ+
     StatusEffectType.Treachery,
 // 敵弱化ダメージ+
@@ -1429,6 +1447,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
 // 初撃の鼓動
     StatusEffectType.PreemptPulse,
+    // 開闢の鼓動
+    StatusEffectType.CreationPulse,
 // 自分から攻撃時、絶対追撃
     StatusEffectType.FollowUpAttackPlus,
     // 戦闘中、絶対追撃
@@ -1449,6 +1469,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Bulwark,
 // 囮指名
     StatusEffectType.AssignDecoy,
+    // 護り手・魔・双
+    StatusEffectType.MagicTwinSave,
 // 相性相殺
     StatusEffectType.CancelAffinity,
 // トライアングルアタック
@@ -1474,6 +1496,8 @@ const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Exposure,
     StatusEffectType.Sabotage,
     StatusEffectType.Discord,
+    StatusEffectType.SpdShackle,
+    StatusEffectType.ResShackle,
     StatusEffectType.HushSpectrum,
     StatusEffectType.ShareSpoils,
     StatusEffectType.ShareSpoilsPlus,

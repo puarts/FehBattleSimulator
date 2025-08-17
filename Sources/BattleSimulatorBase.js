@@ -3802,6 +3802,20 @@ class BattleSimulatorBase {
                 .setSkillOwner(defUnit)
                 .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
+            let env = new BattleSimulatorBaseEnv(this, atkUnit)
+                .setUnitsDuringCombat(atkUnit, defUnit).setTarget(atkUnit)
+                .setTargetAlly(allyUnit).setSkillOwner(allyUnit);
+            env.setName('奥義以外の再行動時（周囲の味方）').setLogLevel(getSkillLogLevel());
+            FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
+            let env = new BattleSimulatorBaseEnv(this, atkUnit)
+                .setUnitsDuringCombat(atkUnit, defUnit).setTarget(allyUnit)
+                .setTargetAlly(atkUnit).setSkillOwner(allyUnit);
+            env.setName('味方の戦闘後の再行動時').setLogLevel(getSkillLogLevel());
+            AFTER_ALLIES_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価
         if (atkUnit.isAlive) {
@@ -11261,7 +11275,7 @@ class BattleSimulatorBase {
             debuffFunc.call(this, nearestEnemy);
             nearestEnemy.addStatusEffect(StatusEffectType.Sabotage)
             for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(nearestEnemy, 2)) {
-                if (unit.__hasSaveSkills()) {
+                if (unit.hasSaveSkills()) {
                     debuffFunc.call(this, unit);
                     unit.addStatusEffect(StatusEffectType.Sabotage)
                 }

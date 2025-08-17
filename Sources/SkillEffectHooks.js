@@ -168,7 +168,7 @@ const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
 /**
  * 護り手判定時
  * targetは護られるユニット、護り手はally、攻撃した敵はfoe
- * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+ * @type {SkillEffectHooks<BoolNode, DamageCalculatorWrapperEnv>} */
 const CAN_TRIGGER_SAVIOR_HOOKS = new SkillEffectHooks();
 
 /**
@@ -247,6 +247,16 @@ const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();
  * 戦闘後の再行動評価時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘後の再行動評価時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 味方の戦闘後の再行動評価時
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_ALLIES_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘後の再行動評価時
@@ -382,7 +392,7 @@ const UNIT_CAN_MOVE_THROUGH_FOES_SPACES_HOOKS = new SkillEffectHooks();
 
 /**
  * Foes cannot warp into spaces
- * @type {SkillEffectHooks}
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
  */
 const UNIT_CANNOT_WARP_INTO_SPACES_HOOKS = new SkillEffectHooks();
 
@@ -406,6 +416,11 @@ const CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHoo
  * TODO: 2距離のチェックは内部で行なっているが2距離以外も阻止できるなら修正する
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
 const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * ユニットが通過できない（敵ではない）
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
+const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
@@ -466,3 +481,8 @@ const IS_AFFLICTOR_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<BoolNode, NodeEnv>}
  */
 const HAS_PATHFINDER_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>}
+ */
+const GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS = new SkillEffectHooks();

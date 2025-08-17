@@ -300,6 +300,11 @@ class SkillEffectNode {
 
 const SKILL_EFFECT_NODE = (...nodes) => new SkillEffectNode(...nodes);
 
+/**
+ * @param nodes
+ * @returns {function(): SkillEffectNode}
+ * @constructor
+ */
 const NODE_FUNC = (...nodes) => () => SKILL_EFFECT_NODE(...nodes);
 
 /**
@@ -1317,9 +1322,11 @@ class IfExpressionNode extends SkillEffectNode {
 }
 
 /**
+ * @template T
  * @param {boolean|BoolNode} condNode
- * @param trueNode
- * @param falseNode
+ * @param {T} trueNode
+ * @param {T} falseNode
+ * @returns {T}
  * @constructor
  */
 const IF_EXPRESSION_NODE = (condNode, trueNode, falseNode) =>
@@ -1356,6 +1363,13 @@ class TernaryConditionalNumberNode extends NumberNode {
     }
 }
 
+/**
+ * @param {BoolNode} cond
+ * @param {number|NumberNode} trueNode
+ * @param {number|NumberNode} falseNode
+ * @returns {TernaryConditionalNumberNode}
+ * @constructor
+ */
 const COND_OP =
     (cond, trueNode, falseNode) => new TernaryConditionalNumberNode(cond, trueNode, falseNode);
 // noinspection JSValidateTypes
@@ -1454,6 +1468,7 @@ class ApplyXNode extends SkillEffectNode {
  * @returns {T}
  */
 const APPLY_X_NODE = (xNode, node) => new ApplyXNode(xNode, node);
+const USE_X_NODE = (node, xNode) => APPLY_X_NODE(xNode, node);
 
 const APPLY_X_NODES = (xNode, ...nodes) => X_NUM_NODE(...nodes, xNode);
 

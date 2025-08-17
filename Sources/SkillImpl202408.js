@@ -158,12 +158,9 @@
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
         AND_NODE(
             GTE_NODE(CURRENT_TURN_NODE, 2),
-            EQ_NODE(TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE, 0),
             IS_TARGET_RANGED_WEAPON_NODE),
     );
-    STYLE_ACTIVATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        SET_TARGET_REST_STYLE_SKILL_AVAILABLE_TURN_NODE(2),
-    ));
+    setOnceUsedThisStyleCannotBeUsedForNTurns(skillId, 2);
     SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
         OR_NODE(
             // foe is armored with Range = 2,
@@ -195,7 +192,6 @@
         ),
     ));
     STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
-    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
 }
 
 // 比翼リュール
@@ -3178,9 +3174,17 @@ function setDiscord(skillId, statsRatios) {
 
 // 護り手・X・茨
 {
-    setBriarSave(PassiveC.ARBriarNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
-    setBriarSave(PassiveC.ADBriarNSave, true, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
-    setBriarSave(PassiveC.ADBriarFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
+    // 近
+    setBriarSave(PassiveC.ARBriarNSave, FOES_RANGE_IS_1_NODE, ATK_RES_NODE(4),
+        true, false, false, false);
+    setBriarSave(PassiveC.ADBriarNSave, FOES_RANGE_IS_1_NODE, ATK_DEF_NODE(4),
+        true, false, false, false);
+    // 遠
+    setBriarSave(PassiveC.ADBriarFSave, FOES_RANGE_IS_2_NODE, ATK_DEF_NODE(4),
+        false, true, false, false);
+    // 理
+    setBriarSave(PassiveC.ADBriarPSave, FOR_FOE_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
+        false, false, true, false);
 }
 
 // 竜の堅鱗
@@ -5579,7 +5583,7 @@ function setDiscord(skillId, statsRatios) {
             // if unit can make a follow-up attack or if unit triggers the "unit attacks twice" effect, X = 10; otherwise, X = 20).
             MULT_TRUNC_NODE(
                 COND_OP(
-                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
+                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
                     0.1,
                     0.2,
                 ),
@@ -5590,7 +5594,7 @@ function setDiscord(skillId, statsRatios) {
         new ReducesDamageExcludingAoeSpecialsNode(
             MULT_TRUNC_NODE(
                 COND_OP(
-                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, IF_TARGET_TRIGGERS_ATTACKS_TWICE_NODE),
+                    OR_NODE(CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE, DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
                     0.1,
                     0.2,
                 ),

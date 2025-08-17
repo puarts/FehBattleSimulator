@@ -880,6 +880,16 @@ class DamageCalculatorWrapper {
                     return true;
                 }
             }
+            if (atkUnit.isPhysicalAttacker()) {
+                if (CAN_SAVE_FROM_P_SKILL_SET.has(skillId)) {
+                    return true;
+                }
+            }
+            if (atkUnit.isMagicalAttacker()) {
+                if (CAN_SAVE_FROM_MAGIC_SKILL_SET.has(skillId)) {
+                    return true;
+                }
+            }
             if (getSkillFunc(skillId, canActivateSaveSkillFuncMap)?.call(this, atkUnit, ally) ?? false) {
                 return true;
             }
@@ -907,7 +917,7 @@ class DamageCalculatorWrapper {
 
         // 通常の護り手スキルの後に判定を行う
         if (ally.hasStatusEffect(StatusEffectType.AssignDecoy)) {
-            if (ally.__hasSaveSkills()) {
+            if (ally.hasSaveSkills()) {
                 // 護り手スキルを持っている場合には囮指名の効果は発動しない
                 // (囮指名者が護り手スキルを持っていてその護り手スキルが発動しない場合の処理)
                 return false;
@@ -14048,7 +14058,8 @@ class DamageCalculatorWrapper {
                 case Weapon.FaithfulBreath:
                     if (atkUnit.battleContext.restHpPercentage >= 40) {
                         if (atkUnit.battleContext.initiatesCombat) {
-                            if (defUnit.color === ColorType.Blue || defUnit.hasNegativeStatusEffect()) {
+                            if (DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit) === TriangleAdvantage.Advantageous ||
+                                defUnit.hasNegativeStatusEffect()) {
                                 return true;
                             }
                         }

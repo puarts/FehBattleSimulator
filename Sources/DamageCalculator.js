@@ -966,11 +966,14 @@ class DamageCalculator {
             {
                 let amount = atkUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttack();
                 let atkCount = atkUnit.tmpSpecialCount + amount;
-                if (amount !== 0) {
-                    this.writeSimpleLog(`【<span class="${atkLogClass}">奥義カウント(${atkUnit.groupChar})</span>】<span class="log-special">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
-                                    ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
-                                    ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
-                                    ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`);
+                if (atkUnit.battleContext.getSpecialCountChangeAmountAbsBeforeFirstAttack() > 0) {
+                    this.writeSimpleLog(
+                        `【<span class="${atkLogClass}">奥義カウント(${atkUnit.groupChar})</span>】<span class="log-special">${atkCount}</span> = ${atkUnit.tmpSpecialCount} -
+                        ${atkUnit.battleContext.specialCountReductionBeforeFirstAttack} -
+                        ${atkUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack} +
+                        ${atkUnit.battleContext.specialCountIncreaseBeforeFirstAttack}
+                        `
+                    );
                 }
                 atkUnit.tmpSpecialCount = MathUtil.ensureMinMax(atkCount, 0, atkUnit.maxSpecialCount);
             }
@@ -979,10 +982,12 @@ class DamageCalculator {
             {
                 let amount = defUnit.battleContext.getSpecialCountChangeAmountBeforeFirstAttackByEnemy();
                 let defCount = defUnit.tmpSpecialCount + amount;
-                if (amount !== 0) {
-                    this.writeSimpleLog(`【<span class="${defLogClass}">奥義カウント(${defUnit.groupChar})</span>】<span class="log-special">${defCount}</span> = ${defUnit.tmpSpecialCount} -
-                                    ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy} +
-                                    ${defUnit.battleContext.specialCountIncreaseBeforeFirstAttack}`
+                if (defUnit.battleContext.getSpecialCountChangeAmountAbsBeforeFirstAttackByEnemy() > 0) {
+                    this.writeSimpleLog(
+                        `【<span class="${defLogClass}">奥義カウント(${defUnit.groupChar})</span>】<span class="log-special">${defCount}</span> = ${defUnit.tmpSpecialCount} -
+                        ${defUnit.battleContext.specialCountReductionBeforeFirstAttackByEnemy} +
+                        ${defUnit.battleContext.specialCountIncreaseBeforeFirstAttack}
+                        `
                     );
                 }
                 defUnit.tmpSpecialCount = MathUtil.ensureMinMax(defCount, 0, defUnit.maxSpecialCount);
@@ -1306,6 +1311,9 @@ class DamageCalculator {
                 this.__restoreMaxSpecialCount(atkUnit);
                 // 奥義発動直後のスキル効果（奥義カウント変動など）
                 this.applySkillEffectAfterSpecialActivated(atkUnit, defUnit, context);
+                if (!isDefenderSpecialActivated) {
+                    this.__reduceSpecialCount(defUnit, defReduceSpCount);
+                }
                 let atkSpecialCountAfter = atkUnit.tmpSpecialCount;
                 let defSpecialCountAfter = defUnit.tmpSpecialCount;
                 let specialSpan = n => `<span class='log-special'>${n}</span>`;
@@ -1366,6 +1374,9 @@ class DamageCalculator {
                     activatesDefenderSpecial, context
                 );
                 this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
+                if (!isDefenderSpecialActivated) {
+                    this.__reduceSpecialCount(defUnit, defReduceSpCount);
+                }
                 let atkSpecialCountAfter = atkUnit.tmpSpecialCount
                 let defSpecialCountAfter = defUnit.tmpSpecialCount
                 let specialSpan = n => `<span class='log-special'>${n}</span>`;
@@ -1393,9 +1404,6 @@ class DamageCalculator {
                 activatesDefenderSpecial, context
             );
 
-            if (!isDefenderSpecialActivated) {
-                this.__reduceSpecialCount(defUnit, defReduceSpCount);
-            }
             context.damageHistory.push(new DamageLog(atkUnit, defUnit, currentDamage).setAttackType(context));
 
             this.applySkillEffectsAfterAttack(atkUnit, defUnit, context);
@@ -1666,7 +1674,8 @@ class DamageCalculator {
     }
 
     #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial ,context) {
-        let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context);
+        let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context)
+            .setBattleMap(g_appData.map);
         env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
         for (let skillId of defUnit.enumerateSkills()) {
