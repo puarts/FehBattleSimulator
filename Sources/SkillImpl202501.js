@@ -2578,7 +2578,7 @@
     );
 }
 {
-    let skillId = getSpecialRefinementSkillId(Weapon.Recluse);
+    let skillId = getSpecialRefinementSkillId(Weapon.ReclusesTome);
     // For foes within 3 rows or 3 columns centered on unit,
     setForFoesSkillsDuringCombatHooks(skillId,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
