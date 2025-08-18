@@ -1577,7 +1577,7 @@
                 // (activates only when unit can attack in combat;
                 // effects that reduce damage “during combat” do not apply;
                 // will not reduce foe’s HP below 1),
-                DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(7),
+                FOR_FOE_NODE(DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(7)),
             ),
         ],
         [
