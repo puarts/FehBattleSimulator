@@ -508,12 +508,12 @@
     // Rng: 1
     // Unit and target ally swap spaces.
     // If unit uses an Assist skill on the current turn, enables [Canto (1)].
-    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, NODE_FUNC(
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () =>
         HAS_TARGET_USED_ASSIST_DURING_CURRENT_TURN_NODE,
-    ));
-    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, NODE_FUNC(
+    );
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () =>
         CONSTANT_NUMBER_NODE(1),
-    ));
+    );
 }
 
 // 🦁 Mighty Roar CD: 3
