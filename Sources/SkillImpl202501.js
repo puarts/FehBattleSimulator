@@ -522,7 +522,7 @@
     setSpecialCountAndType(skillId, 3, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // Boosts damage by 60% of unit’s Def when Special triggers.
-        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_DEF_NODE)),
     ));
     // At start of player phase or enemy phase,
     setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
