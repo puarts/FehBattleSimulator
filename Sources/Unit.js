@@ -6595,6 +6595,8 @@ class Unit extends BattleMapElement {
         this.emblemHeroIndex = EmblemHero.None;
         this.emblemHeroMerge = 0;
         this.isBonusChar = false;
+        this.initAdditionalPassives();
+        this.initCustomSkills();
     }
 
     grantsAnotherAction() {
