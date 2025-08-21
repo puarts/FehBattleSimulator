@@ -3371,7 +3371,7 @@
         EQ_NODE(TARGETS_RANGE_NODE, 2),
     )
     // At start of player phase or enemy phase,
-    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, () => SKILL_EFFECT_NODE(
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
         // if unit is within 2 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
             // grants [Divine Nectar] to unit and allies within 2 spaces of unit for 1 turn.
