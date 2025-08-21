@@ -2470,6 +2470,9 @@ class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
     }
 }
 
+const INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE =
+    (atk, spd, def, res) => new InflictsStatsMinusOnTargetDuringCombatNode(atk, spd, def, res);
+
 class InflictsStatsMinusOnUnitDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);

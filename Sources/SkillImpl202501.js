@@ -684,7 +684,6 @@
 
 // Spd/Res Shackle
 {
-    let skillId = PassiveB.SpdResShackle;
     let setSkill = (skillId, statusEffects, debuffNode) => {
         // At start of turn, and after unit acts (if Canto triggers, after Canto),
         setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, NODE_FUNC(
@@ -714,7 +713,7 @@
     let setSkill = (skillId, statNode) => {
         AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
             // Inflicts penalty on unit’s Spd during combat =
-            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(
+            INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE(
                 statNode(
                     // number of [Penalty] effects active on unit + 4, excluding stat penalties
                     // (max 8; through unit’s next action).
