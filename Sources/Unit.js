@@ -564,6 +564,7 @@ class Unit extends BattleMapElement {
         this.defAppliedGrowthRate = 0.0;
 
         this.isActionDone = false;
+        this.reservedAnotherAction = false;
         // このターン自分から攻撃を行ったか
         this.isAttackDone = false;
         // このターン相手から攻撃を行われたか
@@ -3355,6 +3356,13 @@ class Unit extends BattleMapElement {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
         return [this.hp, damageHp, healHp, reducedHeal];
+    }
+
+    applyReservedAnotherAction() {
+        if (this.reservedAnotherAction) {
+            this.isActionDone = false;
+            this.reservedAnotherAction = false;
+        }
     }
 
     calculateReducedHealAmountInCombat(healHp) {
@@ -6633,7 +6641,7 @@ class Unit extends BattleMapElement {
                 .setUnitManager(g_appData)
                 .setName('再行動後（戦闘後自分以外のスキル）').setLogLevel(getSkillLogLevel());
             AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS.evaluateWithUnit(this, env);
-            this.isActionDone = false;
+            this.reservedAnotherAction = true;
             oncePerTurnSkills.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID);
             return true;
         }
@@ -6647,7 +6655,7 @@ class Unit extends BattleMapElement {
         let oncePerTurnSkills = this.activatedOncePerTurnSkillEffectIdsThisTurn;
         if (!oncePerTurnSkills.has(Unit.GRANTS_ANOTHER_ACTION_AFTER_ALLIES_COMBAT_ID)) {
             oncePerTurnSkills.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_ALLIES_COMBAT_ID);
-            this.isActionDone = false;
+            this.reservedAnotherAction = true;
             return true;
         }
         return false;
