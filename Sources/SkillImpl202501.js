@@ -651,7 +651,11 @@
     ));
     FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, NODE_FUNC(
         // If ally initiates combat and is within 3 spaces of unit,
-        IF_NODE(AND_NODE(DOES_TARGET_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
+        IF_NODE(
+            AND_NODE(
+                DOES_TARGET_INITIATE_COMBAT_NODE,
+                IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE
+            ),
             // grants another action to that ally after combat
             GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_EXCEPT_TARGETS_SKILLS_NODE,
             // (if a skill belonging to that ally triggers an effect that grants them another action, such as Galeforce, this effect is treated as not having triggered;
@@ -766,7 +770,7 @@
                 ARE_TARGET_AND_TARGET_ALLY_WITHIN_N_SPACES_NODE(3),
             ),
             // grants another action to unit after ally’s combat,
-            GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_EXCEPT_TARGETS_SKILLS_NODE,
+            GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_TARGET_ALLIES_COMBAT_NODE,
             // and if Canto has already been triggered, re-enables Canto (once per turn;
             // if another effect that grants action to unit has been activated at the same time,
             // this effect is also considered to have been triggered;

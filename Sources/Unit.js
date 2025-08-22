@@ -378,6 +378,8 @@ class Unit extends BattleMapElement {
     static GRANTS_ANOTHER_ACTION_ON_ASSIST_ID = 'grants-another-action-on-assist';
     static GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID =
         'grants-another-action-after-combat-except-own-skills';
+    static GRANTS_ANOTHER_ACTION_AFTER_ALLIES_COMBAT_ID =
+        'grants-another-action-after-allies-combat';
     constructor(id = "", name = "",
         unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
@@ -6621,20 +6623,34 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
     }
 
-    grantsAnotherActionAfterCombatExceptOwnSkills() {
+    grantsAnotherActionAfterCombatExceptOwnSkills(skillOwner) {
         if (!this.isActionDone) {
-            return;
+            return false;
         }
-        if (!this.activatedOncePerTurnSkillEffectIdsThisTurn.has(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID)) {
-            if (this.isActionDone) {
-                let env = new NodeEnv().setTarget(this).setAssistTargeting(this).setSkillOwner(this)
-                    .setUnitManager(g_appData)
-                    .setName('再行動後（戦闘後）').setLogLevel(getSkillLogLevel());
-                AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS.evaluateWithUnit(this, env);
-            }
+        let oncePerTurnSkills = skillOwner.activatedOncePerTurnSkillEffectIdsThisTurn;
+        if (!oncePerTurnSkills.has(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID)) {
+            let env = new NodeEnv().setTarget(this)
+                .setUnitManager(g_appData)
+                .setName('再行動後（戦闘後自分以外のスキル）').setLogLevel(getSkillLogLevel());
+            AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS.evaluateWithUnit(this, env);
             this.isActionDone = false;
+            oncePerTurnSkills.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID);
+            return true;
         }
-        this.activatedOncePerTurnSkillEffectIdsThisTurn.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID);
+        return false;
+    }
+
+    grantsAnotherActionAfterAlliesCombat() {
+        if (!this.isActionDone) {
+            return false;
+        }
+        let oncePerTurnSkills = this.activatedOncePerTurnSkillEffectIdsThisTurn;
+        if (!oncePerTurnSkills.has(Unit.GRANTS_ANOTHER_ACTION_AFTER_ALLIES_COMBAT_ID)) {
+            oncePerTurnSkills.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_ALLIES_COMBAT_ID);
+            this.isActionDone = false;
+            return true;
+        }
+        return false;
     }
 
     reEnablesCantoOnMap() {
