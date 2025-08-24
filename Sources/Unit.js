@@ -378,6 +378,8 @@ class Unit extends BattleMapElement {
     static GRANTS_ANOTHER_ACTION_ON_ASSIST_ID = 'grants-another-action-on-assist';
     static GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID =
         'grants-another-action-after-combat-except-own-skills';
+    static GRANTS_ANOTHER_ACTION_AFTER_ALLIES_COMBAT_ID =
+        'grants-another-action-after-allies-combat';
     constructor(id = "", name = "",
         unitGroupType = UnitGroupType.Ally, moveType = MoveType.Infantry) {
         super();
@@ -562,6 +564,7 @@ class Unit extends BattleMapElement {
         this.defAppliedGrowthRate = 0.0;
 
         this.isActionDone = false;
+        this.reservedAnotherAction = false;
         // このターン自分から攻撃を行ったか
         this.isAttackDone = false;
         // このターン相手から攻撃を行われたか
@@ -3227,6 +3230,7 @@ class Unit extends BattleMapElement {
         this.initReservedStatusEffects();
         this.initReservedDebuffs();
         this.clearReservedGreatTalents();
+        this.initReservedAnotherAction();
     }
 
     initReservedHp() {
@@ -3247,6 +3251,10 @@ class Unit extends BattleMapElement {
         this.reservedSpdDebuff = 0;
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
+    }
+
+    initReservedAnotherAction() {
+        this.reservedAnotherAction = false;
     }
 
     getReservedBuffs() {
@@ -3353,6 +3361,13 @@ class Unit extends BattleMapElement {
         this.reservedDamage = 0;
         this.reservedHeal = 0;
         return [this.hp, damageHp, healHp, reducedHeal];
+    }
+
+    applyReservedAnotherAction() {
+        if (this.reservedAnotherAction) {
+            this.isActionDone = false;
+            this.reservedAnotherAction = false;
+        }
     }
 
     calculateReducedHealAmountInCombat(healHp) {
@@ -6596,6 +6611,8 @@ class Unit extends BattleMapElement {
         this.emblemHeroIndex = EmblemHero.None;
         this.emblemHeroMerge = 0;
         this.isBonusChar = false;
+        this.initAdditionalPassives();
+        this.initCustomSkills();
     }
 
     grantsAnotherAction() {
@@ -6620,20 +6637,34 @@ class Unit extends BattleMapElement {
         this.isActionDone = false;
     }
 
-    grantsAnotherActionAfterCombatExceptOwnSkills() {
+    grantsAnotherActionAfterCombatExceptOwnSkills(skillOwner) {
         if (!this.isActionDone) {
-            return;
+            return false;
         }
-        if (!this.activatedOncePerTurnSkillEffectIdsThisTurn.has(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID)) {
-            if (this.isActionDone) {
-                let env = new NodeEnv().setTarget(this).setAssistTargeting(this).setSkillOwner(this)
-                    .setUnitManager(g_appData)
-                    .setName('再行動後（戦闘後）').setLogLevel(getSkillLogLevel());
-                AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS.evaluateWithUnit(this, env);
-            }
-            this.isActionDone = false;
+        let oncePerTurnSkills = skillOwner.activatedOncePerTurnSkillEffectIdsThisTurn;
+        if (!oncePerTurnSkills.has(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID)) {
+            let env = new NodeEnv().setTarget(this)
+                .setUnitManager(g_appData)
+                .setName('再行動後（戦闘後自分以外のスキル）').setLogLevel(getSkillLogLevel());
+            AFTER_BEING_GRANTED_ANOTHER_ACTION_AFTER_COMBAT_HOOKS.evaluateWithUnit(this, env);
+            this.reservedAnotherAction = true;
+            oncePerTurnSkills.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID);
+            return true;
         }
-        this.activatedOncePerTurnSkillEffectIdsThisTurn.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_COMBAT_EXCEPT_OWN_SKILLS_ID);
+        return false;
+    }
+
+    grantsAnotherActionAfterAlliesCombat() {
+        if (!this.isActionDone) {
+            return false;
+        }
+        let oncePerTurnSkills = this.activatedOncePerTurnSkillEffectIdsThisTurn;
+        if (!oncePerTurnSkills.has(Unit.GRANTS_ANOTHER_ACTION_AFTER_ALLIES_COMBAT_ID)) {
+            oncePerTurnSkills.add(Unit.GRANTS_ANOTHER_ACTION_AFTER_ALLIES_COMBAT_ID);
+            this.reservedAnotherAction = true;
+            return true;
+        }
+        return false;
     }
 
     reEnablesCantoOnMap() {

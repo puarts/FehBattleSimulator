@@ -3802,6 +3802,8 @@ class BattleSimulatorBase {
                 .setSkillOwner(defUnit)
                 .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
+
+        // 自分以外のスキルでの自分の再行動
         for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
             let env = new BattleSimulatorBaseEnv(this, atkUnit)
                 .setUnitsDuringCombat(atkUnit, defUnit).setTarget(atkUnit)
@@ -3809,12 +3811,18 @@ class BattleSimulatorBase {
             env.setName('奥義以外の再行動時（周囲の味方）').setLogLevel(getSkillLogLevel());
             FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(allyUnit, env);
         }
+        atkUnit.applyReservedAnotherAction();
+
+        // 味方の再行動
         for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
             let env = new BattleSimulatorBaseEnv(this, atkUnit)
                 .setUnitsDuringCombat(atkUnit, defUnit).setTarget(allyUnit)
                 .setTargetAlly(atkUnit).setSkillOwner(allyUnit);
             env.setName('味方の戦闘後の再行動時').setLogLevel(getSkillLogLevel());
             AFTER_ALLIES_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
+            allyUnit.applyReservedAnotherAction();
         }
 
         // 戦闘後の移動系スキルを加味する必要があるので後段で評価

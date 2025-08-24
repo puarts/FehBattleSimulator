@@ -2470,6 +2470,9 @@ class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
     }
 }
 
+const INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE =
+    (atk, spd, def, res) => new InflictsStatsMinusOnTargetDuringCombatNode(atk, spd, def, res);
+
 class InflictsStatsMinusOnUnitDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
@@ -5403,13 +5406,36 @@ class GrantsAnotherActionToTargetAfterCombatExceptsTargetsSkillNode extends Skil
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        unit.grantsAnotherActionAfterCombatExceptOwnSkills();
-        env.debug(`${unit.nameWithGroup}は自分以外のスキルで行動可能な状態になる`);
+        let grantedAnotherAction = unit.grantsAnotherActionAfterCombatExceptOwnSkills(env.skillOwner);
+        if (grantedAnotherAction) {
+            env.debug(`${unit.nameWithGroup}は自分以外のスキルで行動可能な状態になる`);
+        } else {
+            env.debug(`${unit.nameWithGroup}は自分以外のスキルで行動可能な状態になる効果は発動できない`);
+        }
     }
 }
 
 const GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_EXCEPT_TARGETS_SKILLS_NODE =
     new GrantsAnotherActionToTargetAfterCombatExceptsTargetsSkillNode();
+
+class GrantsAnotherActionToTargetAfterTargetAlliesCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let grantedAnotherAction = unit.grantsAnotherActionAfterAlliesCombat();
+        if (grantedAnotherAction) {
+            env.debug(`${unit.nameWithGroup}は味方の戦闘後行動可能な状態になる`);
+        } else {
+            env.debug(`${unit.nameWithGroup}は味方の戦闘後行動可能な状態になる効果は発動できない`);
+        }
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_TARGET_ALLIES_COMBAT_NODE =
+    new GrantsAnotherActionToTargetAfterTargetAlliesCombatNode();
 
 class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
     static {

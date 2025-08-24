@@ -508,12 +508,12 @@
     // Rng: 1
     // Unit and target ally swap spaces.
     // If unit uses an Assist skill on the current turn, enables [Canto (1)].
-    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, NODE_FUNC(
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () =>
         HAS_TARGET_USED_ASSIST_DURING_CURRENT_TURN_NODE,
-    ));
-    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, NODE_FUNC(
+    );
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () =>
         CONSTANT_NUMBER_NODE(1),
-    ));
+    );
 }
 
 // 🦁 Mighty Roar CD: 3
@@ -522,7 +522,7 @@
     setSpecialCountAndType(skillId, 3, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // Boosts damage by 60% of unit’s Def when Special triggers.
-        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_DEF_AT_START_OF_COMBAT_NODE)),
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_DEF_NODE)),
     ));
     // At start of player phase or enemy phase,
     setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
@@ -651,7 +651,11 @@
     ));
     FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, NODE_FUNC(
         // If ally initiates combat and is within 3 spaces of unit,
-        IF_NODE(AND_NODE(DOES_TARGET_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
+        IF_NODE(
+            AND_NODE(
+                DOES_TARGET_INITIATE_COMBAT_NODE,
+                IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE
+            ),
             // grants another action to that ally after combat
             GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_EXCEPT_TARGETS_SKILLS_NODE,
             // (if a skill belonging to that ally triggers an effect that grants them another action, such as Galeforce, this effect is treated as not having triggered;
@@ -684,7 +688,6 @@
 
 // Spd/Res Shackle
 {
-    let skillId = PassiveB.SpdResShackle;
     let setSkill = (skillId, statusEffects, debuffNode) => {
         // At start of turn, and after unit acts (if Canto triggers, after Canto),
         setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, NODE_FUNC(
@@ -714,7 +717,7 @@
     let setSkill = (skillId, statNode) => {
         AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
             // Inflicts penalty on unit’s Spd during combat =
-            INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(
+            INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE(
                 statNode(
                     // number of [Penalty] effects active on unit + 4, excluding stat penalties
                     // (max 8; through unit’s next action).
@@ -767,7 +770,7 @@
                 ARE_TARGET_AND_TARGET_ALLY_WITHIN_N_SPACES_NODE(3),
             ),
             // grants another action to unit after ally’s combat,
-            GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_EXCEPT_TARGETS_SKILLS_NODE,
+            GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_TARGET_ALLIES_COMBAT_NODE,
             // and if Canto has already been triggered, re-enables Canto (once per turn;
             // if another effect that grants action to unit has been activated at the same time,
             // this effect is also considered to have been triggered;
@@ -1577,7 +1580,7 @@
                 // (activates only when unit can attack in combat;
                 // effects that reduce damage “during combat” do not apply;
                 // will not reduce foe’s HP below 1),
-                DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(7),
+                FOR_FOE_NODE(DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(7)),
             ),
         ],
         [
@@ -2578,7 +2581,7 @@
     );
 }
 {
-    let skillId = getSpecialRefinementSkillId(Weapon.Recluse);
+    let skillId = getSpecialRefinementSkillId(Weapon.ReclusesTome);
     // For foes within 3 rows or 3 columns centered on unit,
     setForFoesSkillsDuringCombatHooks(skillId,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
@@ -3372,7 +3375,7 @@
         EQ_NODE(TARGETS_RANGE_NODE, 2),
     )
     // At start of player phase or enemy phase,
-    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, () => SKILL_EFFECT_NODE(
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => SKILL_EFFECT_NODE(
         // if unit is within 2 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
             // grants [Divine Nectar] to unit and allies within 2 spaces of unit for 1 turn.
