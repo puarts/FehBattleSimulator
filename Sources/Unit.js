@@ -3230,6 +3230,7 @@ class Unit extends BattleMapElement {
         this.initReservedStatusEffects();
         this.initReservedDebuffs();
         this.clearReservedGreatTalents();
+        this.initReservedAnotherAction();
     }
 
     initReservedHp() {
@@ -3250,6 +3251,10 @@ class Unit extends BattleMapElement {
         this.reservedSpdDebuff = 0;
         this.reservedDefDebuff = 0;
         this.reservedResDebuff = 0;
+    }
+
+    initReservedAnotherAction() {
+        this.reservedAnotherAction = false;
     }
 
     getReservedBuffs() {
