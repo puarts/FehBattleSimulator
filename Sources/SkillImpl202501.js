@@ -1939,7 +1939,7 @@
     // 飛行特効
     // 奥義が発動しやすい(発動カウント-1)
     // 自軍ターン開始時、および、敵軍ターン開始時、
-    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId,
         NODE_FUNC(
             // 自分と周囲2マス以内の味方の
             // 魔防+6、
