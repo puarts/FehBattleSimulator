@@ -6612,6 +6612,7 @@ class Unit extends BattleMapElement {
         this.isBonusChar = false;
         this.initAdditionalPassives();
         this.initCustomSkills();
+        this.resetStatusAdd();
     }
 
     grantsAnotherAction() {
