@@ -44,7 +44,7 @@
     // Accelerates Special trigger (cooldown count-1).
     // Unit can counterattack regardless of foe’s range.
     // For allies within 3 rows or 3 columns centered on unit,
-    setForFoesSkillsDuringCombatHooks(skillId,
+    setAllEffectsForSkillOwnersAlliesDuringCombatHooks(skillId,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // grants Atk/Spd/Def/Res+5,
         GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
