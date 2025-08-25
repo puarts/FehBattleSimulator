@@ -1,6 +1,16 @@
 // スキル実装
 
 {
+    let skillId = getStatusEffectSkillId(StatusEffectType.Discord);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        INFLICTS_ALL_STATS_MINUS_N_ON_TARGET_DURING_COMBAT_NODE(
+            // 戦闘中、攻撃、速さ、守備、魔防が減少する状態異常。減少値は、周囲2マス以内の味方の数(上限3)+2(敵の次回行動終了まで)
+            MAX_ADD_NODE(COUNT_UNITS_NODE(TARGETS_ALLIES_WITHIN_2_SPACES_NODE()), 3, 2),
+        ),
+    ));
+}
+
+{
     let skillId = Weapon.CrypticValaskjalf;
     // 奥義が発動しやすい(発動カウント-1)
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(

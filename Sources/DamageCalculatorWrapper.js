@@ -10789,10 +10789,6 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.Sabotage)) {
             this.__applySabotage(targetUnit);
         }
-        if (targetUnit.hasStatusEffect(StatusEffectType.Discord)) {
-            let amount = Math.min(this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2), 3) + 2;
-            targetUnit.addAllSpur(-amount);
-        }
         if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
             enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);

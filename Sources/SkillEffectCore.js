@@ -957,6 +957,7 @@ const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
  * @constructor
  */
 const ADD_MAX_NODE = (add1, add2, max) => ENSURE_MAX_NODE(ADD_NODE(add1, add2), max);
+const MAX_ADD_NODE = (add1, max, add2) => ADD_NODE(ENSURE_MAX_NODE(add1, max), add2);
 
 class MinNode extends NumberOperationNode {
     /**

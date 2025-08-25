@@ -355,7 +355,9 @@ class TargetsAlliesWithinNSpacesNode extends UnitsNode {
     }
 }
 
+/** @type {function(number|NumberNode, boolean|BoolNode): UnitsNode} */
 const TARGETS_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(n, includesTarget);
+/** @type {function(boolean|BoolNode): UnitsNode} */
 const TARGETS_ALLIES_WITHIN_2_SPACES_NODE = (includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(2, includesTarget);
 
 const TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE =
@@ -665,6 +667,11 @@ class CountUnitsNode extends PositiveNumberNode {
     }
 }
 
+/**
+ * @param {UnitsNode} unitsNode
+ * @returns {NumberNode}
+ * @constructor
+ */
 const COUNT_UNITS_NODE = unitsNode => new CountUnitsNode(unitsNode);
 
 class CountIfUnitsNode extends PositiveNumberNode {
@@ -2471,7 +2478,7 @@ class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
 }
 
 const INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE =
-    (atk, spd, def, res) => new InflictsStatsMinusOnTargetDuringCombatNode(atk, spd, def, res);
+    (atkOrStats, spd, def, res) => new InflictsStatsMinusOnTargetDuringCombatNode(atkOrStats, spd, def, res);
 
 class InflictsStatsMinusOnUnitDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
     static {
@@ -2552,6 +2559,7 @@ class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
     }
 }
 
+/** @type {function(number|NumberNode, number|NumberNode)} */
 const INFLICTS_STAT_MINUS_AT_ON_TARGET_DURING_COMBAT_NODE =
     (index, value) => new InflictsStatMinusAtOnTargetDuringCombatNode(index, value);
 
@@ -2571,6 +2579,7 @@ class InflictsAllStatsMinusNOnTargetDuringCombatNode extends InflictsStatsMinusO
     }
 }
 
+/** @type {function(number|NumberNode)} */
 const INFLICTS_ALL_STATS_MINUS_N_ON_TARGET_DURING_COMBAT_NODE =
     n => X_NUM_NODE(
         new InflictsStatsMinusOnTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE),
