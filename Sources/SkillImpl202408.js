@@ -1998,7 +1998,7 @@
         GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
         // reduces damage from foe's first attack by 7 during combat
         // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-        new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+        REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
         // and also,
         // if unit initiates combat and foe's attack can trigger foe's Special,
         IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
