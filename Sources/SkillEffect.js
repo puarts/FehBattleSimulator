@@ -2058,8 +2058,9 @@ class GrantsStatPlusToTargetDuringCombatNode extends SkillEffectNode {
         ratios[index] = 1;
         let beforeSpurs = unit.getSpurs();
         let spurs = ratios.map(r => r * n);
-        env.debug(`${unit.nameWithGroup}は戦闘中、${getStatusName(index)}+${n}: [${beforeSpurs}] => [${unit.getSpurs()}]`);
         unit.addSpurs(...spurs);
+        let afterSpurs = unit.getSpurs();
+        env.debug(`${unit.nameWithGroup}は戦闘中、${getStatusName(index)}+${n}: [${beforeSpurs}] => [${afterSpurs}]`);
     }
 }
 
