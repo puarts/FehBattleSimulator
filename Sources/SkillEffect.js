@@ -6536,6 +6536,27 @@ class GrantsAdditionalStatBonusToEachStatNode extends SkillEffectNode {
 const GRANTS_ADDITIONAL_STAT_BONUS_TO_EACH_STAT_NODE =
     (buffAmount, max) => new GrantsAdditionalStatBonusToEachStatNode(buffAmount, max);
 
+class HasTargetSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(special) {
+        super();
+        this._special = NumberNode.makeNumberNodeFrom(special);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let special = this._special.evaluate(env);
+        let result = unit.special === special;
+        env.debug(`${unit.nameWithGroup}は${ObjectUtil.getKeyName(Special, special)}を装備しているか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_SPECIAL_NODE = (special) => new HasTargetSpecialNode(special);
+
 class IsTargetEquippedWithMiracleNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);

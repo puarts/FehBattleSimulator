@@ -2066,35 +2066,6 @@
     );
 }
 
-// 透魔の竜石
-{
-    let skillId = Weapon.Vallastone;
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                enemyUnit.addAllSpur(-5);
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
-                    return 0.3;
-                });
-            }
-        }
-    );
-    applyEndActionSkillsFuncMap.set(skillId,
-        function () {
-            for (let tile of g_appData.map.enumerateTilesWithinSpecifiedDistance(this.placedTile, 2)) {
-                tile.reserveDivineVein(DivineVeinType.Stone, this.groupId);
-            }
-        }
-    );
-    hasDivineVeinSkillsWhenActionDoneFuncMap.set(skillId,
-        function () {
-            return true;
-        }
-    );
-}
-
 // 響・遠影
 {
     let skillId = PassiveX.FarTraceEcho;

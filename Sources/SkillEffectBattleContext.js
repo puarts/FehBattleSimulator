@@ -1089,7 +1089,7 @@ const REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE = x => new ReducesDamag
 // TODO: 奥義扱いの範囲奥義軽減が特別扱いされた場合に修正する
 const REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_BY_SPECIAL_NODE = x => new ReducesDamageFromAoeSpecialsByXPercentNode(x);
 
-const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_OR_FROM_AOE_SPECIALS_NODE =
+const REDUCES_DAMAGE_BY_X_PERCENT_NODE =
     x => IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
         REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(x),
         REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(x),
@@ -1120,8 +1120,6 @@ class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends From
 
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(n);
-
-const REDUCES_DAMAGE_BY_N_PERCENT_NODE = REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE;
 
 class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPositiveNumberNode {
     static {
@@ -2015,6 +2013,9 @@ class CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode 
         env.debug(`${unit.nameWithGroup}は奥義発動時、敵の守備か魔防の低い方でダメージ計算`);
     }
 }
+
+const CALCULATES_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_WHEN_SPECIAL_TRIGGERS_NODE =
+    new CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode();
 
 class InflictsBonusReversalPenaltyOnTargetsFoeNode extends FromBoolStatsNode {
     static {

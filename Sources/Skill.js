@@ -1092,7 +1092,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.ShirasagiNoTsubasa,
     Weapon.SeijuNoKeshinHiko,
     Weapon.GroomsWings,
-    Weapon.IlluminatingHorn,
 ]);
 
 function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
@@ -1124,7 +1123,6 @@ const BEAST_COMMON_SKILL_MAP = new Map([
     [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
     [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
     [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
-    [Weapon.IlluminatingHorn, BeastCommonSkillType.Infantry2],
 
     // 錬成すると次世代歩行
     [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],

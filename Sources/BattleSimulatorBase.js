@@ -7763,7 +7763,6 @@ class BattleSimulatorBase {
                 case Weapon.AbsoluteAmiti:
                 case Weapon.BrightwindFans:
                 case PassiveB.DeepStar:
-                case Weapon.TheCyclesTurn:
                 case Weapon.TeatimesEdge:
                 case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:

@@ -1,6 +1,287 @@
 // スキル実装
 
 {
+    let skillId = getNormalSkillId(Weapon.IlluminatingHorn);
+    // 奥義が発動しやすい(発動カウント-1)
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        // 戦闘中、攻撃、速さ、守備、魔防+5、絶対追撃、かつ、
+        SKILL_EFFECT_NODE(
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+        // 与えるダメージ+自分の守備の20%、受けるダメージ-自分の守備の20%、(範囲奥義を除く)
+        SKILL_EFFECT_NODE(
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_DEF_NODE)),
+            REDUCES_DAMAGE_BY_N_NODE(PERCENTAGE_NODE(20, UNITS_DEF_NODE)),
+        ),
+    );
+    // ターン開始時、竜、獣以外の味方と隣接していない場合、化身状態になる(そうでない場合、化身状態を解除)
+    // 化身状態なら、攻撃+2、かつ奥義発動時、奥義によるダメージ+7、戦闘中、敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
+    setBeastSkill(skillId, BeastCommonSkillType.Infantry2);
+}
+{
+    let skillId = getRefinementSkillId(Weapon.IlluminatingHorn);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.IlluminatingHorn);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.EnclosingDark);
+    // 奥義が発動しやすい(発動カウント-1)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 自分から攻撃した時、または、周囲1マス以内に味方がいない時、戦闘中、攻撃、速さ+6、自分の追撃不可を無効
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_NOT_TARGET_ADJACENT_TO_AN_ALLY),
+            GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(6),
+            UNIT_NEUTRALIZES_EFFECTS_THAT_PREVENT_UNITS_FOLLOW_UP_ATTACKS_DURING_COMBAT,
+        ),
+        // 自分から攻撃した時、追撃可能なら自分の攻撃の直後に追撃を行う
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+        ),
+        // 自分から攻撃した時、または、周囲1マス以内に味方がいない時、
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_NOT_TARGET_ADJACENT_TO_AN_ALLY),
+            // 戦闘中、戦闘相手の周囲2マス以内の敵の数(戦闘相手を除く)に応じて以下の効果を発動
+            APPLY_X_NODES(
+                FOR_FOE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE),
+                // (・1なら、敵の速さ、魔防-4、・2以上なら、敵の速さ、魔防-8、敵は反撃不可)
+                IF_NODE(EQ_NODE(READ_NUM_NODE, 1),
+                    INFLICTS_SPD_RES_ON_FOE_DURING_COMBAT_NODE(4),
+                ),
+                IF_NODE(GTE_NODE(READ_NUM_NODE, 2),
+                    INFLICTS_SPD_RES_ON_FOE_DURING_COMBAT_NODE(8),
+                    FOE_CANNOT_COUNTERATTACK_NODE,
+                ),
+            )
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.EnclosingDark);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.EnclosingDark);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.TheCyclesTurn);
+    // 【再移動(1)】を発動可能
+    enablesCantoN(skillId, 1);
+    // 奥義が発動しやすい(発動カウント-1)
+    // 自分から攻撃した時、または、自身が有利な状態】を受けている時、戦闘中、攻撃、速さ、守備、魔防+5、さらに、
+    // 攻撃、速さがターン数×2だけ増加(最大10)、
+    // ダメージ+速さの20%(戦闘前奥義も含む)、敵の絶対追撃を無効、かつ、自分の追撃不可を無効
+    setCondHooks(skillId,
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_BONUS_ACTIVE_ON_UNIT_NODE),
+        [
+            WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+                GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(MULT_MAX_NODE(CURRENT_TURN_NODE, 2, 10)),
+                NULL_UNIT_FOLLOW_UP_NODE,
+            ),
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            ),
+        ],
+        [
+            BEFORE_AOE_SPECIAL_HOOKS,
+            NODE_FUNC(
+                DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            ),
+        ],
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.TheCyclesTurn);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.TheCyclesTurn);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.DeliverersBrand);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 戦闘開始時、自身のHPが25%以上なら、
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // 戦闘中、攻撃、速さ、守備、魔防+5、
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            // 最初に受けた攻撃のダメージを40%軽減、
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_NODE(40),
+            // 敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+        // 戦闘開始時、自身のHPが25%以上、かつ自身の奥義発動カウント最大値が3以上の攻撃時発動する奥義が発動した時、奥義以外のスキルによる「ダメージを○○%軽減」を無効(範囲奥義を除く)
+        IF_NODE(
+            AND_NODE(
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                GTE_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 3),
+            ),
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        ),
+        // 戦闘開始時、自身のHPが25%以上で、戦闘中、発動した奥義が「蛍火」「緋炎」「華炎」の時、その時の攻撃を敵の守備か魔防の低い方でダメージ計算
+        IF_NODE(
+            AND_NODE(
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                OR_NODE(
+                    HAS_TARGET_SPECIAL_NODE(Special.Hotarubi),
+                    HAS_TARGET_SPECIAL_NODE(Special.Bonfire),
+                    HAS_TARGET_SPECIAL_NODE(Special.Ignis),
+                ),
+            ),
+            CALCULATES_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_WHEN_SPECIAL_TRIGGERS_NODE,
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.DeliverersBrand);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.DeliverersBrand);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.Vallastone);
+    // 射程2の敵に、敵の守備か魔防の低い方でダメージ計算
+    // 奥義が発動しやすい(発動カウント-1)
+    // 行動後(再移動発動時は再移動後)、自分のマスとその周囲2マス以内のマスに【天脈・護】を付与(1ターン)
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, NODE_FUNC(
+        FOR_EACH_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
+            APPLY_DIVINE_VEIN_NODE(DivineVeinType.Flame, TARGET_GROUP_NODE, 1),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 戦闘開始時、自身のHPが25%以上なら、
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // 戦闘中、敵の攻撃、速さ、守備、魔防-5、敵の絶対追撃を無効、かつ、自分の追撃不可を無効、攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)
+            INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(30),
+        ),
+    ));
+    HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS.addSkill(skillId, () => TRUE_NODE)
+}
+{
+    let skillId = getRefinementSkillId(Weapon.Vallastone);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Vallastone);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.ArchSageTome);
+    // 奥義が発動しやすい(発動カウント-1)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 自軍内に自分と支援を結んでいる相手がいる時、ターン開始時、周囲2マス以内の自分と支援を結んでいる相手の攻撃、速さ、守備、魔防+6、【囮指名】を付与(1ターン)
+        // 自軍内に自分と支援を結んでいる相手がいない時、ターン開始時、周囲2マス以内にいる最も守備が高い味方の攻撃、速さ、守備、魔防+6、【囮指名】を付与(1ターン)
+        IF_ELSE_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
+            SKILL_EFFECT_NODE(
+                FOR_EACH_TARGETS_ALLY_WITHIN_2_SPACES_NODE(
+                    IF_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,
+                        GRANTS_ALL_BONUSES_TO_TARGET_ON_MAP_NODE(6),
+                        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.AssignDecoy),
+                    ),
+                ),
+            ),
+            SKILL_EFFECT_NODE(
+                FOR_EACH_UNIT_NODE(HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(STATUS_INDEX.Def),
+                    GRANTS_ALL_BONUSES_TO_TARGET_ON_MAP_NODE(6),
+                    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.AssignDecoy),
+                ),
+            ),
+        ),
+    ));
+    setCondHooks(skillId,
+        // 周囲3マス以内に味方がいる時、戦闘中、
+        IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+        [
+            AT_START_OF_COMBAT_HOOKS,
+            // 自身の攻撃、速さ、守備、魔防+5、さらに、
+            NODE_FUNC(GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE),
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                // 自身の攻撃、速さ、守備、魔防が周囲3マス以内にいる味方のうち強化が最も高い値だけ増加(増加能力値ごとに計算)、かつ
+                FOR_EACH_STAT_INDEX_NODE(
+                    GET_STAT_AT_NODE(
+                        HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(3),
+                        READ_NUM_NODE,
+                    ),
+                ),
+            ),
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                // 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+                IF_NODE(GT_NODE(UNITS_EVAL_RES_NODE, FOES_EVAL_RES_NODE),
+                    REDUCES_DAMAGE_BY_X_PERCENT_NODE(MULT_MAX_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 4, 40)),
+                ),
+            ),
+        ],
+        [
+            BEFORE_AOE_SPECIAL_HOOKS,
+            NODE_FUNC(
+                // 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+                IF_NODE(GT_NODE(UNITS_EVAL_RES_NODE, FOES_EVAL_RES_NODE),
+                    REDUCES_DAMAGE_BY_X_PERCENT_NODE(MULT_MAX_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 4, 40)),
+                ),
+            ),
+        ],
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.ArchSageTome);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.ArchSageTome);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
     let skillId = getStatusEffectSkillId(StatusEffectType.Discord);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         INFLICTS_ALL_STATS_MINUS_N_ON_TARGET_DURING_COMBAT_NODE(
@@ -502,7 +783,7 @@
             // (calculates each stat bonus independently)
             GRANTS_STAT_PLUS_TO_TARGET_DURING_COMBAT_NODE(
                 GET_STAT_AT_NODE(
-                    HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2),
+                    HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(2),
                     READ_NUM_NODE,
                 ),
                 READ_NUM_NODE,
@@ -5086,7 +5367,7 @@
                 // grants Special cooldown count-X to unit before unit’s first attack,
                 GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(READ_NUM_NODE),
                 // reduces damage from attacks by X × 20% (excluding area-of-effect Specials),
-                REDUCES_DAMAGE_BY_N_PERCENT_NODE(MULT_NODE(READ_NUM_NODE, 20)),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(MULT_NODE(READ_NUM_NODE, 20)),
                 // reduces damage from attacks by an additional X × 3 during combat
                 // (excluding area-of-effect Specials),
                 REDUCES_DAMAGE_BY_N_NODE(MULT_NODE(READ_NUM_NODE, 3)),
@@ -7001,7 +7282,7 @@
             // (calculates each stat bonus independently)
             GRANTS_STAT_PLUS_TO_TARGET_DURING_COMBAT_NODE(
                 GET_STAT_AT_NODE(
-                    HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2),
+                    HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(2),
                     READ_NUM_NODE,
                 ),
                 READ_NUM_NODE,
@@ -11467,8 +11748,8 @@
                         IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE,
                         // percentage = difference between stats × 6 (max 60%); otherwise,
                         // percentage = difference between stats × 4 (max 40%).
-                        ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 6), 60),
-                        ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 4), 40),
+                        ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_DURING_COMBAT_NODE, 6), 60),
+                        ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_DURING_COMBAT_NODE, 4), 40),
                     ),
                 ),
             ),

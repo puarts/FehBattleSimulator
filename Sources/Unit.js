@@ -6436,7 +6436,6 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 case PassiveB.DeepStar:
-                case Weapon.TheCyclesTurn:
                 case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:
                 case Weapon.FujinRaijinYumi:

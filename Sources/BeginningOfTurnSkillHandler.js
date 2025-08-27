@@ -310,40 +310,6 @@ class BeginningOfTurnSkillHandler {
                 }
             }
                 break;
-            case Weapon.ArchSageTome: {
-                let found = false;
-                for (let unit of this.enumerateUnitsInTheSameGroupOnMap(skillOwner)) {
-                    if (skillOwner.isPartner(unit)) {
-                        found = true;
-                    }
-                }
-                if (found) {
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        if (skillOwner.isPartner(unit)) {
-                            unit.reserveToApplyBuffs(6, 6, 6, 6);
-                            unit.reserveToAddStatusEffect(StatusEffectType.AssignDecoy);
-                        }
-                    }
-                } else {
-                    let units = [];
-                    for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2)) {
-                        if (units.length === 0) {
-                            units = [unit];
-                        } else {
-                            if (units[0].getDefInPrecombat() < unit.getDefInPrecombat()) {
-                                units = [unit];
-                            } else if (units[0].getDefInPrecombat() === unit.getDefInPrecombat()) {
-                                units.push(unit);
-                            }
-                        }
-                    }
-                    for (let unit of units) {
-                        unit.reserveToApplyBuffs(6, 6, 6, 6);
-                        unit.reserveToAddStatusEffect(StatusEffectType.AssignDecoy);
-                    }
-                }
-            }
-                break;
             case Weapon.VezuruNoYoran:
                 if (skillOwner.isWeaponSpecialRefined) {
                     for (let enemy of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 5)) {

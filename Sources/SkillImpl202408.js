@@ -1867,7 +1867,7 @@
                 4, 4, 4, 4
             ),
             new GrantsStatsPlusToTargetDuringCombatNode(
-                HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2)
+                HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(2)
             ),
         )
     ));
@@ -2693,7 +2693,7 @@ function setDiscord(skillId, statsRatios) {
             new ReducesDamageFromAoeSpecialsByXPercentNode(
                 MULT_TRUNC_NODE(
                     SUB_NODE(4, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT),
-                    new EnsureMaxNode(DIFFERENCE_BETWEEN_RES_STATS_NODE, 10),
+                    new EnsureMaxNode(DIFFERENCE_BETWEEN_RES_STATS_DURING_COMBAT_NODE, 10),
                 ),
             ),
         ),
@@ -3809,7 +3809,7 @@ function setDiscord(skillId, statsRatios) {
             MULT_TRUNC_NODE(0.5, UNITS_SPD_DURING_COMBAT_NODE),
         ),
         // calculates damage using the lower of foe's Def or Res when Special triggers.
-        new CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode(),
+        CALCULATES_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_WHEN_SPECIAL_TRIGGERS_NODE,
     ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -4036,7 +4036,7 @@ function setDiscord(skillId, statsRatios) {
                     new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(READ_NUM_NODE),
                 ),
                 // (X = difference between Def stats; max 10;
-                new EnsureMaxNode(DIFFERENCE_BETWEEN_DEF_STATS_NODE, 10),
+                new EnsureMaxNode(DIFFERENCE_BETWEEN_DEF_STATS_DURING_COMBAT_NODE, 10),
                 // for example, if Spd difference necessary increases by 10, Spd must be ≥ 15 more than foe's Spd to make a follow-up attack; stacks with similar skills).
             ),
         ),
