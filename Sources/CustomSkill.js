@@ -1515,13 +1515,13 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         'at-start-of-player-or-enemy-phase',
         '自軍、および敵軍ターン開始時',
         (skillId, nodeFunc, args) =>
-            setAtStartOfPlayerPhaseOrEnemyPhase(skillId, nodeFunc(args)),
+            setAtStartOfPlayerPhaseOrEnemyPhase(skillId, () => nodeFunc(args)),
     ],
     [
         'at-start-of-player-and-enemy-phase-except-for-in-summoners-duels',
         '自軍、および決闘を除く敵軍ターン開始時',
         (skillId, nodeFunc, args) =>
-            setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, nodeFunc(args)),
+            setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, () => nodeFunc(args)),
     ],
     [
         'after-start-of-turn-skills-on-player-phase',
