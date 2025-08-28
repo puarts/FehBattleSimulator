@@ -49,6 +49,7 @@ class DamageCalcContext {
         /** @type {DamageLog[]} */
         this.damageHistory = []; // 攻撃ダメージの履歴
         this.damageType = DamageType.ActualDamage;
+        this.attackCount = 0;
     }
 
     /**
@@ -1182,6 +1183,7 @@ class DamageCalculator {
         let isFirstAttack = context.isFirstAttack(atkUnit);
         let totalDamage = 0;
         for (let i = 0; i < attackCount; ++i) {
+            context.attackCount = i + 1;
             let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
             if (isDefUnitAlreadyDead) {
                 return totalDamage;
@@ -1588,13 +1590,24 @@ class DamageCalculator {
         return [totalDamage, reducedDamageByMiracle];
     }
 
+    /**
+     * @param {number[]} damageReductionValues
+     * @param {Unit} defUnit
+     * @param {DamageCalcContext} context
+     */
     static #applyDamageReductionValues(damageReductionValues, defUnit, context) {
         damageReductionValues.push(defUnit.battleContext.damageReductionValue);
         damageReductionValues.push(defUnit.battleContext.damageReductionValuePerAttack);
         if (context.isFollowupOrPotentFollowupAttack()) {
+            // 追撃
             damageReductionValues.push(defUnit.battleContext.damageReductionValueOfFollowupAttack);
         } else {
+            // 最初の攻撃
             damageReductionValues.push(defUnit.battleContext.damageReductionValueOfFirstAttacks);
+            // 最初の攻撃の2回目
+            if (context.attackCount === 2) {
+                damageReductionValues.push(...defUnit.battleContext.damageReductionValueOfSecondStrikeOfFirstAttack);
+            }
         }
     }
 

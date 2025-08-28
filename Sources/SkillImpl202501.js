@@ -1,5 +1,121 @@
 // スキル実装
 
+// Fortified Axe
+{
+    let skillId = Weapon.FortifiedAxe;
+    // Mt: 16 Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+    // At start of player phase or enemy phase,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
+        // if unit’s HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants [Bulwark],
+            // “neutralizes unit’s penalties during combat,”
+            // and “increases Spd difference necessary for foe to make a follow-up attack by 10 during combat”
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                StatusEffectType.Bulwark,
+                StatusEffectType.NeutralizesPenalties,
+                StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat,
+            ),
+        ),
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If foe initiates combat
+        // or if unit’s HP ≥ 25% at start of combat,
+        OR_NODE(DOES_FOE_INITIATE_COMBAT_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+        // grants bonus to unit’s Atk/Spd/Def/Res =
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+            // number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+            MULT_ADD_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
+        ),
+        SKILL_EFFECT_NODE(
+            X_NUM_NODE(
+                // unit deals +X × 5 damage (excluding area-of-effect Specials),
+                DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // reduces damage from foe’s attacks by X × 3 (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_BY_N_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // reduces damage from foe’s Specials by an additional X × 3 (excluding area-of-effect Specials;
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // X = number of [Bonus] effects active on unit and foe, excluding stat bonuses; max 5),
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+            // and grants Special cooldown charge +1 to unit per attack during combat
+            // (only highest value applied; does not stack),
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+            // and also, when unit deals damage to foe during combat,
+            // restores 7 HP to unit.
+            WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_TO_TARGET_NODE(7),
+        ),
+    );
+}
+
+// D Bonus Amp
+{
+    let skillId = PassiveA.DBonusAmp;
+    // Unit can counterattack regardless of foe’s range.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Grants bonus to unit’s Atk/Spd/Def/Res during combat =
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+            // number of [Bonus] effects active on unit,
+            // excluding stat bonuses, × 2 (max 8).
+            MULT_MAX_NODE(NUM_OF_BONUS_ON_UNIT_EXCLUDING_STAT_NODE, 2, 8),
+        ),
+    ));
+}
+
+// Fair Fight
+{
+    let skillId = PassiveB.FairFight;
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        TRUE_NODE,
+        SKILL_EFFECT_NODE(
+            // Inflicts Atk/Spd/Def-5 on foe,
+            INFLICTS_ATK_SPD_DEF_ON_FOE_DURING_COMBAT_NODE(5),
+            // and for both unit and foe,
+            FOR_EACH_UNIT_NODE(TARGET_AND_TARGET_FOE_NODE,
+                // neutralizes “reduces damage by X%” effects from non-Special skills (excluding area-of-effect Specials),
+                NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_TARGETS_FOES_NON_SPECIAL_NODE,
+                // neutralizes effects that guarantee follow-up attacks,
+                NEUTRALIZES_EFFECTS_THAT_GUARANTEE_TARGETS_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+                // and increases Spd difference necessary to make a follow-up attack by 20 during combat.
+                INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(20),
+            ),
+            // If unit initiates combat,
+            IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+                // grants Special cooldown count-2 to unit before unit’s first attack during combat.
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(2),
+            ),
+        ),
+        SKILL_EFFECT_NODE(
+            IF_NODE(
+                // If [Bonus] is active on foe,
+                // or if unit’s Def > foe’s Def,
+                OR_NODE(
+                    IS_BONUS_ACTIVE_ON_FOE_NODE,
+                    GTE_NODE(DIFFERENCE_BETWEEN_DEF_STATS_NODE, 0),
+                ),
+                // unit attacks twice during combat.
+                TARGET_ATTACKS_TWICE_DURING_COMBAT_NODE,
+            ),
+            // deals damage = 25% of unit’s Def (excluding area-of-effect Specials),
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(25, UNITS_DEF_NODE)),
+            // reduces damage from foe’s attacks by 25% of unit’s Def
+            // (including area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+            REDUCES_DAMAGE_BY_N_NODE(PERCENTAGE_NODE(25, UNITS_DEF_NODE)),
+            // reduces damage from the second strike of foe’s first attack by an additional 25% of unit’s Def,
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_SECOND_STRIKE_OF_FIRST_ATTACK_BY_N_DURING_COMBAT_NODE(
+                PERCENTAGE_NODE(25, UNITS_DEF_NODE)
+            ),
+        ),
+    );
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // reduces damage from foe’s attacks by 25% of unit’s Def
+        // (including area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+        REDUCES_DAMAGE_BY_N_NODE(PERCENTAGE_NODE(25, UNITS_DEF_NODE)),
+    ));
+}
+
 {
     let skillId = getNormalSkillId(Weapon.IlluminatingHorn);
     // 奥義が発動しやすい(発動カウント-1)
@@ -2059,26 +2175,26 @@
     setSpecialCountAndType(skillId, 3, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by X% of unit's Spd when Special triggers
-        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
-            X_NUM_NODE(
+        X_NUM_NODE(
+            BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
                 PERCENTAGE_NODE(READ_NUM_NODE, UNITS_SPD_NODE),
-                // (if any space within 2 spaces of unit or foe has a Divine Vein effect applied,
-                // is defensive terrain, or counts as difficult or impassable terrain for units other than flying,
-                // X = 60; otherwise, X = 40).
-                IF_VALUE_NODE(
-                    SOME_NODE(
-                        MAP_SPACES_NODE(
-                            SPACES_WITHIN_N_SPACES_OF_TARGET_OR_TARGET_FOE_NODE(2),
-                            OR_NODE(
-                                HAS_DIVINE_VEIN_NODE,
-                                IS_DEFENSIVE_TERRAIN_NODE,
-                                COUNTS_AS_DIFFICULT_OR_IM_PASSABLE_TERRAIN_NODE_FOR_UNITS_OTHER_THAN_FLYING_NODE,
-                            )
+            ),
+            // (if any space within 2 spaces of unit or foe has a Divine Vein effect applied,
+            // is defensive terrain, or counts as difficult or impassable terrain for units other than flying,
+            // X = 60; otherwise, X = 40).
+            IF_VALUE_NODE(
+                SOME_NODE(
+                    MAP_SPACES_NODE(
+                        SPACES_WITHIN_N_SPACES_OF_TARGET_OR_TARGET_FOE_NODE(2),
+                        OR_NODE(
+                            HAS_DIVINE_VEIN_NODE,
+                            IS_DEFENSIVE_TERRAIN_NODE,
+                            COUNTS_AS_DIFFICULT_OR_IM_PASSABLE_TERRAIN_NODE_FOR_UNITS_OTHER_THAN_FLYING_NODE,
                         )
-                    ),
-                    60,
-                    40,
+                    )
                 ),
+                60,
+                40,
             ),
         ),
     ));

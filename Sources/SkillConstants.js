@@ -3949,6 +3949,9 @@ PassiveA.AtkSpdAria = 3377; // 攻撃速さの詠唱
 PassiveB.SpdResShackle = 3378; // 速さ魔防の枷
 PassiveC.JustLikeMother = 3379; // お母様みたいに
 Weapon.CrypticValaskjalf = 3380; // 異邦ヴラスキャルヴ
+Weapon.FortifiedAxe = 3385; // 黒鉄の王の剛斧
+PassiveA.DBonusAmp = 3386; // 遠反・有利増幅
+PassiveB.FairFight = 3387; // 真っ向勝負
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

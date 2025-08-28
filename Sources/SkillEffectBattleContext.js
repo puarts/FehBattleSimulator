@@ -497,6 +497,21 @@ class NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToFoe extends Neutral
 
 const NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE = new NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToFoe();
 
+class NeutralizesEffectsThatGuaranteeTargetsFoesFollowUpAttacksDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+        env.debug(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
+    }
+}
+
+const NEUTRALIZES_EFFECTS_THAT_GUARANTEE_TARGETS_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE =
+    new NeutralizesEffectsThatGuaranteeTargetsFoesFollowUpAttacksDuringCombatNode();
+
 // noinspection JSUnusedGlobalSymbols
 /**
  * neutralizes effects that guarantee foe's follow-up attacks during combat.
@@ -1234,6 +1249,23 @@ class ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode extends 
 const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE =
     n => new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(n);
 
+class ReducesDamageFromTargetsFoesSecondStrikeOfFirstAttackByNDuringCombatNode extends ApplyingNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let reductionValues = unit.battleContext.damageReductionValueOfSecondStrikeOfFirstAttack;
+        reductionValues.push(n);
+        env.debug(`${unit.nameWithGroup}は最初に受けた2回攻撃の2回目のダメージ-${n}: [${reductionValues}]`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_SECOND_STRIKE_OF_FIRST_ATTACK_BY_N_DURING_COMBAT_NODE =
+    n => new ReducesDamageFromTargetsFoesSecondStrikeOfFirstAttackByNDuringCombatNode(n);
+
 class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumberNode {
     getDescription(n) {
         return `敵の奥義による攻撃の時、受けるダメージ-${n}（範囲奥義を除く）`;
@@ -1483,6 +1515,7 @@ class TargetAttacksTwiceEvenIfTargetsFoeInitiatesCombatNode extends SkillEffectN
 
 const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE
     = new TargetAttacksTwiceEvenIfTargetsFoeInitiatesCombatNode();
+const TARGET_ATTACKS_TWICE_DURING_COMBAT_NODE = TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE;
 
 const TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -1865,6 +1898,9 @@ class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode exte
         env.debug(`${unit.nameWithGroup}は相手の奥義以外のダメージ軽減を無効`);
     }
 }
+
+const NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_TARGETS_FOES_NON_SPECIAL_NODE =
+    new NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode();
 
 const NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_FOES_NON_SPECIAL_NODE =
     new class extends NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode {

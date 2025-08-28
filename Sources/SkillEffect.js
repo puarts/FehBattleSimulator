@@ -140,6 +140,20 @@ class TargetNode extends UnitNode {
 
 const TARGET_NODE = new TargetNode();
 
+class TargetsFoeNode extends UnitNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        return unit;
+    }
+}
+
+const TARGETS_FOE_NODE = new TargetsFoeNode();
+
 const FOE_NODE = new class extends TargetNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -236,6 +250,8 @@ class UnitsNode extends CollectionNode {
         return super.evaluate(env);
     }
 }
+
+const TARGET_AND_TARGET_FOE_NODE = UnitsNode.makeFromUnits(TARGET_NODE, TARGETS_FOE_NODE);
 
 class IncludesUnitNode extends BoolNode {
     /**
