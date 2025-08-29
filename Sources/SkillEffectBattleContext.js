@@ -2131,7 +2131,7 @@ class DoesTargetsFoeTriggerAttacksTwiceNode extends DoesTargetTriggerAttacksTwic
     }
 }
 
-class TargetCanAttackDuringCombatNode extends BoolNode {
+class CanTargetAttackDuringCombatNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetValueMixin);
     }
@@ -2147,7 +2147,7 @@ class TargetCanAttackDuringCombatNode extends BoolNode {
     }
 }
 
-const TARGET_CAN_ATTACK_DURING_COMBAT_NODE = new TargetCanAttackDuringCombatNode();
+const CAN_TARGET_ATTACK_DURING_COMBAT_NODE = new CanTargetAttackDuringCombatNode();
 
 /**
  * damage dealt to unit as combat begins

@@ -1387,7 +1387,7 @@ function grantsAnotherActionAfterCanto(skillId) {
 
 function setResonance(skillId) {
     AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+        IF_NODE(CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
             X_NUM_NODE(
                 // Deals damage to unit as combat begins = 20% of X
                 DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(PERCENTAGE_NODE(20, READ_NUM_NODE)),

@@ -1098,7 +1098,7 @@
     AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is transformed or unit's HP ≥ 25% at start of combat,
         IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
-            IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+            IF_NODE(CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
                 // deals damage to foe = 25% of foe's max HP as combat begins
                 // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
                 new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
@@ -5411,7 +5411,7 @@ function setDiscord(skillId, statsRatios) {
         // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
         IF_NODE(AND_NODE(
                 IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
-                TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+                CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
             ),
             new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
         )

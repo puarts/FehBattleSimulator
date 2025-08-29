@@ -1981,13 +1981,15 @@
         ],
         // If unit initiates combat or is within 2 spaces of an ally,
         [
-            AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS,
+            AFTER_FOLLOW_UP_CONFIGURED_HOOKS,
             NODE_FUNC(
                 // deals 7 damage to foe as combat begins
                 // (activates only when unit can attack in combat;
                 // effects that reduce damage “during combat” do not apply;
                 // will not reduce foe’s HP below 1),
-                FOR_FOE_NODE(DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(7)),
+                IF_NODE(CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
+                    FOR_FOE_NODE(DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(7)),
+                ),
             ),
         ],
         [
@@ -2888,7 +2890,7 @@
                 // deals 7 damage to foe as combat begins
                 // (effects that reduce damage during combat do not apply;
                 // will not reduce foe’s HP below 1),
-                DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(7),
+                FOR_FOE_NODE(DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(7)),
                 // grants Atk+7, Def+10 to unit during combat,
                 GRANTS_ATK_DEF_TO_TARGET_DURING_COMBAT_NODE(7, 10),
             ),
@@ -6732,7 +6734,7 @@
         IF_NODE(
             AND_NODE(
                 IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
-                TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+                CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
             ),
             REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(40),
         ),
@@ -13580,7 +13582,7 @@
     AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is transformed or unit's HP ≥ 25% at start of combat,
         IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
-            IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+            IF_NODE(CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
                 // deals damage to foe = 25% of foe's max HP as combat begins
                 // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
                 new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
