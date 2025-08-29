@@ -2,6 +2,7 @@
 class BattleContext {
     // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
     // 他の「戦闘開始後、敵にNダメージ」の効果とは重複せず最大値適用
+    // 自分が受けるダメージ
     #damagesAfterBeginningOfCombatNotStack = [0];
     // 奥義発動時の「奥義ダメージに加算」の加算ダメージ
     #specialAddDamage = 0;
@@ -491,6 +492,8 @@ class BattleContext {
         this.neutralizedDebuffFlagsWhileBeginningOfTurn = [false, false, false, false];
 
         // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+        // 自分が受けるダメージ
+        // TODO: rename
         this.damageAfterBeginningOfCombat = 0;
 
         this.#damagesAfterBeginningOfCombatNotStack = [0]; // 最大値を取る時のために番兵(0)を入れる

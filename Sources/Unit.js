@@ -6884,6 +6884,13 @@ class Unit extends BattleMapElement {
     hasCannotMoveStyle() {
         return this.hasAvailableStyle() && CANNOT_MOVE_STYLES.has(this.getAvailableStyle());
     }
+
+    toJSON() {
+        return {
+            nameWithGroup: this.nameWithGroup,
+            tile: this.placedTile,
+        };
+    }
 }
 
 

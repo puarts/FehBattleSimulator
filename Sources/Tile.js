@@ -985,6 +985,19 @@ class Tile extends BattleMapElement {
         this.reservedDivineVeinGroup = null;
         this.reservedDivineVeinTurns = 0;
     }
+
+    toJSON() {
+        return {
+            id: this.id,
+            // posX: this.posX,
+            // posY: this.posY,
+            // type: this.type,
+            // isDefensiveTile: this.isDefensiveTile,
+            // isTeleportationRequired: this.isTeleportationRequired,
+            // tilePriority: this.tilePriority,
+            // divineVein: this.divineVein,
+        }
+    }
 }
 
 /// マスの優先度を評価する際に使用するコンテキストです。

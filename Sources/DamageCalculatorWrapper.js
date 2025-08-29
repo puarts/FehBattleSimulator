@@ -346,9 +346,6 @@ class DamageCalculatorWrapper {
 
             // 戦闘ダメージ計算
             result = self.calcCombatResult(damageCalcEnv);
-            result.preCombatDamage = damageCalcEnv.damageCalcLog.preCombatDamage;
-            result.preCombatDamageWithOverkill = damageCalcEnv.damageCalcLog.preCombatDamageWithOverkill;
-            result.damageCalcEnv = damageCalcEnv;
 
             // ダメージプレビュー用にスナップショットに戦闘中バフ値をコピー
             atkUnit.copySpursToSnapshot();
@@ -415,7 +412,7 @@ class DamageCalculatorWrapper {
             // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
             atkUnit.battleContext.clearPrecombatState();
         }
-        damageCalcEnv.damageCalcLog.setPreCombatDamage(preCombatDamage)
+        damageCalcEnv.damageCalcResult.setPreCombatDamage(preCombatDamage)
             .setPreCombatDamageWithOverkill(preCombatDamageWithOverkill);
 
         atkUnit.precombatContext.copyTo(atkUnit.battleContext);
