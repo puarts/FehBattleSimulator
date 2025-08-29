@@ -207,6 +207,13 @@ class ForTargetNode extends SkillEffectNode {
  * @constructor
  */
 const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
+
+/**
+ * @template T
+ * @param {T} node
+ * @returns {T}
+ * @constructor
+ */
 const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
 
 /**

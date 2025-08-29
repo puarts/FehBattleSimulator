@@ -41,15 +41,22 @@ class DamageLog {
 
 /// ダメージ計算時に一時的に使用するコンテキストです。
 class DamageCalcContext {
-    constructor() {
+    constructor(damageCalcEnv) {
+        /** @type {DamageCalcEnv} */
+        this.damageCalcEnv = damageCalcEnv;
+        /** @type {DamageLog[]} */
+        this.damageHistory = []; // 攻撃ダメージの履歴
+
         // isFollowupAttackはisPotentFollowupAttackを含む(isPotentFollowupAttackであれば常にisFollowupAttackも満たす)
         this.isCounterattack = false;
         this.isFollowupAttack = false;
         this.isPotentFollowupAttack = false;
-        /** @type {DamageLog[]} */
-        this.damageHistory = []; // 攻撃ダメージの履歴
-        this.damageType = DamageType.ActualDamage;
+
         this.attackCount = 0;
+    }
+
+    get damageType() {
+        return this.damageCalcEnv?.damageType;
     }
 
     /**
@@ -103,6 +110,51 @@ class DamageCalcContext {
     }
 }
 
+class DamageCalcEnv {
+    constructor() {
+        this.atkUnit = null;
+        this.defUnit = null;
+        this.origDefUnit = null;
+        this.saverUnit = null;
+        this.damageCalcLog = null;
+    }
+
+    setUnits(atkUnit, defUnit) {
+        this.atkUnit = atkUnit;
+        this.defUnit = defUnit;
+        this.origDefUnit = defUnit;
+        this.damageCalcLog = new DamageCalcLog();
+        return this;
+    }
+
+    setDamageType(damageType) {
+        this.damageType = damageType;
+        return this;
+    }
+
+    setSaverUnit(saverUnit) {
+        if (saverUnit) {
+            this.defUnit = saverUnit;
+            this.saverUnit = saverUnit;
+        }
+        return this;
+    }
+
+    setTileToAttack(tileToAttack) {
+        this.tileToAttack = tileToAttack;
+        return this;
+    }
+
+    setGameMode(gameMode) {
+        this.gameMode = gameMode;
+        return this;
+    }
+
+    get calcPotentialDamage() {
+        return this.damageType === DamageType.PotentialDamage;
+    }
+}
+
 class OneAttackResult {
     constructor(damage, specialDamage, atkCountPerOneAttack) {
         this.damagePerAttack = damage;
@@ -148,6 +200,23 @@ class DamageCalcResult {
 
         this.atkTile = null;
         this.defTile = null;
+
+        this.damageCalcEnv = null;
+    }
+}
+
+class DamageCalcLog {
+    constructor() {
+    }
+
+    setPreCombatDamage(damage) {
+        this.preCombatDamage = damage;
+        return this;
+    }
+
+    setPreCombatDamageWithOverkill(damage) {
+        this.preCombatDamageWithOverkill = damage;
+        return this;
     }
 }
 
@@ -204,14 +273,17 @@ class DamageCalculator {
 
     /**
      * ダメージ計算を行います。
-     * @param  {Unit} atkUnit 攻撃をするユニットです。
-     * @param  {Unit} defUnit 攻撃を受けるユニットです。
-     * @param  {number} damageType 潜在ダメージ計算かどうかを指定します。
+     * @param {DamageCalcEnv} damageCalcEnv
      */
-    calcCombatResult(atkUnit, defUnit, damageType) {
+    calcCombatResult(damageCalcEnv) {
+        let atkUnit = damageCalcEnv.atkUnit;
+        let defUnit = damageCalcEnv.defUnit;
+        let damageType = damageCalcEnv.damageType;
+
         // 初期化
-        let context = new DamageCalcContext();
-        context.damageType = damageType;
+        let context = new DamageCalcContext(damageCalcEnv);
+        // context.damageType = damageType;
+        context.damageCalcEnv = damageCalcEnv;
         let result = new DamageCalcResult();
         result.defUnit = defUnit;
         result.atkUnit_atk = atkUnit.getAtkInCombat(defUnit);

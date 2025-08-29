@@ -2322,7 +2322,7 @@
                 REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(READ_NUM_NODE),
                 // (○は、敵が赤、緑、無属性の時は速さの50％、(そうでない時は速さの20%)
                 PERCENTAGE_NODE(
-                    IF_VALUE_NODE(EQ_NODE(FOR_TARGET_NODE(FOE_NODE, TARGETS_COLOR_NODE), ColorType.Blue), 20, 50),
+                    COND_OP(EQ_NODE(FOR_TARGET_NODE(FOE_NODE, TARGETS_COLOR_NODE), ColorType.Blue), 20, 50),
                     UNITS_SPD_NODE,
                 ),
             ),

@@ -29,8 +29,9 @@ class PerformanceProfile {
 
 class ScopedTileChanger {
     /**
-     * @param  {Unit} atkUnit
-     * @param  {Tile} tileToAttack
+     * @param {Unit} atkUnit
+     * @param {Tile} tileToAttack
+     * @param {Function} tileChangedFunc=null
      */
     constructor(atkUnit, tileToAttack, tileChangedFunc = null) {
         this._origTile = atkUnit.placedTile;
@@ -38,9 +39,7 @@ class ScopedTileChanger {
         let isTileChanged = tileToAttack !== this._origTile;
         if (tileToAttack !== null && isTileChanged) {
             tileToAttack.setUnit(atkUnit);
-            if (tileChangedFunc !== null) {
-                tileChangedFunc();
-            }
+            tileChangedFunc?.();
         }
     }
 
@@ -289,6 +288,7 @@ class DamageCalculatorWrapper {
 
     /**
      * 戦闘のダメージを計算します。
+     * （攻撃対象への範囲奥義、戦闘。戦闘後のスキル効果は除く）
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
@@ -305,7 +305,12 @@ class DamageCalculatorWrapper {
     ) {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
+        /** @type {DamageCalcResult} */
         let result;
+        /** @type {DamageCalcEnv} */
+        let damageCalcEnv = new DamageCalcEnv().setUnits(atkUnit, defUnit)
+            .setTileToAttack(tileToAttack).setDamageType(damageType).setGameMode(gameMode);
+
         this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
         using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
             self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
@@ -337,67 +342,84 @@ class DamageCalculatorWrapper {
             defUnit.saveCurrentHpAndSpecialCount();
 
             // 戦闘前ダメージ計算
-            let preCombatDamage = 0;
-            let preCombatDamageWithOverkill = 0;
+            this.calcPreCombatResult(damageCalcEnv);
 
-            let canTriggerPrecombatSpecial = !atkUnit.battleContext.cannotTriggerPrecombatSpecial;
-            let canActivatePrecombatSpecial = atkUnit.canActivatePrecombatSpecial() && canTriggerPrecombatSpecial;
-            if (canActivatePrecombatSpecial && !calcPotentialDamage) {
-                if (damageType === DamageType.EstimatedDamage) {
-                    atkUnit.precombatSpecialTiles =
-                        Array.from(this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit));
-                }
-                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit, damageType);
-                // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
-                defUnit.battleContext.clearPrecombatState();
-
-                // 戦闘開始時のHPを保存
-                defUnit.battleContext.restHp = defUnit.restHp;
-            }
-
-            let actualDefUnit = defUnit;
-            if (!calcPotentialDamage) {
-                let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit, damageType);
-                if (saverUnit != null) {
-                    // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
-                    preCombatDamage = 0;
-                    preCombatDamageWithOverkill = 0;
-                    if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
-                    self.__initSaverUnit(saverUnit, defUnit, damageType);
-                    if (canActivatePrecombatSpecial) {
-                        // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
-                        let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
-                        for (let tile of tiles) {
-                            if (tile.placedUnit === saverUnit) {
-                                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit, damageType);
-                                saverUnit.battleContext.clearPrecombatState();
-                                saverUnit.battleContext.restHp = saverUnit.restHp;
-                            }
-                        }
-                    }
-                    // NOTE: 護られるユニットの防御床情報を護り手に入れる
-                    saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
-                    actualDefUnit = saverUnit;
-                }
-
-                // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
-                atkUnit.battleContext.clearPrecombatState();
-            }
-
-            atkUnit.precombatContext.copyTo(atkUnit.battleContext);
-            defUnit.precombatContext.copyTo(defUnit.battleContext);
-
-            result = self.calcCombatResult(atkUnit, actualDefUnit, damageType, gameMode);
-            result.preCombatDamage = preCombatDamage;
-            result.preCombatDamageWithOverkill = preCombatDamageWithOverkill;
+            // 戦闘ダメージ計算
+            result = self.calcCombatResult(damageCalcEnv);
+            result.preCombatDamage = damageCalcEnv.damageCalcLog.preCombatDamage;
+            result.preCombatDamageWithOverkill = damageCalcEnv.damageCalcLog.preCombatDamageWithOverkill;
+            result.damageCalcEnv = damageCalcEnv;
 
             // ダメージプレビュー用にスナップショットに戦闘中バフ値をコピー
             atkUnit.copySpursToSnapshot();
-            actualDefUnit.copySpursToSnapshot();
+            damageCalcEnv.defUnit.copySpursToSnapshot();
         });
         this.logger.trace2(`[行動後] ${atkUnit.getLocationStr(tileToAttack)}`);
-
         return result;
+    }
+
+    /**
+     * @param {DamageCalcEnv} damageCalcEnv
+     */
+    calcPreCombatResult(damageCalcEnv) {
+        let self = this;
+        let atkUnit = damageCalcEnv.atkUnit;
+        let defUnit = damageCalcEnv.defUnit;
+        let calcPotentialDamage = damageCalcEnv.calcPotentialDamage;
+        let damageType = damageCalcEnv.damageType;
+
+        let preCombatDamage = 0;
+        let preCombatDamageWithOverkill = 0;
+
+        let canTriggerPrecombatSpecial = !atkUnit.battleContext.cannotTriggerPrecombatSpecial;
+        let canActivatePrecombatSpecial = atkUnit.canActivatePrecombatSpecial() && canTriggerPrecombatSpecial;
+        if (canActivatePrecombatSpecial && !calcPotentialDamage) {
+            if (damageType === DamageType.EstimatedDamage) {
+                atkUnit.precombatSpecialTiles =
+                    Array.from(this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit));
+            }
+            [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit, damageType);
+            // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
+            defUnit.battleContext.clearPrecombatState();
+
+            // 戦闘開始時のHPを保存
+            defUnit.battleContext.restHp = defUnit.restHp;
+        }
+
+        let actualDefUnit = defUnit;
+        if (!calcPotentialDamage) {
+            let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit, damageType);
+            damageCalcEnv.setSaverUnit(saverUnit);
+            if (saverUnit != null) {
+                // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
+                preCombatDamage = 0;
+                preCombatDamageWithOverkill = 0;
+                if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
+                self.__initSaverUnit(saverUnit, defUnit, damageType);
+                if (canActivatePrecombatSpecial) {
+                    // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
+                    let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
+                    for (let tile of tiles) {
+                        if (tile.placedUnit === saverUnit) {
+                            [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit, damageType);
+                            saverUnit.battleContext.clearPrecombatState();
+                            saverUnit.battleContext.restHp = saverUnit.restHp;
+                        }
+                    }
+                }
+                // NOTE: 護られるユニットの防御床情報を護り手に入れる
+                saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
+                actualDefUnit = saverUnit;
+            }
+
+            // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
+            atkUnit.battleContext.clearPrecombatState();
+        }
+        damageCalcEnv.damageCalcLog.setPreCombatDamage(preCombatDamage)
+            .setPreCombatDamageWithOverkill(preCombatDamageWithOverkill);
+
+        atkUnit.precombatContext.copyTo(atkUnit.battleContext);
+        defUnit.precombatContext.copyTo(defUnit.battleContext);
     }
 
     /**
@@ -526,13 +548,15 @@ class DamageCalculatorWrapper {
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
     /**
-     * @param  {Unit} atkUnit
-     * @param  {Unit} defUnit
-     * @param  {number} damageType
-     * @param  {number} gameMode
+     * @param  {DamageCalcEnv} damageCalcEnv
      * @returns {DamageCalcResult}
      */
-    calcCombatResult(atkUnit, defUnit, damageType, gameMode) {
+    calcCombatResult(damageCalcEnv) {
+        let atkUnit = damageCalcEnv.atkUnit;
+        let defUnit = damageCalcEnv.defUnit;
+        let damageType = damageCalcEnv.damageType;
+        let gameMode = damageCalcEnv.gameMode;
+
         this.combatPhase = NodeEnv.COMBAT_PHASE.AT_START_OF_COMBAT;
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
@@ -709,7 +733,7 @@ class DamageCalculatorWrapper {
 
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
-        result = self._damageCalc.calcCombatResult(atkUnit, defUnit, damageType);
+        result = self._damageCalc.calcCombatResult(damageCalcEnv);
         // });
         return result;
     }
@@ -2228,6 +2252,12 @@ class DamageCalculatorWrapper {
         };
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @private
+     */
     __applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage) {
         // 天脈
         let tile = targetUnit.placedTile;
