@@ -153,6 +153,10 @@ class DamageCalcEnv {
     get calcPotentialDamage() {
         return this.damageType === DamageType.PotentialDamage;
     }
+
+    get isActualDamage() {
+        return this.damageType === DamageType.ActualDamage;
+    }
 }
 
 class OneAttackResult {
@@ -278,12 +282,11 @@ class DamageCalculator {
     calcCombatResult(damageCalcEnv) {
         let atkUnit = damageCalcEnv.atkUnit;
         let defUnit = damageCalcEnv.defUnit;
-        let damageType = damageCalcEnv.damageType;
 
         // 初期化
         let context = new DamageCalcContext(damageCalcEnv);
-        // context.damageType = damageType;
         context.damageCalcEnv = damageCalcEnv;
+
         let result = new DamageCalcResult();
         result.defUnit = defUnit;
         result.atkUnit_atk = atkUnit.getAtkInCombat(defUnit);
@@ -317,14 +320,14 @@ class DamageCalculator {
 
         for (let func of this.__enumerateCombatFuncs(atkUnit, defUnit, result, context)) {
             func();
-            if (damageType === DamageType.ActualDamage &&
+            if (damageCalcEnv.isActualDamage &&
                 this.__isAnyoneDead(atkUnit, defUnit)) {
                 break;
             }
         }
 
         // 1マップ1回の効果が発動したかどうかをBattleContextからUnitに保存する
-        if (damageType === DamageType.ActualDamage) {
+        if (damageCalcEnv.isActualDamage) {
             atkUnit.hasOncePerMapSpecialActivated |= atkUnit.battleContext.hasOncePerMapSpecialActivated;
             defUnit.hasOncePerMapSpecialActivated |= defUnit.battleContext.hasOncePerMapSpecialActivated;
         }
