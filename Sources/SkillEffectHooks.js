@@ -239,6 +239,11 @@ const AFTER_CANTO_HOOKS = new SkillEffectHooks();
 const AFTER_FOLLOW_UP_CONFIGURED_HOOKS = new SkillEffectHooks();
 
 /**
+ * 判定後
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const AFTER_CONDITION_CONFIGURED_HOOKS = new SkillEffectHooks();
+
+/**
  * ステータス比較時(虚勢など)
  * @type {SkillEffectHooks<StatsNode, NodeEnv>} */
 const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();

@@ -609,11 +609,18 @@ class DamageCalculator {
         return this.__isDead(atkUnit) || this.__isDead(defUnit);
     }
 
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcResult} result
+     * @param {DamageCalcContext} context
+     * @private
+     */
     __attack(atkUnit, defUnit, result, context) {
         context.isCounterattack = false;
         context.isFollowupAttack = false;
         context.isPotentFollowupAttack = false;
-        let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
+        let combatResult = this.__calcAttackDamage(atkUnit, defUnit, context);
         result.atkUnit_normalAttackDamage = combatResult.damagePerAttack;
         result.atkUnit_totalAttackCount += combatResult.attackCount;
         result.atkUnit_specialAttackDamage = combatResult.specialDamagePerAttack;
@@ -622,12 +629,19 @@ class DamageCalculator {
         }
     }
 
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcResult} result
+     * @param {DamageCalcContext} context
+     * @private
+     */
     __followupAttack(atkUnit, defUnit, result, context) {
         if (atkUnit.battleContext.canFollowupAttackWithoutPotent) {
             context.isCounterattack = false;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = false;
-            let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
+            let combatResult = this.__calcAttackDamage(atkUnit, defUnit, context);
             result.atkUnit_totalAttackCount += combatResult.attackCount;
             if (atkUnit.restHp > 0) {
                 result.atkUnit_actualTotalAttackCount += combatResult.attackCount;
@@ -635,12 +649,19 @@ class DamageCalculator {
         }
     }
 
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcResult} result
+     * @param {DamageCalcContext} context
+     * @private
+     */
     __potentFollowupAttack(atkUnit, defUnit, result, context) {
         if (atkUnit.battleContext.canPotentFollowupAttack()) {
             context.isCounterattack = false;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = true;
-            let combatResult = this.__calcCombatDamage(atkUnit, defUnit, context);
+            let combatResult = this.__calcAttackDamage(atkUnit, defUnit, context);
             result.atkUnit_totalAttackCount += combatResult.attackCount;
             if (atkUnit.restHp > 0) {
                 result.atkUnit_actualTotalAttackCount += combatResult.attackCount;
@@ -648,13 +669,20 @@ class DamageCalculator {
         }
     }
 
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcResult} result
+     * @param {DamageCalcContext} context
+     * @private
+     */
     __counterattack(atkUnit, defUnit, result, context) {
         if (defUnit.battleContext.canCounterattack) {
             context.isCounterattack = true;
             context.isFollowupAttack = false;
             context.isPotentFollowupAttack = false;
             // TODO: 待ち伏せ、攻め立てなどの情報も入れる
-            let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
+            let combatResult = this.__calcAttackDamage(defUnit, atkUnit, context);
             result.defUnit_normalAttackDamage = combatResult.damagePerAttack;
             result.defUnit_totalAttackCount += combatResult.attackCount;
             result.defUnit_specialAttackDamage = combatResult.specialDamagePerAttack;
@@ -671,13 +699,20 @@ class DamageCalculator {
         }
     }
 
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcResult} result
+     * @param {DamageCalcContext} context
+     * @private
+     */
     __followupCounterattack(atkUnit, defUnit, result, context) {
         if (defUnit.battleContext.canCounterattack &&
             defUnit.battleContext.canFollowupAttackWithoutPotent) {
             context.isCounterattack = true;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = false;
-            let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
+            let combatResult = this.__calcAttackDamage(defUnit, atkUnit, context);
             result.defUnit_totalAttackCount += combatResult.attackCount;
             if (defUnit.restHp > 0) {
                 result.defUnit_actualTotalAttackCount += combatResult.attackCount;
@@ -685,12 +720,19 @@ class DamageCalculator {
         }
     }
 
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcResult} result
+     * @param {DamageCalcContext} context
+     * @private
+     */
     __potentFollowupCounterattack(atkUnit, defUnit, result, context) {
         if (defUnit.battleContext.canCounterattack && defUnit.battleContext.canPotentFollowupAttack()) {
             context.isCounterattack = true;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = true;
-            let combatResult = this.__calcCombatDamage(defUnit, atkUnit, context);
+            let combatResult = this.__calcAttackDamage(defUnit, atkUnit, context);
             result.defUnit_totalAttackCount += combatResult.attackCount;
             if (defUnit.restHp > 0) {
                 result.defUnit_actualTotalAttackCount += combatResult.attackCount;
@@ -825,7 +867,7 @@ class DamageCalculator {
      * @param  {Unit} defUnit
      * @param  {DamageCalcContext} context
      */
-    __calcCombatDamage(atkUnit, defUnit, context) {
+    __calcAttackDamage(atkUnit, defUnit, context) {
         if (this.isLogEnabled) {
             this.__logAttackerAndAttackee(atkUnit, defUnit, context);
             let className = atkUnit.groupId === UnitGroupType.Ally ? 'log-ally-header' : 'log-enemy-header';
@@ -834,9 +876,6 @@ class DamageCalculator {
             this.writeSimpleLog(message);
             this.writeDebugLog(`【${context.getAttackTypeString()}】`);
         }
-
-        this.__applySkillEffectsPerCombat(atkUnit, defUnit, context);
-        this.__applySkillEffectsPerCombat(defUnit, atkUnit, context);
 
         this.__calcAndSetCooldownCount(atkUnit, defUnit);
 
@@ -2097,27 +2136,6 @@ class DamageCalculator {
                     }
                     break;
             }
-        }
-    }
-
-    /**
-     * @param {Unit} targetUnit
-     * @param {Unit} enemyUnit
-     * @param {DamageCalcContext} context
-     */
-    __applySkillEffectsPerCombat(targetUnit, enemyUnit, context) {
-        if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
-            if (isNormalAttackSpecial(targetUnit.special)) {
-                let n = 2;
-                if (targetUnit.battleContext.isTwiceAttackActivating() ||
-                    targetUnit.isReducedMaxSpecialCount()) {
-                    n = 1;
-                }
-                targetUnit.battleContext.specialCountReductionBeforeFirstAttackPerAttack += n;
-            }
-        }
-        for (let skillId of targetUnit.enumerateSkills()) {
-            getSkillFunc(skillId, applySkillEffectsPerCombatFuncMap)?.call(this, targetUnit, enemyUnit, context);
         }
     }
 

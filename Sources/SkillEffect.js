@@ -6747,3 +6747,18 @@ class IsTargetEquippedWithPSaviorEffectsNode extends BoolNode {
 }
 
 const IS_TARGET_EQUIPPED_WITH_P_SAVIOR_EFFECTS_NODE = new IsTargetEquippedWithPSaviorEffectsNode();
+
+class IsTargetsMaximumSpecialCooldownCountReducedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isReducedMaxSpecialCount();
+        env.debug(`${unit.nameWithGroup}の奥義発動カウントの最大値が本来より減少しているか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGETS_MAXIMUM_SPECIAL_COOLDOWN_COUNT_REDUCED_NODE = new IsTargetsMaximumSpecialCooldownCountReducedNode();

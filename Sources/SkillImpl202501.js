@@ -1,5 +1,32 @@
 // スキル実装
 
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.RallySpectrum);
+    // Grants Atk/Spd/Def/Res+5 to unit during combat and
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+    ));
+    AFTER_CONDITION_CONFIGURED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // if unit's attack can trigger unit's Special,
+        IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
+            // grants Special cooldown count-X to unit before unit's first attack during combat
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(
+                COND_OP(
+                    OR_NODE(
+                        // if unit can trigger the "unit attacks twice" effect or
+                        DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE,
+                        // if unit's maximum Special cooldown count is reduced (Special trigger is accelerated); otherwise, X = 2). (That turn only.)
+                        IS_TARGETS_MAXIMUM_SPECIAL_COOLDOWN_COUNT_REDUCED_NODE,
+                    ),
+                    // (X = 1
+                    1,
+                    2,
+                ),
+            ),
+        ),
+    ));
+}
+
 // Fortified Axe
 {
     let skillId = Weapon.FortifiedAxe;

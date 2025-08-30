@@ -728,6 +728,8 @@ class DamageCalculatorWrapper {
             this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(defUnit, atkUnit, calcPotentialDamage, damageType);
         }
 
+        this.applySkillEffectAfterConditionDetermined(damageCalcEnv);
+
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
         result = self._damageCalc.calcCombatResult(damageCalcEnv);
@@ -2397,9 +2399,6 @@ class DamageCalculatorWrapper {
                 let amount = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
                 targetUnit.addAllSpur(amount);
             }
-        }
-        if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
-            targetUnit.addAllSpur(5);
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.HushSpectrum)) {
             targetUnit.addAllSpur(-5);
@@ -17026,5 +17025,17 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+    }
+
+    applySkillEffectAfterConditionDetermined(damageCalcEnv) {
+        let applySkill = (targetUnit, enemyUnit) => {
+            let env =
+                new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, damageCalcEnv.calcPotentialDamage);
+            env.setName('全ての条件決定後').setLogLevel(getSkillLogLevel()).setDamageType(damageCalcEnv.damageType)
+                .setCombatPhase(this.combatPhase);
+            AFTER_CONDITION_CONFIGURED_HOOKS.evaluateWithUnit(targetUnit, env);
+        };
+        applySkill(damageCalcEnv.atkUnit, damageCalcEnv.defUnit);
+        applySkill(damageCalcEnv.defUnit, damageCalcEnv.atkUnit);
     }
 }
