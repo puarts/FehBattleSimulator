@@ -688,10 +688,10 @@ class BattleContext {
      * @param {boolean} res
      */
     invalidateOwnDebuffs(atk, spd, def, res) {
-        this.invalidatesOwnAtkDebuff |= atk;
-        this.invalidatesOwnSpdDebuff |= spd;
-        this.invalidatesOwnDefDebuff |= def;
-        this.invalidatesOwnResDebuff |= res;
+        this.invalidatesOwnAtkDebuff ||= atk;
+        this.invalidatesOwnSpdDebuff ||= spd;
+        this.invalidatesOwnDefDebuff ||= def;
+        this.invalidatesOwnResDebuff ||= res;
     }
 
     invalidateAllOwnDebuffs() {
