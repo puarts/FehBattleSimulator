@@ -19,194 +19,43 @@ const DamageType = {
 };
 
 /**
- * ダメージ計算時の1回攻撃分の結果です。
+ * @abstract
  */
-class StrikeResult {
-    setStrikeCount(strikeCount) {
-        this.strikeCount = strikeCount;
-        return this;
-    }
-
-    setUnits(attackUnit, attackedUnit, damageDealt) {
-        this.attackUnit = attackUnit;
-        this.attackedUnit = attackedUnit;
-        return this;
-    }
-
-    setDamage(damageDealt) {
-        this.damageDealt = damageDealt;
-        return this;
-    }
-
-    /**
-     *
-     * @param {DamageCalcContext} context
-     * @returns {StrikeResult}
-     */
-    setAttackType(context) {
-        this.isCounterattack = context.isCounterattack;
-        this.isFollowupAttack = context.isFollowupAttack;
-        this.isPotentFollowupAttack = context.isPotentFollowupAttack;
-        return this;
-    }
-
-    setDamageReductionRatios(ratios) {
-        this.damageReductionRatios = ratios;
-        return this;
-    }
-}
-
-/// ダメージ計算時に一時的に使用するコンテキストです。
-class DamageCalcContext {
-    constructor(damageCalcEnv) {
-        /** @type {DamageCalcEnv} */
-        this.damageCalcEnv = damageCalcEnv;
-
-        // isFollowupAttackはisPotentFollowupAttackを含む(isPotentFollowupAttackであれば常にisFollowupAttackも満たす)
-        this.isCounterattack = false;
-        this.isFollowupAttack = false;
-        this.isPotentFollowupAttack = false;
-
-        this.attackCount = 0;
-    }
-
-    get damageType() {
-        return this.damageCalcEnv?.damageType;
-    }
-
-    get damageHistory() {
-        return this.damageCalcEnv?.damageCalcResult?.damageHistory;
-    }
-
-    get damageCalcResult() {
-        return this.damageCalcEnv?.damageCalcResult;
-    }
-
-    /**
-     * 引数のユニットが攻撃したログを取得。
-     * @params {Unit} attackUnit
-     * @returns {StrikeResult[]}
-     */
-    getAttackLogs(attackUnit) {
-        return this.damageHistory.filter(log => log.attackUnit === attackUnit);
-    }
-
-    isFirstAttack(atkUnit) {
-        for (let log of this.damageHistory) {
-            if (log.attackUnit === atkUnit) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    isConsecutiveAttack(atkUnit) {
-        let lastLog = this.damageHistory[this.damageHistory.length - 1];
-        return lastLog ? lastLog.attackUnit === atkUnit : false;
-    }
-
-    isFollowupOrPotentFollowupAttack() {
-        return this.isFollowupAttack || this.isPotentFollowupAttack;
-    }
-
-    isFirstFollowupAttack(atkUnit) {
-        let isFollowupAttacked =
-            this.damageHistory.some(log => log.attackUnit === atkUnit && log.isFollowupAttack);
-        return this.isFollowupAttack && !isFollowupAttacked;
-    }
-
-    getAttackTypeString() {
-        let result = "";
-        if (!this.isCounterattack) {
-            result += "攻撃";
-        } else {
-            result += "反撃";
-        }
-        if (this.isFollowupAttack) {
-            result = `追撃${result}`;
-        }
-        if (this.isPotentFollowupAttack) {
-            result = `神速${result}`;
-        }
-        return result;
-    }
-}
-
-class DamageCalcEnv {
+class DamageCalcResult {
     constructor() {
         this.atkUnit = null;
         this.defUnit = null;
-        this.origDefUnit = null;
-        this.saverUnit = null;
-        /** @type {DamageCalcResult} */
-        this.damageCalcResult = new DamageCalcResult();
     }
 
     setUnits(atkUnit, defUnit) {
         this.atkUnit = atkUnit;
         this.defUnit = defUnit;
-        this.origDefUnit = defUnit;
         return this;
-    }
-
-    setDamageType(damageType) {
-        this.damageType = damageType;
-        return this;
-    }
-
-    setSaverUnit(saverUnit) {
-        if (saverUnit) {
-            this.defUnit = saverUnit;
-            this.saverUnit = saverUnit;
-        }
-        return this;
-    }
-
-    setTileToAttack(tileToAttack) {
-        this.tileToAttack = tileToAttack;
-        return this;
-    }
-
-    setGameMode(gameMode) {
-        this.gameMode = gameMode;
-        return this;
-    }
-
-    get calcPotentialDamage() {
-        return this.damageType === DamageType.PotentialDamage;
-    }
-
-    get isActualDamage() {
-        return this.damageType === DamageType.ActualDamage;
-    }
-}
-
-class OneAttackResult {
-    constructor(damage, specialDamage, atkCountPerOneAttack) {
-        this.damagePerAttack = damage;
-        this.specialDamagePerAttack = specialDamage;
-        this.attackCount = atkCountPerOneAttack;
     }
 }
 
 /**
  * ダメージ計算結果を表すクラスです。
  */
-class DamageCalcResult {
+class CombatResult extends DamageCalcResult {
     constructor() {
-        this.atkUnit = null;
-        this.defUnit = null;
+        super();
+
         /** @type {StrikeResult[]} */
         this.damageHistory = [];
+
         this.atkUnit_totalAttackCount = 0;
         this.defUnit_totalAttackCount = 0;
+
         this.atkUnit_actualTotalAttackCount = 0;
         this.defUnit_actualTotalAttackCount = 0;
+
         this.atkUnit_normalAttackDamage = 0;
         this.defUnit_normalAttackDamage = 0;
+
         this.atkUnit_specialAttackDamage = 0;
-        this.defUNit_specialAttackDamage = 0;
+        this.defUnit_specialAttackDamage = 0;
+
         this.atkUnit_specialCount = 0;
         this.defUnit_specialCount = 0;
 
@@ -234,14 +83,11 @@ class DamageCalcResult {
 
         this.damageCalcEnv = null;
 
+        /** @type {AttackResult[]} */
+        this.attackResults = [];
+
         /** @type {StrikeResult[]} */
         this.strikeResults = [];
-    }
-
-    setUnit(atkUnit, defUnit) {
-        this.atkUnit = atkUnit;
-        this.defUnit = defUnit;
-        return this;
     }
 
     setPreCombatDamage(damage) {
@@ -315,9 +161,50 @@ class DamageCalcResult {
         return this;
     }
 
+    setBuffDebuffs(atkUnit, defUnit) {
+        this.atkUnitBuffDebuffs = ArrayUtil.add(atkUnit.getBuffsInCombat(defUnit), atkUnit.getDebuffsInCombat(defUnit));
+        this.defUnitBuffDebuffs = ArrayUtil.add(defUnit.getBuffsInCombat(atkUnit), defUnit.getDebuffsInCombat(atkUnit));
+        return this;
+    }
+
+    setSpurs(atkUnit, defUnit) {
+        this.atkUnitSpurs = atkUnit.getSpurs();
+        this.defSpurs = defUnit.getSpurs();
+        return this;
+    }
+
+    setBuffInvalidations(atkUnit, defUnit) {
+        this.atkUnitBuffInvalidations = atkUnit.battleContext.getBuffInvalidations();
+        this.defUnitBuffInvalidations = defUnit.battleContext.getBuffInvalidations();
+        return this;
+    }
+
+    setDebuffInvalidations(atkUnit, defUnit) {
+        this.atkUnitDebuffInvalidations = atkUnit.battleContext.getDebuffInvalidations();
+        this.defUnitDebuffInvalidations = defUnit.battleContext.getDebuffInvalidations();
+        return this;
+    }
+
+    createAttackResult() {
+        let attackResult = new AttackResult();
+        this.attackResults.push(attackResult);
+        return attackResult;
+    }
+
+    /**
+     * @returns {AttackResult}
+     */
+    getCurrentAttackResult() {
+        return this.attackResults[this.attackResults.length - 1];
+    }
+
     createStrikeResult() {
         let strikeResult = new StrikeResult();
         this.strikeResults.push(strikeResult);
+        let attackResult = this.getCurrentAttackResult();
+        attackResult.strikeResults.push(strikeResult);
+        strikeResult.attackResult = attackResult;
+        strikeResult.setUnits(attackResult.atkUnit, attackResult.defUnit);
         return strikeResult;
     }
 
@@ -326,6 +213,210 @@ class DamageCalcResult {
      */
     getCurrentStrikeResult() {
         return this.strikeResults[this.strikeResults.length - 1];
+    }
+}
+
+class AttackResult extends DamageCalcResult {
+    constructor() {
+        super();
+        /** @type {StrikeResult[]} */
+        this.strikeResults = [];
+    }
+
+    /**
+     * @param {DamageCalcContext} context
+     * @returns {AttackResult}
+     */
+    setAttackType(context) {
+        this.isCounterattack = context.isCounterattack;
+        this.isFollowupAttack = context.isFollowupAttack;
+        this.isPotentFollowupAttack = context.isPotentFollowupAttack;
+        return this;
+    }
+
+    setAtk(atk) {
+        this.atk = atk;
+        return this;
+    }
+
+    setSpecialAtk(specialAtk) {
+        this.specialAtk = specialAtk;
+        return this;
+    }
+
+    setSpecialAtkStat(atkStat) {
+        this.specialAtkStat = atkStat;
+        return this;
+    }
+
+    setAttackCount(count) {
+        this.attackCount = count;
+        return this;
+    }
+}
+
+/**
+ * ダメージ計算時の1回攻撃分の結果です。
+ */
+class StrikeResult extends DamageCalcResult {
+    constructor() {
+        super();
+        /** @type {AttackResult} */
+        this.attackResult = null;
+    }
+
+    setCurrentStrikeCount(strikeCount) {
+        this.currentStrikeCount = strikeCount;
+        return this;
+    }
+
+    setDamage(damageDealt) {
+        this.damageDealt = damageDealt;
+        return this;
+    }
+
+    setDamageReductionRatios(ratios) {
+        this.damageReductionRatios = ratios;
+        return this;
+    }
+
+    toJSON() {
+        const { attackResult, ...rest } = this;
+        return rest;
+    }
+}
+
+/// ダメージ計算時に一時的に使用するコンテキストです。
+class DamageCalcContext {
+    constructor(damageCalcEnv) {
+        /** @type {DamageCalcEnv} */
+        this.damageCalcEnv = damageCalcEnv;
+
+        // isFollowupAttackはisPotentFollowupAttackを含む(isPotentFollowupAttackであれば常にisFollowupAttackも満たす)
+        this.isCounterattack = false;
+        this.isFollowupAttack = false;
+        this.isPotentFollowupAttack = false;
+
+        this.attackCount = 0;
+    }
+
+    get damageType() {
+        return this.damageCalcEnv?.damageType;
+    }
+
+    get damageHistory() {
+        return this.combatResult?.damageHistory;
+    }
+
+    get combatResult() {
+        return this.damageCalcEnv?.combatResult;
+    }
+
+    /**
+     * 引数のユニットが攻撃したログを取得。
+     * @params {Unit} attackUnit
+     * @returns {StrikeResult[]}
+     */
+    getAttackLogs(attackUnit) {
+        return this.damageHistory.filter(log => log.atkUnit === attackUnit);
+    }
+
+    isFirstAttack(atkUnit) {
+        for (let log of this.damageHistory) {
+            if (log.atkUnit === atkUnit) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    isConsecutiveAttack(atkUnit) {
+        let lastLog = this.damageHistory[this.damageHistory.length - 1];
+        return lastLog ? lastLog.atkUnit === atkUnit : false;
+    }
+
+    isFollowupOrPotentFollowupAttack() {
+        return this.isFollowupAttack || this.isPotentFollowupAttack;
+    }
+
+    isFirstFollowupAttack(atkUnit) {
+        let isFollowupAttacked =
+            this.damageHistory.some(log => log.atkUnit === atkUnit && log.isFollowupAttack);
+        return this.isFollowupAttack && !isFollowupAttacked;
+    }
+
+    getAttackTypeString() {
+        let result = "";
+        if (!this.isCounterattack) {
+            result += "攻撃";
+        } else {
+            result += "反撃";
+        }
+        if (this.isFollowupAttack) {
+            result = `追撃${result}`;
+        }
+        if (this.isPotentFollowupAttack) {
+            result = `神速${result}`;
+        }
+        return result;
+    }
+}
+
+class DamageCalcEnv {
+    constructor() {
+        this.atkUnit = null;
+        this.defUnit = null;
+        this.origDefUnit = null;
+        this.saverUnit = null;
+        /** @type {CombatResult} */
+        this.combatResult = new CombatResult();
+    }
+
+    setUnits(atkUnit, defUnit) {
+        this.atkUnit = atkUnit;
+        this.defUnit = defUnit;
+        this.origDefUnit = defUnit;
+        return this;
+    }
+
+    setDamageType(damageType) {
+        this.damageType = damageType;
+        return this;
+    }
+
+    setSaverUnit(saverUnit) {
+        if (saverUnit) {
+            this.defUnit = saverUnit;
+            this.saverUnit = saverUnit;
+        }
+        return this;
+    }
+
+    setTileToAttack(tileToAttack) {
+        this.tileToAttack = tileToAttack;
+        return this;
+    }
+
+    setGameMode(gameMode) {
+        this.gameMode = gameMode;
+        return this;
+    }
+
+    get calcPotentialDamage() {
+        return this.damageType === DamageType.PotentialDamage;
+    }
+
+    get isActualDamage() {
+        return this.damageType === DamageType.ActualDamage;
+    }
+}
+
+class OneAttackResult {
+    constructor(damage, specialDamage, atkCountPerOneAttack) {
+        this.damagePerAttack = damage;
+        this.specialDamagePerAttack = specialDamage;
+        this.attackCount = atkCountPerOneAttack;
     }
 }
 
@@ -391,8 +482,11 @@ class DamageCalculator {
         // 初期化
         let context = new DamageCalcContext(damageCalcEnv);
 
-        let result = damageCalcEnv.damageCalcResult.initStats(atkUnit, defUnit)
-            .setUnit(atkUnit, defUnit).setDefUnit(defUnit).setTiles(atkUnit, defUnit);
+        let result = damageCalcEnv.combatResult.initStats(atkUnit, defUnit)
+            .setSpurs(atkUnit, defUnit).setBuffDebuffs(atkUnit, defUnit)
+            .setBuffInvalidations(atkUnit, defUnit).setDebuffInvalidations(atkUnit, defUnit)
+            .setUnits(atkUnit, defUnit).setDefUnit(defUnit).setTiles(atkUnit, defUnit);
+        // TODO: 攻撃回数、追撃、待ち伏せ、攻め立て、反撃不可
 
         // 戦闘中ダメージ計算
         if (this.isLogEnabled) this.writeDebugLog("戦闘中ダメージ計算..");
@@ -420,6 +514,10 @@ class DamageCalculator {
         }
 
         result.setSpecialCounts(atkUnit, defUnit);
+        // TODO: 削除
+        if (damageCalcEnv.isActualDamage) {
+            // console.log(`damage calc result: ${JSON.stringify(damageCalcEnv.combatResult, null, 2)}`);
+        }
         return result;
     }
 
@@ -433,7 +531,7 @@ class DamageCalculator {
         // 戦闘開始後ダメージ
         let damageToTargetAfterBeginningOfCombat = targetUnit.battleContext.getMaxDamageAfterBeginningOfCombat();
         // ターゲットが受けるダメージは敵が与えるダメージ
-        context.damageCalcResult.setDamageToEnemyAfterBeginningOfCombat(enemyUnit, damageToTargetAfterBeginningOfCombat);
+        context.combatResult.setDamageToEnemyAfterBeginningOfCombat(enemyUnit, damageToTargetAfterBeginningOfCombat);
         if (damageToTargetAfterBeginningOfCombat > 0) {
             targetUnit.takeDamageInCombat(damageToTargetAfterBeginningOfCombat, true);
 
@@ -459,7 +557,7 @@ class DamageCalculator {
         // 戦闘開始後ダメージ後の回復
         let maxHealAmount = targetUnit.battleContext.maxHealAmountAfterAfterBeginningOfCombatSkills;
         let [restHp, healAmount] = targetUnit.healInCombat(maxHealAmount);
-        context.damageCalcResult
+        context.combatResult
             .setHealAfterBeginningOfCombat(targetUnit, healAmount)
             .setHpAfterBeginningOfCombat(targetUnit, restHp);
 
@@ -475,7 +573,7 @@ class DamageCalculator {
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
-     * @param  {DamageCalcResult} result
+     * @param  {CombatResult} result
      * @param  {DamageCalcContext} context
      */
     * __enumerateCombatFuncs(atkUnit, defUnit, result, context) {
@@ -612,7 +710,7 @@ class DamageCalculator {
     /**
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
-     * @param {DamageCalcResult} result
+     * @param {CombatResult} result
      * @param {DamageCalcContext} context
      * @private
      */
@@ -632,7 +730,7 @@ class DamageCalculator {
     /**
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
-     * @param {DamageCalcResult} result
+     * @param {CombatResult} result
      * @param {DamageCalcContext} context
      * @private
      */
@@ -652,7 +750,7 @@ class DamageCalculator {
     /**
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
-     * @param {DamageCalcResult} result
+     * @param {CombatResult} result
      * @param {DamageCalcContext} context
      * @private
      */
@@ -672,7 +770,7 @@ class DamageCalculator {
     /**
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
-     * @param {DamageCalcResult} result
+     * @param {CombatResult} result
      * @param {DamageCalcContext} context
      * @private
      */
@@ -681,7 +779,6 @@ class DamageCalculator {
             context.isCounterattack = true;
             context.isFollowupAttack = false;
             context.isPotentFollowupAttack = false;
-            // TODO: 待ち伏せ、攻め立てなどの情報も入れる
             let combatResult = this.__calcAttackDamage(defUnit, atkUnit, context);
             result.defUnit_normalAttackDamage = combatResult.damagePerAttack;
             result.defUnit_totalAttackCount += combatResult.attackCount;
@@ -702,7 +799,7 @@ class DamageCalculator {
     /**
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
-     * @param {DamageCalcResult} result
+     * @param {CombatResult} result
      * @param {DamageCalcContext} context
      * @private
      */
@@ -723,7 +820,7 @@ class DamageCalculator {
     /**
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
-     * @param {DamageCalcResult} result
+     * @param {CombatResult} result
      * @param {DamageCalcContext} context
      * @private
      */
@@ -868,6 +965,8 @@ class DamageCalculator {
      * @param  {DamageCalcContext} context
      */
     __calcAttackDamage(atkUnit, defUnit, context) {
+        let attackResult = context.combatResult.createAttackResult().setUnits(atkUnit, defUnit);
+        attackResult.setAttackType(context);
         if (this.isLogEnabled) {
             this.__logAttackerAndAttackee(atkUnit, defUnit, context);
             let className = atkUnit.groupId === UnitGroupType.Ally ? 'log-ally-header' : 'log-enemy-header';
@@ -890,6 +989,7 @@ class DamageCalculator {
             let ratio = atkUnit.battleContext.ratioForUsingAnotherStatWhenSpecial;
             specialTotalAtk = Math.trunc(atkUnit.getStatusesInCombat(defUnit)[statusIndexWhenSpecial] * ratio);
         }
+        attackResult.setAtk(totalAtk).setSpecialAtk(specialTotalAtk).setSpecialAtkStat(statusIndexWhenSpecial);
 
         let atkCountPerCombat = atkUnit.battleContext.getAttackCount(context.isCounterattack);
         // 神速追撃の場合は2回攻撃は発動しない
@@ -897,6 +997,7 @@ class DamageCalculator {
             this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerCombat} → ${1}`);
             atkCountPerCombat = 1;
         }
+        attackResult.setAttackCount(atkCountPerCombat);
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.getSpecialAddDamage();
 
@@ -1384,7 +1485,7 @@ class DamageCalculator {
         context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
         invalidatesDamageReductionExceptSpecialOnSpecialActivation,
         invalidatesDamageReductionExceptSpecial) {
-        let damageCalcResult = context.damageCalcEnv.damageCalcResult;
+        let combatResult = context.damageCalcEnv.combatResult;
         let hasAtkUnitSpecial = atkUnit.hasSpecial && isNormalAttackSpecial(atkUnit.special);
         let hasDefUnitSpecial = defUnit.hasSpecial && isDefenseSpecial(defUnit.special);
 
@@ -1398,7 +1499,6 @@ class DamageCalculator {
         let totalDamage = 0;
         for (let i = 0; i < attackCount; ++i) {
             context.attackCount = i + 1;
-
             let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
             if (isDefUnitAlreadyDead) {
                 return totalDamage;
@@ -1408,8 +1508,7 @@ class DamageCalculator {
                 return totalDamage;
             }
 
-            let strikeResult = damageCalcResult.createStrikeResult().setUnits(atkUnit, defUnit)
-                .setAttackType(context).setStrikeCount(attackCount);
+            let strikeResult = combatResult.createStrikeResult().setCurrentStrikeCount(attackCount);
 
             atkUnit.battleContext.initContextPerAttack();
             defUnit.battleContext.initContextPerAttack();
@@ -1625,8 +1724,8 @@ class DamageCalculator {
                 activatesDefenderSpecial, context
             );
 
-            damageCalcResult.damageHistory.push(
-                damageCalcResult.getCurrentStrikeResult().setDamage(currentDamage)
+            combatResult.damageHistory.push(
+                combatResult.getCurrentStrikeResult().setDamage(currentDamage)
             );
 
             this.applySkillEffectsAfterAttack(atkUnit, defUnit, context);

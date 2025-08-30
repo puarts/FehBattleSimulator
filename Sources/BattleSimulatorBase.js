@@ -4049,7 +4049,7 @@ class BattleSimulatorBase {
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
      * @param  {number} damageType=DamageType.EstimatedDamage
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     calcDamageTemporary(
         atkUnit,
@@ -6247,7 +6247,7 @@ class BattleSimulatorBase {
                 this.__updateCombatResultOfAttackableTargetInfo(attackableUnitInfo, unit, tile);
                 let combatResult = attackableUnitInfo.combatResultDetails[tile.id];
                 let result = attackableUnitInfo.combatResults[tile.id];
-                if (result === CombatResult.Win) {
+                if (result === CombatResultType.Win) {
                     this.writeDebugLogLine(unit.getNameWithGroup() + "は戦闘に勝利するので補助資格なし");
                     return true;
                 }
@@ -6267,8 +6267,8 @@ class BattleSimulatorBase {
                 }
 
                 if (evaluatesAfflictorDraw) {
-                    if (isAfflictor(unit, result === CombatResult.Loss, result) &&
-                        result === CombatResult.Draw) {
+                    if (isAfflictor(unit, result === CombatResultType.Loss, result) &&
+                        result === CombatResultType.Draw) {
                         return true;
                     }
                 }
@@ -8482,15 +8482,15 @@ class BattleSimulatorBase {
     /**
      * @param  {Unit} attacker
      * @param  {Unit} target
-     * @return {CombatResult}
+     * @return {CombatResultType}
      */
     __getCombatResult(attacker, target) {
         if (target.restHp === 0) {
-            return CombatResult.Win;
+            return CombatResultType.Win;
         } else if (attacker.restHp === 0) {
-            return CombatResult.Loss;
+            return CombatResultType.Loss;
         } else {
-            return CombatResult.Draw;
+            return CombatResultType.Draw;
         }
     }
 
@@ -8603,7 +8603,7 @@ class BattleSimulatorBase {
         attackEvalContext.isDebufferTier1 = couldAttackerAttack && isDebufferTier1(attacker, target) && this.__canDebuff2PointsOfDefOrRes(attacker, target);
         attackEvalContext.isDebufferTier2 = couldAttackerAttack && isDebufferTier2(attacker, target) && this.__canDebuff2PointsOfDefOrRes(attacker, target);
         attackEvalContext.isAfflictor = couldAttackerAttack &&
-            isAfflictor(attacker, attackEvalContext.combatResult === CombatResult.Loss, result);
+            isAfflictor(attacker, attackEvalContext.combatResult === CombatResultType.Loss, result);
 
 
         attackEvalContext.calcAttackPriority(attacker);

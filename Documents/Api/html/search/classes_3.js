@@ -1,7 +1,7 @@
 var searchData=
 [
   ['damagecalccontext_151',['DamageCalcContext',['../class_damage_calc_context.html',1,'']]],
-  ['damagecalcresult_152',['DamageCalcResult',['../class_damage_calc_result.html',1,'']]],
+  ['damagecalcresult_152',['CombatResult',['../class_damage_calc_result.html',1,'']]],
   ['damagecalculator_153',['DamageCalculator',['../class_damage_calculator.html',1,'']]],
   ['defarmorschool_154',['DefArmorSchool',['../class_def_armor_school.html',1,'']]],
   ['defbolttower_155',['DefBoltTower',['../class_def_bolt_tower.html',1,'']]],

@@ -164,7 +164,7 @@ class DamageCalculatorWrapper {
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
      * @param  {Number} gameMode=GameMode.Arena
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
         this.#initBattleContext(atkUnit, defUnit);
@@ -259,7 +259,7 @@ class DamageCalculatorWrapper {
      * @param  {Tile} tileToAttack=null
      * @param damageType
      * @param  {Number} gameMode=GameMode.Arena
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     calcDamageTemporary(
         atkUnit,
@@ -294,7 +294,7 @@ class DamageCalculatorWrapper {
      * @param  {Tile} tileToAttack=null
      * @param  {number} damageType=DamageType.ActualDamage
      * @param  {number} gameMode=GameMode.Arena
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     calcDamage(
         atkUnit,
@@ -305,7 +305,7 @@ class DamageCalculatorWrapper {
     ) {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
-        /** @type {DamageCalcResult} */
+        /** @type {CombatResult} */
         let result;
         /** @type {DamageCalcEnv} */
         let damageCalcEnv = new DamageCalcEnv().setUnits(atkUnit, defUnit)
@@ -412,7 +412,7 @@ class DamageCalculatorWrapper {
             // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
             atkUnit.battleContext.clearPrecombatState();
         }
-        damageCalcEnv.damageCalcResult.setPreCombatDamage(preCombatDamage)
+        damageCalcEnv.combatResult.setPreCombatDamage(preCombatDamage)
             .setPreCombatDamageWithOverkill(preCombatDamageWithOverkill);
 
         atkUnit.precombatContext.copyTo(atkUnit.battleContext);
@@ -544,9 +544,10 @@ class DamageCalculatorWrapper {
         this.__applyPrecombatSkills(atkUnit, defUnit, damageType);
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
+
     /**
      * @param  {DamageCalcEnv} damageCalcEnv
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     calcCombatResult(damageCalcEnv) {
         let atkUnit = damageCalcEnv.atkUnit;

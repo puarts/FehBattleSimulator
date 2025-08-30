@@ -895,7 +895,7 @@ test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
     let result = test_calcDamage(atkUnit, defUnit, false);
 
     // 待ち伏せが発動して攻撃を受けた側から攻撃するはず
-    expect(result.damageHistory[0].attackUnit).toBe(defUnit);
+    expect(result.damageHistory[0].atkUnit).toBe(defUnit);
 
     expect(defUnit.currentDamage).toBe(25);
     expect(result.preCombatDamage).toBe(15);

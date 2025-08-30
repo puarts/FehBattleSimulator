@@ -88,7 +88,7 @@ class PostCombatSkillHander {
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
-     * @param  {DamageCalcResult} result
+     * @param  {CombatResult} result
      */
     applyPostCombatProcess(atkUnit, defUnit, result) {
         // 戦闘後のダメージ、回復の合計を反映させないといけないので予約HPとして計算

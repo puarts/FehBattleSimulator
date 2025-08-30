@@ -173,7 +173,7 @@ const PartnerLevel = {
 };
 
 
-const CombatResult = {
+const CombatResultType = {
     Win: 2,
     Draw: 1,
     Loss: 0,

@@ -1034,7 +1034,7 @@ class TilePriorityContext {
         this.isPivotRequired = false;
 
         // 攻撃マスの決定に必要
-        this.combatResult = CombatResult.Draw;
+        this.combatResult = CombatResultType.Draw;
         this.damageRatio = 0;
 
         // ブロック破壊可能なタイル
@@ -1240,9 +1240,9 @@ class TilePriorityContext {
 
     __getCombatResultPriority() {
         switch (this.combatResult) {
-            case CombatResult.Loss: return 0;
-            case CombatResult.Draw: return 1;
-            case CombatResult.Win: return 2;
+            case CombatResultType.Loss: return 0;
+            case CombatResultType.Draw: return 1;
+            case CombatResultType.Win: return 2;
         }
     }
 

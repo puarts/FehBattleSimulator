@@ -31,10 +31,10 @@ class AttackableUnitInfo {
         this.bestTileToAttack = null;
         this.damageRatios = [];
 
-        /** @type {CombatResult[]} **/
+        /** @type {CombatResultType[]} **/
         this.combatResults = [];
 
-        /** @type {DamageCalcResult[]} **/
+        /** @type {CombatResult[]} **/
         this.combatResultDetails = [];
 
         /** @type {boolean} **/
@@ -54,7 +54,7 @@ class AttackableUnitInfo {
 class AttackEvaluationContext {
     constructor() {
         this.damageRatio = 0;
-        this.combatResult = CombatResult.Draw;
+        this.combatResult = CombatResultType.Draw;
         this.isDebufferTier1 = false;
         this.isDebufferTier2 = false;
         this.isAfflictor = false;
