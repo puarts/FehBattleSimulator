@@ -234,12 +234,8 @@ class AttackResult extends DamageCalcResult {
         return this;
     }
 
-    setAtk(atk) {
+    setAtk(atk, specialAtk) {
         this.atk = atk;
-        return this;
-    }
-
-    setSpecialAtk(specialAtk) {
         this.specialAtk = specialAtk;
         return this;
     }
@@ -251,6 +247,39 @@ class AttackResult extends DamageCalcResult {
 
     setAttackCount(count) {
         this.attackCount = count;
+        return this;
+    }
+
+    setDefRes(def, res) {
+        this.def = def;
+        this.res = res;
+        return this;
+    }
+
+    setMit(mit, specialMit) {
+        this.mit = mit;
+        this.specialMit = specialMit;
+        return this;
+    }
+
+    setAdditionalDamage(additionalDamage, specialAdditionalDamage) {
+        this.additionalDamage = additionalDamage;
+        this.specialAdditionalDamage = specialAdditionalDamage;
+        return this;
+    }
+
+    setNeutralizesNonSpecialDamageReduction(
+        // when Special triggers, neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills
+        neutralizesNonSpecialDamageReduction,
+        neutralizesNonSpecialDamageReductionWhenSpecial) {
+        this.neutralizesNonSpecialDamageReduction = neutralizesNonSpecialDamageReduction;
+        this.neutralizesNonSpecialDamageReductionWhenSpecial = neutralizesNonSpecialDamageReductionWhenSpecial;
+        return this;
+    }
+
+    setDamage(damage, specialDamage) {
+        this.damage = damage;
+        this.specialDamage = specialDamage;
         return this;
     }
 }
@@ -718,12 +747,12 @@ class DamageCalculator {
         context.isCounterattack = false;
         context.isFollowupAttack = false;
         context.isPotentFollowupAttack = false;
-        let combatResult = this.__calcAttackDamage(atkUnit, defUnit, context);
-        result.atkUnit_normalAttackDamage = combatResult.damagePerAttack;
-        result.atkUnit_totalAttackCount += combatResult.attackCount;
-        result.atkUnit_specialAttackDamage = combatResult.specialDamagePerAttack;
+        let attackResult = this.__calcAttackDamage(atkUnit, defUnit, context);
+        result.atkUnit_normalAttackDamage = attackResult.damage;
+        result.atkUnit_totalAttackCount += attackResult.attackCount;
+        result.atkUnit_specialAttackDamage = attackResult.specialDamage;
         if (atkUnit.restHp > 0) {
-            result.atkUnit_actualTotalAttackCount += combatResult.attackCount;
+            result.atkUnit_actualTotalAttackCount += attackResult.attackCount;
         }
     }
 
@@ -739,10 +768,10 @@ class DamageCalculator {
             context.isCounterattack = false;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = false;
-            let combatResult = this.__calcAttackDamage(atkUnit, defUnit, context);
-            result.atkUnit_totalAttackCount += combatResult.attackCount;
+            let attackResult = this.__calcAttackDamage(atkUnit, defUnit, context);
+            result.atkUnit_totalAttackCount += attackResult.attackCount;
             if (atkUnit.restHp > 0) {
-                result.atkUnit_actualTotalAttackCount += combatResult.attackCount;
+                result.atkUnit_actualTotalAttackCount += attackResult.attackCount;
             }
         }
     }
@@ -759,10 +788,10 @@ class DamageCalculator {
             context.isCounterattack = false;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = true;
-            let combatResult = this.__calcAttackDamage(atkUnit, defUnit, context);
-            result.atkUnit_totalAttackCount += combatResult.attackCount;
+            let attackResult = this.__calcAttackDamage(atkUnit, defUnit, context);
+            result.atkUnit_totalAttackCount += attackResult.attackCount;
             if (atkUnit.restHp > 0) {
-                result.atkUnit_actualTotalAttackCount += combatResult.attackCount;
+                result.atkUnit_actualTotalAttackCount += attackResult.attackCount;
             }
         }
     }
@@ -779,12 +808,12 @@ class DamageCalculator {
             context.isCounterattack = true;
             context.isFollowupAttack = false;
             context.isPotentFollowupAttack = false;
-            let combatResult = this.__calcAttackDamage(defUnit, atkUnit, context);
-            result.defUnit_normalAttackDamage = combatResult.damagePerAttack;
-            result.defUnit_totalAttackCount += combatResult.attackCount;
-            result.defUnit_specialAttackDamage = combatResult.specialDamagePerAttack;
+            let attackResult = this.__calcAttackDamage(defUnit, atkUnit, context);
+            result.defUnit_normalAttackDamage = attackResult.damage;
+            result.defUnit_totalAttackCount += attackResult.attackCount;
+            result.defUnit_specialAttackDamage = attackResult.specialDamage;
             if (defUnit.restHp > 0) {
-                result.defUnit_actualTotalAttackCount += combatResult.attackCount;
+                result.defUnit_actualTotalAttackCount += attackResult.attackCount;
             }
 
             if (atkUnit.restHp === 0) {
@@ -809,10 +838,10 @@ class DamageCalculator {
             context.isCounterattack = true;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = false;
-            let combatResult = this.__calcAttackDamage(defUnit, atkUnit, context);
-            result.defUnit_totalAttackCount += combatResult.attackCount;
+            let attackResult = this.__calcAttackDamage(defUnit, atkUnit, context);
+            result.defUnit_totalAttackCount += attackResult.attackCount;
             if (defUnit.restHp > 0) {
-                result.defUnit_actualTotalAttackCount += combatResult.attackCount;
+                result.defUnit_actualTotalAttackCount += attackResult.attackCount;
             }
         }
     }
@@ -829,10 +858,10 @@ class DamageCalculator {
             context.isCounterattack = true;
             context.isFollowupAttack = true;
             context.isPotentFollowupAttack = true;
-            let combatResult = this.__calcAttackDamage(defUnit, atkUnit, context);
-            result.defUnit_totalAttackCount += combatResult.attackCount;
+            let attackResult = this.__calcAttackDamage(defUnit, atkUnit, context);
+            result.defUnit_totalAttackCount += attackResult.attackCount;
             if (defUnit.restHp > 0) {
-                result.defUnit_actualTotalAttackCount += combatResult.attackCount;
+                result.defUnit_actualTotalAttackCount += attackResult.attackCount;
             }
         }
     }
@@ -963,6 +992,7 @@ class DamageCalculator {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {DamageCalcContext} context
+     * @returns {AttackResult}
      */
     __calcAttackDamage(atkUnit, defUnit, context) {
         let attackResult = context.combatResult.createAttackResult().setUnits(atkUnit, defUnit);
@@ -989,7 +1019,7 @@ class DamageCalculator {
             let ratio = atkUnit.battleContext.ratioForUsingAnotherStatWhenSpecial;
             specialTotalAtk = Math.trunc(atkUnit.getStatusesInCombat(defUnit)[statusIndexWhenSpecial] * ratio);
         }
-        attackResult.setAtk(totalAtk).setSpecialAtk(specialTotalAtk).setSpecialAtkStat(statusIndexWhenSpecial);
+        attackResult.setAtk(totalAtk, specialTotalAtk).setSpecialAtkStat(statusIndexWhenSpecial);
 
         let atkCountPerCombat = atkUnit.battleContext.getAttackCount(context.isCounterattack);
         // 神速追撃の場合は2回攻撃は発動しない
@@ -1007,21 +1037,11 @@ class DamageCalculator {
 
         let totalMit = atkUnit.battleContext.refersRes ? resInCombat : defInCombat;
         let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
+        attackResult.setDefRes(defInCombat, resInCombat).setMit(totalMit, specialTotalMit);
 
         let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
-
         let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
-
-        // 戦闘中に変動し得る奥義の追加ダメージ
-        for (let skillId of atkUnit.enumerateSkills()) {
-            switch (skillId) {
-                case Weapon.Misteruthin:
-                    if (atkUnit.isWeaponSpecialRefined && atkUnit.battleContext.weaponSkillCondSatisfied) {
-                        fixedSpecialAddDamage += Math.min(30, atkUnit.maxHpWithSkills - atkUnit.restHp);
-                    }
-                    break;
-            }
-        }
+        attackResult.setAdditionalDamage(fixedAddDamage, fixedSpecialAddDamage);
 
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         let invalidatesDamageReductionExceptSpecial =
@@ -1031,6 +1051,10 @@ class DamageCalculator {
             invalidatesDamageReductionExceptSpecial |=
                 atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForFollowupAttack;
         }
+        attackResult.setNeutralizesNonSpecialDamageReduction(
+            invalidatesDamageReductionExceptSpecial,
+            invalidatesDamageReductionExceptSpecialOnSpecialActivation
+        );
         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = false;
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
 
@@ -1084,6 +1108,7 @@ class DamageCalculator {
 
         // 杖の半減は加算ダメージ後に計算
         specialDamage = truncNumberWithFloatError(specialDamage * damageReduceRatio);
+        attackResult.setDamage(damage, specialDamage);
 
         let totalDamage = this.__calcAttackTotalDamage(
             context,
@@ -1153,7 +1178,7 @@ class DamageCalculator {
             }
         }
 
-        return new OneAttackResult(damage, specialAddDamage, atkCountPerCombat);
+        return attackResult;
     }
 
     applySkillEffectsAfterAttack(targetUnit, enemyUnit, context) {
@@ -2232,6 +2257,13 @@ class DamageCalculator {
                         if (isSpecialCharged || targetUnit.battleContext.hasSpecialActivated) {
                             targetUnit.battleContext.additionalDamagePerAttack += Math.trunc(targetUnit.getSpdInCombat(enemyUnit) * 0.15);
                         }
+                    }
+                    break;
+                case Weapon.Misteruthin:
+                    if (targetUnit.isWeaponSpecialRefined && targetUnit.battleContext.weaponSkillCondSatisfied) {
+                        targetUnit.battleContext.addSpecialAddDamagePerAttack(
+                            MathUtil.ensureMax(targetUnit.maxHpWithSkills - targetUnit.restHp, 30)
+                        );
                     }
                     break;
             }
