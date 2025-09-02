@@ -1903,39 +1903,42 @@
 
 // 🗡️ Teapot+
 {
-    let skillId = Weapon.TeapotPlus;
-    // Mt: 12 Rng: 2
-    // If a Rally or movement Assist skill is used by unit,
-    setIfRallyOrMovementAssistSkillEndedByUnit(skillId, NODE_FUNC(
-        // grants another action to unit (once per turn;
-        // if another effect that grants action to unit has been activated at the same time,
-        // this effect is also considered to have been triggered).
-        GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_IF_ANOTHER_ACTION_EFFECT_IS_NOT_ACTIVATED_NODE,
-    ));
-    // If a Rally or movement Assist skill is used by unit or targets unit,
-    setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
-        // to allies within 2 spaces of both unit and target ally or unit and targeting ally after movement for 1 turn (including unit and target).
-        FOR_EACH_UNIT_NODE(
-            ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2),
-            // grants [Incited]
-            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Incited),
-            // and
-            // “Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)”
-            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.SpecialCooldownChargePlusOnePerAttack),
-        )
-    ));
-    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
-        // If unit initiates combat or is within 2 spaces of an ally,
-        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
-        // grants Atk/Spd/Def/Res+5 to unit
-        GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
-        X_NUM_NODE(
-            // and unit deals +X × 5 damage during combat (excluding area-of-effect Specials;
-            DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 5)),
-            // X = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5).
-            ENSURE_MAX_NODE(NUM_OF_BONUSES_ON_TARGET_AND_PENALTIES_ON_FOE_EXCLUDING_STAT_NODE, 5),
-        ),
-    );
+    let setSkill = skillId => {
+        // Mt: 12 Rng: 2
+        // If a Rally or movement Assist skill is used by unit,
+        setIfRallyOrMovementAssistSkillEndedByUnit(skillId, NODE_FUNC(
+            // grants another action to unit (once per turn;
+            // if another effect that grants action to unit has been activated at the same time,
+            // this effect is also considered to have been triggered).
+            GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_IF_ANOTHER_ACTION_EFFECT_IS_NOT_ACTIVATED_NODE,
+        ));
+        // If a Rally or movement Assist skill is used by unit or targets unit,
+        setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
+            // to allies within 2 spaces of both unit and target ally or unit and targeting ally after movement for 1 turn (including unit and target).
+            FOR_EACH_UNIT_NODE(
+                ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2),
+                // grants [Incited]
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Incited),
+                // and
+                // “Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)”
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.SpecialCooldownChargePlusOnePerAttack),
+            )
+        ));
+        setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+            // If unit initiates combat or is within 2 spaces of an ally,
+            OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            X_NUM_NODE(
+                // and unit deals +X × 5 damage during combat (excluding area-of-effect Specials;
+                DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // X = number of Bonus effects active on unit, excluding stat bonuses + number of Penalty effects active on foe, excluding stat penalties; max 5).
+                ENSURE_MAX_NODE(NUM_OF_BONUSES_ON_TARGET_AND_PENALTIES_ON_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+        );
+    };
+    setSkill(Weapon.TeapotPlus);
+    setSkill(Weapon.GeiShiNonaihuPlus);
 }
 
 // Silver Spoon
