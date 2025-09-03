@@ -1083,7 +1083,7 @@
             POTENT_FOLLOW_N_PERCENT_NODE(100, -10, true),
         ),
     ));
-    FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.addSkill(skillId, NODE_FUNC(
+    FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_AFTER_OWN_ANOTHER_ACTION_HOOKS.addSkill(skillId, NODE_FUNC(
         // If ally initiates combat and is within 3 spaces of unit,
         IF_NODE(
             AND_NODE(

@@ -3803,16 +3803,6 @@ class BattleSimulatorBase {
                 .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
 
-        // 自分以外のスキルでの自分の再行動
-        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
-            let env = new BattleSimulatorBaseEnv(this, atkUnit)
-                .setUnitsDuringCombat(atkUnit, defUnit).setTarget(atkUnit)
-                .setTargetAlly(allyUnit).setSkillOwner(allyUnit);
-            env.setName('奥義以外の再行動時（周囲の味方）').setLogLevel(getSkillLogLevel());
-            FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(allyUnit, env);
-        }
-        atkUnit.applyReservedAnotherAction();
-
         // 味方の再行動
         for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
             let env = new BattleSimulatorBaseEnv(this, atkUnit)
@@ -3852,6 +3842,16 @@ class BattleSimulatorBase {
             atkUnit.isAlive) {
             this.applyAnotherActionSkillBySpecial(atkUnit);
         }
+
+        // 自分以外のスキルでの自分の再行動（自分の再行動効果後）
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
+            let env = new BattleSimulatorBaseEnv(this, atkUnit)
+                .setUnitsDuringCombat(atkUnit, defUnit).setTarget(atkUnit)
+                .setTargetAlly(allyUnit).setSkillOwner(allyUnit);
+            env.setName('奥義以外の再行動時（周囲の味方、自分の再行動効果の後）').setLogLevel(getSkillLogLevel());
+            FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_AFTER_OWN_ANOTHER_ACTION_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
+        atkUnit.applyReservedAnotherAction();
 
         // 魔法陣の増援による再行動
         atkUnit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
