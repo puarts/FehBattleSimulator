@@ -294,6 +294,11 @@ class StrikeResult extends DamageCalcResult {
         this.attackResult = null;
     }
 
+    /**
+     * 2回攻撃の何回目か（1回目が1）
+     * @param strikeCount
+     * @returns {StrikeResult}
+     */
     setCurrentStrikeCount(strikeCount) {
         this.currentStrikeCount = strikeCount;
         return this;
@@ -351,13 +356,7 @@ class DamageCalcContext {
     }
 
     isFirstAttack(atkUnit) {
-        for (let log of this.damageHistory) {
-            if (log.atkUnit === atkUnit) {
-                return false;
-            }
-        }
-
-        return true;
+        return this.combatResult.attackResults.filter(result => result.atkUnit === atkUnit).length === 1;
     }
 
     isConsecutiveAttack(atkUnit) {
@@ -1011,37 +1010,13 @@ class DamageCalculator {
         // 奥義発動可能状態の時に固定ダメージ(秘奥)などの効果があるので攻撃ダメージ処理の最初の方で奥義カウント変動処理を行う
         this.#applySpecialCountChangesBeforeAttack(atkUnit, defUnit, context);
 
-        let totalAtk = atkUnit.getAtkInCombat(defUnit);
-        let specialTotalAtk = atkUnit.getAtkInCombat(defUnit);
-        let statusIndexWhenSpecial = atkUnit.battleContext.statIndexInsteadOfAtkWhenSpecial;
-        if (statusIndexWhenSpecial !== STATUS_INDEX.None) {
-            // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
-            let ratio = atkUnit.battleContext.ratioForUsingAnotherStatWhenSpecial;
-            specialTotalAtk = Math.trunc(atkUnit.getStatusesInCombat(defUnit)[statusIndexWhenSpecial] * ratio);
-        }
-        attackResult.setAtk(totalAtk, specialTotalAtk).setSpecialAtkStat(statusIndexWhenSpecial);
+        this.setAtkInAttack(atkUnit, defUnit, attackResult);
 
-        let atkCountPerCombat = atkUnit.battleContext.getAttackCount(context.isCounterattack);
-        // 神速追撃の場合は2回攻撃は発動しない
-        if (context.isPotentFollowupAttack) {
-            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerCombat} → ${1}`);
-            atkCountPerCombat = 1;
-        }
-        attackResult.setAttackCount(atkCountPerCombat);
-        let specialMultDamage = atkUnit.battleContext.specialMultDamage;
-        let specialAddDamage = atkUnit.battleContext.getSpecialAddDamage();
+        this.setAttackCountInAttack(atkUnit, attackResult, context);
 
         let mitHp = defUnit.restHp;
-        let defInCombat = defUnit.getDefInCombat(atkUnit);
-        let resInCombat = defUnit.getResInCombat(atkUnit);
-
-        let totalMit = atkUnit.battleContext.refersRes ? resInCombat : defInCombat;
-        let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
-        attackResult.setDefRes(defInCombat, resInCombat).setMit(totalMit, specialTotalMit);
-
-        let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
-        let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
-        attackResult.setAdditionalDamage(fixedAddDamage, fixedSpecialAddDamage);
+        this.setMitInAttack(defUnit, atkUnit, attackResult);
+        this.setAdditionalDamageInAttack(atkUnit, defUnit, attackResult);
 
         let invalidatesDamageReductionExceptSpecialOnSpecialActivation = atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation;
         let invalidatesDamageReductionExceptSpecial =
@@ -1056,11 +1031,12 @@ class DamageCalculator {
             invalidatesDamageReductionExceptSpecialOnSpecialActivation
         );
         atkUnit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttack = false;
+        let specialAddDamage = atkUnit.battleContext.getSpecialAddDamage();
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
 
-        let mitAdvRatio = 0.0;
+        attackResult.mitAdvRatio = 0.0;
         if (defUnit.battleContext.isOnDefensiveTile) {
-            mitAdvRatio = 0.3;
+            attackResult.mitAdvRatio = 0.3;
         }
 
         let damageReduceRatio = 1.0;
@@ -1072,8 +1048,8 @@ class DamageCalculator {
             }
         }
 
-        let finalAtk = totalAtk;
-        let specialFinalAtk = specialTotalAtk;
+        let finalAtk = attackResult.atk;
+        let specialFinalAtk = attackResult.specialAtk;
         if (atkUnit.battleContext.isEffectiveToOpponent) {
             // 特効
             finalAtk = floorNumberWithFloatError(finalAtk * 1.5);
@@ -1086,40 +1062,45 @@ class DamageCalculator {
         finalAtk += addAdjustAtk;
         specialFinalAtk += addAdjustAtkBySpecial;
 
-        let finalMit = floorNumberWithFloatError(totalMit + totalMit * mitAdvRatio);
+        let finalMit = floorNumberWithFloatError(
+            // 防御床分を加算
+            attackResult.mit + attackResult.mit * attackResult.mitAdvRatio
+        );
         let damage = truncNumberWithFloatError((finalAtk - finalMit));
         if (damage < 0) {
             damage = 0;
         }
-        damage += fixedAddDamage;
+        damage += attackResult.additionalDamage;
 
         // 杖の半減は加算ダメージ後に計算
         damage = truncNumberWithFloatError(damage * damageReduceRatio);
 
         let specialSuffer = atkUnit.battleContext.specialSufferPercentage;
         let specialSufferRatio = (specialSuffer / 100.0);
-        let specialFinalMit = floorNumberWithFloatError((specialTotalMit - floorNumberWithFloatError(specialTotalMit * specialSufferRatio)) + floorNumberWithFloatError(specialTotalMit * mitAdvRatio));
+        let specialFinalMit =
+            floorNumberWithFloatError(
+                // 守備、魔防-n%扱い
+                (
+                    attackResult.specialMit -
+                    floorNumberWithFloatError(attackResult.specialMit * specialSufferRatio)
+                )
+                +
+                // 防御床
+                floorNumberWithFloatError(attackResult.specialMit * attackResult.mitAdvRatio)
+            );
+        let specialMultDamage = atkUnit.battleContext.specialMultDamage;
         let specialDamage = truncNumberWithFloatError((specialFinalAtk - specialFinalMit) * specialMultDamage) + specialAddDamage;
         if (specialDamage < 0) {
             specialDamage = 0;
         }
-        specialDamage += fixedAddDamage;
-        specialDamage += fixedSpecialAddDamage;
+        specialDamage += attackResult.additionalDamage;
+        specialDamage += attackResult.specialAdditionalDamage;
 
         // 杖の半減は加算ダメージ後に計算
         specialDamage = truncNumberWithFloatError(specialDamage * damageReduceRatio);
         attackResult.setDamage(damage, specialDamage);
 
-        let totalDamage = this.__calcAttackTotalDamage(
-            context,
-            atkUnit,
-            defUnit,
-            atkCountPerCombat,
-            damage,
-            specialDamage,
-            invalidatesDamageReductionExceptSpecialOnSpecialActivation,
-            invalidatesDamageReductionExceptSpecial
-        );
+        let totalDamage = this.__calcAttackTotalDamage(attackResult, context);
 
         if (this.isLogEnabled) {
             let resInCombatDetail = this.__getResInCombatDetail(defUnit, atkUnit);
@@ -1145,24 +1126,24 @@ class DamageCalculator {
             if (defUnit.battleContext.isOnDefensiveTile) {
                 this.writeDebugLog(`${defUnit.getNameWithGroup()}は防御地形補正 1.3`);
             }
-            this.writeDebugLog(`補正前の攻撃:${totalAtk}(${this.__getAtkInCombatDetail(atkUnit, defUnit)})`);
+            this.writeDebugLog(`補正前の攻撃:${attackResult.atk}(${this.__getAtkInCombatDetail(atkUnit, defUnit)})`);
             if (atkUnit.battleContext.isEffectiveToOpponent) {
                 this.writeDebugLog("特効補正値: 1.5");
             }
             this.writeDebugLog(`相性による攻撃加算: ${addAdjustAtk}(${(finalAtk * attackAdvRatio).toFixed(2)})`);
             this.writeDebugLog(`相性による攻撃加算(奥義): ${addAdjustAtkBySpecial}(${(specialFinalAtk * attackAdvRatio).toFixed(2)})`);
-            this.writeDebugLog(`補正前の耐久:${totalMit}(${totalMitDetailLog})`);
-            if (totalMit !== specialTotalMit) {
-                this.writeDebugLog(`奥義発動時の補正前の耐久:${specialTotalMit}(${specialTotalMitDetailLog})`);
+            this.writeDebugLog(`補正前の耐久:${attackResult.mit}(${totalMitDetailLog})`);
+            if (attackResult.mit !== attackResult.specialMit) {
+                this.writeDebugLog(`奥義発動時の補正前の耐久:${attackResult.specialMit}(${specialTotalMitDetailLog})`);
             }
             this.writeDebugLog(`補正後の攻撃:${finalAtk}、耐久:${finalMit}`);
             this.writeDebugLog(`補正後の攻撃(奥義):${specialFinalAtk}、耐久:${specialFinalMit}`);
-            this.writeDebugLog(`加算ダメージ:${fixedAddDamage}`);
+            this.writeDebugLog(`加算ダメージ:${attackResult.additionalDamage}`);
             if (specialSufferRatio > 0) {
                 this.writeDebugLog(`奥義発動時、守備、魔防－${floorNumberWithFloatError(specialSufferRatio * 100)}%扱い`);
             }
-            this.writeDebugLog(`奥義加算ダメージ:${fixedSpecialAddDamage}`);
-            this.writeDebugLog(`通常ダメージ=${damage}, 奥義ダメージ=${specialDamage}, 攻撃回数=${atkCountPerCombat}`);
+            this.writeDebugLog(`奥義加算ダメージ:${attackResult.specialAdditionalDamage}`);
+            this.writeDebugLog(`通常ダメージ=${attackResult.damage}, 奥義ダメージ=${attackResult.specialDamage}, 攻撃回数=${attackResult.attackCount}`);
             this.writeDebugLog(`合計ダメージ:${totalDamage}`);
         }
 
@@ -1179,6 +1160,44 @@ class DamageCalculator {
         }
 
         return attackResult;
+    }
+
+    setAdditionalDamageInAttack(atkUnit, defUnit, attackResult) {
+        let fixedAddDamage = this.__calcFixedAddDamage(atkUnit, defUnit, false);
+        let fixedSpecialAddDamage = atkUnit.battleContext.additionalDamageOfSpecial;
+        attackResult.setAdditionalDamage(fixedAddDamage, fixedSpecialAddDamage);
+    }
+
+    setMitInAttack(defUnit, atkUnit, attackResult) {
+        let defInCombat = defUnit.getDefInCombat(atkUnit);
+        let resInCombat = defUnit.getResInCombat(atkUnit);
+
+        let totalMit = atkUnit.battleContext.refersRes ? resInCombat : defInCombat;
+        let specialTotalMit = atkUnit.battleContext.refersResForSpecial ? resInCombat : defInCombat; // 攻撃側の奥義発動時の防御力
+        attackResult.setDefRes(defInCombat, resInCombat).setMit(totalMit, specialTotalMit);
+    }
+
+    setAttackCountInAttack(atkUnit, attackResult, context) {
+        let atkCountPerAttack = atkUnit.battleContext.getAttackCount(context.isCounterattack);
+        // 神速追撃の場合は2回攻撃は発動しない
+        if (context.isPotentFollowupAttack) {
+            this.writeDebugLog(`神速追撃により2回攻撃は発動しない: ${atkCountPerAttack} → ${1}`);
+            atkCountPerAttack = 1;
+        }
+        attackResult.setAttackCount(atkCountPerAttack);
+    }
+
+    setAtkInAttack(atkUnit, defUnit, attackResult) {
+        let totalAtk = atkUnit.getAtkInCombat(defUnit);
+        let specialTotalAtk = atkUnit.getAtkInCombat(defUnit);
+        let statusIndexWhenSpecial = atkUnit.battleContext.statIndexInsteadOfAtkWhenSpecial;
+        attackResult.statIndexInsteadOfAtkWhenSpecial = atkUnit.battleContext.statIndexInsteadOfAtkWhenSpecial;
+        if (statusIndexWhenSpecial !== STATUS_INDEX.None) {
+            // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
+            let ratio = atkUnit.battleContext.ratioForUsingAnotherStatWhenSpecial;
+            specialTotalAtk = Math.trunc(atkUnit.getStatusesInCombat(defUnit)[statusIndexWhenSpecial] * ratio);
+        }
+        attackResult.setAtk(totalAtk, specialTotalAtk).setSpecialAtkStat(statusIndexWhenSpecial);
     }
 
     applySkillEffectsAfterAttack(targetUnit, enemyUnit, context) {
@@ -1497,61 +1516,51 @@ class DamageCalculator {
     }
 
     /**
+     * @param {AttackResult} attackResult
      * @param {DamageCalcContext} context
-     * @param {Unit} atkUnit
-     * @param {Unit} defUnit
-     * @param {number} attackCount
-     * @param {number} normalDamage
-     * @param {number} specialDamage
-     * @param {boolean} invalidatesDamageReductionExceptSpecialOnSpecialActivation
-     * @param {boolean} invalidatesDamageReductionExceptSpecial
      */
-    __calcAttackTotalDamage(
-        context, atkUnit, defUnit, attackCount, normalDamage, specialDamage,
-        invalidatesDamageReductionExceptSpecialOnSpecialActivation,
-        invalidatesDamageReductionExceptSpecial) {
-        let combatResult = context.damageCalcEnv.combatResult;
-        let hasAtkUnitSpecial = atkUnit.hasSpecial && isNormalAttackSpecial(atkUnit.special);
-        let hasDefUnitSpecial = defUnit.hasSpecial && isDefenseSpecial(defUnit.special);
-
+    __calcAttackTotalDamage(attackResult, context) {
+        let atkUnit = attackResult.atkUnit;
+        let defUnit = attackResult.defUnit;
         let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
         let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
 
         // ダメカを半分無効
         let neutralizationRatiosOfDamageReduction = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
 
-        let isFirstAttack = context.isFirstAttack(atkUnit);
         let totalDamage = 0;
-        for (let i = 0; i < attackCount; ++i) {
-            context.attackCount = i + 1;
+        for (let i = 0; i < attackResult.attackCount; ++i) {
+            // ユニットの生存判定
             let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
             if (isDefUnitAlreadyDead) {
                 return totalDamage;
             }
-            let isAtkUnitAlreadyDead = atkUnit.restHp === 0;
+            let isAtkUnitAlreadyDead = atkUnit.restHp <= 0;
             if (isAtkUnitAlreadyDead) {
                 return totalDamage;
             }
 
-            let strikeResult = combatResult.createStrikeResult().setCurrentStrikeCount(attackCount);
+            context.attackCount = i + 1;
+            let combatResult = context.damageCalcEnv.combatResult;
+            let strikeResult = combatResult.createStrikeResult().setCurrentStrikeCount(context.attackCount);
 
             atkUnit.battleContext.initContextPerAttack();
             defUnit.battleContext.initContextPerAttack();
 
             let isSecondStrike = i === 1; // FirstStrike: i === 0
-            if (isFirstAttack && isSecondStrike) {
+            if (context.isFirstAttack(atkUnit) && isSecondStrike) {
                 this.applySpecialCountChangeAmountBeforeSecondStrike(atkUnit);
                 this.applySpecialCountChangeAmountBeforeSecondStrike(defUnit);
             }
 
             // 攻撃奥義発動可能状態で実際に奥義が発動できる
-            let canActivateAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0 &&
+            let canActivateAttackerSpecial = atkUnit.hasNormalAttackSpecial() && atkUnit.tmpSpecialCount === 0 &&
                 !atkUnit.battleContext.preventedAttackerSpecial;
             this.__applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial, context);
             this.__applySkillEffectsPerAttack(defUnit, atkUnit, canActivateAttackerSpecial, context);
             // 奥義発動可能状態（実際に奥義が発動できるかは問わない）
-            let activatesAttackerSpecial = hasAtkUnitSpecial && atkUnit.tmpSpecialCount === 0;
-            let activatesDefenderSpecial = hasDefUnitSpecial && defUnit.tmpSpecialCount === 0 &&
+            let activatesAttackerSpecial = atkUnit.hasNormalAttackSpecial() && atkUnit.tmpSpecialCount === 0;
+            let activatesDefenderSpecial = defUnit.hasDefenseSpecial() && defUnit.tmpSpecialCount === 0 &&
                 this.__isSatisfiedDefenderSpecialCond(defUnit, atkUnit);
 
             // 奥義以外のダメージ軽減
@@ -1560,7 +1569,7 @@ class DamageCalculator {
             let damageReductionValues = [];
 
             let invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack =
-                invalidatesDamageReductionExceptSpecialOnSpecialActivation ||
+                attackResult.neutralizesNonSpecialDamageReductionWhenSpecial ||
                 atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack;
             let invalidatesOnSpecialActivation =
                 activatesAttackerSpecial &&
@@ -1568,7 +1577,8 @@ class DamageCalculator {
                 !atkUnit.battleContext.preventedAttackerSpecial;
 
             // ダメージ軽減無効
-            let invalidatesDamageReduction = invalidatesOnSpecialActivation || invalidatesDamageReductionExceptSpecial;
+            let invalidatesDamageReduction =
+                invalidatesOnSpecialActivation || attackResult.neutralizesNonSpecialDamageReduction;
             let damageReductionRatiosAfterNeutralization =
                 this.#getNeutralizationOfDamageReduction(
                     damageReductionRatios,
@@ -1613,9 +1623,9 @@ class DamageCalculator {
             let additionalDamagePerAttack =
                 atkUnit.battleContext.additionalDamagePerAttack +
                 this.#getFixedAddDamagePerAttack(atkUnit, defUnit, context);
-            let normalDamageOfThisAttack = normalDamage + additionalDamagePerAttack;
+            let normalDamageOfThisAttack = attackResult.damage + additionalDamagePerAttack;
             let specialDamageOfThisAttack =
-                specialDamage +
+                attackResult.specialDamage +
                 additionalDamagePerAttack +
                 atkUnit.battleContext.getSpecialAddDamagePerAttack() +
                 atkUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
