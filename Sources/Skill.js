@@ -478,6 +478,7 @@ const DEFENSE_SPECIAL_SET = new Set([
     Special.NegatingFang,
     Special.GodlikeReflexes,
     Special.Miracle,
+    Special.LifeUnending,
 ]);
 
 const MIRACLE_AND_HEAL_SPECIAL_SET = new Set([
