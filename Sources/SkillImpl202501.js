@@ -1,161 +1,388 @@
 // スキル実装
 
-    // 🪄 Disguise Lance
-    //
+// 🪄 Disguise Lance
+{
+    let skillId = Weapon.DisguiseLance;
     // Mt: 16 Rng: 1
     // Accelerates Special trigger (cooldown count-1).
     //
     // If a Rally or movement Assist skill is used by unit or targets unit,
-    // inflicts Spd/Def-7, [Sabotage], and [Panic] on closest foes to both unit and target ally or unit and targeting ally after movement and foes within 2 spaces of those foes through their next actions.
-    //
-    // At start of combat, if unit’s HP ≥ 25%, grants bonus to unit’s Atk/Spd/Def/Res = number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
-    // unit deals +X × 5 damage (excluding area-of-effect Specials),
-    // and reduces damage from foe’s attacks by X × 3 (excluding area-of-effect Specials),
-    // and reduces damage from foe’s Specials by an additional X × 3 during combat (excluding area-of-effect Specials;
-    // X = number of Bonus effects active on unit and foe, excluding stat bonuses; max 5),
-    // and also, if Future Witness is active on unit or unit’s Spd > foe’s Spd, unit attacks twice during combat.
+    setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
+        // inflicts Spd/Def-7, [Sabotage], and [Panic]
+        // on closest foes to both unit and target ally or unit and targeting ally after movement and foes within 2 spaces of those foes through their next actions.
+        FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
+            INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                SPD_DEF_NODE(7),
+                StatusEffectType.Sabotage,
+                StatusEffectType.Panic,
+            )
+        ),
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // At start of combat, if unit’s HP ≥ 25%,
+        IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+        SKILL_EFFECT_NODE(
+            // grants bonus to unit’s Atk/Spd/Def/Res = number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+            GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                MULT_ADD_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
+            ),
+            X_NUM_NODE(
+                // unit deals +X × 5 damage (excluding area-of-effect Specials),
+                DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // and reduces damage from foe’s attacks by X × 3 (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_BY_N_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // and reduces damage from foe’s Specials by an additional X × 3 during combat (excluding area-of-effect Specials;
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // X = number of Bonus effects active on unit and foe, excluding stat bonuses; max 5),
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+        ),
+        SKILL_EFFECT_NODE(
+            // and also, if Future Witness is active on unit or unit’s Spd > foe’s Spd, unit attacks twice during combat.
+            IF_NODE(
+                OR_NODE(
+                    IS_STATUS_EFFECT_ACTIVE_ON_UNIT_NODE(StatusEffectType.FutureWitness),
+                    GT_NODE(UNITS_EVAL_SPD_NODE, FOES_EVAL_SPD_NODE)
+                ),
+                TARGET_ATTACKS_TWICE_DURING_COMBAT_NODE,
+            ),
+        ),
+    );
+}
 
-    // 🛡 Future Gaze
-    //
+// 🛡 Future Gaze
+{
+    let skillId = Support.FutureGaze;
     // Rng: 1
     // Unit and target ally swap spaces.
-    //
-    // Grants [Future Witness], [Dodge], and [Foe Penalty Doubler]
-    // to allies within 2 spaces of both unit and target after movement for 1 turn (including unit and target),
-    // grants Special cooldown-1 to unit and those allies,
+    SWAP_ASSIST_SKILLS.add(skillId);
+
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(`${skillId}-周囲への効果`,
+            // to allies within 2 spaces of both unit and target after movement for 1 turn (including unit and target),
+            FOR_EACH_UNIT_NODE(ALLIES_WITHIN_N_SPACES_OF_BOTH_ASSIST_UNIT_AND_TARGET(2),
+                // Grants [Future Witness], [Dodge], and [Foe Penalty Doubler]
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
+                    StatusEffectType.FutureWitness,
+                    StatusEffectType.Dodge,
+                    StatusEffectType.FoePenaltyDoubler,
+                ),
+                // grants Special cooldown-1 to unit and those allies,
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+            )
+        ),
+    ));
     // and grants another action to unit (once per turn).
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, NODE_FUNC(
+        GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_IF_ANOTHER_ACTION_EFFECT_IS_NOT_ACTIVATED_NODE
+    ));
+}
 
-    // 🅱 Atk/Spd Favor
-    //
-    // If a Rally or movement Assist skill is used by unit or targets unit,
-    // grants Atk/Spd+6, [Empathy], and
-    // “reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills by 50% during combat (excluding area-of-effect Specials)”
-    // to unit and target ally or unit and targeting ally for 1 turn,
-    // and grants Special cooldown-1 to unit and target ally or unit and targeting ally once per turn.
-    //
-    // Allies on the map with [Empathy] active deal +7 damage during combat (excluding area-of-effect Specials).
-    //
-    // Inflicts Spd/Def/Res-4 on foe
-    // and unit deals +X+7 damage during combat (excluding area-of-effect Specials;
-    // X = highest total Atk+Spd bonuses among unit and allies with [Empathy] active).
+// 🅱 Atk/Spd Favor
+{
+    let setSkill = (skillId, grantsNode, inflictsNode) => {
+        // If a Rally or movement Assist skill is used by unit or targets unit,
+        setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
+            FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
+                // grants Atk/Spd+6, [Empathy], and
+                grantsNode,
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Empathy),
+                // “reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills by 50% during combat (excluding area-of-effect Specials)”
+                // to unit and target ally or unit and targeting ally for 1 turn,
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent),
+                // and grants Special cooldown-1 to unit and target ally or unit and targeting ally once per turn.
+                TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
+                    `${skillId}-奥義カウント減少`,
+                    GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+                ),
+            ),
+        ));
+        // Allies on the map with [Empathy] active deal +7 damage during combat (excluding area-of-effect Specials).
+        FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+            IF_NODE(HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Empathy),
+                DEALS_DAMAGE_X_NODE(7),
+            ),
+        ));
+        setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+            TRUE_NODE,
+            SKILL_EFFECT_NODE(
+                // Inflicts Spd/Def/Res-4 on foe
+                inflictsNode,
+            ),
+            SKILL_EFFECT_NODE(
+                X_NUM_NODE(
+                    // and unit deals +X+7 damage during combat (excluding area-of-effect Specials;
+                    DEALS_DAMAGE_X_NODE(ADD_NODE(READ_NUM_NODE, 7)),
+                    // X = highest total Atk+Spd bonuses among unit and allies with [Empathy] active).
+                    MAX_NODE(
+                        MAP_UNITS_NODE(
+                            FILTER_UNITS_NODE(
+                                TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE,
+                                HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Empathy)
+                            ),
+                            ADD_NODE(TARGETS_EVAL_ATK_ON_MAP, TARGETS_EVAL_SPD_ON_MAP),
+                        ),
+                    ),
+                ),
+            ),
+        );
+    };
+    setSkill(PassiveB.AtkSpdFavor,
+        GRANTS_ATK_SPD_TO_TARGET_ON_MAP_NODE(6), INFLICTS_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE(4)
+    );
+    setSkill(PassiveB.AtkDefFavor,
+        GRANTS_ATK_DEF_TO_TARGET_ON_MAP_NODE(6), INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE(4)
+    );
+}
 
-    // 🏹 Gladiator’s Bow
-    //
+// 🏹 Gladiator’s Bow
+{
+    let skillId = Weapon.GladiatorsBow;
     // Mt：14 Rng：2 Eff：🪶
     // Accelerates Special trigger (cooldown count-1).
     // Effective against flying foes.
     //
     // If a Rally or movement Assist skill is used by unit or targets unit,
-    // inflicts Atk/Def-7, [Exposure], [Discord],
-    // and a penalty that neutralizes non-Special “if foe would reduce unit’s HP to 0, unit survives with 1 HP” effects
-    // on closest foes to both unit and target ally or unit and targeting ally after movement
-    // and foes within 2 spaces of those foes through their next actions.
-    //
-    // If unit initiates combat or unit is within 2 spaces of an ally,
-    // grants Atk/Spd/Def/Res+X to unit (X = number of Bonus effects and Penalty effects active on unit × 2,
-    // excluding stat bonuses and stat penalties + 10% of unit’s Def at start of combat + 5),
-    // neutralizes foe’s bonuses to Atk/Def,
-    // and unit deals +Y × 5 damage during combat (excluding area-of-effect Specials;
-    // Y = number of Bonus effects active on unit and foe, excluding stat bonuses; max 5),
-    // and also, if unit initiates combat, unit can make a follow-up attack before foe’s next attack.
+    setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
+        // on closest foes to both unit and target ally or unit and targeting ally after movement
+        // and foes within 2 spaces of those foes through their next actions.
+        FOR_EACH_UNIT_NODE(TARGET_AND_TARGET_FOE_NODE,
+            INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                // inflicts Atk/Def-7, [Exposure], [Discord],
+                // and a penalty that neutralizes non-Special “if foe would reduce unit’s HP to 0, unit survives with 1 HP” effects
+                ATK_DEF_NODE(7),
+                StatusEffectType.Exposure,
+                StatusEffectType.Discord,
+                StatusEffectType.NeutralizeUnitSurvivesWith1HP,
+            )
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat or unit is within 2 spaces of an ally,
+        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+            X_NUM_NODE(
+                // grants Atk/Spd/Def/Res+X to unit
+                GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE),
+                // (X = number of Bonus effects and Penalty effects active on unit × 2,
+                // excluding stat bonuses and stat penalties + 10% of unit’s Def at start of combat + 5),
+                ADD_NODE(
+                    MULT_NODE(NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, 2),
+                    PERCENTAGE_ADD_NODE(10, UNITS_DEF_AT_START_OF_COMBAT_NODE, 5),
+                )
+            ),
+            // neutralizes foe’s bonuses to Atk/Def,
+            NEUTRALIZES_FOES_EACH_BONUSES_TO_STATS_DURING_COMBAT_NODE(true, false, true, false),
+            X_NUM_NODE(
+                // and unit deals +Y × 5 damage during combat (excluding area-of-effect Specials;
+                DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // Y = number of Bonus effects active on unit and foe, excluding stat bonuses; max 5),
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+            // and also, if unit initiates combat, unit can make a follow-up attack before foe’s next attack.
+            IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+                UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+            ),
+        ),
+    ));
+}
 
-    // 🛡 Conquering Fate
-    //
+// 🛡 Conquering Fate
+{
+    let skillId = Support.ConqueringFate;
     // Rng：1
     // Moves target ally to opposite side of unit.
-    // Grants another action to unit, inflicts [Isolation] on unit and Pair Up cohort,
-    // grants [Change of Fate] to unit and target ally for 1 turn,
-    // grants Special cooldown count-1 to unit and target ally,
-    // and grants any Bonus active on unit to target ally,
-    // and any active on target ally to unit (once per turn; granted bonuses exclude stat bonuses inverted by Panic).
-    //
-    // [Change of Fate]
+    SWAP_ASSIST_SKILLS.add(skillId);
+    AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Grants another action to unit,
+        GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE,
+    ));
+    AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // inflicts [Isolation] on unit and Pair Up cohort,
+        INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Isolation),
+    ));
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
+            `${skillId}-運命に打ち勝つ!の補助効果`,
+            // grants [Change of Fate] to unit and target ally for 1 turn,
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ChangeOfFate),
+            // grants Special cooldown count-1 to unit and target ally,
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+            // and grants any Bonus active on unit to target ally,
+            GRANTS_ANY_BONUS_ACTIVE_ON_UNIT_A_TO_UNIT_B_EXCLUDE_STAT_BONUSES_INVERTED_BY_PANIC_NODE(
+                ASSIST_TARGETING_NODE,
+                ASSIST_TARGET_NODE,
+            ),
+            // and any active on target ally to unit (once per turn; granted bonuses exclude stat bonuses inverted by Panic).
+            GRANTS_ANY_BONUS_ACTIVE_ON_UNIT_A_TO_UNIT_B_EXCLUDE_STAT_BONUSES_INVERTED_BY_PANIC_NODE(
+                ASSIST_TARGET_NODE,
+                ASSIST_TARGETING_NODE,
+            ),
+        ),
+    ));
+}
+
+// [Change of Fate]
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.ChangeOfFate);
     // Enables [Canto (2)].
-    //
-    // Grants Atk/Spd/Def/Res+5 to unit and unit deals damage = 3 × the total of the number of Bonus and Penalty effects active on unit,
-    // excluding stat bonuses and stat penalties, during combat (max 15; including area-of-effect Specials).
+    enablesCantoN(skillId, 2);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Grants Atk/Spd/Def/Res+5 to unit and
+        GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+        // unit deals damage =
+        DEALS_DAMAGE_X_NODE(
+            // 3 × the total of the number of Bonus and Penalty effects active on unit,
+            // excluding stat bonuses and stat penalties, during combat (max 15; including area-of-effect Specials).
+            MULT_MAX_NODE(3, NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, 15),
+        ),
+    ));
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // unit deals damage =
+        DEALS_DAMAGE_X_NODE(
+            // 3 × the total of the number of Bonus and Penalty effects active on unit,
+            // excluding stat bonuses and stat penalties, during combat (max 15; including area-of-effect Specials).
+            MULT_MAX_NODE(3, NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, 15),
+        ),
+    ));
+}
 
-    // 🅱️ Atk/Def Favor
-    //
-    // If a Rally or movement Assist skill is used by unit or targets unit,
-    // grants Atk/Def+6, [Empathy],
-    // and “reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills by 50% during combat (excluding area-of-effect Specials)”
-    // to unit and target ally or unit and targeting ally for 1 turn,
-    // and grants Special cooldown-1 to unit and target ally or unit and targeting ally once per turn.
-    //
-    // Allies on the map with [Empathy] active deal +7 damage during combat (excluding area-of-effect Specials).
-    //
-    // Inflicts Atk/Def/Res-4 on foe and unit deals +X+7 damage during combat (excluding area-of-effect Specials;
-    // X = highest total Atk+Def bonuses among unit and allies with [Empathy] active).
-
-    // 🅲 Time Pulse Arms
-    //
-    // At start of turn, if unit’s Special cooldown count is at its maximum value,
-    // grants Special cooldown count-1 to unit.
-    //
+// 🅲 Time Pulse Arms
+{
+    let skillId = PassiveC.TimePulseArms;
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // if unit’s Special cooldown count is at its maximum value,
+        // grants Special cooldown count-1 to unit.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE,
+    ));
     // Grants bonus to unit’s Atk/Def during combat = unit’s maximum Special cooldown count value + 2.
-    // If unit’s Special cooldown count is at its maximum value after combat,
-    // grants Special cooldown count-1 to unit.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        GRANTS_ATK_DEF_TO_TARGET_DURING_COMBAT_NODE(
+            ADD_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 2),
+        ),
+    ));
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit’s Special cooldown count is at its maximum value after combat,
+        // grants Special cooldown count-1 to unit.
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE,
+    ));
+}
 
-    // Arena Axe+
-    //
+// Arena Axe+
+{
+    let skillId = Weapon.ArenaAxePlus;
     // Mt：14 Rng：1
     // At start of turn and after unit acts (if Canto triggers, after Canto),
-    // inflicts Spd/Def-7, [Spd Shackle], and [Def Shackle]
-    // on closest foes and foes within 2 spaces of those foes through their next actions.
-    //
-    // If unit initiates combat or is within 2 spaces of an ally,
-    // grants Atk/Spd/Def/Res+5 to unit,
-    // deals damage = 20% of unit’s Spd (excluding area-of-effect Specials),
-    // and reduces damage from foe’s first attack by 20% of unit’s Spd during combat
-    // (“first attack” normally means only the first strike;
-    // for effects that grant “unit attacks twice,” it means the first and second strikes).
-    //
-    // [Def Shackle]
-    // Inflicts penalty on unit’s Def during combat = number of Penalty effects active on unit + 4,
-    // excluding stat penalties (max 8).
+    setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, NODE_FUNC(
+        // inflicts Spd/Def-7, [Spd Shackle], and [Def Shackle]
+        // on closest foes and foes within 2 spaces of those foes through their next actions.
+        INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+            SPD_DEF_NODE(7),
+            StatusEffectType.SpdShackle,
+            StatusEffectType.DefShackle,
+        )
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If unit initiates combat or is within 2 spaces of an ally,
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        // grants Atk/Spd/Def/Res+5 to unit,
+        GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+        SKILL_EFFECT_NODE(
+            // deals damage = 20% of unit’s Spd (excluding area-of-effect Specials),
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            // and reduces damage from foe’s first attack by 20% of unit’s Spd during combat
+            // (“first attack” normally means only the first strike;
+            // for effects that grant “unit attacks twice,” it means the first and second strikes).
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                PERCENTAGE_NODE(20, UNITS_SPD_NODE)
+            ),
+        ),
+    );
+}
 
-    // Princesses’ Edge
-    //
+// Princesses’ Edge
+{
+    let skillId = Weapon.PrincessesEdge;
     // Mt：16 Rng：1
     // Accelerates Special trigger (cooldown count-1).
-    //
-    // At start of turn, grants Special cooldown count-2 to unit.
-    //
-    // At start of turn and after unit acts (if Canto triggers, after Canto),
-    // inflicts Spd/Def-7, [Discord], [Spd Shackle], and [Def Shackle]
-    // on closest foes and foes within 2 spaces of those foes through their next actions.
-    //
-    // If unit initiates combat or is within 2 spaces of an ally,
-    // grants bonus to unit’s Atk/Spd/Def/Res =
-    // number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
-    // unit deals +X × 3 damage (excluding area-of-effect Specials;
-    // X = number of Bonus effects and Penalty effects active on target and foes within 2 spaces of target,
-    // excluding stat bonuses and stat penalties),
-    // reduces damage from foe’s attacks by 20% of unit’s Spd (excluding area-of-effect Specials),
-    // neutralizes effects that guarantee foe’s follow-up attacks
-    // and effects that prevent unit’s follow-up attacks,
-    // and grants Special cooldown charge +1 to unit per attack during combat
-    // (only highest value applied; does not stack).
 
-    // Galeforce Mist
-    //
+    // At start of turn, grants Special cooldown count-2 to unit.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(2)));
+    // At start of turn and after unit acts (if Canto triggers, after Canto),
+    setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, NODE_FUNC(
+        // inflicts Spd/Def-7, [Discord], [Spd Shackle], and [Def Shackle]
+        // on closest foes and foes within 2 spaces of those foes through their next actions.
+        INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+            SPD_DEF_NODE(7),
+            StatusEffectType.Discord,
+            StatusEffectType.SpdShackle,
+            StatusEffectType.DefShackle,
+        ),
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If unit initiates combat or is within 2 spaces of an ally,
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        SKILL_EFFECT_NODE(
+            // grants bonus to unit’s Atk/Spd/Def/Res =
+            GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                // number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+                MULT_ADD_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
+            ),
+            X_NUM_NODE(
+                // unit deals +X × 3 damage (excluding area-of-effect Specials;
+                DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 3)),
+                // X = number of Bonus effects and Penalty effects active on target and foes within 2 spaces of target,
+                // excluding stat bonuses and stat penalties),
+                TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE(2),
+            ),
+        ),
+        SKILL_EFFECT_NODE(
+            // reduces damage from foe’s attacks by 20% of unit’s Spd (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_BY_N_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            // neutralizes effects that guarantee foe’s follow-up attacks
+            // and effects that prevent unit’s follow-up attacks,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            // and grants Special cooldown charge +1 to unit per attack during combat
+            // (only highest value applied; does not stack).
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+        ),
+    );
+}
+
+// Galeforce Mist
+{
+    let skillId = Special.GaleforceMist;
     // CD：5
     // If unit initiates combat,
     // when unit’s Special triggers, grants another action to unit after combat (once per turn).
-    //
-    // If unit initiates combat, reduces damage from foe’s attacks by 40% during combat
-    // (excluding area-of-effect Specials).
+    setSpecialCountAndType(skillId, 5, false, false, true);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // reduces damage from foe’s attacks by 40% during combat
+            // (excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(40),
+        ),
+    ));
+}
 
-    // Harmonized Skill
-    //
-    // Grants [Resonance: Blades] to unit and allies from the same titles as unit for 1 turn
-    // and grants Special cooldown count-2 to unit and allies from the same titles as unit.
-    //
-    // Any effect that can be triggered only once per turn
-    // by unit’s equipped Special skill can be triggered again
-    // if that effect has already been triggered
-    // (excludes boosted Special effects from engaging).
+// Harmonized Skill
+{
+    let skillId = getDuoOrHarmonizedSkillId(Hero.HarmonizedFir);
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_EACH_UNIT_FROM_SAME_TITLES_NODE(
+            // Grants [Resonance: Blades] to unit and allies from the same titles as unit for 1 turn
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ResonantBlades),
+            // and grants Special cooldown count-2 to unit and allies from the same titles as unit.
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(2),
+        ),
+        // Any effect that can be triggered only once per turn
+        // by unit’s equipped Special skill can be triggered again
+        // if that effect has already been triggered
+        // (excludes boosted Special effects from engaging).
+        ANY_EFFECT_THAT_CAN_BE_TRIGGERED_ONLY_ONCE_PER_TURN_BY_TARGETS_EQUIPPED_SPECIAL_SKILL_CAN_BE_TRIGGERED_AGAIN_EXCLUDES_ENGAGING_NODE,
+    ));
+}
 
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.RallySpectrum);
@@ -1095,7 +1322,7 @@
 // 🛡️ Swap Gait
 {
     let skillId = Support.SwapGait;
-    SWAP_ASSIST_SET.add(skillId);
+    SWAP_ASSIST_SKILLS.add(skillId);
     // Rng: 1
     // Unit and target ally swap spaces.
     // If unit uses an Assist skill on the current turn, enables [Canto (1)].
@@ -1319,7 +1546,7 @@
     };
     // setSkill(getStatusEffectSkillId(StatusEffectType.AtkShackle), ATK_NODE);
     setSkill(getStatusEffectSkillId(StatusEffectType.SpdShackle), SPD_NODE);
-    // setSkill(getStatusEffectSkillId(StatusEffectType.DefShackle), DEF_NODE);
+    setSkill(getStatusEffectSkillId(StatusEffectType.DefShackle), DEF_NODE);
     setSkill(getStatusEffectSkillId(StatusEffectType.ResShackle), RES_NODE);
 }
 

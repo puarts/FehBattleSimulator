@@ -2012,7 +2012,7 @@
 {
     let skillId = Support.FutureFocus;
     // Unit and target ally swap spaces.
-    SWAP_ASSIST_SET.add(skillId);
+    SWAP_ASSIST_SKILLS.add(skillId);
 
     AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         new TargetsOncePerTurnSkillEffectNode(`${skillId}-周囲への効果`,

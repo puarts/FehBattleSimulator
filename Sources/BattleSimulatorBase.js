@@ -3927,6 +3927,11 @@ class BattleSimulatorBase {
     }
 
     applyAnotherActionSkillBySpecial(atkUnit) {
+        for (let skillId of atkUnit.enumerateSkills()) {
+            if (GALEFORCE_SKILLS.has(skillId)) {
+                this.__activateRefreshSpecial(atkUnit);
+            }
+        }
         switch (atkUnit.special) {
             case Special.RequiemDance: {
                 let highestHpUnits = [];
@@ -10137,8 +10142,11 @@ class BattleSimulatorBase {
         let func = getSkillFunc(skillId, getTargetUnitTileAfterMoveAssistFuncMap);
         /** @type {MovementAssistResult} */
         let result = func?.call(this, unit, targetUnit, assistTile) ?? null;
-        if (SWAP_ASSIST_SET.has(skillId)) {
+        if (SWAP_ASSIST_SKILLS.has(skillId)) {
             result = this.__findTileAfterSwap(unit, targetUnit, assistTile);
+        }
+        if (REPOSITION_ASSIST_SKILLS.has(skillId)) {
+            result = this.__findTileAfterReposition(unit, targetUnit, assistTile);
         }
         switch (skillId) {
             case Support.RescuePlus:
@@ -10955,8 +10963,11 @@ class BattleSimulatorBase {
         let skillId = assistUnit.support;
         let func = getSkillFunc(skillId, findTileAfterMovementAssistFuncMap);
         func?.call(this, assistUnit, assistTargetUnit, tile);
-        if (SWAP_ASSIST_SET.has(skillId)) {
+        if (SWAP_ASSIST_SKILLS.has(skillId)) {
             return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
+        }
+        if (REPOSITION_ASSIST_SKILLS.has(skillId)) {
+            return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
         }
 
         switch (assistUnit.support) {

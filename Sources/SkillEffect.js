@@ -2558,6 +2558,8 @@ const INFLICTS_ATK_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, res = at
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, res);
 const INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk, res = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, res);
+const INFLICTS_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (spd, def = spd, res = spd) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, def, res);
 
 const INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atkOrStats, spd = atkOrStats, def = atkOrStats, res = atkOrStats) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atkOrStats, spd, def, res);
@@ -6762,3 +6764,52 @@ class IsTargetsMaximumSpecialCooldownCountReducedNode extends BoolNode {
 }
 
 const IS_TARGETS_MAXIMUM_SPECIAL_COOLDOWN_COUNT_REDUCED_NODE = new IsTargetsMaximumSpecialCooldownCountReducedNode();
+
+// and grants any Bonus active on unit to target ally,
+// any active on target ally to unit (once per turn; granted bonuses exclude stat bonuses inverted by Panic)
+class GrantsAnyBonusActiveOnUnitAToUnitBExcludeStatBonusesInvertedByPanicNode extends SkillEffectNode {
+    /**
+     * @param {UnitNode} unitA
+     * @param {UnitNode} unitB
+     */
+    constructor(unitA, unitB) {
+        super();
+        this._unitA = unitA;
+        this._unitB = unitB;
+    }
+
+    evaluate(env) {
+        let unitA = this._unitA.evaluate(env);
+        let unitB = this._unitB.evaluate(env);
+        let positiveStatusEffects = unitA.getPositiveStatusEffects();
+        let buffsA = ArrayUtil.maxByIndex(unitA.getBuffs(true), [0, 0, 0, 0]);
+        env.debug(`${unitA.nameWithGroup}の有利状態を${unitB.nameWithGroup}に付与: 
+            [${positiveStatusEffects.map(effect => getStatusEffectName(effect)).join(", ")}]`);
+        env.debug(`${unitA.nameWithGroup}のパニック以外のバフを${unitB.nameWithGroup}に付与: [${buffsA}]`);
+        unitB.reserveToAddStatusEffects(...positiveStatusEffects);
+        unitB.reserveToApplyBuffs(...buffsA);
+    }
+}
+
+const GRANTS_ANY_BONUS_ACTIVE_ON_UNIT_A_TO_UNIT_B_EXCLUDE_STAT_BONUSES_INVERTED_BY_PANIC_NODE =
+    (unitA, unitB) =>
+        new GrantsAnyBonusActiveOnUnitAToUnitBExcludeStatBonusesInvertedByPanicNode(unitA, unitB);
+
+// Any effect that can be triggered only once per turn
+// by unit’s equipped Special skill can be triggered again
+// if that effect has already been triggered
+// (excludes boosted Special effects from engaging).
+class AnyEffectThatCanBeTriggeredOnlyOncePerTurnByTargetsEquippedSpecialSkillCanBeTriggeredAgainExcludesEngagingNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.isOneTimeActionActivatedForSpecial = false;
+        env.debug(`${unit.nameWithGroup}の奥義の1ターン1回のみの効果を発動済みなら再発動可能にする`);
+    }
+}
+
+const ANY_EFFECT_THAT_CAN_BE_TRIGGERED_ONLY_ONCE_PER_TURN_BY_TARGETS_EQUIPPED_SPECIAL_SKILL_CAN_BE_TRIGGERED_AGAIN_EXCLUDES_ENGAGING_NODE =
+    new AnyEffectThatCanBeTriggeredOnlyOncePerTurnByTargetsEquippedSpecialSkillCanBeTriggeredAgainExcludesEngagingNode();

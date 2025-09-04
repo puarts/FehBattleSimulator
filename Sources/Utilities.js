@@ -1755,8 +1755,29 @@ class ArrayUtil {
     }
 
     /**
-     * @param {...Array<number>} arrays
-     * @returns {number[]}
+     * 各インデックスの最大値を返す。
+     *
+     * 複数の数値配列を渡すと、それぞれのインデックスごとに最大値を求めて返します。
+     * 配列の長さが異なる場合は、一番長い配列に合わせて処理されます。
+     * 存在しない要素は無視されます。
+     *
+     * @example
+     * // 同じ長さの配列
+     * ArrayUtils.maxByIndex([1, 5, 3], [4, 2, 7], [0, 6, 2]);
+     * // => [4, 6, 7]
+     *
+     * @example
+     * // 長さが異なる配列
+     * ArrayUtils.maxByIndex([10, 20], [5, 15, 25, 35], [7]);
+     * // => [10, 20, 25, 35]
+     *
+     * @example
+     * // 負の数を含む場合
+     * ArrayUtils.maxByIndex([-5, -10], [-3, -7], [-8, -2]);
+     * // => [-3, -2]
+     *
+     * @param {...Array<number>} arrays - 比較対象の数値配列
+     * @returns {number[]} 各インデックスにおける最大値の配列
      */
     static maxByIndex(...arrays) {
         // 配列の最大長を取得

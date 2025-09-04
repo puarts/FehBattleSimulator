@@ -755,13 +755,16 @@ function setSpecialCount(skillId, n) {
     }
 }
 
-function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense) {
+function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense, isGaleforce = false) {
     setSpecialCount(skillId, n);
     if (isNormalAttack) {
         NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     }
     if (isDefense) {
         DEFENSE_SPECIAL_SET.add(skillId);
+    }
+    if (isGaleforce) {
+        GALEFORCE_SKILLS.add(skillId);
     }
 }
 
