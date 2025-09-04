@@ -270,34 +270,37 @@
 
 // Arena Axe+
 {
-    let skillId = Weapon.ArenaAxePlus;
-    // Mt：14 Rng：1
-    // At start of turn and after unit acts (if Canto triggers, after Canto),
-    setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, NODE_FUNC(
-        // inflicts Spd/Def-7, [Spd Shackle], and [Def Shackle]
-        // on closest foes and foes within 2 spaces of those foes through their next actions.
-        INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_DEF_NODE(7),
-            StatusEffectType.SpdShackle,
-            StatusEffectType.DefShackle,
-        )
-    ));
-    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
-        // If unit initiates combat or is within 2 spaces of an ally,
-        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
-        // grants Atk/Spd/Def/Res+5 to unit,
-        GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
-        SKILL_EFFECT_NODE(
-            // deals damage = 20% of unit’s Spd (excluding area-of-effect Specials),
-            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
-            // and reduces damage from foe’s first attack by 20% of unit’s Spd during combat
-            // (“first attack” normally means only the first strike;
-            // for effects that grant “unit attacks twice,” it means the first and second strikes).
-            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
-                PERCENTAGE_NODE(20, UNITS_SPD_NODE)
+    let setSkill = skillId => {
+        // Mt：14 Rng：1
+        // At start of turn and after unit acts (if Canto triggers, after Canto),
+        setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, NODE_FUNC(
+            // inflicts Spd/Def-7, [Spd Shackle], and [Def Shackle]
+            // on closest foes and foes within 2 spaces of those foes through their next actions.
+            INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                SPD_DEF_NODE(7),
+                StatusEffectType.SpdShackle,
+                StatusEffectType.DefShackle,
+            )
+        ));
+        setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+            // If unit initiates combat or is within 2 spaces of an ally,
+            OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+            // grants Atk/Spd/Def/Res+5 to unit,
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            SKILL_EFFECT_NODE(
+                // deals damage = 20% of unit’s Spd (excluding area-of-effect Specials),
+                DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+                // and reduces damage from foe’s first attack by 20% of unit’s Spd during combat
+                // (“first attack” normally means only the first strike;
+                // for effects that grant “unit attacks twice,” it means the first and second strikes).
+                REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
+                    PERCENTAGE_NODE(20, UNITS_SPD_NODE)
+                ),
             ),
-        ),
-    );
+        );
+    };
+    setSkill(Weapon.ArenaAxePlus);
+    setSkill(Weapon.ArenaSwordPlus);
 }
 
 // Princesses’ Edge
