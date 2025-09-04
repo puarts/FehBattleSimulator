@@ -6563,6 +6563,14 @@ class Unit extends BattleMapElement {
         return isDefenseSpecial(this.special);
     }
 
+    isAttackSpecialReady() {
+        return this.hasNormalAttackSpecial() && this.tmpSpecialCount === 0;
+    }
+
+    isDefenseSpecialReady() {
+        return this.hasDefenseSpecial() && this.tmpSpecialCount === 0;
+    }
+
     addHpAfterEnteringBattle(value) {
         this._maxHpWithSkills += value;
         this.#hpAddAfterEnteringBattle += value;

@@ -330,6 +330,11 @@ class StrikeResult extends DamageCalcResult {
         super();
         /** @type {AttackResult} */
         this.attackResult = null;
+        this.canActivateAttackerSpecial = false;
+        this.isAttackerSpecialReady = false;
+        this.isDefenderSpecialReady = false;
+        this.damageReductionRatios = [];
+        this.damageReductionValues = [];
     }
 
     /**
@@ -1601,255 +1606,258 @@ class DamageCalculator {
      * @param {DamageCalcContext} context
      */
     __calcAttackTotalDamage(attackResult, context) {
-        let atkUnit = attackResult.atkUnit;
-        let defUnit = attackResult.defUnit;
-        let atkReduceSpCount = atkUnit.battleContext.cooldownCountForAttack;
-        let defReduceSpCount = defUnit.battleContext.cooldownCountForDefense;
-
-        // ダメカを半分無効
-        let neutralizationRatiosOfDamageReduction = atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
-
         let totalDamage = 0;
         for (let i = 0; i < attackResult.attackCount; ++i) {
             // ユニットの生存判定
-            let isDefUnitAlreadyDead = defUnit.restHp <= totalDamage;
+            let isDefUnitAlreadyDead = attackResult.defUnit.restHp <= totalDamage;
             if (isDefUnitAlreadyDead) {
                 return totalDamage;
             }
-            let isAtkUnitAlreadyDead = atkUnit.restHp <= 0;
+            let isAtkUnitAlreadyDead = attackResult.atkUnit.restHp <= 0;
             if (isAtkUnitAlreadyDead) {
                 return totalDamage;
             }
 
-            context.attackCount = i + 1;
-            let combatResult = context.damageCalcEnv.combatResult;
-            let strikeResult = combatResult.createStrikeResult().setCurrentStrikeCount(context.attackCount);
+            totalDamage = this.calcStrikeTotalDamage(totalDamage, i + 1, attackResult, context);
+        }
 
-            atkUnit.battleContext.initContextPerAttack();
-            defUnit.battleContext.initContextPerAttack();
+        return totalDamage;
+    }
 
-            let isSecondStrike = i === 1; // FirstStrike: i === 0
-            if (context.isFirstAttack(atkUnit) && isSecondStrike) {
-                this.applySpecialCountChangeAmountBeforeSecondStrike(atkUnit);
-                this.applySpecialCountChangeAmountBeforeSecondStrike(defUnit);
-            }
+    calcStrikeTotalDamage(totalDamage, currentAttackCount, attackResult, context) {
+        let atkUnit = attackResult.atkUnit;
+        let defUnit = attackResult.defUnit;
+        context.attackCount = currentAttackCount;
+        let combatResult = context.damageCalcEnv.combatResult;
+        let strikeResult = combatResult.createStrikeResult().setCurrentStrikeCount(context.attackCount);
 
-            // 攻撃奥義発動可能状態で実際に奥義が発動できる
-            let canActivateAttackerSpecial = atkUnit.hasNormalAttackSpecial() && atkUnit.tmpSpecialCount === 0 &&
-                !atkUnit.battleContext.preventedAttackerSpecial;
-            this.__applySkillEffectsPerAttack(atkUnit, defUnit, canActivateAttackerSpecial, context);
-            this.__applySkillEffectsPerAttack(defUnit, atkUnit, canActivateAttackerSpecial, context);
-            // 奥義発動可能状態（実際に奥義が発動できるかは問わない）
-            let activatesAttackerSpecial = atkUnit.hasNormalAttackSpecial() && atkUnit.tmpSpecialCount === 0;
-            let activatesDefenderSpecial = defUnit.hasDefenseSpecial() && defUnit.tmpSpecialCount === 0 &&
-                this.__isSatisfiedDefenderSpecialCond(defUnit, atkUnit);
+        atkUnit.battleContext.initContextPerAttack();
+        defUnit.battleContext.initContextPerAttack();
 
-            // 奥義以外のダメージ軽減
-            strikeResult.setDamageReductionRatios(this.#getDamageReductionRatios(atkUnit, defUnit, context));
-            let damageReductionRatios = this.#getDamageReductionRatios(atkUnit, defUnit, context);
-            let damageReductionValues = [];
+        let isSecondStrike = currentAttackCount === 2;
+        if (context.isFirstAttack(atkUnit) && isSecondStrike) {
+            this.applySpecialCountChangeAmountBeforeSecondStrike(atkUnit);
+            this.applySpecialCountChangeAmountBeforeSecondStrike(defUnit);
+        }
 
-            let invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack =
-                attackResult.neutralizesNonSpecialDamageReductionWhenSpecial ||
-                atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack;
-            let invalidatesOnSpecialActivation =
-                activatesAttackerSpecial &&
-                invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack &&
-                !atkUnit.battleContext.preventedAttackerSpecial;
+        // 攻撃奥義発動可能状態で実際に奥義が発動できる（奥義の発動が確定）
+        strikeResult.canActivateAttackerSpecial =
+            atkUnit.isAttackSpecialReady() &&
+            !atkUnit.battleContext.preventedAttackerSpecial;
+        this.__applySkillEffectsPerAttack(atkUnit, defUnit, strikeResult, context);
+        this.__applySkillEffectsPerAttack(defUnit, atkUnit, strikeResult, context);
+        // 奥義発動可能状態（実際に奥義が発動できるかは問わない）
+        strikeResult.isAttackerSpecialReady = atkUnit.isAttackSpecialReady();
+        strikeResult.isDefenderSpecialReady =
+            defUnit.isDefenseSpecialReady() &&
+            this.__isSatisfiedDefenderSpecialCond(defUnit, atkUnit);
 
-            // ダメージ軽減無効
-            let invalidatesDamageReduction =
-                invalidatesOnSpecialActivation || attackResult.neutralizesNonSpecialDamageReduction;
-            let damageReductionRatiosAfterNeutralization =
-                this.#getNeutralizationOfDamageReduction(
-                    damageReductionRatios,
-                    invalidatesDamageReduction,
-                    neutralizationRatiosOfDamageReduction,
-                    atkUnit,
-                    canActivateAttackerSpecial);
+        // TODO: strikeResultに値を入れるようにする
+        // 奥義以外のダメージ軽減
+        strikeResult.setDamageReductionRatios(this.#getDamageReductionRatios(atkUnit, defUnit, context));
+        let damageReductionRatios = this.#getDamageReductionRatios(atkUnit, defUnit, context);
+        let damageReductionValues = [];
 
-            // 奥義によるダメージ軽減
-            // 攻撃を受けた際に発動する奥義によるダメージ軽減
-            let damageReductionRatiosByDefenderSpecial = [];
-            // それ以外の奥義扱いのダメージ軽減
-            let damageReductionRatiosByNonDefenderSpecial = [];
+        let invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack =
+            attackResult.neutralizesNonSpecialDamageReductionWhenSpecial ||
+            atkUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack;
+        let invalidatesOnSpecialActivation =
+            strikeResult.isAttackerSpecialReady &&
+            invalidatesDamageReductionExceptSpecialOnSpecialActivationInThisAttack &&
+            !atkUnit.battleContext.preventedAttackerSpecial;
 
-            this.#getDamageReductionRatiosBySpecial(damageReductionRatiosByNonDefenderSpecial, defUnit, context);
+        // ダメージ軽減無効
+        let invalidatesDamageReduction =
+            invalidatesOnSpecialActivation || attackResult.neutralizesNonSpecialDamageReduction;
+        let damageReductionRatiosAfterNeutralization =
+            this.#getNeutralizationOfDamageReduction(
+                damageReductionRatios,
+                invalidatesDamageReduction,
+                atkUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial,
+                atkUnit,
+                strikeResult.canActivateAttackerSpecial);
 
-            // 攻撃ごとに変化する可能性がある奥義によるダメージ軽減
-            this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
+        // 奥義によるダメージ軽減
+        // 攻撃を受けた際に発動する奥義によるダメージ軽減
+        let damageReductionRatiosByDefenderSpecial = [];
+        // それ以外の奥義扱いのダメージ軽減
+        let damageReductionRatiosByNonDefenderSpecial = [];
 
-            // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
-            this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial, context);
+        this.#getDamageReductionRatiosBySpecial(damageReductionRatiosByNonDefenderSpecial, defUnit, context);
 
-            // 防御系奥義によるダメージ軽減
-            let isDefenderSpecialActivated =
-                this.#applyDamageReductionByDefenderSpecial(
-                    damageReductionRatiosByDefenderSpecial,
-                    damageReductionValues,
-                    activatesDefenderSpecial,
-                    atkUnit,
-                    defUnit,
-                    context
-                );
+        // 攻撃ごとに変化する可能性がある奥義によるダメージ軽減
+        this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
 
-            // 神速追撃によるダメージ軽減
-            let potentRatio = this.#getDamageReductionRatioByPotent(atkUnit, context);
+        // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
+        this.#applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, strikeResult.canActivateAttackerSpecial, context);
 
-            // 受けるダメージマイナス(固定値軽減)
-            DamageCalculator.#applyDamageReductionValues(damageReductionValues, defUnit, context);
+        // 防御系奥義によるダメージ軽減
+        let isDefenderSpecialActivated =
+            this.#applyDamageReductionByDefenderSpecial(
+                damageReductionRatiosByDefenderSpecial,
+                damageReductionValues,
+                strikeResult.isDefenderSpecialReady,
+                atkUnit,
+                defUnit,
+                context
+            );
 
-            let currentDamage = 0;
-            let reducedDamage = 0;
-            let additionalDamagePerAttack =
-                atkUnit.battleContext.additionalDamagePerAttack +
-                this.#getFixedAddDamagePerAttack(atkUnit, defUnit, context);
-            let normalDamageOfThisAttack = attackResult.damage + additionalDamagePerAttack;
-            let specialDamageOfThisAttack =
-                attackResult.specialDamage +
-                additionalDamagePerAttack +
-                atkUnit.battleContext.getSpecialAddDamagePerAttack() +
-                atkUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
-            if (activatesAttackerSpecial && !atkUnit.battleContext.preventedAttackerSpecial) {
-                atkUnit.battleContext.hasSpecialActivated = true;
-                atkUnit.battleContext.specialActivatedCount++;
+        // 神速追撃によるダメージ軽減
+        let potentRatio = this.#getDamageReductionRatioByPotent(atkUnit, context);
 
-                DamageCalculator.#applySkillEffectsOnSpecial(atkUnit, defUnit);
+        // 受けるダメージマイナス(固定値軽減)
+        DamageCalculator.#applyDamageReductionValues(damageReductionValues, defUnit, context);
 
-                // 奥義発動
-                damageReductionValues.push(defUnit.battleContext.damageReductionValueOfSpecialAttack);
-                damageReductionValues.push(defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack);
-                if (atkUnit.battleContext.isBaneSpecial || atkUnit.battleContext.isBanePerAttack) {
-                    // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
-                    if (specialDamageOfThisAttack < defUnit.restHp - 1) {
-                        if (this.isLogEnabled) {
-                            let message = `${atkUnit.nameWithGroup}の瞬殺効果が発動`;
-                            this.writeDebugLog(message);
-                            this.writeSimpleLog(message);
-                        }
-                        specialDamageOfThisAttack = defUnit.restHp - 1;
+        let currentDamage = 0;
+        let reducedDamage = 0;
+        let additionalDamagePerAttack =
+            atkUnit.battleContext.additionalDamagePerAttack +
+            this.#getFixedAddDamagePerAttack(atkUnit, defUnit, context);
+        let normalDamageOfThisAttack = attackResult.damage + additionalDamagePerAttack;
+        let specialDamageOfThisAttack =
+            attackResult.specialDamage +
+            additionalDamagePerAttack +
+            atkUnit.battleContext.getSpecialAddDamagePerAttack() +
+            atkUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
+        if (strikeResult.isAttackerSpecialReady && !atkUnit.battleContext.preventedAttackerSpecial) {
+            atkUnit.battleContext.hasSpecialActivated = true;
+            atkUnit.battleContext.specialActivatedCount++;
+
+            DamageCalculator.#applySkillEffectsOnSpecial(atkUnit, defUnit);
+
+            // 奥義発動
+            damageReductionValues.push(defUnit.battleContext.damageReductionValueOfSpecialAttack);
+            damageReductionValues.push(defUnit.battleContext.damageReductionValueOfSpecialAttackPerAttack);
+            if (atkUnit.battleContext.isBaneSpecial || atkUnit.battleContext.isBanePerAttack) {
+                // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
+                if (specialDamageOfThisAttack < defUnit.restHp - 1) {
+                    if (this.isLogEnabled) {
+                        let message = `${atkUnit.nameWithGroup}の瞬殺効果が発動`;
+                        this.writeDebugLog(message);
+                        this.writeSimpleLog(message);
                     }
+                    specialDamageOfThisAttack = defUnit.restHp - 1;
                 }
-                let atkSpecialCountBefore = atkUnit.tmpSpecialCount;
-                let defSpecialCountBefore = defUnit.tmpSpecialCount;
-                [currentDamage, reducedDamage] = this.__calcUnitAttackDamage(
-                    defUnit, atkUnit,
-                    specialDamageOfThisAttack,
-                    additionalDamagePerAttack,
-                    damageReductionRatiosAfterNeutralization,
-                    damageReductionRatiosByDefenderSpecial,
-                    damageReductionRatiosByNonDefenderSpecial,
-                    damageReductionValues,
-                    potentRatio,
-                    atkUnit.battleContext.damageCalculationRatios,
-                    activatesDefenderSpecial, context
-                );
-                this.__restoreMaxSpecialCount(atkUnit);
-                // 奥義発動直後のスキル効果（奥義カウント変動など）
-                this.applySkillEffectAfterSpecialActivated(atkUnit, defUnit, context);
-                if (!isDefenderSpecialActivated) {
-                    this.__reduceSpecialCount(defUnit, defReduceSpCount);
-                }
-                let atkSpecialCountAfter = atkUnit.tmpSpecialCount;
-                let defSpecialCountAfter = defUnit.tmpSpecialCount;
-                let specialSpan = n => `<span class='log-special'>${n}</span>`;
-                let specialInfo =
-                    `${HtmlLogUtil.groupNameSpan(atkUnit)}: ${specialSpan(atkSpecialCountBefore)} → ${specialSpan(atkSpecialCountAfter)}, 
+            }
+            let atkSpecialCountBefore = atkUnit.tmpSpecialCount;
+            let defSpecialCountBefore = defUnit.tmpSpecialCount;
+            [currentDamage, reducedDamage] = this.__calcUnitAttackDamage(
+                defUnit, atkUnit,
+                specialDamageOfThisAttack,
+                additionalDamagePerAttack,
+                damageReductionRatiosAfterNeutralization,
+                damageReductionRatiosByDefenderSpecial,
+                damageReductionRatiosByNonDefenderSpecial,
+                damageReductionValues,
+                potentRatio,
+                atkUnit.battleContext.damageCalculationRatios,
+                strikeResult.isDefenderSpecialReady, context
+            );
+            this.__restoreMaxSpecialCount(atkUnit);
+            // 奥義発動直後のスキル効果（奥義カウント変動など）
+            this.applySkillEffectAfterSpecialActivated(atkUnit, defUnit, context);
+            if (!isDefenderSpecialActivated) {
+                this.__reduceSpecialCount(defUnit, defUnit.battleContext.cooldownCountForDefense);
+            }
+            let atkSpecialCountAfter = atkUnit.tmpSpecialCount;
+            let defSpecialCountAfter = defUnit.tmpSpecialCount;
+            let specialSpan = n => `<span class='log-special'>${n}</span>`;
+            let specialInfo =
+                `${HtmlLogUtil.groupNameSpan(atkUnit)}: ${specialSpan(atkSpecialCountBefore)} → ${specialSpan(atkSpecialCountAfter)}, 
                      ${HtmlLogUtil.groupNameSpan(defUnit)}: ${specialSpan(defSpecialCountBefore)} → ${specialSpan(defSpecialCountAfter)}`;
-                if (this.isLogEnabled) {
-                    this.writeLog(`${HtmlLogUtil.specialSpan('奥義')}によるダメージ${HtmlLogUtil.damageSpan(currentDamage)}`);
-                }
-                this.writeSimpleLog(`<div class="log-damage-line">${HtmlLogUtil.damageSpan(currentDamage)}
+            if (this.isLogEnabled) {
+                this.writeLog(`${HtmlLogUtil.specialSpan('奥義')}によるダメージ${HtmlLogUtil.damageSpan(currentDamage)}`);
+            }
+            this.writeSimpleLog(`<div class="log-damage-line">${HtmlLogUtil.damageSpan(currentDamage)}
                 （${HtmlLogUtil.specialSpan('奥義')}）${specialInfo}</div>`);
 
-                // 奥義発動時の回復
-                {
-                    let actualDamage = currentDamage;
-                    if (defUnit.restHp - totalDamage < currentDamage) {
-                        actualDamage = defUnit.restHp - totalDamage;
-                    }
-
-                    let healedHp = floorNumberWithFloatError(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
-                    let maxHpRatioToHealBySpecial =
-                        atkUnit.battleContext.maxHpRatioToHealBySpecial +
-                        atkUnit.battleContext.maxHpRatioToHealBySpecialPerAttack;
-                    healedHp += floorNumberWithFloatError(atkUnit.maxHpWithSkills * maxHpRatioToHealBySpecial);
-                    healedHp += atkUnit.battleContext.healedHpAfterAttackSpecialInCombat;
-
-                    if (atkUnit.passiveB === PassiveB.TaiyoNoUdewa) {
-                        healedHp += floorNumberWithFloatError(actualDamage * 0.3);
-                    }
-
-                    this.__heal(atkUnit, healedHp, defUnit);
-                }
-            } else {
-                // 通常攻撃
-                let atkSpecialCountBefore = atkUnit.tmpSpecialCount
-                let defSpecialCountBefore = defUnit.tmpSpecialCount
-                if (atkUnit.battleContext.isBanePerAttack) {
-                    // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
-                    if (normalDamageOfThisAttack < defUnit.restHp - 1) {
-                        if (this.isLogEnabled) {
-                            let message = `${atkUnit.nameWithGroup}の瞬殺効果が発動`;
-                            this.writeDebugLog(message);
-                            this.writeSimpleLog(message);
-                        }
-                        normalDamageOfThisAttack = defUnit.restHp - 1;
-                    }
-                }
-                [currentDamage, reducedDamage] = this.__calcUnitAttackDamage(
-                    defUnit, atkUnit,
-                    normalDamageOfThisAttack,
-                    additionalDamagePerAttack,
-                    damageReductionRatiosAfterNeutralization,
-                    damageReductionRatiosByDefenderSpecial,
-                    damageReductionRatiosByNonDefenderSpecial,
-                    damageReductionValues,
-                    potentRatio,
-                    atkUnit.battleContext.damageCalculationRatios,
-                    activatesDefenderSpecial, context
-                );
-                this.__reduceSpecialCount(atkUnit, atkReduceSpCount);
-                if (!isDefenderSpecialActivated) {
-                    this.__reduceSpecialCount(defUnit, defReduceSpCount);
-                }
-                let atkSpecialCountAfter = atkUnit.tmpSpecialCount
-                let defSpecialCountAfter = defUnit.tmpSpecialCount
-                let specialSpan = n => `<span class='log-special'>${n}</span>`;
-                let specialInfo = `${HtmlLogUtil.groupNameSpan(atkUnit)}: ${specialSpan(atkSpecialCountBefore)} → ${specialSpan(atkSpecialCountAfter)}, 
-                                          ${HtmlLogUtil.groupNameSpan(defUnit)}: ${specialSpan(defSpecialCountBefore)} → ${specialSpan(defSpecialCountAfter)}`;
-                if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ<span class="log-damage">${currentDamage}</span>`);
-                this.writeSimpleLog(`<div class="log-damage-line">${HtmlLogUtil.damageSpan(currentDamage)}（通常）${specialInfo}</div>`);
-            }
-
+            // 奥義発動時の回復
             {
-                let healHpAmount = this.__getHealAmountByAttack(atkUnit, defUnit, currentDamage, context);
-                if (healHpAmount > 0) {
-                    if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${healHpAmount}回復`);
-                    this.__heal(atkUnit, healHpAmount, defUnit);
+                let actualDamage = currentDamage;
+                if (defUnit.restHp - totalDamage < currentDamage) {
+                    actualDamage = defUnit.restHp - totalDamage;
+                }
+
+                let healedHp = floorNumberWithFloatError(actualDamage * atkUnit.battleContext.specialDamageRatioToHeal);
+                let maxHpRatioToHealBySpecial =
+                    atkUnit.battleContext.maxHpRatioToHealBySpecial +
+                    atkUnit.battleContext.maxHpRatioToHealBySpecialPerAttack;
+                healedHp += floorNumberWithFloatError(atkUnit.maxHpWithSkills * maxHpRatioToHealBySpecial);
+                healedHp += atkUnit.battleContext.healedHpAfterAttackSpecialInCombat;
+
+                if (atkUnit.passiveB === PassiveB.TaiyoNoUdewa) {
+                    healedHp += floorNumberWithFloatError(actualDamage * 0.3);
+                }
+
+                this.__heal(atkUnit, healedHp, defUnit);
+            }
+        } else {
+            // 通常攻撃
+            let atkSpecialCountBefore = atkUnit.tmpSpecialCount
+            let defSpecialCountBefore = defUnit.tmpSpecialCount
+            if (atkUnit.battleContext.isBanePerAttack) {
+                // 奥義発動時、軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする(巨影など一部の敵を除く)
+                if (normalDamageOfThisAttack < defUnit.restHp - 1) {
+                    if (this.isLogEnabled) {
+                        let message = `${atkUnit.nameWithGroup}の瞬殺効果が発動`;
+                        this.writeDebugLog(message);
+                        this.writeSimpleLog(message);
+                    }
+                    normalDamageOfThisAttack = defUnit.restHp - 1;
                 }
             }
-
-            // 祈り処理
-            // TODO: リファクタリング
-            let reducedDamageByMiracle = 0;
-            [totalDamage, reducedDamageByMiracle] = this.#activateMiracle(atkUnit, defUnit, currentDamage, totalDamage);
-            this.#applyReducedDamageForNextAttack(
-                atkUnit, defUnit,
-                reducedDamage + reducedDamageByMiracle,
-                activatesDefenderSpecial, context
+            [currentDamage, reducedDamage] = this.__calcUnitAttackDamage(
+                defUnit, atkUnit,
+                normalDamageOfThisAttack,
+                additionalDamagePerAttack,
+                damageReductionRatiosAfterNeutralization,
+                damageReductionRatiosByDefenderSpecial,
+                damageReductionRatiosByNonDefenderSpecial,
+                damageReductionValues,
+                potentRatio,
+                atkUnit.battleContext.damageCalculationRatios,
+                strikeResult.isDefenderSpecialReady, context
             );
-
-            combatResult.damageHistory.push(
-                combatResult.getCurrentStrikeResult().setDamage(currentDamage)
-            );
-
-            this.applySkillEffectsAfterAttack(atkUnit, defUnit, context);
-            this.applySkillEffectsAfterAttack(defUnit, atkUnit, context);
-
-            if (this.isLogEnabled) {
-                this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + Math.max(0, defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
+            this.__reduceSpecialCount(atkUnit, atkUnit.battleContext.cooldownCountForAttack);
+            if (!isDefenderSpecialActivated) {
+                this.__reduceSpecialCount(defUnit, defUnit.battleContext.cooldownCountForDefense);
             }
+            let atkSpecialCountAfter = atkUnit.tmpSpecialCount
+            let defSpecialCountAfter = defUnit.tmpSpecialCount
+            let specialSpan = n => `<span class='log-special'>${n}</span>`;
+            let specialInfo = `${HtmlLogUtil.groupNameSpan(atkUnit)}: ${specialSpan(atkSpecialCountBefore)} → ${specialSpan(atkSpecialCountAfter)}, 
+                                          ${HtmlLogUtil.groupNameSpan(defUnit)}: ${specialSpan(defSpecialCountBefore)} → ${specialSpan(defSpecialCountAfter)}`;
+            if (this.isLogEnabled) this.writeLog(`通常攻撃によるダメージ<span class="log-damage">${currentDamage}</span>`);
+            this.writeSimpleLog(`<div class="log-damage-line">${HtmlLogUtil.damageSpan(currentDamage)}（通常）${specialInfo}</div>`);
+        }
+
+        {
+            let healHpAmount = this.__getHealAmountByAttack(atkUnit, defUnit, currentDamage, context);
+            if (healHpAmount > 0) {
+                if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.getNameWithGroup()}は${healHpAmount}回復`);
+                this.__heal(atkUnit, healHpAmount, defUnit);
+            }
+        }
+
+        // 祈り処理
+        // TODO: リファクタリング
+        let reducedDamageByMiracle = 0;
+        [totalDamage, reducedDamageByMiracle] = this.#activateMiracle(atkUnit, defUnit, currentDamage, totalDamage);
+        this.#applyReducedDamageForNextAttack(
+            atkUnit, defUnit,
+            reducedDamage + reducedDamageByMiracle,
+            strikeResult.isDefenderSpecialReady, context
+        );
+
+        combatResult.damageHistory.push(
+            combatResult.getCurrentStrikeResult().setDamage(currentDamage)
+        );
+
+        this.applySkillEffectsAfterAttack(atkUnit, defUnit, context);
+        this.applySkillEffectsAfterAttack(defUnit, atkUnit, context);
+
+        if (this.isLogEnabled) {
+            this.writeDebugLog(defUnit.getNameWithGroup() + "の残りHP" + Math.max(0, defUnit.restHp - totalDamage) + "/" + defUnit.maxHpWithSkills);
         }
 
         return totalDamage;
@@ -2307,10 +2315,11 @@ class DamageCalculator {
     /**
      * @param {Unit} targetUnit
      * @param {Unit} enemyUnit
-     * @param {boolean} canActivateAttackerSpecial
+     * @param {StrikeResult} strikeResult
      * @param {DamageCalcContext} context
      */
-    __applySkillEffectsPerAttack(targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
+    __applySkillEffectsPerAttack(targetUnit, enemyUnit, strikeResult, context) {
+        let canActivateAttackerSpecial = strikeResult.canActivateAttackerSpecial;
         let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit, canActivateAttackerSpecial, context);
         env.setName('攻撃開始時').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
@@ -2365,11 +2374,7 @@ class DamageCalculator {
         for (let skillId of defUnit.enumerateSkills()) {
             switch (skillId) {
                 case Special.GodlikeReflexes:
-                    if (defUnit.getEvalSpdInCombat(atkUnit) >= atkUnit.getEvalSpdInCombat(defUnit) - 4) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return defUnit.getEvalSpdInCombat(atkUnit) >= atkUnit.getEvalSpdInCombat(defUnit) - 4;
             }
         }
         return true;
