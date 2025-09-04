@@ -79,6 +79,8 @@ const Hero = {
     DuoJulia: 1276,
     DuoHapi: 1294,
     HarmonizedIngrid: 1309,
+    // TODO: 修正
+    HarmonizedFir: 9999,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -173,7 +175,7 @@ const PartnerLevel = {
 };
 
 
-const CombatResult = {
+const CombatResultType = {
     Win: 2,
     Draw: 1,
     Loss: 0,
@@ -242,6 +244,7 @@ const NEGATIVE_STATUS_EFFECT_SET = new Set([
     StatusEffectType.ShareSpoilsPlus,
     StatusEffectType.SpdShackle,
     StatusEffectType.ResShackle,
+    StatusEffectType.DefShackle,
 ]);
 
 /// ステータス効果が不利なステータス効果であるかどうかを判定します。
@@ -376,9 +379,12 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.ProfsGuidance, ["ProfsGuidance.webp", "師の導き", "SP2倍、奥義で軽減2回可&戦闘後にカウント-1"]],
     [StatusEffectType.FringeBonus, ["FringeBonus.webp", "真強化増幅", "攻速守魔が上昇、自分と周囲の味方の強化が最も高い値"]],
     [StatusEffectType.MagicTwinSave, ["MagicTwinSave.webp", "護り手・魔・双", "魔法攻撃に「護り手」、奥義のダメージ軽減2回発動可"]],
+    // [StatusEffectType.AtkShackle, ["AtkShackle.webp", "攻撃の枷", "攻撃が減少、自分の不利な状態異常の数+4（最大8）"]],
     [StatusEffectType.SpdShackle, ["SpdShackle.webp", "速さの枷", "速さが減少、自分の不利な状態異常の数+4（最大8）"]],
+    [StatusEffectType.DefShackle, ["DefShackle.webp", "守備の枷", "守備が減少、自分の不利な状態異常の数+4（最大8）"]],
     [StatusEffectType.ResShackle, ["ResShackle.webp", "魔防の枷", "魔防が減少、自分の不利な状態異常の数+4（最大8）"]],
     [StatusEffectType.CreationPulse, ["CreationPulse.webp", "開闢の鼓動", "攻撃前に、奥義発動カウント-敵の不利な状態異常の数"]],
+    [StatusEffectType.ChangeOfFate, ["ChangeOfFate.webp", "運命を変える!", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

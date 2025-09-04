@@ -1098,7 +1098,7 @@
     AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is transformed or unit's HP ≥ 25% at start of combat,
         IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
-            IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+            IF_NODE(CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
                 // deals damage to foe = 25% of foe's max HP as combat begins
                 // (activates only when unit can attack in combat; only highest value applied; does not stack with other "deals X damage as combat begins" effects; effects that reduce damage during combat do not apply; will not reduce foe's HP below 1; excluding certain foes, such as Røkkr).
                 new DealsDamageToFoeAsCombatBeginsThatDoesNotStackNode(PERCENTAGE_NODE(25, new FoesMaxHpNode())),
@@ -1867,7 +1867,7 @@
                 4, 4, 4, 4
             ),
             new GrantsStatsPlusToTargetDuringCombatNode(
-                HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2)
+                HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(2)
             ),
         )
     ));
@@ -1998,7 +1998,7 @@
         GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
         // reduces damage from foe's first attack by 7 during combat
         // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
-        new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(7),
+        REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
         // and also,
         // if unit initiates combat and foe's attack can trigger foe's Special,
         IF_NODE(AND_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
@@ -2012,7 +2012,7 @@
 {
     let skillId = Support.FutureFocus;
     // Unit and target ally swap spaces.
-    SWAP_ASSIST_SET.add(skillId);
+    SWAP_ASSIST_SKILLS.add(skillId);
 
     AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         new TargetsOncePerTurnSkillEffectNode(`${skillId}-周囲への効果`,
@@ -2693,7 +2693,7 @@ function setDiscord(skillId, statsRatios) {
             new ReducesDamageFromAoeSpecialsByXPercentNode(
                 MULT_TRUNC_NODE(
                     SUB_NODE(4, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT),
-                    new EnsureMaxNode(DIFFERENCE_BETWEEN_RES_STATS_NODE, 10),
+                    new EnsureMaxNode(DIFFERENCE_BETWEEN_RES_STATS_DURING_COMBAT_NODE, 10),
                 ),
             ),
         ),
@@ -3809,7 +3809,7 @@ function setDiscord(skillId, statsRatios) {
             MULT_TRUNC_NODE(0.5, UNITS_SPD_DURING_COMBAT_NODE),
         ),
         // calculates damage using the lower of foe's Def or Res when Special triggers.
-        new CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode(),
+        CALCULATES_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_WHEN_SPECIAL_TRIGGERS_NODE,
     ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -4036,7 +4036,7 @@ function setDiscord(skillId, statsRatios) {
                     new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(READ_NUM_NODE),
                 ),
                 // (X = difference between Def stats; max 10;
-                new EnsureMaxNode(DIFFERENCE_BETWEEN_DEF_STATS_NODE, 10),
+                new EnsureMaxNode(DIFFERENCE_BETWEEN_DEF_STATS_DURING_COMBAT_NODE, 10),
                 // for example, if Spd difference necessary increases by 10, Spd must be ≥ 15 more than foe's Spd to make a follow-up attack; stacks with similar skills).
             ),
         ),
@@ -5411,7 +5411,7 @@ function setDiscord(skillId, statsRatios) {
         // reduces damage from foe's next attack by 40% (once per combat; excluding area-of-effect Specials).
         IF_NODE(AND_NODE(
                 IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
-                TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+                CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
             ),
             new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(40),
         )

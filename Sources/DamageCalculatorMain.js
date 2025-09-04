@@ -411,8 +411,12 @@ class DamageCalcData {
         this.atkUnit.tmpSpecialCount = 0;
 
         this.damageCalc.clearLog();
-        // TODO: 引数を確認する(damage type, game mode)
-        let result = this.damageCalc.calcCombatResult(this.atkUnit, this.defUnit, DamageType.EstimatedDamage, GameMode.AetherRaid);
+
+        /** @type {DamageCalcEnv} */
+        let damageCalcEnv = new DamageCalcEnv().setUnits(this.atkUnit, this.defUnit)
+            // .setTileToAttack(tileToAttack)
+            .setDamageType(DamageType.EstimatedDamage).setGameMode(GameMode.AetherRaid);
+        let result = this.damageCalc.calcCombatResult(damageCalcEnv);
         this.basicDamageDealt = result.atkUnit_normalAttackDamage;
         this.actualDamageDealt = result.damageHistory[0].damageDealt;
         this.additionalDamage = this.atkUnit.battleContext.getSpecialAddDamage()

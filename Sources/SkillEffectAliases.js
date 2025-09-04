@@ -320,10 +320,21 @@ const DIFFERENCE_BETWEEN_SPD_STATS_NODE =
  * 戦闘中の守備の差
  * @type {SubNode}
  */
-const DIFFERENCE_BETWEEN_DEF_STATS_NODE =
+const DIFFERENCE_BETWEEN_DEF_STATS_DURING_COMBAT_NODE =
     SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE);
-const DIFFERENCE_BETWEEN_RES_STATS_NODE =
+const DIFFERENCE_BETWEEN_RES_STATS_DURING_COMBAT_NODE =
     SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE);
+
+const DIFFERENCE_BETWEEN_DEF_STATS_NODE =
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        SUB_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE),
+        SUB_NODE(UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE, FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE),
+    );
+const DIFFERENCE_BETWEEN_RES_STATS_NODE =
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        SUB_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, FOES_EVAL_RES_DURING_COMBAT_NODE),
+        SUB_NODE(UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE, FOES_EVAL_RES_AT_START_OF_COMBAT_NODE),
+    );
 
 /// 強化(バフ)
 const TARGET_STAT_BONUS_NODE = index => new TargetsBonusNode(index);
@@ -744,13 +755,16 @@ function setSpecialCount(skillId, n) {
     }
 }
 
-function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense) {
+function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense, isGaleforce = false) {
     setSpecialCount(skillId, n);
     if (isNormalAttack) {
         NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     }
     if (isDefense) {
         DEFENSE_SPECIAL_SET.add(skillId);
+    }
+    if (isGaleforce) {
+        GALEFORCE_SKILLS.add(skillId);
     }
 }
 
@@ -810,7 +824,19 @@ const HIGHEST_TOTAL_BONUSES_TO_TARGET_STATS_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACE
  * @returns {StatsNode}
  * @constructor
  */
-const HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE =
+const HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGETS_ALLIES_WITHIN_N_SPACES_NODE =
+    (n) =>
+        new HighestValueOnEachStatAmongUnitsNode(
+            TARGETS_ALLIES_WITHIN_N_SPACES_NODE(n),
+            TARGETS_BONUSES_NODE
+        );
+
+/**
+ * @param {number|NumberNode} n
+ * @returns {StatsNode}
+ * @constructor
+ */
+const HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE =
     (n) =>
         new HighestValueOnEachStatAmongUnitsNode(
             new TargetsAndThoseAlliesWithinNSpacesNode(n, TARGET_NODE),
@@ -1364,7 +1390,7 @@ function grantsAnotherActionAfterCanto(skillId) {
 
 function setResonance(skillId) {
     AFTER_FOLLOW_UP_CONFIGURED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        IF_NODE(TARGET_CAN_ATTACK_DURING_COMBAT_NODE,
+        IF_NODE(CAN_TARGET_ATTACK_DURING_COMBAT_NODE,
             X_NUM_NODE(
                 // Deals damage to unit as combat begins = 20% of X
                 DEALS_DAMAGE_TO_TARGET_AS_COMBAT_BEGINS_NODE(PERCENTAGE_NODE(20, READ_NUM_NODE)),

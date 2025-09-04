@@ -1,7 +1,7 @@
 var searchData=
 [
   ['damagecalccontext_26',['DamageCalcContext',['../class_damage_calc_context.html',1,'']]],
-  ['damagecalcresult_27',['DamageCalcResult',['../class_damage_calc_result.html',1,'']]],
+  ['damagecalcresult_27',['CombatResult',['../class_damage_calc_result.html',1,'']]],
   ['damagecalculator_28',['DamageCalculator',['../class_damage_calculator.html',1,'']]],
   ['damagecalculator_2ejs_29',['DamageCalculator.js',['../_damage_calculator_8js.html',1,'']]],
   ['defarmorschool_30',['DefArmorSchool',['../class_def_armor_school.html',1,'']]],

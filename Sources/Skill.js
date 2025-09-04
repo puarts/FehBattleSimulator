@@ -478,6 +478,7 @@ const DEFENSE_SPECIAL_SET = new Set([
     Special.NegatingFang,
     Special.GodlikeReflexes,
     Special.Miracle,
+    Special.LifeUnending,
 ]);
 
 const MIRACLE_AND_HEAL_SPECIAL_SET = new Set([
@@ -825,7 +826,17 @@ function canRallyForciblyByPlayer(unit) {
 /**
  * @type {Set<number|string>}
  */
-SWAP_ASSIST_SET = new Set();
+SWAP_ASSIST_SKILLS = new Set();
+
+/**
+ * @type {Set<number|string>}
+ */
+REPOSITION_ASSIST_SKILLS = new Set();
+
+/**
+ * @type {Set<number|string>}
+ */
+GALEFORCE_SKILLS = new Set();
 
 CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET = new Set();
 
@@ -1092,7 +1103,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.ShirasagiNoTsubasa,
     Weapon.SeijuNoKeshinHiko,
     Weapon.GroomsWings,
-    Weapon.IlluminatingHorn,
 ]);
 
 function isWeaponTypeThatCanAddAtk2AfterTransform(weapon) {
@@ -1124,7 +1134,6 @@ const BEAST_COMMON_SKILL_MAP = new Map([
     [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
     [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
     [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
-    [Weapon.IlluminatingHorn, BeastCommonSkillType.Infantry2],
 
     // 錬成すると次世代歩行
     [Weapon.JinroOuNoTsumekiba, BeastCommonSkillType.Infantry2IfRefined],
@@ -1341,6 +1350,8 @@ const StatusEffectType = {
     SpdShackle: 91, // 速さの枷
     ResShackle: 92, // 魔防の枷
     CreationPulse: 93, // 開闢の鼓動
+    ChangeOfFate: 94, // 運命を変える
+    DefShackle: 95, // 守備の枷
     // 1. STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 2. 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // 3. POSITIVE_STATUS_EFFECT_ARRAYまたはNEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1496,7 +1507,9 @@ const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Exposure,
     StatusEffectType.Sabotage,
     StatusEffectType.Discord,
+    // StatusEffectType.AtkShackle,
     StatusEffectType.SpdShackle,
+    StatusEffectType.DefShackle,
     StatusEffectType.ResShackle,
     StatusEffectType.HushSpectrum,
     StatusEffectType.ShareSpoils,
@@ -1932,7 +1945,7 @@ const getTargetUnitTileAfterMoveAssistFuncMap = new Map();
 const findTileAfterMovementAssistFuncMap = new Map();
 /** @type {Map<number|string, (this: Unit) => number>} */
 const resetMaxSpecialCountFuncMap = new Map();
-/** @type {Map<number|string, (this: Window, attackUnit: Unit, lossesInCombat: boolean, result: DamageCalcResult) => boolean>} */
+/** @type {Map<number|string, (this: Window, atkUnit: Unit, lossesInCombat: boolean, result: CombatResult) => boolean>} */
 const isAfflictorFuncMap = new Map();
 /** @type {Map<number|string, (this: BeginningOfTurnSkillHandler, owner: Unit) => void>} */
 const applySkillAfterSkillsForBeginningOfTurnFuncMap = new Map();

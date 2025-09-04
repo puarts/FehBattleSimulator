@@ -3803,16 +3803,6 @@ class BattleSimulatorBase {
                 .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
 
-        // 自分以外のスキルでの自分の再行動
-        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
-            let env = new BattleSimulatorBaseEnv(this, atkUnit)
-                .setUnitsDuringCombat(atkUnit, defUnit).setTarget(atkUnit)
-                .setTargetAlly(allyUnit).setSkillOwner(allyUnit);
-            env.setName('奥義以外の再行動時（周囲の味方）').setLogLevel(getSkillLogLevel());
-            FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(allyUnit, env);
-        }
-        atkUnit.applyReservedAnotherAction();
-
         // 味方の再行動
         for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
             let env = new BattleSimulatorBaseEnv(this, atkUnit)
@@ -3852,6 +3842,16 @@ class BattleSimulatorBase {
             atkUnit.isAlive) {
             this.applyAnotherActionSkillBySpecial(atkUnit);
         }
+
+        // 自分以外のスキルでの自分の再行動（自分の再行動効果後）
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(atkUnit, false)) {
+            let env = new BattleSimulatorBaseEnv(this, atkUnit)
+                .setUnitsDuringCombat(atkUnit, defUnit).setTarget(atkUnit)
+                .setTargetAlly(allyUnit).setSkillOwner(allyUnit);
+            env.setName('奥義以外の再行動時（周囲の味方、自分の再行動効果の後）').setLogLevel(getSkillLogLevel());
+            FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_AFTER_OWN_ANOTHER_ACTION_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
+        atkUnit.applyReservedAnotherAction();
 
         // 魔法陣の増援による再行動
         atkUnit.grantAnotherActionByCallingCircleIfPossible(g_appData.currentTurn);
@@ -3927,6 +3927,11 @@ class BattleSimulatorBase {
     }
 
     applyAnotherActionSkillBySpecial(atkUnit) {
+        for (let skillId of atkUnit.enumerateSkills()) {
+            if (GALEFORCE_SKILLS.has(skillId)) {
+                this.__activateRefreshSpecial(atkUnit);
+            }
+        }
         switch (atkUnit.special) {
             case Special.RequiemDance: {
                 let highestHpUnits = [];
@@ -4049,7 +4054,7 @@ class BattleSimulatorBase {
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
      * @param  {number} damageType=DamageType.EstimatedDamage
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     calcDamageTemporary(
         atkUnit,
@@ -4251,7 +4256,7 @@ class BattleSimulatorBase {
                 atkUnit,
                 result.defUnit,
                 result.preCombatDamageWithOverkill,
-                result.atkUnitDamageAfterBeginningOfCombat,
+                result.atkUnitDamageToEnemyAfterBeginningOfCombat,
                 result.atkUnit_normalAttackDamage, result.atkUnit_totalAttackCount,
                 result.atkUnit_atk,
                 result.atkUnit_spd,
@@ -4263,7 +4268,7 @@ class BattleSimulatorBase {
                 result.defUnit,
                 atkUnit,
                 -1,
-                result.defUnitDamageAfterBeginningOfCombat,
+                result.defUnitDamageToEnemyAfterBeginningOfCombat,
                 result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
                 result.defUnit_atk,
                 result.defUnit_spd,
@@ -4285,7 +4290,7 @@ class BattleSimulatorBase {
      * @param  {Unit} unit
      * @param  {Unit} enemyUnit
      * @param  {Number} preCombatDamage
-     * @param damageAfterBeginningOfCombat
+     * @param damageToEnemyAfterBeginningOfCombat
      * @param  {Number} damage
      * @param  {Number} attackCount
      * @param  {Number} atk
@@ -4296,17 +4301,17 @@ class BattleSimulatorBase {
      * @param  {boolean} isAlly
      */
     __createDamageCalcSummaryHtml(unit, enemyUnit,
-        preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount,
+        preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount,
         atk, spd, def, res, tile, isAlly) {
         // ダメージに関するサマリー
-        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile, isAlly);
+        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAlly);
         // ステータスやバフに関するサマリー
         html += this.__createStatusSummaryHtml(unit, atk, spd, def, res);
 
         return `<div class="summary-damage-figure summary-text-shadow">${html}</div>`;
     }
 
-    __createDamageSummaryHtml(unit, preCombatDamage, damageAfterBeginningOfCombat, damage, attackCount, tile, isAllyArea) {
+    __createDamageSummaryHtml(unit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAllyArea) {
         let divineHtml = '';
         // 天脈
         if (tile.hasDivineVein()) {
@@ -4333,7 +4338,7 @@ class BattleSimulatorBase {
         let damageHtml;
         if (attackCount > 0) {
             let precombatHtml = preCombatDamage > 0 ? `${preCombatDamage}+` : "";
-            let afterBeginningOfCombatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
+            let afterBeginningOfCombatHtml = damageToEnemyAfterBeginningOfCombat > 0 ? `${damageToEnemyAfterBeginningOfCombat}+` : "";
             // 特効は緑表示にする
             let combatHtml = unit.battleContext.isEffectiveToOpponent ?
                 `<span style='color:#00FF00'>${damage}</span>` :
@@ -4343,7 +4348,7 @@ class BattleSimulatorBase {
             }
             damageHtml = `${precombatHtml}${afterBeginningOfCombatHtml}${combatHtml}`;
         } else {
-            let afterBeginningOfCombatHtml = damageAfterBeginningOfCombat > 0 ? `${damageAfterBeginningOfCombat}+` : "";
+            let afterBeginningOfCombatHtml = damageToEnemyAfterBeginningOfCombat > 0 ? `${damageToEnemyAfterBeginningOfCombat}+` : "";
             damageHtml = `${afterBeginningOfCombatHtml}-`;
         }
         html += `${specialHtml}&nbsp;${damageHtml}<br/>`;
@@ -6247,7 +6252,7 @@ class BattleSimulatorBase {
                 this.__updateCombatResultOfAttackableTargetInfo(attackableUnitInfo, unit, tile);
                 let combatResult = attackableUnitInfo.combatResultDetails[tile.id];
                 let result = attackableUnitInfo.combatResults[tile.id];
-                if (result === CombatResult.Win) {
+                if (result === CombatResultType.Win) {
                     this.writeDebugLogLine(unit.getNameWithGroup() + "は戦闘に勝利するので補助資格なし");
                     return true;
                 }
@@ -6267,8 +6272,8 @@ class BattleSimulatorBase {
                 }
 
                 if (evaluatesAfflictorDraw) {
-                    if (isAfflictor(unit, result === CombatResult.Loss, result) &&
-                        result === CombatResult.Draw) {
+                    if (isAfflictor(unit, result === CombatResultType.Loss, result) &&
+                        result === CombatResultType.Draw) {
                         return true;
                     }
                 }
@@ -7763,7 +7768,6 @@ class BattleSimulatorBase {
                 case Weapon.AbsoluteAmiti:
                 case Weapon.BrightwindFans:
                 case PassiveB.DeepStar:
-                case Weapon.TheCyclesTurn:
                 case Weapon.TeatimesEdge:
                 case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:
@@ -8483,15 +8487,15 @@ class BattleSimulatorBase {
     /**
      * @param  {Unit} attacker
      * @param  {Unit} target
-     * @return {CombatResult}
+     * @return {CombatResultType}
      */
     __getCombatResult(attacker, target) {
         if (target.restHp === 0) {
-            return CombatResult.Win;
+            return CombatResultType.Win;
         } else if (attacker.restHp === 0) {
-            return CombatResult.Loss;
+            return CombatResultType.Loss;
         } else {
-            return CombatResult.Draw;
+            return CombatResultType.Draw;
         }
     }
 
@@ -8604,7 +8608,7 @@ class BattleSimulatorBase {
         attackEvalContext.isDebufferTier1 = couldAttackerAttack && isDebufferTier1(attacker, target) && this.__canDebuff2PointsOfDefOrRes(attacker, target);
         attackEvalContext.isDebufferTier2 = couldAttackerAttack && isDebufferTier2(attacker, target) && this.__canDebuff2PointsOfDefOrRes(attacker, target);
         attackEvalContext.isAfflictor = couldAttackerAttack &&
-            isAfflictor(attacker, attackEvalContext.combatResult === CombatResult.Loss, result);
+            isAfflictor(attacker, attackEvalContext.combatResult === CombatResultType.Loss, result);
 
 
         attackEvalContext.calcAttackPriority(attacker);
@@ -10138,8 +10142,11 @@ class BattleSimulatorBase {
         let func = getSkillFunc(skillId, getTargetUnitTileAfterMoveAssistFuncMap);
         /** @type {MovementAssistResult} */
         let result = func?.call(this, unit, targetUnit, assistTile) ?? null;
-        if (SWAP_ASSIST_SET.has(skillId)) {
+        if (SWAP_ASSIST_SKILLS.has(skillId)) {
             result = this.__findTileAfterSwap(unit, targetUnit, assistTile);
+        }
+        if (REPOSITION_ASSIST_SKILLS.has(skillId)) {
+            result = this.__findTileAfterReposition(unit, targetUnit, assistTile);
         }
         switch (skillId) {
             case Support.RescuePlus:
@@ -10956,8 +10963,11 @@ class BattleSimulatorBase {
         let skillId = assistUnit.support;
         let func = getSkillFunc(skillId, findTileAfterMovementAssistFuncMap);
         func?.call(this, assistUnit, assistTargetUnit, tile);
-        if (SWAP_ASSIST_SET.has(skillId)) {
+        if (SWAP_ASSIST_SKILLS.has(skillId)) {
             return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
+        }
+        if (REPOSITION_ASSIST_SKILLS.has(skillId)) {
+            return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
         }
 
         switch (assistUnit.support) {

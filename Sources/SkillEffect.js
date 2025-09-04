@@ -140,6 +140,20 @@ class TargetNode extends UnitNode {
 
 const TARGET_NODE = new TargetNode();
 
+class TargetsFoeNode extends UnitNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        return unit;
+    }
+}
+
+const TARGETS_FOE_NODE = new TargetsFoeNode();
+
 const FOE_NODE = new class extends TargetNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -193,6 +207,13 @@ class ForTargetNode extends SkillEffectNode {
  * @constructor
  */
 const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
+
+/**
+ * @template T
+ * @param {T} node
+ * @returns {T}
+ * @constructor
+ */
 const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
 
 /**
@@ -236,6 +257,8 @@ class UnitsNode extends CollectionNode {
         return super.evaluate(env);
     }
 }
+
+const TARGET_AND_TARGET_FOE_NODE = UnitsNode.makeFromUnits(TARGET_NODE, TARGETS_FOE_NODE);
 
 class IncludesUnitNode extends BoolNode {
     /**
@@ -355,7 +378,9 @@ class TargetsAlliesWithinNSpacesNode extends UnitsNode {
     }
 }
 
+/** @type {function(number|NumberNode, boolean|BoolNode): UnitsNode} */
 const TARGETS_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(n, includesTarget);
+/** @type {function(boolean|BoolNode): UnitsNode} */
 const TARGETS_ALLIES_WITHIN_2_SPACES_NODE = (includesTarget = FALSE_NODE) => new TargetsAlliesWithinNSpacesNode(2, includesTarget);
 
 const TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE =
@@ -665,6 +690,11 @@ class CountUnitsNode extends PositiveNumberNode {
     }
 }
 
+/**
+ * @param {UnitsNode} unitsNode
+ * @returns {NumberNode}
+ * @constructor
+ */
 const COUNT_UNITS_NODE = unitsNode => new CountUnitsNode(unitsNode);
 
 class CountIfUnitsNode extends PositiveNumberNode {
@@ -2051,8 +2081,9 @@ class GrantsStatPlusToTargetDuringCombatNode extends SkillEffectNode {
         ratios[index] = 1;
         let beforeSpurs = unit.getSpurs();
         let spurs = ratios.map(r => r * n);
-        env.debug(`${unit.nameWithGroup}は戦闘中、${getStatusName(index)}+${n}: [${beforeSpurs}] => [${unit.getSpurs()}]`);
         unit.addSpurs(...spurs);
+        let afterSpurs = unit.getSpurs();
+        env.debug(`${unit.nameWithGroup}は戦闘中、${getStatusName(index)}+${n}: [${beforeSpurs}] => [${afterSpurs}]`);
     }
 }
 
@@ -2471,7 +2502,7 @@ class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
 }
 
 const INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE =
-    (atk, spd, def, res) => new InflictsStatsMinusOnTargetDuringCombatNode(atk, spd, def, res);
+    (atkOrStats, spd, def, res) => new InflictsStatsMinusOnTargetDuringCombatNode(atkOrStats, spd, def, res);
 
 class InflictsStatsMinusOnUnitDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
     static {
@@ -2527,6 +2558,8 @@ const INFLICTS_ATK_SPD_RES_ON_FOE_DURING_COMBAT_NODE = (atk, spd = atk, res = at
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, spd, 0, res);
 const INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atk, def = atk, res = atk) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atk, 0, def, res);
+const INFLICTS_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (spd, def = spd, res = spd) =>
+    new InflictsStatsMinusOnFoeDuringCombatNode(0, spd, def, res);
 
 const INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE = (atkOrStats, spd = atkOrStats, def = atkOrStats, res = atkOrStats) =>
     new InflictsStatsMinusOnFoeDuringCombatNode(atkOrStats, spd, def, res);
@@ -2552,6 +2585,7 @@ class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
     }
 }
 
+/** @type {function(number|NumberNode, number|NumberNode)} */
 const INFLICTS_STAT_MINUS_AT_ON_TARGET_DURING_COMBAT_NODE =
     (index, value) => new InflictsStatMinusAtOnTargetDuringCombatNode(index, value);
 
@@ -2571,6 +2605,7 @@ class InflictsAllStatsMinusNOnTargetDuringCombatNode extends InflictsStatsMinusO
     }
 }
 
+/** @type {function(number|NumberNode)} */
 const INFLICTS_ALL_STATS_MINUS_N_ON_TARGET_DURING_COMBAT_NODE =
     n => X_NUM_NODE(
         new InflictsStatsMinusOnTargetDuringCombatNode(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE),
@@ -6526,6 +6561,27 @@ class GrantsAdditionalStatBonusToEachStatNode extends SkillEffectNode {
 const GRANTS_ADDITIONAL_STAT_BONUS_TO_EACH_STAT_NODE =
     (buffAmount, max) => new GrantsAdditionalStatBonusToEachStatNode(buffAmount, max);
 
+class HasTargetSpecialNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(special) {
+        super();
+        this._special = NumberNode.makeNumberNodeFrom(special);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let special = this._special.evaluate(env);
+        let result = unit.special === special;
+        env.debug(`${unit.nameWithGroup}は${ObjectUtil.getKeyName(Special, special)}を装備しているか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_SPECIAL_NODE = (special) => new HasTargetSpecialNode(special);
+
 class IsTargetEquippedWithMiracleNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -6693,3 +6749,67 @@ class IsTargetEquippedWithPSaviorEffectsNode extends BoolNode {
 }
 
 const IS_TARGET_EQUIPPED_WITH_P_SAVIOR_EFFECTS_NODE = new IsTargetEquippedWithPSaviorEffectsNode();
+
+class IsTargetsMaximumSpecialCooldownCountReducedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isReducedMaxSpecialCount();
+        env.debug(`${unit.nameWithGroup}の奥義発動カウントの最大値が本来より減少しているか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGETS_MAXIMUM_SPECIAL_COOLDOWN_COUNT_REDUCED_NODE = new IsTargetsMaximumSpecialCooldownCountReducedNode();
+
+// and grants any Bonus active on unit to target ally,
+// any active on target ally to unit (once per turn; granted bonuses exclude stat bonuses inverted by Panic)
+class GrantsAnyBonusActiveOnUnitAToUnitBExcludeStatBonusesInvertedByPanicNode extends SkillEffectNode {
+    /**
+     * @param {UnitNode} unitA
+     * @param {UnitNode} unitB
+     */
+    constructor(unitA, unitB) {
+        super();
+        this._unitA = unitA;
+        this._unitB = unitB;
+    }
+
+    evaluate(env) {
+        let unitA = this._unitA.evaluate(env);
+        let unitB = this._unitB.evaluate(env);
+        let positiveStatusEffects = unitA.getPositiveStatusEffects();
+        let buffsA = ArrayUtil.maxByIndex(unitA.getBuffs(true), [0, 0, 0, 0]);
+        env.debug(`${unitA.nameWithGroup}の有利状態を${unitB.nameWithGroup}に付与: 
+            [${positiveStatusEffects.map(effect => getStatusEffectName(effect)).join(", ")}]`);
+        env.debug(`${unitA.nameWithGroup}のパニック以外のバフを${unitB.nameWithGroup}に付与: [${buffsA}]`);
+        unitB.reserveToAddStatusEffects(...positiveStatusEffects);
+        unitB.reserveToApplyBuffs(...buffsA);
+    }
+}
+
+const GRANTS_ANY_BONUS_ACTIVE_ON_UNIT_A_TO_UNIT_B_EXCLUDE_STAT_BONUSES_INVERTED_BY_PANIC_NODE =
+    (unitA, unitB) =>
+        new GrantsAnyBonusActiveOnUnitAToUnitBExcludeStatBonusesInvertedByPanicNode(unitA, unitB);
+
+// Any effect that can be triggered only once per turn
+// by unit’s equipped Special skill can be triggered again
+// if that effect has already been triggered
+// (excludes boosted Special effects from engaging).
+class AnyEffectThatCanBeTriggeredOnlyOncePerTurnByTargetsEquippedSpecialSkillCanBeTriggeredAgainExcludesEngagingNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.isOneTimeActionActivatedForSpecial = false;
+        env.debug(`${unit.nameWithGroup}の奥義の1ターン1回のみの効果を発動済みなら再発動可能にする`);
+    }
+}
+
+const ANY_EFFECT_THAT_CAN_BE_TRIGGERED_ONLY_ONCE_PER_TURN_BY_TARGETS_EQUIPPED_SPECIAL_SKILL_CAN_BE_TRIGGERED_AGAIN_EXCLUDES_ENGAGING_NODE =
+    new AnyEffectThatCanBeTriggeredOnlyOncePerTurnByTargetsEquippedSpecialSkillCanBeTriggeredAgainExcludesEngagingNode();

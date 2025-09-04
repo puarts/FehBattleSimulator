@@ -1633,25 +1633,30 @@
                                        @change="g_app.vm.actionDoneChanged"/>
                                 <label class="normal" v-bind:for='"isActionDone"+value.id'>行動済み</label>
 
+                                <input v-bind:id='"isOneTimeActionActivatedForSpecial"+value.id' type="checkbox"
+                                       v-model="value.isOneTimeActionActivatedForSpecial"/>
+                                <label class="normal"
+                                       v-bind:for='"isOneTimeActionActivatedForSpecial"+value.id'>奥義再行動発動済み</label>
+
                                 <input v-bind:id='"isCantoActivatedInCurrentTurn"+value.id' type="checkbox"
                                        v-model="value.isCantoActivatedInCurrentTurn"/>
                                 <label class="normal"
                                        v-bind:for='"isCantoActivatedInCurrentTurn"+value.id'>再移動発動済み</label>
-
+                            </td>
+                        </tr>
+                        <tr v-bind:style="g_app.vm.debugMenuStyle">
+                            <td colspan="7">
                                 <input v-bind:id='"isEnemyActionTriggered"+value.id' type="checkbox"
                                        v-model="value.isEnemyActionTriggered"/>
                                 <label class="normal"
                                        v-bind:for='"isEnemyActionTriggered"+value.id'>AIの行動制限解除</label>
 
                                 <span v-if="isWeaponTypeBeast(value.weaponType)">
-                                    <input v-bind:id='"isTransformed"+value.id' type="checkbox"
-                                           v-model="value.isTransformed" @change="g_app.vm.mergeChanged"/>
-                                    <label class="normal" v-bind:for='"isTransformed"+value.id'>化身状態</label>
+                                        <input v-bind:id='"isTransformed"+value.id' type="checkbox"
+                                               v-model="value.isTransformed" @change="g_app.vm.mergeChanged"/>
+                                        <label class="normal" v-bind:for='"isTransformed"+value.id'>化身状態</label>
                                 </span>
-                            </td>
-                        </tr>
-                        <tr v-bind:style="g_app.vm.debugMenuStyle">
-                            <td colspan="7">
+
                                 <label class="normal" v-bind:for='"isCantoActivated"+value.id'>再移動</label>
                                 {{value.isCantoActivated()}}
                                 <input v-bind:id='"isSelected"+value.id' type="checkbox" v-model="value.isSelected" />

@@ -2,6 +2,7 @@
 class BattleContext {
     // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
     // 他の「戦闘開始後、敵にNダメージ」の効果とは重複せず最大値適用
+    // 自分が受けるダメージ
     #damagesAfterBeginningOfCombatNotStack = [0];
     // 奥義発動時の「奥義ダメージに加算」の加算ダメージ
     #specialAddDamage = 0;
@@ -306,7 +307,13 @@ class BattleContext {
         // 最初に受けた攻撃の固定ダメージ軽減(2回攻撃は最初の連撃どちらも対象)
         // 最初に受けた攻撃と2回攻撃のダメージ-N(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃)
         // Nの符号に注意。Nは自然数（ダメージ-5ならN=5）
+        /** @type {number} */
         this.damageReductionValueOfFirstAttacks = 0;
+
+        // 最初に受けた2回攻撃の2回目のダメージ-
+        // reduces damage from the second strike of foe’s first attack
+        /** @type {number[]} */
+        this.damageReductionValueOfSecondStrikeOfFirstAttack = [];
 
         // 敵の奥義による攻撃のダメージ-N(範囲奥義を除く)
         this.damageReductionValueOfSpecialAttack = 0;
@@ -485,6 +492,8 @@ class BattleContext {
         this.neutralizedDebuffFlagsWhileBeginningOfTurn = [false, false, false, false];
 
         // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
+        // 自分が受けるダメージ
+        // TODO: rename
         this.damageAfterBeginningOfCombat = 0;
 
         this.#damagesAfterBeginningOfCombatNotStack = [0]; // 最大値を取る時のために番兵(0)を入れる
@@ -679,10 +688,10 @@ class BattleContext {
      * @param {boolean} res
      */
     invalidateOwnDebuffs(atk, spd, def, res) {
-        this.invalidatesOwnAtkDebuff |= atk;
-        this.invalidatesOwnSpdDebuff |= spd;
-        this.invalidatesOwnDefDebuff |= def;
-        this.invalidatesOwnResDebuff |= res;
+        this.invalidatesOwnAtkDebuff ||= atk;
+        this.invalidatesOwnSpdDebuff ||= spd;
+        this.invalidatesOwnDefDebuff ||= def;
+        this.invalidatesOwnResDebuff ||= res;
     }
 
     invalidateAllOwnDebuffs() {

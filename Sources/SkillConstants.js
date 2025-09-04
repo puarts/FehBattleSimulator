@@ -3949,6 +3949,22 @@ PassiveA.AtkSpdAria = 3377; // 攻撃速さの詠唱
 PassiveB.SpdResShackle = 3378; // 速さ魔防の枷
 PassiveC.JustLikeMother = 3379; // お母様みたいに
 Weapon.CrypticValaskjalf = 3380; // 異邦ヴラスキャルヴ
+Weapon.FortifiedAxe = 3385; // 黒鉄の王の剛斧
+PassiveA.DBonusAmp = 3386; // 遠反・有利増幅
+PassiveB.FairFight = 3387; // 真っ向勝負
+Weapon.DisguiseLance = 3389; // 謎の闘技者の槍
+Support.FutureGaze = 3390; // 未来を選ぶ瞳
+PassiveB.AtkSpdFavor = 3391; // 攻撃速さの共感
+Weapon.GladiatorsBow = 3392; // 猛き闘技者の弓
+Support.ConqueringFate = 3393; // 運命に打ち勝つ！
+PassiveB.AtkDefFavor = 3394; // 攻撃守備の共感
+PassiveC.TimePulseArms = 3395; // 始まりの鼓動・鎧
+Weapon.ArenaAxePlus = 3396; // 闘技の斧+
+Weapon.PrincessesEdge = 3397; // 剣姫母娘の烈剣
+Special.GaleforceMist = 3398; // 疾風迅雷・霞
+// TODO: 修正する
+Weapon.ArenaSwordPlus = 3399; // 闘技の剣+
+Weapon.JiaMianNojiangNojian = 3400; // 仮面の将の剣
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

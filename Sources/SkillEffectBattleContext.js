@@ -497,6 +497,21 @@ class NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToFoe extends Neutral
 
 const NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE = new NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToFoe();
 
+class NeutralizesEffectsThatGuaranteeTargetsFoesFollowUpAttacksDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
+        env.debug(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
+    }
+}
+
+const NEUTRALIZES_EFFECTS_THAT_GUARANTEE_TARGETS_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE =
+    new NeutralizesEffectsThatGuaranteeTargetsFoesFollowUpAttacksDuringCombatNode();
+
 // noinspection JSUnusedGlobalSymbols
 /**
  * neutralizes effects that guarantee foe's follow-up attacks during combat.
@@ -1089,7 +1104,7 @@ const REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE = x => new ReducesDamag
 // TODO: 奥義扱いの範囲奥義軽減が特別扱いされた場合に修正する
 const REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_BY_SPECIAL_NODE = x => new ReducesDamageFromAoeSpecialsByXPercentNode(x);
 
-const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_OR_FROM_AOE_SPECIALS_NODE =
+const REDUCES_DAMAGE_BY_X_PERCENT_NODE =
     x => IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
         REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(x),
         REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(x),
@@ -1120,8 +1135,6 @@ class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends From
 
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(n);
-
-const REDUCES_DAMAGE_BY_N_PERCENT_NODE = REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE;
 
 class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPositiveNumberNode {
     static {
@@ -1235,6 +1248,23 @@ class ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode extends 
 
 const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE =
     n => new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(n);
+
+class ReducesDamageFromTargetsFoesSecondStrikeOfFirstAttackByNDuringCombatNode extends ApplyingNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let reductionValues = unit.battleContext.damageReductionValueOfSecondStrikeOfFirstAttack;
+        reductionValues.push(n);
+        env.debug(`${unit.nameWithGroup}は最初に受けた2回攻撃の2回目のダメージ-${n}: [${reductionValues}]`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_SECOND_STRIKE_OF_FIRST_ATTACK_BY_N_DURING_COMBAT_NODE =
+    n => new ReducesDamageFromTargetsFoesSecondStrikeOfFirstAttackByNDuringCombatNode(n);
 
 class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumberNode {
     getDescription(n) {
@@ -1485,6 +1515,7 @@ class TargetAttacksTwiceEvenIfTargetsFoeInitiatesCombatNode extends SkillEffectN
 
 const TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE
     = new TargetAttacksTwiceEvenIfTargetsFoeInitiatesCombatNode();
+const TARGET_ATTACKS_TWICE_DURING_COMBAT_NODE = TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE;
 
 const TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
@@ -1868,6 +1899,9 @@ class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode exte
     }
 }
 
+const NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_TARGETS_FOES_NON_SPECIAL_NODE =
+    new NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode();
+
 const NEUTRALIZE_REDUCES_DAMAGE_BY_X_PERCENT_EFFECTS_FROM_FOES_NON_SPECIAL_NODE =
     new class extends NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode {
         static {
@@ -2016,6 +2050,9 @@ class CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode 
     }
 }
 
+const CALCULATES_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_WHEN_SPECIAL_TRIGGERS_NODE =
+    new CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode();
+
 class InflictsBonusReversalPenaltyOnTargetsFoeNode extends FromBoolStatsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2094,7 +2131,7 @@ class DoesTargetsFoeTriggerAttacksTwiceNode extends DoesTargetTriggerAttacksTwic
     }
 }
 
-class TargetCanAttackDuringCombatNode extends BoolNode {
+class CanTargetAttackDuringCombatNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetValueMixin);
     }
@@ -2110,7 +2147,7 @@ class TargetCanAttackDuringCombatNode extends BoolNode {
     }
 }
 
-const TARGET_CAN_ATTACK_DURING_COMBAT_NODE = new TargetCanAttackDuringCombatNode();
+const CAN_TARGET_ATTACK_DURING_COMBAT_NODE = new CanTargetAttackDuringCombatNode();
 
 /**
  * damage dealt to unit as combat begins

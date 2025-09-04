@@ -957,6 +957,7 @@ const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
  * @constructor
  */
 const ADD_MAX_NODE = (add1, add2, max) => ENSURE_MAX_NODE(ADD_NODE(add1, add2), max);
+const MAX_ADD_NODE = (add1, max, add2) => ADD_NODE(ENSURE_MAX_NODE(add1, max), add2);
 
 class MinNode extends NumberOperationNode {
     /**
@@ -1422,16 +1423,12 @@ class NumThatIsNode extends SkillEffectNode {
 
 class XNumNode extends SkillEffectNode {
     /**
-     * @param {...SkillEffectNode} nodes
+     * @param {...SkillEffectNode|NumberNode} nodes
      */
     constructor(...nodes) {
         super(...(nodes.slice(0, -1)));
-        // noinspection JSCheckFunctionSignatures
-        let xNode = NumberNode.makeNumberNodeFrom(nodes[nodes.length - 1]);
-        if (!(xNode instanceof NumberNode)) {
-            console.error(`Last node must be a NumberNode but received: ${xNode.constructor.name}`);
-        }
-        this._numNode = xNode;
+        let lastNode = nodes[nodes.length - 1];
+        this._numNode = NumberNode.makeNumberNodeFrom(lastNode);
     }
 
     evaluate(env) {

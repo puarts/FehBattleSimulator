@@ -239,6 +239,11 @@ const AFTER_CANTO_HOOKS = new SkillEffectHooks();
 const AFTER_FOLLOW_UP_CONFIGURED_HOOKS = new SkillEffectHooks();
 
 /**
+ * 判定後
+ * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
+const AFTER_CONDITION_CONFIGURED_HOOKS = new SkillEffectHooks();
+
+/**
  * ステータス比較時(虚勢など)
  * @type {SkillEffectHooks<StatsNode, NodeEnv>} */
 const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();
@@ -249,9 +254,9 @@ const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();
 const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
- * 戦闘後の再行動評価時
+ * 戦闘後の再行動評価時（周囲の味方、自分の再行動効果の後）
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
-const FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+const FOR_ALLIES_AFTER_COMBAT_FOR_ANOTHER_ACTION_AFTER_OWN_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
 
 /**
  * 味方の戦闘後の再行動評価時

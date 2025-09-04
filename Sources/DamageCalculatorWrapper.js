@@ -29,8 +29,9 @@ class PerformanceProfile {
 
 class ScopedTileChanger {
     /**
-     * @param  {Unit} atkUnit
-     * @param  {Tile} tileToAttack
+     * @param {Unit} atkUnit
+     * @param {Tile} tileToAttack
+     * @param {Function} tileChangedFunc=null
      */
     constructor(atkUnit, tileToAttack, tileChangedFunc = null) {
         this._origTile = atkUnit.placedTile;
@@ -38,9 +39,7 @@ class ScopedTileChanger {
         let isTileChanged = tileToAttack !== this._origTile;
         if (tileToAttack !== null && isTileChanged) {
             tileToAttack.setUnit(atkUnit);
-            if (tileChangedFunc !== null) {
-                tileChangedFunc();
-            }
+            tileChangedFunc?.();
         }
     }
 
@@ -165,7 +164,7 @@ class DamageCalculatorWrapper {
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
      * @param  {Number} gameMode=GameMode.Arena
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
         this.#initBattleContext(atkUnit, defUnit);
@@ -260,7 +259,7 @@ class DamageCalculatorWrapper {
      * @param  {Tile} tileToAttack=null
      * @param damageType
      * @param  {Number} gameMode=GameMode.Arena
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     calcDamageTemporary(
         atkUnit,
@@ -289,12 +288,13 @@ class DamageCalculatorWrapper {
 
     /**
      * 戦闘のダメージを計算します。
+     * （攻撃対象への範囲奥義、戦闘。戦闘後のスキル効果は除く）
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      * @param  {Tile} tileToAttack=null
      * @param  {number} damageType=DamageType.ActualDamage
      * @param  {number} gameMode=GameMode.Arena
-     * @returns {DamageCalcResult}
+     * @returns {CombatResult}
      */
     calcDamage(
         atkUnit,
@@ -305,7 +305,12 @@ class DamageCalculatorWrapper {
     ) {
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
+        /** @type {CombatResult} */
         let result;
+        /** @type {DamageCalcEnv} */
+        let damageCalcEnv = new DamageCalcEnv().setUnits(atkUnit, defUnit)
+            .setTileToAttack(tileToAttack).setDamageType(damageType).setGameMode(gameMode);
+
         this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
         using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
             self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
@@ -337,67 +342,81 @@ class DamageCalculatorWrapper {
             defUnit.saveCurrentHpAndSpecialCount();
 
             // 戦闘前ダメージ計算
-            let preCombatDamage = 0;
-            let preCombatDamageWithOverkill = 0;
+            this.calcPreCombatResult(damageCalcEnv);
 
-            let canTriggerPrecombatSpecial = !atkUnit.battleContext.cannotTriggerPrecombatSpecial;
-            let canActivatePrecombatSpecial = atkUnit.canActivatePrecombatSpecial() && canTriggerPrecombatSpecial;
-            if (canActivatePrecombatSpecial && !calcPotentialDamage) {
-                if (damageType === DamageType.EstimatedDamage) {
-                    atkUnit.precombatSpecialTiles =
-                        Array.from(this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit));
-                }
-                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit, damageType);
-                // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
-                defUnit.battleContext.clearPrecombatState();
-
-                // 戦闘開始時のHPを保存
-                defUnit.battleContext.restHp = defUnit.restHp;
-            }
-
-            let actualDefUnit = defUnit;
-            if (!calcPotentialDamage) {
-                let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit, damageType);
-                if (saverUnit != null) {
-                    // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
-                    preCombatDamage = 0;
-                    preCombatDamageWithOverkill = 0;
-                    if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
-                    self.__initSaverUnit(saverUnit, defUnit, damageType);
-                    if (canActivatePrecombatSpecial) {
-                        // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
-                        let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
-                        for (let tile of tiles) {
-                            if (tile.placedUnit === saverUnit) {
-                                [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit, damageType);
-                                saverUnit.battleContext.clearPrecombatState();
-                                saverUnit.battleContext.restHp = saverUnit.restHp;
-                            }
-                        }
-                    }
-                    // NOTE: 護られるユニットの防御床情報を護り手に入れる
-                    saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
-                    actualDefUnit = saverUnit;
-                }
-
-                // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
-                atkUnit.battleContext.clearPrecombatState();
-            }
-
-            atkUnit.precombatContext.copyTo(atkUnit.battleContext);
-            defUnit.precombatContext.copyTo(defUnit.battleContext);
-
-            result = self.calcCombatResult(atkUnit, actualDefUnit, damageType, gameMode);
-            result.preCombatDamage = preCombatDamage;
-            result.preCombatDamageWithOverkill = preCombatDamageWithOverkill;
+            // 戦闘ダメージ計算
+            result = self.calcCombatResult(damageCalcEnv);
 
             // ダメージプレビュー用にスナップショットに戦闘中バフ値をコピー
             atkUnit.copySpursToSnapshot();
-            actualDefUnit.copySpursToSnapshot();
+            damageCalcEnv.defUnit.copySpursToSnapshot();
         });
         this.logger.trace2(`[行動後] ${atkUnit.getLocationStr(tileToAttack)}`);
-
         return result;
+    }
+
+    /**
+     * @param {DamageCalcEnv} damageCalcEnv
+     */
+    calcPreCombatResult(damageCalcEnv) {
+        let self = this;
+        let atkUnit = damageCalcEnv.atkUnit;
+        let defUnit = damageCalcEnv.defUnit;
+        let calcPotentialDamage = damageCalcEnv.calcPotentialDamage;
+        let damageType = damageCalcEnv.damageType;
+
+        let preCombatDamage = 0;
+        let preCombatDamageWithOverkill = 0;
+
+        let canTriggerPrecombatSpecial = !atkUnit.battleContext.cannotTriggerPrecombatSpecial;
+        let canActivatePrecombatSpecial = atkUnit.canActivatePrecombatSpecial() && canTriggerPrecombatSpecial;
+        if (canActivatePrecombatSpecial && !calcPotentialDamage) {
+            if (damageType === DamageType.EstimatedDamage) {
+                atkUnit.precombatSpecialTiles =
+                    Array.from(this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit));
+            }
+            [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, defUnit, damageType);
+            // NOTE: 護り手が範囲にいる場合は護り手に対してダメージを計算しないといけないのでここではまだatkUnitのPrecombatStateはクリアしない
+            defUnit.battleContext.clearPrecombatState();
+
+            // 戦闘開始時のHPを保存
+            defUnit.battleContext.restHp = defUnit.restHp;
+        }
+
+        let actualDefUnit = defUnit;
+        if (!calcPotentialDamage) {
+            let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit, damageType);
+            damageCalcEnv.setSaverUnit(saverUnit);
+            if (saverUnit != null) {
+                // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
+                preCombatDamage = 0;
+                preCombatDamageWithOverkill = 0;
+                if (self.isLogEnabled) self.writeDebugLog(`${saverUnit.getNameWithGroup()}による護り手発動`);
+                self.__initSaverUnit(saverUnit, defUnit, damageType);
+                if (canActivatePrecombatSpecial) {
+                    // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
+                    let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
+                    for (let tile of tiles) {
+                        if (tile.placedUnit === saverUnit) {
+                            [preCombatDamage, preCombatDamageWithOverkill] = self.calcPrecombatSpecialResult(atkUnit, saverUnit, damageType);
+                            saverUnit.battleContext.clearPrecombatState();
+                            saverUnit.battleContext.restHp = saverUnit.restHp;
+                        }
+                    }
+                }
+                // NOTE: 護られるユニットの防御床情報を護り手に入れる
+                saverUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile;
+                actualDefUnit = saverUnit;
+            }
+
+            // NOTE: 範囲奥義の計算が全て終わったのでここでatkUnitの状態をクリアする
+            atkUnit.battleContext.clearPrecombatState();
+        }
+        damageCalcEnv.combatResult.setPreCombatDamage(preCombatDamage)
+            .setPreCombatDamageWithOverkill(preCombatDamageWithOverkill);
+
+        atkUnit.precombatContext.copyTo(atkUnit.battleContext);
+        defUnit.precombatContext.copyTo(defUnit.battleContext);
     }
 
     /**
@@ -525,14 +544,17 @@ class DamageCalculatorWrapper {
         this.__applyPrecombatSkills(atkUnit, defUnit, damageType);
         return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
     }
+
     /**
-     * @param  {Unit} atkUnit
-     * @param  {Unit} defUnit
-     * @param  {number} damageType
-     * @param  {number} gameMode
-     * @returns {DamageCalcResult}
+     * @param  {DamageCalcEnv} damageCalcEnv
+     * @returns {CombatResult}
      */
-    calcCombatResult(atkUnit, defUnit, damageType, gameMode) {
+    calcCombatResult(damageCalcEnv) {
+        let atkUnit = damageCalcEnv.atkUnit;
+        let defUnit = damageCalcEnv.defUnit;
+        let damageType = damageCalcEnv.damageType;
+        let gameMode = damageCalcEnv.gameMode;
+
         this.combatPhase = NodeEnv.COMBAT_PHASE.AT_START_OF_COMBAT;
         let calcPotentialDamage = damageType === DamageType.PotentialDamage;
         let self = this;
@@ -707,9 +729,11 @@ class DamageCalculatorWrapper {
             this.applySkillEffectsAfterAfterBeginningOfCombatFromAllies(defUnit, atkUnit, calcPotentialDamage, damageType);
         }
 
+        this.applySkillEffectAfterConditionDetermined(damageCalcEnv);
+
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
-        result = self._damageCalc.calcCombatResult(atkUnit, defUnit, damageType);
+        result = self._damageCalc.calcCombatResult(damageCalcEnv);
         // });
         return result;
     }
@@ -799,20 +823,6 @@ class DamageCalculatorWrapper {
             for (let skillId of atkUnit.enumerateSkills()) {
                 getSkillFunc(skillId, selectReferencingResOrDefFuncMap)?.call(this, atkUnit, defUnit);
                 switch (skillId) {
-                    case Weapon.DeliverersBrand:
-                        if (atkUnit.battleContext.restHpPercentage >= 25) {
-                            if (atkUnit.special === Special.Bonfire ||
-                                atkUnit.special === Special.Ignis ||
-                                atkUnit.special === Special.Hotarubi) {
-                                if (this.isLogEnabled) this.writeDebugLog(`${atkUnit.weaponInfo.name}により守備魔防の低い方でダメージ計算`);
-
-                                let defInCombat = defUnit.getDefInCombat(atkUnit);
-                                let resInCombat = defUnit.getResInCombat(atkUnit);
-                                atkUnit.battleContext.refersResForSpecial = defInCombat === resInCombat ? atkUnit.isPhysicalAttacker() : resInCombat < defInCombat;
-                                break;
-                            }
-                        }
-                        break;
                     case Special.SeidrShell: {
                         if (this.isLogEnabled) this.writeDebugLog("魔弾により守備魔防の低い方でダメージ計算");
 
@@ -992,12 +1002,6 @@ class DamageCalculatorWrapper {
                     let ratio = Math.min(defUnit.maxSpecialCount * 0.1, 0.5);
                     defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                 }
-                    break;
-                case Weapon.ArchSageTome:
-                    if (this.__isThereAllyInSpecifiedSpaces(defUnit, 3)) {
-                        let ratio = DamageCalculationUtility.getResDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
-                    }
                     break;
                 case Weapon.DreamHorn:
                     if (defUnit.battleContext.restHpPercentage >= 25) {
@@ -2248,6 +2252,12 @@ class DamageCalculatorWrapper {
         };
     }
 
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {boolean} calcPotentialDamage
+     * @private
+     */
     __applySKillEffectForUnitAtBeginningOfCombat(targetUnit, enemyUnit, calcPotentialDamage) {
         // 天脈
         let tile = targetUnit.placedTile;
@@ -2390,9 +2400,6 @@ class DamageCalculatorWrapper {
                 let amount = Math.min(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 3);
                 targetUnit.addAllSpur(amount);
             }
-        }
-        if (targetUnit.hasStatusEffect(StatusEffectType.RallySpectrum)) {
-            targetUnit.addAllSpur(5);
         }
         if (targetUnit.hasStatusEffect(StatusEffectType.HushSpectrum)) {
             targetUnit.addAllSpur(-5);
@@ -2868,42 +2875,11 @@ class DamageCalculatorWrapper {
                 return Math.min(defUnit.maxSpecialCount * 0.1, 0.5);
             });
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.DeliverersBrand] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.4, enemyUnit);
-                targetUnit.battleContext.applyInvalidationSkillEffectFuncs.push(
-                    (targetUnit, enemyUnit, calcPotentialDamage) => {
-                        enemyUnit.battleContext.increaseCooldownCountForAttack = false;
-                        enemyUnit.battleContext.increaseCooldownCountForDefense = false;
-                        enemyUnit.battleContext.reducesCooldownCount = false;
-                    }
-                );
-                if (targetUnit.maxSpecialCount >= 3 ||
-                    isNormalAttackSpecial(targetUnit.special)) {
-                    targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
-                }
-            }
-        }
         this._applySkillEffectForUnitFuncDict[PassiveB.GoldUnwinding] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             enemyUnit.addSpdResSpurs(-5);
             if (targetUnit.battleContext.restHpPercentage >= 50 &&
                 targetUnit.battleContext.initiatesCombat) {
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.6, enemyUnit);
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.TheCyclesTurn] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat ||
-                targetUnit.hasPositiveStatusEffect(enemyUnit)) {
-                targetUnit.addAllSpur(5);
-                let amount = Math.min(this.globalBattleContext.currentTurn * 2, 10);
-                targetUnit.addAtkSpdSpurs(amount);
-                targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
-                    let spd = DamageCalculatorWrapper.__getSpd(atkUnit, defUnit, isPrecombat);
-                    atkUnit.battleContext.additionalDamage += Math.trunc(spd * 0.2);
-                });
-                targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveA.RareTalent] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -2934,22 +2910,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                 );
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.ArchSageTome] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedFuncs.push(
-                    (targetUnit, enemyUnit, calcPotentialDamage) => {
-                        // 周囲3マス以内の場合
-                        let units = this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, 3);
-                        let amounts = this.__getHighestBuffs(targetUnit, enemyUnit, units);
-                        targetUnit.addSpurs(...amounts);
-                    }
-                );
-                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
-                    return DamageCalculationUtility.getResDodgeDamageReductionRatio(atkUnit, defUnit);
-                });
             }
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.CounterRoar4] = (targetUnit, enemyUnit, calcPotentialDamage) => {
@@ -4549,22 +4509,6 @@ class DamageCalculatorWrapper {
                 targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.EnclosingDark] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isSolo(targetUnit) || calcPotentialDamage) {
-                targetUnit.addSpurs(6, 6, 0, 0);
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                let count = self.__countAlliesWithinSpecifiedSpaces(enemyUnit, 2);
-                if (count === 1) {
-                    enemyUnit.addSpurs(0, -4, 0, -4);
-                } else if (count >= 2) {
-                    enemyUnit.addSpurs(0, -8, 0, -8);
-                    targetUnit.battleContext.invalidatesCounterattack = true;
-                }
-            }
-            if (targetUnit.battleContext.initiatesCombat) {
-                targetUnit.battleContext.isDesperationActivatable = true;
-            }
-        }
         this._applySkillEffectForUnitFuncDict[PassiveC.AllTogether] = (targetUnit, enemyUnit) => {
             if (self.__isThereAllyIn2Spaces(targetUnit)) {
                 targetUnit.addAllSpur(4);
@@ -5138,13 +5082,6 @@ class DamageCalculatorWrapper {
         }
         this._applySkillEffectForUnitFuncDict[PassiveB.SpdResBulwark3] = (targetUnit, enemyUnit) => {
             enemyUnit.addSpdResSpurs(-4);
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.IlluminatingHorn] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.battleContext.weaponSkillCondSatisfied = true;
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
-            }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.EverlivingBreath] = (targetUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
@@ -10789,10 +10726,6 @@ class DamageCalculatorWrapper {
         if (targetUnit.hasStatusEffect(StatusEffectType.Sabotage)) {
             this.__applySabotage(targetUnit);
         }
-        if (targetUnit.hasStatusEffect(StatusEffectType.Discord)) {
-            let amount = Math.min(this.__countAlliesWithinSpecifiedSpaces(targetUnit, 2), 3) + 2;
-            targetUnit.addAllSpur(-amount);
-        }
         if (targetUnit.hasStatusEffect(StatusEffectType.FoePenaltyDoubler)) {
             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
             enemyUnit.spdSpur -= Math.abs(enemyUnit.spdDebuffTotal);
@@ -11935,11 +11868,6 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.PastelPoleaxe:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def);
-                        }
-                        break;
-                    case Weapon.IlluminatingHorn:
-                        if (targetUnit.battleContext.weaponSkillCondSatisfied) {
                             this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def);
                         }
                         break;
@@ -17098,5 +17026,17 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+    }
+
+    applySkillEffectAfterConditionDetermined(damageCalcEnv) {
+        let applySkill = (targetUnit, enemyUnit) => {
+            let env =
+                new DamageCalculatorWrapperEnv(this, targetUnit, enemyUnit, damageCalcEnv.calcPotentialDamage);
+            env.setName('全ての条件決定後').setLogLevel(getSkillLogLevel()).setDamageType(damageCalcEnv.damageType)
+                .setCombatPhase(this.combatPhase);
+            AFTER_CONDITION_CONFIGURED_HOOKS.evaluateWithUnit(targetUnit, env);
+        };
+        applySkill(damageCalcEnv.atkUnit, damageCalcEnv.defUnit);
+        applySkill(damageCalcEnv.defUnit, damageCalcEnv.atkUnit);
     }
 }

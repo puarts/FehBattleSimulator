@@ -31,10 +31,10 @@ class AttackableUnitInfo {
         this.bestTileToAttack = null;
         this.damageRatios = [];
 
-        /** @type {CombatResult[]} **/
+        /** @type {CombatResultType[]} **/
         this.combatResults = [];
 
-        /** @type {DamageCalcResult[]} **/
+        /** @type {CombatResult[]} **/
         this.combatResultDetails = [];
 
         /** @type {boolean} **/
@@ -54,7 +54,7 @@ class AttackableUnitInfo {
 class AttackEvaluationContext {
     constructor() {
         this.damageRatio = 0;
-        this.combatResult = CombatResult.Draw;
+        this.combatResult = CombatResultType.Draw;
         this.isDebufferTier1 = false;
         this.isDebufferTier2 = false;
         this.isAfflictor = false;
@@ -6437,7 +6437,6 @@ class Unit extends BattleMapElement {
                     }
                     break;
                 case PassiveB.DeepStar:
-                case Weapon.TheCyclesTurn:
                 case Weapon.TeatimeSetPlus:
                 case Weapon.BakedTreats:
                 case Weapon.FujinRaijinYumi:
@@ -6565,6 +6564,14 @@ class Unit extends BattleMapElement {
         return isDefenseSpecial(this.special);
     }
 
+    isAttackSpecialReady() {
+        return this.hasNormalAttackSpecial() && this.tmpSpecialCount === 0;
+    }
+
+    isDefenseSpecialReady() {
+        return this.hasDefenseSpecial() && this.tmpSpecialCount === 0;
+    }
+
     addHpAfterEnteringBattle(value) {
         this._maxHpWithSkills += value;
         this.#hpAddAfterEnteringBattle += value;
@@ -6613,6 +6620,7 @@ class Unit extends BattleMapElement {
         this.isBonusChar = false;
         this.initAdditionalPassives();
         this.initCustomSkills();
+        this.resetStatusAdd();
     }
 
     grantsAnotherAction() {
@@ -6884,6 +6892,13 @@ class Unit extends BattleMapElement {
 
     hasCannotMoveStyle() {
         return this.hasAvailableStyle() && CANNOT_MOVE_STYLES.has(this.getAvailableStyle());
+    }
+
+    toJSON() {
+        return {
+            nameWithGroup: this.nameWithGroup,
+            tile: this.placedTile,
+        };
     }
 }
 

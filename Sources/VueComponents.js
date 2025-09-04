@@ -1838,7 +1838,7 @@ function initVueComponents() {
                 </td>
                 <td class="col-save">
                   <button class="icon-button save-button"
-                          @click="getAppData().saveUnitAt(originalIndex)
+                          @click="saveUnitAt(originalIndex)
                                   ? showFlash('上書き保存しました', 'success', true)
                                   : showFlash('キャンセルしました', 'success', true)">
                     <i class="fa-solid fa-save" title="上書き保存"></i>
