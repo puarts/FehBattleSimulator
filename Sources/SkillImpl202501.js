@@ -1,5 +1,162 @@
 // スキル実装
 
+    // 🪄 Disguise Lance
+    //
+    // Mt: 16 Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    // inflicts Spd/Def-7, [Sabotage], and [Panic] on closest foes to both unit and target ally or unit and targeting ally after movement and foes within 2 spaces of those foes through their next actions.
+    //
+    // At start of combat, if unit’s HP ≥ 25%, grants bonus to unit’s Atk/Spd/Def/Res = number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // unit deals +X × 5 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by X × 3 (excluding area-of-effect Specials),
+    // and reduces damage from foe’s Specials by an additional X × 3 during combat (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit and foe, excluding stat bonuses; max 5),
+    // and also, if Future Witness is active on unit or unit’s Spd > foe’s Spd, unit attacks twice during combat.
+
+    // 🛡 Future Gaze
+    //
+    // Rng: 1
+    // Unit and target ally swap spaces.
+    //
+    // Grants [Future Witness], [Dodge], and [Foe Penalty Doubler]
+    // to allies within 2 spaces of both unit and target after movement for 1 turn (including unit and target),
+    // grants Special cooldown-1 to unit and those allies,
+    // and grants another action to unit (once per turn).
+
+    // 🅱 Atk/Spd Favor
+    //
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    // grants Atk/Spd+6, [Empathy], and
+    // “reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills by 50% during combat (excluding area-of-effect Specials)”
+    // to unit and target ally or unit and targeting ally for 1 turn,
+    // and grants Special cooldown-1 to unit and target ally or unit and targeting ally once per turn.
+    //
+    // Allies on the map with [Empathy] active deal +7 damage during combat (excluding area-of-effect Specials).
+    //
+    // Inflicts Spd/Def/Res-4 on foe
+    // and unit deals +X+7 damage during combat (excluding area-of-effect Specials;
+    // X = highest total Atk+Spd bonuses among unit and allies with [Empathy] active).
+
+    // 🏹 Gladiator’s Bow
+    //
+    // Mt：14 Rng：2 Eff：🪶
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+    //
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    // inflicts Atk/Def-7, [Exposure], [Discord],
+    // and a penalty that neutralizes non-Special “if foe would reduce unit’s HP to 0, unit survives with 1 HP” effects
+    // on closest foes to both unit and target ally or unit and targeting ally after movement
+    // and foes within 2 spaces of those foes through their next actions.
+    //
+    // If unit initiates combat or unit is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+X to unit (X = number of Bonus effects and Penalty effects active on unit × 2,
+    // excluding stat bonuses and stat penalties + 10% of unit’s Def at start of combat + 5),
+    // neutralizes foe’s bonuses to Atk/Def,
+    // and unit deals +Y × 5 damage during combat (excluding area-of-effect Specials;
+    // Y = number of Bonus effects active on unit and foe, excluding stat bonuses; max 5),
+    // and also, if unit initiates combat, unit can make a follow-up attack before foe’s next attack.
+
+    // 🛡 Conquering Fate
+    //
+    // Rng：1
+    // Moves target ally to opposite side of unit.
+    // Grants another action to unit, inflicts [Isolation] on unit and Pair Up cohort,
+    // grants [Change of Fate] to unit and target ally for 1 turn,
+    // grants Special cooldown count-1 to unit and target ally,
+    // and grants any Bonus active on unit to target ally,
+    // and any active on target ally to unit (once per turn; granted bonuses exclude stat bonuses inverted by Panic).
+    //
+    // [Change of Fate]
+    // Enables [Canto (2)].
+    //
+    // Grants Atk/Spd/Def/Res+5 to unit and unit deals damage = 3 × the total of the number of Bonus and Penalty effects active on unit,
+    // excluding stat bonuses and stat penalties, during combat (max 15; including area-of-effect Specials).
+
+    // 🅱️ Atk/Def Favor
+    //
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    // grants Atk/Def+6, [Empathy],
+    // and “reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills by 50% during combat (excluding area-of-effect Specials)”
+    // to unit and target ally or unit and targeting ally for 1 turn,
+    // and grants Special cooldown-1 to unit and target ally or unit and targeting ally once per turn.
+    //
+    // Allies on the map with [Empathy] active deal +7 damage during combat (excluding area-of-effect Specials).
+    //
+    // Inflicts Atk/Def/Res-4 on foe and unit deals +X+7 damage during combat (excluding area-of-effect Specials;
+    // X = highest total Atk+Def bonuses among unit and allies with [Empathy] active).
+
+    // 🅲 Time Pulse Arms
+    //
+    // At start of turn, if unit’s Special cooldown count is at its maximum value,
+    // grants Special cooldown count-1 to unit.
+    //
+    // Grants bonus to unit’s Atk/Def during combat = unit’s maximum Special cooldown count value + 2.
+    // If unit’s Special cooldown count is at its maximum value after combat,
+    // grants Special cooldown count-1 to unit.
+
+    // Arena Axe+
+    //
+    // Mt：14 Rng：1
+    // At start of turn and after unit acts (if Canto triggers, after Canto),
+    // inflicts Spd/Def-7, [Spd Shackle], and [Def Shackle]
+    // on closest foes and foes within 2 spaces of those foes through their next actions.
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit,
+    // deals damage = 20% of unit’s Spd (excluding area-of-effect Specials),
+    // and reduces damage from foe’s first attack by 20% of unit’s Spd during combat
+    // (“first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,” it means the first and second strikes).
+    //
+    // [Def Shackle]
+    // Inflicts penalty on unit’s Def during combat = number of Penalty effects active on unit + 4,
+    // excluding stat penalties (max 8).
+
+    // Princesses’ Edge
+    //
+    // Mt：16 Rng：1
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // At start of turn, grants Special cooldown count-2 to unit.
+    //
+    // At start of turn and after unit acts (if Canto triggers, after Canto),
+    // inflicts Spd/Def-7, [Discord], [Spd Shackle], and [Def Shackle]
+    // on closest foes and foes within 2 spaces of those foes through their next actions.
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // unit deals +X × 3 damage (excluding area-of-effect Specials;
+    // X = number of Bonus effects and Penalty effects active on target and foes within 2 spaces of target,
+    // excluding stat bonuses and stat penalties),
+    // reduces damage from foe’s attacks by 20% of unit’s Spd (excluding area-of-effect Specials),
+    // neutralizes effects that guarantee foe’s follow-up attacks
+    // and effects that prevent unit’s follow-up attacks,
+    // and grants Special cooldown charge +1 to unit per attack during combat
+    // (only highest value applied; does not stack).
+
+    // Galeforce Mist
+    //
+    // CD：5
+    // If unit initiates combat,
+    // when unit’s Special triggers, grants another action to unit after combat (once per turn).
+    //
+    // If unit initiates combat, reduces damage from foe’s attacks by 40% during combat
+    // (excluding area-of-effect Specials).
+
+    // Harmonized Skill
+    //
+    // Grants [Resonance: Blades] to unit and allies from the same titles as unit for 1 turn
+    // and grants Special cooldown count-2 to unit and allies from the same titles as unit.
+    //
+    // Any effect that can be triggered only once per turn
+    // by unit’s equipped Special skill can be triggered again
+    // if that effect has already been triggered
+    // (excludes boosted Special effects from engaging).
+
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.RallySpectrum);
     // Grants Atk/Spd/Def/Res+5 to unit during combat and
