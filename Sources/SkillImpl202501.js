@@ -13517,7 +13517,7 @@
 {
     let skillId = PassiveB.IRemember;
     // At start of player phase or enemy phase,
-    let nodeFunc = () => new SkillEffectNode(
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
         // if unit is within 2 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
             // on closest foes and foes within 2 spaces of those foes through their next actions.
@@ -13528,9 +13528,7 @@
                 INFLICTS_STATUS_EFFECTS_AT_START_OF_TURN_NODE(StatusEffectType.Panic, StatusEffectType.Sabotage),
             ),
         ),
-    );
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, nodeFunc);
-    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
+    ));
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or is within 2 spaces of an ally,
