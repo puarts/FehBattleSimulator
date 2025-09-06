@@ -5224,6 +5224,7 @@ class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
         let amounts = this.evaluateChildren(env).map(v => -v);
         env.debug(`${unit.nameWithGroup}にデバフ予約: [${amounts}]`);
         unit.reserveToApplyDebuffs(...amounts);
+        env.checkNotCombatPhase();
     }
 }
 
