@@ -1618,7 +1618,7 @@
     );
 
     // 敵を通過可能
-    CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
+    CAN_MOVE_THROUGH_FOES_SPACE_SKILLS.add(skillId);
 
     TELEPORTATION_SKILL_SET.add(skillId);
     enumerateTeleportTilesForUnitFuncMap.set(skillId,

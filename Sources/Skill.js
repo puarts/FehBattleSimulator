@@ -838,7 +838,10 @@ REPOSITION_ASSIST_SKILLS = new Set();
  */
 GALEFORCE_SKILLS = new Set();
 
-CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET = new Set();
+/**
+ * @type {Set<number|string>}
+ */
+CAN_MOVE_THROUGH_FOES_SPACE_SKILLS = new Set();
 
 /**
  * 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。

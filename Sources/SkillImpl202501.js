@@ -1,5 +1,64 @@
 // スキル実装
 
+// Clouded Blade
+{
+    let skillId = Weapon.CloudedBlade;
+    // Mt 16 Rng 1 HP+3
+    // Enables [Canto (Rem. +1; Min 2)] •
+    enablesCantoRemPlusMin(skillId, 1, 2);
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Calculates damage using the lower of foe's Def or Res.
+        CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,
+        // If unit initiates combat or the number of allies adjacent to unit ≤ 1,
+        IF_NODE(
+            OR_NODE(
+                DOES_UNIT_INITIATE_COMBAT_NODE,
+                LTE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE, 1),
+            ),
+            // grants Atk/Spd/Def/Res+5 to unit and
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            X_NUM_NODE(
+                // reduces damage from foe's attacks by X × 4
+                // (excluding area-of-effect Specials), and
+                REDUCES_DAMAGE_BY_N_NODE(MULT_NODE(READ_NUM_NODE, 4)),
+                // reduces damage from foe's Specials by an additional X × 4 during combat
+                // (excluding area-of-effect Specials;
+                REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(MULT_NODE(READ_NUM_NODE, 4)),
+                // X = number of spaces from start position to end position of whoever initiated combat; max 3), and also,
+                ENSURE_MAX_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 3),
+            ),
+            // when unit deals damage to foe during combat,
+            // restores 7 HP to unit.
+            WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_TO_TARGET_NODE(7),
+        ),
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.CloudedBlade);
+    // For foes within 3 rows and 3 columns centered on unit,
+    setForFoesSkillsDuringCombatHooks(skillId,
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        // inflicts Atk/Spd/Def/Res-5 on foe,
+        INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+        SKILL_EFFECT_NODE(
+            // inflicts Special cooldown charge -1 on foe per attack
+            // (only highest value applied; does not stack), and
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+            // foe suffers guaranteed follow-up attacks during combat.
+            FOE_SUFFERS_GUARANTEED_FOLLOW_UP_ATTACKS_DURING_COMBAT,
+        ),
+    );
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // deals damage = 20% of unit's Def during combat
+            // (excluding area-of-effect Specials).
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_DEF_NODE)),
+        ),
+    ));
+}
+
 // 🪄 Disguise Lance
 {
     let skillId = Weapon.DisguiseLance;
@@ -553,21 +612,86 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.IlluminatingHorn);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-    ));
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // If unit initiates combat or is within 3 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit,
+    // unit makes a guaranteed follow-up attack,
+    // deals damage = 20% of unit's Def, and
+    // reduces damage from foe's attacks by 20% of unit's Def during combat
+    // (excluding area-of-effect Specials).
+    //
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies
+    // or if unit is not adjacent to any ally,
+    // unit transforms (otherwise, unit reverts).
+    //
+    // If unit transforms,
+    // grants Atk+2,
+    // deals +7 damage when Special triggers, and
+    // neutralizes effects that grant "Special cooldown charge +X" to foe
+    // or inflict "Special cooldown charge -X" on unit.
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        // 戦闘中、攻撃、速さ、守備、魔防+5、絶対追撃、かつ、
+        SKILL_EFFECT_NODE(
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+        // 与えるダメージ+自分の守備の20%、受けるダメージ-自分の守備の20%、(範囲奥義を除く)
+        SKILL_EFFECT_NODE(
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_DEF_NODE)),
+            REDUCES_DAMAGE_BY_N_NODE(PERCENTAGE_NODE(20, UNITS_DEF_NODE)),
+        ),
+    );
+    // ターン開始時、竜、獣以外の味方と隣接していない場合、化身状態になる(そうでない場合、化身状態を解除)
+    // 化身状態なら、攻撃+2、かつ奥義発動時、奥義によるダメージ+7、戦闘中、敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
+    setBeastSkill(skillId, BeastCommonSkillType.Infantry2);
 }
 {
     let skillId = getSpecialRefinementSkillId(Weapon.IlluminatingHorn);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    // For allies within 3 rows or 3 columns centered on unit,
+    setForAlliesHooks(skillId,
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        // grants Atk/Def/Res+5,
+        GRANTS_ATK_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(5),
+        SKILL_EFFECT_NODE(
+            // neutralizes penalties on ally, and
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+            // inflicts Special cooldown charge -1 on foe per attack during combat
+            // (only highest value applied; does not stack).
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+        ),
+    );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If foe initiates combat or if unit's HP ≥ 25% at start of combat,
+        IF_NODE(
+            OR_NODE(
+                DOES_FOE_INITIATE_COMBAT_NODE,
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            ),
+            // grants bonus to unit's Atk/Def/Res =
+            GRANTS_ATK_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                // number of allies within 3 spaces of unit × 2 + 5 (max 11),
+                MULT_ADD_MAX_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 2, 5, 11),
+            ),
+            // neutralizes penalties on unit,
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+            // inflicts Special cooldown charge -1 on foe per attack
+            // (only highest value applied; does not stack), and
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE,
+            // reduces the percentage of foe's non-Special
+            // "reduce damage by X%" skills by 50% during combat
+            // (excluding area-of-effect Specials).
+            REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+        )
     ));
 }
 
 {
     let skillId = getNormalSkillId(Weapon.EnclosingDark);
     // 奥義が発動しやすい(発動カウント-1)
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // 自分から攻撃した時、または、周囲1マス以内に味方がいない時、戦闘中、攻撃、速さ+6、自分の追撃不可を無効
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_NOT_TARGET_ADJACENT_TO_AN_ALLY),
@@ -597,14 +721,79 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.EnclosingDark);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    // Accelerates Special trigger (cooldown count-1).
+    // If unit initiates combat or the number of allies adjacent to unit ≤ 1,
+    // grants Atk/Spd+6 to unit and
+    // neutralizes effects that guarantee foe's follow-up attacks and
+    // effects that prevent unit's follow-up attacks, and
+    // inflicts the following effects based on the number of foes within 2 spaces of target (excluding target) during combat:
+    // if = 1, inflicts Spd/Res-4 on foe;
+    // if ≥ 2, inflicts Spd/Res-8 on foe and foe cannot counterattack.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 自分から攻撃した時、または、周囲1マス以内に味方がいない時、戦闘中、攻撃、速さ+6、自分の追撃不可を無効
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_NOT_TARGET_ADJACENT_TO_AN_ALLY),
+            GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(6),
+            UNIT_NEUTRALIZES_EFFECTS_THAT_PREVENT_UNITS_FOLLOW_UP_ATTACKS_DURING_COMBAT,
+        ),
+        // 自分から攻撃した時、追撃可能なら自分の攻撃の直後に追撃を行う
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+        ),
+        // 自分から攻撃した時、または、周囲1マス以内に味方がいない時、
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_NOT_TARGET_ADJACENT_TO_AN_ALLY),
+            // 戦闘中、戦闘相手の周囲2マス以内の敵の数(戦闘相手を除く)に応じて以下の効果を発動
+            APPLY_X_NODES(
+                FOR_FOE_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE),
+                // (・1なら、敵の速さ、魔防-4、・2以上なら、敵の速さ、魔防-8、敵は反撃不可)
+                IF_NODE(EQ_NODE(READ_NUM_NODE, 1),
+                    INFLICTS_SPD_RES_ON_FOE_DURING_COMBAT_NODE(4),
+                ),
+                IF_NODE(GTE_NODE(READ_NUM_NODE, 2),
+                    INFLICTS_SPD_RES_ON_FOE_DURING_COMBAT_NODE(8),
+                    FOE_CANNOT_COUNTERATTACK_NODE,
+                ),
+            )
+        ),
+        // If unit initiates combat,
+        IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+            // unit can make a follow-up attack before foe's next attack.
+            UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+        ),
     ));
 }
 {
     let skillId = getSpecialRefinementSkillId(Weapon.EnclosingDark);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants Atk/Spd+6, [Preempt Pulse], and [Resonance: Blades]
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                ATK_SPD_NODE(6),
+                StatusEffectType.PreemptPulse,
+                StatusEffectType.ResonantBlades,
+            )
+        ),
+    ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd =
+            GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(
+                // 10% of unit's Spd at start of combat + 6, and
+                PERCENTAGE_ADD_NODE(10, UNITS_SPD_AT_START_OF_COMBAT_NODE, 6),
+            ),
+            X_NUM_NODE(
+                // unit deals +X × 5 damage during combat
+                // (excluding area-of-effect Specials;
+                DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                // X = number of Bonus effects active on unit, excluding stat bonuses
+                // number of Penalty effects active on foe, excluding stat penalties; max 5).
+                ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+            ),
+        ),
     ));
 }
 
@@ -642,14 +831,80 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.TheCyclesTurn);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-    ));
+    // Enables [Canto (Rem.; Min 1)] •
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // If unit initiates combat or Bonus is active on unit,
+    // grants Atk/Spd/Def/Res+5 to unit,
+    // grants additional bonus to unit's Atk/Spd/Def/Res =
+    // turn number x 2 (max +10),
+    // deals damage = 20% of unit's Spd
+    // (including when dealing damage with a Special triggered before combat), and
+    // neutralizes effects that guarantee foe's follow-up attacks and
+    // effects that prevent unit's follow-up attacks during combat.
+    enablesCantoN(skillId, 1);
+    setCondHooks(skillId,
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_BONUS_ACTIVE_ON_UNIT_NODE),
+        [
+            WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+                // grants additional bonus to unit's Atk/Spd/Def/Res =
+                // turn number x 2 (max +10),
+                GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(MULT_MAX_NODE(CURRENT_TURN_NODE, 2, 10)),
+                NULL_UNIT_FOLLOW_UP_NODE,
+            ),
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            ),
+        ],
+        [
+            BEFORE_AOE_SPECIAL_HOOKS,
+            NODE_FUNC(
+                DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+            ),
+        ],
+    );
 }
 {
     let skillId = getSpecialRefinementSkillId(Weapon.TheCyclesTurn);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    // For foes within 3 rows or 3 columns centered on unit,
+    setForFoesSkillsDuringCombatHooks(skillId,
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        // inflicts Atk/Spd/Def/Res-5,
+        INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+        SKILL_EFFECT_NODE(
+            // neutralizes foe's bonuses, and
+            NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
+            // foe suffers +10 damage from attacks during combat
+            // (excluding area-of-effect Specials).
+            DEALS_DAMAGE_X_NODE(10),
+        ),
+    );
+    // After Canto
+    // (including cases where action is ended due to Canto Control),
+    // if unit entered combat on the current turn,
+    // grants another action to unit, and re-enables Canto
+    // (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+    grantsAnotherActionAfterCanto(skillId);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res =
+            GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                // number of foes within 3 rows or 3 columns centered on unit + 2 (max 6), and
+                ADD_MAX_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 2, 6),
+            ),
+            // reduces damage from foe's first attack by 7 during combat
+            // ("first attack" normally means only the first strike;
+            // for effects that grant "unit attacks twice,"
+            // it means the first and second strikes).
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
+        ),
     ));
 }
 
@@ -690,15 +945,105 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.DeliverersBrand);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    // Grants Spd+3.
+    //
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // grants Atk/Spd/Def/Res+5 to unit,
+    // reduces damage from foe's first attack by 40%
+    // ("first attack" normally means only the first strike;
+    // for effects that grant "unit attacks twice,"
+    // it means the first and second strikes),
+    // reduces damage from foe's attacks by 20% of unit's Spd
+    // (excluding area-of-effect Specials), and
+    // neutralizes effects that grant "Special cooldown charge +X" to foe
+    // or inflict "Special cooldown charge -X" on unit during combat.
+    //
+    // At start of combat,
+    // if unit's HP ≥ 25%, and also,
+    // if unit's max Special cooldown count value ≥ 3 and
+    // unit's attack can trigger unit's Special,
+    // when unit's Special triggers
+    // (excluding area-of-effect Specials),
+    // neutralizes "reduces damage by X%" effects from non-Special skills.
+    //
+    // At start of combat,
+    // if unit's HP ≥ 25% and
+    // unit triggers the Glowing Ember, Bonfire, or Ignis Special during combat,
+    // calculates that attack's damage using the lower of foe's Def or Res.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 戦闘開始時、自身のHPが25%以上なら、
+        IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+            // 戦闘中、攻撃、速さ、守備、魔防+5、
+            GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+            // reduces damage from foe's first attack by 40%
+            // ("first attack" normally means only the first strike;
+            // for effects that grant "unit attacks twice,"
+            // it means the first and second strikes),
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_INCLUDING_TWICE_NODE(40),
+            // 敵の奥義発動カウント変動量+を無効、かつ自身の奥義発動カウント変動量-を無効
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        ),
+        // 戦闘開始時、自身のHPが25%以上、かつ自身の奥義発動カウント最大値が3以上の攻撃時発動する奥義が発動した時、奥義以外のスキルによる「ダメージを○○%軽減」を無効(範囲奥義を除く)
+        IF_NODE(
+            AND_NODE(
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                GTE_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 3),
+            ),
+            WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        ),
+        // 戦闘開始時、自身のHPが25%以上で、戦闘中、発動した奥義が「蛍火」「緋炎」「華炎」の時、その時の攻撃を敵の守備か魔防の低い方でダメージ計算
+        IF_NODE(
+            AND_NODE(
+                IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+                OR_NODE(
+                    HAS_TARGET_SPECIAL_NODE(Special.Hotarubi),
+                    HAS_TARGET_SPECIAL_NODE(Special.Bonfire),
+                    HAS_TARGET_SPECIAL_NODE(Special.Ignis),
+                ),
+            ),
+            CALCULATES_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_WHEN_SPECIAL_TRIGGERS_NODE,
+        ),
+    ));
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            // reduces damage from foe's attacks by 20% of unit's Spd
+            // (excluding area-of-effect Specials), and
+            REDUCES_DAMAGE_BY_N_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+        ),
     ));
 }
 {
     let skillId = getSpecialRefinementSkillId(Weapon.DeliverersBrand);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    // Unit can move through foes' spaces.
+    CAN_MOVE_THROUGH_FOES_SPACE_SKILLS.add(skillId)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // inflicts Spd/Res-7, [Sabotage], and [Frozen]
+            // on closest foes and foes within 2 spaces of those foes
+            // through their next actions.
+            INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                SPD_RES_NODE(7),
+                StatusEffectType.Sabotage,
+                StatusEffectType.Frozen,
+            ),
+        ),
     ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If unit initiates combat or if unit is within 2 spaces of an ally,
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        // grants bonus to unit's Atk/Spd/Def/Res =
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+            // number of allies within 3 rows or 3 columns centered on unit × 2 + 5 (max 11), and
+            MULT_ADD_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 2, 5, 11),
+        ),
+        // deals damage = 20% of unit's Spd during combat
+        // (excluding area-of-effect Specials).
+        DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+    );
 }
 
 {
@@ -724,15 +1069,84 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.Vallastone);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    // Accelerates Special trigger (cooldown count-1).
+    // If foe's Range = 2,
+    // calculates damage using the lower of foe's Def or Res.
+    // After unit acts (if Canto triggers, after Canto),
+    // applies [Divine Vein (Stone)] to unit's space and spaces within 2 spaces of unit for 1 turn.
+    //
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // inflicts Atk/Spd/Def/Res-5 on foe,
+    // neutralizes effects that guarantee foe's follow-up attacks and
+    // effects that prevent unit's follow-up attacks,
+    // reduces damage from foe's attacks by 30%
+    // (excluding area-of-effect Specials), and
+    // reduces damage from foe's attacks by 20% of unit's Spd during combat
+    // (including area-of-effect Specials; excluding Rokkr area-of-effect Specials).
+    AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.addSkill(skillId, NODE_FUNC(
+        FOR_EACH_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
+            APPLY_DIVINE_VEIN_NODE(DivineVeinType.Flame, TARGET_GROUP_NODE, 1),
+        ),
     ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+        SKILL_EFFECT_NODE(
+            INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+            NULL_UNIT_FOLLOW_UP_NODE,
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(30),
+        ),
+        REDUCES_DAMAGE_BY_N_NODE(PERCENTAGE_NODE(20, UNITS_SPD_NODE)),
+    );
+    HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS.addSkill(skillId, () => TRUE_NODE)
 }
 {
     let skillId = getSpecialRefinementSkillId(Weapon.Vallastone);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    // At start of player phase or enemy phase,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants [Draconic Hex] and
+            // "neutralizes penalties on unit during combat"
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                StatusEffectType.DraconicHex,
+                StatusEffectType.NeutralizesPenalties,
+            ),
+        ),
     ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If unit is within 3 spaces of an ally,
+        IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+        SKILL_EFFECT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res =
+            GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                // number of allies within 3 rows or 3 columns centered on unit × 2 + 5 (max 11;
+                // if unit triggers Savior, value is treated as 11), and
+                COND_OP(
+                    IS_TARGETS_SAVIOR_TRIGGERED_NODE,
+                    11,
+                    MULT_ADD_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 2, 5, 11),
+                ),
+            ),
+            // unit deals +7 damage during combat
+            // (excluding area-of-effect Specials), and also,
+            DEALS_DAMAGE_X_NODE(7),
+        ),
+        SKILL_EFFECT_NODE(
+            // if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res + 5,
+            IF_NODE(
+                AND_NODE(
+                    CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
+                    GTE_NODE(UNITS_EVAL_RES_NODE, ADD_NODE(FOES_EVAL_RES_NODE, 5)),
+                ),
+                // inflicts Special cooldown count+1 on foe
+                // before foe's first attack during combat
+                // (cannot exceed the foe's maximum Special cooldown).
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+            ),
+        ),
+    );
 }
 
 {
@@ -800,15 +1214,118 @@
 }
 {
     let skillId = getRefinementSkillId(Weapon.ArchSageTome);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // At start of turn,
+    // grants Atk/Spd/Def/Res+6 and [Assign Decoy]
+    // to any support partner within 2 spaces of unit, or
+    // if unit is not on a team with unit's support partner,
+    // to ally with the highest Def within 2 spaces of unit for 1 turn.
+    //
+    // If unit is within 3 spaces of an ally,
+    // grants bonus to unit's Atk/Spd/Def/Res during combat =
+    // 5 + highest bonus on each stat between allies within 3 spaces of unit
+    // (calculates each stat bonus independently), and
+    // reduces damage from foe's attacks by 20% of unit's Res during combat
+    // (including area-of-effect Specials, excluding Rokkr area-of-effect Specials), and also,
+    // if unit's Res > foe's Res,
+    // reduces damage from attacks during combat and from area-of-effect Specials
+    // by percentage = difference between stats × 4 (max 40%;
+    // excluding Rokkr area-of-effect Specials).
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 自軍内に自分と支援を結んでいる相手がいる時、ターン開始時、周囲2マス以内の自分と支援を結んでいる相手の攻撃、速さ、守備、魔防+6、【囮指名】を付与(1ターン)
+        // 自軍内に自分と支援を結んでいる相手がいない時、ターン開始時、周囲2マス以内にいる最も守備が高い味方の攻撃、速さ、守備、魔防+6、【囮指名】を付与(1ターン)
+        IF_ELSE_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
+            SKILL_EFFECT_NODE(
+                FOR_EACH_TARGETS_ALLY_WITHIN_2_SPACES_NODE(
+                    IF_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,
+                        GRANTS_ALL_BONUSES_TO_TARGET_ON_MAP_NODE(6),
+                        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.AssignDecoy),
+                    ),
+                ),
+            ),
+            SKILL_EFFECT_NODE(
+                FOR_EACH_UNIT_NODE(HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(STATUS_INDEX.Def),
+                    GRANTS_ALL_BONUSES_TO_TARGET_ON_MAP_NODE(6),
+                    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.AssignDecoy),
+                ),
+            ),
+        ),
     ));
+    setCondHooks(skillId,
+        // 周囲3マス以内に味方がいる時、戦闘中、
+        IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+        [
+            AT_START_OF_COMBAT_HOOKS,
+            // 自身の攻撃、速さ、守備、魔防+5、さらに、
+            NODE_FUNC(GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE),
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                // 自身の攻撃、速さ、守備、魔防が周囲3マス以内にいる味方のうち強化が最も高い値だけ増加(増加能力値ごとに計算)、かつ
+                FOR_EACH_STAT_INDEX_NODE(
+                    GET_STAT_AT_NODE(
+                        HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(3),
+                        READ_NUM_NODE,
+                    ),
+                ),
+            ),
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                // reduces damage from foe's attacks by 20% of unit's Res during combat
+                REDUCES_DAMAGE_BY_N_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE)),
+                // 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+                IF_NODE(GT_NODE(UNITS_EVAL_RES_NODE, FOES_EVAL_RES_NODE),
+                    REDUCES_DAMAGE_BY_X_PERCENT_NODE(MULT_MAX_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 4, 40)),
+                ),
+            ),
+        ],
+        [
+            BEFORE_AOE_SPECIAL_HOOKS,
+            NODE_FUNC(
+                // 魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+                IF_NODE(GT_NODE(UNITS_EVAL_RES_NODE, FOES_EVAL_RES_NODE),
+                    REDUCES_DAMAGE_BY_X_PERCENT_NODE(MULT_MAX_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 4, 40)),
+                ),
+            ),
+        ],
+    );
 }
 {
     let skillId = getSpecialRefinementSkillId(Weapon.ArchSageTome);
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // At start of turn,
+        // if unit's HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // inflicts Atk/Res-7, [Exposure], and [Discord]
+            // on closest foes and foes within 2 spaces of those foes through their next actions.
+            INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                ATK_RES_NODE(7),
+                StatusEffectType.Exposure,
+                StatusEffectType.Discord,
+            )
+        ),
     ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // At start of combat,
+        // if unit's HP ≥ 25%,
+        IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+        SKILL_EFFECT_NODE(
+            // grants bonus to unit's Atk/Spd/Def/Res =
+            GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                // number of foes within 3 rows or 3 columns centered on unit × 2 + 5 (max 11),
+                MULT_ADD_MAX_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 2, 5, 11),
+            ),
+            // neutralizes unit's penalties to Atk/Res, and
+            NEUTRALIZES_EACH_PENALTIES_ON_UNIT_NODE(true, false, false, true),
+        ),
+        // deals damage = 20% of unit's Res during combat
+        // (excluding area-of-effect Specials).
+        DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE)),
+    );
 }
 
 {
@@ -11186,7 +11703,7 @@
 {
     let skillId = PassiveA.TrainedToKill;
     // Unit can move through foes' spaces.
-    CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
+    CAN_MOVE_THROUGH_FOES_SPACE_SKILLS.add(skillId);
 
     let filteredSpacesNode = FILTER_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(2),
         OR_NODE(
