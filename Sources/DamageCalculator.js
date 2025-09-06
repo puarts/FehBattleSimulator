@@ -2593,7 +2593,7 @@ class DamageCalculator {
             this.writeDebugLog(`ダメージ計算: (${damage} - trunc(${damage} * ${roundFloat(reduceRatio)})) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
             this.writeDebugLog(`ダメージ計算2: ((${damage} - ${Math.trunc(damage * reduceRatio)}) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
             this.writeDebugLog(`ダメージ計算3: (${damage - Math.trunc(damage * reduceRatio)} - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
-            this.writeDebugLog(`実質ダメージ軽減値: ${damageReductionValue} * ${1/damageRatio} = ${Math.trunc(damageReductionValue / damageRatio)}`);
+            this.writeDebugLog(`実質ダメージ軽減値: ${damageReductionValue} * ${1 / damageRatio} = ${Math.trunc(damageReductionValue / damageRatio)}`);
             this.writeDebugLog(`0ダメージに軽減: ${defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat}`);
             this.writeDebugLog(`ダメージ変化: ${damage}→${currentDamage} (${damage - currentDamage}軽減)`);
             if (defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat) {

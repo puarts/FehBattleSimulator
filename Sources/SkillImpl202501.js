@@ -1554,14 +1554,14 @@
         IS_STYLE_ACTIVE(style)
     );
     // Unit suffers a counterattack if any of the following conditions are met:
-    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, NODE_FUNC(
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
         OR_NODE(
             // foe is armored with Range = 1
             // or foe can counterattack regardless of unit’s range.
             AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_1_NODE),
             CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
         ),
-    ));
+    );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         IF_NODE(IS_STYLE_ACTIVE(style),
             // After-combat movement effects do not occur.

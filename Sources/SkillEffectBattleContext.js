@@ -1478,7 +1478,7 @@ class CanTargetCounterattackRegardlessOfRangeNode extends BoolNode {
 
 const CAN_TARGET_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new CanTargetCounterattackRegardlessOfRangeNode();
 
-class CanFoeCounterattackRegardlessOfRangeNode extends BoolNode {
+class CanFoeCounterattackRegardlessOfRangeNode extends CanTargetCounterattackRegardlessOfRangeNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
