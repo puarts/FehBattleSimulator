@@ -309,21 +309,21 @@
 {
     let skillId = PassiveC.TimePulseArms;
     // At start of turn,
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(
         // if unit’s Special cooldown count is at its maximum value,
         // grants Special cooldown count-1 to unit.
-        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE,
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
     ));
     // Grants bonus to unit’s Atk/Def during combat = unit’s maximum Special cooldown count value + 2.
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         GRANTS_ATK_DEF_TO_TARGET_DURING_COMBAT_NODE(
             ADD_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 2),
         ),
     ));
-    AFTER_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    AFTER_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // If unit’s Special cooldown count is at its maximum value after combat,
         // grants Special cooldown count-1 to unit.
-        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE,
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
     ));
 }
 
