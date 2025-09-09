@@ -174,13 +174,16 @@
                     DEALS_DAMAGE_X_NODE(ADD_NODE(READ_NUM_NODE, 7)),
                     // X = highest total Atk+Spd bonuses among unit and allies with [Empathy] active).
                     MAX_NODE(
-                        MAP_UNITS_NODE(
-                            FILTER_UNITS_NODE(
-                                TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE,
-                                HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Empathy)
+                        MAX_NODE(
+                            MAP_UNITS_NODE(
+                                FILTER_UNITS_NODE(
+                                    TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE,
+                                    HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Empathy)
+                                ),
+                                ADD_NODE(TARGETS_EVAL_ATK_ON_MAP, TARGETS_EVAL_SPD_ON_MAP),
                             ),
-                            ADD_NODE(TARGETS_EVAL_ATK_ON_MAP, TARGETS_EVAL_SPD_ON_MAP),
                         ),
+                        0,
                     ),
                 ),
             ),
@@ -250,7 +253,7 @@
     let skillId = Support.ConqueringFate;
     // Rng：1
     // Moves target ally to opposite side of unit.
-    SWAP_ASSIST_SKILLS.add(skillId);
+    REPOSITION_ASSIST_SKILLS.add(skillId);
     AFTER_MOVEMENT_ASSIST_ENDED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Grants another action to unit,
         GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE,
@@ -312,7 +315,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(
         // if unit’s Special cooldown count is at its maximum value,
         // grants Special cooldown count-1 to unit.
-        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
     ));
     // Grants bonus to unit’s Atk/Def during combat = unit’s maximum Special cooldown count value + 2.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
@@ -323,7 +326,7 @@
     AFTER_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // If unit’s Special cooldown count is at its maximum value after combat,
         // grants Special cooldown count-1 to unit.
-        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
+        IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE(1),
     ));
 }
 
