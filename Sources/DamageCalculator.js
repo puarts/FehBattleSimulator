@@ -293,6 +293,14 @@ class AttackResult extends DamageCalcResult {
         return this;
     }
 
+    getTotalAdditionalDamage(isAttackerSpecialActive) {
+        let additionalDamage = this.additionalDamage;
+        if (isAttackerSpecialActive) {
+            additionalDamage += this.specialAdditionalDamage;
+        }
+        return additionalDamage;
+    }
+
     setNeutralizesNonSpecialDamageReduction(
         // when Special triggers, neutralizes foe's "reduces damage by X%" effects from foe's non-Special skills
         neutralizesNonSpecialDamageReduction,
@@ -373,14 +381,24 @@ class StrikeResult extends DamageCalcResult {
         return this;
     }
 
-    getAdditionalDamage() {
-        return this.isAttackerSpecialActive ? this.specialAdditionalDamage : this.additionalDamage;
+    getAdditionalDamageWhenNormal() {
+        return this.additionalDamage;
     }
 
+    getAdditionalDamageWhenSpecial() {
+        return this.additionalDamage + this.specialAdditionalDamage;
+    }
+
+    /**
+     * 固定ダメージ。奥義の場合は奥義の固定ダメージも加算される。
+     * @returns {number}
+     */
     getTotalAdditionalDamage() {
-        let additionalDamage = this.isAttackerSpecialActive ?
-            this.attackResult.specialAdditionalDamage : this.attackResult.additionalDamage;
-        return additionalDamage + this.getAdditionalDamage();
+        let additionalDamage = this.additionalDamage;
+        if (this.isAttackerSpecialActive) {
+            additionalDamage += this.specialAdditionalDamage;
+        }
+        return additionalDamage;
     }
 
     setDamageDealt(damageDealt) {
@@ -1228,8 +1246,7 @@ class DamageCalculator {
         if (specialDamage < 0) {
             specialDamage = 0;
         }
-        specialDamage += attackResult.additionalDamage;
-        specialDamage += attackResult.specialAdditionalDamage;
+        specialDamage += attackResult.additionalDamage + attackResult.specialAdditionalDamage;
 
         // 杖の半減は加算ダメージ後に計算
         specialDamage = truncNumberWithFloatError(specialDamage * attackResult.calcDamageReductionRatio());
@@ -1732,17 +1749,16 @@ class DamageCalculator {
         let currentDamage = 0;
         let reducedDamage = 0;
 
-        let additionalDamagePerAttack =
+        let additionalDamagePerStrike =
             atkUnit.battleContext.additionalDamagePerAttack +
             this.#getFixedAddDamagePerAttack(atkUnit, defUnit, context);
-        strikeResult.setAdditionalDamage(additionalDamagePerAttack, additionalDamagePerAttack);
-
-        let normalDamageOfThisStrike = attackResult.damage + strikeResult.additionalDamage;
-        let specialDamageOfThisStrike =
-            attackResult.specialDamage +
-            strikeResult.specialAdditionalDamage +
+        let specialAdditionalDamagePerStrike =
             atkUnit.battleContext.getSpecialAddDamagePerAttack() +
             atkUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
+        strikeResult.setAdditionalDamage(additionalDamagePerStrike, specialAdditionalDamagePerStrike);
+
+        let normalDamageOfThisStrike = attackResult.damage + strikeResult.getAdditionalDamageWhenNormal();
+        let specialDamageOfThisStrike = attackResult.specialDamage + strikeResult.getAdditionalDamageWhenSpecial();
         strikeResult.setDamage(normalDamageOfThisStrike, specialDamageOfThisStrike);
 
         strikeResult.reducesDamageFromFoeToZeroDuringCombat =
@@ -2582,7 +2598,12 @@ class DamageCalculator {
         if (this.isLogEnabled) {
             this.writeDebugLog(`ダメージ軽減計算開始`);
             this.writeDebugLog(`軽減前ダメージ: ${damage}`);
-            this.writeDebugLog(`固定ダメージ: ${strikeResult.getTotalAdditionalDamage()}`);
+            let attackResult = strikeResult.attackResult;
+            this.writeDebugLog(`固定ダメージ(合計): ${attackResult.getTotalAdditionalDamage(strikeResult.isAttackerSpecialActive) + strikeResult.getTotalAdditionalDamage()}`);
+            this.writeDebugLog(`固定ダメージ(通常): ${attackResult.additionalDamage}`);
+            this.writeDebugLog(`固定ダメージ(奥義): ${attackResult.specialAdditionalDamage}`);
+            this.writeDebugLog(`固定ダメージ(攻撃毎通常): ${strikeResult.additionalDamage}`);
+            this.writeDebugLog(`固定ダメージ(攻撃毎奥義): ${strikeResult.specialAdditionalDamage}`);
             this.writeDebugLog(`ダメージ軽減率(奥義以外): [${strikeResult.damageReductionRatiosAfterNeutralization}]`);
             this.writeDebugLog(`ダメージ軽減率(守備奥義): [${strikeResult.damageReductionRatiosByDefenderSpecial}]`);
             this.writeDebugLog(`ダメージ軽減率(奥義扱い): [${strikeResult.damageReductionRatiosByNonDefenderSpecial}]`);
