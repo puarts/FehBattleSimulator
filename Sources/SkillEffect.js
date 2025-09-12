@@ -6699,7 +6699,11 @@ class HasTargetWeaponTriangleAdvantageNode extends BoolNode {
 
 const HAS_TARGET_WEAPON_TRIANGLE_ADVANTAGE_NODE = new HasTargetWeaponTriangleAdvantageNode();
 
-class HasAttackCanceledNode extends BoolNode {
+class HasTargetsAttackCanceledNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = env.hasAttackCanceled;
@@ -6708,9 +6712,13 @@ class HasAttackCanceledNode extends BoolNode {
     }
 }
 
-const IS_AFFECTED_BY_FORESIGHT_SNARE_NODE = new HasAttackCanceledNode();
+const IS_TARGET_AFFECTED_BY_FORESIGHT_SNARE_NODE = new HasTargetsAttackCanceledNode();
 
-class IsAffectedByTrapNode extends BoolNode {
+class IsTargetAffectedByTrapNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = isTrapActivationResult(env.moveResult);
@@ -6719,7 +6727,7 @@ class IsAffectedByTrapNode extends BoolNode {
     }
 }
 
-const IS_AFFECTED_BY_TRAP_NODE = new IsAffectedByTrapNode();
+const IS_TARGET_AFFECTED_BY_TRAP_NODE = new IsTargetAffectedByTrapNode();
 
 class IsTargetEquippedWithSaviorEffectsNode extends BoolNode {
     static {
