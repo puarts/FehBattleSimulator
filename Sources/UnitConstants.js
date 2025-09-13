@@ -79,8 +79,7 @@ const Hero = {
     DuoJulia: 1276,
     DuoHapi: 1294,
     HarmonizedIngrid: 1309,
-    // TODO: 修正
-    HarmonizedFir: 9999,
+    HarmonizedFir: 1322,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
