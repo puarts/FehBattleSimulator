@@ -656,17 +656,17 @@ class BattleContext {
     }
 
     setBonusReversals(atk, spd, def, res) {
-        this.isAtkBonusReversal |= atk;
-        this.isSpdBonusReversal |= spd;
-        this.isDefBonusReversal |= def;
-        this.isResBonusReversal |= res;
+        this.isAtkBonusReversal ||= atk;
+        this.isSpdBonusReversal ||= spd;
+        this.isDefBonusReversal ||= def;
+        this.isResBonusReversal ||= res;
     }
 
     invalidateBuffs(atk, spd, def, res) {
-        this.invalidatesAtkBuff = atk;
-        this.invalidatesSpdBuff = spd;
-        this.invalidatesDefBuff = def;
-        this.invalidatesResBuff = res;
+        this.invalidatesAtkBuff ||= atk;
+        this.invalidatesSpdBuff ||= spd;
+        this.invalidatesDefBuff ||= def;
+        this.invalidatesResBuff ||= res;
     }
 
     /**
