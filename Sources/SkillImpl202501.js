@@ -180,7 +180,7 @@
                                     TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE,
                                     HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Empathy)
                                 ),
-                                ADD_NODE(TARGETS_EVAL_ATK_ON_MAP, TARGETS_EVAL_SPD_ON_MAP),
+                                ADD_NODE(TARGET_ATK_BONUS_NODE, TARGET_SPD_BONUS_NODE),
                             ),
                         ),
                         0,
