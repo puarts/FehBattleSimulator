@@ -522,6 +522,8 @@ class AppData extends UnitManager {
         }
 
         this.flashMessages = [];
+        /** @type {CombatResult|null} */
+        this.combatResult = null;
 
         this.addStructuresToSelectionOptions();
         this.registerTemplateImages();

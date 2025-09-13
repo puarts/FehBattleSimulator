@@ -3730,6 +3730,7 @@ class BattleSimulatorBase {
         this.damageCalc.clearLog();
 
         let result = this.damageCalc.updateDamageCalculation(atkUnit, defUnit, tileToAttack, this.data.gameMode);
+        g_appData.combatResult = result;
         atkUnit.isAttackDone = true;
         result.defUnit.isAttackedDone = true;
         atkUnit.isCombatDone = true;
@@ -4249,6 +4250,15 @@ class BattleSimulatorBase {
     showDamageCalcSummary(atkUnit, defUnit, attackTile) {
         atkUnit.createSnapshotIfNull();
         let result = this.calcDamageTemporary(atkUnit, defUnit, attackTile);
+        g_appData.combatResult = result;
+        const pop = document.getElementById('info-pop');
+        if (!CSS.supports("top: anchor(top)")) {
+            let anchor = document.getElementById('info-pop-anchor');
+            const r = anchor.getBoundingClientRect(); // viewport座標
+            pop.style.left = r.left + 'px';
+            pop.style.top = r.top + 'px';
+        }
+        pop.showPopover();
         this.setDamageCalcSummary(
             atkUnit,
             result.defUnit,
@@ -4285,6 +4295,7 @@ class BattleSimulatorBase {
         this.vm.attackerUnitIndex = -1;
         this.vm.attackTargetUnitIndex = -1;
         g_appData.__showStatusToAttackerInfo();
+        document.getElementById('info-pop').hidePopover();
     }
     /**
      * @param  {Unit} unit

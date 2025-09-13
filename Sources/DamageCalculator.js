@@ -30,6 +30,16 @@ class DamageCalcResult {
     setUnits(atkUnit, defUnit) {
         this.atkUnit = atkUnit;
         this.defUnit = defUnit;
+        this.atkRestHp = atkUnit.restHp;
+        this.defRestHp = defUnit.restHp;
+        this.atkMaxHp = atkUnit.maxHpWithSkills;
+        this.defMaxHp = defUnit.maxHpWithSkills;
+        return this;
+    }
+
+    setIsAlreadyDead(atkUnit, defUnit) {
+        // atkUnit.isDeadでは戦闘中の死亡は判定できない
+        this.isAlreadyDead = atkUnit.restHp <= 0 || defUnit.restHp <= 0;
         return this;
     }
 }
@@ -204,7 +214,8 @@ class CombatResult extends DamageCalcResult {
         let attackResult = this.getCurrentAttackResult();
         attackResult.strikeResults.push(strikeResult);
         strikeResult.attackResult = attackResult;
-        strikeResult.setUnits(attackResult.atkUnit, attackResult.defUnit);
+        strikeResult.setUnits(attackResult.atkUnit, attackResult.defUnit)
+            .setIsAlreadyDead(attackResult.atkUnit, attackResult.defUnit);
         return strikeResult;
     }
 
@@ -222,6 +233,10 @@ class AttackResult extends DamageCalcResult {
         /** @type {StrikeResult[]} */
         this.strikeResults = [];
         this.damageReductionRatios = [];
+        /**
+         * 奥義ダメージ
+         */
+        this.specialAddDamage = 0;
     }
 
     /**
@@ -254,6 +269,10 @@ class AttackResult extends DamageCalcResult {
         return this;
     }
 
+    getFinalAtk(isAttackerSpecialActive) {
+        return isAttackerSpecialActive ? this.specialFinalAtk : this.finalAtk;
+    }
+
     setSpecialAtkStat(atkStat) {
         this.specialAtkStat = atkStat;
         return this;
@@ -282,9 +301,13 @@ class AttackResult extends DamageCalcResult {
     }
 
     setFinalMit(finalMit, specialFinalMit) {
-        this.finalMit = finalMit;
-        this.specialFinalMit = specialFinalMit;
+        this.finalMit = Math.max(finalMit, 0);
+        this.specialFinalMit = Math.max(specialFinalMit, 0);
         return this;
+    }
+
+    getFinalMit(isAttackerSpecialActive) {
+        return isAttackerSpecialActive ? this.specialFinalMit : this.finalMit;
     }
 
     setAdditionalDamage(additionalDamage, specialAdditionalDamage) {
@@ -316,6 +339,20 @@ class AttackResult extends DamageCalcResult {
         return this;
     }
 
+    getDamage(isAttackerSpecialActive) {
+        return isAttackerSpecialActive ? this.specialDamage : this.damage;
+    }
+
+    setDamageBeforeAdditionalDamage(damage, specialDamage) {
+        this.damageBeforeAdditionalDamage = damage;
+        this.specialDamageBeforeAdditionalDamage = specialDamage;
+        return this;
+    }
+
+    getDamageBeforeAdditionalDamage(isAttackerSpecialActive) {
+        return isAttackerSpecialActive ? this.specialDamageBeforeAdditionalDamage : this.damageBeforeAdditionalDamage;
+    }
+
     setTotalDamage(totalDamage) {
         this.totalDamage = totalDamage;
         return this;
@@ -342,17 +379,27 @@ class StrikeResult extends DamageCalcResult {
         this.isAttackerSpecialReady = false;
         this.isDefenderSpecialReady = false;
         this.isAttackerSpecialActive = false;
+        this.isDefenderSpecialActive = false;
+        this.damageRatio = 0;
+        this.damageReductionRatio = 0;
         this.damageReductionRatios = [];
         this.specialDamageReductionRatios = [];
         this.damageReductionRatiosAfterNeutralization = [];
         this.specialDamageReductionRatiosAfterNeutralization = [];
+        this.damageReductionValue = 0;
         this.damageReductionValues = [];
         this.specialDamageReductionValues = [];
         this.invalidatesDamageReduction = false;
         this.damageReductionRatiosByDefenderSpecial = [];
         this.damageReductionRatiosByNonDefenderSpecial = [];
+        this.reducedDamage = 0;
+        this.isMiracleActivated = false;
+        this.reducedDamageIncludingMiracle = 0;
         this.potentRatio = 1;
         this.reducesDamageFromFoeToZeroDuringCombat = false;
+        this.damageAfterReductionValue = 0;
+        this.selfDamageReductionRatios = [];
+        this.actualDamage = 0;
     }
 
     /**
@@ -387,6 +434,10 @@ class StrikeResult extends DamageCalcResult {
 
     getAdditionalDamageWhenSpecial() {
         return this.additionalDamage + this.specialAdditionalDamage;
+    }
+
+    getAdditionalDamage() {
+        return this.isAttackerSpecialActive ? this.getAdditionalDamageWhenSpecial() : this.getAdditionalDamageWhenNormal();
     }
 
     /**
@@ -1108,7 +1159,7 @@ class DamageCalculator {
      */
     __calcAttackDamage(atkUnit, defUnit, context) {
         let attackResult = context.combatResult.createAttackResult()
-            .setUnits(atkUnit, defUnit).setAttackType(context);
+            .setUnits(atkUnit, defUnit).setAttackType(context).setIsAlreadyDead(atkUnit, defUnit);
 
         this.writeAttackStartLog(atkUnit, defUnit, context);
 
@@ -1223,11 +1274,25 @@ class DamageCalculator {
     }
 
     calcDamageInAttack(atkUnit, attackResult) {
+        // 攻撃 - 守備 を計算
         let damage = truncNumberWithFloatError((attackResult.finalAtk - attackResult.finalMit));
         if (damage < 0) {
             damage = 0;
         }
+
+        let specialMultDamage = atkUnit.battleContext.specialMultDamage;
+        let specialAddDamage = atkUnit.battleContext.getSpecialAddDamage();
+        specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
+        attackResult.specialAddDamage = specialAddDamage;
+        let specialDamage = truncNumberWithFloatError((attackResult.specialFinalAtk - attackResult.specialFinalMit) * specialMultDamage) + specialAddDamage;
+        if (specialDamage < 0) {
+            specialDamage = 0;
+        }
+        attackResult.setDamageBeforeAdditionalDamage(damage, specialDamage);
+
+        // 固定ダメージ
         damage += attackResult.additionalDamage;
+        specialDamage += attackResult.additionalDamage + attackResult.specialAdditionalDamage;
 
         // 神罰の杖
         if (atkUnit.weaponType === WeaponType.Staff) {
@@ -1235,21 +1300,10 @@ class DamageCalculator {
                 attackResult.damageReductionRatios.push(0.5);
             }
         }
-
         // 杖の半減は加算ダメージ後に計算
         damage = truncNumberWithFloatError(damage * attackResult.calcDamageReductionRatio());
-
-        let specialMultDamage = atkUnit.battleContext.specialMultDamage;
-        let specialAddDamage = atkUnit.battleContext.getSpecialAddDamage();
-        specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
-        let specialDamage = truncNumberWithFloatError((attackResult.specialFinalAtk - attackResult.specialFinalMit) * specialMultDamage) + specialAddDamage;
-        if (specialDamage < 0) {
-            specialDamage = 0;
-        }
-        specialDamage += attackResult.additionalDamage + attackResult.specialAdditionalDamage;
-
-        // 杖の半減は加算ダメージ後に計算
         specialDamage = truncNumberWithFloatError(specialDamage * attackResult.calcDamageReductionRatio());
+
         attackResult.setDamage(damage, specialDamage);
     }
 
@@ -1690,6 +1744,14 @@ class DamageCalculator {
         return totalDamage;
     }
 
+    /**
+     * 1回の攻撃(Strike)とこの攻撃(Attack)での今までのトータルダメージを計算する。
+     * @param {number} totalDamage
+     * @param {number} currentAttackCount
+     * @param {AttackResult} attackResult
+     * @param {DamageCalcContext} context
+     * @returns {number}
+     */
     calcStrikeTotalDamage(totalDamage, currentAttackCount, attackResult, context) {
         let atkUnit = attackResult.atkUnit;
         let defUnit = attackResult.defUnit;
@@ -1787,7 +1849,7 @@ class DamageCalculator {
             }
             let atkSpecialCountBefore = atkUnit.tmpSpecialCount;
             let defSpecialCountBefore = defUnit.tmpSpecialCount;
-            [currentDamage, reducedDamage] = this.__calcUnitAttackDamage(strikeResult, context);
+            [currentDamage, reducedDamage] = this.__calcUnitStrikeDamage(strikeResult, context);
             this.__restoreMaxSpecialCount(atkUnit);
             // 奥義発動直後のスキル効果（奥義カウント変動など）
             this.applySkillEffectAfterSpecialActivated(atkUnit, defUnit, context);
@@ -1842,7 +1904,7 @@ class DamageCalculator {
                     strikeResult.isBaneStrike = true;
                 }
             }
-            [currentDamage, reducedDamage] = this.__calcUnitAttackDamage(strikeResult, context);
+            [currentDamage, reducedDamage] = this.__calcUnitStrikeDamage(strikeResult, context);
             this.__reduceSpecialCount(atkUnit, atkUnit.battleContext.cooldownCountForAttack);
             if (!isDefenderSpecialActivated) {
                 this.__reduceSpecialCount(defUnit, defUnit.battleContext.cooldownCountForDefense);
@@ -1867,12 +1929,13 @@ class DamageCalculator {
         // 祈り処理
         // TODO: リファクタリング
         let reducedDamageByMiracle = 0;
-        [totalDamage, reducedDamageByMiracle] = this.#activateMiracle(atkUnit, defUnit, currentDamage, totalDamage);
+        [totalDamage, reducedDamageByMiracle] = this.#activateMiracle(atkUnit, defUnit, currentDamage, totalDamage, strikeResult);
         this.#applyReducedDamageForNextAttack(
             atkUnit, defUnit,
             reducedDamage + reducedDamageByMiracle,
             strikeResult.isDefenderSpecialReady, context
         );
+        strikeResult.reducedDamageIncludingMiracle = reducedDamage + reducedDamageByMiracle;
 
         combatResult.damageHistory.push(
             combatResult.getCurrentStrikeResult().setDamageDealt(currentDamage)
@@ -1948,7 +2011,7 @@ class DamageCalculator {
         }
     }
 
-    #activateMiracle(atkUnit, defUnit, currentDamage, totalDamage) {
+    #activateMiracle(atkUnit, defUnit, currentDamage, totalDamage, strikeResult) {
         let reducedDamageByMiracle = 0;
         // 奥義による祈り
         let canActivateSpecialMiracle = this.__canActivateSpecialMiracle(defUnit, atkUnit);
@@ -2011,6 +2074,7 @@ class DamageCalculator {
         if (canActivateAnyMiracles &&
             isRestHpGreaterOne &&
             isDeadWithoutMiracle) {
+            strikeResult.isMiracleActivated = true;
             let logMiracle = message => {
                 let result = `${message} ${HtmlLogUtil.groupNameSpan(defUnit)} ${currentDamage} → 
                 ${HtmlLogUtil.damageSpan(defUnit.restHp - totalDamage - 1)}`;
@@ -2133,6 +2197,7 @@ class DamageCalculator {
 
             // 攻撃を受ける際に発動する奥義発動可能時に奥義を発動する処理
             if (isDefenderSpecialActivated) {
+                strikeResult.isDefenderSpecialActive = true;
                 defUnit.battleContext.hasSpecialActivated = true;
                 defUnit.battleContext.specialActivatedCount++;
                 strikeResult.damageReductionValues.push(defUnit.battleContext.damageReductionValueAfterSpecialTriggerTwice);
@@ -2566,8 +2631,9 @@ class DamageCalculator {
     /**
      * @param {StrikeResult} strikeResult
      * @param {DamageCalcContext} context
+     * @returns {[number, number]} current damage and reduced damage
      */
-    __calcUnitAttackDamage(strikeResult, context) {
+    __calcUnitStrikeDamage(strikeResult, context) {
         let atkUnit = strikeResult.atkUnit;
         let defUnit = strikeResult.defUnit;
 
@@ -2575,26 +2641,29 @@ class DamageCalculator {
 
         // 軽減効果の計算前のダメージが「敵のHP-1」より低い時、そのダメージを「敵のHP-1」とする
         // （巨影など一部の敵を除く）
-        let damageReductionValue = strikeResult.damageReductionValues.reduce((a, c) => a + c, 0);
-        let reductionRatios = [];
-        reductionRatios.push(...strikeResult.damageReductionRatiosAfterNeutralization);
-        reductionRatios.push(...strikeResult.damageReductionRatiosByDefenderSpecial);
-        reductionRatios.push(...strikeResult.damageReductionRatiosByNonDefenderSpecial);
-        // 【検証】回避・盾奥義・連撃防御が重なった時の端数計算
+        strikeResult.damageReductionValue = strikeResult.damageReductionValues.reduce((a, c) => a + c, 0);
+        strikeResult.damageReductionRatios = [
+            ...strikeResult.damageReductionRatiosAfterNeutralization,
+            ...strikeResult.damageReductionRatiosByDefenderSpecial,
+            ...strikeResult.damageReductionRatiosByNonDefenderSpecial
+        ];
         // https://www.mattari-feh.com/entry/2020/06/22/201217
         // > m.（回避×盾奥義×連撃防御）
         // > という事で、実用上はmのケースで理解しておけば良さそうです。
-        let damageRatio = reductionRatios.reduce((a, c) => a * (1 - c), 1);
-        let reduceRatio = 1 - damageRatio;
-        let reducedDamage = Math.trunc(damage * reduceRatio) + damageReductionValue;
+        strikeResult.damageReductionRatio = strikeResult.damageReductionRatios.reduce((a, c) => a * (1 - c), 1);
+        strikeResult.damageRatio = 1 - strikeResult.damageReductionRatio;
+        strikeResult.reducedDamage = Math.trunc(damage * strikeResult.damageRatio) + strikeResult.damageReductionValue;
         let potentRatio = strikeResult.potentRatio;
-        let currentDamage = Math.trunc(Math.max(damage - reducedDamage, 0) * potentRatio);
+        strikeResult.damageAfterReductionValue = Math.max(damage - strikeResult.reducedDamage, 0);
+        let currentDamage = Math.trunc(strikeResult.damageAfterReductionValue * potentRatio);
+        strikeResult.selfDamageReductionRatios = atkUnit.battleContext.damageCalculationRatios;
         for (let ratio of atkUnit.battleContext.damageCalculationRatios) {
             currentDamage = Math.trunc(currentDamage * ratio);
         }
         if (strikeResult.reducesDamageFromFoeToZeroDuringCombat) {
             currentDamage = 0;
         }
+        strikeResult.actualDamage = currentDamage;
         if (this.isLogEnabled) {
             this.writeDebugLog(`ダメージ軽減計算開始`);
             this.writeDebugLog(`軽減前ダメージ: ${damage}`);
@@ -2607,14 +2676,14 @@ class DamageCalculator {
             this.writeDebugLog(`ダメージ軽減率(奥義以外): [${strikeResult.damageReductionRatiosAfterNeutralization}]`);
             this.writeDebugLog(`ダメージ軽減率(守備奥義): [${strikeResult.damageReductionRatiosByDefenderSpecial}]`);
             this.writeDebugLog(`ダメージ軽減率(奥義扱い): [${strikeResult.damageReductionRatiosByNonDefenderSpecial}]`);
-            this.writeDebugLog(`最終ダメージ率: ${floorNumberWithFloatError(damageRatio * 100)}%`);
-            this.writeDebugLog(`最終ダメージ軽減率: ${floorNumberWithFloatError(reduceRatio * 100)}%`);
-            this.writeDebugLog(`固定ダメージ軽減値: -${damageReductionValue} ([${strikeResult.damageReductionValues}])`);
+            this.writeDebugLog(`最終ダメージ率: ${floorNumberWithFloatError(strikeResult.damageRatio * 100)}%`);
+            this.writeDebugLog(`最終ダメージ軽減率: ${floorNumberWithFloatError(strikeResult.damageReductionRatio * 100)}%`);
+            this.writeDebugLog(`固定ダメージ軽減値: -${strikeResult.damageReductionValue} ([${strikeResult.damageReductionValues}])`);
             this.writeDebugLog(`神速追撃ダメージ倍率: ${floorNumberWithFloatError(potentRatio * 100)}%`);
-            this.writeDebugLog(`ダメージ計算: (${damage} - trunc(${damage} * ${roundFloat(reduceRatio)})) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
-            this.writeDebugLog(`ダメージ計算2: ((${damage} - ${Math.trunc(damage * reduceRatio)}) - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
-            this.writeDebugLog(`ダメージ計算3: (${damage - Math.trunc(damage * reduceRatio)} - ${damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
-            this.writeDebugLog(`実質ダメージ軽減値: ${damageReductionValue} * ${1 / damageRatio} = ${Math.trunc(damageReductionValue / damageRatio)}`);
+            this.writeDebugLog(`ダメージ計算: (${damage} - trunc(${damage} * ${roundFloat(strikeResult.damageReductionRatio)})) - ${strikeResult.damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
+            this.writeDebugLog(`ダメージ計算2: ((${damage} - ${Math.trunc(damage * strikeResult.damageReductionRatio)}) - ${strikeResult.damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
+            this.writeDebugLog(`ダメージ計算3: (${damage - Math.trunc(damage * strikeResult.damageReductionRatio)} - ${strikeResult.damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
+            this.writeDebugLog(`実質ダメージ軽減値: ${strikeResult.damageReductionValue} * ${1 / strikeResult.damageRatio} = ${Math.trunc(strikeResult.damageReductionValue / strikeResult.damageRatio)}`);
             this.writeDebugLog(`0ダメージに軽減: ${defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat}`);
             this.writeDebugLog(`ダメージ変化: ${damage}→${currentDamage} (${damage - currentDamage}軽減)`);
             if (defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat) {
