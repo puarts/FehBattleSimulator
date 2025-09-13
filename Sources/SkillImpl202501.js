@@ -12727,7 +12727,7 @@
                 // grants bonus to unit's Atk/Def/Res =
                 GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(READ_NUM_NODE, 0, READ_NUM_NODE, READ_NUM_NODE),
                 // 20% of unit's Res at start of combat + 5,
-                ADD_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE), 5),
+                PERCENTAGE_ADD_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE, 5),
             ),
             X_NUM_NODE(
                 // unit deals +X damage
@@ -12738,7 +12738,7 @@
                 // value is treated as 15; excluding area-of-effect Specials),
                 COND_OP(IS_TARGETS_SAVIOR_TRIGGERED_NODE,
                     15,
-                    ENSURE_MAX_NODE(MULT_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 5), 15)
+                    MULT_MAX_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 5, 15),
                 ),
             ),
             // unit makes a guaranteed follow-up attack,
@@ -12771,8 +12771,8 @@
                     IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE,
                     // percentage = difference between stats × 6 (max 60%); otherwise,
                     // percentage = difference between stats × 4 (max 40%).
-                    ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE, 6), 60),
-                    ENSURE_MAX_NODE(MULT_NODE(DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE, 4), 40),
+                    MULT_MAX_NODE(DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE, 6, 60),
+                    MULT_MAX_NODE(DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE, 4, 40),
                 ),
             ),
         ),
