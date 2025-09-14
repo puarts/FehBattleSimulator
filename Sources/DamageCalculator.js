@@ -476,7 +476,7 @@ class StrikeResult extends DamageCalcResult {
     }
 
     toJSON() {
-        const { attackResult, ...rest } = this;
+        const {attackResult, ...rest} = this;
         return rest;
     }
 }
@@ -2236,7 +2236,7 @@ class DamageCalculator {
         return isDefenderSpecialActivated;
     }
 
-    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial ,context) {
+    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial, context) {
         let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context)
             .setBattleMap(g_appData.map);
         env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
@@ -2647,12 +2647,33 @@ class DamageCalculator {
             ...strikeResult.damageReductionRatiosByDefenderSpecial,
             ...strikeResult.damageReductionRatiosByNonDefenderSpecial
         ];
-        // https://www.mattari-feh.com/entry/2020/06/22/201217
-        // > m.（回避×盾奥義×連撃防御）
-        // > という事で、実用上はmのケースで理解しておけば良さそうです。
-        strikeResult.damageReductionRatio = strikeResult.damageReductionRatios.reduce((a, c) => a * (1 - c), 1);
-        strikeResult.damageRatio = 1 - strikeResult.damageReductionRatio;
-        strikeResult.reducedDamage = Math.trunc(damage * strikeResult.damageRatio) + strikeResult.damageReductionValue;
+        // TODO: 軽減が重なった場合の計算について調査する
+        // 軽減の計算
+        strikeResult.damageRatio = strikeResult.damageReductionRatios.reduce((a, c) => a * (1 - c), 1);
+        strikeResult.damageReductionRatio = 1 - strikeResult.damageRatio;
+        strikeResult.reducedDamage =
+            Math.trunc(damage * strikeResult.damageReductionRatio) + strikeResult.damageReductionValue;
+        // 別の計算方法
+        let reduced = 0;
+        let remaining = damage;
+        for (const r of strikeResult.damageReductionRatios) {
+            const reducedThisStep = Math.trunc(remaining * r); // この軽減で減る分
+            reduced += reducedThisStep;
+            remaining = Math.max(0, remaining - reducedThisStep);
+        }
+        let reducedDamage = reduced + strikeResult.damageReductionValue;
+        // 2つの計算方法が異なる場合は警告を出す
+        if (strikeResult.reducedDamage !== reducedDamage &&
+            this.isLogEnabled &&
+            context.damageType === DamageType.ActualDamage) {
+            console.warn("strikeResult.reducedDamage !== reducedDamage");
+            console.warn(`strikeResult.reducedDamage: ${strikeResult.reducedDamage}`);
+            console.warn(`reducedDamage: ${reducedDamage}`);
+            console.warn(`damage: ${damage}`);
+            console.warn(`strikeResult.damageReductionRatios: ${strikeResult.damageReductionRatios}`);
+            console.warn(`JSON.stringify(strikeResult, null, 2): ${JSON.stringify(strikeResult, null, 2)}`);
+        }
+
         let potentRatio = strikeResult.potentRatio;
         strikeResult.damageAfterReductionValue = Math.max(damage - strikeResult.reducedDamage, 0);
         let currentDamage = Math.trunc(strikeResult.damageAfterReductionValue * potentRatio);
@@ -2683,7 +2704,7 @@ class DamageCalculator {
             this.writeDebugLog(`ダメージ計算: (${damage} - trunc(${damage} * ${roundFloat(strikeResult.damageReductionRatio)})) - ${strikeResult.damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
             this.writeDebugLog(`ダメージ計算2: ((${damage} - ${Math.trunc(damage * strikeResult.damageReductionRatio)}) - ${strikeResult.damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
             this.writeDebugLog(`ダメージ計算3: (${damage - Math.trunc(damage * strikeResult.damageReductionRatio)} - ${strikeResult.damageReductionValue}) * ${potentRatio} = ${currentDamage}`);
-            this.writeDebugLog(`実質ダメージ軽減値: ${strikeResult.damageReductionValue} * ${1 / strikeResult.damageReductionRatio} = ${Math.trunc(strikeResult.damageReductionValue / strikeResult.damageReductionRatio)}`);
+            this.writeDebugLog(`実質ダメージ軽減値: ${strikeResult.damageReductionValue} * ${1 / strikeResult.damageRatio} = ${Math.trunc(strikeResult.damageReductionValue / strikeResult.damageRatio)}`);
             this.writeDebugLog(`0ダメージに軽減: ${defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat}`);
             this.writeDebugLog(`ダメージ変化: ${damage}→${currentDamage} (${damage - currentDamage}軽減)`);
             if (defUnit.battleContext.reducesDamageFromFoeToZeroDuringCombat) {

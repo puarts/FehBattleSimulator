@@ -1966,10 +1966,11 @@ function initVueComponents() {
             additionalDamageOfAttack: vm => vm.attackResult.getTotalAdditionalDamage(vm.isSpecialAttack),
             additionalDamageOfStrike: vm => vm.strikeResult.getAdditionalDamage(),
             damageRatio: vm => vm.roundTo(vm.strikeResult.damageRatio),
+            damageReductionRatio: vm => vm.roundTo(vm.strikeResult.damageReductionRatio),
             damageMinusWithReductionConsidered(vm) {
-                const {damageReductionRatios, damageReductionValue, damageReductionRatio} = vm.strikeResult;
+                const {damageReductionRatios, damageReductionValue, damageRatio} = vm.strikeResult;
                 return damageReductionRatios.length > 0
-                    ? Math.trunc(damageReductionValue / damageReductionRatio)
+                    ? Math.trunc(damageReductionValue / damageRatio)
                     : damageReductionValue;
             },
             reflexValue: vm => vm.strikeResult.reducedDamageIncludingMiracle,
@@ -2020,7 +2021,7 @@ function initVueComponents() {
               <defense-value>{{ strikeResult.reducedDamage }}</defense-value> <value-label>(ダメージ減少値)</value-label>
               =
               {{ strikeResult.getDamage() }}
-              &times; {{ damageRatio }} ({{ strikeResult.damageReductionRatios }})
+              &times; {{ damageReductionRatio }} ({{ strikeResult.damageReductionRatios }})
               <value-label>(ダメージ軽減率)</value-label>
               + {{ strikeResult.damageReductionValue }}
               <value-label>(ダメージ-)(ダメージ+換算{{ damageMinusWithReductionConsidered }})</value-label>
