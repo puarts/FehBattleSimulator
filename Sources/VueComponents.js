@@ -1870,21 +1870,11 @@ function initVueComponents() {
             },
         },
         computed: {
-            hasResult() {
-                return !!this.combatResult;
-            },
-            atkName() {
-                return this.combatResult?.atkUnit?.name || '';
-            },
-            defName() {
-                return this.combatResult?.defUnit?.name || '';
-            },
-            precombatDamage() {
-                return this.combatResult?.preCombatDamage ?? 0;
-            },
-            attackResults() {
-                return this.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? [];
-            },
+            hasResult: vm => !!vm.combatResult,
+            atkName: vm => vm.combatResult?.atkUnit?.name || '',
+            defName: vm => vm.combatResult?.defUnit?.name || '',
+            precombatDamage: vm => vm.combatResult?.preCombatDamage ?? 0,
+            attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? []
         },
         template: `
             <div class="damage-calc-result">
@@ -1917,12 +1907,8 @@ function initVueComponents() {
             attackResult: {type: AttackResult, required: true},
         },
         computed: {
-            strikes() {
-                return this.attackResult?.strikeResults ?? [];
-            },
-            hasStrikes() {
-                return this.strikes.length > 0;
-            },
+            strikes: vm => vm.attackResult?.strikeResults ?? [],
+            hasStrikes: vm => vm.strikes.length > 0,
             attackTypeLabel() {
                 const parts = [];
                 if (this.attackResult?.isPotentFollowupAttack) parts.push('神速');
@@ -1930,18 +1916,10 @@ function initVueComponents() {
                 parts.push(this.attackResult?.isCounterattack ? '反撃' : '攻撃');
                 return parts.join('');
             },
-            currentAtkHpStr() {
-                return `HP: ${this.attackResult.atkRestHp}/${this.attackResult.atkMaxHp}`
-            },
-            currentDefHpStr() {
-                return `HP: ${this.attackResult.defRestHp}/${this.attackResult.defMaxHp}`
-            },
-            atkName() {
-                return this.attackResult?.atkUnit?.name || '';
-            },
-            defName() {
-                return this.attackResult?.defUnit?.name || '';
-            },
+            currentAtkHpStr: vm => `HP: ${vm.attackResult.atkRestHp}/${vm.attackResult.atkMaxHp}`,
+            currentDefHpStr: vm => `HP: ${vm.attackResult.defRestHp}/${vm.attackResult.defMaxHp}`,
+            atkName: vm => vm.attackResult?.atkUnit?.name || '',
+            defName: vm => vm.attackResult?.defUnit?.name || '',
         },
         template: `
           <div class="attack-result">
@@ -1981,49 +1959,24 @@ function initVueComponents() {
             ReflexValue: {template: `<span class="reflex-value"><slot/></span>`},
         },
         computed: {
-            isSpecialAttack() {
-                return this.strikeResult?.isAttackerSpecialActive || false;
+            isSpecialAttack: vm => vm.strikeResult?.isAttackerSpecialActive || false,
+            damageBeforeAdditional: vm => vm.attackResult.getDamageBeforeAdditionalDamage(vm.isSpecialAttack),
+            atk: vm => vm.attackResult.getFinalAtk(vm.isSpecialAttack),
+            mit: vm => vm.attackResult.getFinalMit(vm.isSpecialAttack),
+            additionalDamageOfAttack: vm => vm.attackResult.getTotalAdditionalDamage(vm.isSpecialAttack),
+            additionalDamageOfStrike: vm => vm.strikeResult.getAdditionalDamage(),
+            damageRatio: vm => vm.roundTo(vm.strikeResult.damageRatio),
+            damageMinusWithReductionConsidered(vm) {
+                const {damageReductionRatios, damageReductionValue, damageRatio} = vm.strikeResult;
+                return damageReductionRatios.length > 0
+                    ? Math.trunc(damageReductionValue / damageRatio)
+                    : damageReductionValue;
             },
-            damageBeforeAdditional() {
-                return this.attackResult.getDamageBeforeAdditionalDamage(this.isSpecialAttack);
-            },
-            atk() {
-                return this.attackResult.getFinalAtk(this.isSpecialAttack);
-            },
-            mit() {
-                return this.attackResult.getFinalMit(this.isSpecialAttack);
-            },
-            additionalDamageOfAttack() {
-                return this.attackResult.getTotalAdditionalDamage(this.isSpecialAttack);
-            },
-            additionalDamageOfStrike() {
-                return this.strikeResult.getAdditionalDamage();
-            },
-            damageRatio() {
-                return this.roundTo(this.strikeResult.damageRatio);
-            },
-            damageMinusWithReductionConsidered() {
-                if (this.strikeResult.damageReductionRatios.length > 0) {
-                    return Math.trunc(this.strikeResult.damageReductionValue / this.strikeResult.damageRatio);
-                }
-                return this.strikeResult.damageReductionValue;
-            },
-            reflexValue() {
-                return this.strikeResult.reducedDamageIncludingMiracle;
-            },
-            normalOrSpecialLabel() {
-                return this.isSpecialAttack ? '奥義' : '通常';
-            },
-            defenderSpecialLabel() {
-                return this.strikeResult.isDefenderSpecialActive ? '守備奥義' : '';
-            },
-            selfDamageReductionRatios() {
-                let ratios = this.strikeResult?.selfDamageReductionRatios ?? [];
-                if (ratios.length === 0) {
-                    return [1];
-                }
-                return ratios;
-            },
+            reflexValue: vm => vm.strikeResult.reducedDamageIncludingMiracle,
+            normalOrSpecialLabel: vm => vm.isSpecialAttack ? '奥義' : '通常',
+            defenderSpecialLabel: vm => vm.strikeResult.isDefenderSpecialActive ? '守備奥義' : '',
+            selfDamageReductionRatios: vm => (vm.strikeResult?.selfDamageReductionRatios?.length ?
+                vm.strikeResult.selfDamageReductionRatios : [1]),
         },
         methods: {
             roundTo(n, digits = 6) {
