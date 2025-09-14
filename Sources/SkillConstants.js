@@ -2718,6 +2718,7 @@ const PassiveA = {
     AtkSpdPrime4: 2565, // 攻撃速さの備え4
     AtkDefPrime3: 2978, // 攻撃守備の備え3
     AtkDefPrime4: 2699, // 攻撃守備の備え4
+    SpdDefPrime3: 2977, // 速さ守備の備え3
     SpdDefPrime4: 2967, // 速さ守備の備え4
 
     // 野生
@@ -3962,9 +3963,8 @@ PassiveC.TimePulseArms = 3395; // 始まりの鼓動・鎧
 Weapon.ArenaAxePlus = 3396; // 闘技の斧+
 Weapon.PrincessesEdge = 3397; // 剣姫母娘の烈剣
 Special.GaleforceMist = 3398; // 疾風迅雷・霞
-// TODO: 修正する
 Weapon.ArenaSwordPlus = 3399; // 闘技の剣+
-Weapon.JiaMianNojiangNojian = 3400; // 仮面の将の剣
+Weapon.CloudedBlade = 3400; // 仮面の将の剣
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

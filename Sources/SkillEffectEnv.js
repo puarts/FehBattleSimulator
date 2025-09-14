@@ -472,6 +472,18 @@ class NodeEnv {
         return this.combatPhase >= phase;
     }
 
+    checkNotCombatPhase() {
+        if (this.isInCombatPhase()) {
+            let message = 'Operation not allowed (combat phase).';
+            this.error(message);
+            if (g_appData.isDebugMode()) {
+                throw new Error(message);
+            }
+            return false;
+        }
+        return true;
+    }
+
     get moveResult() {
         return this._moveResult;
     }

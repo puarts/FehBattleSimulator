@@ -422,16 +422,16 @@ input[class="fehButton"]:not(:checked) + label {
 
 .control-panel {
     display: grid;
-    grid-template-rows:    repeat(2, auto);  /* 行を2つ、自動高さ */
-    gap: 0.1rem;                             /* 行・列の間隔 */
+    grid-template-rows:    repeat(2, auto); /* 行を2つ、自動高さ */
+    gap: 0.1rem; /* 行・列の間隔 */
 }
 
 .control-row {
     display: grid;
     grid-template-columns: repeat(5, 60px);
     /*column-gap: 0.1rem;*/
-    row-gap:   0.1rem;    /* 必要なら行間も同じギャップで */
-    align-items: center;  /* 縦中央揃え */
+    row-gap: 0.1rem; /* 必要なら行間も同じギャップで */
+    align-items: center; /* 縦中央揃え */
 }
 
 .control-row .control-row-1 {
@@ -1174,7 +1174,7 @@ td.enemy {
 .skill-grid {
     display: flex;
     flex-direction: column;
-    row-gap: 0.2rem;       /* 行間 */
+    row-gap: 0.2rem; /* 行間 */
     place-content: center; /* オプションで全体を中央寄せ */
 }
 
@@ -1184,8 +1184,8 @@ td.enemy {
     width: 100%;
     /* 列定義と背景色は下位クラスで --cols, --bg に設定 */
     grid-template-columns: var(--cols);
-    column-gap: 0.3rem;    /* 列間 */
-    align-items: center;   /* 縦方向中央揃え */
+    column-gap: 0.3rem; /* 列間 */
+    align-items: center; /* 縦方向中央揃え */
     background: var(--bg);
     border-radius: 4px;
     padding: 1px;
@@ -1194,49 +1194,49 @@ td.enemy {
 /* 武器スキル行 */
 .weapon-skill-row {
     --cols: 25px var(--select-width) 15px 120px 1fr;
-    --bg:   #ff000020;
+    --bg: #ff000020;
 }
 
 /* サポートスキル行 */
 .support-skill-row {
     --cols: 25px var(--select-width) 15px 1fr;
-    --bg:   #00ff0020;
+    --bg: #00ff0020;
 }
 
 /* 奥義スキル行 */
 .special-skill-row {
     --cols: 25px var(--select-width) 15px 70px 1fr;
-    --bg:   #ff00ff20;
+    --bg: #ff00ff20;
 }
 
 /* パッシブスキル行 */
 .passive-skill-row {
     --cols: 25px var(--select-width) 15px 1fr;
-    --bg:   #00885520;
+    --bg: #00885520;
 }
 
 /* パッシブSスキル行 */
 .passive-s-skill-row {
     --cols: 25px var(--select-width) 15px 1fr;
-    --bg:   #cccc5530;
+    --bg: #cccc5530;
 }
 
 /* パッシブXスキル行 */
 .passive-x-skill-row {
     --cols: 25px var(--select-width) 15px 1fr;
-    --bg:   #00ff0040;
+    --bg: #00ff0040;
 }
 
 /* 追加スキル行 */
 .additional-skill-row {
     --cols: 25px var(--select-width) 15px 60px 1fr;
-    --bg:   #00000008;
+    --bg: #00000008;
 }
 
 /* カスタムスキル行 */
 .custom-skill-row {
     --cols: 25px var(--custom-select-width) 60px;
-    --bg:   #00000010;
+    --bg: #00000010;
 }
 
 .custom-skill-name {
@@ -1250,7 +1250,7 @@ td.enemy {
 
 /* 各セル（列）に必要なスタイル */
 .skill-icon {
-    justify-self: center;  /* 横方向中央揃え */
+    justify-self: center; /* 横方向中央揃え */
     display: flex;
     align-items: center;
     text-align: center;
@@ -1263,7 +1263,7 @@ td.enemy {
 }
 
 .skill-actions {
-    justify-self: center;  /* 横方向中央揃え */
+    justify-self: center; /* 横方向中央揃え */
 }
 
 .skill-arg-row {
@@ -1306,3 +1306,113 @@ td.enemy {
 /*    display: block;*/
 /*    margin-top: 0.25rem;*/
 /*}*/
+
+#info-pop-anchor {
+    anchor-name: --info-pop-anchor;
+}
+
+#info-pop:popover-open {
+    width: 500px;
+    /*height: 500px;*/
+    position: fixed;
+    position-anchor: --info-pop-anchor;
+    top: anchor(top);
+    left: anchor(left);
+    /*bottom: 5px;*/
+    /*right: 5px;*/
+    margin: 0;
+
+    background: rgba(0, 0, 0, 0.8); /* 黒＋80%不透明 */
+    color: #fff; /* 文字は白で読みやすく */
+    padding: 0.5em;
+    border-radius: 0.5em;
+    /*max-width: 240px;*/
+}
+
+.damage-calc-result {
+    text-align: left;
+    font-size: 11px;
+    /*font-family: 'Inter', 'Roboto', 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;*/
+    font-family: Arial, Helvetica, sans-serif;
+    font-variant-numeric: tabular-nums; /* 桁を揃える */
+}
+
+.pop-close-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    cursor: pointer;
+    color: #ffffff;
+}
+
+.pop-close-btn:hover {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.attack-result {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.1em;
+    margin: 0em 0em 1em 0em;
+}
+
+.strike-result {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.1em;
+    margin: 0.1em 0.2em 0.5em 0.2em;
+}
+
+.attack-value {
+    color: #ffaaaa;
+    font-weight: bold;
+}
+
+.defense-value {
+    color: #00eeee;
+    font-weight: bold;
+}
+
+.reflex-value {
+    color: #b388ff; /* 鮮やかで視認性の高い紫 */
+    font-weight: bold;
+}
+
+.ally-value {
+    color: #00eeee;
+    font-weight: bold;
+}
+
+.enemy-value {
+    color: #ffaaaa;
+    font-weight: bold;
+}
+
+.damage-result-label {
+    color: #aaaaaa;
+    font-size: 0.9em;
+}
+
+.button-row {
+    display: flex;
+    align-items: center; /* 上下中央揃え */
+}
+
+.button-row input {
+    margin-right: 4px; /* ボタンの間隔調整 */
+}
+
+.damage-calc-info-icon {
+    margin-left: auto; /* 残りスペースを押し出して右端へ */
+    cursor: pointer;
+    font-size: 14px; /* 必要なら調整 */
+    color: #007bff; /* 情報アイコンなので青系が無難 */
+}
+
+.damage-calc-info-icon:hover {
+    color: #0056b3; /* 濃い青に変化 */
+}

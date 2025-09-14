@@ -413,6 +413,11 @@ const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_GRANTS_SPECIAL_C
         new GrantsSpecialCooldownCountMinusOnTargetNode(n),
     );
 
+/**
+ * @param {number|NumberNode} n
+ * @returns {IfNode}
+ * @constructor
+ */
 const IF_TARGETS_SPECIAL_COOLDOWN_COUNT_IS_AT_ITS_MAXIMUM_VALUE_MINUS_1_GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_NODE =
     n => IF_NODE(EQ_NODE(TARGETS_SPECIAL_COOLDOWN_COUNT_ON_MAP_NODE, SUB_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 1)),
         GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(n),
@@ -1378,7 +1383,7 @@ function grantsAnotherActionAfterCanto(skillId) {
             TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
                 `${skillId}-再移動後再起動`,
                 // and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
-                // TODO: 移動中に行動終了した = 罠を踏んだの全体が崩れた時に修正する
+                // TODO: 移動中に行動終了した = 罠を踏んだの前提が崩れた時に修正する
                 IF_NODE(NOT_NODE(IS_TARGET_ACTION_DONE_DURING_MOVE_COMMAND_NODE),
                     GRANTS_ANOTHER_ACTION_TO_TARGET_ON_MAP_NODE,
                     RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE,

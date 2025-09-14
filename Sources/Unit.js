@@ -2615,7 +2615,7 @@ class Unit extends BattleMapElement {
             return true;
         }
         for (let skillId of this.enumerateSkills()) {
-            if (CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.has(skillId)) {
+            if (CAN_MOVE_THROUGH_FOES_SPACE_SKILLS.has(skillId)) {
                 return true;
             }
         }

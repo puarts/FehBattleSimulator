@@ -3715,6 +3715,7 @@ function setDiscord(skillId, statsRatios) {
     };
     setSkill(PassiveA.AtkSpdPrime3, [READ_NUM_NODE, READ_NUM_NODE, 0, 0]);
     setSkill(PassiveA.AtkDefPrime3, [READ_NUM_NODE, 0, READ_NUM_NODE, 0]);
+    setSkill(PassiveA.SpdDefPrime3, [0, READ_NUM_NODE, READ_NUM_NODE, 0]);
 }
 
 // 称賛の希求の大斧

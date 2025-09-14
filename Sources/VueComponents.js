@@ -1855,6 +1855,199 @@ function initVueComponents() {
           </div>
         `
     });
+    Vue.component('damage-calc-result', {
+        props: {
+            combatResult: {
+                type: CombatResult,
+                required: true,
+                default: null,
+            },
+            onClosed: {
+                type: Function,
+                required: false,
+                default: () => {
+                },
+            },
+        },
+        computed: {
+            hasResult: vm => !!vm.combatResult,
+            atkName: vm => vm.combatResult?.atkUnit?.name || '',
+            defName: vm => vm.combatResult?.defUnit?.name || '',
+            precombatDamage: vm => vm.combatResult?.preCombatDamage ?? 0,
+            attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? []
+        },
+        template: `
+            <div class="damage-calc-result">
+              <!-- 閉じるボタン -->
+              <button class="pop-close-btn" @click="onClosed">×</button>
+
+              <div v-if="hasResult">
+                <div class="summary">
+                  <div>{{ atkName }} vs {{ defName }}</div>
+                  <div>戦闘前ダメージ: {{ precombatDamage }}</div>
+                </div>
+
+                <div class="attacks-result" v-if="attackResults">
+                  <div v-for="(attackResult, ai) in attackResults" :key="ai">
+                    <attack-calc-result 
+                      :combat-result="combatResult"
+                      :attack-result="attackResult"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div v-else>結果はまだありません。</div>
+            </div>
+        `,
+    });
+    Vue.component('attack-calc-result', {
+        props: {
+            combatResult: {type: CombatResult, required: true},
+            attackResult: {type: AttackResult, required: true},
+        },
+        computed: {
+            strikes: vm => vm.attackResult?.strikeResults ?? [],
+            hasStrikes: vm => vm.strikes.length > 0,
+            attackTypeLabel() {
+                const parts = [];
+                if (this.attackResult?.isPotentFollowupAttack) parts.push('神速');
+                if (this.attackResult?.isFollowupAttack) parts.push('追撃');
+                parts.push(this.attackResult?.isCounterattack ? '反撃' : '攻撃');
+                return parts.join('');
+            },
+            currentAtkHpStr: vm => `HP: ${vm.attackResult.atkRestHp}/${vm.attackResult.atkMaxHp}`,
+            currentDefHpStr: vm => `HP: ${vm.attackResult.defRestHp}/${vm.attackResult.defMaxHp}`,
+            atkName: vm => vm.attackResult?.atkUnit?.name || '',
+            defName: vm => vm.attackResult?.defUnit?.name || '',
+        },
+        template: `
+          <div class="attack-result">
+            <div>
+              <span :class="attackResult.atkUnit.groupId === UnitGroupType.Ally ? 'ally-value' : 'enemy-value'" >
+                {{ attackTypeLabel }}： {{ atkName }} ({{ currentAtkHpStr }}) → {{ defName }} ({{ currentDefHpStr }})
+              </span>
+            </div>
+
+            <div class="strikes-result" v-if="hasStrikes">
+              <div v-for="(strikeResult, si) in strikes" :key="si">
+                <strike-calc-result
+                  :combat-result="combatResult"
+                  :attack-result="attackResult"
+                  :strike-result="strikeResult"
+                />
+              </div>
+            </div>
+
+            <div>
+              合計ダメージ: {{ attackResult?.totalDamage }}
+            </div>
+          </div>
+        `
+    });
+
+    Vue.component('strike-calc-result', {
+        props: {
+            combatResult: {type: CombatResult, required: true, default: null,},
+            attackResult: {type: AttackResult, required: true, default: null,},
+            strikeResult: {type: StrikeResult, required: true, default: null,},
+        },
+        components: {
+            ValueLabel: {template: `<span class="damage-result-label"><slot/></span>`},
+            AttackValue: {template: `<span class="attack-value"><slot/></span>`},
+            DefenseValue: {template: `<span class="defense-value"><slot/></span>`},
+            ReflexValue: {template: `<span class="reflex-value"><slot/></span>`},
+        },
+        computed: {
+            isSpecialAttack: vm => vm.strikeResult?.isAttackerSpecialActive || false,
+            damageBeforeAdditional: vm => vm.attackResult.getDamageBeforeAdditionalDamage(vm.isSpecialAttack),
+            atk: vm => vm.attackResult.getFinalAtk(vm.isSpecialAttack),
+            mit: vm => vm.attackResult.getFinalMit(vm.isSpecialAttack),
+            additionalDamageOfAttack: vm => vm.attackResult.getTotalAdditionalDamage(vm.isSpecialAttack),
+            additionalDamageOfStrike: vm => vm.strikeResult.getAdditionalDamage(),
+            damageRatio: vm => vm.roundTo(vm.strikeResult.damageRatio),
+            damageReductionRatio: vm => vm.roundTo(vm.strikeResult.damageReductionRatio),
+            damageMinusWithReductionConsidered(vm) {
+                const {damageReductionRatios, damageReductionValue, damageRatio} = vm.strikeResult;
+                return damageReductionRatios.length > 0
+                    ? Math.trunc(damageReductionValue / damageRatio)
+                    : damageReductionValue;
+            },
+            reflexValue: vm => vm.strikeResult.reducedDamageIncludingMiracle,
+            normalOrSpecialLabel: vm => vm.isSpecialAttack ? '奥義' : '通常',
+            defenderSpecialLabel: vm => vm.strikeResult.isDefenderSpecialActive ? '守備奥義' : '',
+            selfDamageReductionRatios: vm => (vm.strikeResult?.selfDamageReductionRatios?.length ?
+                vm.strikeResult.selfDamageReductionRatios : [1]),
+        },
+        methods: {
+            roundTo(n, digits = 6) {
+                let factor = Math.pow(10, digits);
+                return Math.round(n * factor) / factor;
+            },
+        },
+        template: `
+          <div class="strike-result">
+            <div>
+              {{ strikeResult.currentStrikeCount }}撃目
+              (
+              <span :class="{ 'log-special': strikeResult.isAttackerSpecialActive }">
+                {{ normalOrSpecialLabel }}
+              </span>
+              <span v-if="strikeResult.isDefenderSpecialActive">
+                、 <span class="log-special">{{ defenderSpecialLabel }}</span>
+              </span>
+              )
+            </div>
+
+            <div>
+              {{ damageBeforeAdditional }}
+              =
+              {{ atk }} <value-label>(攻撃)</value-label>
+              <span v-if="strikeResult.isAttackerSpecialActive">
+                + {{ attackResult.specialAddDamage }} <value-label>(奥義ダメージ)</value-label>
+              </span>
+              - {{ mit }} <value-label>(防御)</value-label>
+            </div>
+
+            <div>
+              <attack-value>{{ strikeResult.getDamage() }}</attack-value>
+              = 
+              {{ damageBeforeAdditional }}
+              + {{ additionalDamageOfAttack }} <value-label>(ダメージ+)</value-label>
+              + {{ additionalDamageOfStrike }} <value-label>(反射など、この攻撃でのダメージ+)</value-label>
+            </div>
+
+            <div>
+              <defense-value>{{ strikeResult.reducedDamage }}</defense-value> <value-label>(ダメージ減少値)</value-label>
+              =
+              {{ strikeResult.getDamage() }}
+              &times; {{ damageReductionRatio }} ({{ strikeResult.damageReductionRatios }})
+              <value-label>(ダメージ軽減率)</value-label>
+              + {{ strikeResult.damageReductionValue }}
+              <value-label>(ダメージ-)(ダメージ+換算{{ damageMinusWithReductionConsidered }})</value-label>
+            </div>
+
+            <div>
+              {{ strikeResult.damageAfterReductionValue }} 
+              = 
+              {{ strikeResult.getDamage() }} <value-label>(ダメージ)</value-label>
+              - {{ strikeResult.reducedDamage }} <value-label>(ダメージ減少値)</value-label>
+            </div>
+
+            <div>
+              <reflex-value>{{ reflexValue }}</reflex-value> <value-label>(反射対象軽減値)</value-label>
+            </div>
+
+            <div>
+              <attack-value>{{ strikeResult.actualDamage }}</attack-value> <value-label>(実際のダメージ)</value-label>
+              =
+              {{ strikeResult.damageAfterReductionValue }} 
+              &times; {{ selfDamageReductionRatios }} <value-label>(神速など自分へのダメージ軽減)</value-label>
+              <span v-if="strikeResult.isMiracleActivated">[祈り発動]</span>
+            </div>
+          </div>
+        `
+    });
 }
 
 initVueComponents();

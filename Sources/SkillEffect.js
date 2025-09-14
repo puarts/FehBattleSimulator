@@ -5224,6 +5224,7 @@ class InflictsStatsMinusAtStartOfTurnNode extends ApplyingNumberToEachStatNode {
         let amounts = this.evaluateChildren(env).map(v => -v);
         env.debug(`${unit.nameWithGroup}にデバフ予約: [${amounts}]`);
         unit.reserveToApplyDebuffs(...amounts);
+        env.checkNotCombatPhase();
     }
 }
 
@@ -6312,6 +6313,9 @@ class IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode extends Bool
 const IS_TARGETS_TEAMS_MIRACLE_WITHOUT_SPECIAL_ACTIVATED_ON_CURRENT_TURN_NODE =
     new IsTargetsTeamsMiracleWithoutSpecialActivatedOnCurrentTurnNode();
 
+/**
+ * 最初の攻撃(最初の2回攻撃の2回目は含まない。最初のAttackの最初のStrikeだけ)
+ */
 class IsTargetsFirstAttackNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -6321,7 +6325,7 @@ class IsTargetsFirstAttackNode extends BoolNode {
         let unit = this.getUnit(env);
         let context = env.damageCalcContext;
         if (context) {
-            let result = context.isFirstAttack(unit);
+            let result = context.isFirstStrike(unit);
             env.debug(`${unit.nameWithGroup}の最初の攻撃か: ${result}`);
             return result;
         } else {
@@ -6698,7 +6702,11 @@ class HasTargetWeaponTriangleAdvantageNode extends BoolNode {
 
 const HAS_TARGET_WEAPON_TRIANGLE_ADVANTAGE_NODE = new HasTargetWeaponTriangleAdvantageNode();
 
-class HasAttackCanceledNode extends BoolNode {
+class HasTargetsAttackCanceledNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = env.hasAttackCanceled;
@@ -6707,9 +6715,13 @@ class HasAttackCanceledNode extends BoolNode {
     }
 }
 
-const IS_AFFECTED_BY_FORESIGHT_SNARE_NODE = new HasAttackCanceledNode();
+const IS_TARGET_AFFECTED_BY_FORESIGHT_SNARE_NODE = new HasTargetsAttackCanceledNode();
 
-class IsAffectedByTrapNode extends BoolNode {
+class IsTargetAffectedByTrapNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = isTrapActivationResult(env.moveResult);
@@ -6718,7 +6730,7 @@ class IsAffectedByTrapNode extends BoolNode {
     }
 }
 
-const IS_AFFECTED_BY_TRAP_NODE = new IsAffectedByTrapNode();
+const IS_TARGET_AFFECTED_BY_TRAP_NODE = new IsTargetAffectedByTrapNode();
 
 class IsTargetEquippedWithSaviorEffectsNode extends BoolNode {
     static {

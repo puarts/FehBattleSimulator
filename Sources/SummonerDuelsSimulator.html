@@ -252,7 +252,7 @@
                                     </tr>
                                 </table>
                             </td>
-                            <td style="vertical-align:top;">
+                            <td id="info-pop-anchor" style="vertical-align:top;">
                                 <table style="border-style: none;">
                                     <tr>
                                         <td colspan="1">
@@ -263,10 +263,15 @@
                                     </tr>
                                     <tr>
                                         <td colspan="1">
-                                            <input type="button" @click="g_app.clearSimpleLog()" value="クリア"
-                                                style="font-size: 8px;" />
-                                            <input type="button" @click="copySimpleLogToClipboard()" value="コピー"
-                                                style="font-size: 8px;" />
+                                            <div class="button-row">
+                                                <input type="button" @click="g_app.clearSimpleLog()" value="クリア"
+                                                       style="font-size: 8px;"/>
+                                                <input type="button" @click="copySimpleLogToClipboard()" value="コピー"
+                                                       style="font-size: 8px;"/>
+                                                <i class="fas fa-info-circle damage-calc-info-icon"
+                                                   @click="document.getElementById('info-pop').togglePopover()">
+                                                </i>
+                                            </div>
                                             <div v-html="simpleLog" id="simpleLogPanel"
                                                 style="overflow-y:scroll; margin-bottom: 5px; height: 130px; width:190px; border: 1px solid #ddd;background-color: #fff;">
                                             </div>
@@ -1199,6 +1204,12 @@
                 <img src="/images/dummy.png" v-bind:data-src="`${g_corsImageRootPath}images/FehSkillIcons/EngagedSpecial/${imgFile.fileName}`"
                      v-bind:id="imgFile.fileName" class="lazyTemplateImage" v-bind:alt="imgFile.fileName"/>
             </span>
+        </div>
+        <div id="info-pop" popover="manual">
+            <damage-calc-result
+                    :combat-result="combatResult"
+            >
+            </damage-calc-result>
         </div>
     </div>
     <style>

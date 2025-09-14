@@ -1247,7 +1247,7 @@ CustomSkill.setFuncId(
     'can-move-through-foes-spaces',
     "すり抜け",
     (skillId, args) => {
-        CAN_MOVE_THROUGH_FOES_SPACE_SKILL_SET.add(skillId);
+        CAN_MOVE_THROUGH_FOES_SPACE_SKILLS.add(skillId);
     },
     []
 );
