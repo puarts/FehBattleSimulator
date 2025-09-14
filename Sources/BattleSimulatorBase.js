@@ -7320,6 +7320,14 @@ class BattleSimulatorBase {
         return result;
     }
 
+    __convertPerTurnStatusToSerialForOffenseStructuresOnMap() {
+        let result = "";
+        for (let st of this.__enumerateOffenceStructuresOnMap()) {
+            result += this.__convertStructurePerTurnStatusToSerial(st) + ElemDelimiter;
+        }
+        return result;
+    }
+
     __convertUnitPerTurnStatusToSerialForSpecifiedGroupUnitsOnMap(groupId) {
         let result = "";
         for (let unit of this.enumerateUnitsInSpecifiedGroup(groupId)) {
@@ -7942,6 +7950,8 @@ class BattleSimulatorBase {
         let serial = null;
         if (this.vm.isCommandUndoable) {
             serial = this.__convertUnitPerTurnStatusToSerialForAllUnitsAndTrapsOnMapAndGlobal();
+            // 戦闘後に安全柵が破壊されるようになったので攻撃側の施設も保存対象に入れる
+            serial += this.__convertPerTurnStatusToSerialForOffenseStructuresOnMap();
         }
         let self = this;
         let func = function () {
