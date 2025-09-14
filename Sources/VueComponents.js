@@ -1879,26 +1879,11 @@ function initVueComponents() {
             defName() {
                 return this.combatResult?.defUnit?.name || '';
             },
-            totalPre() {
+            precombatDamage() {
                 return this.combatResult?.preCombatDamage ?? 0;
             },
             attackResults() {
                 return this.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? [];
-            },
-        },
-        methods: {
-            attackTypeLabel(attackResult) {
-                const parts = [];
-                if (attackResult?.isPotentFollowupAttack) parts.push('神速');
-                if (attackResult?.isFollowupAttack) parts.push('追撃');
-                parts.push(attackResult?.isCounterattack ? '反撃' : '攻撃');
-                return parts.join('');
-            },
-            currentAtkHpStr(attackResult) {
-                return `HP: ${attackResult.atkRestHp}/${attackResult.atkMaxHp}`
-            },
-            currentDefHpStr(attackResult) {
-                return `HP: ${attackResult.defRestHp}/${attackResult.defMaxHp}`
             },
         },
         template: `
@@ -1909,33 +1894,15 @@ function initVueComponents() {
               <div v-if="hasResult">
                 <div class="summary">
                   <div>{{ atkName }} vs {{ defName }}</div>
-                  <div>戦闘前ダメージ: {{ totalPre }}</div>
+                  <div>戦闘前ダメージ: {{ precombatDamage }}</div>
                 </div>
 
-                <div class="attacks-result" v-if="attackResults.length">
+                <div class="attacks-result" v-if="attackResults">
                   <div v-for="(attackResult, ai) in attackResults" :key="ai">
-                    <div class="attack-result">
-                      <div>
-                        <span :class="attackResult.atkUnit.groupId === UnitGroupType.Ally ? 'ally-value' : 'enemy-value'" >
-                        {{ attackTypeLabel(attackResult) }}：
-                        {{ attackResult?.atkUnit?.name || '' }} ({{ currentAtkHpStr(attackResult) }}) → 
-                        {{ attackResult?.defUnit?.name || '' }} ({{ currentDefHpStr(attackResult) }})
-                        </span>
-                      </div>
-
-                      <div class="strikes-result" v-if="attackResult?.strikeResults?.length">
-                        <div v-for="(strikeResult, si) in attackResult.strikeResults" :key="si">
-                          <strike-calc-result 
-                              :combat-result="combatResult"
-                              :attack-result="attackResult"
-                              :strike-result="strikeResult"
-                          />
-                        </div>
-                      </div>
-                      <div v-if="typeof attackResult?.totalDamage === 'number'">
-                        合計ダメージ: {{ attackResult.totalDamage }}
-                      </div>
-                    </div>
+                    <attack-calc-result 
+                      :combat-result="combatResult"
+                      :attack-result="attackResult"
+                    />
                   </div>
                 </div>
               </div>
@@ -1943,6 +1910,62 @@ function initVueComponents() {
               <div v-else>結果はまだありません。</div>
             </div>
         `,
+    });
+    Vue.component('attack-calc-result', {
+        props: {
+            combatResult: {type: CombatResult, required: true},
+            attackResult: {type: AttackResult, required: true},
+        },
+        computed: {
+            strikes() {
+                return this.attackResult?.strikeResults ?? [];
+            },
+            hasStrikes() {
+                return this.strikes.length > 0;
+            },
+            attackTypeLabel() {
+                const parts = [];
+                if (this.attackResult?.isPotentFollowupAttack) parts.push('神速');
+                if (this.attackResult?.isFollowupAttack) parts.push('追撃');
+                parts.push(this.attackResult?.isCounterattack ? '反撃' : '攻撃');
+                return parts.join('');
+            },
+            currentAtkHpStr() {
+                return `HP: ${this.attackResult.atkRestHp}/${this.attackResult.atkMaxHp}`
+            },
+            currentDefHpStr() {
+                return `HP: ${this.attackResult.defRestHp}/${this.attackResult.defMaxHp}`
+            },
+            atkName() {
+                return this.attackResult?.atkUnit?.name || '';
+            },
+            defName() {
+                return this.attackResult?.defUnit?.name || '';
+            },
+        },
+        template: `
+          <div class="attack-result">
+            <div>
+              <span :class="attackResult.atkUnit.groupId === UnitGroupType.Ally ? 'ally-value' : 'enemy-value'" >
+                {{ attackTypeLabel }}： {{ atkName }} ({{ currentAtkHpStr }}) → {{ defName }} ({{ currentDefHpStr }})
+              </span>
+            </div>
+
+            <div class="strikes-result" v-if="hasStrikes">
+              <div v-for="(strikeResult, si) in strikes" :key="si">
+                <strike-calc-result
+                  :combat-result="combatResult"
+                  :attack-result="attackResult"
+                  :strike-result="strikeResult"
+                />
+              </div>
+            </div>
+
+            <div>
+              合計ダメージ: {{ attackResult?.totalDamage }}
+            </div>
+          </div>
+        `
     });
 
     Vue.component('strike-calc-result', {
