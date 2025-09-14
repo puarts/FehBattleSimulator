@@ -1967,9 +1967,9 @@ function initVueComponents() {
             additionalDamageOfStrike: vm => vm.strikeResult.getAdditionalDamage(),
             damageRatio: vm => vm.roundTo(vm.strikeResult.damageRatio),
             damageMinusWithReductionConsidered(vm) {
-                const {damageReductionRatios, damageReductionValue, damageRatio} = vm.strikeResult;
+                const {damageReductionRatios, damageReductionValue, damageReductionRatio} = vm.strikeResult;
                 return damageReductionRatios.length > 0
-                    ? Math.trunc(damageReductionValue / damageRatio)
+                    ? Math.trunc(damageReductionValue / damageReductionRatio)
                     : damageReductionValue;
             },
             reflexValue: vm => vm.strikeResult.reducedDamageIncludingMiracle,
