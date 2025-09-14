@@ -9974,7 +9974,9 @@
             FILTER_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE,
                 AND_NODE(
                     LT_NODE(TARGETS_EVAL_RES_ON_MAP, SKILL_OWNERS_EVAL_RES_ON_MAP),
-                    TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE(2))),
+                    IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE(2)
+                ),
+            ),
             // inflicts (Panic), (Exposure) , and [Deep Wounds)
             INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
                 StatusEffectType.Panic, StatusEffectType.Exposure, StatusEffectType.DeepWounds),

@@ -53,6 +53,8 @@ class CombatResult extends DamageCalcResult {
 
         /** @type {StrikeResult[]} */
         this.damageHistory = [];
+        /** @type {AttackResult[]} */
+        this.attackHistory = [];
 
         this.atkUnit_totalAttackCount = 0;
         this.defUnit_totalAttackCount = 0;
@@ -506,6 +508,13 @@ class DamageCalcContext {
         return this.combatResult?.damageHistory;
     }
 
+    /**
+     * @returns {AttackResult[]}
+     */
+    get attackHistory() {
+        return this.combatResult?.attackHistory;
+    }
+
     get combatResult() {
         return this.damageCalcEnv?.combatResult;
     }
@@ -519,8 +528,12 @@ class DamageCalcContext {
         return this.damageHistory.filter(log => log.atkUnit === attackUnit);
     }
 
+    isFirstStrike(atkUnit) {
+        return this.combatResult.damageHistory.filter(result => result.atkUnit === atkUnit).length === 0;
+    }
+
     isFirstAttack(atkUnit) {
-        return this.combatResult.attackResults.filter(result => result.atkUnit === atkUnit).length === 1;
+        return this.combatResult.attackHistory.filter(result => result.atkUnit === atkUnit).length === 0;
     }
 
     isConsecutiveAttack(atkUnit) {
@@ -1199,6 +1212,8 @@ class DamageCalculator {
 
         this.applyDamageInAttack(atkUnit, defUnit, attackResult);
 
+        context.attackHistory.push(attackResult);
+
         return attackResult;
     }
 
@@ -1413,17 +1428,16 @@ class DamageCalculator {
     }
 
     /**
-     * @param {number} fixedAddDamage
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
      * @param {DamageCalcContext} context
      */
-    #getFixedAddDamagePerAttack(atkUnit, defUnit, context) {
+    #getFixedAddDamagePerStrike(atkUnit, defUnit, context) {
         let fixedAddDamage = 0;
         fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttack;
         atkUnit.battleContext.additionalDamageOfNextAttack = 0;
         // TODO: 戦闘開始のタイミングに移動させる
-        if (context.isFirstAttack(atkUnit)) {
+        if (context.isFirstStrike(atkUnit)) {
             fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
         }
         for (let skillId of atkUnit.enumerateSkills()) {
@@ -1526,6 +1540,7 @@ class DamageCalculator {
     #applySpecialCountChangesBeforeAttack(atkUnit, defUnit, context) {
         let atkLogClass = atkUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
         let defLogClass = defUnit.groupId === UnitGroupType.Ally ? 'log-ally' : 'log-enemy';
+        // 最初のStrikeが始まる前なのでAttackだけの判定で良い
         if (context.isFirstAttack(atkUnit)) {
             // atkUnitの奥義カウント変動
             {
@@ -1764,6 +1779,7 @@ class DamageCalculator {
 
         let isSecondStrike = currentAttackCount === 2;
         if (context.isFirstAttack(atkUnit) && isSecondStrike) {
+            // TODO: 最初ののAttackのSecond Strikeだということが明確になるようにrenameする
             this.applySpecialCountChangeAmountBeforeSecondStrike(atkUnit);
             this.applySpecialCountChangeAmountBeforeSecondStrike(defUnit);
         }
@@ -1813,7 +1829,7 @@ class DamageCalculator {
 
         let additionalDamagePerStrike =
             atkUnit.battleContext.additionalDamagePerAttack +
-            this.#getFixedAddDamagePerAttack(atkUnit, defUnit, context);
+            this.#getFixedAddDamagePerStrike(atkUnit, defUnit, context);
         let specialAdditionalDamagePerStrike =
             atkUnit.battleContext.getSpecialAddDamagePerAttack() +
             atkUnit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
@@ -1937,9 +1953,8 @@ class DamageCalculator {
         );
         strikeResult.reducedDamageIncludingMiracle = reducedDamage + reducedDamageByMiracle;
 
-        combatResult.damageHistory.push(
-            combatResult.getCurrentStrikeResult().setDamageDealt(currentDamage)
-        );
+        // TODO: damageHistory.pushとapplySkillEffectsAfterAttackの順序について検討する
+        combatResult.damageHistory.push(strikeResult.setDamageDealt(currentDamage));
 
         this.applySkillEffectsAfterAttack(atkUnit, defUnit, context);
         this.applySkillEffectsAfterAttack(defUnit, atkUnit, context);
@@ -2310,8 +2325,8 @@ class DamageCalculator {
         // 計算機の外側で設定されたダメージ軽減率
         damageReductionRatios.push(...defUnit.battleContext.getDamageReductionRatios());
 
-        if (context.isFirstAttack(atkUnit)) {
-            // 初回攻撃
+        if (context.isFirstStrike(atkUnit)) {
+            // 初回攻撃(2回攻撃の場合2回攻撃の最初の1回のみ)
             damageReductionRatios.push(...defUnit.battleContext.getDamageReductionRatiosOfFirstAttack());
         } else if (context.isConsecutiveAttack(atkUnit)) {
             // 連続した攻撃
@@ -2732,7 +2747,7 @@ class DamageCalculator {
         // 差し違え4などの相手のダメージだけで決まる軽減ダメージ追加はここで計算する
         // 祈りも考慮した軽減ダメージ追加は祈りの処理の時に行う
         if (defUnit.battleContext.reducedRatioForNextAttack > 0) {
-            if (context.isFirstAttack(atkUnit)) {
+            if (context.isFirstStrike(atkUnit)) {
                 defUnit.battleContext.additionalDamageOfNextAttackByDamageRatio =
                     Math.trunc(damage * defUnit.battleContext.reducedRatioForNextAttack);
             }
@@ -2750,7 +2765,7 @@ class DamageCalculator {
      */
     #applyReducedDamageForNextAttack(atkUnit, defUnit, reducedDamage, activatesDefenderSpecial, context) {
         // ダメージ反射
-        if (context.isFirstAttack(atkUnit)) {
+        if (context.isFirstStrike(atkUnit)) {
             for (let rate of defUnit.battleContext.firstAttackReflexDamageRates) {
                 defUnit.battleContext.reflexDamagesAndRatesForNextAttack.push([reducedDamage, rate]);
             }
