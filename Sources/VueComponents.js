@@ -2035,7 +2035,7 @@ function initVueComponents() {
             </div>
 
             <div>
-              <reflex-value>{{ reflexValue }}</reflex-value> <value-label>(反射量)</value-label>
+              <reflex-value>{{ reflexValue }}</reflex-value> <value-label>(反射対象軽減値)</value-label>
             </div>
 
             <div>
