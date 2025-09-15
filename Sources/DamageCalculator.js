@@ -1052,11 +1052,6 @@ class DamageCalculator {
     __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
         let fixedAddDamage = 0;
 
-        if (atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio > 0) {
-            fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio;
-            atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio = 0;
-        }
-
         for (let skillId of atkUnit.enumerateSkills()) {
             switch (skillId) {
                 case Weapon.ArcaneGrima:
@@ -1449,6 +1444,11 @@ class DamageCalculator {
             fixedAddDamage += Math.trunc(damage * rate);
         }
         atkUnit.battleContext.reflexDamagesAndRatesForNextAttack = [];
+
+        if (atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio > 0) {
+            fixedAddDamage += atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio;
+            atkUnit.battleContext.additionalDamageOfNextAttackByDamageRatio = 0;
+        }
 
         if (atkUnit.battleContext.isNextAttackAddReducedDamageActivating) {
             fixedAddDamage += atkUnit.battleContext.reducedDamageForNextAttack;
