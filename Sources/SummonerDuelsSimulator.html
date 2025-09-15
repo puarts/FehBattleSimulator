@@ -269,7 +269,7 @@
                                                 <input type="button" @click="copySimpleLogToClipboard()" value="コピー"
                                                        style="font-size: 8px;"/>
                                                 <i class="fas fa-info-circle damage-calc-info-icon"
-                                                   @click="document.getElementById('info-pop').togglePopover()">
+                                                   @click="document.getElementById('info-pop')?.togglePopover()">
                                                 </i>
                                             </div>
                                             <div v-html="simpleLog" id="simpleLogPanel"
