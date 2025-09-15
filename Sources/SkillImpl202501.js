@@ -1,5 +1,158 @@
 // スキル実装
 
+    // Hoshido Raijinto
+    //
+    // Mt：16　Rng：1
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit can counterattack regardless of foe’s range.
+    //
+    // At start of player phase or enemy phase,
+    // if unit’s HP ≥ 25%, grants Def/Res+6, [Dodge],
+    // and “neutralizes penalties on unit during combat”
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // If foe initiates combat or unit’s HP ≥ 25% at start of combat,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // and reduces damage from foe’s attacks by 20% of unit’s Spd (excluding area-of-effect Specials),
+    // and reduces damage from foe’s Specials by an additional 20% of unit’s Spd during combat (excluding area-of-effect Specials),
+    // and also, when unit’s Special triggers,
+    // deals damage = 40% of unit’s Spd (excluding area-of-effect Specials).
+    //
+    // Unit can use the following [Style]:
+    // Hoshido Raijinto Style
+
+    // Duelist’s Blow
+    //
+    // If unit initiates combat or is within 3 spaces of an ally,
+    // grants Atk/Spd+9 to unit,
+    // reduces damage from foe’s first attack by X
+    // (“first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,” it means the first and second strikes;
+    // if unit initiates combat, X = 15; otherwise, X = 7),
+    // and neutralizes effects that grant “Special cooldown charge +X” to foe
+    // or inflict “Special cooldown charge -X” on unit during combat.
+
+    // Bushido Tenet
+    //
+    // If a skill compares unit’s Spd to a foe’s or ally’s Spd,
+    // treats unit’s Spd as if granted +7.
+    //
+    // At start of player phase or enemy phase,
+    // grants [Fringe Bonus] and [Null Follow-Up]
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // Inflicts Atk/Spd/Def-5 on foe during combat.
+    // When unit’s Special triggers, deals damage = 15 + unit’s max Special cooldown count value × 5 (excluding area-of-effect Specials)
+    // and neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills (excluding area-of-effect Specials).
+    //
+    // Reduces damage from foe’s attacks by 15 during combat (excluding area-of-effect Specials),
+    // and unit’s next attack deals damage = total damage reduced from foe’s first attack (by any source, including other skills).
+    // Resets at end of combat.
+    //
+    // Restores 7 HP to unit after combat.
+
+    // Tumultuous Echo
+    //
+    // Enables [Canto (Dist. +1; Max 4)].
+    //
+    // At start of turn, unit can move 1 extra space (that turn only; does not stack).
+
+    // Style
+    //
+    // Unit can use the following [Style]:
+    // Hoshido Raijinto Style
+    //
+    // Unit can attack foes 2 spaces away (unit cannot attack adjacent foes).
+    // Decreases Spd difference necessary for unit to make a follow-up attack by 10 during combat.
+    //
+    // Cannot move through spaces within 2 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
+    // Unit suffers a counterattack if any of the following conditions are met:
+    // foe is armored with Range = 1, foe can counterattack regardless of unit’s range,
+    // or foe’s Range is the same as the distance between unit and foe.
+    //
+    // After-combat movement effects do not occur.
+    // Skill effect’s Range is treated as 1.
+    // This Style can be used only once per turn.
+
+    // Arcane Crimson
+    // Mt: 16 Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // Inflicts Atk/Spd/Def-5 on foes within 3 rows or 3 columns centered on unit during combat.
+    //
+    // If foe initiates combat or unit’s HP ≥ 25% at start of combat, grants bonus to unit’s Atk/Spd/Def/Res = 25% of foe’s Atk at start of combat - 9 (max 9; min 0),
+    // deals damage = 15% of unit’s Atk (including area-of-effect Specials),
+    // reduces damage from foe’s attacks by 15% of unit’s Atk (including area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+    // and grants Special cooldown count-1 to unit before unit’s first attack during combat,
+    // and restores 7 HP to unit after combat.
+
+    // Air Superiority
+    // Unit can move through foes’ spaces.
+    //
+    // For each foe within 5 spaces of unit, unit can move to any of the nearest spaces adjacent to that foe (unless space is impassable terrain).
+    //
+    // Inflicts Spd/Def-4 on foe and deals damage during combat = 20% of the greater of unit’s Spd or Def (excluding area-of-effect Specials),
+    // and also, if foe is cavalry or flying,
+    // or if decreasing the Spd difference necessary to make a follow-up attack by 25 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow X%] during combat (if unit cannot perform follow-up and attack twice, X = 80; otherwise, X = 40).
+
+    // Encouragement
+    // At start of turn, if unit is within 2 spaces of an ally, grants Atk/Spd+6, [Treachery], and [Incited] to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // For foes within 3 rows or 3 columns centered on unit,
+    // inflicts Atk/Spd/Def-5, neutralizes bonuses,
+    // and reduces the percentage of foe’s non-Special “reduce damage by X%” skills by 50% during combat (excluding area-of-effect Specials).
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // unit deals +7 damage (excluding area-of-effect Specials),
+    // and neutralizes effects that guarantee foe’s follow-up attacks and effects that prevent unit’s follow-up attacks during combat,
+    // and also, if Potent Follow X% has triggered and X ≤ 99, then X = 100.
+
+    // Entwining Horn
+    // Mt: 14 Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // At start of player phase or enemy phase, grants [Imbue], [Resonance: Shields],
+    // and “neutralizes foe’s bonuses during combat” to unit, support partner, and allies within 2 spaces of unit for 1 turn.
+    //
+    // If unit is transformed or if foe initiates combat,
+    // grants bonus to unit’s Atk/Def/Res = number of allies within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // unit deals damage = 20% of unit’s Def (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 20% of unit’s Def and reduces damage from foe’s Specials by an additional 20% of unit’s Def (in either case, including area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+    // and unit makes a guaranteed follow-up attack during combat,
+    // and also, if unit’s Def ≥ foe’s Def+5, disables unit’s and foe’s skills that change attack priority during combat.
+    //
+    // At start of turn, if unit is adjacent to only beast or dragon allies or if unit is not adjacent to any ally, unit transforms (otherwise, unit reverts).
+    // If unit transforms, grants Atk+2, deals +7 damage when Special triggers,
+    // and neutralizes effects that grant “Special cooldown charge +X” to foe or inflict “Special cooldown charge -X” on unit.
+
+    // Flame Wall
+    // (CD: 4)
+    // Boosts damage by 70% of unit’s Def when Special triggers.
+    //
+    // If unit’s or foe’s Special is ready, or unit’s or foe’s Special triggered before or during this combat,
+    // and also, if unit’s Def ≥ foe’s Def-10,
+    // reduces damage from foe’s next attack by 40% (once per combat; excluding area-of-effect Specials).
+
+    // Heir of Openness
+    // If unit can transform, transformation effects gain “if unit is within 2 spaces of any allies from a different title than unit” as a trigger condition (in addition to existing conditions).
+    //
+    // If defending in Aether Raids, at the start of enemy turn 1, if conditions for transforming are met, unit transforms.
+    //
+    // Allies within 2 spaces of unit can move to any space within 2 spaces of unit.
+    //
+    // Foes with Range = 1 cannot move through spaces adjacent to unit. (Does not affect foes with Pass skills.)
+    // Foes with Range = 2 cannot move through spaces within 2 spaces of unit. (Does not affect foes with Pass skills.)
+    //
+    // For support partner and for allies within 3 spaces of unit,
+    // grants Atk/Def/Res+5 and reduces damage from foe’s attacks by 7 during combat (excluding area-of-effect Specials),
+    // and next attack deals damage = 40% of foe’s first-attack damage prior to reductions (resets at end of combat; only highest value applied; does not stack).
+    //
+    // If unit is within 3 spaces of an ally, grants Atk/Def/Res+5 to unit, deals +7 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by 7 during combat (excluding area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+    // and unit’s next attack deals damage = 40% of foe’s first-attack damage prior to reductions (resets at end of combat; only highest value applied; does not stack).
+
 // Clouded Blade
 {
     let skillId = Weapon.CloudedBlade;

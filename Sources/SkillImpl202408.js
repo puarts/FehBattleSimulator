@@ -1852,25 +1852,28 @@
 
 // 強化増幅の剣+
 {
-    let skillId = Weapon.DoublerSwordPlus;
-    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // At start of turn,
-        // if unit is within 2 spaces of an ally,
-        // grants Atk/Def+6 to unit and allies within 2 spaces of unit for 1 turn.
-    ));
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // If unit initiates combat or is within 2 spaces of an ally,
-        IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
-            // grants Atk/Spd/Def/Res+X to unit during combat
-            // (X = 4 + highest bonus on each stat between unit and allies within 2 spaces of unit; calculates each stat bonus independently).
-            new GrantsStatsPlusToTargetDuringCombatNode(
-                4, 4, 4, 4
-            ),
-            new GrantsStatsPlusToTargetDuringCombatNode(
-                HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(2)
-            ),
-        )
-    ));
+    let setSkill = skillId => {
+        AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // At start of turn,
+            // if unit is within 2 spaces of an ally,
+            // grants Atk/Def+6 to unit and allies within 2 spaces of unit for 1 turn.
+        ));
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+            // If unit initiates combat or is within 2 spaces of an ally,
+            IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
+                // grants Atk/Spd/Def/Res+X to unit during combat
+                // (X = 4 + highest bonus on each stat between unit and allies within 2 spaces of unit; calculates each stat bonus independently).
+                new GrantsStatsPlusToTargetDuringCombatNode(
+                    4, 4, 4, 4
+                ),
+                new GrantsStatsPlusToTargetDuringCombatNode(
+                    HIGHEST_BONUS_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGETS_ALLIES_WITHIN_N_SPACES_NODE(2)
+                ),
+            )
+        ));
+    };
+    setSkill(Weapon.DoublerSwordPlus);
+    setSkill(Weapon.DoublerAxePlus);
 }
 
 // エトルリアの光
