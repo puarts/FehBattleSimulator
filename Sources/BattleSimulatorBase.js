@@ -527,6 +527,21 @@ class BattleSimulatorBase {
                 appData.__updateStatusBySkillsAndMerges(currentUnit);
                 updateAllUi();
             },
+            unitChanged: function () {
+                if (g_app == null) {
+                    return;
+                }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) {
+                    return;
+                }
+                let currentUnit = self.__getCurrentUnit();
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
+                updateAllUi();
+            },
+            entwinedIdChanged: function () {
+                this.unitChanged();
+            },
             grantedBlessingChanged: function () {
                 if (g_app == null) {
                     return;

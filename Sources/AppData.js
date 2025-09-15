@@ -398,20 +398,16 @@ class AppData extends UnitManager {
             { id: WeaponRefinementType.WrathfulStaff, text: "神罰の杖" },
             { id: WeaponRefinementType.DazzlingStaff, text: "幻惑の杖" },
         ];
-        this.summonerLevelOptions = [
-            { id: SummonerLevel.None, text: "なし" },
-            { id: SummonerLevel.C, text: "C" },
-            { id: SummonerLevel.B, text: "B" },
-            { id: SummonerLevel.A, text: "A" },
-            { id: SummonerLevel.S, text: "S" },
-        ];
+        this.summonerLevelOptions = [...SummonerLevelOptions];
         this.partnerLevelOptions = [
             { id: PartnerLevel.None, text: "なし" },
             { id: PartnerLevel.C, text: "C" },
             { id: PartnerLevel.B, text: "B" },
             { id: PartnerLevel.A, text: "A" },
             { id: PartnerLevel.S, text: "S" },
+            { id: PartnerLevel.SPlus, text: "S+" },
         ];
+        this.entwinedOptions = [...EntwinedOptions];
         this.weaponOptions = [
             { id: -1, text: "なし" }
         ];

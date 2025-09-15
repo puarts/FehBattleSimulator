@@ -1252,6 +1252,14 @@
                                         </option>
                                     </select>
                                 </span>
+                                <span v-if="value.groupId === UnitGroupType.Ally || g_appData.isDebugMenuEnabled">
+                                    <label class="normal" >つながり: </label>
+                                    <select v-model="value.entwinedId" @change="g_app.vm.entwinedIdChanged">
+                                        <option v-for="option in g_appData.entwinedOptions" v-bind:value="option.id">
+                                            {{ option.text }}
+                                        </option>
+                                    </select>
+                                </span>
                                 <span v-if="value.providableBlessingSeason == SeasonType.None">
                                     <label class="normal" for="grantedBlessing">祝福: </label>
                                     <select v-model="value.grantedBlessing" @change="g_app.vm.grantedBlessingChanged">

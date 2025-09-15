@@ -777,6 +777,8 @@ class Unit extends BattleMapElement {
         this._isStyleActive = false;
         this.isStyleActivatedInThisTurn = false;
         this.styleActivationsCount = 0;
+
+        this.entwinedId = EntwinedType.None.id;
     }
 
     /**
@@ -1403,6 +1405,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.reinforcementMerge
             + ValueDelimiter + Base62.encode(JSON.stringify(this.additionalPassives))
             + ValueDelimiter + Base62.encode(JSON.stringify(this.customSkills))
+            + ValueDelimiter + this.entwinedId
             + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
@@ -1540,6 +1543,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.reinforcementMerge = Number(values[i]); ++i; }
         if (values[i]) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
         if (values[i]) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.entwinedId = Number(values[i]); ++i; }
         if (i < elemCount) {
             this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
@@ -1694,6 +1698,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.resAdd
             + ValueDelimiter + Base62.encode(JSON.stringify(this.additionalPassives))
             + ValueDelimiter + Base62.encode(JSON.stringify(this.customSkills))
+            + ValueDelimiter + this.entwinedId
             ;
     }
 
@@ -1765,6 +1770,7 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.resAdd = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
         if (values[i] !== undefined) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
+        if (Number.isInteger(Number(values[i]))) { this.entwinedId = Number(values[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -4655,6 +4661,13 @@ class Unit extends BattleMapElement {
     updateStatusBySummonerLevel() {
         switch (this.summonerLevel) {
             case SummonerLevel.None:
+                break;
+            case SummonerLevel.SPlus:
+                this._maxHpWithSkills += 7;
+                this.defWithSkills += 2;
+                this.resWithSkills += 2;
+                this.spdWithSkills += 2;
+                this.atkWithSkills += 2;
                 break;
             case SummonerLevel.S:
                 this._maxHpWithSkills += 5;

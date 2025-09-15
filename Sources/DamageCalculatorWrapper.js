@@ -15843,6 +15843,13 @@ class DamageCalculatorWrapper {
                             targetUnit.addAllSpur(1);
                         }
                         break;
+                    case PartnerLevel.SPlus:
+                        targetUnit.addAllSpur(2);
+                        targetUnit.addSpurs(...(ArrayUtil.maxByIndex(
+                            EntwinedValues.get(targetUnit.entwinedId) ?? [0, 0, 0, 0],
+                            EntwinedValues.get(nearestPartner.entwinedId) ?? [0, 0, 0, 0]
+                        )));
+                        break;
                 }
             }
         }
