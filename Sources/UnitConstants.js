@@ -179,8 +179,8 @@ const PartnerLevel = {
 
 // つながり英雄が増えた場合以下に追加
 const EntwinedType = {
-    None: {id: -1, value: [0, 0, 0, 0], text: "なし"},
-    Ash: {id: 0, value: [2, 0, 2, 0], text: "アシュ"},
+    None: {id: 0, value: [0, 0, 0, 0], text: "なし"},
+    Ash: {id: 1, value: [2, 0, 2, 0], text: "アシュ"},
 };
 
 const EntwinedOptions = [...Object.values(EntwinedType)];
