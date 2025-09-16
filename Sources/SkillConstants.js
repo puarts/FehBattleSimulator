@@ -4158,6 +4158,7 @@ const STYLE_TYPE = {
     ECHO: 3,
     SUBLIME_HEAVEN: 4,
     WEAPON_TRIANGLE_GREEN: 5,
+    HOSHIDO_RAIJINTO: 6,
 }
 
 /**

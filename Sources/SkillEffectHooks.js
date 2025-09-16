@@ -372,7 +372,7 @@ const HAS_DIVINE_VEIN_SKILLS_WHEN_ACTION_DONE_HOOKS = new SkillEffectHooks();
 
 /**
  * ターン開始時の化身のタイミング
- * @type {SkillEffectHooks<SkillEffectNode, AtStartOfTurnEnv>} */
+ * @type {SkillEffectHooks<BoolNode, AtStartOfTurnEnv>} */
 const CAN_TRANSFORM_AT_START_OF_TURN_HOOKS = new SkillEffectHooks();
 
 /**
@@ -421,6 +421,11 @@ const CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS = new SkillEffectHoo
  * TODO: 2距離のチェックは内部で行なっているが2距離以外も阻止できるなら修正する
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
 const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
+ * ユニットが通過できない（敵ではない）
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
+const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
 
 /**
  * ユニットが通過できない（敵ではない）

@@ -949,6 +949,16 @@ const MULT_MAX_NODE = (mult1, mult2, max) => ENSURE_MAX_NODE(MULT_NODE(mult1, mu
  */
 const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
     ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(mult1, mult2), add), max);
+
+/**
+ * @param add
+ * @param mult1
+ * @param mult2
+ * @returns {NumberNode}
+ * @constructor
+ */
+const ADD_MULT_MAX_NODE = (add, mult1, mult2) => ADD_NODE(add, MULT_NODE(mult1, mult2));
+
 /**
  * @param add1
  * @param add2

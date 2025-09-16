@@ -1377,7 +1377,7 @@ class ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCom
         let unit = this.getUnit(env);
         let ratios = unit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
         ratios.push(percentage / 100);
-        env.debug(`${unit.nameWithGroup}はダメージ軽減を${percentage}%無効。ratios: [${ratios}]`);
+        env.debug(`${unit.nameWithGroup}は敵のダメージ軽減を${percentage}%無効。ratios: [${ratios}]`);
     }
 }
 
@@ -2101,6 +2101,27 @@ class CanTargetMakeFollowUpIncludingPotentNode extends BoolNode {
 }
 
 const CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetMakeFollowUpIncludingPotentNode();
+
+/**
+ * 神速は含まない
+ */
+class CanTargetMakeFollowUpNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.AFTER_FOLLOWUP_CONFIGURED)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        }
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canFollowupAttackWithoutPotent;
+        env.debug(`${unit.nameWithGroup}は追撃可能か: ${result}`);
+        return result;
+    }
+}
+
+const CAN_TARGET_MAKE_FOLLOW_UP_NODE = new CanTargetMakeFollowUpNode();
 
 class CanTargetsFoeMakeFollowUpIncludingPotentNode extends CanTargetMakeFollowUpIncludingPotentNode {
     static {

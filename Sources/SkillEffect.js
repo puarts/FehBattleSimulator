@@ -4404,7 +4404,12 @@ class AppliesPotentEffectNode extends FromNumbersNode {
     }
 }
 
+/**
+ * 速さ条件-25、追撃不可もしくは2回攻撃で80, そのほかは40
+ * @type {AppliesPotentEffectNode}
+ */
 const APPLY_POTENT_EFFECT_NODE = new AppliesPotentEffectNode();
+
 /**
  * @param {number|NumberNode} percentage
  * @param {number|NumberNode} spdDiff
@@ -4415,6 +4420,21 @@ const APPLY_POTENT_EFFECT_NODE = new AppliesPotentEffectNode();
 const POTENT_FOLLOW_N_PERCENT_NODE =
     (percentage = 40, spdDiff = -25, isFixed = false) =>
         new AppliesPotentEffectNode(percentage, spdDiff, isFixed);
+
+class TriggersTargetsPotentFollowXNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        unit.battleContext.potentRatios.push(percentage);
+        env.debug(`${unit.nameWithGroup}は神速スキル(${percentage}%を発動`);
+    }
+}
+
+const TRIGGERS_TARGETS_POTENT_FOLLOW_X_NODE = percentage => new TriggersTargetsPotentFollowXNode(percentage);
 
 // Tileへの効果 START
 
@@ -5786,7 +5806,7 @@ class IsTargetTransformedNode extends BoolNode {
 
 const IS_TARGET_TRANSFORMED_NODE = new IsTargetTransformedNode();
 
-class IsDifferentOriginNode extends BoolNode {
+class hasDifferentTitleAmongTargetAndSkillOwnerNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -5798,6 +5818,8 @@ class IsDifferentOriginNode extends BoolNode {
         return result;
     }
 }
+
+const HAS_DIFFERENT_TITLE_AMONG_TARGET_AND_SKILL_OWNER_NODE = new hasDifferentTitleAmongTargetAndSkillOwnerNode();
 
 class CalcPotentialDamageNode extends BoolNode {
     evaluate(env) {

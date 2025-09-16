@@ -2637,13 +2637,15 @@ class Unit extends BattleMapElement {
         env.setName('移動時(2マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
         hasSkills |=
             CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
-        for (let skillId of this.enumerateSkills()) {
-            let func = getSkillFunc(skillId, canActivateObstructToTilesIn2SpacesFuncMap);
-            if (func?.call(this, moveUnit) ?? false) {
-                hasSkills = true;
-                break;
-            }
+
+        {
+            let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
+            // env.setName('自分が移動時(2マス以内)').setLogLevel(getSkillLogLevel());
+            env.setName('自分が移動時(2マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
+            hasSkills |=
+                CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(moveUnit, env);
         }
+
         hasSkills |=
             this.weapon === Weapon.CaptainsSword ||
             this.passiveB === PassiveB.AtkSpdBulwark3 ||

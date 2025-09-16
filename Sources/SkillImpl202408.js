@@ -3359,7 +3359,7 @@ function setDiscord(skillId, statsRatios) {
     // If unit can transform,
     // transformation effects gain "if unit is within 2 spaces of any allies from a different title than unit" as a trigger condition (in addition to existing conditions).
     CAN_TRANSFORM_AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
-        new IsTargetWithinNSpacesOfTargetsAllyNode(2, new IsDifferentOriginNode()),
+        new IsTargetWithinNSpacesOfTargetsAllyNode(2, new hasDifferentTitleAmongTargetAndSkillOwnerNode()),
     );
 
     // If defending in Aether Raids,
@@ -3370,7 +3370,7 @@ function setDiscord(skillId, statsRatios) {
 
     let skillEffectNode = new SkillEffectNode(
         // if unit is within 3 spaces of any allies from a different title than unit,
-        IF_NODE(new IsTargetWithinNSpacesOfTargetsAllyNode(3, new IsDifferentOriginNode()),
+        IF_NODE(new IsTargetWithinNSpacesOfTargetsAllyNode(3, new hasDifferentTitleAmongTargetAndSkillOwnerNode()),
             // to unit and allies within 3 spaces of unit for 1 turn,
             new ForEachTargetAndTargetsAllyWithinNSpacesOfTargetNode(3, TRUE_NODE,
                 // grants Atk/Def+6,
