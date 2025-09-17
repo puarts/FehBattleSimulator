@@ -3973,7 +3973,7 @@ Weapon.ArcaneCrimson = 3408; // 魔器・真紅薙刀
 PassiveB.AirSuperiority = 3409; // 天翔ける
 PassiveC.Encouragement = 3410; // 鼓舞激励
 Weapon.DoublerAxePlus = 3411; // 強化増幅の斧+
-Weapon.EntwiningHorn = 3412; // 結ぶ者の角
+Weapon.EntwiningHorn = 3403; // 結ぶ者の角
 Special.FlameWall = 3413; // 壁炎
 PassiveC.HeirOfOpenness = 3414; // 開神の娘
 
