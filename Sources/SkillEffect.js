@@ -4399,7 +4399,7 @@ class AppliesPotentEffectNode extends FromNumbersNode {
         let [percentage, spdDiff] = this.evaluateChildren(env);
         let isFixed = this._isFixed.evaluate(env);
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用`);
+        env.debug(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用, 固定割合: ${isFixed}`);
         env.damageCalculatorWrapper.__applyPotent(unit, env.foeDuringCombat, percentage / 100.0, spdDiff, isFixed);
     }
 }
