@@ -1986,6 +1986,22 @@ function initVueComponents() {
             logLevel() {
                 return this.detailToLevel.get(this.detailLevel) ?? LoggerBase.LogLevel.INFO;
             },
+            isSimple() {
+                return this.detailLevel === DetailLevel.SIMPLE;
+            },
+            showsLogLine() {
+                if (this.isSimple) {
+                    return !this.node.isGroup;
+                }
+                // 通常以下なら
+                if (DetailUtils.atMost(this.detailLevel, DetailLevel.NORMAL)) {
+                    // 中身がなければfalse
+                    if (!this.node.hasLeaf(this.logLevel)) {
+                        return false;
+                    }
+                }
+                return true;
+            },
         },
         methods: {
             setOpenAll(val) {
@@ -1999,11 +2015,11 @@ function initVueComponents() {
           <div
             :class="[
               levelClass,
-              { 'log-item': isChild }
+              { 'log-item': isChild && !isSimple }
             ]"
             v-if="node.level <= logLevel"
           >
-            <div class="log-line" v-if="node.hasLeaf(logLevel)">
+            <div class="log-line" v-if="showsLogLine">
               <button v-if="hasChildren" class="log-toggle" :aria-expanded="open.toString()" @click="open = !open">
                 <span v-if="open">▾</span><span v-else>▸</span>
               </button>
