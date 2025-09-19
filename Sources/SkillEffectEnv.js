@@ -36,6 +36,14 @@ class NodeEnv {
         });
     }
 
+    static SkillLogContent = class {
+        constructor(name, message, tag = null) {
+            this.name = name;
+            this.message = message;
+            this.tag = tag;
+        }
+    }
+
     /** @type {string} */
     phase = NodeEnv.PHASE.NULL_PHASE;
     /** @type {number} */
@@ -99,6 +107,9 @@ class NodeEnv {
     isStatusFixedNullable = null;
 
     #logLevel = LoggerBase.LOG_LEVEL.OFF;
+
+    /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
+    groupLogger = new GroupLogger();
 
     /** @type {function(string): void} */
     #logFunc = (_message) => {
@@ -511,6 +522,15 @@ class NodeEnv {
         return this;
     }
 
+    /**
+     * @param {GroupLogger<NodeEnv.SkillLogContent>} logger
+     * @returns {NodeEnv}
+     */
+    setGroupLogger(logger) {
+        this.groupLogger = logger;
+        return this;
+    }
+
     setLogLevel(level) {
         this.#logLevel = level;
         return this;
@@ -545,11 +565,16 @@ class NodeEnv {
         }
     }
 
+    #groupLog(level, message) {
+        this.groupLogger.push(level, new NodeEnv.SkillLogContent(this.name, message));
+    }
+
     /**
      * @param {string} message
      */
     fatal(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.FATAL);
+        this.#groupLog(LoggerBase.LOG_LEVEL.FATAL, message);
     }
 
     /**
@@ -557,6 +582,7 @@ class NodeEnv {
      */
     error(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.ERROR);
+        this.#groupLog(LoggerBase.LOG_LEVEL.ERROR, message);
     }
 
     /**
@@ -564,6 +590,15 @@ class NodeEnv {
      */
     warn(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.WARN);
+        this.#groupLog(LoggerBase.LOG_LEVEL.WARN, message);
+    }
+
+    /**
+     * @param {string} message
+     */
+    notice(message) {
+        this.#logIf(message, LoggerBase.LOG_LEVEL.NOTICE);
+        this.#groupLog(LoggerBase.LOG_LEVEL.NOTICE, message);
     }
 
     /**
@@ -571,6 +606,7 @@ class NodeEnv {
      */
     info(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.INFO);
+        this.#groupLog(LoggerBase.LOG_LEVEL.INFO, message);
     }
 
     /**
@@ -578,6 +614,7 @@ class NodeEnv {
      */
     debug(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.DEBUG);
+        this.#groupLog(LoggerBase.LOG_LEVEL.DEBUG, message);
     }
 
     /**
@@ -585,6 +622,7 @@ class NodeEnv {
      */
     trace(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE);
+        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE, message);
     }
 
     /**
@@ -592,6 +630,7 @@ class NodeEnv {
      */
     trace2(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE2);
+        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE2, message);
     }
 
     /**
@@ -599,6 +638,7 @@ class NodeEnv {
      */
     trace3(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE3);
+        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE3, message);
     }
 
     /**
@@ -606,6 +646,7 @@ class NodeEnv {
      */
     trace4(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE4);
+        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE4, message);
     }
 
     /**
@@ -613,6 +654,7 @@ class NodeEnv {
      */
     trace5(message) {
         this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE5);
+        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE5, message);
     }
 
     #logIf(message, level) {

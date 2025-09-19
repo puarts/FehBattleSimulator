@@ -580,7 +580,7 @@ class BattleContext {
         this.applySkillEffectPerAttackNodes = [];
     }
 
-    initContextPerAttack() {
+    initContextPerStrike() {
         this.additionalDamagePerAttack = 0;
         this.additionalDamageOfSpecialPerAttackInCombat = 0;
         this.additionalDamageOfSpecialPerAttack = 0;

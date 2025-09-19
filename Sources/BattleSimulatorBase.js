@@ -3339,36 +3339,36 @@ class BattleSimulatorBase {
 
     writeSimpleLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.simpleLog += `<div class="log-info log-simple">${log}</div>`;
+        this.vm.simpleLog += `<div class="damage-log-info damage-log-simple">${log}</div>`;
     }
 
     writeErrorLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.ERROR)) return;
-        let error = `<div class="log-error">${log}</div>`;
+        let error = `<div class="damage-log-error">${log}</div>`;
         this.vm.damageCalcLog += error;
         this.writeSimpleLogLine(error);
     }
 
     writeWarningLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.WARN)) return;
-        let warning = `<div class="log-warn">${log}</div>`;
+        let warning = `<div class="damage-log-warn">${log}</div>`;
         this.vm.damageCalcLog += warning;
         this.writeSimpleLogLine(warning);
     }
 
     writeLog(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.damageCalcLog += `<div class="log-info">${log}</div>`;
+        this.vm.damageCalcLog += `<div class="damage-log-info">${log}</div>`;
     }
 
     writeLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
-        this.vm.damageCalcLog += `<div class="log-info">${log}</div>`;
+        this.vm.damageCalcLog += `<div class="damage-log-info">${log}</div>`;
     }
 
     writeDebugLogLine(log) {
         if (!this.#shouldLog(LoggerBase.LOG_LEVEL.DEBUG)) return;
-        this.vm.damageCalcLog += `<div class="log-debug">${log}</div>`;
+        this.vm.damageCalcLog += `<div class="damage-log-debug">${log}</div>`;
     }
 
     #shouldLog(level) {

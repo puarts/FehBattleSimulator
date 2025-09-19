@@ -25,6 +25,8 @@ class DamageCalcResult {
     constructor() {
         this.atkUnit = null;
         this.defUnit = null;
+        /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
+        this.skillLogger = new GroupLogger();
     }
 
     setUnits(atkUnit, defUnit) {
@@ -100,6 +102,9 @@ class CombatResult extends DamageCalcResult {
 
         /** @type {StrikeResult[]} */
         this.strikeResults = [];
+
+        /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
+        this.skillLogger = new GroupLogger();
     }
 
     setPreCombatDamage(damage) {
@@ -576,6 +581,50 @@ class DamageCalcEnv {
         this.saverUnit = null;
         /** @type {CombatResult} */
         this.combatResult = new CombatResult();
+    }
+
+    /**
+     * @returns {GroupLogger<NodeEnv.SkillLogContent>}
+     */
+    getCombatLogger() {
+        return this.combatResult.skillLogger;
+    }
+
+    withCombatPhaseGroup(name, fn) {
+        this.getCombatLogger().withGroup(
+            LoggerBase.LOG_LEVEL.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
+                return fn();
+            }
+        );
+    }
+
+    withStrikePhaseGroup(name, fn) {
+        this.getCurrentStrikeLogger().withGroup(
+            LoggerBase.LOG_LEVEL.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
+                return fn();
+            }
+        );
+    }
+
+    applySkill(name, atkUnit, defUnit, fn, thisArg) {
+        this.withCombatPhaseGroup(name, () => {
+            fn.call(thisArg, atkUnit, defUnit, this);
+            fn.call(thisArg, defUnit, atkUnit, this);
+        });
+    }
+
+    /**
+     * @returns {GroupLogger<NodeEnv.SkillLogContent>}
+     */
+    getCurrentAttackLogger() {
+        return this.combatResult.getCurrentAttackResult().skillLogger;
+    }
+
+    /**
+     * @returns {GroupLogger<NodeEnv.SkillLogContent>}
+     */
+    getCurrentStrikeLogger() {
+        return this.combatResult.getCurrentStrikeResult().skillLogger;
     }
 
     setUnits(atkUnit, defUnit) {
@@ -1774,12 +1823,12 @@ class DamageCalculator {
         let combatResult = context.damageCalcEnv.combatResult;
         let strikeResult = combatResult.createStrikeResult().setCurrentStrikeCount(context.attackCount);
 
-        atkUnit.battleContext.initContextPerAttack();
-        defUnit.battleContext.initContextPerAttack();
+        atkUnit.battleContext.initContextPerStrike();
+        defUnit.battleContext.initContextPerStrike();
 
         let isSecondStrike = currentAttackCount === 2;
         if (context.isFirstAttack(atkUnit) && isSecondStrike) {
-            // TODO: 最初ののAttackのSecond Strikeだということが明確になるようにrenameする
+            // TODO: 最初のAttackのSecond Strikeだということが明確になるようにrenameする
             this.applySpecialCountChangeAmountBeforeSecondStrike(atkUnit);
             this.applySpecialCountChangeAmountBeforeSecondStrike(defUnit);
         }
@@ -1788,8 +1837,10 @@ class DamageCalculator {
         strikeResult.canActivateAttackerSpecial =
             atkUnit.isAttackSpecialReady() &&
             !atkUnit.battleContext.preventedAttackerSpecial;
-        this.__applySkillEffectsPerAttack(atkUnit, defUnit, strikeResult, context);
-        this.__applySkillEffectsPerAttack(defUnit, atkUnit, strikeResult, context);
+        context.damageCalcEnv.withStrikePhaseGroup('攻撃開始時', () => {
+            this.__applySkillEffectsPerAttack(atkUnit, defUnit, strikeResult, context);
+            this.__applySkillEffectsPerAttack(defUnit, atkUnit, strikeResult, context);
+        });
         // 奥義発動可能状態（実際に奥義が発動できるかは問わない）
         strikeResult.isAttackerSpecialReady = atkUnit.isAttackSpecialReady();
         strikeResult.isDefenderSpecialReady =
@@ -1813,7 +1864,13 @@ class DamageCalculator {
         this.#applySpecialDamageReductionPerAttack(defUnit, atkUnit, context);
 
         // 重装の聖炎など攻撃奥義スキルに内蔵されているダメージカット(心流星は除く)
-        this.#applyDamageReductionByNoneDefenderSpecial(strikeResult.damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, strikeResult.canActivateAttackerSpecial, context);
+        context.damageCalcEnv.withStrikePhaseGroup('1戦闘に1回の奥義による軽減効果', () => {
+            this.#applyDamageReductionByNoneDefenderSpecial(
+                strikeResult.damageReductionRatiosByNonDefenderSpecial,
+                atkUnit, defUnit,
+                strikeResult.canActivateAttackerSpecial, context
+            );
+        });
 
         // 防御系奥義によるダメージ軽減
         let isDefenderSpecialActivated = this.#applyDamageReductionByDefenderSpecial(strikeResult, context);
@@ -2252,9 +2309,9 @@ class DamageCalculator {
     }
 
     #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial, context) {
-        let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context)
-            .setBattleMap(g_appData.map);
-        env.setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
+        let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context);
+        env.setBattleMap(g_appData.map).setGroupLogger(context.damageCalcEnv.getCurrentStrikeLogger())
+            .setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
         for (let skillId of defUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap);
@@ -2445,7 +2502,9 @@ class DamageCalculator {
     __applySkillEffectsPerAttack(targetUnit, enemyUnit, strikeResult, context) {
         let canActivateAttackerSpecial = strikeResult.canActivateAttackerSpecial;
         let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit, canActivateAttackerSpecial, context);
-        env.setName('攻撃開始時').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
+
+        env.setName('攻撃開始時').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType)
+            .setGroupLogger(context.damageCalcEnv.getCurrentStrikeLogger());
         targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
         AT_START_OF_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {

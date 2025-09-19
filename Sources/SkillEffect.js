@@ -2083,7 +2083,7 @@ class GrantsStatPlusToTargetDuringCombatNode extends SkillEffectNode {
         let spurs = ratios.map(r => r * n);
         unit.addSpurs(...spurs);
         let afterSpurs = unit.getSpurs();
-        env.debug(`${unit.nameWithGroup}は戦闘中、${getStatusName(index)}+${n}: [${beforeSpurs}] => [${afterSpurs}]`);
+        env.debug(`${unit.nameWithGroup}は戦闘中、${getStatusName(index)}+${n}: [${beforeSpurs}] → [${afterSpurs}]`);
     }
 }
 
@@ -2106,7 +2106,7 @@ class GrantsStatsPlusToTargetDuringCombatNode extends FromPositiveStatsNode {
         let unit = this.getUnit(env);
         let beforeSpurs = unit.getSpurs();
         unit.addSpurs(...amounts);
-        env.debug(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防+[${amounts}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+        env.info(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防 + [${amounts}]: [${beforeSpurs}] → [${unit.getSpurs()}]`);
     }
 }
 
@@ -2161,7 +2161,7 @@ class GrantsStatPlusAtToTargetDuringCombatNode extends SkillEffectNode {
         let values = new Array(4).fill(0).map((_, i) => i === this._index.evaluate(env) ? value : 0);
         let beforeSpurs = unit.getSpurs();
         unit.addSpurs(...values);
-        env.debug(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防+[${values}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+        env.info(`${unit.nameWithGroup}の攻撃/速さ/守備/魔防 + [${values}]: [${beforeSpurs}] → [${unit.getSpurs()}]`);
     }
 }
 
@@ -2497,7 +2497,7 @@ class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
         let unit = this.getUnit(env);
         let beforeSpurs = unit.getSpurs();
         unit.addSpurs(...spurs.map(v => -v));
-        env.debug(`${unit.nameWithGroup}は攻撃/速さ/守備/魔坊-[${spurs}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+        env.info(`${unit.nameWithGroup}は攻撃/速さ/守備/魔防 - [${spurs}]: [${beforeSpurs}] → [${unit.getSpurs()}]`);
     }
 }
 
@@ -2581,7 +2581,7 @@ class InflictsStatMinusAtOnTargetDuringCombatNode extends SkillEffectNode {
         let values = new Array(4).fill(0).map((_, i) => i === this._index.evaluate(env) ? value : 0);
         let beforeSpurs = unit.getSpurs();
         unit.addSpurs(...values.map(v => -v));
-        env.debug(`${unit.nameWithGroup}は攻撃/速さ/守備/魔坊-[${values}]: [${beforeSpurs}] => [${unit.getSpurs()}]`);
+        env.info(`${unit.nameWithGroup}は攻撃/速さ/守備/魔防 - [${values}]: [${beforeSpurs}] → [${unit.getSpurs()}]`);
     }
 }
 
@@ -3917,7 +3917,7 @@ class RestoreTargetHpNode extends FromPositiveNumberNode {
         let n = this.evaluateChildren(env);
         let hp = unit.hp;
         unit.heal(n);
-        env.debug(`${unit.nameWithGroup}はHPが${n}回復: ${hp} => ${unit.hp}`);
+        env.debug(`${unit.nameWithGroup}はHPが${n}回復: ${hp} → ${unit.hp}`);
     }
 }
 
@@ -4399,7 +4399,7 @@ class AppliesPotentEffectNode extends FromNumbersNode {
         let [percentage, spdDiff] = this.evaluateChildren(env);
         let isFixed = this._isFixed.evaluate(env);
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用, 固定割合: ${isFixed}`);
+        env.info(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用, 固定割合: ${isFixed}`);
         env.damageCalculatorWrapper.__applyPotent(unit, env.foeDuringCombat, percentage / 100.0, spdDiff, isFixed);
     }
 }
@@ -5262,7 +5262,7 @@ class GrantsStatusEffectsOnTargetOnMapNode extends FromNumbersNode {
     evaluate(env) {
         this.evaluateChildren(env).forEach(e => {
             let unit = this.getUnit(env);
-            env.debug(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与予約`);
+            env.info(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与予約`);
             unit.reserveToAddStatusEffect(e);
         });
     }

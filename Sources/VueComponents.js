@@ -1855,6 +1855,7 @@ function initVueComponents() {
           </div>
         `
     });
+
     Vue.component('damage-calc-result', {
         props: {
             combatResult: {
@@ -1869,22 +1870,59 @@ function initVueComponents() {
                 },
             },
         },
+        data() {
+            return {
+                showsSkill: false,
+            };
+        },
         computed: {
             hasResult: vm => !!vm.combatResult,
             atkName: vm => vm.combatResult?.atkUnit?.name || '',
             defName: vm => vm.combatResult?.defUnit?.name || '',
             precombatDamage: vm => vm.combatResult?.preCombatDamage ?? 0,
-            attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? []
+            attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? [],
+            skillCheckboxId: vm => `skill-checkbox-${vm._uid}`,
+        },
+        methods: {
+            levelKey(s) {
+                return String(s).toLowerCase();
+            },
+            levelClass(levelStr) {
+                return `log-${this.levelKey(levelStr)}`;
+            },
+            levelTagClass(levelStr) {
+                return `${this.levelClass(levelStr)}-tag`;
+            },
         },
         template: `
-            <div class="damage-calc-result">
-              <!-- 閉じるボタン -->
-              <button class="pop-close-btn" @click="onClosed">×</button>
+            <div class="pop damage-calc-result theme-dark">
+              <div class="pop-header">
+                <div v-if="hasResult">{{ atkName }} vs {{ defName }}</div>
+                <div v-else>結果はまだありません</div>
+                <!-- 閉じるボタン -->
+                <div>
+                  <label class="check-btn">
+                    <input type="checkbox" v-model="showsSkill" />
+                    <span>スキル表示</span>
+                  </label>
+                  <button class="pop-close-btn" @click="onClosed">×</button>
+                </div>
+              </div>
 
-              <div v-if="hasResult">
+              <div v-if="hasResult" class="pop-container">
                 <div class="summary">
-                  <div>{{ atkName }} vs {{ defName }}</div>
                   <div>戦闘前ダメージ: {{ precombatDamage }}</div>
+                </div>
+                
+<!--                {{ JSON.stringify(combatResult.skillLogger.rootLog.children, null, 2) }}-->
+                <div v-if="showsSkill">
+                  <log-node 
+                    v-for="(n, i) in combatResult.skillLogger.rootLog.children" 
+                    :key="i"
+                    :node="n"
+                    :default-open="true"
+                    :child-default-open="true"
+                  />
                 </div>
 
                 <div class="attacks-result" v-if="attackResults">
@@ -1892,19 +1930,100 @@ function initVueComponents() {
                     <attack-calc-result 
                       :combat-result="combatResult"
                       :attack-result="attackResult"
+                      :shows-skill="showsSkill"
                     />
                   </div>
                 </div>
+                
+<!--                <div>-->
+<!--                  <div-->
+<!--                    v-for="(log, i) in combatResult.logs"-->
+<!--                    :key="i"-->
+<!--                    :class="['log', levelClass(log.levelStr)]"-->
+<!--                    v-if="showsSkill"-->
+<!--                  >-->
+<!--&lt;!&ndash;                    <span :class="['log-level', levelTagClass(log.levelStr)]">&ndash;&gt;-->
+<!--&lt;!&ndash;                      {{ log.levelStr }}&ndash;&gt;-->
+<!--&lt;!&ndash;                    </span>&ndash;&gt;-->
+<!--                    <span :class="['log-name', levelTagClass(log.levelStr)]">-->
+<!--                      {{ log.name }}-->
+<!--                    </span>-->
+<!--                    {{ log.message }}-->
+<!--                  </div>-->
+<!--                </div>-->
               </div>
-
-              <div v-else>結果はまだありません。</div>
             </div>
         `,
     });
+
+    Vue.component('log-node', {
+        name: 'log-node',
+        props: {
+            node: {type: GroupLog, required: true}, // GroupLog<SkillLogContent>
+            defaultOpen: {type: Boolean, default: true},
+            childDefaultOpen: {type: Boolean, default: false},
+            logLevel: {type: Number, default: LoggerBase.LOG_LEVEL.INFO},
+            isChild: {type: Boolean, default: false},
+        },
+        data() {
+            return {open: this.defaultOpen};
+        },
+        computed: {
+            hasChildren() {
+                return Array.isArray(this.node.children) && this.node.children.length > 0;
+            },
+            levelClass() {
+                return this.node.levelStr ? ('log-' + this.node.levelStr.toLowerCase()) : '';
+            },
+            content() {
+                return this.node.log || null;
+            } // SkillLogContent
+        },
+        methods: {
+            setOpenAll(val) {
+                this.open = !!val;
+                if (this.hasChildren) {
+                    this.$children.forEach(c => c.setOpenAll && c.setOpenAll(val));
+                }
+            }
+        },
+        template: `
+          <div
+            :class="[
+              levelClass,
+              { 'log-item': isChild }
+            ]"
+            v-if="node.level <= logLevel"
+          >
+            <div class="log-line">
+              <button v-if="hasChildren" class="log-toggle" :aria-expanded="open.toString()" @click="open = !open">
+                <span v-if="open">▾</span><span v-else>▸</span>
+              </button>
+              <span v-else class="log-toggle-spacer"></span>
+<!--              <span class="log-level">[{{ node.levelStr }}]</span>-->
+<!--              <span :class="['log-tag', levelClass + '-tag']" v-if="content && content.name">{{ content.name }}</span>-->
+              <span :class="['log-tag', levelClass + '-tag']" v-if="content && content.tag">{{ content.tag }}</span>
+              <span class="log-message" v-if="content && content.message">{{ content.message }}</span>
+            </div>
+            <div class="log-children" v-show="open" v-if="hasChildren">
+              <log-node
+                v-for="(child, i) in node.children"
+                :key="i"
+                :node="child"
+                :default-open="childDefaultOpen"
+                :child-default-open="childDefaultOpen"
+                :is-child="true"
+              />
+            </div>
+          </div>
+        `,
+    });
+
     Vue.component('attack-calc-result', {
         props: {
             combatResult: {type: CombatResult, required: true},
             attackResult: {type: AttackResult, required: true},
+            showsSkill: {type: Boolean, required: true},
         },
         computed: {
             strikes: vm => vm.attackResult?.strikeResults ?? [],
@@ -1931,6 +2050,15 @@ function initVueComponents() {
 
             <div class="strikes-result" v-if="hasStrikes">
               <div v-for="(strikeResult, si) in strikes" :key="si">
+                <div v-if="showsSkill">
+                  <log-node 
+                    v-for="(n, i) in strikeResult.skillLogger.rootLog.children" 
+                    :key="i"
+                    :node="n"
+                    :default-open="true"
+                    :child-default-open="true"
+                  />
+                </div>
                 <strike-calc-result
                   :combat-result="combatResult"
                   :attack-result="attackResult"
