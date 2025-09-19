@@ -2347,6 +2347,8 @@ class DamageCalculator {
                 }
                 defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial = [];
             }
+        } else {
+            defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial = [];
         }
         let engageCount = defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecialCount;
         if (engageCount < 1) {
