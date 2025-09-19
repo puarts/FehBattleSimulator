@@ -1230,13 +1230,13 @@ targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPreco
 });
 // 範囲奥義を除くステータス参照固定ダメージ
 // 自分のステータス
-targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
+targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.ATK, 0.15);
 // 敵のステータス
-targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Atk, 0.15);
+targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(StatusIndex.ATK, 0.15);
 もしくは
 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
     if (isPrecombat) return;
-    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
+    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.SPD, 0.2);
 });
 もしくは
 DamageCalculatorWrapper.js
@@ -1265,7 +1265,7 @@ __calcFixedAddDamage(atkUnit, defUnit, isPrecombat) {
 マリア算など[ステータス参照の固定ダメージ軽減、固定ダメージ]
 targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
     (targetUnit, enemyUnit, calcPotentialDamage) => {
-        this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def, 0.25);
+        this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.DEF, 0.25);
     }
 );
 

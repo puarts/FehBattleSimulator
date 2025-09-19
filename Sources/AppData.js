@@ -284,8 +284,8 @@ class AppData extends UnitManager {
         this.enableAllSkillOptions = false; // スキルを継承可能なものだけに制限しない
         this.disableLowRankSkillOptions = false; // 下位スキルを表示する
 
-        this.simulatorLogLevel = LocalStorageUtil.getNumber('simulatorLogLevel', LoggerBase.LOG_LEVEL.INFO);
-        this.simulatorLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LOG_LEVEL);
+        this.simulatorLogLevel = LocalStorageUtil.getNumber('simulatorLogLevel', LoggerBase.LogLevel.INFO);
+        this.simulatorLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LogLevel);
 
         this.damageCalcLogger = new HtmlLogger();
         this.damageCalcLogger.logLevel = this.simulatorLogLevel;
@@ -298,8 +298,8 @@ class AppData extends UnitManager {
         this.attackInfoTdStyle = "";
         this.isSummonerDualCalcEnabled = false;
 
-        this.skillLogLevel = LocalStorageUtil.getNumber('skillLogLevel', LoggerBase.LOG_LEVEL.OFF);
-        this.skillLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LOG_LEVEL);
+        this.skillLogLevel = LocalStorageUtil.getNumber('skillLogLevel', LoggerBase.LogLevel.OFF);
+        this.skillLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LogLevel);
 
         /**
          * ダブル補正が有効かどうか
@@ -904,16 +904,16 @@ class AppData extends UnitManager {
                   ${statsLabel(unit, StatusType.Hp)}&nbsp;&nbsp;<span class="summary-figure">${unit.hp} / ${unit.maxHpWithSkills} (${Math.trunc(unit.restHpPercentageAtBeginningOfTurn)}%)</span>
                 </div>
                 <div class="summary-grid-item summary-label atk">
-                  ${statsLabel(unit, StatusType.Atk)}&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Atk)}</span>
+                  ${statsLabel(unit, StatusType.Atk)}&nbsp;<span class="summary-figure">${statString(unit, StatusIndex.ATK)}</span>
                 </div>
                 <div class="summary-grid-item summary-label spd">
-                  ${statsLabel(unit, StatusType.Spd)}&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Spd)}</span>
+                  ${statsLabel(unit, StatusType.Spd)}&nbsp;<span class="summary-figure">${statString(unit, StatusIndex.SPD)}</span>
                 </div>
                 <div class="summary-grid-item summary-label def">
-                  ${statsLabel(unit, StatusType.Def)}&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Def)}</span>
+                  ${statsLabel(unit, StatusType.Def)}&nbsp;<span class="summary-figure">${statString(unit, StatusIndex.DEF)}</span>
                 </div>
                 <div class="summary-grid-item summary-label res">
-                  ${statsLabel(unit, StatusType.Res)}&nbsp;<span class="summary-figure">${statString(unit, STATUS_INDEX.Res)}</span>
+                  ${statsLabel(unit, StatusType.Res)}&nbsp;<span class="summary-figure">${statString(unit, StatusIndex.RES)}</span>
                 </div>
                 <div class="summary-grid-item summary-label level">
                     LV.${unit.level}

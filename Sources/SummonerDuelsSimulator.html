@@ -1527,7 +1527,7 @@
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.atkWithSkills"
                                     type="number" min="1" max="99" step="1" readonly="readonly"> -->
-                                {{value.atkWithSkills - value.atkAdd}} + {{ value.getGreatTalent(STATUS_INDEX.Atk) }}
+                                {{value.atkWithSkills - value.atkAdd}} + {{ value.getGreatTalent(StatusIndex.ATK) }}
                             </td>
                             <td class='param'>
                                 <input class='numeric' v-model=" value.atkBuff" @change="g_app.vm.buffChanged"
@@ -1563,7 +1563,7 @@
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.spdWithSkills"
                                     type="number" min="1" max="99" step="1" readonly="readonly"> -->
-                                {{value.spdWithSkills-value.spdAdd}} + {{ value.getGreatTalent(STATUS_INDEX.Spd) }}
+                                {{value.spdWithSkills - value.spdAdd}} + {{ value.getGreatTalent(StatusIndex.SPD) }}
                             </td>
                             <td class='param'>
                                 <input class='numeric' v-model="value.spdBuff" @change="g_app.vm.buffChanged"
@@ -1599,7 +1599,7 @@
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.defWithSkills"
                                     type="number" min="1" max="99" step="1" readonly="readonly"> -->
-                                {{value.defWithSkills - value.defAdd}} + {{ value.getGreatTalent(STATUS_INDEX.Def) }}
+                                {{value.defWithSkills - value.defAdd}} + {{ value.getGreatTalent(StatusIndex.DEF) }}
                             </td>
                             <td class='param'>
                                 <input class='numeric' v-model="value.defBuff" @change="g_app.vm.buffChanged"
@@ -1636,7 +1636,7 @@
                             <td class='param'>
                                 <!-- <input class='numeric' v-model="value.resWithSkills"
                                     type="number" min="1" max="99" step="1" readonly="readonly"> -->
-                                {{value.resWithSkills - value.resAdd}} + {{ value.getGreatTalent(STATUS_INDEX.Res) }}
+                                {{value.resWithSkills - value.resAdd}} + {{ value.getGreatTalent(StatusIndex.RES) }}
                             </td>
                             <td class='param'>
                                 <input class='numeric' v-model="value.resBuff" @change="g_app.vm.buffChanged"

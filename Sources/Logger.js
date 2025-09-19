@@ -2,7 +2,7 @@
  * @abstract
  */
 class LoggerBase {
-    static LOG_LEVEL = Object.freeze({
+    static LogLevel = Object.freeze({
         OFF: 1,
         FATAL: 2,
         ERROR: 3,
@@ -18,7 +18,7 @@ class LoggerBase {
         ALL: 13
     });
 
-    static LOG_LEVEL_MAP = ObjectUtil.makeMapFromObj(this.LOG_LEVEL);
+    static LOG_LEVEL_MAP = ObjectUtil.makeMapFromObj(this.LogLevel);
 
     static levelStr(level) {
         return this.LOG_LEVEL_MAP.get(level);
@@ -36,7 +36,7 @@ class LoggerBase {
 
     constructor() {
         this.isLogEnabled = false;
-        this._logLevel = LoggerBase.LOG_LEVEL.OFF;
+        this._logLevel = LoggerBase.LogLevel.OFF;
     }
 
     set logLevel(level) {
@@ -230,17 +230,17 @@ class GroupLogger {
     }
 
     // 以下は薄いラッパー
-    /** @param {T} log */ fatal(log){ return this.push(LoggerBase.LOG_LEVEL.FATAL, log); }
-    /** @param {T} log */ error(log){ return this.push(LoggerBase.LOG_LEVEL.ERROR, log); }
-    /** @param {T} log */ warn(log){ return this.push(LoggerBase.LOG_LEVEL.WARN, log); }
-    /** @param {T} log */ notice(log){ return this.push(LoggerBase.LOG_LEVEL.NOTICE, log); }
-    /** @param {T} log */ info(log){ return this.push(LoggerBase.LOG_LEVEL.INFO, log); }
-    /** @param {T} log */ debug(log){ return this.push(LoggerBase.LOG_LEVEL.DEBUG, log); }
-    /** @param {T} log */ trace(log){ return this.push(LoggerBase.LOG_LEVEL.TRACE, log); }
-    /** @param {T} log */ trace2(log){ return this.push(LoggerBase.LOG_LEVEL.TRACE2, log); }
-    /** @param {T} log */ trace3(log){ return this.push(LoggerBase.LOG_LEVEL.TRACE3, log); }
-    /** @param {T} log */ trace4(log){ return this.push(LoggerBase.LOG_LEVEL.TRACE4, log); }
-    /** @param {T} log */ trace5(log){ return this.push(LoggerBase.LOG_LEVEL.TRACE5, log); }
+    /** @param {T} log */ fatal(log){ return this.push(LoggerBase.LogLevel.FATAL, log); }
+    /** @param {T} log */ error(log){ return this.push(LoggerBase.LogLevel.ERROR, log); }
+    /** @param {T} log */ warn(log){ return this.push(LoggerBase.LogLevel.WARN, log); }
+    /** @param {T} log */ notice(log){ return this.push(LoggerBase.LogLevel.NOTICE, log); }
+    /** @param {T} log */ info(log){ return this.push(LoggerBase.LogLevel.INFO, log); }
+    /** @param {T} log */ debug(log){ return this.push(LoggerBase.LogLevel.DEBUG, log); }
+    /** @param {T} log */ trace(log){ return this.push(LoggerBase.LogLevel.TRACE, log); }
+    /** @param {T} log */ trace2(log){ return this.push(LoggerBase.LogLevel.TRACE2, log); }
+    /** @param {T} log */ trace3(log){ return this.push(LoggerBase.LogLevel.TRACE3, log); }
+    /** @param {T} log */ trace4(log){ return this.push(LoggerBase.LogLevel.TRACE4, log); }
+    /** @param {T} log */ trace5(log){ return this.push(LoggerBase.LogLevel.TRACE5, log); }
 
     withGroup(level, log, fn) {
         this.group(level, log);
@@ -271,42 +271,42 @@ class SimpleLogger extends LoggerBase {
     }
 
     writeSimpleLog(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.INFO)) return;
         this._rawLog += `${log}\n`;
     }
 
     writeLog(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.INFO)) return;
         this._rawLog += `${log}\n`;
     }
 
     writeDebugLog(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.DEBUG)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.DEBUG)) return;
         this._rawLog += `${log}\n`;
     }
 
     trace(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE)) return;
         this._rawLog += `${log}\n`;
     }
 
     trace2(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE2)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE2)) return;
         this._rawLog += `${log}\n`;
     }
 
     trace3(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE3)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE3)) return;
         this._rawLog += `${log}\n`;
     }
 
     trace4(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE4)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE4)) return;
         this._rawLog += `${log}\n`;
     }
 
     trace5(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE5)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE5)) return;
         this._rawLog += `${log}\n`;
     }
 }
@@ -334,42 +334,42 @@ class HtmlLogger extends LoggerBase {
     }
 
     writeSimpleLog(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.INFO)) return;
         this._simpleLog += `<div class="damage-log-info">${log}</div>`;
     }
 
     writeLog(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.INFO)) return;
         this._log += `<div class="damage-log-info">${log}</div>`;
     }
 
     writeDebugLog(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.DEBUG)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.DEBUG)) return;
         this._log += `<div class="damage-log-debug">${log}</div>`;
     }
 
     trace(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE)) return;
         this._log += `<div class="damage-log-trace">${log}</div>`;
     }
 
     trace2(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE2)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE2)) return;
         this._log += `<div class="damage-log-trace2">${log}</div>`;
     }
 
     trace3(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE3)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE3)) return;
         this._log += `<div class="damage-log-trace3">${log}</div>`;
     }
 
     trace4(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE4)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE4)) return;
         this._log += `<div class="damage-log-trace4">${log}</div>`;
     }
 
     trace5(log) {
-        if (!this._shouldLog(LoggerBase.LOG_LEVEL.TRACE5)) return;
+        if (!this._shouldLog(LoggerBase.LogLevel.TRACE5)) return;
         this._log += `<div class="damage-log-trace5">${log}</div>`;
     }
 }
@@ -377,32 +377,32 @@ class HtmlLogger extends LoggerBase {
 class ConsoleLogger extends LoggerBase {
     // 黒背景用のスタイル
     static BLACK_BG_STYLES = new Map([
-        [LoggerBase.LOG_LEVEL.FATAL, 'color: #FF6B6B; font-weight: bold;'],
-        [LoggerBase.LOG_LEVEL.ERROR, 'color: #FF5252; font-weight: bold;'],
-        [LoggerBase.LOG_LEVEL.WARN, 'color: #FFC107; font-weight: bold;'],
-        [LoggerBase.LOG_LEVEL.NOTICE, 'color: #64B5F6; font-weight: bold;'],
-        [LoggerBase.LOG_LEVEL.INFO, 'color: #81C784;'],
-        [LoggerBase.LOG_LEVEL.DEBUG, 'color: #888888;'],
-        [LoggerBase.LOG_LEVEL.TRACE, 'color: #777777;'],
-        [LoggerBase.LOG_LEVEL.TRACE2, 'color: #666666;'],
-        [LoggerBase.LOG_LEVEL.TRACE3, 'color: #555555;'],
-        [LoggerBase.LOG_LEVEL.TRACE4, 'color: #444444;'],
-        [LoggerBase.LOG_LEVEL.TRACE5, 'color: #333333;'],
+        [LoggerBase.LogLevel.FATAL, 'color: #FF6B6B; font-weight: bold;'],
+        [LoggerBase.LogLevel.ERROR, 'color: #FF5252; font-weight: bold;'],
+        [LoggerBase.LogLevel.WARN, 'color: #FFC107; font-weight: bold;'],
+        [LoggerBase.LogLevel.NOTICE, 'color: #64B5F6; font-weight: bold;'],
+        [LoggerBase.LogLevel.INFO, 'color: #81C784;'],
+        [LoggerBase.LogLevel.DEBUG, 'color: #888888;'],
+        [LoggerBase.LogLevel.TRACE, 'color: #777777;'],
+        [LoggerBase.LogLevel.TRACE2, 'color: #666666;'],
+        [LoggerBase.LogLevel.TRACE3, 'color: #555555;'],
+        [LoggerBase.LogLevel.TRACE4, 'color: #444444;'],
+        [LoggerBase.LogLevel.TRACE5, 'color: #333333;'],
     ]);
 
     // 白背景用のスタイル
     static WHITE_BG_STYLES = new Map([
-        [LoggerBase.LOG_LEVEL.FATAL, 'color: darkred; font-weight: bold;'],
-        [LoggerBase.LOG_LEVEL.ERROR, 'color: red; font-weight: bold;'],
-        [LoggerBase.LOG_LEVEL.WARN, 'color: orange; font-weight: bold;'],
-        [LoggerBase.LOG_LEVEL.NOTICE, 'color: blue; font-weight: bold;'],
-        [LoggerBase.LOG_LEVEL.INFO, 'color: green;'],
-        [LoggerBase.LOG_LEVEL.DEBUG, 'color: #888888;'],
-        [LoggerBase.LOG_LEVEL.TRACE, 'color: #999999;'],
-        [LoggerBase.LOG_LEVEL.TRACE2, 'color: #aaaaaa;'],
-        [LoggerBase.LOG_LEVEL.TRACE3, 'color: #bbbbbb;'],
-        [LoggerBase.LOG_LEVEL.TRACE4, 'color: #cccccc;'],
-        [LoggerBase.LOG_LEVEL.TRACE5, 'color: #dddddd;'],
+        [LoggerBase.LogLevel.FATAL, 'color: darkred; font-weight: bold;'],
+        [LoggerBase.LogLevel.ERROR, 'color: red; font-weight: bold;'],
+        [LoggerBase.LogLevel.WARN, 'color: orange; font-weight: bold;'],
+        [LoggerBase.LogLevel.NOTICE, 'color: blue; font-weight: bold;'],
+        [LoggerBase.LogLevel.INFO, 'color: green;'],
+        [LoggerBase.LogLevel.DEBUG, 'color: #888888;'],
+        [LoggerBase.LogLevel.TRACE, 'color: #999999;'],
+        [LoggerBase.LogLevel.TRACE2, 'color: #aaaaaa;'],
+        [LoggerBase.LogLevel.TRACE3, 'color: #bbbbbb;'],
+        [LoggerBase.LogLevel.TRACE4, 'color: #cccccc;'],
+        [LoggerBase.LogLevel.TRACE5, 'color: #dddddd;'],
     ]);
 
     static logWithLevel(level, message, styles) {

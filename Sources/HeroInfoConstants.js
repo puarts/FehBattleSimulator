@@ -337,13 +337,13 @@ function nameToStatusType(statusName) {
 
 function statusIndexStr(index) {
     switch (index) {
-        case STATUS_INDEX.Atk:
+        case StatusIndex.ATK:
             return "攻撃";
-        case STATUS_INDEX.Spd:
+        case StatusIndex.SPD:
             return "速さ";
-        case STATUS_INDEX.Def:
+        case StatusIndex.DEF:
             return "守備";
-        case STATUS_INDEX.Res:
+        case StatusIndex.RES:
             return "魔防";
         default:
             return "-";

@@ -525,7 +525,7 @@ class BattleContext {
         this.canUnitDisableSkillsThatChangeAttackPriority = false;
 
         // 奥義の際に攻撃の代わりに他のステータスを利用
-        this.statIndexInsteadOfAtkWhenSpecial = STATUS_INDEX.None;
+        this.statIndexInsteadOfAtkWhenSpecial = StatusIndex.NONE;
         this.ratioForUsingAnotherStatWhenSpecial = 0;
 
         // 奥義によるダメージを与えた敵の数

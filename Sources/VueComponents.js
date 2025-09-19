@@ -1945,7 +1945,7 @@ function initVueComponents() {
             node: {type: GroupLog, required: true}, // GroupLog<SkillLogContent>
             defaultOpen: {type: Boolean, default: true},
             childDefaultOpen: {type: Boolean, default: false},
-            logLevel: {type: Number, default: LoggerBase.LOG_LEVEL.INFO},
+            logLevel: {type: Number, default: LoggerBase.LogLevel.INFO},
             isChild: {type: Boolean, default: false},
         },
         data() {

@@ -106,7 +106,7 @@ class NodeEnv {
      * @type {boolean|null} */
     isStatusFixedNullable = null;
 
-    #logLevel = LoggerBase.LOG_LEVEL.OFF;
+    #logLevel = LoggerBase.LogLevel.OFF;
 
     /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
     groupLogger = new GroupLogger();
@@ -573,88 +573,88 @@ class NodeEnv {
      * @param {string} message
      */
     fatal(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.FATAL);
-        this.#groupLog(LoggerBase.LOG_LEVEL.FATAL, message);
+        this.#logIf(message, LoggerBase.LogLevel.FATAL);
+        this.#groupLog(LoggerBase.LogLevel.FATAL, message);
     }
 
     /**
      * @param {string} message
      */
     error(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.ERROR);
-        this.#groupLog(LoggerBase.LOG_LEVEL.ERROR, message);
+        this.#logIf(message, LoggerBase.LogLevel.ERROR);
+        this.#groupLog(LoggerBase.LogLevel.ERROR, message);
     }
 
     /**
      * @param {string} message
      */
     warn(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.WARN);
-        this.#groupLog(LoggerBase.LOG_LEVEL.WARN, message);
+        this.#logIf(message, LoggerBase.LogLevel.WARN);
+        this.#groupLog(LoggerBase.LogLevel.WARN, message);
     }
 
     /**
      * @param {string} message
      */
     notice(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.NOTICE);
-        this.#groupLog(LoggerBase.LOG_LEVEL.NOTICE, message);
+        this.#logIf(message, LoggerBase.LogLevel.NOTICE);
+        this.#groupLog(LoggerBase.LogLevel.NOTICE, message);
     }
 
     /**
      * @param {string} message
      */
     info(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.INFO);
-        this.#groupLog(LoggerBase.LOG_LEVEL.INFO, message);
+        this.#logIf(message, LoggerBase.LogLevel.INFO);
+        this.#groupLog(LoggerBase.LogLevel.INFO, message);
     }
 
     /**
      * @param {string} message
      */
     debug(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.DEBUG);
-        this.#groupLog(LoggerBase.LOG_LEVEL.DEBUG, message);
+        this.#logIf(message, LoggerBase.LogLevel.DEBUG);
+        this.#groupLog(LoggerBase.LogLevel.DEBUG, message);
     }
 
     /**
      * @param {string} message
      */
     trace(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE);
-        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE, message);
+        this.#logIf(message, LoggerBase.LogLevel.TRACE);
+        this.#groupLog(LoggerBase.LogLevel.TRACE, message);
     }
 
     /**
      * @param {string} message
      */
     trace2(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE2);
-        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE2, message);
+        this.#logIf(message, LoggerBase.LogLevel.TRACE2);
+        this.#groupLog(LoggerBase.LogLevel.TRACE2, message);
     }
 
     /**
      * @param {string} message
      */
     trace3(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE3);
-        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE3, message);
+        this.#logIf(message, LoggerBase.LogLevel.TRACE3);
+        this.#groupLog(LoggerBase.LogLevel.TRACE3, message);
     }
 
     /**
      * @param {string} message
      */
     trace4(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE4);
-        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE4, message);
+        this.#logIf(message, LoggerBase.LogLevel.TRACE4);
+        this.#groupLog(LoggerBase.LogLevel.TRACE4, message);
     }
 
     /**
      * @param {string} message
      */
     trace5(message) {
-        this.#logIf(message, LoggerBase.LOG_LEVEL.TRACE5);
-        this.#groupLog(LoggerBase.LOG_LEVEL.TRACE5, message);
+        this.#logIf(message, LoggerBase.LogLevel.TRACE5);
+        this.#groupLog(LoggerBase.LogLevel.TRACE5, message);
     }
 
     #logIf(message, level) {

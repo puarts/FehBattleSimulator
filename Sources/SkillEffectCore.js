@@ -134,7 +134,7 @@ class SkillEffectHooks {
         }
 
         const skillLogContent = this.#getSkillNameLogContent(skillId, env);
-        return logger.withGroup(LoggerBase.LOG_LEVEL.NOTICE, skillLogContent, evaluateAll);
+        return logger.withGroup(LoggerBase.LogLevel.NOTICE, skillLogContent, evaluateAll);
     }
 
     #getSkillNameLogContent(skillId, env) {
@@ -209,7 +209,7 @@ class SkillEffectHooks {
 
         const logContent = new NodeEnv.SkillLogContent('', `${unit.nameWithGroup}のスキルを評価`);
         return logger.withGroup(
-            LoggerBase.LOG_LEVEL.NOTICE,
+            LoggerBase.LogLevel.NOTICE,
             logContent,
             evaluateAllSkills
         );

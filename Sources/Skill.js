@@ -260,7 +260,7 @@ const RALLY_BUFF_AMOUNT_MAP = new Map();
  */
 function getAtkBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Atk];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.ATK];
     }
     switch (support) {
         case Support.RallyAttack:
@@ -291,7 +291,7 @@ function getAtkBuffAmount(support) {
  */
 function getSpdBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Spd];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.SPD];
     }
     switch (support) {
         case Support.RallySpeed:
@@ -322,7 +322,7 @@ function getSpdBuffAmount(support) {
  */
 function getDefBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Def];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.DEF];
     }
     switch (support) {
         case Support.RallyUpDef:
@@ -353,7 +353,7 @@ function getDefBuffAmount(support) {
  */
 function getResBuffAmount(support) {
     if (RALLY_BUFF_AMOUNT_MAP.has(support)) {
-        return RALLY_BUFF_AMOUNT_MAP.get(support)[STATUS_INDEX.Res];
+        return RALLY_BUFF_AMOUNT_MAP.get(support)[StatusIndex.RES];
     }
     switch (support) {
         case Support.RallyUpRes:
@@ -1034,7 +1034,7 @@ function getEvalSpdAdd(unit) {
     let amount = 0;
     let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
     let stats = AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(unit, env);
-    amount += stats[STATUS_INDEX.Spd];
+    amount += stats[StatusIndex.SPD];
     for (let skillId of unit.enumerateSkills()) {
         amount += EVAL_SPD_ADD_MAP.get(skillId) ?? 0;
         amount += getSkillFunc(skillId, evalSpdAddFuncMap)?.call(this, unit) ?? 0;
@@ -1062,7 +1062,7 @@ function getEvalResAdd(unit) {
     let value = 0;
     let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
     let stats = AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(unit, env);
-    value += stats[STATUS_INDEX.Res];
+    value += stats[StatusIndex.RES];
     for (let skillId of unit.enumerateSkills()) {
         value += EVAL_RES_ADD_MAP.get(skillId) ?? 0;
         value += getSkillFunc(skillId, evalResAddFuncMap)?.call(this, unit) ?? 0;
@@ -1722,7 +1722,7 @@ class SkillInfo {
         }
 
         if (iconName === "" || iconName == null) {
-            return iconRoot + "None.png";
+            return iconRoot + "NONE.png";
         }
 
         switch (this.type) {
@@ -1772,16 +1772,16 @@ const DISARM_HEX_TRAP_SKILL_SET = new Set([
     PassiveB.DisarmTrap4,
 ]);
 
-const STATUS_INDEX = {
-    None: -1,
-    Atk: 0,
-    Spd: 1,
-    Def: 2,
-    Res: 3,
-}
+const StatusIndex = Object.freeze({
+    NONE: -1,
+    ATK: 0,
+    SPD: 1,
+    DEF: 2,
+    RES: 3,
+});
 
 function getStatusName(index) {
-    if (index === STATUS_INDEX.None) {
+    if (index === StatusIndex.NONE) {
         return "ー";
     }
     return ["攻撃", "速さ", "守備", "魔防"][index];

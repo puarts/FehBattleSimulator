@@ -1457,10 +1457,10 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.restPassiveBSkillAvailableTurn
             + ValueDelimiter + boolToInt(this.isSupportDone)
             + ValueDelimiter + boolToInt(this.isAnotherActionInPostCombatActivated)
-            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Atk)
-            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
-            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
-            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
+            + ValueDelimiter + this.getGreatTalent(StatusIndex.ATK)
+            + ValueDelimiter + this.getGreatTalent(StatusIndex.SPD)
+            + ValueDelimiter + this.getGreatTalent(StatusIndex.DEF)
+            + ValueDelimiter + this.getGreatTalent(StatusIndex.RES)
             + ValueDelimiter + boolToInt(this.isSupportedDone)
             + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterCombatInitiation)
             + ValueDelimiter + boolToInt(this.hasGrantedAnotherActionAfterActionWithoutCombat)
@@ -1612,10 +1612,10 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.restPassiveBSkillAvailableTurn = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.isSupportDone = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isAnotherActionInPostCombatActivated = intToBool(Number(values[i])); ++i; }
-        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Atk, Number(values[i])); ++i; }
-        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
-        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
-        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(StatusIndex.ATK, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(StatusIndex.SPD, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(StatusIndex.DEF, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(StatusIndex.RES, Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.isSupportedDone = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterCombatInitiation = intToBool(Number(values[i])); ++i; }
         if (values[i] !== undefined) { this.hasGrantedAnotherActionAfterActionWithoutCombat = intToBool(Number(values[i])); ++i; }
@@ -1684,10 +1684,10 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.initPosX
             + ValueDelimiter + this.initPosY
             + ValueDelimiter + this.passiveX
-            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Atk)
-            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Spd)
-            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Def)
-            + ValueDelimiter + this.getGreatTalent(STATUS_INDEX.Res)
+            + ValueDelimiter + this.getGreatTalent(StatusIndex.ATK)
+            + ValueDelimiter + this.getGreatTalent(StatusIndex.SPD)
+            + ValueDelimiter + this.getGreatTalent(StatusIndex.DEF)
+            + ValueDelimiter + this.getGreatTalent(StatusIndex.RES)
             + ValueDelimiter + boolToInt(this.isAidesEssenceUsed)
             + ValueDelimiter + this.anotherActionTurnForCallingCircle
             + ValueDelimiter + this.reinforcementMerge
@@ -1756,10 +1756,10 @@ class Unit extends BattleMapElement {
         if (Number.isInteger(Number(values[i]))) { this.initPosX = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.initPosY = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.passiveX = Number(values[i]); ++i; }
-        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Atk, Number(values[i])); ++i; }
-        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Spd, Number(values[i])); ++i; }
-        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Def, Number(values[i])); ++i; }
-        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(STATUS_INDEX.Res, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(StatusIndex.ATK, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(StatusIndex.SPD, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(StatusIndex.DEF, Number(values[i])); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.setGreatTalent(StatusIndex.RES, Number(values[i])); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.isAidesEssenceUsed = toBoolean(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.anotherActionTurnForCallingCircle = Number(values[i]); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.reinforcementMerge = Number(values[i]); ++i; }
@@ -2634,14 +2634,14 @@ class Unit extends BattleMapElement {
         let hasSkills = false;
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(2マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('移動時(2マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
+        env.setName('移動時(2マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
         hasSkills |=
             CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
 
         {
             let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
             // env.setName('自分が移動時(2マス以内)').setLogLevel(getSkillLogLevel());
-            env.setName('自分が移動時(2マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
+            env.setName('自分が移動時(2マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
             hasSkills |=
                 CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(moveUnit, env);
         }
@@ -2660,7 +2660,7 @@ class Unit extends BattleMapElement {
         let hasSkills = false;
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('自分が移動時(3マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('自分が移動時(3マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
+        env.setName('自分が移動時(3マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
         hasSkills |=
             CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(moveUnit, env);
         let canObstruct =
@@ -2674,7 +2674,7 @@ class Unit extends BattleMapElement {
         let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwark);
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(1マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('移動時(1マス以内)').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
+        env.setName('移動時(1マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
         hasSkills |=
             CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
         for (let skillId of this.enumerateSkills()) {
@@ -3632,7 +3632,7 @@ class Unit extends BattleMapElement {
 
     getColorWhenDeterminingWeaponTriangle() {
         let env = new NodeEnv().setTarget(this).setSkillOwner(this)
-            .setName('3すくみ決定時の色').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            .setName('3すくみ決定時の色').setLogLevel(LoggerBase.LogLevel.OFF);
         let color = GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS.evaluateMaxWithUnit(this, env);
         if (color >= 0) {
             return color;
@@ -3786,13 +3786,13 @@ class Unit extends BattleMapElement {
     get attackRangeOnMapForAttackingUnit() {
         if (this.isStyleActive) {
             let env = new NodeEnv().setTarget(this).setSkillOwner(this)
-                .setName('スタイル時の射程').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                .setName('スタイル時の射程').setLogLevel(LoggerBase.LogLevel.OFF);
             let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(this, env);
             if (range > 0) return range;
         }
         if (this.attackRange > 0) {
             let env = new NodeEnv().setTarget(this).setSkillOwner(this)
-                .setName('射程').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                .setName('射程').setLogLevel(LoggerBase.LogLevel.OFF);
             let range = CAN_ATTACK_FOES_N_SPACES_AWAY_HOOKS.evaluateMaxWithUnit(this, env);
             if (range > 0) return range;
         }
@@ -4116,7 +4116,7 @@ class Unit extends BattleMapElement {
     }
 
     getSpdInPrecombatWithoutDebuff() {
-        return Number(this.spdWithSkills) + Number(this.spdBuff) * this.__getBuffMultiply() + this.getGreatTalent(STATUS_INDEX.Spd);
+        return Number(this.spdWithSkills) + Number(this.spdBuff) * this.__getBuffMultiply() + this.getGreatTalent(StatusIndex.SPD);
     }
 
     getSpdInPrecombat() {
@@ -4144,7 +4144,7 @@ class Unit extends BattleMapElement {
     }
 
     getAtkInPrecombatWithoutDebuff() {
-        return Number(this.atkWithSkills) + Number(this.atkBuff) * this.__getBuffMultiply() + this.getGreatTalent(STATUS_INDEX.Atk);
+        return Number(this.atkWithSkills) + Number(this.atkBuff) * this.__getBuffMultiply() + this.getGreatTalent(StatusIndex.ATK);
     }
 
     getAtkInPrecombat() {
@@ -4376,19 +4376,19 @@ class Unit extends BattleMapElement {
     }
 
     __getAtkInCombatWithoutBuff() {
-        return Number(this.atkWithSkills) + this.getAtkDebuffInCombat() + Number(this.atkSpur) + this.getGreatTalent(STATUS_INDEX.Atk);
+        return Number(this.atkWithSkills) + this.getAtkDebuffInCombat() + Number(this.atkSpur) + this.getGreatTalent(StatusIndex.ATK);
     }
 
     __getSpdInCombatWithoutBuff() {
-        return Number(this.spdWithSkills) + this.getSpdDebuffInCombat() + Number(this.spdSpur) + this.getGreatTalent(STATUS_INDEX.Spd);
+        return Number(this.spdWithSkills) + this.getSpdDebuffInCombat() + Number(this.spdSpur) + this.getGreatTalent(StatusIndex.SPD);
     }
 
     __getDefInCombatWithoutBuff() {
-        return Number(this.defWithSkills) + this.getDefDebuffInCombat() + Number(this.defSpur) + this.getGreatTalent(STATUS_INDEX.Def);
+        return Number(this.defWithSkills) + this.getDefDebuffInCombat() + Number(this.defSpur) + this.getGreatTalent(StatusIndex.DEF);
     }
 
     __getResInCombatWithoutBuff() {
-        return Number(this.resWithSkills) + this.getResDebuffInCombat() + Number(this.resSpur) + this.getGreatTalent(STATUS_INDEX.Res);
+        return Number(this.resWithSkills) + this.getResDebuffInCombat() + Number(this.resSpur) + this.getGreatTalent(StatusIndex.RES);
     }
 
     getEvalAtkInPrecombat() {
@@ -4406,7 +4406,7 @@ class Unit extends BattleMapElement {
     getDefInPrecombatWithoutDebuff() {
         let mit = Number(this.defWithSkills);
         let mitBuff = Number(this.defBuff) * this.__getBuffMultiply();
-        return mit + mitBuff + this.getGreatTalent(STATUS_INDEX.Def);
+        return mit + mitBuff + this.getGreatTalent(StatusIndex.DEF);
     }
 
     getDefInPrecombat() {
@@ -4420,7 +4420,7 @@ class Unit extends BattleMapElement {
     getResInPrecombatWithoutDebuff() {
         let mit = Number(this.resWithSkills);
         let mitBuff = Number(this.resBuff) * this.__getBuffMultiply();
-        return mit + mitBuff + this.getGreatTalent(STATUS_INDEX.Res);
+        return mit + mitBuff + this.getGreatTalent(StatusIndex.RES);
     }
 
     getResInPrecombat() {
@@ -4714,35 +4714,35 @@ class Unit extends BattleMapElement {
         switch (blessing) {
             case BlessingType.Hp5_Atk3:
                 this.addHpAfterEnteringBattle(5);
-                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Atk, 3);
+                this.addStatusesAfterEnteringBattle(StatusIndex.ATK, 3);
                 break;
             case BlessingType.Hp5_Spd4:
                 this.addHpAfterEnteringBattle(5);
-                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Spd, 4);
+                this.addStatusesAfterEnteringBattle(StatusIndex.SPD, 4);
                 break;
             case BlessingType.Hp5_Def5:
                 this.addHpAfterEnteringBattle(5);
-                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Def, 5);
+                this.addStatusesAfterEnteringBattle(StatusIndex.DEF, 5);
                 break;
             case BlessingType.Hp5_Res5:
                 this.addHpAfterEnteringBattle(5);
-                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Res, 5);
+                this.addStatusesAfterEnteringBattle(StatusIndex.RES, 5);
                 break;
             case BlessingType.Hp3_Atk2:
                 this.addHpAfterEnteringBattle(3);
-                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Atk, 2);
+                this.addStatusesAfterEnteringBattle(StatusIndex.ATK, 2);
                 break;
             case BlessingType.Hp3_Spd3:
                 this.addHpAfterEnteringBattle(3);
-                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Spd, 3);
+                this.addStatusesAfterEnteringBattle(StatusIndex.SPD, 3);
                 break;
             case BlessingType.Hp3_Def4:
                 this.addHpAfterEnteringBattle(3);
-                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Def, 4);
+                this.addStatusesAfterEnteringBattle(StatusIndex.DEF, 4);
                 break;
             case BlessingType.Hp3_Res4:
                 this.addHpAfterEnteringBattle(3);
-                this.addStatusesAfterEnteringBattle(STATUS_INDEX.Res, 4);
+                this.addStatusesAfterEnteringBattle(StatusIndex.RES, 4);
                 break;
             case BlessingType.Hp3:
                 this.addHpAfterEnteringBattle(3);
@@ -5057,12 +5057,12 @@ class Unit extends BattleMapElement {
 
         // 開花得意は順序に影響しない
         // switch (ascendedAsset) {
-        //     case StatusType.None: break;
+        //     case StatusType.NONE: break;
         //     case StatusType.Hp: hpLv1IvChange = 1; break;
-        //     case StatusType.Atk: atkLv1IvChange = 1; break;
-        //     case StatusType.Spd: spdLv1IvChange = 1; break;
-        //     case StatusType.Def: defLv1IvChange = 1; break;
-        //     case StatusType.Res: resLv1IvChange = 1; break;
+        //     case StatusType.ATK: atkLv1IvChange = 1; break;
+        //     case StatusType.SPD: spdLv1IvChange = 1; break;
+        //     case StatusType.DEF: defLv1IvChange = 1; break;
+        //     case StatusType.RES: resLv1IvChange = 1; break;
         // }
 
         switch (ivLowStat) {
@@ -5518,7 +5518,7 @@ class Unit extends BattleMapElement {
         // すべての個性で評価して現在より大きい査定になるものがあればそれに設定
         for (let asset of assetStatuses.filter(x => x !== defaultAsset)) {
             this.ivHighStat = asset;
-            this.ivLowStat = StatusType.None; // 不得意は関係ないので None にしておく
+            this.ivLowStat = StatusType.None; // 不得意は関係ないので NONE にしておく
             let score = this.calcArenaBaseStatusScore();
             if (score > defaultScore) {
                 // 適当な不得意を設定
@@ -5832,10 +5832,10 @@ class Unit extends BattleMapElement {
         // ボナキャラ補正
         if (this.isBonusChar) {
             this.addHpAfterEnteringBattle(10);
-            this.addStatusesAfterEnteringBattle(STATUS_INDEX.Atk, 4);
-            this.addStatusesAfterEnteringBattle(STATUS_INDEX.Spd, 4);
-            this.addStatusesAfterEnteringBattle(STATUS_INDEX.Def, 4);
-            this.addStatusesAfterEnteringBattle(STATUS_INDEX.Res, 4);
+            this.addStatusesAfterEnteringBattle(StatusIndex.ATK, 4);
+            this.addStatusesAfterEnteringBattle(StatusIndex.SPD, 4);
+            this.addStatusesAfterEnteringBattle(StatusIndex.DEF, 4);
+            this.addStatusesAfterEnteringBattle(StatusIndex.RES, 4);
         }
 
         // 神装
@@ -6109,7 +6109,7 @@ class Unit extends BattleMapElement {
             for (let unit of this.enumerateAttackableUnitsInAttackChangingStyle()) {
                 for (let tile of this.enumerateMovableTiles(false)) {
                     let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
-                        .setName('実際に攻撃可能な対象決定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                        .setName('実際に攻撃可能な対象決定時').setLogLevel(LoggerBase.LogLevel.OFF);
                     let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
                     if (range > 0) {
                         let dist = tile.calculateDistanceToUnit(unit);
@@ -6187,7 +6187,7 @@ class Unit extends BattleMapElement {
             }
         }
         let env = new NodeEnv().setTarget(this).setSkillOwner(this)
-            .setName('天駆の道判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            .setName('天駆の道判定').setLogLevel(LoggerBase.LogLevel.OFF);
         return HAS_PATHFINDER_HOOKS.evaluateSomeWithUnit(this, env);
     }
 
@@ -6899,7 +6899,7 @@ class Unit extends BattleMapElement {
             return true;
         }
         let env = new NodeEnv().setTarget(this).setSkillOwner(this);
-        env.setName("スタイル発動可能判定").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        env.setName("スタイル発動可能判定").setLogLevel(LoggerBase.LogLevel.OFF);
         // env.setName("スタイル発動可能判定").setLogLevel(getSkillLogLevel());
         return !CAN_ACTIVATE_STYLE_HOOKS.evaluateSomeWithUnit(this, env);
     }
@@ -7053,7 +7053,7 @@ function calcHealAmount(assistUnit, targetUnit) {
 // noinspection JSUnusedLocalSymbols
 function isDebufferTier1(attackUnit, targetUnit) {
     let env = new NodeEnv().setUnitsDuringCombat(attackUnit, targetUnit).setSkillOwner(attackUnit)
-        .setName('Tier1のデバッファー判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        .setName('Tier1のデバッファー判定').setLogLevel(LoggerBase.LogLevel.OFF);
     if (IS_DEBUFFER_TIER_1_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
         return true;
     }
@@ -7063,7 +7063,7 @@ function isDebufferTier1(attackUnit, targetUnit) {
 /// Tier 2 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 function isDebufferTier2(attackUnit, targetUnit) {
     let env = new NodeEnv().setUnitsDuringCombat(attackUnit, targetUnit).setSkillOwner(attackUnit)
-        .setName('Tier2のデバッファー判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        .setName('Tier2のデバッファー判定').setLogLevel(LoggerBase.LogLevel.OFF);
     if (IS_DEBUFFER_TIER_2_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
         return true;
     }
@@ -7109,7 +7109,7 @@ function isDebufferTier2(attackUnit, targetUnit) {
 function isAfflictor(attackUnit, lossesInCombat, result) {
     // TODO: envにlossesInCombat, resultを取れるようにする
     let env = new NodeEnv().setTarget(attackUnit).setUnitsDuringCombat(attackUnit).setSkillOwner(attackUnit)
-        .setName('アフリクター判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        .setName('アフリクター判定').setLogLevel(LoggerBase.LogLevel.OFF);
     if (IS_AFFLICTOR_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
         return true;
     }

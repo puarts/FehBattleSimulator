@@ -922,14 +922,14 @@ describe('Test great talent', () => {
 
     atkUnit = heroDatabase.createUnit("アルフォンス");
     atkUnit.atkWithSkills = 40;
-    atkUnit.setGreatTalent(STATUS_INDEX.Atk, 6);
+    atkUnit.setGreatTalent(StatusIndex.ATK, 6);
     atkUnit.passiveA = PassiveA.None;
     atkUnit.placedTile.posX = 0;
     atkUnit.placedTile.posY = 1;
 
     defAllyUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
     defUnit.defWithSkills = 30;
-    defUnit.setGreatTalent(STATUS_INDEX.Def, 4);
+    defUnit.setGreatTalent(StatusIndex.DEF, 4);
     defAllyUnit.placedTile.posX = 1;
     defAllyUnit.placedTile.posY = 0;
 

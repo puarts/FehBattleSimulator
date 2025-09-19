@@ -2114,13 +2114,13 @@ const GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd, def, res) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res);
 
 const GRANTS_ATK_TO_TARGET_DURING_COMBAT_NODE =
-    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Atk, n);
+    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(StatusIndex.ATK, n);
 const GRANTS_SPD_TO_TARGET_DURING_COMBAT_NODE =
-    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Spd, n);
+    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(StatusIndex.SPD, n);
 const GRANTS_DEF_TO_TARGET_DURING_COMBAT_NODE =
-    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Def, n);
+    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(StatusIndex.DEF, n);
 const GRANTS_RES_TO_TARGET_DURING_COMBAT_NODE =
-    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Res, n);
+    n => GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(StatusIndex.RES, n);
 
 const GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, 0, 0);
@@ -2437,7 +2437,7 @@ class ForEachStatIndexNode extends SkillEffectNode {
  */
 const FOR_EACH_STAT_INDEX_NODE =
     (...nodes) => new ForEachStatIndexNode(
-        [STATUS_INDEX.Atk, STATUS_INDEX.Spd, STATUS_INDEX.Res, STATUS_INDEX.Def], ...nodes);
+        [StatusIndex.ATK, StatusIndex.SPD, StatusIndex.RES, StatusIndex.DEF], ...nodes);
 
 const FOR_EACH_TARGET_STAT_INDEX_NODE =
     (targetIndices, ...nodes) => new ForEachStatIndexNode(targetIndices, ...nodes);
@@ -2798,29 +2798,29 @@ class FoesEvalStatAtStartOfCombatNode extends UnitsEvalStatAtStartOfCombatNode {
 
 // noinspection JSUnusedGlobalSymbols
 const UNITS_STAT_AT_START_OF_COMBAT_NODE = index => new UnitsStatAtStartOfCombatNode(index);
-const UNITS_ATK_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Atk);
-const UNITS_SPD_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Spd);
+const UNITS_ATK_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(StatusIndex.ATK);
+const UNITS_SPD_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(StatusIndex.SPD);
 // noinspection JSUnusedGlobalSymbols
-const UNITS_DEF_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Def);
-const UNITS_RES_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(STATUS_INDEX.Res);
+const UNITS_DEF_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(StatusIndex.DEF);
+const UNITS_RES_AT_START_OF_COMBAT_NODE = new UnitsStatAtStartOfCombatNode(StatusIndex.RES);
 
 const FOES_STAT_AT_START_OF_COMBAT_NODE = index => new FoesStatAtStartOfCombatNode(index);
-const FOES_ATK_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Atk);
-const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Spd);
-const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Def);
-const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(STATUS_INDEX.Res);
+const FOES_ATK_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(StatusIndex.ATK);
+const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(StatusIndex.SPD);
+const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(StatusIndex.DEF);
+const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(StatusIndex.RES);
 
-const UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new UnitsEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
-const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Atk);
-const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Spd);
-const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Def);
-const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res);
+const UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new UnitsEvalStatAtStartOfCombatNode(StatusIndex.ATK);
+const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.ATK);
+const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.SPD);
+const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.DEF);
+const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.RES);
 
-const FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new FoesEvalStatAtStartOfCombatNode(STATUS_INDEX.Atk);
-const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Atk);
-const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Spd);
-const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Def);
-const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res);
+const FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new FoesEvalStatAtStartOfCombatNode(StatusIndex.ATK);
+const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.ATK);
+const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.SPD);
+const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.DEF);
+const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.RES);
 
 class TargetsStatsDuringCombat extends PositiveNumberNode {
     static {
@@ -2869,12 +2869,12 @@ class UnitsStatsDuringCombat extends TargetsStatsDuringCombat {
 
 // noinspection JSUnusedGlobalSymbols
 const UNITS_STAT_DURING_COMBAT_NODE = index => new UnitsStatsDuringCombat(index);
-const UNITS_ATK_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Atk);
-const UNITS_SPD_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Spd);
+const UNITS_ATK_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(StatusIndex.ATK);
+const UNITS_SPD_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(StatusIndex.SPD);
 // noinspection JSUnusedGlobalSymbols
-const UNITS_DEF_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Def);
+const UNITS_DEF_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(StatusIndex.DEF);
 // noinspection JSUnusedGlobalSymbols
-const UNITS_RES_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(STATUS_INDEX.Res);
+const UNITS_RES_DURING_COMBAT_NODE = new UnitsStatsDuringCombat(StatusIndex.RES);
 
 class FoesStatsDuringCombatNode extends UnitsStatsDuringCombat {
     static {
@@ -2883,10 +2883,10 @@ class FoesStatsDuringCombatNode extends UnitsStatsDuringCombat {
 }
 
 const FOES_STAT_DURING_COMBAT_NODE = index => new FoesStatsDuringCombatNode(index);
-const FOES_ATK_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Atk);
-const FOES_SPD_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Spd);
-const FOES_DEF_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Def);
-const FOES_RES_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(STATUS_INDEX.Res);
+const FOES_ATK_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(StatusIndex.ATK);
+const FOES_SPD_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(StatusIndex.SPD);
+const FOES_DEF_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(StatusIndex.DEF);
+const FOES_RES_DURING_COMBAT_NODE = new FoesStatsDuringCombatNode(StatusIndex.RES);
 
 class UnitsEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
     static {
@@ -2902,12 +2902,12 @@ class UnitsEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
 }
 
 // noinspection JSUnusedGlobalSymbols
-const UNITS_EVAL_ATK_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(STATUS_INDEX.Atk);
-const UNITS_EVAL_SPD_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(STATUS_INDEX.Spd);
+const UNITS_EVAL_ATK_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(StatusIndex.ATK);
+const UNITS_EVAL_SPD_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(StatusIndex.SPD);
 // noinspection JSUnusedGlobalSymbols
-const UNITS_EVAL_DEF_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(STATUS_INDEX.Def);
+const UNITS_EVAL_DEF_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(StatusIndex.DEF);
 // noinspection JSUnusedGlobalSymbols
-const UNITS_EVAL_RES_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(STATUS_INDEX.Res);
+const UNITS_EVAL_RES_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(StatusIndex.RES);
 
 class FoesEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
     static {
@@ -2923,12 +2923,12 @@ class FoesEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
 }
 
 // noinspection JSUnusedGlobalSymbols
-const FOES_EVAL_ATK_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Atk);
-const FOES_EVAL_SPD_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Spd);
+const FOES_EVAL_ATK_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(StatusIndex.ATK);
+const FOES_EVAL_SPD_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(StatusIndex.SPD);
 // noinspection JSUnusedGlobalSymbols
-const FOES_EVAL_DEF_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Def);
+const FOES_EVAL_DEF_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(StatusIndex.DEF);
 // noinspection JSUnusedGlobalSymbols
-const FOES_EVAL_RES_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(STATUS_INDEX.Res);
+const FOES_EVAL_RES_DURING_COMBAT_NODE = new FoesEvalStatsDuringCombatNode(StatusIndex.RES);
 
 class TargetsStatsOnMapNode extends StatsNode {
     static {
@@ -3027,21 +3027,21 @@ class FoesGreatTalentsNode extends GreatTalentsNode {
 }
 
 // noinspection JSUnusedGlobalSymbols
-const UNITS_ATK_GREAT_TALENT_NODE = new UnitsGreatTalentsNode(STATUS_INDEX.Atk);
+const UNITS_ATK_GREAT_TALENT_NODE = new UnitsGreatTalentsNode(StatusIndex.ATK);
 // noinspection JSUnusedGlobalSymbols
-const UNITS_SPD_GREAT_TALENT_NODE = new UnitsGreatTalentsNode(STATUS_INDEX.Spd);
-const UNITS_DEF_GREAT_TALENT_NODE = new UnitsGreatTalentsNode(STATUS_INDEX.Def);
+const UNITS_SPD_GREAT_TALENT_NODE = new UnitsGreatTalentsNode(StatusIndex.SPD);
+const UNITS_DEF_GREAT_TALENT_NODE = new UnitsGreatTalentsNode(StatusIndex.DEF);
 // noinspection JSUnusedGlobalSymbols
-const UNITS_RES_GREAT_TALENT_NODE = new UnitsGreatTalentsNode(STATUS_INDEX.Res);
+const UNITS_RES_GREAT_TALENT_NODE = new UnitsGreatTalentsNode(StatusIndex.RES);
 
 // noinspection JSUnusedGlobalSymbols
-const FOES_ATK_GREAT_TALENT_NODE = new FoesGreatTalentsNode(STATUS_INDEX.Atk);
+const FOES_ATK_GREAT_TALENT_NODE = new FoesGreatTalentsNode(StatusIndex.ATK);
 // noinspection JSUnusedGlobalSymbols
-const FOES_SPD_GREAT_TALENT_NODE = new FoesGreatTalentsNode(STATUS_INDEX.Spd);
+const FOES_SPD_GREAT_TALENT_NODE = new FoesGreatTalentsNode(StatusIndex.SPD);
 // noinspection JSUnusedGlobalSymbols
-const FOES_DEF_GREAT_TALENT_NODE = new FoesGreatTalentsNode(STATUS_INDEX.Def);
+const FOES_DEF_GREAT_TALENT_NODE = new FoesGreatTalentsNode(StatusIndex.DEF);
 // noinspection JSUnusedGlobalSymbols
-const FOES_RES_GREAT_TALENT_NODE = new FoesGreatTalentsNode(STATUS_INDEX.Res);
+const FOES_RES_GREAT_TALENT_NODE = new FoesGreatTalentsNode(StatusIndex.RES);
 
 /**
  * @abstract
@@ -6282,9 +6282,9 @@ const IS_ANOTHER_ACTION_BY_ASSIST_ACTIVATED_IN_CURRENT_TURN_ON_SKILL_OWNER_TEAM_
 
 function getSkillLogLevel() {
     if (typeof g_appData === 'undefined') {
-        return LoggerBase.LOG_LEVEL.OFF;
+        return LoggerBase.LogLevel.OFF;
     }
-    return g_appData?.skillLogLevel ?? LoggerBase.LOG_LEVEL.OFF;
+    return g_appData?.skillLogLevel ?? LoggerBase.LogLevel.OFF;
 }
 
 class CanActivateAttackerSpecialNode extends BoolNode {

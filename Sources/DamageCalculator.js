@@ -592,7 +592,7 @@ class DamageCalcEnv {
 
     withCombatPhaseGroup(name, fn) {
         this.getCombatLogger().withGroup(
-            LoggerBase.LOG_LEVEL.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
+            LoggerBase.LogLevel.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
                 return fn();
             }
         );
@@ -600,7 +600,7 @@ class DamageCalcEnv {
 
     withStrikePhaseGroup(name, fn) {
         this.getCurrentStrikeLogger().withGroup(
-            LoggerBase.LOG_LEVEL.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
+            LoggerBase.LogLevel.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
                 return fn();
             }
         );
@@ -1457,8 +1457,8 @@ class DamageCalculator {
         let specialTotalAtk = atkUnit.getAtkInCombat(defUnit);
         let statusIndexWhenSpecial = atkUnit.battleContext.statIndexInsteadOfAtkWhenSpecial;
         attackResult.statIndexInsteadOfAtkWhenSpecial = atkUnit.battleContext.statIndexInsteadOfAtkWhenSpecial;
-        if (statusIndexWhenSpecial !== STATUS_INDEX.None) {
-            // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
+        if (statusIndexWhenSpecial !== StatusIndex.NONE) {
+            // calculates damage using 150% of unit's DEF instead of the value of unit's ATK when Special triggers.
             let ratio = atkUnit.battleContext.ratioForUsingAnotherStatWhenSpecial;
             specialTotalAtk = Math.trunc(atkUnit.getStatusesInCombat(defUnit)[statusIndexWhenSpecial] * ratio);
         }

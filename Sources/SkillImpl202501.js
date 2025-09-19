@@ -1592,7 +1592,7 @@
                 ),
             ),
             SKILL_EFFECT_NODE(
-                FOR_EACH_UNIT_NODE(HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(STATUS_INDEX.Def),
+                FOR_EACH_UNIT_NODE(HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(StatusIndex.DEF),
                     GRANTS_ALL_BONUSES_TO_TARGET_ON_MAP_NODE(6),
                     GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.AssignDecoy),
                 ),
@@ -1672,7 +1672,7 @@
                 ),
             ),
             SKILL_EFFECT_NODE(
-                FOR_EACH_UNIT_NODE(HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(STATUS_INDEX.Def),
+                FOR_EACH_UNIT_NODE(HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(StatusIndex.DEF),
                     GRANTS_ALL_BONUSES_TO_TARGET_ON_MAP_NODE(6),
                     GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.AssignDecoy),
                 ),
@@ -2300,14 +2300,14 @@
             FOR_EACH_UNIT_NODE(
                 // (if support partner is on player team, targets any support partner; otherwise,
                 PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE(
-                    // targets ally with the highest Res at start of battle, excluding unit;
-                    STATUS_INDEX.Res,
-                    // “at start of battle” excludes increases to Res granted after ally is deployed,
+                    // targets ally with the highest RES at start of battle, excluding unit;
+                    StatusIndex.RES,
+                    // “at start of battle” excludes increases to RES granted after ally is deployed,
                     // such as Legendary Effects, Mythic Effects, Bonus Heroes, Great Talent, etc.;
                     TARGETS_STAT_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE
                 ),
                 IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
-                    // grants Res +6 and [Magic Twin Save] to target allies within 2 spaces of unit for 1 turn
+                    // grants RES +6 and [Magic Twin Save] to target allies within 2 spaces of unit for 1 turn
                     GRANTS_RES_TO_TARGET_ON_MAP_NODE(6),
                     GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.MagicTwinSave),
                 ),
@@ -6429,9 +6429,9 @@
             IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // (If support partner is on player team,
             // targets any support partner;
-            // otherwise, targets ally with the highest Def on player team, excluding unit.)
-            INCLUDES_UNIT_NODE(TARGET_NODE, PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(STATUS_INDEX.Def))),
-        // grants Atk/Spd/Def+5,
+            // otherwise, targets ally with the highest DEF on player team, excluding unit.)
+            INCLUDES_UNIT_NODE(TARGET_NODE, PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.DEF))),
+        // grants ATK/SPD/DEF+5,
         GRANTS_ATK_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE(5),
         SKILL_EFFECT_NODE(
             // Special cooldown charge +1 per attack
@@ -8115,7 +8115,7 @@
             UNITE_UNITS_NODE(
                 SKILL_OWNER_NODE,
                 FILTER_UNITS_NODE(
-                    PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(STATUS_INDEX.Def),
+                    PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.DEF),
                     IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
             ),
             GRANTS_DEF_RES_TO_TARGET_ON_MAP_NODE(6),
@@ -8505,7 +8505,7 @@
         // triggers [Savior] on unit.
         AND_NODE(
             IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE,
-            INCLUDES_UNIT_NODE(TARGET_NODE, PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(STATUS_INDEX.Atk)),
+            INCLUDES_UNIT_NODE(TARGET_NODE, PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.ATK)),
         ),
     );
     // (If support partner is on player team,
@@ -8514,7 +8514,7 @@
     // Unit can move to a space within 2 spaces of target ally.
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
         TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE(2,
-            PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(STATUS_INDEX.Atk))
+            PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.ATK))
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // If unit is transformed or if foe initiates combat,
@@ -8909,7 +8909,7 @@
                 ),
             ),
             // deals damage = 20% of unit's Spd (excluding area-of-effect Specials), and
-            DEALS_DAMAGE_X_PERCENTAGE_OF_UNITS_STAT_NODE(STATUS_INDEX.Spd, 20),
+            DEALS_DAMAGE_X_PERCENTAGE_OF_UNITS_STAT_NODE(StatusIndex.SPD, 20),
             // reduces damage from foe's first attack by 7 during combat
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
             REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
@@ -9019,7 +9019,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
     let [dealsDamageAoe, dealsDamageDuringCombat] =
-        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(STATUS_INDEX.Res, 20);
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(StatusIndex.RES, 20);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // At start of combat, if unit’s HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
@@ -9212,7 +9212,7 @@
         IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
         SKILL_EFFECT_NODE(
             // calculates damage using 150% of unit’s Def instead of unit’s Atk when Special triggers (excluding area-of-effect Specials).
-            CALCULATES_DAMAGE_USING_X_PERCENT_OF_TARGETS_STAT_INSTEAD_OF_ATK_WHEN_SPECIAL_NODE(STATUS_INDEX.Def, 150),
+            CALCULATES_DAMAGE_USING_X_PERCENT_OF_TARGETS_STAT_INSTEAD_OF_ATK_WHEN_SPECIAL_NODE(StatusIndex.DEF, 150),
             X_NUM_NODE(
                 // grants bonus to unit’s Atk/Spd/Def/Res =
                 GRANTS_ALL_BONUSES_TO_TARGETS_NODE(READ_NUM_NODE),
@@ -9222,7 +9222,7 @@
         ),
         SKILL_EFFECT_NODE(
             // deals damage = 20% of unit’s Def (excluding area-of-effect Specials),
-            DEALS_DAMAGE_X_PERCENTAGE_OF_UNITS_STAT_NODE(STATUS_INDEX.Def, 20),
+            DEALS_DAMAGE_X_PERCENTAGE_OF_UNITS_STAT_NODE(StatusIndex.DEF, 20),
             // reduces damage from foe’s first attack by 20% of unit’s Def during combat
             // (“first attack” normally means only the first strike; for effects that grant “unit attacks twice,” it means the first and second strikes),
             REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
@@ -9488,7 +9488,7 @@
                             ),
                             AND_NODE(
                                 NOT_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE),
-                                INCLUDES_UNIT_NODE(TARGET_NODE, HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(STATUS_INDEX.Atk)),
+                                INCLUDES_UNIT_NODE(TARGET_NODE, HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(StatusIndex.ATK)),
                             ),
                         )),
                     30,
@@ -9573,7 +9573,7 @@
         ),
     ));
     let [dealsDamageBeforeCombat, dealsDamageDuringCombat] =
-        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(STATUS_INDEX.Res, 20);
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(StatusIndex.RES, 20);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // At start of combat,
         // if unit's HP ≥ 25%,
@@ -10137,7 +10137,7 @@
                         ),
                         AND_NODE(
                             NOT_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE),
-                            INCLUDES_UNIT_NODE(TARGET_NODE, HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(STATUS_INDEX.Spd)),
+                            INCLUDES_UNIT_NODE(TARGET_NODE, HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(StatusIndex.SPD)),
                         ),
                     )),
                 // unit attacks twice during combat.
@@ -10338,7 +10338,7 @@
                 // If it is unit's first combat initiated by unit or first combat initiated by foe that turn,
                 IS_IT_TARGETS_FIRST_COMBAT_INITIATED_BY_TARGET_OR_FIRST_COMBAT_INITIATED_BY_TARGETS_FOE_IN_PLAYER_PHASE_OR_ENEMY_PHASE_NODE,
                 // inflicts Atk-4 on unit and
-                INFLICTS_STAT_MINUS_AT_ON_TARGET_DURING_COMBAT_NODE(STATUS_INDEX.Atk, 4),
+                INFLICTS_STAT_MINUS_AT_ON_TARGET_DURING_COMBAT_NODE(StatusIndex.ATK, 4),
                 // unit attacks twice during combat
                 TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
             ),
@@ -10361,7 +10361,7 @@
         ),
     ));
     let [dealsDamageBeforeCombat, dealsDamageDuringCombat] =
-        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(STATUS_INDEX.Atk, 15);
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(StatusIndex.ATK, 15);
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // deals damage = 15% of unit's Atk (including area-of-effect Specials),
         dealsDamageBeforeCombat,
@@ -11226,7 +11226,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_FOES_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE,
             INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 6, 0, 6),
-            FOR_EACH_TARGET_STAT_INDEX_NODE([STATUS_INDEX.Spd, STATUS_INDEX.Res],
+            FOR_EACH_TARGET_STAT_INDEX_NODE([StatusIndex.SPD, StatusIndex.RES],
                 INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(
                     READ_NUM_NODE,
                     MULT_NODE(FOES_BONUS_NODE(READ_NUM_NODE), 2)),
@@ -11244,7 +11244,7 @@
             INFLICTS_SPD_RES_ON_FOE_DURING_COMBAT_NODE(6),
             // inflicts penalty on foe’s Atk/Spd/Res = current bonus on each of foe’s stats × 2
             // (calculates each stat penalty independently),
-            FOR_EACH_TARGET_STAT_INDEX_NODE([STATUS_INDEX.Atk, STATUS_INDEX.Spd, STATUS_INDEX.Res],
+            FOR_EACH_TARGET_STAT_INDEX_NODE([StatusIndex.ATK, StatusIndex.SPD, StatusIndex.RES],
                 INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(
                     READ_NUM_NODE,
                     MULT_NODE(FOES_BONUS_NODE, 2))
@@ -11293,7 +11293,7 @@
 {
     let skillId = getNormalSkillId(Weapon.Luin);
     let [dealsDamageBeforeCombat, dealsDamageDuringCombat] =
-        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(STATUS_INDEX.Spd, 20);
+        DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_NODES(StatusIndex.SPD, 20);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_2_SPACES_OF_AN_ALLY(
             dealsDamageDuringCombat,
@@ -11536,7 +11536,7 @@
             FILTER_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE,
                 AND_NODE(
                     IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_SKILL_OWNER_NODE,
-                    LT_NODE(TARGETS_STAT_ON_MAP(STATUS_INDEX.Res), SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Res)),
+                    LT_NODE(TARGETS_STAT_ON_MAP(StatusIndex.RES), SKILL_OWNERS_STAT_ON_MAP(StatusIndex.RES)),
                 ),
             ),
             INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FalseStart),
@@ -11559,7 +11559,7 @@
             FILTER_UNITS_NODE(TARGETS_FOES_ON_MAP_NODE,
                 AND_NODE(
                     IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_SKILL_OWNER_NODE,
-                    LT_NODE(TARGETS_STAT_ON_MAP(STATUS_INDEX.Res), SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Res)),
+                    LT_NODE(TARGETS_STAT_ON_MAP(StatusIndex.RES), SKILL_OWNERS_STAT_ON_MAP(StatusIndex.RES)),
                 ),
             ),
             // inflicts Atk/Res-7 and (False Start)
@@ -13190,7 +13190,7 @@
 
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's Res > foe's Res,
-        IF_NODE(UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res),
+        IF_NODE(UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.RES),
             // reduces damage from attacks during combat and from area-of-effect Specials
             REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(
                 COND_OP(
@@ -13483,7 +13483,7 @@
 
             // B = 2 x current penalty
             // on unit's respective stats; calculates each stat penalty independently),
-            FOR_EACH_TARGET_STAT_INDEX_NODE([STATUS_INDEX.Atk, STATUS_INDEX.Def, STATUS_INDEX.Res],
+            FOR_EACH_TARGET_STAT_INDEX_NODE([StatusIndex.ATK, StatusIndex.DEF, StatusIndex.RES],
                 GRANTS_STAT_PLUS_TO_TARGET_DURING_COMBAT_NODE(
                     MULT_NODE(2, GET_STAT_AT_NODE(TARGETS_PENALTIES_NODE, READ_NUM_NODE)),
                     READ_NUM_NODE
@@ -14092,7 +14092,7 @@
             IF_NODE(NOT_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE),
                 FOR_EACH_UNIT_NODE(
                     // targets ally with the highest Atk within 2 spaces of unit).
-                    UNITE_UNITS_NODE(TARGET_NODE, HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(STATUS_INDEX.Atk)),
+                    UNITE_UNITS_NODE(TARGET_NODE, HIGHEST_TARGETS_STAT_ALLIES_WITHIN_2_SPACES_NODE(StatusIndex.ATK)),
                     GRANTS_STATS_PLUS_AT_START_OF_TURN_NODE(6, 0, 0, 6),
                     GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.EssenceDrain, StatusEffectType.BonusDoubler),
                 ),
@@ -14204,7 +14204,7 @@
             // and also,
             // when unit's Special triggers,
             // calculates damage using 150% of unit's Res instead of the value of unit's Atk (excluding area-of-effect Specials).
-            new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(STATUS_INDEX.Res, 150),
+            new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(StatusIndex.RES, 150),
         ),
     ));
 }

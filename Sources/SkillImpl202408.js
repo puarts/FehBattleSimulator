@@ -2465,8 +2465,8 @@
         // At start of turn,
         // if unit is not on a team with support partner and if there is only 1 ally who has the highest Def,
         IF_NODE(EQ_NODE(0, COUNT_UNITS_NODE(TARGETS_PARTNERS_ON_MAP_NODE)),
-            IF_NODE(EQ_NODE(1, COUNT_UNITS_NODE(HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE(STATUS_INDEX.Def))),
-                FOR_EACH_UNIT_NODE(HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE(STATUS_INDEX.Def),
+            IF_NODE(EQ_NODE(1, COUNT_UNITS_NODE(HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE(StatusIndex.DEF))),
+                FOR_EACH_UNIT_NODE(HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE(StatusIndex.DEF),
                     // grants【Pathfinder】to that ally for 1 turn.
                     GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Pathfinder),
                 ),
@@ -2711,7 +2711,7 @@ function setDiscord(skillId, statsRatios) {
         // If unit's Res > foe's Res, reduces damage from attacks during combat and from area-of-effect Specials (excluding
         // Rokkr area-of-effect Specials) by percentage = 4 - current
         // Special cooldown count value, x difference between stats (max difference between stats: 10).
-        IF_NODE(UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res),
+        IF_NODE(UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.RES),
             new ReducesDamageFromAoeSpecialsByXPercentNode(
                 MULT_TRUNC_NODE(
                     SUB_NODE(4, UNITS_CURRENT_SPECIAL_COOLDOWN_COUNT_DURING_COMBAT),
@@ -4019,7 +4019,7 @@ function setDiscord(skillId, statsRatios) {
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // calculates damage using 150% of unit's Def instead of the value of unit's Atk when Special triggers.
-        new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(STATUS_INDEX.Def, 150),
+        new CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode(StatusIndex.DEF, 150),
     ));
 
     AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -4498,7 +4498,7 @@ function setDiscord(skillId, statsRatios) {
         IF_NODE(NOT_NODE(new IsThereUnitOnMapNode(new AreTargetAndSkillOwnerPartnersNode())),
             // at start of turn,
             // grants "neutralizes 'effective against dragons' bonuses" to ally with the highest Res among allies within 3 spaces of unit for 1 turn.
-            new ForEachAllyWithHighestValueWithinNSpacesNode(3, TRUE_NODE, new TargetsStatAtStartOfTurnNode(STATUS_INDEX.Res),
+            new ForEachAllyWithHighestValueWithinNSpacesNode(3, TRUE_NODE, new TargetsStatAtStartOfTurnNode(StatusIndex.RES),
                 new GrantsStatusEffectsAtStartOfTurnNode(StatusEffectType.ShieldDragon),
             ),
         ),

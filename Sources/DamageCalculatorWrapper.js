@@ -2354,7 +2354,7 @@ class DamageCalculatorWrapper {
     ____applySkillEffectForUnit(targetUnit, enemyUnit, damageCalcEnv) {
         if (targetUnit.hasStatusEffect(StatusEffectType.Paranoia)) {
             // 【Paranoia】
-            // At start of combat, if unit's HP ≤ 99%, grants Atk+5 to unit during combat, and also, if unit initiates combat, unit can make a follow-up attack before foe's next attack.
+            // At start of combat, if unit's HP ≤ 99%, grants ATK+5 to unit during combat, and also, if unit initiates combat, unit can make a follow-up attack before foe's next attack.
             // At start of combat, if unit's HP ≤ 99%, if foe initiates combat, and if either that foe's Range = unit's Range or number of【Penalty】effects active on foe excluding stat penalties ≥ 3, unit can counterattack before foe's first attack (excluding when unit's Savior effect triggers).
             if (targetUnit.battleContext.restHpPercentage <= 99) {
                 targetUnit.atkSpur += 5;
@@ -11713,12 +11713,12 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.FairFightBlade:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def, 0.25);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.DEF, 0.25);
                         }
                         break;
                     case Weapon.RadiantAureola:
                         if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Res);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.RES);
                         }
                         break;
                     case Weapon.BaraNoYari:
@@ -11792,7 +11792,7 @@ class DamageCalculatorWrapper {
                     case Weapon.KouketsuNoSensou:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (targetUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                                this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Atk);
+                                this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.ATK);
                             }
                         }
                         break;
@@ -11840,7 +11840,7 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.DreamingSpear:
                         if (targetUnit.battleContext.weaponSkillCondSatisfied) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Res);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.RES);
                         }
                         break;
                     case Weapon.BouryakuNoSenkyu:
@@ -11881,7 +11881,7 @@ class DamageCalculatorWrapper {
                         break;
                     case Weapon.PastelPoleaxe:
                         if (targetUnit.battleContext.restHpPercentage >= 25) {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.DEF);
                         }
                         break;
                     case Weapon.Tangurisuni:
@@ -11982,7 +11982,7 @@ class DamageCalculatorWrapper {
                     case Weapon.MoonGradivus:
                         if (targetUnit.isWeaponSpecialRefined) {
                             if (this.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                                this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Def);
+                                this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.DEF);
                             }
                         }
                         break;

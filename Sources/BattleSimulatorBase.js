@@ -1275,7 +1275,7 @@ class BattleSimulatorBase {
         }
 
         let env = new EnumerationEnv(g_appData, duoUnit);
-        env.setName('比翼双界スキル使用可能判定').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        env.setName('比翼双界スキル使用可能判定').setLogLevel(LoggerBase.LogLevel.OFF);
         let cannotTrigger =
             CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP
                 .getValues(duoUnit.heroIndex)
@@ -2926,7 +2926,7 @@ class BattleSimulatorBase {
         //     unit.blessing2 = BlessingType.Hp5_Spd4;
         //     unit.merge = 10;
         //     unit.dragonflower = 8;
-        //     unit.ivHighStat = StatusType.Def;
+        //     unit.ivHighStat = StatusType.DEF;
         //     unit.weapon = 399;
         //     unit.weaponRefinement = WeaponRefinementType.Hp5_Res4;
         //     unit.support = 413;
@@ -3338,36 +3338,36 @@ class BattleSimulatorBase {
     }
 
     writeSimpleLogLine(log) {
-        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        if (!this.#shouldLog(LoggerBase.LogLevel.INFO)) return;
         this.vm.simpleLog += `<div class="damage-log-info damage-log-simple">${log}</div>`;
     }
 
     writeErrorLine(log) {
-        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.ERROR)) return;
+        if (!this.#shouldLog(LoggerBase.LogLevel.ERROR)) return;
         let error = `<div class="damage-log-error">${log}</div>`;
         this.vm.damageCalcLog += error;
         this.writeSimpleLogLine(error);
     }
 
     writeWarningLine(log) {
-        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.WARN)) return;
+        if (!this.#shouldLog(LoggerBase.LogLevel.WARN)) return;
         let warning = `<div class="damage-log-warn">${log}</div>`;
         this.vm.damageCalcLog += warning;
         this.writeSimpleLogLine(warning);
     }
 
     writeLog(log) {
-        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        if (!this.#shouldLog(LoggerBase.LogLevel.INFO)) return;
         this.vm.damageCalcLog += `<div class="damage-log-info">${log}</div>`;
     }
 
     writeLogLine(log) {
-        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.INFO)) return;
+        if (!this.#shouldLog(LoggerBase.LogLevel.INFO)) return;
         this.vm.damageCalcLog += `<div class="damage-log-info">${log}</div>`;
     }
 
     writeDebugLogLine(log) {
-        if (!this.#shouldLog(LoggerBase.LOG_LEVEL.DEBUG)) return;
+        if (!this.#shouldLog(LoggerBase.LogLevel.DEBUG)) return;
         this.vm.damageCalcLog += `<div class="damage-log-debug">${log}</div>`;
     }
 
@@ -6671,7 +6671,7 @@ class BattleSimulatorBase {
         //         if (!g_appData.examinesEnemyActionTriggered(unit)) {
         //             return false;
         //         }
-        //         return unit.weapon === Weapon.None;
+        //         return unit.weapon === Weapon.NONE;
         //     }
         //     default:
         //         return false;
@@ -9036,7 +9036,7 @@ class BattleSimulatorBase {
         if (unit.canActivateStyle() &&
             !unit.hasCannotMoveStyle()) {
             let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
-                .setName('攻撃可能ユニット設定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                .setName('攻撃可能ユニット設定時').setLogLevel(LoggerBase.LogLevel.OFF);
             let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
             if (range > 0) {
                 this.__setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc, range, true);

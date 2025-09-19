@@ -2100,7 +2100,7 @@ class BattleMap {
         // unitがunitのスキルによりワープ
         let env = new BattleMapEnv(this, unit);
         // env.setName('ワープ').setLogLevel(getSkillLogLevel());
-        env.setName('ワープ').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        env.setName('ワープ').setLogLevel(LoggerBase.LogLevel.OFF);
         yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
 
         for (let skillId of unit.enumerateSkills()) {
@@ -2112,7 +2112,7 @@ class BattleMap {
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
             let env = new BattleMapEnv(this, unit).setSkillOwner(ally);
             // env.setName('ワープ(周囲)').setLogLevel(getSkillLogLevel());
-            env.setName('ワープ(周囲)').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            env.setName('ワープ(周囲)').setLogLevel(LoggerBase.LogLevel.OFF);
             yield* ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(ally, env);
 
             for (let skillId of ally.enumerateSkills()) {
@@ -2411,7 +2411,7 @@ class BattleMap {
                 let enemyUnit = tile.placedUnit;
 
                 let env = new BattleMapEnv(this, warpUnit).setSkillOwner(enemyUnit).setTile(targetTile);
-                env.setName('ワープ不可').setLogLevel(LoggerBase.LOG_LEVEL.WARN);
+                env.setName('ワープ不可').setLogLevel(LoggerBase.LogLevel.WARN);
                 if (UNIT_CANNOT_WARP_INTO_SPACES_HOOKS.evaluateSomeWithUnit(enemyUnit, env)) {
                     return false;
                 }
@@ -2489,8 +2489,8 @@ class BattleMap {
                     yield* this.enumerateWarpCantoTiles(unit);
                     for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
                         let env = new BattleMapEnv(this, unit).setSkillOwner(ally);
-                        env.setName('味方によるワープ（再移動）').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
-                        // env.setName('味方によるワープ（再移動）').setLogLevel(LoggerBase.LOG_LEVEL.ALL);
+                        env.setName('味方によるワープ（再移動）').setLogLevel(LoggerBase.LogLevel.OFF);
+                        // env.setName('味方によるワープ（再移動）').setLogLevel(LoggerBase.LogLevel.ALL);
                         yield* WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(ally, env);
                     }
                 }
@@ -2504,7 +2504,7 @@ class BattleMap {
      */
     * enumerateWarpCantoTiles(unit) {
         let env = new BattleMapEnv(this, unit);
-        env.setName('ワープ（再移動）').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        env.setName('ワープ（再移動）').setLogLevel(LoggerBase.LogLevel.OFF);
         yield* WHEN_CANTO_UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
 
         for (let skillId of unit.enumerateSkills()) {
@@ -2625,7 +2625,7 @@ class BattleMap {
             // かぜの剣スタイルは2距離で脅威度を計算
             if (unit.canActivateStyle() && !unit.hasCannotMoveStyle()) {
                 let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
-                    .setName('スタイルでの脅威度判定時').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+                    .setName('スタイルでの脅威度判定時').setLogLevel(LoggerBase.LogLevel.OFF);
                 let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
                 if (range > 0) {
                     attackRanges.push(range);
@@ -2658,7 +2658,7 @@ class BattleMap {
         // リンスタイル
         if (unit.canActivateStyle() && unit.hasCannotMoveStyle()) {
             let env = new BattleMapEnv(this, unit);
-            env.setName("スタイルでの脅威度判定時").setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            env.setName("スタイルでの脅威度判定時").setLogLevel(LoggerBase.LogLevel.OFF);
             let tiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
             for (let tile of tiles) {
                 if (!doneTiles.includes(tile)) {
@@ -2754,7 +2754,7 @@ class BattleMap {
 
     setAttackableTilesInStyle(unit, attackingTile) {
         let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
-            .setName('敵のスタイルでの攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+            .setName('敵のスタイルでの攻撃可能マス').setLogLevel(LoggerBase.LogLevel.OFF);
         let range = CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.evaluateMaxWithUnit(unit, env);
         if (range <= 0) {
             return;
@@ -2768,7 +2768,7 @@ class BattleMap {
 
     setAttackableTilesInCannotMoveStyle(unit) {
         let env = new BattleMapEnv(this, unit).setTile(unit.placedTile);
-        env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LOG_LEVEL.OFF);
+        env.setName('移動不可時の攻撃可能マス').setLogLevel(LoggerBase.LogLevel.OFF);
         let attackableTiles = CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
         for (let attackableTile of attackableTiles) {
             if (!unit.attackableTilesInStyle.includes(attackableTile)) {
