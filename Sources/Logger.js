@@ -168,6 +168,12 @@ class GroupLog {
         }
         return false;
     }
+
+    matches(text) {
+        const keywords = text.replace(/\u3000/g, ' ').toLowerCase().split(/\s+/);
+        if (!this.log) { return false; }
+        return keywords.every(keyword => this.log.matches?.(keyword));
+    }
 }
 
 /**
@@ -285,6 +291,56 @@ class GroupLogger {
         } finally {
             this.groupEnd();
         }
+    }
+
+    /**
+     * ツリーを剪定して、predicate にヒットしたノードとその祖先だけを残す
+     * ただし「マッチしたノード自身の配下」は剪定せず **全て残す**。
+     * @template T
+     * @param {GroupLog<T>} root
+     * @param {(node: GroupLog<T>) => boolean} predicate
+     * @param {"with-matching-descendants"|"self-only"} mode  // selfMatch には無視される
+     * @returns {GroupLog<T> | null}
+     */
+    static filterGroupTree(root, predicate, mode = "with-matching-descendants") {
+        // フィルタ無しの深いクローン
+        function cloneSubtree(node) {
+            const copy = new GroupLog(node.level, node.log, node.isGroup);
+            copy.children = node.children.map(cloneSubtree);
+            return copy;
+        }
+
+        function visit(node) {
+            const keptChildren = node.children.map(visit).filter(Boolean);
+            const selfMatch = predicate(node);
+
+            if (selfMatch) {
+                // マッチしたノードは配下を「そのまま」全て残す
+                // （mode は無視して、剪定せずクローン）
+                return cloneSubtree(node);
+            }
+
+            if (keptChildren.length > 0) {
+                // 自身は非ヒットだが、子にヒットがあるので祖先として残す
+                const copy = new GroupLog(node.level, node.log, node.isGroup);
+                copy.children = keptChildren;
+                return copy;
+            }
+
+            // どちらも該当なし → 落とす
+            return null;
+        }
+        return visit(root);
+    }
+
+    /**
+     * インスタンスの rootLog を条件で剪定した新しい木を返す
+     * @param {(node: GroupLog<T>) => boolean} predicate
+     * @param {"with-matching-descendants"|"self-only"} mode
+     * @returns {GroupLog<T> | null}
+     */
+    filteredRoot(predicate, mode = "with-matching-descendants") {
+        return GroupLogger.filterGroupTree(this.rootLog, predicate, mode);
     }
 }
 

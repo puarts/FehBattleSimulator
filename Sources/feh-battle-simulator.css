@@ -113,6 +113,43 @@ li {
     box-shadow: none;
 }
 
+/* 入力欄 */
+.theme-dark .input-btn {
+    display: inline-block;
+    border: 1px solid #4dabf7;   /* 明るめの青 */
+    border-radius: 0.4em;
+    background: transparent;     /* 黒背景と馴染ませる */
+    color: #4dabf7;              /* テキストも青系 */
+    padding: 0.3em 0.6em;
+    font-size: 0.95em;
+    transition: all 0.2s;
+}
+
+/* プレースホルダ */
+.theme-dark .input-btn::placeholder {
+    color: rgba(77, 171, 247, 0.6); /* 少し薄い青 */
+}
+
+/* フォーカス時 */
+.theme-dark .input-btn:focus {
+    outline: none;
+    border-color: #62b5f8;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25);
+    background: rgba(77, 171, 247, 0.08);
+}
+
+/* ホバー時（フォーカスしていない場合） */
+.theme-dark .input-btn:hover {
+    background: rgba(77, 171, 247, 0.12);
+}
+
+/* 無効状態 */
+.theme-dark .input-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
 .tabs {
     overflow: hidden;
 }

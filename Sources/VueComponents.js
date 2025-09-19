@@ -1869,12 +1869,17 @@ function initVueComponents() {
                 default: () => {
                 },
             },
+            showsSkillLogs: {
+                type: Boolean,
+                required: true,
+            },
         },
         data() {
             return {
-                showsSkill: false,
                 detailLevel: DetailLevel.NORMAL,
                 detailLevelOptions: DetailUtils.getOptions(),
+                logFilterText: '',
+                groupFilterText: '',
             };
         },
         computed: {
@@ -1884,6 +1889,19 @@ function initVueComponents() {
             precombatDamage: vm => vm.combatResult?.preCombatDamage ?? 0,
             attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? [],
             skillCheckboxId: vm => `skill-checkbox-${vm._uid}`,
+            rootChildren() {
+                const logger = this.combatResult.skillLogger;
+                if (this.groupFilterText) {
+                    const pred = node => node.isGroup && node.matches(this.groupFilterText);
+                    return logger.filteredRoot(pred)?.children ?? [];
+                }
+                return logger.rootLog.children;
+            },
+            // v-model 用のプロキシ
+            modelShowsSkillLogs: {
+                get() { return this.showsSkillLogs; },
+                set(v) { this.$emit('update:shows-skill-logs', v); } // 親に反映
+            },
         },
         methods: {
             levelKey(s) {
@@ -1912,11 +1930,27 @@ function initVueComponents() {
                   </select>
                   <!-- スキル表示 -->
                   <label class="check-btn">
-                    <input type="checkbox" v-model="showsSkill" />
+                    <input type="checkbox" v-model="modelShowsSkillLogs" />
                     <span>スキル表示</span>
                   </label>
                   <!-- 閉じるボタン -->
                   <button class="pop-close-btn" @click="onClosed">×</button>
+                </div>
+              </div>
+              <div v-if="showsSkillLogs" class="pop-header">
+                <div>
+                  <input
+                    v-model="logFilterText"
+                    type="text"
+                    class="input filter-input input-btn"
+                    placeholder="ログをフィルタ..."
+                  />
+                  <input
+                    v-model="groupFilterText"
+                    type="text"
+                    class="input filter-input input-btn"
+                    placeholder="グループをフィルタ..."
+                  />
                 </div>
               </div>
 
@@ -1925,15 +1959,15 @@ function initVueComponents() {
                   <div>戦闘前ダメージ: {{ precombatDamage }}</div>
                 </div>
                 
-<!--                {{ JSON.stringify(combatResult.skillLogger.rootLog.children, null, 2) }}-->
-                <div v-if="showsSkill">
+                <div v-if="showsSkillLogs">
                   <log-node 
-                    v-for="(n, i) in combatResult.skillLogger.rootLog.children" 
+                    v-for="(n, i) in rootChildren"
                     :key="i"
                     :node="n"
                     :default-open="true"
                     :child-default-open="true"
                     :detail-level="detailLevel"
+                    :log-filter-text="logFilterText"
                   />
                 </div>
 
@@ -1942,7 +1976,10 @@ function initVueComponents() {
                     <attack-calc-result 
                       :combat-result="combatResult"
                       :attack-result="attackResult"
-                      :shows-skill="showsSkill"
+                      :shows-skill-logs="showsSkillLogs"
+                      :detail-level="detailLevel"
+                      :log-filter-text="logFilterText"
+                      :group-filter-text="groupFilterText"
                     />
                   </div>
                 </div>
@@ -1959,6 +1996,7 @@ function initVueComponents() {
             childDefaultOpen: {type: Boolean, default: false},
             isChild: {type: Boolean, default: false},
             detailLevel: {type: Number, default: DetailLevel.NORMAL},
+            logFilterText: {type: String, default: ''},
         },
         data() {
             return {
@@ -2002,6 +2040,22 @@ function initVueComponents() {
                 }
                 return true;
             },
+            /**
+             * フィルタ文字列を分割したキーワード配列
+             * @returns {string[]}
+             */
+            keywords() {
+                const filter = this.logFilterText.trim().replace(/\u3000/g, ' ');
+                if (filter === "") return [];
+                // 大文字小文字を区別しない場合
+                return filter.toLowerCase().split(/\s+/);
+            },
+            matchesFilter() {
+                let text = this.content.message;
+                if (this.keywords.length === 0) return true; // フィルタなしなら常にマッチ
+                const lowerText = text.toLowerCase();
+                return this.keywords.every(keyword => lowerText.includes(keyword));
+            },
         },
         methods: {
             setOpenAll(val) {
@@ -2009,7 +2063,7 @@ function initVueComponents() {
                 if (this.hasChildren) {
                     this.$children.forEach(c => c.setOpenAll && c.setOpenAll(val));
                 }
-            }
+            },
         },
         template: `
           <div
@@ -2017,9 +2071,9 @@ function initVueComponents() {
               levelClass,
               { 'log-item': isChild && !isSimple }
             ]"
-            v-if="node.level <= logLevel"
+            v-if="node && (node.level <= logLevel)"
           >
-            <div class="log-line" v-if="showsLogLine">
+            <div class="log-line" v-if="content && showsLogLine && matchesFilter">
               <button v-if="hasChildren" class="log-toggle" :aria-expanded="open.toString()" @click="open = !open">
                 <span v-if="open">▾</span><span v-else>▸</span>
               </button>
@@ -2038,6 +2092,7 @@ function initVueComponents() {
                 :child-default-open="childDefaultOpen"
                 :is-child="true"
                 :detail-level="detailLevel"
+                :log-filter-text="logFilterText"
               />
             </div>
           </div>
@@ -2048,7 +2103,10 @@ function initVueComponents() {
         props: {
             combatResult: {type: CombatResult, required: true},
             attackResult: {type: AttackResult, required: true},
-            showsSkill: {type: Boolean, required: true},
+            detailLevel: {type: Number, default: DetailLevel.NORMAL},
+            showsSkillLogs: {type: Boolean, required: true},
+            logFilterText: {type: String, required: true},
+            groupFilterText: {type: String, required: true},
         },
         computed: {
             strikes: vm => vm.attackResult?.strikeResults ?? [],
@@ -2065,6 +2123,16 @@ function initVueComponents() {
             atkName: vm => vm.attackResult?.atkUnit?.name || '',
             defName: vm => vm.attackResult?.defUnit?.name || '',
         },
+        methods: {
+            getRootChildren(strikeResult) {
+                const logger = strikeResult.skillLogger;
+                if (this.groupFilterText) {
+                    const pred = node => node.isGroup && node.matches(this.groupFilterText);
+                    return logger.filteredRoot(pred)?.children ?? [];
+                }
+                return logger.rootLog.children;
+            },
+        },
         template: `
           <div class="attack-result">
             <div>
@@ -2075,13 +2143,15 @@ function initVueComponents() {
 
             <div class="strikes-result" v-if="hasStrikes">
               <div v-for="(strikeResult, si) in strikes" :key="si">
-                <div v-if="showsSkill">
+                <div v-if="showsSkillLogs">
                   <log-node 
-                    v-for="(n, i) in strikeResult.skillLogger.rootLog.children" 
+                    v-for="(n, i) in getRootChildren(strikeResult)" 
                     :key="i"
                     :node="n"
                     :default-open="true"
                     :child-default-open="true"
+                    :detail-level="detailLevel"
+                    :log-filter-text="logFilterText"
                   />
                 </div>
                 <strike-calc-result
@@ -2202,5 +2272,7 @@ function initVueComponents() {
         `
     });
 }
-
+Vue.config.errorHandler = (err, vm, info) => {
+    console.error('[Vue]', vm && vm.$options && vm.$options.name, info, err);
+};
 initVueComponents();

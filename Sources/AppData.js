@@ -301,6 +301,8 @@ class AppData extends UnitManager {
         this.skillLogLevel = LocalStorageUtil.getNumber('skillLogLevel', LoggerBase.LogLevel.OFF);
         this.skillLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LogLevel);
 
+        this.showsSkillLogs = LocalStorageUtil.getBoolean('showsSkillLogs');
+
         /**
          * ダブル補正が有効かどうか
          * @type {Boolean}

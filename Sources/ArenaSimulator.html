@@ -1087,6 +1087,9 @@
         <div id="info-pop" popover="manual">
             <damage-calc-result
                     :combat-result="combatResult"
+                    :on-closed="() => { document.getElementById('info-pop')?.hidePopover() }"
+                    :shows-skill-logs="showsSkillLogs"
+                    @update:shows-skill-logs="val => (showsSkillLogs = val)"
             >
             </damage-calc-result>
         </div>

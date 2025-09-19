@@ -42,6 +42,10 @@ class NodeEnv {
             this.message = message;
             this.tag = tag;
         }
+
+        matches(text) {
+            return this.name.includes(text) || this.message.includes(text) || (this.tag && this.tag.includes(text));
+        }
     }
 
     /** @type {string} */
