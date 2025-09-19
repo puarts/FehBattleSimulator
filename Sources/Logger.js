@@ -140,16 +140,34 @@ class GroupLog {
     /**
      * @param {number} level
      * @param {T|null} log
+     * @param {boolean} isGroup
      */
-    constructor(level, log) {
+    constructor(level, log, isGroup = false) {
         /** @type {number} */
         this.level = level;
         /** @type {T|null} */
         this.log = log;
         /** @type {GroupLog<T>[]} */
         this.children = [];
+        /** @type {boolean} */
+        this.isGroup = isGroup;
     }
-    get levelStr() { return LoggerBase.levelStr(this.level); }
+
+    get levelStr() {
+        return LoggerBase.levelStr(this.level);
+    }
+
+    hasLeaf(level) {
+        if (this.level <= level && !this.isGroup) {
+            return true;
+        }
+        for (let child of this.children) {
+            if (child.hasLeaf(level)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 /**
@@ -158,7 +176,7 @@ class GroupLog {
 class GroupLogger {
     constructor() {
         /** @type {GroupLog<T>} */
-        this.rootLog = new GroupLog(-1, null);
+        this.rootLog = new GroupLog(-1, null, true);
         /** @type {GroupLog<T>} */
         this.currentLog = this.rootLog;
         /** @type {GroupLog<T>[]} */
@@ -184,7 +202,7 @@ class GroupLogger {
      * @returns {GroupLog<T>} 新規グループ
      */
     group(level, log) {
-        const g = new GroupLog(level, log);
+        const g = new GroupLog(level, log, true);
         this.currentLog.children.push(g);
         this._stack.push(g);
         this.currentLog = g;

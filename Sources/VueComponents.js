@@ -1978,7 +1978,7 @@ function initVueComponents() {
             ]"
             v-if="node.level <= logLevel"
           >
-            <div class="log-line">
+            <div class="log-line" v-if="node.hasLeaf(logLevel)">
               <button v-if="hasChildren" class="log-toggle" :aria-expanded="open.toString()" @click="open = !open">
                 <span v-if="open">▾</span><span v-else>▸</span>
               </button>
