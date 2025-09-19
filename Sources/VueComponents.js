@@ -1934,23 +1934,6 @@ function initVueComponents() {
                     />
                   </div>
                 </div>
-                
-<!--                <div>-->
-<!--                  <div-->
-<!--                    v-for="(log, i) in combatResult.logs"-->
-<!--                    :key="i"-->
-<!--                    :class="['log', levelClass(log.levelStr)]"-->
-<!--                    v-if="showsSkill"-->
-<!--                  >-->
-<!--&lt;!&ndash;                    <span :class="['log-level', levelTagClass(log.levelStr)]">&ndash;&gt;-->
-<!--&lt;!&ndash;                      {{ log.levelStr }}&ndash;&gt;-->
-<!--&lt;!&ndash;                    </span>&ndash;&gt;-->
-<!--                    <span :class="['log-name', levelTagClass(log.levelStr)]">-->
-<!--                      {{ log.name }}-->
-<!--                    </span>-->
-<!--                    {{ log.message }}-->
-<!--                  </div>-->
-<!--                </div>-->
               </div>
             </div>
         `,
