@@ -190,10 +190,14 @@ class GroupLogger {
     }
 
     /** 現在グループの直下 */
-    get logs() { return this.currentLog.children; }
+    get logs() {
+        return this.currentLog.children;
+    }
 
     /** ルート直下（トップレベル） */
-    get rootLogs() { return this.rootLog.children; }
+    get rootLogs() {
+        return this.rootLog.children;
+    }
 
     /**
      * グループを開く
@@ -230,17 +234,49 @@ class GroupLogger {
     }
 
     // 以下は薄いラッパー
-    /** @param {T} log */ fatal(log){ return this.push(LoggerBase.LogLevel.FATAL, log); }
-    /** @param {T} log */ error(log){ return this.push(LoggerBase.LogLevel.ERROR, log); }
-    /** @param {T} log */ warn(log){ return this.push(LoggerBase.LogLevel.WARN, log); }
-    /** @param {T} log */ notice(log){ return this.push(LoggerBase.LogLevel.NOTICE, log); }
-    /** @param {T} log */ info(log){ return this.push(LoggerBase.LogLevel.INFO, log); }
-    /** @param {T} log */ debug(log){ return this.push(LoggerBase.LogLevel.DEBUG, log); }
-    /** @param {T} log */ trace(log){ return this.push(LoggerBase.LogLevel.TRACE, log); }
-    /** @param {T} log */ trace2(log){ return this.push(LoggerBase.LogLevel.TRACE2, log); }
-    /** @param {T} log */ trace3(log){ return this.push(LoggerBase.LogLevel.TRACE3, log); }
-    /** @param {T} log */ trace4(log){ return this.push(LoggerBase.LogLevel.TRACE4, log); }
-    /** @param {T} log */ trace5(log){ return this.push(LoggerBase.LogLevel.TRACE5, log); }
+    /** @param {T} log */ fatal(log) {
+        return this.push(LoggerBase.LogLevel.FATAL, log);
+    }
+
+    /** @param {T} log */ error(log) {
+        return this.push(LoggerBase.LogLevel.ERROR, log);
+    }
+
+    /** @param {T} log */ warn(log) {
+        return this.push(LoggerBase.LogLevel.WARN, log);
+    }
+
+    /** @param {T} log */ notice(log) {
+        return this.push(LoggerBase.LogLevel.NOTICE, log);
+    }
+
+    /** @param {T} log */ info(log) {
+        return this.push(LoggerBase.LogLevel.INFO, log);
+    }
+
+    /** @param {T} log */ debug(log) {
+        return this.push(LoggerBase.LogLevel.DEBUG, log);
+    }
+
+    /** @param {T} log */ trace(log) {
+        return this.push(LoggerBase.LogLevel.TRACE, log);
+    }
+
+    /** @param {T} log */ trace2(log) {
+        return this.push(LoggerBase.LogLevel.TRACE2, log);
+    }
+
+    /** @param {T} log */ trace3(log) {
+        return this.push(LoggerBase.LogLevel.TRACE3, log);
+    }
+
+    /** @param {T} log */ trace4(log) {
+        return this.push(LoggerBase.LogLevel.TRACE4, log);
+    }
+
+    /** @param {T} log */ trace5(log) {
+        return this.push(LoggerBase.LogLevel.TRACE5, log);
+    }
 
     withGroup(level, log, fn) {
         this.group(level, log);
@@ -432,3 +468,81 @@ class ConsoleLogger extends LoggerBase {
     writeSimpleLog(log) {
     }
 }
+
+const DetailLevel = Object.freeze({
+    SIMPLE: 0,
+    NORMAL: 10,
+    DETAIL: 20,
+    VERBOSE: 30,
+    FULL: 40,
+});
+
+// ラベル定義は配列で保持して凍結（順序も明示）
+const _entries = Object.freeze([
+    [DetailLevel.SIMPLE, '簡易'],
+    [DetailLevel.NORMAL, '通常'],
+    [DetailLevel.DETAIL, '詳細'],
+    [DetailLevel.VERBOSE, '詳細+'],
+    [DetailLevel.FULL, '完全'],
+]);
+
+// 参照用の読み取り構造を生成（公開は get 経由にすると安心）
+const _labels = new Map(_entries);
+const _labelsRev = new Map(_entries.map(([k, v]) => [v, k]));
+
+// レベル配列（数値昇順を保証）
+const _levels = Object.freeze(_entries.map(([k]) => k).sort((a, b) => a - b));
+
+const DetailLabels = Object.freeze({
+    get(level, fallback = '') {
+        return _labels.get(level) ?? fallback;
+    },
+    has(level) {
+        return _labels.has(level);
+    },
+    // 必要なら entries/keys/values の読み取りメソッドを用意
+});
+
+const DetailUtils = Object.freeze({
+    levels: _levels, // すでに凍結済みの配列
+
+    labelOf(level, fallback = '') {
+        return _labels.get(level) ?? fallback;
+    },
+
+    parseLabel(label) {
+        return _labelsRev.get(label); // 見つからなければ undefined
+    },
+
+    clamp(level) {
+        if (!Number.isFinite(level)) return _levels[0];
+        if (level <= _levels[0]) return _levels[0];
+        if (level >= _levels[_levels.length - 1]) return _levels[_levels.length - 1];
+        // 刻みに合わせて丸めたい場合（例: 10刻み）
+        // return Math.round(level / 10) * 10;
+        return level;
+    },
+
+    next(level) {
+        const i = _levels.indexOf(level);
+        return i >= 0 && i < _levels.length - 1 ? _levels[i + 1] : level;
+    },
+
+    prev(level) {
+        const i = _levels.indexOf(level);
+        return i > 0 ? _levels[i - 1] : level;
+    },
+
+    // ある詳細度以上か？
+    atLeast(level, min) {
+        return level >= min;
+    },
+
+    atMost(level, max) {
+        return level <= max;
+    },
+
+    getOptions() {
+        return _entries.map(([value, label]) => ({text: label, value}));
+    },
+});

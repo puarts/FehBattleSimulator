@@ -18,18 +18,53 @@ li {
     list-style: none;
 }
 
+.theme-dark .select-btn {
+    display: inline-block;
+    border: 1px solid #4dabf7;   /* 同じ青 */
+    border-radius: 0.4em;
+    background: transparent;     /* 黒背景と馴染ませる */
+    color: #4dabf7;              /* テキスト色も青 */
+    /*font-weight: bold;*/
+    /*padding: 0.4em 1em;*/
+    cursor: pointer;
+    transition: all 0.2s;
+    /*appearance: none;            !* ブラウザ標準の矢印を消す *!*/
+    /*-moz-appearance: none;*/
+    /*-webkit-appearance: none;*/
+    text-align: center;
+    font-size: 1em;
+}
+
+/* hover時：枠を少し明るく */
+.theme-dark .select-btn:hover {
+    border-color: #74c0fc;
+    color: #74c0fc;
+}
+
+/* focus時：アウトラインを青に */
+.theme-dark .select-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(77,171,247,0.5);
+}
+
+/* 選択肢ドロップダウン */
+.theme-dark .select-btn option {
+    background: #000;    /* ドロップダウン背景は黒 */
+    color: #fff;         /* 文字は白 */
+}
+
 /* ラベル全体をクリック可能に */
-.check-btn {
+.theme-dark .check-btn {
     display: inline-flex;
     align-items: center;
     cursor: pointer;
 }
 
-.check-btn input {
+.theme-dark .check-btn input {
     display: none; /* デフォルトチェックボックス非表示 */
 }
 
-.check-btn span {
+.theme-dark .check-btn span {
     display: inline-block;
     /*padding: 0.5em 1em;*/
     border: 1px solid #4dabf7;   /* 明るめの青 */
@@ -41,38 +76,38 @@ li {
 }
 
 /* チェック時に背景を青、文字を黒に反転 */
-.check-btn input:checked + span {
+.theme-dark .check-btn input:checked + span {
     background: #4dabf7;
     color: #000;
 }
 
 /* ホバー時（未チェック時はうっすらハイライト） */
-.check-btn:hover span {
+.theme-dark .check-btn:hover span {
     background: rgba(77, 171, 247, 0.12);
     color: #4dabf7;
     box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25) inset;
 }
 
 /* 押下時のフィードバック */
-.check-btn:active span {
+.theme-dark .check-btn:active span {
     transform: translateY(1px);
 }
 
 /* フォーカス（キーボード操作対応） */
-.check-btn input:focus-visible + span {
+.theme-dark .check-btn input:focus-visible + span {
     outline: 2px solid #4dabf7;
     outline-offset: 2px;
 }
 
 /* チェック済み + ホバーで少し明るく */
-.check-btn input:checked + span:hover {
+.theme-dark .check-btn input:checked + span:hover {
     background: #62b5f8;
     color: #000;
 }
 
 /* 無効状態 */
-.check-btn[aria-disabled="true"] span,
-.check-btn input:disabled + span {
+.theme-dark .check-btn[aria-disabled="true"] span,
+.theme-dark .check-btn input:disabled + span {
     opacity: 0.5;
     cursor: not-allowed;
     box-shadow: none;
@@ -1403,6 +1438,13 @@ td.enemy {
     display: flex;
     align-items: center;
     justify-content: space-between; /* 左右端に分ける */
+
+    font-size: 12px;
+    /*padding: 0.4em 1em;*/
+    line-height: 1.2; /* 共通化 */
+    border: 1px solid #4dabf7;
+    border-radius: 0.4em;
+    font-weight: bold;
 }
 
 .pop-container {

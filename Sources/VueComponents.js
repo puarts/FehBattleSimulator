@@ -1873,6 +1873,8 @@ function initVueComponents() {
         data() {
             return {
                 showsSkill: false,
+                detailLevel: DetailLevel.NORMAL,
+                detailLevelOptions: DetailUtils.getOptions(),
             };
         },
         computed: {
@@ -1899,12 +1901,21 @@ function initVueComponents() {
               <div class="pop-header">
                 <div v-if="hasResult">{{ atkName }} vs {{ defName }}</div>
                 <div v-else>結果はまだありません</div>
-                <!-- 閉じるボタン -->
                 <div>
+                  <!-- 詳細度 -->
+                  <select v-model="detailLevel" class="select-btn">
+                    <option v-for="option in detailLevelOptions" 
+                            :key="option.value" 
+                            :value="option.value">
+                      {{ option.text }}
+                    </option>
+                  </select>
+                  <!-- スキル表示 -->
                   <label class="check-btn">
                     <input type="checkbox" v-model="showsSkill" />
                     <span>スキル表示</span>
                   </label>
+                  <!-- 閉じるボタン -->
                   <button class="pop-close-btn" @click="onClosed">×</button>
                 </div>
               </div>
@@ -1922,6 +1933,7 @@ function initVueComponents() {
                     :node="n"
                     :default-open="true"
                     :child-default-open="true"
+                    :detail-level="detailLevel"
                   />
                 </div>
 
@@ -1945,11 +1957,20 @@ function initVueComponents() {
             node: {type: GroupLog, required: true}, // GroupLog<SkillLogContent>
             defaultOpen: {type: Boolean, default: true},
             childDefaultOpen: {type: Boolean, default: false},
-            logLevel: {type: Number, default: LoggerBase.LogLevel.INFO},
             isChild: {type: Boolean, default: false},
+            detailLevel: {type: Number, default: DetailLevel.NORMAL},
         },
         data() {
-            return {open: this.defaultOpen};
+            return {
+                open: this.defaultOpen,
+                detailToLevel: new Map([
+                    [DetailLevel.SIMPLE, LoggerBase.LogLevel.INFO],
+                    [DetailLevel.NORMAL, LoggerBase.LogLevel.INFO],
+                    [DetailLevel.DETAIL, LoggerBase.LogLevel.DEBUG],
+                    [DetailLevel.VERBOSE, LoggerBase.LogLevel.TRACE],
+                    [DetailLevel.FULL, LoggerBase.LogLevel.ALL],
+                ]),
+            };
         },
         computed: {
             hasChildren() {
@@ -1958,9 +1979,13 @@ function initVueComponents() {
             levelClass() {
                 return this.node.levelStr ? ('log-' + this.node.levelStr.toLowerCase()) : '';
             },
+            // SkillLogContent
             content() {
                 return this.node.log || null;
-            } // SkillLogContent
+            },
+            logLevel() {
+                return this.detailToLevel.get(this.detailLevel) ?? LoggerBase.LogLevel.INFO;
+            },
         },
         methods: {
             setOpenAll(val) {
@@ -1996,6 +2021,7 @@ function initVueComponents() {
                 :default-open="childDefaultOpen"
                 :child-default-open="childDefaultOpen"
                 :is-child="true"
+                :detail-level="detailLevel"
               />
             </div>
           </div>
