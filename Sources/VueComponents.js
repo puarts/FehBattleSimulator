@@ -1933,13 +1933,13 @@ function initVueComponents() {
                 <div>
                   <input
                     v-model="logFilterText"
-                    type="text"
+                    type="search"
                     class="input filter-input input-btn"
                     placeholder="ログをフィルタ..."
                   />
                   <input
                     v-model="groupFilterText"
-                    type="text"
+                    type="search"
                     class="input filter-input input-btn"
                     placeholder="グループをフィルタ..."
                   />
