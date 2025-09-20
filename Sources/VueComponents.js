@@ -1581,9 +1581,6 @@ function initVueComponents() {
             isFiltering() {
                 return this.filterText && this.filterText.trim() !== '';
             },
-            resetFilter() {
-                this.filterText = '';
-            },
             onItemDragStart(index) {
                 this.draggedIndex = index;
             },
@@ -1666,12 +1663,7 @@ function initVueComponents() {
             </div>
 
             <span>
-              <input type="text" class="box-common name-filter" v-model="filterText" placeholder="名前で絞り込み" />
-              <button type="reset"
-                      class="icon-button load-button" 
-                      @click="resetFilter">
-                <i class="fa fa-eraser" aria-hidden="true"></i>
-              </button>
+              <input type="search" class="box-common name-filter" v-model="filterText" placeholder="名前で絞り込み" />
             </span>
             <table class="unit-dialog">
               <thead>
