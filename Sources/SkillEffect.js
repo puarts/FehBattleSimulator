@@ -719,6 +719,12 @@ class CountIfUnitsNode extends PositiveNumberNode {
 
 const COUNT_IF_UNITS_NODE = (unitsNode, predNode) => new CountIfUnitsNode(unitsNode, predNode);
 
+/**
+ * @param {UnitsNode} units
+ * @param {BoolNode} pred
+ * @returns {GtNode}
+ * @constructor
+ */
 const EXISTS_UNITS = (units, pred) => GT_NODE(COUNT_UNITS_NODE(FILTER_UNITS_NODE(units, pred)), 0);
 
 /**

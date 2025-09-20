@@ -128,7 +128,9 @@
     );
     // Decreases Spd difference necessary for unit to make a follow-up attack by 10 during combat.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
-        DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE(10),
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE(10),
+        ),
     ));
     // Cannot move through spaces within 2 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
     CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
@@ -386,7 +388,7 @@
     // as a trigger condition (in addition to existing conditions).
     CAN_TRANSFORM_AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
         EXISTS_UNITS(
-            TARGETS_ALLIES_WITHIN_2_SPACES_NODE,
+            TARGETS_ALLIES_WITHIN_2_SPACES_NODE(),
             HAS_DIFFERENT_TITLE_AMONG_TARGET_AND_SKILL_OWNER_NODE
         ),
     );
