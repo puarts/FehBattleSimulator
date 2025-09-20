@@ -1564,6 +1564,13 @@ td.enemy {
     font-weight: bold;
 }
 
+.precombat-result {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.1em;
+    margin: 0.2em 0em 0.2em 0em;
+}
+
 .attack-result {
     border: 1px solid #ccc;
     border-radius: 4px;

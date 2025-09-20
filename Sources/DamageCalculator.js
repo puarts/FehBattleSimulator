@@ -85,6 +85,7 @@ class CombatResult extends DamageCalcResult {
 
         this.preCombatDamage = 0;
         this.preCombatDamageWithOverkill = 0;
+        this.wasPrecombatSpecialActivated = false;
 
         this.atkUnitDamageToEnemyAfterBeginningOfCombat = 0;
         this.defUnitDamageToEnemyAfterBeginningOfCombat = 0;
@@ -104,11 +105,19 @@ class CombatResult extends DamageCalcResult {
         this.strikeResults = [];
 
         /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
+        this.beforeCombatSkillLogger = new GroupLogger();
+
+        /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
         this.skillLogger = new GroupLogger();
     }
 
     setPreCombatDamage(damage) {
         this.preCombatDamage = damage;
+        return this;
+    }
+
+    setWasPrecombatSpecialActivated(activated) {
+        this.wasPrecombatSpecialActivated = activated;
         return this;
     }
 
@@ -586,8 +595,23 @@ class DamageCalcEnv {
     /**
      * @returns {GroupLogger<NodeEnv.SkillLogContent>}
      */
+    getBeforeCombatLogger() {
+        return this.combatResult.beforeCombatSkillLogger;
+    }
+
+    /**
+     * @returns {GroupLogger<NodeEnv.SkillLogContent>}
+     */
     getCombatLogger() {
         return this.combatResult.skillLogger;
+    }
+
+    withBeforeCombatPhaseGroup(name, fn) {
+        this.getBeforeCombatLogger().withGroup(
+            LoggerBase.LogLevel.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
+                return fn();
+            }
+        );
     }
 
     withCombatPhaseGroup(name, fn) {
@@ -604,6 +628,13 @@ class DamageCalcEnv {
                 return fn();
             }
         );
+    }
+
+    applyBeforeCombatSkill(name, atkUnit, defUnit, fn, thisArg) {
+        this.withBeforeCombatPhaseGroup(name, () => {
+            fn.call(thisArg, atkUnit, defUnit, this);
+            fn.call(thisArg, defUnit, atkUnit, this);
+        });
     }
 
     applySkill(name, atkUnit, defUnit, fn, thisArg) {

@@ -1879,8 +1879,17 @@ function initVueComponents() {
             atkName: vm => vm.combatResult?.atkUnit?.name || '',
             defName: vm => vm.combatResult?.defUnit?.name || '',
             precombatDamage: vm => vm.combatResult?.preCombatDamage ?? 0,
+            wasPrecombatSpecialActivated: vm => vm.combatResult?.wasPrecombatSpecialActivated ?? false,
             attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? [],
             skillCheckboxId: vm => `skill-checkbox-${vm._uid}`,
+            beforeCombatRootChildren() {
+                const logger = this.combatResult.beforeCombatSkillLogger;
+                if (this.groupFilterText) {
+                    const pred = node => node.isGroup && node.matches(this.groupFilterText);
+                    return logger.filteredRoot(pred)?.children ?? [];
+                }
+                return logger.rootLog.children;
+            },
             rootChildren() {
                 const logger = this.combatResult.skillLogger;
                 if (this.groupFilterText) {
@@ -1947,7 +1956,19 @@ function initVueComponents() {
               </div>
 
               <div v-if="hasResult" class="pop-container">
-                <div class="summary">
+                <div v-if="showsSkillLogs">
+                  <log-node 
+                    v-for="(n, i) in beforeCombatRootChildren"
+                    :key="i"
+                    :node="n"
+                    :default-open="true"
+                    :child-default-open="true"
+                    :detail-level="detailLevel"
+                    :log-filter-text="logFilterText"
+                  />
+                </div>
+                
+                <div v-if="wasPrecombatSpecialActivated" class="precombat-result">
                   <div>戦闘前ダメージ: {{ precombatDamage }}</div>
                 </div>
                 

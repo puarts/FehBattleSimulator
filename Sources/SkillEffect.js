@@ -5364,7 +5364,7 @@ class GrantsSpecialCooldownCountMinusOnTargetAtStartOfTurnNode extends FromPosit
         let n = this.evaluateChildren(env);
         // TODO: battleContextに設定するように修正するか検討する
         unit.reserveToReduceSpecialCount(n);
-        env.debug(`${unit.nameWithGroup}は奥義発動カウント-${n}を予約`);
+        env.info(`${unit.nameWithGroup}は奥義発動カウント-${n}を予約`);
         return super.evaluate(env);
     }
 }
@@ -5398,7 +5398,7 @@ class InflictsSpecialCooldownCountPlusNOnTargetAtStartOfTurnNode extends FromPos
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.reserveToIncreaseSpecialCount(n);
-        env.debug(`${unit.nameWithGroup}は奥義発動カウント+${n}を予約`);
+        env.info(`${unit.nameWithGroup}は奥義発動カウント+${n}を予約`);
         return super.evaluate(env);
     }
 }
