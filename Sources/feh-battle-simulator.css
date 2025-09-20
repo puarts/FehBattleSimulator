@@ -18,6 +18,138 @@ li {
     list-style: none;
 }
 
+.theme-dark .select-btn {
+    display: inline-block;
+    border: 1px solid #4dabf7; /* 同じ青 */
+    border-radius: 0.4em;
+    background: transparent; /* 黒背景と馴染ませる */
+    color: #4dabf7; /* テキスト色も青 */
+    /*font-weight: bold;*/
+    /*padding: 0.4em 1em;*/
+    cursor: pointer;
+    transition: all 0.2s;
+    /*appearance: none;            !* ブラウザ標準の矢印を消す *!*/
+    /*-moz-appearance: none;*/
+    /*-webkit-appearance: none;*/
+    text-align: center;
+    font-size: 1em;
+}
+
+/* hover時：枠を少し明るく */
+.theme-dark .select-btn:hover {
+    border-color: #74c0fc;
+    color: #74c0fc;
+}
+
+/* focus時：アウトラインを青に */
+.theme-dark .select-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.5);
+}
+
+/* 選択肢ドロップダウン */
+.theme-dark .select-btn option {
+    background: #000; /* ドロップダウン背景は黒 */
+    color: #fff; /* 文字は白 */
+}
+
+/* ラベル全体をクリック可能に */
+.theme-dark .check-btn {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.theme-dark .check-btn input {
+    display: none; /* デフォルトチェックボックス非表示 */
+}
+
+.theme-dark .check-btn span {
+    display: inline-block;
+    /*padding: 0.5em 1em;*/
+    border: 1px solid #4dabf7; /* 明るめの青 */
+    border-radius: 0.4em;
+    background: transparent; /* 黒背景と馴染ませる */
+    color: #4dabf7; /* 文字も青 */
+    /*font-weight: bold;*/
+    transition: all 0.2s;
+}
+
+/* チェック時に背景を青、文字を黒に反転 */
+.theme-dark .check-btn input:checked + span {
+    background: #4dabf7;
+    color: #000;
+}
+
+/* ホバー時（未チェック時はうっすらハイライト） */
+.theme-dark .check-btn:hover span {
+    background: rgba(77, 171, 247, 0.12);
+    color: #4dabf7;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25) inset;
+}
+
+/* 押下時のフィードバック */
+.theme-dark .check-btn:active span {
+    transform: translateY(1px);
+}
+
+/* フォーカス（キーボード操作対応） */
+.theme-dark .check-btn input:focus-visible + span {
+    outline: 2px solid #4dabf7;
+    outline-offset: 2px;
+}
+
+/* チェック済み + ホバーで少し明るく */
+.theme-dark .check-btn input:checked + span:hover {
+    background: #62b5f8;
+    color: #000;
+}
+
+/* 無効状態 */
+.theme-dark .check-btn[aria-disabled="true"] span,
+.theme-dark .check-btn input:disabled + span {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* 入力欄 */
+.theme-dark .input-btn {
+    display: inline-block;
+    border: 1px solid #4dabf7; /* 明るめの青 */
+    border-radius: 0.4em;
+    background: transparent; /* 黒背景と馴染ませる */
+    color: #4dabf7; /* テキストも青系 */
+    padding: 0.3em 0.6em;
+    font-size: 0.95em;
+    transition: all 0.2s;
+}
+
+/* プレースホルダ */
+.theme-dark .input-btn::placeholder {
+    color: rgba(77, 171, 247, 0.6); /* 少し薄い青 */
+}
+
+/* フォーカス時 */
+.theme-dark .input-btn:focus {
+    outline: none;
+    border-color: #62b5f8;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.25);
+    background: rgba(77, 171, 247, 0.08);
+}
+
+/* ホバー時（フォーカスしていない場合） */
+.theme-dark .input-btn:hover {
+    background: rgba(77, 171, 247, 0.12);
+}
+
+/* 無効状態 */
+.theme-dark .input-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
 .tabs {
     overflow: hidden;
 }
@@ -506,52 +638,52 @@ input[class="fehButton"]:not(:checked) + label {
 }
 
 /* Logger */
-.log-simple {
+.damage-log-simple {
 }
 
-.log-error {
+.damage-log-error {
     font-size: 12px;
     color: red;
 }
 
-.log-warn {
+.damage-log-warn {
     /*font-size: 12px;*/
     /*color: #ffa500;*/
     color: #ff6600;
 }
 
-.log-info {
+.damage-log-info {
     font-size: 10px;
     color: #000000;
     width: 100%;
 }
 
-.log-debug {
+.damage-log-debug {
     font-size: 10px;
     color: #666666;
 }
 
-.log-trace {
+.damage-log-trace {
     font-size: 10px;
     color: #777777;
 }
 
-.log-trace2 {
+.damage-log-trace2 {
     font-size: 10px;
     color: #888888;
 }
 
-.log-trace3 {
+.damage-log-trace3 {
     font-size: 10px;
     color: #999999;
 }
 
-.log-trace4 {
+.damage-log-trace4 {
     font-size: 10px;
     color: #aaaaaa;
 }
 
-.log-trace5 {
+.damage-log-trace5 {
     font-size: 10px;
     color: #bbbbbb;
 }
@@ -637,6 +769,7 @@ tr.attackInfo {
     border: 10px solid;
     padding: 0px;
     margin: 0px;
+    font-variant-numeric: tabular-nums;
 }
 
 td.ally {
@@ -1313,7 +1446,6 @@ td.enemy {
 
 #info-pop:popover-open {
     width: 500px;
-    /*height: 500px;*/
     position: fixed;
     position-anchor: --info-pop-anchor;
     top: anchor(top);
@@ -1324,9 +1456,74 @@ td.enemy {
 
     background: rgba(0, 0, 0, 0.8); /* 黒＋80%不透明 */
     color: #fff; /* 文字は白で読みやすく */
-    padding: 0.5em;
+    padding: 0;
     border-radius: 0.5em;
     /*max-width: 240px;*/
+}
+
+.pop {
+}
+
+.pop-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.3em;
+    /*background: rgba(0, 0, 0, .9); !* 透け防止に背景を再指定 *!*/
+    backdrop-filter: saturate(120%) blur(2px); /* お好みで */
+    /*border-bottom: 1px solid rgba(255, 255, 255, .12);*/
+    /* 任意: ヘッダー内で右上に×などを置く */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 左右端に分ける */
+
+    font-size: 1em;
+    line-height: 1.3;
+}
+
+.pop-container {
+    /*flex: 1 1 auto;   !* 余白を全部ここに配分 *!*/
+    /*min-height: 0;    !* ← これがないとFlex内でスクロールが効かないことがある *!*/
+    /*height: 100%;*/
+    overflow: auto;
+    /*padding: .75rem;*/
+    /*max-height: 1000px;*/
+    max-height: 90vh;
+    margin: 0.3em;
+}
+
+/* --- Firefox 用 --- */
+/*#info-pop:popover-open {*/
+/*    !*scrollbar-color: rgba(0, 256, 256, .55) rgba(0, 0, 0, .25);*!*/
+/*    scrollbar-color: rgba(0, 256, 256, .55) rgba(0, 0, 0, .8);*/
+/*    scrollbar-width: thin;*/
+/*}*/
+
+/* --- Chrome/Edge/Safari 用 --- */
+.pop-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.pop-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, .8);
+    margin: 0;
+    border-radius: 0.5em;
+}
+
+.pop-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 256, 256, .55);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.pop-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 256, 256, .7);
+}
+
+.pop-container::-webkit-scrollbar-corner {
+    background: rgba(0, 256, 256, .25);
 }
 
 .damage-calc-result {
@@ -1337,13 +1534,27 @@ td.enemy {
     font-variant-numeric: tabular-nums; /* 桁を揃える */
 }
 
+.damage-calc-result-header {
+    position: sticky;
+    inset: 0;
+    top: 0; /* 上端に吸着 */
+    z-index: 1; /* 本文より前面に */
+    background: rgba(0, 0, 0, .9); /* 透け防止に背景を再指定 */
+    backdrop-filter: saturate(120%) blur(2px); /* お好みで */
+    padding: .5em .75em;
+    display: flex;
+    align-items: center;
+    gap: .5em;
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
 .pop-close-btn {
-    position: absolute;
-    top: 4px;
-    right: 4px;
+    /*position: absolute;*/
+    /*top: 4px;*/
+    /*right: 4px;*/
     border: none;
     background: transparent;
-    font-size: 18px;
+    /*!*font-size: 14px;*!*/
     cursor: pointer;
     color: #ffffff;
 }
@@ -1351,6 +1562,13 @@ td.enemy {
 .pop-close-btn:hover {
     color: #ffffff;
     font-weight: bold;
+}
+
+.precombat-result {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.1em;
+    margin: 0.2em 0em 0.2em 0em;
 }
 
 .attack-result {
@@ -1415,4 +1633,208 @@ td.enemy {
 
 .damage-calc-info-icon:hover {
     color: #0056b3; /* 濃い青に変化 */
+}
+
+.log-level {
+    color: #000;
+    font-family: monospace;
+    border: 1px solid;
+    border-radius: 0.3em;
+    width: 6ch; /* 6文字分の幅（ch = 0 の幅を基準） */
+    display: inline-block; /* 幅を持たせるため */
+    text-align: left; /* 左寄せ（デフォルトだけど明示しておくと安心） */
+}
+
+.log-name {
+    color: #000;
+    font-family: monospace;
+    border: 1px solid;
+    border-radius: 0.3em;
+    /*width: 6ch; !* 6文字分の幅（ch = 0 の幅を基準） *!*/
+    display: inline-block; /* 幅を持たせるため */
+    text-align: left; /* 左寄せ（デフォルトだけど明示しておくと安心） */
+}
+
+.log-level.debug {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* 共通: ログレベルごとのクラス */
+.log-fatal {
+    color: var(--log-fatal-fg);
+    background: var(--log-fatal-bg);
+}
+
+.log-error {
+    color: var(--log-error);
+}
+
+.log-warn {
+    color: var(--log-warn);
+}
+
+.log-notice {
+    color: var(--log-notice);
+}
+
+.log-info {
+    color: var(--log-info);
+}
+
+.log-debug {
+    color: var(--log-debug);
+}
+
+.log-trace {
+    color: var(--log-trace1);
+}
+
+.log-trace2 {
+    color: var(--log-trace2);
+}
+
+.log-trace3 {
+    color: var(--log-trace3);
+}
+
+.log-trace4 {
+    color: var(--log-trace4);
+}
+
+.log-trace5 {
+    color: var(--log-trace5);
+}
+
+.log-tag {
+    /*width: 10ch;*/
+    color: #000;
+    border: 1px solid;
+    border-radius: 0.3em;
+}
+
+.log-error-tag {
+    background-color: var(--log-error);
+}
+
+.log-warn-tag {
+    background-color: var(--log-warn);
+}
+
+.log-notice-tag {
+    background-color: var(--log-notice);
+}
+
+.log-info-tag {
+    background-color: var(--log-info);
+}
+
+.log-debug-tag {
+    background-color: var(--log-debug);
+}
+
+.log-trace-tag {
+    background-color: var(--log-trace1);
+}
+
+.log-trace2-tag {
+    background-color: var(--log-trace2);
+}
+
+.log-trace3-tag {
+    background-color: var(--log-trace3);
+}
+
+.log-trace4-tag {
+    background-color: var(--log-trace4);
+}
+
+.log-trace5-tag {
+    background-color: var(--log-trace5);
+}
+
+/* ライトテーマ（白背景用） */
+.theme-light {
+    --log-notice: #1976d2;
+    --log-info: #2e7d32;
+    --log-debug: #6b7280;
+    --log-warn: #b45309;
+    --log-error: #b91c1c;
+    --log-fatal-fg: #fff;
+    --log-fatal-bg: #7f1d1d;
+
+    /* TRACE系: 濃い→薄いグレー */
+    --log-trace1: #666666;
+    --log-trace2: #888888;
+    --log-trace3: #aaaaaa;
+    --log-trace4: #cccccc;
+    --log-trace5: #e0e0e0;
+}
+
+/* ダークテーマ（黒背景用） */
+.theme-dark {
+    /*--log-notice: #64b5f6;*/
+    --log-notice: #88ffff;
+    --log-info: #81c784;
+    --log-debug: #cccccc;
+    --log-warn: #f59e0b;
+    --log-error: #f87171;
+    --log-fatal-fg: #fff;
+    --log-fatal-bg: #991b1b;
+
+    /* TRACE系: 明るい→暗いグレー */
+    --log-trace1: #999999;
+    --log-trace2: #888888;
+    --log-trace3: #777777;
+    --log-trace4: #666666;
+    --log-trace5: #555555;
+}
+
+.log-tree {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.log-item {
+    margin-left: 1em;
+}
+
+.log-line {
+    display: flex;
+    align-items: center;
+    gap: .5em;
+}
+
+.log-toggle, .log-toggle-spacer {
+    width: 1em;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    color: #aaa;
+    font-size: .95em;
+}
+
+.log-toggle-spacer {
+    cursor: default;
+}
+
+/*アニメーション*/
+@keyframes glow-bright {
+    0% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.5);
+    }
+    /* 明るく */
+    100% {
+        filter: brightness(1);
+    }
+}
+
+.icon-glow {
+    animation: glow-bright 1s ease;
 }

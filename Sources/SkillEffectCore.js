@@ -102,13 +102,6 @@ class SkillEffectHooks {
      * @return {*[]}
      */
     evaluate(skillId, env) {
-        let skills = this.getSkills(skillId);
-        if (skills.length > 0) {
-            this.#skillNameLog(skillId, env);
-            if (skills.length >= 2) {
-                env?.info(`登録スキル数: ${skills.length}`);
-            }
-        }
         if (String(skillId).startsWith('custom_')) {
             let str = skillId;
             let firstUnderscore = str.indexOf('_');
@@ -122,10 +115,29 @@ class SkillEffectHooks {
                 CustomSkill.registeredSkillIds.add(skillId);
             }
         }
-        return skills.map(skillNode => skillNode.evaluate(env));
+        let skills = this.getSkills(skillId);
+        if (skills.length === 0) {
+            return [];
+        }
+        const hasMultipleSkills = skills.length >= 2;
+
+        const evaluateAll = () => {
+            if (hasMultipleSkills) {
+                env?.trace(`登録スキル数: ${skills.length}`);
+            }
+            return skills.map(skillNode => skillNode.evaluate(env));
+        };
+        const logger = env?.groupLogger;
+
+        if (!logger) {
+            return evaluateAll();
+        }
+
+        const skillLogContent = this.#getSkillNameLogContent(skillId, env);
+        return logger.withGroup(LoggerBase.LogLevel.NOTICE, skillLogContent, evaluateAll);
     }
 
-    #skillNameLog(skillId, env) {
+    #getSkillNameLogContent(skillId, env) {
         const str = `${skillId}`;
         const underscoreIndex = str.indexOf("_");
 
@@ -173,7 +185,7 @@ class SkillEffectHooks {
         } else {
             name = g_appData.skillDatabase?.findSkillInfoByDict(suffix)?.name ?? `${skillId}`;
         }
-        env?.info(`${env.skillOwner.nameWithGroup}の${type}${name}を評価`);
+        return new NodeEnv.SkillLogContent(env?.name, `${env?.skillOwner?.nameWithGroup}の${type}${name}を評価`);
     }
 
     /**
@@ -182,9 +194,25 @@ class SkillEffectHooks {
      * @returns {*[]}
      */
     evaluateWithUnit(unit, env) {
-        // TODO: 付与されたステータスも入れるようにする
-        // 1つのskillIdに複数の効果が入るのでflatで平らにする
-        return Array.from(unit.enumerateSkills()).map(skillId => this.evaluate(skillId, env)).flat();
+        const skills = Array.from(unit.enumerateSkills());
+        if (skills.length === 0) return [];
+
+        // スキル評価の本体処理を明確な名前に変更
+        const evaluateAllSkills =
+            () => skills.flatMap(skillId => this.evaluate(skillId, env));
+
+        // ロギングに用いる値を導入して可読性を向上
+        const logger = env?.groupLogger;
+        if (!logger) {
+            return evaluateAllSkills();
+        }
+
+        const logContent = new NodeEnv.SkillLogContent('', `${unit.nameWithGroup}のスキルを評価`);
+        return logger.withGroup(
+            LoggerBase.LogLevel.NOTICE,
+            logContent,
+            evaluateAllSkills
+        );
     }
 
     /**
@@ -949,6 +977,16 @@ const MULT_MAX_NODE = (mult1, mult2, max) => ENSURE_MAX_NODE(MULT_NODE(mult1, mu
  */
 const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
     ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(mult1, mult2), add), max);
+
+/**
+ * @param add
+ * @param mult1
+ * @param mult2
+ * @returns {NumberNode}
+ * @constructor
+ */
+const ADD_MULT_MAX_NODE = (add, mult1, mult2) => ADD_NODE(add, MULT_NODE(mult1, mult2));
+
 /**
  * @param add1
  * @param add2
@@ -997,7 +1035,7 @@ class SumNode extends NumberOperationNode {
     evaluate(env) {
         let evaluated = super.evaluateChildren(env);
         let result = evaluated.reduce((a, b) => a + b, 0);
-        env?.trace(`[SumNode] max [${[evaluated]}] = ${result}`);
+        env?.trace(`[SumNode] sum [${[evaluated]}] = ${result}`);
         return result;
     }
 }

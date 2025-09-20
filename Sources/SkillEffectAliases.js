@@ -4,20 +4,20 @@ const UNITS_STAT_NODE = i =>
         UNITS_STAT_DURING_COMBAT_NODE(i),
         UNITS_STAT_AT_START_OF_COMBAT_NODE(i),
     );
-const UNITS_ATK_NODE = UNITS_STAT_NODE(STATUS_INDEX.Atk);
-const UNITS_SPD_NODE = UNITS_STAT_NODE(STATUS_INDEX.Spd);
-const UNITS_DEF_NODE = UNITS_STAT_NODE(STATUS_INDEX.Def);
-const UNITS_RES_NODE = UNITS_STAT_NODE(STATUS_INDEX.Res);
+const UNITS_ATK_NODE = UNITS_STAT_NODE(StatusIndex.ATK);
+const UNITS_SPD_NODE = UNITS_STAT_NODE(StatusIndex.SPD);
+const UNITS_DEF_NODE = UNITS_STAT_NODE(StatusIndex.DEF);
+const UNITS_RES_NODE = UNITS_STAT_NODE(StatusIndex.RES);
 
 const FOES_STAT_NODE = i =>
     COND_OP(IS_IN_COMBAT_PHASE_NODE,
         FOES_STAT_DURING_COMBAT_NODE(i),
         FOES_STAT_AT_START_OF_COMBAT_NODE(i),
     );
-const FOES_ATK_NODE = FOES_STAT_NODE(STATUS_INDEX.Atk);
-const FOES_SPD_NODE = FOES_STAT_NODE(STATUS_INDEX.Spd);
-const FOES_DEF_NODE = FOES_STAT_NODE(STATUS_INDEX.Def);
-const FOES_RES_NODE = FOES_STAT_NODE(STATUS_INDEX.Res);
+const FOES_ATK_NODE = FOES_STAT_NODE(StatusIndex.ATK);
+const FOES_SPD_NODE = FOES_STAT_NODE(StatusIndex.SPD);
+const FOES_DEF_NODE = FOES_STAT_NODE(StatusIndex.DEF);
+const FOES_RES_NODE = FOES_STAT_NODE(StatusIndex.RES);
 
 const UNITS_EVAL_SPD_NODE =
     COND_OP(IS_IN_COMBAT_PHASE_NODE,
@@ -204,7 +204,7 @@ const RESTORE_X_HP_LIKE_BREATH_OF_LIFE_4_NODE =
             new RestoresXHPToTargetAsTargetsCombatBeginsNode(READ_NUM_NODE),
             // (triggers after effects that deal damage as combat begins;
             new EnsureMaxNode(
-                // if unit's Def > foe's Def,
+                // if unit's DEF > foe's DEF,
                 COND_OP(GT_NODE(UNITS_EVAL_DEF_DURING_COMBAT_NODE, FOES_EVAL_DEF_DURING_COMBAT_NODE),
                     // X = 20% of unit's max HP + difference between stats × 4; otherwise,
                     ADD_NODE(
@@ -255,7 +255,7 @@ const BOOST_3_NODE =
         // At start of combat,
         // if unit's HP ≥ 50%,
         IF_NODE(new IsUnitsHpGteNPercentAtStartOfCombatNode(50),
-            // grants Spd/Res+7 to unit during combat,
+            // grants SPD/RES+7 to unit during combat,
             grantsNode,
             // and also,
             // if unit is within 2 spaces of an ally with HP ≥ 50%,
@@ -268,28 +268,28 @@ const BOOST_3_NODE =
 
 /// ステータス
 const TARGETS_STAT_ON_MAP = index => new TargetsStatOnMapNode(index);
-const TARGETS_ATK_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Atk);
-const TARGETS_SPD_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Spd);
-const TARGETS_DEF_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Def);
-const TARGETS_RES_ON_MAP = TARGETS_STAT_ON_MAP(STATUS_INDEX.Res);
+const TARGETS_ATK_ON_MAP = TARGETS_STAT_ON_MAP(StatusIndex.ATK);
+const TARGETS_SPD_ON_MAP = TARGETS_STAT_ON_MAP(StatusIndex.SPD);
+const TARGETS_DEF_ON_MAP = TARGETS_STAT_ON_MAP(StatusIndex.DEF);
+const TARGETS_RES_ON_MAP = TARGETS_STAT_ON_MAP(StatusIndex.RES);
 
 const TARGETS_EVAL_STAT_ON_MAP = index => new TargetsEvalStatOnMapNode(index);
-const TARGETS_EVAL_ATK_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Atk);
-const TARGETS_EVAL_SPD_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Spd);
-const TARGETS_EVAL_DEF_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Def);
-const TARGETS_EVAL_RES_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(STATUS_INDEX.Res);
+const TARGETS_EVAL_ATK_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(StatusIndex.ATK);
+const TARGETS_EVAL_SPD_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(StatusIndex.SPD);
+const TARGETS_EVAL_DEF_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(StatusIndex.DEF);
+const TARGETS_EVAL_RES_ON_MAP = TARGETS_EVAL_STAT_ON_MAP(StatusIndex.RES);
 
 const SKILL_OWNERS_STAT_ON_MAP = index => new SkillOwnersStatOnMapNode(index);
-const SKILL_OWNERS_ATK_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Atk);
-const SKILL_OWNERS_SPD_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Spd);
-const SKILL_OWNERS_DEF_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Def);
-const SKILL_OWNERS_RES_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(STATUS_INDEX.Res);
+const SKILL_OWNERS_ATK_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(StatusIndex.ATK);
+const SKILL_OWNERS_SPD_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(StatusIndex.SPD);
+const SKILL_OWNERS_DEF_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(StatusIndex.DEF);
+const SKILL_OWNERS_RES_ON_MAP = SKILL_OWNERS_STAT_ON_MAP(StatusIndex.RES);
 
 const SKILL_OWNERS_EVAL_STAT_ON_MAP = index => new SkillOwnersEvalStatOnMapNode(index);
-const SKILL_OWNERS_EVAL_ATK_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(STATUS_INDEX.Atk);
-const SKILL_OWNERS_EVAL_SPD_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(STATUS_INDEX.Spd);
-const SKILL_OWNERS_EVAL_DEF_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(STATUS_INDEX.Def);
-const SKILL_OWNERS_EVAL_RES_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(STATUS_INDEX.Res);
+const SKILL_OWNERS_EVAL_ATK_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(StatusIndex.ATK);
+const SKILL_OWNERS_EVAL_SPD_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(StatusIndex.SPD);
+const SKILL_OWNERS_EVAL_DEF_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(StatusIndex.DEF);
+const SKILL_OWNERS_EVAL_RES_ON_MAP = SKILL_OWNERS_EVAL_STAT_ON_MAP(StatusIndex.RES);
 
 /// 戦闘開始時ステータスの比較
 const UNITS_STAT_GT_FOES_STAT_AT_START_OF_COMBAT_NODE =
@@ -301,7 +301,7 @@ const DIFFERENCE_BETWEEN_STATS_AT_START_OF_COMBAT_NODE = index =>
         FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(index)
     );
 const DIFFERENCE_BETWEEN_RES_STATS_AT_START_OF_COMBAT_NODE =
-    DIFFERENCE_BETWEEN_STATS_AT_START_OF_COMBAT_NODE(STATUS_INDEX.Res);
+    DIFFERENCE_BETWEEN_STATS_AT_START_OF_COMBAT_NODE(StatusIndex.RES);
 
 /// 戦闘中ステータスの比較
 /**
@@ -338,16 +338,16 @@ const DIFFERENCE_BETWEEN_RES_STATS_NODE =
 
 /// 強化(バフ)
 const TARGET_STAT_BONUS_NODE = index => new TargetsBonusNode(index);
-const TARGET_ATK_BONUS_NODE = TARGET_STAT_BONUS_NODE(STATUS_INDEX.Atk);
-const TARGET_SPD_BONUS_NODE = TARGET_STAT_BONUS_NODE(STATUS_INDEX.Spd);
-const TARGET_DEF_BONUS_NODE = TARGET_STAT_BONUS_NODE(STATUS_INDEX.Def);
-const TARGET_RES_BONUS_NODE = TARGET_STAT_BONUS_NODE(STATUS_INDEX.Res);
+const TARGET_ATK_BONUS_NODE = TARGET_STAT_BONUS_NODE(StatusIndex.ATK);
+const TARGET_SPD_BONUS_NODE = TARGET_STAT_BONUS_NODE(StatusIndex.SPD);
+const TARGET_DEF_BONUS_NODE = TARGET_STAT_BONUS_NODE(StatusIndex.DEF);
+const TARGET_RES_BONUS_NODE = TARGET_STAT_BONUS_NODE(StatusIndex.RES);
 
 const FOES_STAT_BONUS_NODE = index => new FoesBonusNode(index);
-const FOES_ATK_BONUS_NODE = FOES_STAT_BONUS_NODE(STATUS_INDEX.Atk);
-const FOES_SPD_BONUS_NODE = FOES_STAT_BONUS_NODE(STATUS_INDEX.Spd);
-const FOES_DEF_BONUS_NODE = FOES_STAT_BONUS_NODE(STATUS_INDEX.Def);
-const FOES_RES_BONUS_NODE = FOES_STAT_BONUS_NODE(STATUS_INDEX.Res);
+const FOES_ATK_BONUS_NODE = FOES_STAT_BONUS_NODE(StatusIndex.ATK);
+const FOES_SPD_BONUS_NODE = FOES_STAT_BONUS_NODE(StatusIndex.SPD);
+const FOES_DEF_BONUS_NODE = FOES_STAT_BONUS_NODE(StatusIndex.DEF);
+const FOES_RES_BONUS_NODE = FOES_STAT_BONUS_NODE(StatusIndex.RES);
 
 const NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE =
     SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
@@ -474,7 +474,7 @@ const IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_3_SPACES_OF_AN_ALLY = (...nodes) =>
     IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, new IsUnitWithinNSpacesOfUnitsAllyNode(3, TRUE_NODE)), ...nodes);
 
 /**
- * Calculates damage using the lower of foe's Def or Res.
+ * Calculates damage using the lower of foe's DEF or RES.
  * @param skillId
  * @constructor
  */
@@ -554,7 +554,7 @@ function setBriarSave(skillId, predNode, statsNode,
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // If foe's Range = 2,
         IF_NODE(predNode,
-            // grants Atk/Def+4 to unit and
+            // grants ATK/DEF+4 to unit and
             GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(statsNode),
             // reduces damage from foe's first attack by 5 during combat
             // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
@@ -646,7 +646,7 @@ function enablesCantoAllyNM(skillId, n, m) {
 
 const DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS = (percentage, statNode) =>
     new AppliesSkillEffectsAfterStatusFixedNode(
-        // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
+        // deals damage = 20% of unit's SPD (excluding area-of-effect Specials),
         new TargetDealsDamageExcludingAoeSpecialsNode(MULT_TRUNC_NODE(percentage / 100, statNode)),
     );
 
@@ -660,7 +660,7 @@ const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_PERCENTAGE_OF_TARGETS_STAT_EXC
 const REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_PERCENTAGE_OF_TARGETS_STAT_DURING_COMBAT_INCLUDING_TWICE_NODE =
     (percentage, statNode) =>
         APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
-            // and reduces damage from foe's first attack by 20% of unit's Spd during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            // and reduces damage from foe's first attack by 20% of unit's SPD during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
             new ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode(
                 PERCENTAGE_NODE(percentage, statNode)),
         );
@@ -1166,7 +1166,7 @@ function setFortune(skillId, neutralizesBonusFlags, bonuses) {
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit is transformed or if foe initiates combat,
         IF_NODE(OR_NODE(new IsTargetTransformedNode(), DOES_UNIT_INITIATE_COMBAT_NODE),
-            // grants Atk/Spd+8 to unit and neutralizes foe's bonuses to Spd/Def during combat,
+            // grants ATK/SPD+8 to unit and neutralizes foe's bonuses to SPD/DEF during combat,
             new GrantsStatsPlusToUnitDuringCombatNode(StatsNode.makeStatsNodeFrom(...bonuses)),
             new NeutralizesFoesBonusesToStatsDuringCombatNode(...neutralizesBonusFlags),
             // and restores 7 HP to unit after combat.
@@ -1179,7 +1179,7 @@ function setSlyEffect(skillId, atk, spd, def, res) {
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat,
         IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
-            // grants Atk/Spd+8 to unit and unit makes a guaranteed follow-up attack during combat,
+            // grants ATK/SPD+8 to unit and unit makes a guaranteed follow-up attack during combat,
             new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res),
             UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
             // and also,
@@ -1303,10 +1303,10 @@ function setSpikedWall(skillId, debuffAmounts, statuses) {
         EQ_NODE(new TargetsRangeNode(), 2),
     )
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        // Inflicts Atk/Def-4 on foe,
+        // Inflicts ATK/DEF-4 on foe,
         new InflictsStatsMinusOnFoeDuringCombatNode(...debuffAmounts),
         new AppliesSkillEffectsAfterStatusFixedNode(
-            // deals damage = 15% of the greater of unit's Def or Res (excluding area-of-effect Specials),
+            // deals damage = 15% of the greater of unit's DEF or RES (excluding area-of-effect Specials),
             new UnitDealsDamageExcludingAoeSpecialsNode(
                 MULT_TRUNC_NODE(0.15, MAX_NODE(...statuses)),
             ),
@@ -1340,7 +1340,7 @@ function setSway(skillId, statsNodes) {
         // If unit initiates combat or is within 3 spaces of an ally,
         IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
             X_NUM_NODE(
-                // grants bonus to unit's Atk/Res during combat = 8 + number of allies within 3 spaces of unit × 2 (max 12),
+                // grants bonus to unit's ATK/RES during combat = 8 + number of allies within 3 spaces of unit × 2 (max 12),
                 GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(...statsNodes),
                 ENSURE_MAX_NODE(ADD_NODE(8, MULT_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 2)), 12),
             ),
@@ -1363,7 +1363,7 @@ function setCannotMoveThroughSpacesSkill(skillId) {
  */
 const INFLICTS_SPECIAL_COOLDOWN_COUNT_1_ON_FOE_BEFORE_FOES_FIRST_ATTACK_DURING_COMBAT_BY_DRAGON_NODE =
     APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
-        // if foe's attack can trigger foe's Special and unit's Res ≥ foe's Res+5,
+        // if foe's attack can trigger foe's Special and unit's RES ≥ foe's RES+5,
         IF_NODE(
             AND_NODE(
                 CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,

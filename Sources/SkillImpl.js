@@ -358,7 +358,7 @@
             enemyUnit.addSpursWithoutRes(-5);
             // 戦闘中、
             // ダメージ＋敵の守備の25%（範囲奥義を除く）、
-            targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Def, 0.25);
+            targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(StatusIndex.DEF, 0.25);
             // 自分の最初の攻撃前に奥義発動カウントー1、
             targetUnit.battleContext.specialCountReductionBeforeFirstAttack += 1;
             // 自分の最初の追撃前に奥義発動カウントー1、
@@ -693,7 +693,7 @@
                 // 戦闘中、攻撃、速さ、守備、魔防+4、
                 targetUnit.addAllSpur(4);
                 // ダメージ+敵の攻撃の15%(範囲奥義を除く)、
-                targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(STATUS_INDEX.Atk, 0.15);
+                targetUnit.battleContext.addFixedDamageByEnemyStatusInCombat(StatusIndex.ATK, 0.15);
                 // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)
                 targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
             }
@@ -892,7 +892,7 @@
                 // 戦闘中、攻撃、速さ、守備、魔防+4、
                 targetUnit.addAllSpur(4);
                 // ダメージ+速さの20%(範囲奥義を除く)
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.SPD, 0.2);
             }
         }
     );
@@ -1224,7 +1224,7 @@
                 let amount = MathUtil.ensureMax(count * 3 + 5, 14);
                 targetUnit.addAllSpur(amount);
                 // - ダメージ＋攻撃の15％（範囲奥義を除く）、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.ATK, 0.15);
                 // - 敵の奥義発動カウント変動量－1（同系統効果複数時、最大値適用）、
                 targetUnit.battleContext.reducesCooldownCount = true;
                 // - 戦闘後、自分は、7回復
@@ -1494,7 +1494,7 @@
                 // 戦闘中、敵の攻撃、速さ、守備-5、
                 enemyUnit.addSpursWithoutRes(-5);
                 // 自分が与えるダメージ+攻撃の10%(範囲奥義を除く)、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.10);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.ATK, 0.10);
                 // 敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)、
                 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
                 // かつ速さが敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを速さの差×5%軽減(最大50%)(巨影の範囲奥義を除く)
@@ -1656,7 +1656,7 @@
                 let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.2);
                 targetUnit.addAtkSpdSpurs(amount);
                 // - ダメージ＋速さの20%（範囲奥義を除く）、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.SPD, 0.2);
                 // - 敵の速さ、魔防の強化の＋を無効にする（無効になるのは、鼓舞や応援等の＋効果）、
                 targetUnit.battleContext.invalidateBuffs(false, true, false, true);
                 // - 自分の最初の追撃前に自身の奥義発動カウントー1、
@@ -1760,7 +1760,7 @@
                 }
                 targetUnit.addAllSpur(amount);
                 // - ダメージ＋速さの20%（範囲義を除く）、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.SPD, 0.2);
                 // - 敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を半分無効（無効にする数値は端数切捨て）（範囲奥義を除く）
                 targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
             }
@@ -1983,9 +1983,9 @@
                 // - 自身の奥義発動カウント変動量ーを無効、
                 targetUnit.battleContext.neutralizesReducesCooldownCount();
                 // - 自分が与えるダメージ＋速さの20％（範囲奥義を除く）、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.2);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.SPD, 0.2);
                 // - 最初に受けた攻撃と2回攻撃のダメージー速さの25％（最初に受けた攻撃と2回攻撃：通常の攻撃は、1回目の攻撃のみ「2回攻撃」は、1～2回目の攻撃）、
-                targetUnit.battleContext.addDamageReductionValueOfFirstAttacks(STATUS_INDEX.Spd, 0.25);
+                targetUnit.battleContext.addDamageReductionValueOfFirstAttacks(StatusIndex.SPD, 0.25);
                 // - 最初に受けた攻撃で軽減した値を、自身の次の攻撃のダメージに＋（その戦闘中のみ。軽減値はスキルによる軽減効果も含む）、
                 targetUnit.battleContext.firstAttackReflexDamageRates.push(1.0);
                 // - 戦闘後、7回復
@@ -2848,7 +2848,7 @@
                 // 敵の絶対追撃を無効、かつ、自分の追撃不可を無効、
                 targetUnit.battleContext.setNullFollowupAttack();
                 // ダメージ＋速さの20%（範囲奥義を除く）、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.SPD, 0.20);
                 // かつ戦闘中、自分の攻撃でダメージを与えた時、HPが回復
                 // 回復値は、攻撃した側（自分からなら自分、敵からなら敵）の移動前と移動後のマスの距離x3（最大12）
                 // （与えたダメージが0でも効果は発動）
@@ -2872,7 +2872,7 @@
                 // 戦闘中、攻撃、速さ、守備、魔防＋4、
                 targetUnit.addAllSpur(4);
                 // ダメージ＋速さの15%（範囲奥義を除く）、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.15);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.SPD, 0.15);
                 // 最初に受けた攻撃と2回攻撃のダメージを〇%軽減（〇は、各ターンについて、このスキル所持者が自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時は80、そうでない時は40）
                 let ratio = 0.4;
                 if (targetUnit.battleContext.initiatesCombat) {
@@ -2959,7 +2959,7 @@
                 let amount = Math.trunc(targetUnit.getSpdInPrecombat() * 0.15);
                 targetUnit.addAllSpur(amount);
                 // ダメージ＋速さの20%（範囲奥義を除く）、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.SPD, 0.20);
                 // 【〇は、各ターンについて、このスキル所持者が
                 // 自分から攻撃した最初の戦闘と敵から攻撃された最初の戦闘の時は80
                 // そうでない時は40）
@@ -3330,7 +3330,7 @@
                     // 最初に受けた攻撃と2回攻撃のダメージを40%軽減(最初に受けた攻撃と2回攻撃:通常の攻撃は、1回目の攻撃のみ。「2回攻撃」は、1～2回目の攻撃)、
                     targetUnit.battleContext.multDamageReductionRatioOfFirstAttacks(0.4, enemyUnit);
                     // ダメージ+速さの20%(範囲奥義を除く)、
-                    targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Spd, 0.20);
+                    targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.SPD, 0.20);
                     // かつ自分の攻撃でダメージを与えた時、7回復(与えたダメージが0でも効果は発動)
                     targetUnit.battleContext.healedHpByAttack += 7;
                 }
@@ -3498,7 +3498,7 @@
                 targetUnit.atkSpur += 5;
                 enemyUnit.atkSpur -= 5;
                 // 自分が与えるダメージ+魔防の20%(範囲奥義を除く)、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Res, 0.20);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.RES, 0.20);
                 // 自分が受けた攻撃のダメージを50%軽減(範囲奥義を除く)
                 targetUnit.battleContext.setDamageReductionRatio(0.5);
                 // 「自分から攻撃した時、または、敵が射程2の時」、
@@ -3637,7 +3637,7 @@
                 let amount = MathUtil.ensureMax(Unit.calcAttackerMoveDistance(targetUnit, enemyUnit), 4);
                 targetUnit.addAllSpur(amount);
                 // ダメージ+攻撃の15%(範囲奥義を除く)、
-                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(STATUS_INDEX.Atk, 0.15);
+                targetUnit.battleContext.addFixedDamageByOwnStatusInCombat(StatusIndex.ATK, 0.15);
                 // 敵の攻撃、守備の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)
                 targetUnit.battleContext.invalidateOwnDebuffs(true, false, true, false);
             }
@@ -4249,7 +4249,7 @@
                 // ダメージ+魔防の20%(範囲奥義を除く)
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.RES, 0.2);
                 });
             }
         }
@@ -4573,7 +4573,7 @@ function setLantern(skillId) {
                 // ダメージ+守備の20%(範囲奥義を除く)、
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Def, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.DEF, 0.2);
                 });
                 // 攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)
                 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
@@ -4639,7 +4639,7 @@ function setLantern(skillId) {
                 // 自分が与えるダメージ＋攻撃の15%（範囲奥義を除く）、かつ
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Atk, 0.15);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.ATK, 0.15);
                 });
                 // 奥義発動時、敵の奥義以外のスキルによる「ダメージを〇〇％軽減」を無効（範囲奥義を除く）
                 targetUnit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
@@ -4881,7 +4881,7 @@ function setLantern(skillId) {
                 // - ダメージ＋魔防の20％（範囲奥義を除く）
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.RES, 0.2);
                 });
             }
         }
@@ -5051,7 +5051,7 @@ function setLantern(skillId) {
                 // 自分が与えるダメージ+速さの20%(範囲奥義を除く)、
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.SPD, 0.2);
                 });
                 // 敵の速さ、魔防の強化の+を無効にする(無効になるのは、鼓舞や応援等の+効果)、
                 targetUnit.battleContext.invalidateBuffs(false, true, false, true);
@@ -5305,7 +5305,7 @@ function setLantern(skillId) {
                 // 自分が与えるダメージ+魔防の20%(範囲奥義を除く)、
                 targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                     if (isPrecombat) return;
-                    this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Res, 0.2);
+                    this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.RES, 0.2);
                 });
                 // かつ魔防が敵より高い時、受けた範囲奥義のダメージと、戦闘中に攻撃を受けた時のダメージを魔防の差×4%軽減(最大40%)(巨影の範囲奥義を除く)
                 targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
@@ -6201,7 +6201,7 @@ function setLantern(skillId) {
                     enemyUnit.atkSpur -= 7;
                     targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs.push(
                         (targetUnit, enemyUnit, calcPotentialDamage) => {
-                            this.applyFixedValueSkill(targetUnit, enemyUnit, STATUS_INDEX.Atk, 0.15);
+                            this.applyFixedValueSkill(targetUnit, enemyUnit, StatusIndex.ATK, 0.15);
                         }
                     );
                     targetUnit.battleContext.applyAttackSkillEffectAfterCombatFuncs.push(
@@ -6694,7 +6694,7 @@ function setLantern(skillId) {
                         targetUnit.addAllSpur(4);
                         targetUnit.battleContext.calcFixedAddDamageFuncs.push((atkUnit, defUnit, isPrecombat) => {
                             if (isPrecombat) return;
-                            this.addFixedDamageByStatus(atkUnit, defUnit, STATUS_INDEX.Spd, 0.2);
+                            this.addFixedDamageByStatus(atkUnit, defUnit, StatusIndex.SPD, 0.2);
                         });
                     }
                 }
@@ -9478,11 +9478,11 @@ function setLantern(skillId) {
     };
 
     // 攻撃守備の混乱3
-    setSabotageFuncs(PassiveB.SabotageAD3, [STATUS_INDEX.Atk, STATUS_INDEX.Def], (u, v1, v2) => u.addAtkDefSpurs(v1, v2));
+    setSabotageFuncs(PassiveB.SabotageAD3, [StatusIndex.ATK, StatusIndex.DEF], (u, v1, v2) => u.addAtkDefSpurs(v1, v2));
     // 攻撃魔防の混乱3
-    setSabotageFuncs(PassiveB.SabotageAR3, [STATUS_INDEX.Atk, STATUS_INDEX.Res], (u, v1, v2) => u.addAtkResSpurs(v1, v2));
+    setSabotageFuncs(PassiveB.SabotageAR3, [StatusIndex.ATK, StatusIndex.RES], (u, v1, v2) => u.addAtkResSpurs(v1, v2));
     // 速さ魔防の混乱3
-    setSabotageFuncs(PassiveB.SabotageSR3, [STATUS_INDEX.Spd, STATUS_INDEX.Res], (u, v1, v2) => u.addSpdResSpurs(v1, v2));
+    setSabotageFuncs(PassiveB.SabotageSR3, [StatusIndex.SPD, StatusIndex.RES], (u, v1, v2) => u.addSpdResSpurs(v1, v2));
 }
 
 // 竜眼

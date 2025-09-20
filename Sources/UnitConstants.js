@@ -155,14 +155,17 @@ const SummonerLevel = {
     B: 1,
     A: 2,
     S: 3,
+    SPlus: 4,
 };
 
+// TODO: なぜsummonerLevelOptionsと2つ存在するのか調査する
 const SummonerLevelOptions = [
     { id: SummonerLevel.None, text: "なし" },
     { id: SummonerLevel.C, text: "C" },
     { id: SummonerLevel.B, text: "B" },
     { id: SummonerLevel.A, text: "A" },
     { id: SummonerLevel.S, text: "S" },
+    { id: SummonerLevel.SPlus, text: "S+" },
 ];
 
 const PartnerLevel = {
@@ -171,8 +174,19 @@ const PartnerLevel = {
     B: 1,
     A: 2,
     S: 3,
+    SPlus: 4,
 };
 
+// つながり英雄が増えた場合以下に追加
+const EntwinedType = {
+    None: {id: 0, value: [0, 0, 0, 0], text: "なし"},
+    Ash: {id: 1, value: [2, 0, 2, 0], text: "アシュ"},
+};
+
+const EntwinedOptions = [...Object.values(EntwinedType)];
+const EntwinedValues = new Map(
+    EntwinedOptions.map(type => [type.id, type.value])
+);
 
 const CombatResultType = {
     Win: 2,

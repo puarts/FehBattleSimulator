@@ -1,7 +1,7 @@
 const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は範囲奥義を発動できない`);
+        env.info(`${unit.nameWithGroup}は範囲奥義を発動できない`);
         unit.battleContext.cannotTriggerPrecombatSpecial = true;
     }
 }();
@@ -9,7 +9,7 @@ const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends Skill
 const FOE_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は範囲奥義を発動できない`);
+        env.info(`${unit.nameWithGroup}は範囲奥義を発動できない`);
         unit.battleContext.cannotTriggerPrecombatSpecial = true;
     }
 }();
@@ -17,7 +17,7 @@ const FOE_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillE
 const UNIT_DISABLES_DEFENSIVE_TERRAIN_EFFECTS = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は防御地形の効果を無効`);
+        env.info(`${unit.nameWithGroup}は防御地形の効果を無効`);
         unit.battleContext.invalidatesDefensiveTerrainEffect = true;
     }
 }();
@@ -25,7 +25,7 @@ const UNIT_DISABLES_DEFENSIVE_TERRAIN_EFFECTS = new class extends SkillEffectNod
 const FOE_DISABLES_DEFENSIVE_TERRAIN_EFFECTS = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は防御地形の効果を無効`);
+        env.info(`${unit.nameWithGroup}は防御地形の効果を無効`);
         unit.battleContext.invalidatesDefensiveTerrainEffect = true;
     }
 }();
@@ -33,7 +33,7 @@ const FOE_DISABLES_DEFENSIVE_TERRAIN_EFFECTS = new class extends SkillEffectNode
 const UNIT_DISABLES_SUPPORT_EFFECTS = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は支援効果を無効`);
+        env.info(`${unit.nameWithGroup}は支援効果を無効`);
         unit.battleContext.invalidatesSupportEffect = true;
     }
 }();
@@ -41,7 +41,7 @@ const UNIT_DISABLES_SUPPORT_EFFECTS = new class extends SkillEffectNode {
 const FOE_DISABLES_SUPPORT_EFFECTS = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は支援効果を無効`);
+        env.info(`${unit.nameWithGroup}は支援効果を無効`);
         unit.battleContext.invalidatesSupportEffect = true;
     }
 }();
@@ -334,7 +334,7 @@ class UnitGrantsSpecialCooldownMinusNToUnitBeforeUnitsFirstAttackNode extends Fr
         let unit = env.targetUnit;
         unit.battleContext.specialCountReductionBeforeFirstAttack += n;
         let reduction = unit.battleContext.specialCountReductionBeforeFirstAttack;
-        env.debug(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント-${n}: ${reduction - n} => ${reduction}`);
+        env.info(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント-${n}: ${reduction - n} → ${reduction}`);
     }
 }
 
@@ -350,14 +350,14 @@ class GrantsSpecialCooldownCountMinusNToTargetAfterFirstSpecialTriggerPerCombatN
         let unit = this.getUnit(env);
         let count = this.evaluateChildren(env);
         let result = unit.battleContext.specialCountReductionAfterFirstSpecial += count;
-        env.debug(`${unit.nameWithGroup}は各戦闘の最初の奥義発動後、奥義発動カウント-${count}: ${result}`);
+        env.info(`${unit.nameWithGroup}は各戦闘の最初の奥義発動後、奥義発動カウント-${count}: ${result}`);
     }
 }
 
 const FOE_CANNOT_COUNTERATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は反撃不可`);
+        env.info(`${unit.nameWithGroup}は反撃不可`);
         unit.battleContext.invalidatesCounterattack = true;
     }
 }();
@@ -406,7 +406,7 @@ const UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE = new class extends SkillEffec
     evaluate(env) {
         let unit = env.unitDuringCombat;
         unit.battleContext.followupAttackPriorityIncrement++;
-        env.debug(`${unit.nameWithGroup}は絶対追撃: ${unit.battleContext.followupAttackPriorityIncrement}`);
+        env.info(`${unit.nameWithGroup}は絶対追撃: ${unit.battleContext.followupAttackPriorityIncrement}`);
     }
 }();
 
@@ -420,7 +420,7 @@ class TargetCannotMakeFollowUpAttackNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.followupAttackPriorityDecrement--;
-        env.debug(`${unit.nameWithGroup}は追撃不可: ${unit.battleContext.followupAttackPriorityDecrement}`);
+        env.info(`${unit.nameWithGroup}は追撃不可: ${unit.battleContext.followupAttackPriorityDecrement}`);
     }
 }
 
@@ -435,7 +435,7 @@ const FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE = new class extends TargetCannotMake
 const NULL_UNIT_FOLLOW_UP_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は自身に見切り・追撃`);
+        env.info(`${unit.nameWithGroup}は自身に見切り・追撃`);
         unit.battleContext.setNullFollowupAttack();
     }
 }();
@@ -443,7 +443,7 @@ const NULL_UNIT_FOLLOW_UP_NODE = new class extends SkillEffectNode {
 const NULL_FOE_FOLLOW_UP_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は自身に見切り・追撃`);
+        env.info(`${unit.nameWithGroup}は自身に見切り・追撃`);
         unit.battleContext.setNullFollowupAttack();
     }
 }();
@@ -458,7 +458,7 @@ class NeutralizesEffectsThatInflictSpecialCooldownChargeMinusXOnTarget extends S
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        env.debug(`${unit.nameWithGroup}は自身の奥義発動カウント変動量-を無効`);
+        env.info(`${unit.nameWithGroup}は自身の奥義発動カウント変動量-を無効`);
         unit.battleContext.neutralizesReducesCooldownCount();
     }
 }
@@ -483,7 +483,7 @@ class NeutralizesEffectsThatGrantSpecialCooldownChargePlusXToTarget extends Skil
     evaluate(env) {
         let unit = this.getUnit(env);
         let foe = env.getFoeDuringCombatOf(unit);
-        env.debug(`${unit.nameWithGroup}は敵の奥義発動カウント変動量+を無効`);
+        env.info(`${unit.nameWithGroup}は敵の奥義発動カウント変動量+を無効`);
         foe.battleContext.increaseCooldownCountForAttack = false;
         foe.battleContext.increaseCooldownCountForDefense = false;
     }
@@ -505,7 +505,7 @@ class NeutralizesEffectsThatGuaranteeTargetsFoesFollowUpAttacksDuringCombatNode 
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-        env.debug(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
+        env.info(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
     }
 }
 
@@ -520,7 +520,7 @@ const UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMB
     evaluate(env) {
         let unit = env.unitDuringCombat;
         unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-        env.debug(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
+        env.info(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
     }
 }
 
@@ -528,7 +528,7 @@ const FOE_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_UNITS_FOLLOW_UP_ATTACKS_DURING_COMB
     evaluate(env) {
         let unit = env.foeDuringCombat;
         unit.battleContext.invalidatesAbsoluteFollowupAttack = true;
-        env.debug(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
+        env.info(`${unit.nameWithGroup}は敵の絶対追撃を無効`);
     }
 }
 
@@ -550,7 +550,7 @@ const UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE = new class ex
     evaluate(env) {
         // 攻め立て
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}に攻め立て効果を設定`);
+        env.info(`${unit.nameWithGroup}に攻め立て効果を設定`);
         unit.battleContext.isDesperationActivatable = true;
     }
 }
@@ -558,7 +558,7 @@ const UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE = new class ex
 const UNIT_DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は反撃不可を無効`);
+        env.info(`${unit.nameWithGroup}は反撃不可を無効`);
         unit.battleContext.nullCounterDisrupt = true;
     }
 }
@@ -566,7 +566,7 @@ const UNIT_DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE = new class extends 
 const FOE_DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は反撃不可を無効`);
+        env.info(`${unit.nameWithGroup}は反撃不可を無効`);
         unit.battleContext.nullCounterDisrupt = true;
     }
 }
@@ -574,7 +574,7 @@ const FOE_DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS_NODE = new class extends S
 const UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は戦闘中の攻撃奥義を発動できない`);
+        env.info(`${unit.nameWithGroup}は戦闘中の攻撃奥義を発動できない`);
         unit.battleContext.preventedAttackerSpecial = true;
     }
 }();
@@ -582,7 +582,7 @@ const UNIT_CANNOT_TRIGGER_ATTACKER_SPECIAL = new class extends SkillEffectNode {
 const FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は戦闘中の攻撃奥義を発動できない`);
+        env.info(`${unit.nameWithGroup}は戦闘中の攻撃奥義を発動できない`);
         unit.battleContext.preventedAttackerSpecial = true;
     }
 }();
@@ -590,7 +590,7 @@ const FOE_CANNOT_TRIGGER_ATTACKER_SPECIAL = new class extends SkillEffectNode {
 const UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は戦闘中の防御奥義を発動できない`);
+        env.info(`${unit.nameWithGroup}は戦闘中の防御奥義を発動できない`);
         unit.battleContext.preventedDefenderSpecial = true;
     }
 }();
@@ -598,7 +598,7 @@ const UNIT_CANNOT_TRIGGER_DEFENDER_SPECIAL = new class extends SkillEffectNode {
 const FOE_CANNOT_TRIGGER_DEFENDER_SPECIAL = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は戦闘中の防御奥義を発動できない`);
+        env.info(`${unit.nameWithGroup}は戦闘中の防御奥義を発動できない`);
         unit.battleContext.preventedDefenderSpecial = true;
     }
 }();
@@ -611,7 +611,7 @@ class TargetCannotTriggerDefenderSpecialPerAttackNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.preventedDefenderSpecialPerAttack = true;
-        env.debug(`${unit.nameWithGroup}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
+        env.info(`${unit.nameWithGroup}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
     }
 }
 
@@ -626,7 +626,7 @@ class TargetsFoeCannotTriggerDefenderSpecialPerAttackNode extends SkillEffectNod
     evaluate(env) {
         let unit = env.getFoeDuringCombatOf(this.getUnit(env));
         unit.battleContext.preventedDefenderSpecialPerAttack = true;
-        env.debug(`${unit.nameWithGroup}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
+        env.info(`${unit.nameWithGroup}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
     }
 }
 
@@ -639,7 +639,7 @@ const PREVENTS_TARGETS_FOES_SPECIALS_THAT_ARE_TRIGGERED_BY_TARGETS_ATTACK_NODE =
 const UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は戦闘順序入れ替えスキル(待ち伏せ、攻め立て等)無効`);
+        env.info(`${unit.nameWithGroup}は戦闘順序入れ替えスキル(待ち伏せ、攻め立て等)無効`);
         unit.battleContext.canUnitDisableSkillsThatChangeAttackPriority = true;
     }
 }();
@@ -647,7 +647,7 @@ const UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends Skill
 const FOE_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は戦闘順序入れ替えスキル(待ち伏せ、攻め立て等)無効`);
+        env.info(`${unit.nameWithGroup}は戦闘順序入れ替えスキル(待ち伏せ、攻め立て等)無効`);
         unit.battleContext.canUnitDisableSkillsThatChangeAttackPriority = true;
     }
 }();
@@ -666,7 +666,7 @@ class IncreasesSpdDiffNecessaryForTargetToMakeFollowUpNode extends FromPositiveN
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
-        env.debug(`${unit.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+        env.info(`${unit.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
@@ -689,7 +689,7 @@ class IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode extends FromPositiveNu
         let n = this.evaluateChildren(env);
         let foe = env.getFoeDuringCombatOf(unit);
         foe.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
-        env.debug(`${foe.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+        env.info(`${foe.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
@@ -703,7 +703,7 @@ class DecreasesSpdDiffNecessaryForUnitFollowUpNode extends FromPositiveNumberNod
         let unit = env.unitDuringCombat;
         let n = this.evaluateChildren(env);
         unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack -= n;
-        env.debug(`${unit.nameWithGroup}の追撃の速さ条件-${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+        env.info(`${unit.nameWithGroup}の追撃の速さ条件-${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
@@ -721,7 +721,7 @@ class NeutralizesPenaltiesToTargetsStatsNode extends SetBoolToEachStatusNode {
     evaluate(env) {
         let values = this.getValues();
         let unit = this.getUnit(env);
-        env.debug(`${unit.nameWithGroup}は自身の弱化を無効: [${values}]`);
+        env.info(`${unit.nameWithGroup}は自身の弱化を無効: [${values}]`);
         unit.battleContext.invalidateOwnDebuffs(...values);
     }
 }
@@ -744,7 +744,7 @@ class NeutralizesFoesBonusesToStatsDuringCombatNode extends SetBoolToEachStatusN
         let values = this.getValues();
         let unit = env.unitDuringCombat;
         let foe = env.getFoeDuringCombatOf(unit);
-        env.debug(`${unit.nameWithGroup}は相手(${foe.nameWithGroup})の強化を無効: [${values}]`);
+        env.info(`${unit.nameWithGroup}は相手(${foe.nameWithGroup})の強化を無効: [${values}]`);
         unit.battleContext.invalidateBuffs(...values);
     }
 }
@@ -765,7 +765,7 @@ class NeutralizesTargetsFoesBonusesToStatsDuringCombatNode extends SetBoolToEach
         let unit = this.getUnit(env);
         let foe = env.getFoeDuringCombatOf(unit);
         if (foe) {
-            env.debug(`${unit.nameWithGroup}は相手(${foe.nameWithGroup})の強化を無効: [${values}]`);
+            env.info(`${unit.nameWithGroup}は相手(${foe.nameWithGroup})の強化を無効: [${values}]`);
             unit.battleContext.invalidateBuffs(...values);
         }
     }
@@ -928,7 +928,7 @@ class BoostsDamageWhenSpecialTriggersNode extends FromPositiveNumberNode {
         let value = this.evaluateChildren(env);
         unit.battleContext.addSpecialAddDamage(value);
         let damage = unit.battleContext.getSpecialAddDamage();
-        env.debug(`${unit.nameWithGroup}は奥義ダメージに${value}加算: ${damage - value} => ${damage}`);
+        env.info(`${unit.nameWithGroup}は奥義ダメージに${value}加算: ${damage - value} → ${damage}`);
     }
 }
 
@@ -943,7 +943,7 @@ class RestoresXPercentageOfTargetsMaximumHpNode extends FromPositiveNumberNode {
         let unit = this.getUnit(env);
         let percentage = this.evaluateChildren(env);
         unit.battleContext.maxHpRatioToHealBySpecial = percentage / 100;
-        env.debug(`${unit.nameWithGroup}は自分の最大HPの${percentage}を回復`);
+        env.info(`${unit.nameWithGroup}は自分の最大HPの${percentage}を回復`);
     }
 }
 
@@ -974,7 +974,7 @@ class TargetDealsDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
         let context = unit.battleContext;
         let beforeValue = context.additionalDamage;
         context.additionalDamage += n;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.additionalDamage}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} → ${context.additionalDamage}`);
     }
 }
 
@@ -998,7 +998,7 @@ class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
         let context = unit.battleContext;
         let beforeValue = context.additionalDamageInPrecombat;
         context.additionalDamageInPrecombat += n;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.additionalDamageInPrecombat}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.additionalDamageInPrecombat}`);
     }
 }
 
@@ -1016,7 +1016,7 @@ class ReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
         let context = unit.battleContext;
         let beforeValue = context.damageReductionValue;
         context.damageReductionValue += n;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValue}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} → ${context.damageReductionValue}`);
     }
 }
 
@@ -1037,7 +1037,7 @@ class ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode extends ApplyingNum
         let context = unit.battleContext;
         let beforeValue = context.damageReductionValue;
         context.damageReductionValue += n;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValue}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} → ${context.damageReductionValue}`);
     }
 }
 
@@ -1057,7 +1057,7 @@ class ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode extends Ap
         let n = this.evaluateChildren(env);
         let unit = this.getUnit(env);
         let result = unit.battleContext.damageReductionValuePerAttack += n;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${result - n} => ${result}`);
     }
 }
 
@@ -1075,7 +1075,7 @@ class ReducesDamageBeforeCombatNode extends ApplyingNumberNode {
         let context = unit.battleContext;
         let beforeValue = context.damageReductionForPrecombat;
         context.damageReductionForPrecombat += n;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionForPrecombat}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionForPrecombat}`);
     }
 }
 
@@ -1096,7 +1096,7 @@ class ReducesDamageFromAoeSpecialsByXPercentNode extends ApplyingNumberNode {
         let unit = env.unitDuringCombat;
         let n = this.evaluateChildren(env);
         unit.battleContext.multDamageReductionRatioOfPrecombatSpecial(n / 100);
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${unit.battleContext.damageReductionRatioForPrecombat}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${unit.battleContext.damageReductionRatioForPrecombat}`);
     }
 }
 
@@ -1129,7 +1129,7 @@ class ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode extends From
         let percentage = this.evaluateChildren(env);
         unit.battleContext.addDamageReductionRatio(percentage / 100);
         let ratios = unit.battleContext.getDamageReductionRatios();
-        env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+        env.info(`${unit.nameWithGroup}は受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
 
@@ -1146,7 +1146,7 @@ class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPosi
         let percentage = this.evaluateChildren(env);
         unit.battleContext.damageReductionRatiosByNonDefenderSpecial.push(percentage / 100);
         let ratios = unit.battleContext.damageReductionRatiosByNonDefenderSpecial;
-        env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${percentage}%軽減（奥義扱い）: ratios [${ratios}]`);
+        env.info(`${unit.nameWithGroup}は受けた攻撃のダメージを${percentage}%軽減（奥義扱い）: ratios [${ratios}]`);
     }
 }
 
@@ -1162,7 +1162,7 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatNode extends Applyin
         let percentage = this.evaluateChildren(env);
         unit.battleContext.addDamageReductionRatioOfFirstAttack(percentage / 100);
         let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttack();
-        env.debug(`${unit.nameWithGroup}は最初に受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+        env.info(`${unit.nameWithGroup}は最初に受けた攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
 
@@ -1179,7 +1179,7 @@ class ReducesDamageFromTargetFoesFollowUpAttackByXPercentDuringCombatNode extend
         let percentage = this.evaluateChildren(env);
         unit.battleContext.addDamageReductionRatioOfFollowupAttack(percentage / 100);
         let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttack();
-        env.debug(`${unit.nameWithGroup}は追撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+        env.info(`${unit.nameWithGroup}は追撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
 
@@ -1196,7 +1196,7 @@ class ReducesDamageFromFoesFirstAttackByNPercentDuringCombatIncludingTwiceNode e
         let percentage = this.evaluateChildren(env);
         unit.battleContext.addDamageReductionRatioOfFirstAttacks(percentage / 100);
         let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttacks();
-        env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
+        env.info(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減: ratios [${ratios}]`);
     }
 }
 
@@ -1209,7 +1209,7 @@ class ReducesDamageFromFoesFirstAttackByNPercentBySpecialDuringCombatIncludingTw
         let percentage = this.evaluateChildren(env);
         unit.battleContext.addDamageReductionRatioOfFirstAttacksBySpecial(percentage / 100);
         let ratios = unit.battleContext.getDamageReductionRatiosOfFirstAttacksBySpecial();
-        env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減（奥義扱い）: ratios [${ratios}]`);
+        env.info(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージを${percentage}%軽減（奥義扱い）: ratios [${ratios}]`);
     }
 }
 
@@ -1226,7 +1226,7 @@ class ReducesDamageFromTargetFoesConsecutiveAttacksByXPercentDuringCombatNode ex
         let n = this.evaluateChildren(env);
         let ratio = n / 100.0;
         unit.battleContext.addDamageReductionRatioOfConsecutiveAttacks(ratio);
-        env.debug(`${unit.nameWithGroup}は連撃のダメージを${n}%軽減`);
+        env.info(`${unit.nameWithGroup}は連撃のダメージを${n}%軽減`);
     }
 }
 
@@ -1242,7 +1242,7 @@ class ReducesDamageFromFoesFirstAttackByNDuringCombatIncludingTwiceNode extends 
         let n = this.evaluateChildren(env);
         unit.battleContext.damageReductionValueOfFirstAttacks += n;
         let reduction = unit.battleContext.damageReductionValueOfFirstAttacks;
-        env.debug(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージ-${n}: ${reduction - n} => ${reduction}`);
+        env.info(`${unit.nameWithGroup}は最初に受けた攻撃と2回攻撃のダメージ-${n}: ${reduction - n} → ${reduction}`);
     }
 }
 
@@ -1259,7 +1259,7 @@ class ReducesDamageFromTargetsFoesSecondStrikeOfFirstAttackByNDuringCombatNode e
         let n = this.evaluateChildren(env);
         let reductionValues = unit.battleContext.damageReductionValueOfSecondStrikeOfFirstAttack;
         reductionValues.push(n);
-        env.debug(`${unit.nameWithGroup}は最初に受けた2回攻撃の2回目のダメージ-${n}: [${reductionValues}]`);
+        env.info(`${unit.nameWithGroup}は最初に受けた2回攻撃の2回目のダメージ-${n}: [${reductionValues}]`);
     }
 }
 
@@ -1277,7 +1277,7 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumber
         let context = unit.battleContext;
         let beforeValue = context.damageReductionValueOfSpecialAttack;
         context.damageReductionValueOfSpecialAttack += n;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} => ${context.damageReductionValueOfSpecialAttack}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${beforeValue} → ${context.damageReductionValueOfSpecialAttack}`);
     }
 }
 
@@ -1293,7 +1293,7 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode extends Apply
         let n = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;
         let result = unit.battleContext.damageReductionValueOfSpecialAttackPerAttack += n;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}: ${result - n} → ${result}`);
     }
 }
 
@@ -1306,7 +1306,7 @@ class DealsDamageWhenTriggeringSpecialDuringCombatNode extends ApplyingNumberNod
         let unit = env.unitDuringCombat;
         unit.battleContext.additionalDamageOfSpecial += n;
         let damage = unit.battleContext.additionalDamageOfSpecial;
-        env.debug(`${unit.nameWithGroup}は戦闘中、自分の奥義によるダメージ+${n}: ${damage - n} => ${damage}`);
+        env.info(`${unit.nameWithGroup}は戦闘中、自分の奥義によるダメージ+${n}: ${damage - n} → ${damage}`);
     }
 }
 
@@ -1319,7 +1319,7 @@ class DealsDamageWhenTriggeringSpecialDuringCombatPerAttackNode extends Applying
         let unit = env.unitDuringCombat;
         unit.battleContext.additionalDamageOfSpecialPerAttackInCombat += n;
         let damage = unit.battleContext.additionalDamageOfSpecialPerAttackInCombat;
-        env.debug(`${unit.nameWithGroup}は戦闘中、自分の奥義によるダメージ+${n}: ${damage - n} => ${damage}`);
+        env.info(`${unit.nameWithGroup}は戦闘中、自分の奥義によるダメージ+${n}: ${damage - n} → ${damage}`);
     }
 }
 
@@ -1335,7 +1335,7 @@ class ReducesDamageFromAttacksDuringCombatByXPercentAsSpecialSkillEffectPerAttac
         let n = this.evaluateChildren(env);
         let unit = env.unitDuringCombat;
         unit.battleContext.damageReductionRatiosBySpecialPerAttack.push(n / 100.0);
-        env.debug(`${unit.nameWithGroup}はこの攻撃の際にダメージを${n}%軽減(奥義扱い): ratios [${unit.battleContext.damageReductionRatiosBySpecialPerAttack}]`);
+        env.info(`${unit.nameWithGroup}はこの攻撃の際にダメージを${n}%軽減(奥義扱い): ratios [${unit.battleContext.damageReductionRatiosBySpecialPerAttack}]`);
     }
 }
 
@@ -1350,7 +1350,7 @@ class RestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
     evaluate(env) {
         let n = this.evaluateChildren(env);
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は${this.getDescription(n)}`);
+        env.info(`${unit.nameWithGroup}は${this.getDescription(n)}`);
         unit.battleContext.healedHpAfterCombat += n;
     }
 }
@@ -1362,7 +1362,7 @@ const RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombat
 const WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)`);
+        env.info(`${unit.nameWithGroup}は奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効(ダメージ加算、軽減無効は、範囲奥義を除く)`);
         unit.battleContext.invalidatesDamageReductionExceptSpecialOnSpecialActivation = true;
     }
 }();
@@ -1377,7 +1377,7 @@ class ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCom
         let unit = this.getUnit(env);
         let ratios = unit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial;
         ratios.push(percentage / 100);
-        env.debug(`${unit.nameWithGroup}はダメージ軽減を${percentage}%無効。ratios: [${ratios}]`);
+        env.info(`${unit.nameWithGroup}は敵のダメージ軽減を${percentage}%無効。ratios: [${ratios}]`);
     }
 }
 
@@ -1413,7 +1413,7 @@ const REDUCES_PERCENTAGE_OF_UNITS_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DUR
 const NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は奥義発動カウント変動量-を無効`);
+        env.info(`${unit.nameWithGroup}は奥義発動カウント変動量-を無効`);
         unit.battleContext.neutralizesReducesCooldownCount();
     }
 }();
@@ -1421,7 +1421,7 @@ const NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE = new class extends SkillEf
 const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は敵の奥義発動カウント変動量-1`);
+        env.info(`${unit.nameWithGroup}は敵の奥義発動カウント変動量-1`);
         unit.battleContext.reducesCooldownCount = true;
     }
 }();
@@ -1429,7 +1429,7 @@ const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE = new class extends S
 const UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;
-        env.debug(`${unit.nameWithGroup}は暗闘効果を発動(戦闘相手以外の敵軍のスキルを無効化)`);
+        env.info(`${unit.nameWithGroup}は暗闘効果を発動(戦闘相手以外の敵軍のスキルを無効化)`);
         unit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
     }
 }();
@@ -1437,7 +1437,7 @@ const UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE =
 const FOE_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.foeDuringCombat;
-        env.debug(`${unit.nameWithGroup}は暗闘効果を発動(戦闘相手以外の敵軍のスキルを無効化)`);
+        env.info(`${unit.nameWithGroup}は暗闘効果を発動(戦闘相手以外の敵軍のスキルを無効化)`);
         unit.battleContext.disablesSkillsFromEnemyAlliesInCombat = true;
     }
 }();
@@ -1448,7 +1448,7 @@ const FOE_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = 
 class TargetCanCounterattackRegardlessOfRangeNode extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は距離に関係なく反撃する`);
+        env.info(`${unit.nameWithGroup}は距離に関係なく反撃する`);
         unit.battleContext.canCounterattackToAllDistance = true;
     }
 }
@@ -1492,7 +1492,7 @@ const CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE = new CanFoeCounterattackRe
 const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は敵の守備か魔防の低い方でダメージ計算)`);
+        env.info(`${unit.nameWithGroup}は敵の守備か魔防の低い方でダメージ計算)`);
         unit.battleContext.refersMinOfDefOrRes = true;
     }
 }();
@@ -1507,7 +1507,7 @@ class TargetAttacksTwiceEvenIfTargetsFoeInitiatesCombatNode extends SkillEffectN
 
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は2回攻撃（受けの時も2回攻撃）`);
+        env.info(`${unit.nameWithGroup}は2回攻撃（受けの時も2回攻撃）`);
         unit.battleContext.attackCount = 2;
         unit.battleContext.counterattackCount = 2;
     }
@@ -1520,7 +1520,7 @@ const TARGET_ATTACKS_TWICE_DURING_COMBAT_NODE = TARGET_ATTACKS_TWICE_EVEN_IF_TAR
 const TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は攻撃時に2回攻撃: ${unit.battleContext.attackCount} => 2`);
+        env.info(`${unit.nameWithGroup}は攻撃時に2回攻撃: ${unit.battleContext.attackCount} → 2`);
         unit.battleContext.attackCount = 2;
     }
 }();
@@ -1528,7 +1528,7 @@ const TARGET_ATTACKS_TWICE_WHEN_TARGET_INITIATES_COMBAT_NODE = new class extends
 const TARGET_ATTACKS_TWICE_WHEN_TARGETS_FOE_INITIATES_COMBAT_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.target;
-        env.debug(`${unit.nameWithGroup}は受け時に2回攻撃): ${unit.battleContext.counterattackCount} => ${2}`);
+        env.info(`${unit.nameWithGroup}は受け時に2回攻撃): ${unit.battleContext.counterattackCount} → 2`);
         unit.battleContext.counterattackCount = 2;
     }
 }();
@@ -1542,7 +1542,7 @@ class WhenSpecialTriggersReducesDamageFromTargetsFoesAttacksByNPercentNode exten
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.battleContext.damageReductionRatioBySpecial = n / 100;
-        env.debug(`${unit.nameWithGroup}は奥義発動、攻撃のダメージを${n}%軽減`);
+        env.info(`${unit.nameWithGroup}は奥義発動、攻撃のダメージを${n}%軽減`);
     }
 }
 
@@ -1556,7 +1556,7 @@ class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode extends 
         let n = this.evaluateChildren(env);
         unit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(n / 100.0);
         let ratios = unit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial;
-        env.debug(`${unit.nameWithGroup}は受けた攻撃のダメージを${n}%軽減(1戦闘1回のみ): ratios [${ratios}]`);
+        env.info(`${unit.nameWithGroup}は受けた攻撃のダメージを${n}%軽減(1戦闘1回のみ): ratios [${ratios}]`);
     }
 }
 
@@ -1573,7 +1573,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
         let n = this.evaluateChildren(env);
         unit.battleContext.specialCountReductionBeforeFirstAttack += n;
         let result = unit.battleContext.specialCountReductionBeforeFirstAttack;
-        env.debug(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1589,7 +1589,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeEachOfTargetsFollowUpAttackD
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         let result = unit.battleContext.specialCountReductionBeforeEachFollowupAttack += n;
-        env.debug(`${unit.nameWithGroup}は自分の各追撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は自分の各追撃前に自身の奥義発動カウント-${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1606,7 +1606,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDu
         let n = this.evaluateChildren(env);
         unit.battleContext.specialCountReductionBeforeFirstFollowupAttack += n;
         let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
-        env.debug(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} => ${reduction}`);
+        env.info(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} → ${reduction}`);
     }
 }
 
@@ -1633,7 +1633,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstAttackDuring
         let n = this.evaluateChildren(env);
         unit.battleContext.specialCountReductionBeforeFirstAttackByEnemy += n;
         let result = unit.battleContext.specialCountReductionBeforeFirstAttackByEnemy;
-        env.debug(`${unit.nameWithGroup}は相手の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は相手の最初の攻撃前に自身の奥義発動カウント-${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1650,7 +1650,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesFirstFollowUpAtta
         let n = this.evaluateChildren(env);
         unit.battleContext.specialCountReductionBeforeFirstFollowUpAttackByEnemy += n;
         let result = unit.battleContext.specialCountReductionBeforeFirstFollowUpAttackByEnemy;
-        env.debug(`${unit.nameWithGroup}は相手の最初の追撃の前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は相手の最初の追撃の前に自身の奥義発動カウント-${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1664,7 +1664,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFoesSecondStrikeDurin
         let n = this.evaluateChildren(env);
         unit.battleContext.specialCountReductionBeforeSecondStrikeByEnemy += n;
         let result = unit.battleContext.specialCountReductionBeforeSecondStrikeByEnemy;
-        env.debug(`${unit.nameWithGroup}は相手の最初の2回攻撃の2回目の前に自身の奥義発動カウント-${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は相手の最初の2回攻撃の2回目の前に自身の奥義発動カウント-${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1681,7 +1681,7 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackN
         let n = this.evaluateChildren(env);
         let foe = env.getFoeDuringCombatOf(unit);
         let result = foe.battleContext.specialCountIncreaseBeforeFirstAttack += n;
-        env.debug(`${unit.nameWithGroup}は敵の最初の攻撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は敵の最初の攻撃前に敵の奥義発動カウント+${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1698,7 +1698,7 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesSecondStrike
         let n = this.evaluateChildren(env);
         let foe = env.getFoeDuringCombatOf(unit);
         let result = foe.battleContext.specialCountIncreaseBeforeSecondStrike += n;
-        env.debug(`${unit.nameWithGroup}は敵の最初の2回攻撃の2回目の攻撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は敵の最初の2回攻撃の2回目の攻撃前に敵の奥義発動カウント+${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1719,7 +1719,7 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstFollowU
         let n = this.evaluateChildren(env);
         let foe = env.getFoeDuringCombatOf(unit);
         let result = foe.battleContext.specialCountIncreaseBeforeFollowupAttack += n;
-        env.debug(`${unit.nameWithGroup}は敵の最初の追撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は敵の最初の追撃前に敵の奥義発動カウント+${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1740,7 +1740,7 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFirstAttackNode 
         let n = this.evaluateChildren(env);
         let foe = env.getFoeDuringCombatOf(unit);
         let result = foe.battleContext.specialCountIncreaseBeforeFirstAttackByEnemy += n;
-        env.debug(`${unit.nameWithGroup}は最初の攻撃前に敵の奥義発動カウント+${n}: ${result - n} => ${result}`);
+        env.info(`${unit.nameWithGroup}は最初の攻撃前に敵の奥義発動カウント+${n}: ${result - n} → ${result}`);
     }
 }
 
@@ -1771,7 +1771,7 @@ class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
         unit.battleContext.canActivateNonSpecialMiracle = true;
         let threshold = this.evaluateChildren(env);
         unit.battleContext.nonSpecialMiracleHpPercentageThreshold = threshold;
-        env.debug(`HP${threshold}%以上の時${unit.nameWithGroup}は奥義以外の祈りを発動可能`);
+        env.info(`HP${threshold}%以上の時${unit.nameWithGroup}は奥義以外の祈りを発動可能`);
     }
 }
 
@@ -1797,7 +1797,7 @@ class EffectiveAgainstNode extends SkillEffectNode {
         let unit = env.unitDuringCombat;
         for (let effective of this.evaluateChildren(env)) {
             unit.battleContext.effectivesAgainst.push(effective);
-            env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(effective)}特効`);
+            env.info(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(effective)}特効`);
         }
     }
 }
@@ -1823,10 +1823,10 @@ class TargetsSpecialTriggersTwiceThenReducesDamageByNNode extends BoolNode {
         let unit = this.getUnit(env);
         unit.battleContext.canDamageReductionSpecialTriggerTwice = true;
         let n = this.evaluateChildren(env)[0];
-        env.debug(`${unit.nameWithGroup}はダメージ軽減奥義を複製発動`);
+        env.info(`${unit.nameWithGroup}はダメージ軽減奥義を複製発動`);
         if (n > 0) {
             unit.battleContext.damageReductionValueAfterSpecialTriggerTwice += n;
-            env.debug(`${unit.nameWithGroup}はその後、受けるダメージ-${n}: => ${unit.battleContext.damageReductionValueAfterSpecialTriggerTwice}`);
+            env.info(`${unit.nameWithGroup}はその後、受けるダメージ-${n}: → ${unit.battleContext.damageReductionValueAfterSpecialTriggerTwice}`);
         }
     }
 }
@@ -1842,7 +1842,7 @@ class NeutralizesEffectsThatPreventTargetsCounterattacksDuringCombatNode extends
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.nullCounterDisrupt = true;
-        env.debug(`${unit.nameWithGroup}は自身の反撃不可を無効`);
+        env.info(`${unit.nameWithGroup}は自身の反撃不可を無効`);
     }
 }
 
@@ -1861,7 +1861,7 @@ class WhenTargetDealsDamageDuringCombatRestoresNHpToTargetNode extends FromPosit
         let unit = this.getUnit(env);
         let result = this.evaluateChildren(env);
         unit.battleContext.healedHpByAttack += result;
-        env.debug(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
+        env.info(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
     }
 }
 
@@ -1880,7 +1880,7 @@ class WhenTargetDealsDamageDuringCombatRestoresNHpPerAttackToTargetNode extends 
         let unit = this.getUnit(env);
         let result = this.evaluateChildren(env);
         unit.battleContext.healedHpByAttackPerAttack += result;
-        env.debug(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
+        env.info(`${unit.nameWithGroup}は自分の攻撃でダメージを与えた時、${result}回復（与えたダメージが0でも効果は発動）`);
     }
 }
 
@@ -1895,7 +1895,7 @@ class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialNode exte
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.invalidatesDamageReductionExceptSpecial = true;
-        env.debug(`${unit.nameWithGroup}は相手の奥義以外のダメージ軽減を無効`);
+        env.info(`${unit.nameWithGroup}は相手の奥義以外のダメージ軽減を無効`);
     }
 }
 
@@ -1924,7 +1924,7 @@ class NeutralizeReducesDamageByXPercentEffectsFromTargetsFoesNonSpecialAfterDefe
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial = true;
-        env.debug(`${unit.nameWithGroup}は奥義発動後相手の奥義以外のダメージ軽減を無効`);
+        env.info(`${unit.nameWithGroup}は奥義発動後相手の奥義以外のダメージ軽減を無効`);
     }
 }
 
@@ -1936,7 +1936,7 @@ class AfterSpecialTriggersTargetsNextAttackDealsDamageEqTotalDamageReducedNode e
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.canAddDamageReductionToNextAttackAfterSpecial = true;
-        env.debug(`${unit.nameWithGroup}は奥義で軽減した値を、自身の次の攻撃のダメージに+`);
+        env.info(`${unit.nameWithGroup}は奥義で軽減した値を、自身の次の攻撃のダメージに+`);
     }
 }
 
@@ -1951,7 +1951,7 @@ class TargetsNextAttackDealsDamageEqTotalDamageReducedFromTargetsFoesFirstAttack
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.firstAttackReflexDamageRates.push(1.0);
-        env.debug(`${unit.nameWithGroup}は敵の最初の攻撃で軽減した値を、自身の次の攻撃のダメージに+`);
+        env.info(`${unit.nameWithGroup}は敵の最初の攻撃で軽減した値を、自身の次の攻撃のダメージに+`);
     }
 }
 
@@ -1973,7 +1973,7 @@ class TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOn
         let percentage = this.evaluateChildren(env);
         let ratio = percentage / 100.0;
         let result = unit.battleContext.reducedRatioForNextAttack = Math.max(ratio, unit.battleContext.reducedRatioForNextAttack);
-        env.debug(`${unit.nameWithGroup}は軽減前のダメージの${percentage}%を自身の次の攻撃のダメージに+(同系統効果複数時、最大値適用): ${result}`);
+        env.info(`${unit.nameWithGroup}は軽減前のダメージの${percentage}%を自身の次の攻撃のダメージに+(同系統効果複数時、最大値適用): ${result}`);
     }
 }
 
@@ -1992,7 +1992,7 @@ class RestoresXHPToTargetAsTargetsCombatBeginsNode extends FromPositiveNumberNod
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.battleContext.addHealAmountAfterAfterBeginningOfCombatSkills(n);
-        env.debug(`${unit.nameWithGroup}は戦闘開始後${n}回復`);
+        env.info(`${unit.nameWithGroup}は戦闘開始後${n}回復`);
     }
 }
 
@@ -2018,7 +2018,7 @@ class ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode extends FromPo
         let unit = this.getUnit(env);
         let x = this.evaluateChildren(env);
         unit.battleContext.addNullInvalidatesHealRatios(x / 100);
-        env.debug(`${unit.nameWithGroup}は自身の【回復不可】を${x}%無効`);
+        env.info(`${unit.nameWithGroup}は自身の【回復不可】を${x}%無効`);
     }
 }
 
@@ -2034,7 +2034,7 @@ class AfterSpecialTriggersTargetsNextAttackDealsDamageMinNode extends FromPositi
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.battleContext.nextAttackMinAdditionAfterSpecial = n;
-        env.debug(`${unit.nameWithGroup}は奥義で軽減した値を、自身の次の攻撃のダメージに+する効果の最小 : ${n}`);
+        env.info(`${unit.nameWithGroup}が奥義で軽減した値を、自身の次の攻撃のダメージに+する効果の最低値 : ${n}`);
     }
 }
 
@@ -2046,7 +2046,7 @@ class CalculatesDamageUsingTheLowerOfTargetsFoesDefOrResWhenSpecialTriggersNode 
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.refersLowerDefOrResWhenSpecial = true;
-        env.debug(`${unit.nameWithGroup}は奥義発動時、敵の守備か魔防の低い方でダメージ計算`);
+        env.info(`${unit.nameWithGroup}は奥義発動時、敵の守備か魔防の低い方でダメージ計算`);
     }
 }
 
@@ -2063,7 +2063,7 @@ class InflictsBonusReversalPenaltyOnTargetsFoeNode extends FromBoolStatsNode {
         let foe = env.getFoeDuringCombatOf(unit);
         let booleans = this.evaluateChildren(env);
         foe.battleContext.setBonusReversals(...booleans);
-        env.debug(`${foe.nameWithGroup}は強化反転を受ける: [${booleans}]`);
+        env.info(`${foe.nameWithGroup}は強化反転を受ける: [${booleans}]`);
     }
 }
 
@@ -2075,7 +2075,7 @@ class DisablesTargetsFoesSkillsThatCalculateDamageUsingTheLowerOfTargetsFoesDefO
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.invalidatesReferenceLowerMit = true;
-        env.debug(`${unit.nameWithGroup}は敵の「敵の守備か魔防の低い方でダメージ計算」を無効化`);
+        env.info(`${unit.nameWithGroup}は敵の「敵の守備か魔防の低い方でダメージ計算」を無効化`);
     }
 }
 
@@ -2102,6 +2102,27 @@ class CanTargetMakeFollowUpIncludingPotentNode extends BoolNode {
 
 const CAN_TARGET_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetMakeFollowUpIncludingPotentNode();
 
+/**
+ * 神速は含まない
+ */
+class CanTargetMakeFollowUpNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.AFTER_FOLLOWUP_CONFIGURED)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        }
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canFollowupAttackWithoutPotent;
+        env.debug(`${unit.nameWithGroup}は追撃可能か: ${result}`);
+        return result;
+    }
+}
+
+const CAN_TARGET_MAKE_FOLLOW_UP_NODE = new CanTargetMakeFollowUpNode();
+
 class CanTargetsFoeMakeFollowUpIncludingPotentNode extends CanTargetMakeFollowUpIncludingPotentNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -2109,6 +2130,27 @@ class CanTargetsFoeMakeFollowUpIncludingPotentNode extends CanTargetMakeFollowUp
 }
 
 const CAN_TARGETS_FOE_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetsFoeMakeFollowUpIncludingPotentNode();
+
+/**
+ * 神速は含まない
+ */
+class CanTargetMakeFollowUpBeforePotentNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.APPLYING_POTENT)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        }
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canFollowupAttackWithoutPotent;
+        env.debug(`${unit.nameWithGroup}は追撃可能か: ${result}`);
+        return result;
+    }
+}
+
+const CAN_TARGET_MAKE_FOLLOW_UP_BEFORE_POTENT_NODE = new CanTargetMakeFollowUpBeforePotentNode();
 
 // TODO: 命名規則を統一させる
 class DoesTargetTriggerAttacksTwiceNode extends BoolNode {
@@ -2160,7 +2202,7 @@ class DamageDealtToTargetAsCombatBeginsNode extends NumberNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.battleContext.getMaxDamageAfterBeginningOfCombat();
-        env.debug(`${unit.nameWithGroup}は戦闘開始後${result}のダメージを受けた`);
+        env.info(`${unit.nameWithGroup}は戦闘開始後${result}のダメージを受けた`);
         return result;
     }
 }
@@ -2180,7 +2222,7 @@ class DealsDamageToTargetAsCombatBeginsNode extends FromPositiveNumberNode {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         let result = unit.battleContext.damageAfterBeginningOfCombat += n;
-        env.debug(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ: ${result - n} -> ${result}`);
+        env.info(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ: ${result - n} -> ${result}`);
     }
 }
 
@@ -2202,7 +2244,7 @@ class DealsDamageToTargetAsCombatBeginsThatDoesNotStackNode extends FromPositive
         let n = this.evaluateChildren(env);
         unit.battleContext.addDamageAfterBeginningOfCombatNotStack(n);
         let result = unit.battleContext.getDamagesAfterBeginningOfCombatNotStack();
-        env.debug(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ（最大値適用）: ${result}`);
+        env.info(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ（最大値適用）: ${result}`);
     }
 }
 
@@ -2260,7 +2302,7 @@ class GrantsSpecialCooldownChargePlus1ToTargetPerAttackDuringCombatNode extends 
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.increaseCooldownCountForBoth();
-        env.debug(`${unit.nameWithGroup}は戦闘中、自身の奥義発動カウント変動量+1`);
+        env.info(`${unit.nameWithGroup}は戦闘中、自身の奥義発動カウント変動量+1`);
     }
 }
 
@@ -2294,7 +2336,7 @@ class CalculatesDamageUsingXPercentOfTargetsStatInsteadOfAtkWhenSpecialNode exte
         let percentage = this._percentageNode.evaluate(env);
         unit.battleContext.statIndexInsteadOfAtkWhenSpecial = index;
         unit.battleContext.ratioForUsingAnotherStatWhenSpecial = percentage / 100.0;
-        env.debug(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに${getStatusName(index)}の値を使用(${percentage}%)`);
+        env.info(`${unit.nameWithGroup}は奥義発動時攻撃の代わりに${getStatusName(index)}の値を使用(${percentage}%)`);
     }
 }
 
@@ -2313,7 +2355,7 @@ class AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode 
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.battleContext.addAdditionalNTimesDamageReductionRatiosByNonDefenderSpecialCount(n);
-        env.debug(`${unit.nameWithGroup}は1戦闘1回の奥義スキルが持つダメージ軽減の発動回数を${n}回増加（${n + 1}回発動）}`);
+        env.info(`${unit.nameWithGroup}は1戦闘1回の奥義スキルが持つダメージ軽減の発動回数を${n}回増加（${n + 1}回発動）}`);
     }
 }
 
@@ -2331,7 +2373,7 @@ class GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisad
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.isAdvantageForColorless = true;
-        env.debug(`${unit.nameWithGroup}は無属性の敵との戦闘時自分は3すくみ有利、敵は3すくみ不利となる`);
+        env.info(`${unit.nameWithGroup}は無属性の敵との戦闘時自分は3すくみ有利、敵は3すくみ不利となる`);
     }
 }
 
@@ -2347,7 +2389,7 @@ class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesStatusEffectThatTakeEffectOnTar
         let unit = this.getUnit(env);
         let e = this.evaluateChildren(env);
         unit.battleContext.neutralizedStatusEffectSetWhileBeginningOfTurn.add(e);
-        env.debug(`${unit.nameWithGroup}は付与される${getStatusEffectName(e)}を無効化`);
+        env.info(`${unit.nameWithGroup}は付与される${getStatusEffectName(e)}を無効化`);
     }
 }
 
@@ -2359,7 +2401,7 @@ class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTarget
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.battleContext.neutralizedDebuffFlagsWhileBeginningOfTurn = this.evaluateChildren(env);
-        env.debug(`${unit.nameWithGroup}は付与される弱化を無効化: [${result}]`);
+        env.info(`${unit.nameWithGroup}は付与される弱化を無効化: [${result}]`);
     }
 }
 
@@ -2387,7 +2429,7 @@ class PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode extends SkillEffe
         } else {
             unit.battleContext.potentOverwriteRatio = n / 100.0;
         }
-        env.debug(`${unit.nameWithGroup}は神速追撃発動時に神速追撃${n}%とする`);
+        env.info(`${unit.nameWithGroup}は神速追撃発動時に神速追撃${n}%とする`);
     }
 }
 
@@ -2402,7 +2444,7 @@ class CalculatesTargetsDamageFromStaffLikeOtherWeaponsNode extends BoolNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.wrathfulStaff = true;
-        env.debug(`${unit.nameWithGroup}は他の武器同様のダメージ計算になる`);
+        env.info(`${unit.nameWithGroup}は他の武器同様のダメージ計算になる`);
     }
 }
 
@@ -2432,7 +2474,7 @@ class TargetCanCounterattackBeforeTargetsFoesFirstAttackNode extends SkillEffect
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.isVantageActivatable = true;
-        env.debug(`${unit.nameWithGroup}は敵から攻撃された時、先制攻撃`);
+        env.info(`${unit.nameWithGroup}は敵から攻撃された時、先制攻撃`);
     }
 }
 
@@ -2449,7 +2491,7 @@ class TargetNeutralizesEffectiveAgainstXNode extends FromPositiveNumbersNode {
         let es = this.evaluateChildren(env);
         for (let e of es) {
             unit.battleContext.invalidatedEffectives.push(e);
-            env.debug(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(e)}特攻を無効`);
+            env.info(`${unit.nameWithGroup}は${EFFECTIVE_TYPE_NAMES.get(e)}特攻を無効`);
         }
     }
 }
@@ -2465,7 +2507,7 @@ class SetTargetsBanePerAttackNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.isBanePerAttack = true;
-        env.debug(`${unit.nameWithGroup}は瞬殺を発動`);
+        env.info(`${unit.nameWithGroup}は瞬殺を発動`);
     }
 }
 
@@ -2480,7 +2522,7 @@ class TreatsTargetsFoesDefResAsIfReducedByXPercentNode extends FromPositiveNumbe
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.battleContext.specialSufferPercentage = n;
-        env.debug(`${unit.nameWithGroup}は敵の守備、魔防-${n}%扱いで攻撃`);
+        env.info(`${unit.nameWithGroup}は敵の守備、魔防-${n}%扱いで攻撃`);
     }
 }
 
@@ -2495,7 +2537,7 @@ class DoesNotTriggerTargetsFoesSaviorEffectsNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.doesNotTriggerFoesSaviorEffects = true;
-        env.debug(`${unit.nameWithGroup}の戦闘時、敵の護り手は発動しない`);
+        env.info(`${unit.nameWithGroup}の戦闘時、敵の護り手は発動しない`);
     }
 }
 
@@ -2524,7 +2566,7 @@ class TargetCannotRecoverHpDuringCombatNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.hasDeepWounds = true;
-        env.debug(`${unit.nameWithGroup}は戦闘中HPを回復できない`);
+        env.info(`${unit.nameWithGroup}は戦闘中HPを回復できない`);
     }
 }
 
@@ -2546,7 +2588,7 @@ class TargetCannotRecoverHpAfterCombatNeutralizedWhenFeudNode extends SkillEffec
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.hasDeepWoundsAfterCombatNeutralizedWhenFeud = true;
-        env.debug(`${unit.nameWithGroup}は戦闘後HPを回復できない（暗闘で無効化される）`);
+        env.info(`${unit.nameWithGroup}は戦闘後HPを回復できない（暗闘で無効化される）`);
     }
 }
 
@@ -2570,7 +2612,7 @@ class ReducesEffectOfDeepWoundsOnTargetByNPercentNode extends FromPositiveNumber
         let value = this.evaluateChildren(env);
         let ratio = value / 100.0;
         unit.battleContext.addNullInvalidatesHealRatios(ratio);
-        env.debug(`${unit.nameWithGroup}は回復不可を${value}%無効`);
+        env.info(`${unit.nameWithGroup}は回復不可を${value}%無効`);
     }
 }
 
@@ -2588,7 +2630,7 @@ class NeutralizesTargetFoesNonSpecialMiracle extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.neutralizesNonSpecialMiracle = true;
-        env.debug(`${unit.nameWithGroup}は相手の奥義以外の祈りを無効`);
+        env.info(`${unit.nameWithGroup}は相手の奥義以外の祈りを無効`);
     }
 }
 
@@ -2603,7 +2645,7 @@ class CalculatesDamageAtNPercentNode extends FromPositiveNumberNode {
         let unit = this.getUnit(env);
         let percentage = this.evaluateChildren(env);
         unit.battleContext.damageCalculationRatios.push(percentage / 100.0);
-        env.debug(`${unit.nameWithGroup}は与えるダメージを${percentage}%で計算`);
+        env.info(`${unit.nameWithGroup}は与えるダメージを${percentage}%で計算`);
     }
 }
 
@@ -2620,7 +2662,7 @@ class AfterCombatMovementEffectsDoNotOccurBecauseOfTargetNode extends SkillEffec
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.isAfterCombatMovementDisabled = true;
-        env.debug(`${unit.nameWithGroup}は戦闘後移動スキルを無効にする`);
+        env.info(`${unit.nameWithGroup}は戦闘後移動スキルを無効にする`);
     }
 }
 
@@ -2635,7 +2677,7 @@ class CancelsStatusEffectsGrantedToTargetNode extends FromNumbersNode {
     evaluate(env) {
         this.evaluateChildren(env).forEach(e => {
             let unit = this.getUnit(env);
-            env.debug(`${unit.nameWithGroup}の${getStatusEffectName(e)}を解除予約`);
+            env.info(`${unit.nameWithGroup}の${getStatusEffectName(e)}を解除予約`);
             unit.reservedStatusEffectSetToNeutralize.add(e);
         });
     }
@@ -2668,7 +2710,7 @@ class ReducesDamageFromTargetFoeToZeroNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.reducesDamageFromFoeToZeroDuringCombat = true;
-        env.debug(`${unit.nameWithGroup}はダメージを0に軽減`);
+        env.info(`${unit.nameWithGroup}はダメージを0に軽減`);
     }
 }
 

@@ -29,6 +29,7 @@ class DoubleClickChecker {
 
 const g_keyboardManager = new KeyboardManager();
 let g_draggingElemId = "";
+let g_isDragging = false;
 /** @type {Queue<Tile>} */
 let g_dragoverTileHistory = new Queue(10);
 let g_currentTile = null;
@@ -103,6 +104,7 @@ function onItemSelected(event) {
 
 /***** ドラッグ開始時の処理 *****/
 function f_dragstart(event) {
+    g_isDragging = true;
     //ドラッグするデータのid名をDataTransferオブジェクトにセット
     event.dataTransfer.setData("text", event.target.id);
     g_draggingElemId = event.target.id;
@@ -111,13 +113,32 @@ function f_dragstart(event) {
     g_attackTile = null;
 }
 
+let dragRightClickHandled = false;
+
+function toggleShowSkillLogs(event) {
+    // 右クリック検知 (buttons: 左=1, 右=2, 中=4 のビットマスク)
+    if ((event.buttons & 2) !== 0) {
+        if (!dragRightClickHandled) {
+            dragRightClickHandled = true; // ドラッグ中に一度だけ実行
+            let el = document.getElementById('info-pop');
+            if (el?.matches(":popover-open")) {
+                g_appData.showsSkillLogs = !g_appData.showsSkillLogs;
+                LocalStorageUtil.setBoolean('showsSkillLogs', g_appData.showsSkillLogs);
+            }
+        }
+    } else {
+        // ボタンが離されたらフラグをリセット
+        dragRightClickHandled = false;
+    }
+}
+
 /***** ドラッグ要素がドロップ要素に重なっている間の処理 *****/
 function f_dragover(event) {
     //dragoverイベントをキャンセルして、ドロップ先の要素がドロップを受け付けるようにする
     let dropTargetId = event.currentTarget.id;
     if (dropTargetId.includes('_')) {
         let pos = getPositionFromCellId(dropTargetId);
-        dragoverImpl(pos[0], pos[1]);
+        dragoverImpl(pos[0], pos[1], null, event);
     }
     event.preventDefault();
 }
@@ -132,6 +153,7 @@ function table_dragend(event) {
 
 /***** ドロップ時の処理 *****/
 function f_drop(event) {
+    g_isDragging = false;
     //ドラッグされたデータのid名をDataTransferオブジェクトから取得
     let objId = event.dataTransfer.getData("text");
     let dropTargetId = event.currentTarget.id;
@@ -251,7 +273,7 @@ function findBestActionTile(targetTile, spaces, unit) {
     return null;
 }
 
-function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
+function dragoverImpl(overTilePx, overTilePy, draggingElemId = null, event = null) {
     try {
         let elemId = "";
         if (draggingElemId == null) {
@@ -264,7 +286,7 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
         if (unit != null) {
             let targetTile = g_appData.map.getTile(overTilePx, overTilePy);
             if (targetTile != null) {
-                dragoverImplForTargetTile(unit, targetTile);
+                dragoverImplForTargetTile(unit, targetTile, event);
             }
 
             if (g_appData.showMovableRangeWhenMovingUnit) {
@@ -351,9 +373,27 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null) {
     }
 }
 
-function dragoverImplForTargetTile(unit, targetTile) {
+function glowPopInfoIcon() {
+    const el = document.querySelector('.damage-calc-info-icon');
+    const cls = 'icon-glow';
+    if (el) {
+        el.classList.remove(cls); // 連続実行時にリセット
+        void el.offsetWidth;      // リフロー強制
+        el.classList.add(cls);
+        el.addEventListener('animationend', () => el.classList.remove(cls), {once: true});
+    }
+}
+
+function dragoverImplForTargetTile(unit, targetTile, event) {
     // ターゲットのタイルが変化していなければ再計算しない
-    if (g_dragoverTargetTileForCalcSummary === targetTile) { return; }
+    if (g_dragoverTargetTileForCalcSummary === targetTile) {
+        toggleShowSkillLogs(event);
+        return;
+    }
+    if (g_dragoverTargetTileForCalcSummary) {
+        // 現在ダメージ予測が存在するがtargetTileは変わっている => ダメージ予測が変化
+        glowPopInfoIcon();
+    }
     g_attackTile = null;
     g_currentTile = targetTile;
     unit.precombatSpecialTiles = [];
@@ -385,6 +425,7 @@ function dragoverImplForTargetTile(unit, targetTile) {
             // 再計算のチェックのためサマリーを計算するタイルを保存しておく
             g_dragoverTargetTileForCalcSummary = targetTile;
             g_app.showDamageCalcSummary(unit, unitPlacedOnTargetTile, attackTile);
+            toggleShowSkillLogs(event);
             return;
         }
     }

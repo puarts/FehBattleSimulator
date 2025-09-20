@@ -1581,9 +1581,6 @@ function initVueComponents() {
             isFiltering() {
                 return this.filterText && this.filterText.trim() !== '';
             },
-            resetFilter() {
-                this.filterText = '';
-            },
             onItemDragStart(index) {
                 this.draggedIndex = index;
             },
@@ -1666,12 +1663,7 @@ function initVueComponents() {
             </div>
 
             <span>
-              <input type="text" class="box-common name-filter" v-model="filterText" placeholder="名前で絞り込み" />
-              <button type="reset"
-                      class="icon-button load-button" 
-                      @click="resetFilter">
-                <i class="fa fa-eraser" aria-hidden="true"></i>
-              </button>
+              <input type="search" class="box-common name-filter" v-model="filterText" placeholder="名前で絞り込み" />
             </span>
             <table class="unit-dialog">
               <thead>
@@ -1855,6 +1847,7 @@ function initVueComponents() {
           </div>
         `
     });
+
     Vue.component('damage-calc-result', {
         props: {
             combatResult: {
@@ -1868,23 +1861,127 @@ function initVueComponents() {
                 default: () => {
                 },
             },
+            showsSkillLogs: {
+                type: Boolean,
+                required: true,
+            },
+        },
+        data() {
+            return {
+                detailLevel: DetailLevel.NORMAL,
+                detailLevelOptions: DetailUtils.getOptions(),
+                logFilterText: '',
+                groupFilterText: '',
+            };
         },
         computed: {
             hasResult: vm => !!vm.combatResult,
             atkName: vm => vm.combatResult?.atkUnit?.name || '',
             defName: vm => vm.combatResult?.defUnit?.name || '',
             precombatDamage: vm => vm.combatResult?.preCombatDamage ?? 0,
-            attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? []
+            wasPrecombatSpecialActivated: vm => vm.combatResult?.wasPrecombatSpecialActivated ?? false,
+            attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? [],
+            skillCheckboxId: vm => `skill-checkbox-${vm._uid}`,
+            beforeCombatRootChildren() {
+                const logger = this.combatResult.beforeCombatSkillLogger;
+                if (this.groupFilterText) {
+                    const pred = node => node.isGroup && node.matches(this.groupFilterText);
+                    return logger.filteredRoot(pred)?.children ?? [];
+                }
+                return logger.rootLog.children;
+            },
+            rootChildren() {
+                const logger = this.combatResult.skillLogger;
+                if (this.groupFilterText) {
+                    const pred = node => node.isGroup && node.matches(this.groupFilterText);
+                    return logger.filteredRoot(pred)?.children ?? [];
+                }
+                return logger.rootLog.children;
+            },
+            // v-model 用のプロキシ
+            modelShowsSkillLogs: {
+                get() { return this.showsSkillLogs; },
+                set(v) { this.$emit('update:shows-skill-logs', v); } // 親に反映
+            },
+        },
+        methods: {
+            levelKey(s) {
+                return String(s).toLowerCase();
+            },
+            levelClass(levelStr) {
+                return `log-${this.levelKey(levelStr)}`;
+            },
+            levelTagClass(levelStr) {
+                return `${this.levelClass(levelStr)}-tag`;
+            },
         },
         template: `
-            <div class="damage-calc-result">
-              <!-- 閉じるボタン -->
-              <button class="pop-close-btn" @click="onClosed">×</button>
+            <div class="pop damage-calc-result theme-dark">
+              <div class="pop-header">
+                <div v-if="hasResult">{{ atkName }} vs {{ defName }}</div>
+                <div v-else>結果はまだありません</div>
+                <div>
+                  <!-- 詳細度 -->
+                  <select v-model="detailLevel" class="select-btn">
+                    <option v-for="option in detailLevelOptions" 
+                            :key="option.value" 
+                            :value="option.value">
+                      {{ option.text }}
+                    </option>
+                  </select>
+                  <!-- スキル表示 -->
+                  <label class="check-btn">
+                    <input type="checkbox" v-model="modelShowsSkillLogs" />
+                    <span>スキル表示</span>
+                  </label>
+                  <!-- 閉じるボタン -->
+                  <button class="pop-close-btn" @click="onClosed">×</button>
+                </div>
+              </div>
+              <div v-if="showsSkillLogs" class="pop-header">
+                <div>
+                  <input
+                    v-model="logFilterText"
+                    type="search"
+                    class="input filter-input input-btn"
+                    placeholder="ログをフィルタ..."
+                  />
+                  <input
+                    v-model="groupFilterText"
+                    type="search"
+                    class="input filter-input input-btn"
+                    placeholder="グループをフィルタ..."
+                  />
+                </div>
+              </div>
 
-              <div v-if="hasResult">
-                <div class="summary">
-                  <div>{{ atkName }} vs {{ defName }}</div>
+              <div v-if="hasResult" class="pop-container">
+                <div v-if="showsSkillLogs">
+                  <log-node 
+                    v-for="(n, i) in beforeCombatRootChildren"
+                    :key="i"
+                    :node="n"
+                    :default-open="true"
+                    :child-default-open="true"
+                    :detail-level="detailLevel"
+                    :log-filter-text="logFilterText"
+                  />
+                </div>
+                
+                <div v-if="wasPrecombatSpecialActivated" class="precombat-result">
                   <div>戦闘前ダメージ: {{ precombatDamage }}</div>
+                </div>
+                
+                <div v-if="showsSkillLogs">
+                  <log-node 
+                    v-for="(n, i) in rootChildren"
+                    :key="i"
+                    :node="n"
+                    :default-open="true"
+                    :child-default-open="true"
+                    :detail-level="detailLevel"
+                    :log-filter-text="logFilterText"
+                  />
                 </div>
 
                 <div class="attacks-result" v-if="attackResults">
@@ -1892,19 +1989,137 @@ function initVueComponents() {
                     <attack-calc-result 
                       :combat-result="combatResult"
                       :attack-result="attackResult"
+                      :shows-skill-logs="showsSkillLogs"
+                      :detail-level="detailLevel"
+                      :log-filter-text="logFilterText"
+                      :group-filter-text="groupFilterText"
                     />
                   </div>
                 </div>
               </div>
-
-              <div v-else>結果はまだありません。</div>
             </div>
         `,
     });
+
+    Vue.component('log-node', {
+        name: 'log-node',
+        props: {
+            node: {type: GroupLog, required: true}, // GroupLog<SkillLogContent>
+            defaultOpen: {type: Boolean, default: true},
+            childDefaultOpen: {type: Boolean, default: false},
+            isChild: {type: Boolean, default: false},
+            detailLevel: {type: Number, default: DetailLevel.NORMAL},
+            logFilterText: {type: String, default: ''},
+        },
+        data() {
+            return {
+                open: this.defaultOpen,
+                detailToLevel: new Map([
+                    [DetailLevel.SIMPLE, LoggerBase.LogLevel.INFO],
+                    [DetailLevel.NORMAL, LoggerBase.LogLevel.INFO],
+                    [DetailLevel.DETAIL, LoggerBase.LogLevel.DEBUG],
+                    [DetailLevel.VERBOSE, LoggerBase.LogLevel.TRACE],
+                    [DetailLevel.FULL, LoggerBase.LogLevel.ALL],
+                ]),
+            };
+        },
+        computed: {
+            hasChildren() {
+                return Array.isArray(this.node.children) && this.node.children.length > 0;
+            },
+            levelClass() {
+                return this.node.levelStr ? ('log-' + this.node.levelStr.toLowerCase()) : '';
+            },
+            // SkillLogContent
+            content() {
+                return this.node.log || null;
+            },
+            logLevel() {
+                return this.detailToLevel.get(this.detailLevel) ?? LoggerBase.LogLevel.INFO;
+            },
+            isSimple() {
+                return this.detailLevel === DetailLevel.SIMPLE;
+            },
+            showsLogLine() {
+                if (this.isSimple) {
+                    return !this.node.isGroup;
+                }
+                // 通常以下なら
+                if (DetailUtils.atMost(this.detailLevel, DetailLevel.NORMAL)) {
+                    // 中身がなければfalse
+                    if (!this.node.hasLeaf(this.logLevel)) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            /**
+             * フィルタ文字列を分割したキーワード配列
+             * @returns {string[]}
+             */
+            keywords() {
+                const filter = this.logFilterText.trim().replace(/\u3000/g, ' ');
+                if (filter === "") return [];
+                // 大文字小文字を区別しない場合
+                return filter.toLowerCase().split(/\s+/);
+            },
+            matchesFilter() {
+                let text = this.content.message;
+                if (this.keywords.length === 0) return true; // フィルタなしなら常にマッチ
+                const lowerText = text.toLowerCase();
+                return this.keywords.every(keyword => lowerText.includes(keyword));
+            },
+        },
+        methods: {
+            setOpenAll(val) {
+                this.open = !!val;
+                if (this.hasChildren) {
+                    this.$children.forEach(c => c.setOpenAll && c.setOpenAll(val));
+                }
+            },
+        },
+        template: `
+          <div
+            :class="[
+              levelClass,
+              { 'log-item': isChild && !isSimple }
+            ]"
+            v-if="node && (node.level <= logLevel)"
+          >
+            <div class="log-line" v-if="content && showsLogLine && matchesFilter">
+              <button v-if="hasChildren" class="log-toggle" :aria-expanded="open.toString()" @click="open = !open">
+                <span v-if="open">▾</span><span v-else>▸</span>
+              </button>
+              <span v-else class="log-toggle-spacer"></span>
+<!--              <span class="log-level">[{{ node.levelStr }}]</span>-->
+<!--              <span :class="['log-tag', levelClass + '-tag']" v-if="content && content.name">{{ content.name }}</span>-->
+              <span :class="['log-tag', levelClass + '-tag']" v-if="content && content.tag">{{ content.tag }}</span>
+              <span class="log-message" v-if="content && content.message">{{ content.message }}</span>
+            </div>
+            <div class="log-children" v-show="open" v-if="hasChildren">
+              <log-node
+                v-for="(child, i) in node.children"
+                :key="i"
+                :node="child"
+                :default-open="childDefaultOpen"
+                :child-default-open="childDefaultOpen"
+                :is-child="true"
+                :detail-level="detailLevel"
+                :log-filter-text="logFilterText"
+              />
+            </div>
+          </div>
+        `,
+    });
+
     Vue.component('attack-calc-result', {
         props: {
             combatResult: {type: CombatResult, required: true},
             attackResult: {type: AttackResult, required: true},
+            detailLevel: {type: Number, default: DetailLevel.NORMAL},
+            showsSkillLogs: {type: Boolean, required: true},
+            logFilterText: {type: String, required: true},
+            groupFilterText: {type: String, required: true},
         },
         computed: {
             strikes: vm => vm.attackResult?.strikeResults ?? [],
@@ -1921,6 +2136,16 @@ function initVueComponents() {
             atkName: vm => vm.attackResult?.atkUnit?.name || '',
             defName: vm => vm.attackResult?.defUnit?.name || '',
         },
+        methods: {
+            getRootChildren(strikeResult) {
+                const logger = strikeResult.skillLogger;
+                if (this.groupFilterText) {
+                    const pred = node => node.isGroup && node.matches(this.groupFilterText);
+                    return logger.filteredRoot(pred)?.children ?? [];
+                }
+                return logger.rootLog.children;
+            },
+        },
         template: `
           <div class="attack-result">
             <div>
@@ -1931,6 +2156,17 @@ function initVueComponents() {
 
             <div class="strikes-result" v-if="hasStrikes">
               <div v-for="(strikeResult, si) in strikes" :key="si">
+                <div v-if="showsSkillLogs">
+                  <log-node 
+                    v-for="(n, i) in getRootChildren(strikeResult)" 
+                    :key="i"
+                    :node="n"
+                    :default-open="true"
+                    :child-default-open="true"
+                    :detail-level="detailLevel"
+                    :log-filter-text="logFilterText"
+                  />
+                </div>
                 <strike-calc-result
                   :combat-result="combatResult"
                   :attack-result="attackResult"
@@ -2049,5 +2285,7 @@ function initVueComponents() {
         `
     });
 }
-
+Vue.config.errorHandler = (err, vm, info) => {
+    console.error('[Vue]', vm && vm.$options && vm.$options.name, info, err);
+};
 initVueComponents();

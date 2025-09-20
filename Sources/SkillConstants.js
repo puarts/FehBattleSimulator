@@ -3780,6 +3780,8 @@ PassiveC.TimePulseHelm = 3209; // 始まりの鼓動・兜
 Weapon.PriorsTome = 3210; // 修道院長の書
 PassiveB.SealAtkRes3 = 3211; // 攻撃魔防封じ3
 Weapon.HexbladeSwordPlus = 3212; // 魔刃の剣+
+Weapon.HexbladeLancePlus = 3415; // 魔刃の槍+
+// Weapon.HexbladeAxePlus = 3415; // 魔刃の斧+
 Weapon.TrueBondBow = 3213; // 想い合う絆の弓
 Special.TrueLunarFlash = 3214; // 真月光閃
 PassiveC.PulseOnBlades = 3215; // 追撃の鼓動・刃
@@ -3965,6 +3967,17 @@ Weapon.PrincessesEdge = 3397; // 剣姫母娘の烈剣
 Special.GaleforceMist = 3398; // 疾風迅雷・霞
 Weapon.ArenaSwordPlus = 3399; // 闘技の剣+
 Weapon.CloudedBlade = 3400; // 仮面の将の剣
+Weapon.HoshidoRaijinto = 3404; // 白夜雷神刀
+PassiveA.DuelistsBlow = 3405; // 清流の一撃
+PassiveB.BushidoTenet = 3406; // 武士道と雲ふは
+PassiveX.TumultuousEcho = 3407; // 響・迅雷風烈・鬼没
+Weapon.ArcaneCrimson = 3408; // 魔器・真紅薙刀
+PassiveB.AirSuperiority = 3409; // 天翔ける
+PassiveC.Encouragement = 3410; // 鼓舞激励
+Weapon.DoublerAxePlus = 3411; // 強化増幅の斧+
+Weapon.EntwiningHorn = 3403; // 結ぶ者の角
+Special.FlameWall = 3413; // 壁炎
+PassiveC.HeirOfOpenness = 3414; // 開神の娘
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -4147,6 +4160,7 @@ const STYLE_TYPE = {
     ECHO: 3,
     SUBLIME_HEAVEN: 4,
     WEAPON_TRIANGLE_GREEN: 5,
+    HOSHIDO_RAIJINTO: 6,
 }
 
 /**
