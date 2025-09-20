@@ -265,7 +265,6 @@
             ),
         ),
     ));
-    // TODO: 動作確認
     // For foes within 3 rows or 3 columns centered on unit,
     setForFoesSkillsDuringCombatHooks(skillId,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
@@ -400,7 +399,7 @@
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit. (Does not affect foes with Pass skills.)
     setCannotMoveThroughSpacesSkill(skillId);
     // For support partner and for allies within 3 spaces of unit,
-    setForFoesSkillsDuringCombatHooks(skillId,
+    setForAlliesHooks(skillId,
         OR_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE, IS_TARGET_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(3)),
         // grants Atk/Def/Res+5 and
         GRANTS_ATK_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(5),
