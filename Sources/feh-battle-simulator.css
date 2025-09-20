@@ -20,10 +20,10 @@ li {
 
 .theme-dark .select-btn {
     display: inline-block;
-    border: 1px solid #4dabf7;   /* 同じ青 */
+    border: 1px solid #4dabf7; /* 同じ青 */
     border-radius: 0.4em;
-    background: transparent;     /* 黒背景と馴染ませる */
-    color: #4dabf7;              /* テキスト色も青 */
+    background: transparent; /* 黒背景と馴染ませる */
+    color: #4dabf7; /* テキスト色も青 */
     /*font-weight: bold;*/
     /*padding: 0.4em 1em;*/
     cursor: pointer;
@@ -44,13 +44,13 @@ li {
 /* focus時：アウトラインを青に */
 .theme-dark .select-btn:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(77,171,247,0.5);
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.5);
 }
 
 /* 選択肢ドロップダウン */
 .theme-dark .select-btn option {
-    background: #000;    /* ドロップダウン背景は黒 */
-    color: #fff;         /* 文字は白 */
+    background: #000; /* ドロップダウン背景は黒 */
+    color: #fff; /* 文字は白 */
 }
 
 /* ラベル全体をクリック可能に */
@@ -67,10 +67,10 @@ li {
 .theme-dark .check-btn span {
     display: inline-block;
     /*padding: 0.5em 1em;*/
-    border: 1px solid #4dabf7;   /* 明るめの青 */
+    border: 1px solid #4dabf7; /* 明るめの青 */
     border-radius: 0.4em;
-    background: transparent;     /* 黒背景と馴染ませる */
-    color: #4dabf7;              /* 文字も青 */
+    background: transparent; /* 黒背景と馴染ませる */
+    color: #4dabf7; /* 文字も青 */
     /*font-weight: bold;*/
     transition: all 0.2s;
 }
@@ -116,10 +116,10 @@ li {
 /* 入力欄 */
 .theme-dark .input-btn {
     display: inline-block;
-    border: 1px solid #4dabf7;   /* 明るめの青 */
+    border: 1px solid #4dabf7; /* 明るめの青 */
     border-radius: 0.4em;
-    background: transparent;     /* 黒背景と馴染ませる */
-    color: #4dabf7;              /* テキストも青系 */
+    background: transparent; /* 黒背景と馴染ませる */
+    color: #4dabf7; /* テキストも青系 */
     padding: 0.3em 0.6em;
     font-size: 0.95em;
     transition: all 0.2s;
@@ -1812,4 +1812,22 @@ td.enemy {
 
 .log-toggle-spacer {
     cursor: default;
+}
+
+/*アニメーション*/
+@keyframes glow-bright {
+    0% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.5);
+    }
+    /* 明るく */
+    100% {
+        filter: brightness(1);
+    }
+}
+
+.icon-glow {
+    animation: glow-bright 1s ease;
 }

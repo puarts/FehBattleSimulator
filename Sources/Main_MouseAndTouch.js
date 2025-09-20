@@ -373,11 +373,26 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null, event = nul
     }
 }
 
+function glowPopInfoIcon() {
+    const el = document.querySelector('.damage-calc-info-icon');
+    const cls = 'icon-glow';
+    if (el) {
+        el.classList.remove(cls); // 連続実行時にリセット
+        void el.offsetWidth;      // リフロー強制
+        el.classList.add(cls);
+        el.addEventListener('animationend', () => el.classList.remove(cls), {once: true});
+    }
+}
+
 function dragoverImplForTargetTile(unit, targetTile, event) {
     // ターゲットのタイルが変化していなければ再計算しない
     if (g_dragoverTargetTileForCalcSummary === targetTile) {
         toggleShowSkillLogs(event);
         return;
+    }
+    if (g_dragoverTargetTileForCalcSummary) {
+        // 現在ダメージ予測が存在するがtargetTileは変わっている => ダメージ予測が変化
+        glowPopInfoIcon();
     }
     g_attackTile = null;
     g_currentTile = targetTile;
