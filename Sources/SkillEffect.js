@@ -2144,6 +2144,9 @@ const GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd = atk, def = atk, res = atk) =>
         new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, res);
 
+const GRANTS_BONUS_TO_TARGETS_STATS_DURING_COMBAT_NODE =
+        statsNode => GRANTS_STATS_PLUS_TO_TARGET_DURING_COMBAT_NODE(statsNode);
+
 class GrantsStatPlusAtToTargetDuringCombatNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
