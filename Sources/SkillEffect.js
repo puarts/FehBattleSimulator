@@ -4439,7 +4439,7 @@ class TriggersTargetsPotentFollowXNode extends FromPositiveNumberNode {
         let unit = this.getUnit(env);
         let percentage = this.evaluateChildren(env);
         unit.battleContext.potentRatios.push(percentage);
-        env.debug(`${unit.nameWithGroup}は神速スキル(${percentage}%を発動`);
+        env.info(`${unit.nameWithGroup}は神速スキル(${percentage})%を発動`);
     }
 }
 

@@ -2131,6 +2131,27 @@ class CanTargetsFoeMakeFollowUpIncludingPotentNode extends CanTargetMakeFollowUp
 
 const CAN_TARGETS_FOE_MAKE_FOLLOW_UP_INCLUDING_POTENT_NODE = new CanTargetsFoeMakeFollowUpIncludingPotentNode();
 
+/**
+ * 神速は含まない
+ */
+class CanTargetMakeFollowUpBeforePotentNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.APPLYING_POTENT)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        }
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.canFollowupAttackWithoutPotent;
+        env.debug(`${unit.nameWithGroup}は追撃可能か: ${result}`);
+        return result;
+    }
+}
+
+const CAN_TARGET_MAKE_FOLLOW_UP_BEFORE_POTENT_NODE = new CanTargetMakeFollowUpBeforePotentNode();
+
 // TODO: 命名規則を統一させる
 class DoesTargetTriggerAttacksTwiceNode extends BoolNode {
     static {
