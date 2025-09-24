@@ -1,5 +1,15 @@
 // スキル実装
 
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Exposure);
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_FOE_NODE(TARGET_DEALS_DAMAGE_X_NODE(10)),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_FOE_NODE(TARGET_DEALS_DAMAGE_X_NODE(10)),
+    ));
+}
+
 // Hoshido Raijinto
 {
     let skillId = Weapon.HoshidoRaijinto;
@@ -14895,7 +14905,7 @@
     // deals damage = 20% of unit's Res (including when dealing damage with an area-of-effect Special),
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
-            UNIT_DEALS_DAMAGE_AT_AOE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE)),
+            UNIT_DEALS_DAMAGE_AT_AOE_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE)),
         ),
     ));
 }

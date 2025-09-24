@@ -978,6 +978,8 @@ class TargetDealsDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     }
 }
 
+const TARGET_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE = n => new TargetDealsDamageExcludingAoeSpecialsNode(n);
+
 class UnitDealsDamageExcludingAoeSpecialsNode extends TargetDealsDamageExcludingAoeSpecialsNode {
     static {
         Object.assign(this, GetUnitDuringCombatMixin);
@@ -987,14 +989,18 @@ class UnitDealsDamageExcludingAoeSpecialsNode extends TargetDealsDamageExcluding
 const UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE =
     (value) => new UnitDealsDamageExcludingAoeSpecialsNode(value);
 
-class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
+class TargetDealsDamageBeforeCombatNode extends ApplyingNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     getDescription(n) {
         return `与えるダメージ+${n}(戦闘前)`;
     }
 
     evaluate(env) {
+        let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        let unit = env.unitDuringCombat;
         let context = unit.battleContext;
         let beforeValue = context.additionalDamageInPrecombat;
         context.additionalDamageInPrecombat += n;
@@ -1002,8 +1008,17 @@ class UnitDealsDamageBeforeCombatNode extends ApplyingNumberNode {
     }
 }
 
+const TARGET_DEALS_DAMAGE_BEFORE_COMBAT_NODE = n => new TargetDealsDamageBeforeCombatNode(n);
+const TARGET_DEALS_DAMAGE_AT_AOE_NODE = TARGET_DEALS_DAMAGE_BEFORE_COMBAT_NODE;
+
+class UnitDealsDamageBeforeCombatNode extends TargetDealsDamageBeforeCombatNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
 const UNIT_DEALS_DAMAGE_BEFORE_COMBAT_NODE = n => new UnitDealsDamageBeforeCombatNode(n);
-const UNIT_DEALS_DAMAGE_AT_AOE = n => new UnitDealsDamageBeforeCombatNode(n);
+const UNIT_DEALS_DAMAGE_AT_AOE_NODE = n => new UnitDealsDamageBeforeCombatNode(n);
 
 class ReducesDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
     getDescription(n) {

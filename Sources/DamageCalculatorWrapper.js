@@ -13055,10 +13055,6 @@ class DamageCalculatorWrapper {
             }
         }
 
-        if (defUnit.hasStatusEffect(StatusEffectType.Exposure)) {
-            atkUnit.battleContext.additionalDamage += 10;
-        }
-
         for (let skillId of atkUnit.enumerateSkills()) {
             getSkillFunc(skillId, calcFixedAddDamageFuncMap)?.call(this, atkUnit, defUnit, isPrecombat);
             this.#calcFixedAddDamageForSkill(skillId, atkUnit, defUnit, isPrecombat);
