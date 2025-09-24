@@ -703,7 +703,9 @@
             // grants [Change of Fate] to unit and target ally for 1 turn,
             GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ChangeOfFate),
             // grants Special cooldown count-1 to unit and target ally,
-            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+            FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+            ),
             // and grants any Bonus active on unit to target ally,
             GRANTS_ANY_BONUS_ACTIVE_ON_UNIT_A_TO_UNIT_B_EXCLUDE_STAT_BONUSES_INVERTED_BY_PANIC_NODE(
                 ASSIST_TARGETING_NODE,
