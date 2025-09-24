@@ -1122,7 +1122,7 @@ td.enemy {
     border: none;
     outline: none;
     font-size: 12px;
-    height: 100%;
+    height: calc(100% - 2px);
 
     /*width: 100%;*/
     /*!*max-width: 400px;*!*/
