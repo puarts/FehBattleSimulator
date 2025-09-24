@@ -1,6 +1,12 @@
 // スキル実装
 
 {
+    let skillId = getStatusEffectSkillId(StatusEffectType.Bulwark);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+}
+
+{
     let skillId = getStatusEffectSkillId(StatusEffectType.Exposure);
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         FOR_FOE_NODE(TARGET_DEALS_DAMAGE_X_NODE(10)),
