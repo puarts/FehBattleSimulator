@@ -689,7 +689,7 @@ class IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode extends FromPositiveNu
         let n = this.evaluateChildren(env);
         let foe = env.getFoeDuringCombatOf(unit);
         foe.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += n;
-        env.info(`${foe.nameWithGroup}の追撃の速さ条件+${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
+        env.info(`${foe.nameWithGroup}の追撃の速さ条件+${n}: ${foe.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
@@ -908,7 +908,7 @@ const NUM_OF_PENALTY_ON_UNIT_EXCLUDING_STAT_NODE = new class extends PositiveNum
 const NUM_OF_BONUS_ON_UNIT_AND_FOE_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
         let result = env.unitDuringCombat.getPositiveStatusEffects().length + env.foeDuringCombat.getPositiveStatusEffects().length;
-        env.debug(`自分有利な状態と相手の有利な状態の数: ${result}`);
+        env.debug(`自分の有利な状態と相手の有利な状態の数: ${result}`);
         return result;
     }
 }();

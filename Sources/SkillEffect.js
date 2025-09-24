@@ -146,9 +146,7 @@ class TargetsFoeNode extends UnitNode {
     }
 
     evaluate(env) {
-        let unit = this.getUnit(env);
-        let foe = env.getFoeDuringCombatOf(unit);
-        return unit;
+        return env.getFoeDuringCombatOf(this.getUnit(env));
     }
 }
 
