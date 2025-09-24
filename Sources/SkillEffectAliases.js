@@ -765,7 +765,10 @@ function setSpecialCount(skillId, n) {
     }
 }
 
-function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense, isGaleforce = false) {
+function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense,
+                                isGaleforce = false,
+                                isRanged = false,
+                                rangedDamageRatio = 1) {
     setSpecialCount(skillId, n);
     if (isNormalAttack) {
         NORMAL_ATTACK_SPECIAL_SET.add(skillId);
@@ -775,6 +778,9 @@ function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense, isGalefor
     }
     if (isGaleforce) {
         GALEFORCE_SKILLS.add(skillId);
+    }
+    if (isRanged) {
+        RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.set(skillId, rangedDamageRatio);
     }
 }
 

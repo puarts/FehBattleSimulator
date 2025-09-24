@@ -6578,6 +6578,10 @@ class Unit extends BattleMapElement {
         return isDefenseSpecial(this.special);
     }
 
+    hasRangedAttackSpecial() {
+        return isRangedAttackSpecial(this.special);
+    }
+
     isAttackSpecialReady() {
         return this.hasNormalAttackSpecial() && this.tmpSpecialCount === 0;
     }

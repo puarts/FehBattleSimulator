@@ -1974,7 +1974,7 @@ class CanTargetsAttackTriggerTargetsSpecialNode extends BoolNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = unit.hasNormalAttackSpecial();
+        let result = unit.hasNormalAttackSpecial() || unit.hasRangedAttackSpecial();
         env.debug(`${unit.nameWithGroup}が攻撃時に発動する奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
         return result;
     }
