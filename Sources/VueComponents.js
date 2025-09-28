@@ -95,16 +95,17 @@ function initVueComponents() {
         template: '<select></select>',
 
         props: {
-            options: {
-                type: Array,
-                required: true,
-            },
-            value: {
-                type: [Number, String],
-                required: false,
-            },
-            fallbackValue: {type: [Number, String], default: -1, required: false},
-            isDebugMode: {type: Boolean, default: false, required: false},
+            options: { type: Array, required: true },
+            value:   { type: [Number, String, null], required: false },
+            fallbackValue: { type: [Number, String], default: -1, required: false },
+            isDebugMode:   { type: Boolean, default: false, required: false },
+
+            // ★ 追加：select2 のオプションを受け取る
+            // 例: { placeholder: '選択してください', allowClear: true, width: '100%' }
+            settings: {
+                type: Object,
+                default: () => ({})
+            }
         },
 
         mounted() {
@@ -113,44 +114,67 @@ function initVueComponents() {
 
         methods: {
             resetData(options, value) {
+                const base = {
+                    data: options,
+                    matcher: this.matchMultiWords,
+                };
+                // ★ 既定値と props.settings をマージ
+                const s2opts = Object.assign({}, base, this.settings);
+
+                // ★ allowClear を確実に効かせるため、空 option をDOMに用意
+                //   （既に空optionがあるなら重複させない）
+                if (s2opts.allowClear) {
+                    // jQueryで select の先頭に空 option を注入（無ければ）
+                    if ($(this.$el).find('option[value=""]').length === 0) {
+                        $(this.$el).prepend('<option value=""></option>');
+                    }
+                    // placeholder が無ければ補う
+                    if (!('placeholder' in s2opts)) {
+                        s2opts.placeholder = '選択してください';
+                    }
+                }
+
                 $(this.$el)
                     .empty()
-                    .select2({
-                        data: options,
-                        matcher: this.matchMultiWords
-                    })
-                    .val(value)
-                    .trigger('change')
+                    .select2(s2opts)
+                    .val(value ?? '')     // 値が null/undefined のときは空を選択
+                    .trigger('change');
             },
+
             initSelect2(options, value) {
                 this.resetData(options, value);
-                $(this.$el)
-                    .on('change', event => {
-                        const raw = event.target.value;
-                        const parsed = parseInt(raw, 10);
-                        const newVar = isNaN(parsed) ? raw : parsed;
-                        if (newVar === 0 || newVar) {
-                            this.$emit('input', newVar);
-                        }
-                    });
+
+                // 変更時に v-model へ反映
+                $(this.$el).on('change', (event) => {
+                    const raw = event.target.value;
+                    const parsed = parseInt(raw, 10);
+                    const newVar = isNaN(parsed) ? raw : parsed;
+                    // 空文字は null に寄せたい場合は以下を有効化：
+                    // const out = (newVar === '') ? null : newVar;
+                    if (newVar === 0 || newVar || newVar === '') {
+                        this.$emit('input', newVar);
+                    }
+                });
+
+                // ★ クリアボタン（×）で消した時のイベント
+                $(this.$el).on('select2:clear', () => {
+                    // クリア時の値の扱い：null / '' / fallbackValue のどれかにする
+                    const cleared = '';
+                    $(this.$el).val(cleared).trigger('change');
+                });
             },
+
             applyInvalidValueClass(hasCurrent) {
-                // 不正値表示用にスタイルを付与（任意）
                 const container = $(this.$el).next('.select2-container');
-                if (!hasCurrent) {
-                    container.addClass('invalid-value');
-                } else {
-                    container.removeClass('invalid-value');
-                }
+                if (!hasCurrent) container.addClass('invalid-value');
+                else container.removeClass('invalid-value');
             },
+
             matchMultiWords(params, data) {
                 if ($.trim(params.term) === '') return data;
                 if (typeof data.text === 'undefined') return null;
-
-                // 全角スペースを半角スペースに変換して分割
                 const keywords = params.term.replace(/\u3000/g, ' ').toLowerCase().split(/\s+/);
                 const text = data.text.toLowerCase();
-
                 const isMatch = keywords.every(word => text.includes(word));
                 return isMatch ? $.extend({}, data, true) : null;
             },
@@ -158,17 +182,9 @@ function initVueComponents() {
 
         watch: {
             value(newVal, oldVal) {
-                // console.log(`select2: value changed: ${oldVal} -> ${newVal}`);
-                // 1. 現在の UI 側 select2 の値を取得
                 const uiVal = $(this.$el).val();
-                // console.log(`select2: UI val = ${uiVal}, prop newVal = ${newVal}`);
-
-                // 2. UI とプロップが異なる場合のみ反映して change を起こす
-                if (String(uiVal) !== String(newVal)) {
-                    // console.log('update with new value: ' + newVal);
-                    $(this.$el)
-                        .val(newVal)
-                        .trigger('change');
+                if (String(uiVal) !== String(newVal ?? '')) {
+                    $(this.$el).val(newVal ?? '').trigger('change');
                 }
                 if (this.isDebugMode) {
                     const hasCurrent = this.options.some(opt => String(opt.id) === String(this.value));
@@ -176,29 +192,16 @@ function initVueComponents() {
                 }
             },
 
-            options(newOptions, oldOptions) {
-                // まず、現在の this.value が newOptions に含まれているかチェック
+            options(newOptions) {
                 const hasCurrent = newOptions.some(opt => String(opt.id) === String(this.value));
-                // デバッグモードならオプションにない値が含まれても元の値を保持する
-                // その際に警告を表示する
-                // そうでない場合は元の値に-1をセットする
                 if (this.isDebugMode) {
                     let effectiveOptions = newOptions.slice();
-
                     if (!hasCurrent) {
-                        // 「不正な値」用のダミーオプションを作成
-                        effectiveOptions.push({
-                            id: this.value,
-                            text: `（不正な値: ${this.value}）`,
-                            disabled: true
-                        });
+                        effectiveOptions.push({ id: this.value, text: `（不正な値: ${this.value}）`, disabled: true });
                     }
                     this.resetData(effectiveOptions, this.value);
-
-                    // 不正値表示用にスタイルを付与（任意）
                     this.applyInvalidValueClass(hasCurrent);
                 } else {
-                    // オプションにない要素は -1（fallbackValue 使用）
                     const selectedValue = hasCurrent ? this.value : this.fallbackValue;
                     this.resetData(newOptions, selectedValue);
                 }
@@ -206,7 +209,6 @@ function initVueComponents() {
         },
 
         beforeDestroy() {
-            // select2 インスタンスのクリーンアップ
             $(this.$el).off().select2('destroy');
         }
     });
