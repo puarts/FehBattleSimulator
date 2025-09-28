@@ -147,3 +147,220 @@ describe('Test skill effect', () => {
         });
     });
 });
+
+describe('Stats node', () => {
+    /** @type {Unit} */
+    let unit;
+    /** @type {NodeEnv} */
+    let env;
+
+    const BASE_SPD = 40;
+    const SPD_SPUR = 10;
+    const PHANTOM_SPD_3_VALUE = 10;
+
+    beforeEach(() => {
+        unit = heroDatabase.createUnit('アルフォンス');
+        env = new NodeEnv();
+        env.setTarget(unit);
+
+        // 素のSPD & spurを明示
+        unit.spdWithSkills = BASE_SPD;
+        unit.spdSpur = SPD_SPUR;
+    });
+
+    afterEach(() => {
+        // 必要なら: env.dispose(); heroDatabase.reset(); 等
+    });
+
+    test('on map', () => {
+        const result = TARGETS_SPD_ON_MAP.evaluate(env);
+        expect(result).toBe(BASE_SPD);
+    });
+
+    describe('when eval', () => {
+        test('on map', () => {
+            env.setCombatPhase(NodeEnv.CombatPhase.NULL_PHASE);
+            const result = TARGETS_EVAL_SPD_NODE.evaluate(env);
+            expect(result).toBe(BASE_SPD);
+        });
+
+        test.each([
+            ['AT_START_OF_COMBAT', NodeEnv.CombatPhase.AT_START_OF_COMBAT],
+            ['AFTER_COMBAT', NodeEnv.CombatPhase.AFTER_COMBAT],
+            ['AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED', NodeEnv.CombatPhase.AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED],
+        ])('%s phase', (_label, phase) => {
+            env.setCombatPhase(phase);
+            const result = TARGETS_EVAL_SPD_NODE.evaluate(env);
+            expect(result).toBe(BASE_SPD + SPD_SPUR);
+        });
+
+        test('with phantom on map', () => {
+            env.setCombatPhase(NodeEnv.CombatPhase.NULL_PHASE);
+            unit.passiveS = PassiveS.HayasaNoKyosei3;
+            const result = TARGETS_EVAL_SPD_NODE.evaluate(env);
+            expect(result).toBe(BASE_SPD + PHANTOM_SPD_3_VALUE);
+        });
+
+        test('with phantom during combat', () => {
+            env.setCombatPhase(NodeEnv.CombatPhase.AT_START_OF_COMBAT);
+            unit.passiveS = PassiveS.HayasaNoKyosei3;
+            const result = TARGETS_EVAL_SPD_NODE.evaluate(env);
+            expect(result).toBe(BASE_SPD + SPD_SPUR + PHANTOM_SPD_3_VALUE);
+        });
+
+        test('no spur when spdSpur = 0', () => {
+            unit.spdSpur = 0;
+            env.setCombatPhase(NodeEnv.CombatPhase.AT_START_OF_COMBAT);
+            const result = TARGETS_EVAL_SPD_NODE.evaluate(env);
+            expect(result).toBe(BASE_SPD);
+        });
+    });
+});
+
+describe('Bonuses or penalties', () => {
+    /** @type {Unit} */
+    let unit;
+    /** @type {Unit} */
+    let foe;
+    /** @type {NodeEnv} */
+    let env;
+
+    const BASE_STATS = [40, 35, 30, 25];
+    const SPURS = [10, 8, 6, 4];
+
+    beforeEach(() => {
+        unit = heroDatabase.createUnit('アルフォンス');
+        foe = heroDatabase.createUnit('シャロン');
+        env = new NodeEnv();
+        env.setTarget(unit).setUnitsDuringCombat(unit, foe);
+
+        [unit.atkWithSkills, unit.spdWithSkills, unit.defWithSkills, unit.resWithSkills] = BASE_STATS;
+        [foe.atkWithSkills, foe.spdWithSkills, foe.defWithSkills, foe.resWithSkills] = BASE_STATS;
+
+        unit.addSpurs(...SPURS);
+        foe.addSpurs(...SPURS);
+    });
+
+    afterEach(() => {
+        // 必要なら: env.dispose(); heroDatabase.reset(); 等
+    });
+
+    test('when grants 5', () => {
+        GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE.evaluate(env);
+        expect(unit.getSpurs()).toEqual(ArrayUtil.add(SPURS, [5, 5, 5, 5]));
+        expect(foe.getSpurs()).toEqual(SPURS);
+    });
+
+    test('when grants atk/spd/def/res', () => {
+        let spurs = [1, 2, 3, 4];
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(...spurs).evaluate(env);
+        expect(unit.getSpurs()).toEqual(ArrayUtil.add(SPURS, spurs));
+        expect(foe.getSpurs()).toEqual(SPURS);
+    });
+
+    test('when grants stats', () => {
+        let spurs = [1, 2, 3, 4];
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(STATS_NODE(...spurs)).evaluate(env);
+        expect(unit.getSpurs()).toEqual(ArrayUtil.add(SPURS, spurs));
+        expect(foe.getSpurs()).toEqual(SPURS);
+    });
+
+    test('when inflicts 5', () => {
+        INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE.evaluate(env);
+        expect(foe.getSpurs()).toEqual(ArrayUtil.sub(SPURS, [5, 5, 5, 5]));
+        expect(unit.getSpurs()).toEqual(SPURS);
+    });
+
+    test('when inflicts atk/spd/def/res on foe', () => {
+        let spurs = [1, 2, 3, 4];
+        INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE(...spurs).evaluate(env);
+        expect(foe.getSpurs()).toEqual(ArrayUtil.sub(SPURS, spurs));
+        expect(unit.getSpurs()).toEqual(SPURS);
+    });
+
+    test('when inflicts atk/spd/def/res on target', () => {
+        let spurs = [1, 2, 3, 4];
+        INFLICTS_ATK_SPD_DEF_RES_ON_TARGET_DURING_COMBAT_NODE(...spurs).evaluate(env);
+        expect(unit.getSpurs()).toEqual(ArrayUtil.sub(SPURS, spurs));
+        expect(foe.getSpurs()).toEqual(SPURS);
+    });
+
+    test('when inflicts stats', () => {
+        let spurs = [1, 2, 3, 4];
+        INFLICTS_ATK_SPD_DEF_RES_ON_TARGET_DURING_COMBAT_NODE(STATS_NODE(...spurs)).evaluate(env);
+        expect(unit.getSpurs()).toEqual(ArrayUtil.sub(SPURS, spurs));
+        expect(foe.getSpurs()).toEqual(SPURS);
+    });
+});
+
+describe('Skills during combat', () => {
+    /** @type {Unit} */
+    let atkUnit;
+    /** @type {Unit} */
+    let defUnit;
+    let calculator;
+
+    beforeEach(() => {
+        atkUnit = heroDatabase.createUnit('アルフォンス');
+        defUnit = heroDatabase.createUnit('アルフォンス');
+        calculator = new test_DamageCalculator();
+        calculator.unitManager.units = [atkUnit, defUnit];
+        calculator.isLogEnabled = true;
+        g_appData = calculator.unitManager;
+        // g_appData.skillLogLevel = LoggerBase.LogLevel.ALL;
+    });
+
+    test('when Frozen added', () => {
+        atkUnit.addStatusEffect(StatusEffectType.Frozen);
+        atkUnit.defWithSkills = 40;
+        defUnit.defWithSkills = 40;
+        calculator.calcDamage(atkUnit, defUnit);
+        expect(atkUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack).toBe(10);
+        expect(defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack).toBe(-10);
+    });
+
+    test('when Frozen added with def diff', () => {
+        let skillId = 'phantom-def';
+        AT_COMPARING_STATS_HOOKS.addSkillIfAbsent(skillId, () => DEF_NODE(7));
+        defUnit.passiveS = skillId;
+        atkUnit.addStatusEffect(StatusEffectType.Frozen);
+        atkUnit.defWithSkills = 40;
+        defUnit.defWithSkills = 65;
+        calculator.calcDamage(atkUnit, defUnit);
+        // 守備の差 * 2 + 10
+        let expected = (65 + 7 - 40) * 2 + 10;
+        expect(atkUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack).toBe(expected);
+        expect(defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack).toBe(-expected);
+    });
+
+    test('deals damage during combat', () => {
+        let additionalDamage = 25;
+        let skillId = 'deals-damage-during-combat';
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, NODE_FUNC(
+            DEALS_DAMAGE_X_NODE(additionalDamage),
+        ));
+        atkUnit.passiveS = skillId;
+        let result = calculator.calcDamage(atkUnit, defUnit);
+        expect(result.atkUnit_atk).toBe(63);
+        expect(result.defUnit_def).toBe(34);
+        expect(result.atkUnit_totalAttackCount).toBe(1);
+        expect(result.atkUnit_normalAttackDamage).toBe(result.atkUnit_atk - result.defUnit_def + additionalDamage);
+    });
+
+    test('deals damage during combat when atk - def = 0', () => {
+        let additionalDamage = 25;
+        let skillId = 'deals-damage-during-combat';
+        AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, NODE_FUNC(
+            DEALS_DAMAGE_X_NODE(additionalDamage),
+        ));
+        atkUnit.passiveS = skillId;
+        defUnit.defWithSkills = 99;
+        let result = calculator.calcDamage(atkUnit, defUnit);
+        expect(result.atkUnit_atk).toBe(63);
+        expect(result.defUnit_def).toBe(99);
+        expect(result.atkUnit_totalAttackCount).toBe(1);
+        expect(result.atkUnit_normalAttackDamage).toBe(
+            MathUtil.ensureMin(result.atkUnit_atk - result.defUnit_def, 0) + additionalDamage
+        );
+    });
+});
