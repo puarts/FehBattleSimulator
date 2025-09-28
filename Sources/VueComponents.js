@@ -1865,10 +1865,13 @@ function initVueComponents() {
                 type: Boolean,
                 required: true,
             },
+            detailLevel: {
+                type: Boolean,
+                required: true,
+            }
         },
         data() {
             return {
-                detailLevel: DetailLevel.NORMAL,
                 detailLevelOptions: DetailUtils.getOptions(),
                 logFilterText: '',
                 groupFilterText: '',
@@ -1903,6 +1906,10 @@ function initVueComponents() {
                 get() { return this.showsSkillLogs; },
                 set(v) { this.$emit('update:shows-skill-logs', v); } // 親に反映
             },
+            modelDetailLevel: {
+                get() { return this.detailLevel; },
+                set(v) { this.$emit('update:detail-level', v); }
+            }
         },
         methods: {
             levelKey(s) {
@@ -1922,7 +1929,7 @@ function initVueComponents() {
                 <div v-else>結果はまだありません</div>
                 <div>
                   <!-- 詳細度 -->
-                  <select v-model="detailLevel" class="select-btn">
+                  <select v-model="modelDetailLevel" class="select-btn">
                     <option v-for="option in detailLevelOptions" 
                             :key="option.value" 
                             :value="option.value">

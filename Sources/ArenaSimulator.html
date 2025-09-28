@@ -1119,7 +1119,9 @@
                     :combat-result="combatResult"
                     :on-closed="() => { document.getElementById('info-pop')?.hidePopover() }"
                     :shows-skill-logs="showsSkillLogs"
+                    :detail-level="damageCalcDetailLevel"
                     @update:shows-skill-logs="val => (showsSkillLogs = val)"
+                    @update:detail-level="val => (damageCalcDetailLevel = val)"
             >
             </damage-calc-result>
         </div>

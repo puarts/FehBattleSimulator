@@ -302,6 +302,7 @@ class AppData extends UnitManager {
         this.skillLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LogLevel);
 
         this.showsSkillLogs = LocalStorageUtil.getBoolean('showsSkillLogs');
+        this.damageCalcDetailLevel = LocalStorageUtil.getNumber('damageCalcDetailLevel', DetailLevel.NORMAL);
 
         /**
          * ダブル補正が有効かどうか
@@ -2537,6 +2538,16 @@ class AppData extends UnitManager {
         for (let unit of this.units) {
             unit.clearReservedSkills();
         }
+    }
+
+    saveShowsSkills(value) {
+        this.showsSkillLogs = value;
+        LocalStorageUtil.setBoolean('showsSkillLogs', this.showsSkillLogs);
+    }
+
+    saveDamageCalcDetailLevel(value) {
+        this.damageCalcDetailLevel = value;
+        LocalStorageUtil.setNumber('damageCalcDetailLevel', this.damageCalcDetailLevel);
     }
 }
 
