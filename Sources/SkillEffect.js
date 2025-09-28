@@ -214,6 +214,8 @@ const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
  */
 const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
 
+const FOR_TARGETS_FOE_NODE = node => FOR_TARGET_NODE(TARGETS_FOE_NODE, node);
+
 /**
  * @extends {CollectionNode<*, Unit>}
  * @abstract
@@ -2390,6 +2392,15 @@ class GetStatAtNode extends NumberNode {
  * @constructor
  */
 const GET_STAT_AT_NODE = (statsNode, index) => new GetStatAtNode(statsNode, index);
+const GET_ATK_NODE = statsNode => GET_STAT_AT_NODE(statsNode, StatusIndex.ATK);
+const GET_DEF_NODE = statsNode => GET_STAT_AT_NODE(statsNode, StatusIndex.DEF);
+const GET_SPD_NODE = statsNode => GET_STAT_AT_NODE(statsNode, StatusIndex.SPD);
+const GET_RES_NODE = statsNode => GET_STAT_AT_NODE(statsNode, StatusIndex.RES);
+
+const GET_ATK_DIFF_NODE = (statsNode1, statsNode2) => SUB_NODE(GET_ATK_NODE(statsNode1), GET_ATK_NODE(statsNode2));
+const GET_DEF_DIFF_NODE = (statsNode1, statsNode2) => SUB_NODE(GET_DEF_NODE(statsNode1), GET_DEF_NODE(statsNode2));
+const GET_SPD_DIFF_NODE = (statsNode1, statsNode2) => SUB_NODE(GET_SPD_NODE(statsNode1), GET_SPD_NODE(statsNode2));
+const GET_RES_DIFF_NODE = (statsNode1, statsNode2) => SUB_NODE(GET_RES_NODE(statsNode1), GET_RES_NODE(statsNode2));
 
 class StatsFromStatNode extends StatsNode {
     /**
@@ -2510,6 +2521,7 @@ class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
 
 const INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE =
     (atkOrStats, spd, def, res) => new InflictsStatsMinusOnTargetDuringCombatNode(atkOrStats, spd, def, res);
+const INFLICTS_ATK_SPD_DEF_RES_ON_TARGET_DURING_COMBAT_NODE = INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE;
 
 class InflictsStatsMinusOnUnitDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
     static {
@@ -2951,6 +2963,33 @@ class TargetsStatsOnMapNode extends StatsNode {
 }
 
 const TARGETS_STATS_ON_MAP_NODE = new TargetsStatsOnMapNode();
+
+class TargetsEvalStatsNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let stats = env.isInCombatPhase() ?
+            unit.getEvalStatusesInCombat(env.getFoeDuringCombatOf(unit)) : unit.getEvalStatusesInPrecombat();
+        env.debug(`${unit.nameWithGroup}の${env.isInCombatPhase() ? '戦闘中' : '戦闘開始時(マップ)'}のステータス: [${stats}]`);
+        return stats;
+    }
+}
+
+const TARGETS_EVAL_STATS_NODE = new TargetsEvalStatsNode();
+
+const TARGETS_EVAL_ATK_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.ATK);
+const TARGETS_EVAL_SPD_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.SPD);
+const TARGETS_EVAL_DEF_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.DEF);
+const TARGETS_EVAL_RES_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.RES);
+
+const TARGETS_EVAL_ATK_DIFF_NODE = GET_ATK_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_SPD_DIFF_NODE = GET_SPD_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_DEF_DIFF_NODE = GET_DEF_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_RES_DIFF_NODE = GET_RES_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+
 
 /**
  * @abstract

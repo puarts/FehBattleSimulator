@@ -4037,7 +4037,7 @@ function setDiscord(skillId, statsRatios) {
                     // decreases Spd difference necessary for unit to make a follow-up attack by X and
                     new DecreasesSpdDiffNecessaryForUnitFollowUpNode(READ_NUM_NODE),
                     // increases Spd difference necessary for foe to make a follow-up attack by X during combat
-                    new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(READ_NUM_NODE),
+                    new IncreasesSpdDiffNecessaryForTargetsFoesToMakeFollowUpNode(READ_NUM_NODE),
                 ),
                 // (X = difference between Def stats; max 10;
                 new EnsureMaxNode(DIFFERENCE_BETWEEN_DEF_STATS_DURING_COMBAT_NODE, 10),
@@ -6052,7 +6052,7 @@ function setDiscord(skillId, statsRatios) {
                     ),
                     UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
                     FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
-                    new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(20),
+                    new IncreasesSpdDiffNecessaryForTargetsFoesToMakeFollowUpNode(20),
                 ),
             ),
         ),

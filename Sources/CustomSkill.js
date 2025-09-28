@@ -2068,7 +2068,7 @@ CustomSkill.setFuncId(
     '敵の追撃の速さ条件+',
     (skillId, args) => {
         AT_START_OF_COMBAT_HOOKS.addSkillIfAbsent(skillId, () =>
-            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(
+            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE(
                 CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
             ),
         );

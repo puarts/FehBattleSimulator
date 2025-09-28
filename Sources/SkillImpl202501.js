@@ -1,6 +1,21 @@
 // スキル実装
 
 {
+    let skillId = getStatusEffectSkillId(StatusEffectType.Frozen);
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        X_NUM_NODE(
+            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE),
+            FOR_TARGETS_FOE_NODE(DECREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE)),
+            COND_OP(
+                GTE_NODE(FOR_TARGETS_FOE_NODE(TARGETS_EVAL_DEF_NODE), TARGETS_EVAL_DEF_NODE),
+                ADD_MULT_NODE(10, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_DEF_DIFF_NODE), 2),
+                10,
+            ),
+        ),
+    ));
+}
+
+{
     let skillId = getStatusEffectSkillId(StatusEffectType.Bulwark);
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
@@ -106,7 +121,7 @@
         // When unit’s Special triggers,
         DEALS_DAMAGE_WHEN_TRIGGERING_SPECIAL_DURING_COMBAT_NODE(
             // deals damage = 15 + unit’s max Special cooldown count value × 5 (excluding area-of-effect Specials)
-            ADD_MULT_MAX_NODE(15, TARGETS_MAX_SPECIAL_COUNT_NODE, 5),
+            ADD_MULT_NODE(15, TARGETS_MAX_SPECIAL_COUNT_NODE, 5),
         ),
         // and neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills (excluding area-of-effect Specials).
         WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
@@ -145,7 +160,7 @@
     // Decreases Spd difference necessary for unit to make a follow-up attack by 10 during combat.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         IF_NODE(IS_STYLE_ACTIVE(style),
-            DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE(10),
+            DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_TO_MAKE_FOLLOW_UP_NODE(10),
         ),
     ));
     // Cannot move through spaces within 2 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
@@ -649,7 +664,7 @@
     setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
         // on closest foes to both unit and target ally or unit and targeting ally after movement
         // and foes within 2 spaces of those foes through their next actions.
-        FOR_EACH_UNIT_NODE(TARGET_AND_TARGET_FOE_NODE,
+        FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
                 // inflicts Atk/Def-7, [Exposure], [Discord],
                 // and a penalty that neutralizes non-Special “if foe would reduce unit’s HP to 0, unit survives with 1 HP” effects
@@ -998,7 +1013,7 @@
                 // neutralizes effects that guarantee follow-up attacks,
                 NEUTRALIZES_EFFECTS_THAT_GUARANTEE_TARGETS_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
                 // and increases Spd difference necessary to make a follow-up attack by 20 during combat.
-                INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(20),
+                INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE(20),
             ),
             // If unit initiates combat,
             IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
@@ -12035,7 +12050,7 @@
             // inflicts Spd/Def/Res-4 on foe,
             INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 4, 4, 4),
             // and increases the Spd difference necessary for foe to make a follow-up attack by 10 during combat,
-            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(10),
+            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE(10),
         ),
         SKILL_EFFECT_NODE(
             // deals damage = 15% of foe's Atk (excluding area-of-effect Specials),
@@ -13953,7 +13968,7 @@
             // if foe initiates combat,
             IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
                 // decreases Spd difference necessary for unit to make a follow-up attack by 10 and
-                DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE(10),
+                DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_TO_MAKE_FOLLOW_UP_NODE(10),
                 // unit deals +7 damage during combat (excluding area-of-effect Specials).
                 UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(7),
             ),
@@ -14002,7 +14017,7 @@
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(10),
+        INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE(10),
     ));
 }
 

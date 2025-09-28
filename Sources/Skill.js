@@ -1032,9 +1032,6 @@ const EVAL_SPD_ADD_MAP = new Map([
  */
 function getEvalSpdAdd(unit) {
     let amount = 0;
-    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-    let stats = AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(unit, env);
-    amount += stats[StatusIndex.SPD];
     for (let skillId of unit.enumerateSkills()) {
         amount += EVAL_SPD_ADD_MAP.get(skillId) ?? 0;
         amount += getSkillFunc(skillId, evalSpdAddFuncMap)?.call(this, unit) ?? 0;
@@ -1060,9 +1057,6 @@ const EVAL_RES_ADD_MAP = new Map([
  */
 function getEvalResAdd(unit) {
     let value = 0;
-    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-    let stats = AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(unit, env);
-    value += stats[StatusIndex.RES];
     for (let skillId of unit.enumerateSkills()) {
         value += EVAL_RES_ADD_MAP.get(skillId) ?? 0;
         value += getSkillFunc(skillId, evalResAddFuncMap)?.call(this, unit) ?? 0;

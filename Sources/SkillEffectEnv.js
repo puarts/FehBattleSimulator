@@ -8,7 +8,7 @@ class NodeEnv {
     });
 
     // 戦闘中のフェーズ
-    static COMBAT_PHASE = {
+    static CombatPhase = {
         NULL_PHASE: null,
         AT_START_OF_COMBAT: null,
         APPLYING_OTHER_UNITS_SKILL: null,
@@ -31,8 +31,8 @@ class NodeEnv {
     };
 
     static {
-        Object.keys(this.COMBAT_PHASE).forEach((key, index) => {
-            this.COMBAT_PHASE[key] = index; // 定義順に番号をセット
+        Object.keys(this.CombatPhase).forEach((key, index) => {
+            this.CombatPhase[key] = index; // 定義順に番号をセット
         });
     }
 
@@ -51,7 +51,7 @@ class NodeEnv {
     /** @type {string} */
     phase = NodeEnv.PHASE.NULL_PHASE;
     /** @type {number} */
-    _combatPhase = NodeEnv.COMBAT_PHASE.NULL_PHASE;
+    _combatPhase = NodeEnv.CombatPhase.NULL_PHASE;
     /** @type {Unit} */
     #skillOwner = null;
     /** @type {Unit} */
@@ -476,7 +476,7 @@ class NodeEnv {
     }
 
     isInCombatPhase() {
-        return this.combatPhase !== NodeEnv.COMBAT_PHASE.NULL_PHASE;
+        return this.combatPhase !== NodeEnv.CombatPhase.NULL_PHASE;
     }
 
     isAfterCombatPhase(phase) {

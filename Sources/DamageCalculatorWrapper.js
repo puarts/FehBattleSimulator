@@ -583,7 +583,7 @@ class DamageCalculatorWrapper {
         let defUnit = damageCalcEnv.defUnit;
         let damageType = damageCalcEnv.damageType;
 
-        this.combatPhase = NodeEnv.COMBAT_PHASE.AT_START_OF_COMBAT;
+        this.combatPhase = NodeEnv.CombatPhase.AT_START_OF_COMBAT;
         let calcPotentialDamage = damageCalcEnv.calcPotentialDamage;
         let self = this;
 
@@ -605,7 +605,7 @@ class DamageCalculatorWrapper {
         self.__applySkillEffectRelatedToEnemyStatusEffects(defUnit, atkUnit, calcPotentialDamage);
         // });
 
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_OTHER_UNITS_SKILL;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_OTHER_UNITS_SKILL;
 
         // 味方ユニットからの戦闘中バフ
         damageCalcEnv.applySkill('周囲の味方からのバフ', atkUnit, defUnit, this.__applySpursFromAllies, this);
@@ -622,7 +622,7 @@ class DamageCalculatorWrapper {
         damageCalcEnv.applySkill('周囲の敵からのスキル', atkUnit, defUnit,
             this.__applySkillEffectFromEnemyAllies, this);
 
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_OTHER_UNITS_SKILL_AFTER_FEUD;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_OTHER_UNITS_SKILL_AFTER_FEUD;
 
         // 暗闘の対象外になる周囲からのスキル効果
         // 主に戦闘外の効果。味方の存在などで発動するスキルも書いて良い（ただし大抵の場合他の場所で書ける）
@@ -633,13 +633,13 @@ class DamageCalculatorWrapper {
         self.__setWrathfulStaff(atkUnit, defUnit);
         self.__setWrathfulStaff(defUnit, atkUnit);
 
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_EFFECTIVE;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_EFFECTIVE;
 
         // 特効
         self.__setEffectiveAttackEnabledIfPossible(atkUnit, defUnit);
         self.__setEffectiveAttackEnabledIfPossible(defUnit, atkUnit);
 
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_COUNTER_ALL_DISTANCE;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_COUNTER_ALL_DISTANCE;
 
         // スキル内蔵の全距離反撃
         defUnit.battleContext.canCounterattackToAllDistance = defUnit.canCounterAttackToAllDistance();
@@ -648,22 +648,22 @@ class DamageCalculatorWrapper {
         // self.profile.profile("__applySkillEffect 2", () => {
 
         // 戦闘中バフが決まった後に評価するバフ
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_STATUS_SKILL_AFTER_STATUS_FIXED;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_STATUS_SKILL_AFTER_STATUS_FIXED;
         damageCalcEnv.applySkill('戦闘中バフ決定後のバフ', atkUnit, defUnit,
             this.__applySpurForUnitAfterCombatStatusFixed, this);
 
         // 戦闘中バフが決まった後に評価するスキル効果
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_SKILL_AFTER_STATUS_FIXED;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_SKILL_AFTER_STATUS_FIXED;
         damageCalcEnv.applySkill('戦闘中バフ決定後のスキル', atkUnit, defUnit,
             this.__applySkillEffectForUnitAfterCombatStatusFixed, this);
 
         // self.profile.profile("__applySkillEffectFromSkillInfo", () => {
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_ATTACK_COUNT;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_ATTACK_COUNT;
         // 1回の攻撃の攻撃回数を設定
         self.__setAttackCount(atkUnit, defUnit);
         self.__setAttackCount(defUnit, atkUnit);
 
-        this.combatPhase = NodeEnv.COMBAT_PHASE.AFTER_APPLYING_ATTACK_COUNT;
+        this.combatPhase = NodeEnv.CombatPhase.AFTER_APPLYING_ATTACK_COUNT;
         self.__applySkillEffectAfterSetAttackCount(atkUnit, defUnit);
         self.__applySkillEffectAfterSetAttackCount(defUnit, atkUnit);
 
@@ -683,12 +683,12 @@ class DamageCalculatorWrapper {
 
         // self.profile.profile("__applySkillEffect 3", () => {
         // 敵が反撃可能か判定
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_CAN_COUNTER;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_CAN_COUNTER;
         defUnit.battleContext.canCounterattack = self.canCounterAttack(atkUnit, defUnit, calcPotentialDamage, damageType);
         // self.writeDebugLogLine(defUnit.getNameWithGroup() + "の反撃可否:" + defUnit.battleContext.canCounterattack);
 
         // 追撃可能か判定
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_CAN_FOLLOW_UP;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_CAN_FOLLOW_UP;
         atkUnit.battleContext.canFollowupAttackWithoutPotent = self.__examinesCanFollowupAttackForAttacker(atkUnit, defUnit, calcPotentialDamage);
         if (defUnit.battleContext.canCounterattack) {
             defUnit.battleContext.canFollowupAttackWithoutPotent = self.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, calcPotentialDamage);
@@ -701,21 +701,21 @@ class DamageCalculatorWrapper {
         // 神速
         // 他の追撃可能かどうかを条件とするスキルは神速も追撃と見なすのでそれより前に神速判定をしなければならない
         // 神速自体も追撃可能かどうかを条件とするので追撃判定の後に効果を適用しなければならない
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_POTENT;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_POTENT;
         damageCalcEnv.applySkill('神速判定時', atkUnit, defUnit, this.__applyPotentSkillEffect, this);
-        this.combatPhase = NodeEnv.COMBAT_PHASE.AFTER_FOLLOWUP_CONFIGURED;
+        this.combatPhase = NodeEnv.CombatPhase.AFTER_FOLLOWUP_CONFIGURED;
 
         // 追撃可能かどうかが条件として必要なスキル効果の適用
         damageCalcEnv.applySkill('追撃判定後', atkUnit, defUnit,
             this.__applySkillEffectRelatedToFollowupAttackPossibility, this);
 
         // 効果を無効化するスキル
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_NEUTRALIZATION_SKILL;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_NEUTRALIZATION_SKILL;
         self.__applyInvalidationSkillEffect(atkUnit, defUnit, calcPotentialDamage);
         self.__applyInvalidationSkillEffect(defUnit, atkUnit, calcPotentialDamage);
 
         // 奥義
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_SPECIAL;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_SPECIAL;
         damageCalcEnv.applySkill('戦闘開始時奥義効果', atkUnit, defUnit, this.__applySpecialSkillEffect, this);
 
         // 間接的な設定から実際に戦闘で利用する値を評価して戦闘コンテキストに設定
@@ -723,7 +723,7 @@ class DamageCalculatorWrapper {
         // });
 
         // 守備、魔防のどちらを参照するか決定
-        this.combatPhase = NodeEnv.COMBAT_PHASE.APPLYING_REF_MIT;
+        this.combatPhase = NodeEnv.CombatPhase.APPLYING_REF_MIT;
         atkUnit.battleContext.invalidatesReferenceLowerMit |= this.__canInvalidatesReferenceLowerMit(atkUnit, defUnit);
         defUnit.battleContext.invalidatesReferenceLowerMit |= this.__canInvalidatesReferenceLowerMit(defUnit, atkUnit);
         self.__selectReferencingResOrDef(atkUnit, defUnit);
@@ -737,7 +737,7 @@ class DamageCalculatorWrapper {
             this.__applySkillEffectFromEnemyAlliesAfterOtherSkills, this);
 
         // 戦闘開始後ダメージ決定後に評価されるスキル効果
-        this.combatPhase = NodeEnv.COMBAT_PHASE.AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED;
+        this.combatPhase = NodeEnv.CombatPhase.AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED;
         // TODO: リファクタリング。戦闘開始時にBattleContextに設定できるようにする
         damageCalcEnv.applySkill('戦闘開始後ダメージ後', atkUnit, defUnit,
             this.applySkillEffectsAfterAfterBeginningOfCombat, this);
@@ -11684,21 +11684,6 @@ class DamageCalculatorWrapper {
      * @param  {DamageCalcEnv} damageCalcEnv
      */
     __applySkillEffectForUnitAfterCombatStatusFixed(targetUnit, enemyUnit, damageCalcEnv) {
-        // 【凍結】
-        if (targetUnit.hasStatusEffect(StatusEffectType.Frozen)) {
-            // 以下の効果により、自分の追撃が発生しにくくなり、敵の追撃が発生しやすくなる状態異常（敵の次回行動終了まで）
-            // 戦闘中、
-            let d = targetUnit.getDefDiffInCombat(enemyUnit);
-            // 〇は、敵の守備が自分の守備より高い時は10＋守備の差x2、そうでない時は10
-            let amount = MathUtil.ensureMin(10 + d * 2, 10);
-            // 自分の追撃の速さ条件＋〇、
-            targetUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack += amount;
-            // 敵の追撃の速さ条件一〇
-            enemyUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack -= amount;
-            // （例えば、追撃の速さ条件＋10であれば、速さの差が15以上なければ追撃できない）
-            // （同系統スキル複数の時、効果は累積する）
-        }
-
         for (let func of targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedFuncs) {
             func(targetUnit, enemyUnit, damageCalcEnv.calcPotentialDamage);
         }

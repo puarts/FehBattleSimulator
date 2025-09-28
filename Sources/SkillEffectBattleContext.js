@@ -670,6 +670,9 @@ class IncreasesSpdDiffNecessaryForTargetToMakeFollowUpNode extends FromPositiveN
     }
 }
 
+const INCREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE =
+        n => new IncreasesSpdDiffNecessaryForTargetToMakeFollowUpNode(n);
+
 class IncreasesSpdDiffNecessaryForFoeToMakeFollowUpNode extends IncreasesSpdDiffNecessaryForTargetToMakeFollowUpNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -679,7 +682,7 @@ class IncreasesSpdDiffNecessaryForFoeToMakeFollowUpNode extends IncreasesSpdDiff
 /**
  * increases the Spd difference necessary for foe to make a follow-up attack by N during combat
  */
-class IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode extends FromPositiveNumberNode {
+class IncreasesSpdDiffNecessaryForTargetsFoesToMakeFollowUpNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -693,21 +696,35 @@ class IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode extends FromPositiveNu
     }
 }
 
-const INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE = n => new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(n);
+const INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE =
+        n => new IncreasesSpdDiffNecessaryForTargetsFoesToMakeFollowUpNode(n);
 
-/**
- * decreases Spd difference necessary for unit to make a follow-up attack by X during combat
- */
-class DecreasesSpdDiffNecessaryForUnitFollowUpNode extends FromPositiveNumberNode {
+class DecreasesSpdDiffNecessaryForTargetToMakeFollowUpNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
-        let unit = env.unitDuringCombat;
+        let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack -= n;
         env.info(`${unit.nameWithGroup}の追撃の速さ条件-${n}: ${unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack}`);
     }
 }
 
-const DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE
+const DECREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE =
+        n => new DecreasesSpdDiffNecessaryForTargetToMakeFollowUpNode(n);
+
+/**
+ * decreases Spd difference necessary for unit to make a follow-up attack by X during combat
+ */
+class DecreasesSpdDiffNecessaryForUnitFollowUpNode extends DecreasesSpdDiffNecessaryForTargetToMakeFollowUpNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_TO_MAKE_FOLLOW_UP_NODE
     = n => new DecreasesSpdDiffNecessaryForUnitFollowUpNode(n);
 
 /**
@@ -2105,8 +2122,8 @@ class CanTargetMakeFollowUpIncludingPotentNode extends BoolNode {
     }
 
     evaluate(env) {
-        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.AFTER_FOLLOWUP_CONFIGURED)) {
-            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.CombatPhase.AFTER_FOLLOWUP_CONFIGURED)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.CombatPhase, env.combatPhase)}`);
         }
         let unit = this.getUnit(env);
         let result = unit.battleContext.canFollowupAttackIncludingPotent();
@@ -2126,8 +2143,8 @@ class CanTargetMakeFollowUpNode extends BoolNode {
     }
 
     evaluate(env) {
-        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.AFTER_FOLLOWUP_CONFIGURED)) {
-            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.CombatPhase.AFTER_FOLLOWUP_CONFIGURED)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.CombatPhase, env.combatPhase)}`);
         }
         let unit = this.getUnit(env);
         let result = unit.battleContext.canFollowupAttackWithoutPotent;
@@ -2155,8 +2172,8 @@ class CanTargetMakeFollowUpBeforePotentNode extends BoolNode {
     }
 
     evaluate(env) {
-        if (!env.isAtOrAfterCombatPhase(NodeEnv.COMBAT_PHASE.APPLYING_POTENT)) {
-            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, env.combatPhase)}`);
+        if (!env.isAtOrAfterCombatPhase(NodeEnv.CombatPhase.APPLYING_POTENT)) {
+            env.error(`追撃可能判定が終了していません。phase: ${ObjectUtil.getKeyName(NodeEnv.CombatPhase, env.combatPhase)}`);
         }
         let unit = this.getUnit(env);
         let result = unit.battleContext.canFollowupAttackWithoutPotent;
@@ -2196,9 +2213,9 @@ class CanTargetAttackDuringCombatNode extends BoolNode {
     debugMessage = "は攻撃可能か";
 
     getValue(unit, env) {
-        if (env.combatPhase !== NodeEnv.COMBAT_PHASE.NULL_PHASE &&
-            !env.isAfterCombatPhase(NodeEnv.COMBAT_PHASE.APPLYING_CAN_COUNTER)) {
-            env.error(`反撃可能判定が終わっていません(current phase: ${ObjectUtil.getKeyName(NodeEnv.COMBAT_PHASE, 1)})`);
+        if (env.combatPhase !== NodeEnv.CombatPhase.NULL_PHASE &&
+            !env.isAfterCombatPhase(NodeEnv.CombatPhase.APPLYING_CAN_COUNTER)) {
+            env.error(`反撃可能判定が終わっていません(current phase: ${ObjectUtil.getKeyName(NodeEnv.CombatPhase, 1)})`);
         }
         return unit.battleContext.canAttackInCombat();
     }

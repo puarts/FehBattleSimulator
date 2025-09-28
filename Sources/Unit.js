@@ -4135,12 +4135,18 @@ class Unit extends BattleMapElement {
         return this.getSpdInPrecombat() + this.__getEvalSpdAdd();
     }
 
+    __getEvalStatsAdd() {
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this).setName('ステータス比較時')
+            .setLogLevel(getSkillLogLevel());
+        return AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(this, env);
+    }
+
     __getEvalAtkAdd() {
-        return 0;
+        return this.__getEvalStatsAdd()[StatusIndex.ATK] ?? 0;
     }
 
     __getEvalSpdAdd() {
-        return getEvalSpdAdd(this);
+        return getEvalSpdAdd(this) + this.__getEvalStatsAdd()[StatusIndex.SPD] ?? 0;
     }
 
     getAtkInPrecombatWithoutDebuff() {
@@ -4574,18 +4580,11 @@ class Unit extends BattleMapElement {
     }
 
     __getEvalDefAdd() {
-        switch (this.passiveS) {
-            default:
-                return 0;
-        }
+        return this.__getEvalStatsAdd()[StatusIndex.DEF] ?? 0;
     }
 
     __getEvalResAdd() {
-        let value = getEvalResAdd(this);
-        if (value) {
-            return value;
-        }
-        return 0;
+        return getEvalResAdd(this) + this.__getEvalStatsAdd()[StatusIndex.RES] ?? 0;
     }
 
     // TODO: 削除する
