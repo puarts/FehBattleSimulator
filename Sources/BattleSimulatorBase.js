@@ -4491,25 +4491,31 @@ class BattleSimulatorBase {
      * @param {Unit} targetUnit
      */
     updatePartner(targetUnit) {
-        let allUnits = this.enumerateAllyUnits();
-        for (let unit of allUnits) {
-            if (unit.groupId !== targetUnit.groupId) {
-                continue;
-            }
-            if (unit.heroIndex === targetUnit.heroIndex) {
-                // 他のインデックスが等しいユニットにも支援を設定する
-                unit.partnerHeroIndex = targetUnit.partnerHeroIndex;
-                unit.partnerLevel = targetUnit.partnerLevel;
-            } else if (unit.heroIndex === targetUnit.partnerHeroIndex) {
-                // 自分の支援相手に自分を設定する
-                unit.partnerHeroIndex = targetUnit.heroIndex;
-                unit.partnerLevel = targetUnit.partnerLevel;
-            } else {
-                if (unit.partnerHeroIndex === targetUnit.partnerHeroIndex) {
-                    // 他のユニットが同じユニットを支援相手にしていた場合に支援を外す
-                    unit.partnerHeroIndex = -1;
-                    unit.partnerLevel = PartnerLevel.None;
-                }
+        let partnerIndex = targetUnit.partnerHeroIndex;
+        for (let allyUnit of this.enumerateAllyUnits()) {
+            if (targetUnit === allyUnit) continue;
+            if (targetUnit.groupId !== allyUnit.groupId) continue;
+            if (allyUnit.heroIndex === partnerIndex) {
+                // 味方が支援相手の場合
+                // 味方に自分を設定する
+                allyUnit.partnerHeroIndex = targetUnit.heroIndex;
+                allyUnit.partnerLevel = targetUnit.partnerLevel;
+            } else if (allyUnit.heroIndex === targetUnit.heroIndex) {
+                // 味方が自分と同キャラの場合
+                // 味方に自分の支援相手を設定する
+                allyUnit.partnerHeroIndex = partnerIndex;
+                allyUnit.partnerLevel = targetUnit.partnerLevel;
+            } else if (allyUnit.partnerHeroIndex === partnerIndex) {
+                // 味方の支援相手が自分の支援相手だった場合
+                // 味方の支援相手の設定を削除する
+                allyUnit.partnerHeroIndex = -1;
+                allyUnit.partnerLevel = PartnerLevel.None;
+            } else if (allyUnit.partnerHeroIndex === targetUnit.heroIndex) {
+                // targetUnitのパートナーはpartnerIndexに変更されたので
+                // partnerIndexではないallyUnitでtargetUnitが設定されている場合は削除する
+                // ※ allyUnit.heroIndex !== partnerIndexは一番上のif分で判定されている
+                allyUnit.partnerHeroIndex = -1;
+                allyUnit.partnerLevel = PartnerLevel.None;
             }
         }
     }
