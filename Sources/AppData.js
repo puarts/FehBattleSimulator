@@ -2312,9 +2312,9 @@ class AppData extends UnitManager {
     }
 
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
-    *enumerateUnits() {
+    * enumerateUnits() {
         for (let unit of this.enumerateEnemyUnits()) {
             yield unit;
         }
@@ -2347,6 +2347,55 @@ class AppData extends UnitManager {
      */
     enumerateEnemyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, this.enemyUnits.length);
+    }
+
+    getDuplicateEmblemHeroUnits(units) {
+        const unitsWithEmblemHero = units.filter(u => u.hasEmblemHero());
+        const seen = new Set();
+        const duplicates = new Set();
+
+        // 重複している ID を Set に格納
+        for (const u of unitsWithEmblemHero) {
+            if (seen.has(u.emblemHeroIndex)) {
+                duplicates.add(u.emblemHeroIndex);
+            }
+            seen.add(u.emblemHeroIndex);
+        }
+
+        // 重複 ID を持つユニットだけ返す
+        return unitsWithEmblemHero.filter(u => duplicates.has(u.emblemHeroIndex));
+    }
+
+    /**
+     * 味方チーム内で「重複した Emblem Hero」を持つユニットの配列を返す
+     * @returns {Unit[]} 重複した Emblem Hero を持つユニットの配列
+     */
+    getDuplicateAllyEmblemHeroUnits() {
+        return this.getDuplicateEmblemHeroUnits(Array.from(this.enumerateAllyUnits()));
+    }
+
+    /**
+     * 敵チーム内で「重複した Emblem Hero」を持つユニットの配列を返す
+     * @returns {Unit[]} 重複した Emblem Hero を持つユニットの配列
+     */
+    getDuplicateEnemyEmblemHeroUnits() {
+        return this.getDuplicateEmblemHeroUnits(Array.from(this.enumerateEnemyUnits()));
+    }
+
+    hasDuplicateEmblemHero(units) {
+        const emblemIndexes = units
+            .filter(u => u.hasEmblemHero())
+            .map(u => u.emblemHeroIndex);
+
+        return new Set(emblemIndexes).size !== emblemIndexes.length;
+    }
+
+    hasDuplicateEmblemHeroInAllyTeam() {
+        return this.hasDuplicateEmblemHero(Array.from(this.enumerateAllyUnits()));
+    }
+
+    hasDuplicateEmblemHeroInEnemyTeam() {
+        return this.hasDuplicateEmblemHero(Array.from(this.enumerateEnemyUnits()));
     }
 
     /**

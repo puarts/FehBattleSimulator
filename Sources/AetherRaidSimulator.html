@@ -456,25 +456,39 @@
                     </div> -->
                     <table border="0" style="border-width: 0px;border-color: #dddddd;margin: 5px;font-size:14px">
                         <tr>
-                            <td><span style="padding-right: 10px;">攻撃編成</span>
-                                <span v-if="g_appData.gameMode == GameMode.Arena"
-                                    style="font-size:12px"><br />査定:{{arenaScore}}({{primeArenaScore}})</span>
+                            <td>
+                                <div style="padding-right: 10px;">攻撃編成</div>
+                                <div v-if="g_appData.gameMode === GameMode.Arena"
+                                     style="font-size:12px">査定:{{arenaScore}}({{primeArenaScore}})
+                                </div>
+                                <div v-if="g_appData.hasDuplicateEmblemHeroInAllyTeam()"
+                                     class="warning team-warning"
+                                >
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    紋章士重複
+                                </div>
                             </td>
                             <td>
                                 <draggable tag="div" @end="enemyUnitSorted">
                                     <button type="button" @click="g_app.selectItem(unit.id)" v-for="unit in allyUnits"
-                                        v-bind:class="unit.id + ' iconButton'" style="position:relative">
+                                            v-bind:class="unit.id + ' iconButton'" style="position:relative">
                                         <span style="font-weight: bold; font-size:12px; position:absolute">
                                             <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
                                                 絆{{summonerLevelToString(unit.summonerLevel)}}</div>
                                             <div v-if="unit.isBonusChar"
-                                                style=" color:blue;background-color: #ffffff66;">
+                                                 style=" color:blue;background-color: #ffffff66;">
                                                 Bonus</div>
                                         </span>
                                         <div class="team-container">
                                             <img :key=" unit.id" v-bind:src="unit.icon" class="unit-img" style="max-width: 35px;" />
                                             <img v-if="unit.emblemHeroIndex !== EmblemHero.None" class="engage-img" v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20" />
+                                            <div v-if="g_appData.getDuplicateAllyEmblemHeroUnits().includes(unit)"
+                                                 class="team-warning warning-icon"
+                                            >
+                                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                            </div>
                                         </div>
+
 
                                     </button>
                                     <!-- <img v-for="unit in allyUnits" :key="unit.id" src="/images/dummy.png" v-bind:data-src="unit.icon"
@@ -483,27 +497,44 @@
                             </td>
                         </tr>
                         <tr>
-                            <td><span style="padding-right: 10px;">防衛編成</span><span
-                                    v-if="g_appData.gameMode == GameMode.Arena"
-                                    style="font-size:12px"><br />査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
-                                </span>
-                                <span v-else-if="g_appData.gameMode == GameMode.AetherRaid"
-                                    style="font-size:12px"><br />失敗レート:{{aetherRaidDefenseLiftLoss}}</span>
+                            <td>
+                                <div style="padding-right: 10px;">防衛編成</div>
+                                <div
+                                        v-if="g_appData.gameMode === GameMode.Arena"
+                                        style="font-size:12px">査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
+                                </div>
+                                <div v-else-if="g_appData.gameMode === GameMode.AetherRaid"
+                                     style="font-size:12px">失敗レート:{{aetherRaidDefenseLiftLoss}}
+                                </div>
+                                <div v-if="g_appData.hasDuplicateEmblemHeroInEnemyTeam()"
+                                     class="warning team-warning"
+                                >
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    紋章士重複
+                                </div>
                             </td>
                             <td>
                                 <draggable tag="div" @end="enemyUnitSorted" style="position:relative">
                                     <button type="button" @click="g_app.selectItem(unit.id)" v-for="unit in enemyUnits"
-                                        v-bind:class="unit.id + ' iconButton'" style="position:relative">
+                                            v-bind:class="unit.id + ' iconButton'" style="position:relative">
                                         <span style="font-weight: bold; font-size:12px; position:absolute">
-                                            <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
+                                            <div v-if="unit.summonerLevel!==SummonerLevel.None" style="color:red; ">
                                                 {{summonerLevelToString(unit.summonerLevel)}}</div>
                                             <div v-if="unit.isBonusChar"
-                                                style=" color:blue;background-color: #ffffff66;">
+                                                 style=" color:blue;background-color: #ffffff66;">
                                                 Bonus</div>
                                         </span>
                                         <div class="team-container">
-                                            <img :key=" unit.id" v-bind:src="unit.icon" class="unit-img" style="max-width: 35px;" />
-                                            <img v-if="unit.emblemHeroIndex !== EmblemHero.None" class="engage-img" v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20" />
+                                            <img :key=" unit.id" v-bind:src="unit.icon" class="unit-img"
+                                                 style="max-width: 35px;"/>
+                                            <img v-if="unit.emblemHeroIndex !== EmblemHero.None" class="engage-img"
+                                                 v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20"/>
+
+                                            <div v-if="g_appData.getDuplicateEnemyEmblemHeroUnits().includes(unit)"
+                                                 class="team-warning warning-icon"
+                                            >
+                                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                            </div>
                                         </div>
                                     </button>
                                 </draggable>
