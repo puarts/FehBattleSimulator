@@ -102,11 +102,11 @@
     ));
 
     // Unit can use the following【Style】:
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ASTRA_STORM);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.ASTRA_STORM);
 }
 
 {
-    let style = STYLE_TYPE.ASTRA_STORM;
+    let style = StyleType.ASTRA_STORM;
     let skillId = getStyleSkillId(style);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // ――――― Astra Storm Style ―――――
@@ -152,7 +152,7 @@
 
 // 紋章士リン
 {
-    let style = STYLE_TYPE.EMBLEM_LYN;
+    let style = StyleType.EMBLEM_LYN;
     let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
     SKILL_ID_TO_STYLE_TYPE.set(skillId, style);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>

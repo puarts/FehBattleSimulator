@@ -6541,7 +6541,7 @@ class TargetsCurrentStyleNode extends NumberNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.getCurrentStyle();
-        env.debug(`${unit.nameWithGroup}の現在のスタイル: ${ObjectUtil.getKeyName(STYLE_TYPE, result)}`);
+        env.debug(`${unit.nameWithGroup}の現在のスタイル: ${ObjectUtil.getKeyName(StyleType, result)}`);
         return result;
     }
 }

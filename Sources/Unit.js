@@ -5257,6 +5257,14 @@ class Unit extends BattleMapElement {
         yield getDuoOrHarmonizedSkillId(this.heroIndex);
     }
 
+    * enumerateSkillsWithoutStyle() {
+        yield* this.enumerateEquippedSkills();
+        // 受けているステータス
+        yield* this.getStatusEffects().map(getStatusEffectSkillId);
+        // 比翼・双界スキル
+        yield getDuoOrHarmonizedSkillId(this.heroIndex);
+    }
+
     /**
      * マップに入る前に装備されているスキルを列挙する
      * @returns {Generator<string|number>}
@@ -6812,10 +6820,13 @@ class Unit extends BattleMapElement {
      */
     getAvailableStyle() {
         let skills = this.getStyles();
+        // TODO: 状態によるスタイルを考慮する
+        // getStylesのrename(装備スキルからのスタイルにする)
+        // 装備スキルからのスタイルがない場合に状態からのスタイルを見る
         if (skills.length === 1) {
             return skills[0];
         }
-        return STYLE_TYPE.NONE;
+        return StyleType.NONE;
     }
 
     /**
@@ -6824,7 +6835,7 @@ class Unit extends BattleMapElement {
      * @returns {number}
      */
     getCurrentStyle() {
-        return this.isStyleActive ? this.getAvailableStyle() : STYLE_TYPE.NONE;
+        return this.isStyleActive ? this.getAvailableStyle() : StyleType.NONE;
     }
 
     /**
@@ -6833,6 +6844,7 @@ class Unit extends BattleMapElement {
      */
     getStyles() {
         let styles = [];
+        // enumerateSkillsだと内部でgetStylesを呼び出してしまう
         for (let skillId of this.enumerateEquippedSkills()) {
             if (SKILL_ID_TO_STYLE_TYPE.has(skillId)) {
                 styles.push(SKILL_ID_TO_STYLE_TYPE.get(skillId));
@@ -6842,7 +6854,7 @@ class Unit extends BattleMapElement {
     }
 
     hasAvailableStyle() {
-        return this.getAvailableStyle() !== STYLE_TYPE.NONE;
+        return this.getAvailableStyle() !== StyleType.NONE;
     }
 
     /**

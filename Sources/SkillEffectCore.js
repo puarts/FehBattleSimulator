@@ -176,7 +176,7 @@ class SkillEffectHooks {
         } else if (prefix === 'se') {
             name = getStatusEffectName(suffix);
         } else if (prefix === 'style') {
-            name = ObjectUtil.getKeyName(STYLE_TYPE, Number(suffix));
+            name = ObjectUtil.getKeyName(StyleType, Number(suffix));
         } else if (prefix === 'duo-or-harmonized') {
             name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
         } else if (prefix === 'custom') {

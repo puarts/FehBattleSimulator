@@ -73,7 +73,7 @@
     );
     // Unit can use the following [Style]:
     // Hoshido Raijinto Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.HOSHIDO_RAIJINTO);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.HOSHIDO_RAIJINTO);
 }
 
 // Duelist’s Blow
@@ -148,7 +148,7 @@
 
 // Style
 {
-    let style = STYLE_TYPE.HOSHIDO_RAIJINTO;
+    let style = StyleType.HOSHIDO_RAIJINTO;
     let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // Hoshido Raijinto Style
@@ -1883,7 +1883,7 @@
     ));
     // Unit can use the following [Style]:
     // Sublime Heaven Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.SUBLIME_HEAVEN);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.SUBLIME_HEAVEN);
 }
 
 // 🛡️ Prof’s Guidance
@@ -1985,7 +1985,7 @@
 
 // 🔷 Style
 {
-    let style = STYLE_TYPE.SUBLIME_HEAVEN
+    let style = StyleType.SUBLIME_HEAVEN
     let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // Sublime Heaven Style
@@ -2100,7 +2100,7 @@
     );
     // Unit can use the following [Style]:
     // Weapon Triangle: Green Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.WEAPON_TRIANGLE_GREEN);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.WEAPON_TRIANGLE_GREEN);
 }
 
 // 🌙 Archrival
@@ -2182,7 +2182,7 @@
 
 // 🎯 Style
 {
-    let style = STYLE_TYPE.WEAPON_TRIANGLE_GREEN;
+    let style = StyleType.WEAPON_TRIANGLE_GREEN;
     let skillId = getStyleSkillId(style);
     setStyleRange(skillId, TARGETS_RANGE_NODE);
     // Unit can use the following [Style]:
@@ -5989,7 +5989,7 @@
     ));
     // Unit can use the following 【Style】:
     // Echo Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ECHO);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.ECHO);
 }
 
 // 🌙 Magic Light ⏳3
@@ -6042,7 +6042,7 @@
 
 // 🎭 Style
 {
-    let style = STYLE_TYPE.ECHO;
+    let style = StyleType.ECHO;
     let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // ――― Echo Style ―――
@@ -10222,7 +10222,7 @@
 
 // Wind Sword Style
 {
-    let style = STYLE_TYPE.WIND_SWORD;
+    let style = StyleType.WIND_SWORD;
     let skillId = getStyleSkillId(style);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // Unit can attack foes 2 spaces away (unit cannot attack adjacent foes).
@@ -10302,7 +10302,7 @@
     ));
     // Unit can use the following [Style] :
     // Wind Sword Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.WIND_SWORD);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.WIND_SWORD);
 }
 
 // Twin Strike

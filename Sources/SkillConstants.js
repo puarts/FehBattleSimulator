@@ -4152,7 +4152,7 @@ const NoneValue = -1;
 
 const NoneOption = { id: NoneValue, text: "なし" };
 
-const STYLE_TYPE = {
+const StyleType = {
     NONE: -1,
     ASTRA_STORM: 0,
     EMBLEM_LYN: 1,
