@@ -41,7 +41,7 @@ const ObstructTile = 10000; // 進軍阻止されているタイルのウェイ�
 
 // 天脈追加
 // DivineVeinTypeに追加
-// DIVINE_VEIN_STRINGSに追加
+// DIVINE_VEIN_NAMESに追加
 // getDivineVeinImgPathに追加
 // 画像ファイルを追加(https://feheroes.fandom.com/wiki/Divine_Vein#Gallery)
 // 氷系の場合はbreakDivineVein(), hasBreakableDivineVein()に追加
