@@ -1579,6 +1579,72 @@ td.enemy {
     margin: 0.2em 0em 0.2em 0em;
 }
 
+.follow-up-result {
+    font-size: 0.9em;
+    /*color: #aaaaaa;*/
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.1em;
+    margin: 0.2em 0em 0.2em 0em;
+}
+
+.follow-up-grid {
+    width: 80%;
+    display: grid;
+    grid-template-columns: 20ch 18ch 18ch 18ch;
+}
+
+.follow-up-title {
+    font-weight: bold;
+}
+
+.follow-up-header {
+    text-align: center;
+    padding-bottom: 0.2em;
+}
+
+.follow-up-number {
+    width: 50%;
+    padding-left: 0.5ch;
+    text-align: right;
+}
+
+.follow-up-value {
+    text-align: center;
+}
+
+.follow-up-neutralized {
+    text-decoration: line-through;
+}
+
+.follow-up-enabled {
+    color: #00eeee;
+    font-weight: bold;
+}
+
+.follow-up-plus {
+    color: #00eeee;
+    font-weight: bold;
+}
+
+.follow-up-plus::after {
+    content: "(絶対追撃)";
+}
+
+.follow-up-disabled {
+    color: #ffaaaa;
+    font-weight: bold;
+}
+
+.follow-up-minus {
+    color: #ffaaaa;
+    font-weight: bold;
+}
+
+.follow-up-minus::after {
+    content: "(追撃不可)";
+}
+
 .attack-result {
     border: 1px solid #ccc;
     border-radius: 4px;

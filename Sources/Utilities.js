@@ -1837,6 +1837,13 @@ class SetUtil {
      * @param {Set<T>} baseSet - The base set.
      * @param {...Set<T>} sets - A list of sets to subtract from the base set.
      * @returns {Set<T>} A new set that contains elements in the base set but not in the other sets.
+     *
+     * @example
+     * // Basic usage with two sets
+     * const setA = new Set([1, 2, 3, 4, 5]);
+     * const setB = new Set([2, 4]);
+     * const result = SetUtils.difference(setA, setB);
+     * console.log(result); // Set { 1, 3, 5 }
      */
     static difference(baseSet, ...sets) {
         return sets.reduce((acc, set) => new Set([...acc].filter(item => !set.has(item))), baseSet);

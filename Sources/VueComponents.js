@@ -1881,6 +1881,25 @@ function initVueComponents() {
             hasResult: vm => !!vm.combatResult,
             atkName: vm => vm.combatResult?.atkUnit?.name || '',
             defName: vm => vm.combatResult?.defUnit?.name || '',
+            atkUnit: vm => vm.combatResult?.atkUnit || null,
+            defUnit: vm => vm.combatResult?.defUnit || null,
+            atkSpd: vm => MathUtil.ensureMin(vm.combatResult?.atkUnit_spd || 0, 0),
+            defSpd: vm => MathUtil.ensureMin(vm.combatResult?.defUnit_spd || 0, 0),
+            spdDiff: vm => MathUtil.ensureMin(vm.atkSpd - vm.defSpd, 0),
+            atkSpdDiff: vm => MathUtil.ensureMin(vm.atkSpd - vm.defSpd, 0),
+            defSpdDiff: vm => MathUtil.ensureMin(vm.defSpd - vm.atkSpd, 0),
+            atkFollowUpInc: vm => vm.atkUnit?.battleContext?.followupAttackPriorityIncrement || 0,
+            defFollowUpInc: vm => vm.defUnit?.battleContext?.followupAttackPriorityIncrement || 0,
+            atkFollowUpDec: vm => vm.atkUnit?.battleContext?.followupAttackPriorityDecrement || 0,
+            defFollowUpDec: vm => vm.defUnit?.battleContext?.followupAttackPriorityDecrement || 0,
+            atkFollowUp: vm => vm.atkFollowUpInc + vm.atkFollowUpDec,
+            defFollowUp: vm => vm.defFollowUpInc + vm.defFollowUpDec,
+            atkNeutralizesOwnFollowUpDec: vm => vm.atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack,
+            defNeutralizesOwnFollowUpDec: vm => vm.defUnit.battleContext.invalidatesInvalidationOfFollowupAttack,
+            atkNeutralizesFoesFollowUpInc: vm => vm.atkUnit.battleContext.invalidatesAbsoluteFollowupAttack,
+            defNeutralizesFoesFollowUpInc: vm => vm.defUnit.battleContext.invalidatesAbsoluteFollowupAttack,
+            atkAdditionalSpdDiff: vm => vm.atkUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack,
+            defAdditionalSpdDiff: vm => vm.defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack,
             precombatDamage: vm => vm.combatResult?.preCombatDamage ?? 0,
             wasPrecombatSpecialActivated: vm => vm.combatResult?.wasPrecombatSpecialActivated ?? false,
             attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? [],
@@ -1921,6 +1940,9 @@ function initVueComponents() {
             levelTagClass(levelStr) {
                 return `${this.levelClass(levelStr)}-tag`;
             },
+            boolToStr(bool) {
+                return bool ? '◯' : ' ';
+            }
         },
         template: `
             <div class="pop damage-calc-result theme-dark">
@@ -1977,6 +1999,97 @@ function initVueComponents() {
                 
                 <div v-if="wasPrecombatSpecialActivated" class="precombat-result">
                   <div>戦闘前ダメージ: {{ precombatDamage }}</div>
+                </div>
+                
+                <div v-if="detailLevel >= DetailLevel.NORMAL"
+                     class="follow-up-result"
+                >
+                  <div class="follow-up-grid">
+                    <!-- ヘッダー -->
+                    <div class="follow-up-title">【追撃評価】</div>
+                    <div class="follow-up-header">{{ atkName }}</div>
+                    <div class="follow-up-header">{{ defName }}</div>
+                    <div class="follow-up-header">差分</div>
+
+                    <!-- データ行 -->
+                    <div v-if="detailLevel >= DetailLevel.DETAIL">速さ</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ atkSpd }}</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ defSpd }}</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ spdDiff }}</div>
+
+                    <div>攻撃側の追撃値</div>
+                    <div class="follow-up-number">{{ atkFollowUpInc }}</div>
+                    <div class="follow-up-number">{{ atkFollowUpDec }}</div>
+                    <div class="follow-up-value"
+                         :class="{
+                           'follow-up-neutralized': (atkFollowUp < 0 && atkNeutralizesOwnFollowUpDec) ||
+                                                    (atkFollowUp > 0 && defNeutralizesFoesFollowUpInc),
+                           'follow-up-plus': atkFollowUp > 0,
+                           'follow-up-minus': atkFollowUp < 0
+                         }"
+                    >
+                      {{ atkFollowUp }}
+                    </div>
+
+                    <div>守備側の追撃値</div>
+                    <div class="follow-up-number">{{ defFollowUpDec }}</div>
+                    <div class="follow-up-number">{{ defFollowUpInc }}</div>
+                    <div class="follow-up-value"
+                         :class="{
+                           'follow-up-neutralized': (atkFollowUp < 0 && atkNeutralizesOwnFollowUpDec) ||
+                                                    (defFollowUp > 0 && atkNeutralizesFoesFollowUpInc),
+                           'follow-up-plus': defFollowUp > 0,
+                           'follow-up-minus': defFollowUp < 0
+                         }"
+                    >
+                      {{ defFollowUp }}
+                    </div>
+
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" >自身の追撃不可を無効</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value">
+                      {{ boolToStr(atkNeutralizesOwnFollowUpDec) }}
+                    </div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value">
+                      {{ boolToStr(defNeutralizesOwnFollowUpDec) }}
+                    </div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value"></div>
+
+                    <div v-if="detailLevel >= DetailLevel.DETAIL">相手の絶対追撃を無効</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value">
+                      {{ boolToStr(atkNeutralizesFoesFollowUpInc) }}
+                    </div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value">
+                      {{ boolToStr(defNeutralizesFoesFollowUpInc) }}
+                    </div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value"></div>
+
+                    <div v-if="detailLevel >= DetailLevel.DETAIL">追撃の速さ条件</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ atkAdditionalSpdDiff }}</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ defAdditionalSpdDiff }}</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number"></div>
+
+                    <div>速さの差</div>
+                    <div class="follow-up-number" 
+                         :class="{
+                           'follow-up-enabled': atkSpdDiff - (5 + atkAdditionalSpdDiff) > 0,
+                           'follow-up-neutralized': !atkNeutralizesOwnFollowUpDec && atkFollowUp < 0
+                         }">
+                      {{ atkSpdDiff }}
+                    </div>
+                    <div class="follow-up-number" 
+                         :class="{
+                           'follow-up-enabled': defSpdDiff - (5 + defAdditionalSpdDiff) > 0,
+                           'follow-up-neutralized': !defNeutralizesOwnFollowUpDec && defFollowUp < 0
+                         }">
+                      {{ defSpdDiff }}
+                    </div>
+                    <div class="follow-up-number"></div>
+
+                    <div>追撃に必要な速さの差</div>
+                    <div class="follow-up-number">{{ 5 + atkAdditionalSpdDiff }}</div>
+                    <div class="follow-up-number">{{ 5 + defAdditionalSpdDiff }}</div>
+                    <div class="follow-up-number"></div>
+                  </div>
                 </div>
                 
                 <div v-if="showsSkillLogs">
