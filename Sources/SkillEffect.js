@@ -860,6 +860,19 @@ class IntersectSpacesNode extends SpacesNode {
     }
 }
 
+class DifferenceSpacesNode extends SpacesNode {
+    constructor(baseNode, ...children) {
+        super(...children);
+        this._baseNode = baseNode;
+    }
+
+    evaluate(env) {
+        return SetUtil.difference(this._baseNode.evaluate(env), ...this.evaluateChildren(env).map(s => new Set(s)));
+    }
+}
+
+const DIFFERENCE_SPACES_NODE = (baseNode, ...children) => new DifferenceSpacesNode(baseNode, ...children);
+
 class FilterSpacesNode extends SpacesNode {
     /**
      * @param {SpacesNode} spacesNode
@@ -977,6 +990,18 @@ class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
 }
 
 const SPACES_WITHIN_N_SPACES_OF_TARGET_NODE = n => new SpacesWithinNSpacesOfTargetNode(n);
+
+class SpacesNSpacesAwayFromTargetNode extends SpacesWithinNSpacesOfTargetNode {
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let result = env.battleMap.enumerateTilesAtDistanceFrom(unit.placedTile, n);
+        env.trace(`Spaces ${n} spaces away from ${unit.nameWithGroup}`);
+        return result;
+    }
+}
+
+const SPACES_N_SPACES_AWAY_FROM_TARGET_NODE = n => new SpacesNSpacesAwayFromTargetNode(n);
 
 class SpacesWithinNSpacesOfSkillOwnerNode extends SpacesWithinNSpacesOfTargetNode {
     static {

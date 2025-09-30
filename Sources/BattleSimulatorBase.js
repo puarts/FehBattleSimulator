@@ -7676,8 +7676,8 @@ class BattleSimulatorBase {
                 g_app.writeLogLine(unit.getNameWithGroup() + "は天脈を破壊");
             }
 
-            // TODO: 予約しなくて良いのか検討
-            targetTile.removeDivineVein();
+            targetTile.breakDivineVein();
+            g_appData.map.applyReservedDivineVein();
             if (unit.isStyleActive) {
                 unit.isStyleActivatedInThisTurn = true;
                 unit.styleActivationsCount++;
@@ -7688,7 +7688,7 @@ class BattleSimulatorBase {
         };
         return this.__createCommand(
             `${unit.id}-bd-${targetTile.divineVein}-${moveTile.id}`,
-            `天脈・${DIVINE_VEIN_STRINGS[targetTile.divineVein]}破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
+            `天脈・${getDivineVeinName(targetTile.divineVein)}破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
             func,
             serial,
             commandType
@@ -7705,30 +7705,34 @@ class BattleSimulatorBase {
             this.writeDebugLogLine("再移動の発動");
             // Nマス以内にいるだけで再移動発動時に効果を発揮する
             // activateCantoIfPossible内で再移動の発動を判定しているのでここではNマス以内の判定結果だけを保存
-            let isThereAnyUnitThatInflictCantoControlWithinRange = false;
+            let isCantoControlled = false;
             for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
                 let env = new CantoControlEnv(unit, u);
                 env.setName('再移動制限時').setLogLevel(getSkillLogLevel());
-                isThereAnyUnitThatInflictCantoControlWithinRange |=
+                isCantoControlled |=
                     CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
                 for (let skillId of u.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DotingStaff:
                             if (u.isWeaponSpecialRefined) {
                                 if (unit.distance(u) <= 4) {
-                                    isThereAnyUnitThatInflictCantoControlWithinRange = true;
+                                    isCantoControlled = true;
                                 }
                             }
                             break;
                         case PassiveC.CantoControl3:
                             if (unit.distance(u) <= 4) {
-                                isThereAnyUnitThatInflictCantoControlWithinRange = true;
+                                isCantoControlled = true;
                             }
                             break;
                     }
                 }
             }
-            unit.activateCantoIfPossible(count, isThereAnyUnitThatInflictCantoControlWithinRange);
+            if (unit.placedTile.divineVein === DivineVeinType.Vert &&
+                unit.placedTile.divineVeinGroup !== unit.groupId) {
+                isCantoControlled = true;
+            }
+            unit.activateCantoIfPossible(count, isCantoControlled);
             return true;
         }
         return false;

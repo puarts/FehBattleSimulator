@@ -39,6 +39,12 @@ for (let key in TileType) {
 const CanNotReachTile = 1000000;
 const ObstructTile = 10000; // 進軍阻止されているタイルのウェイト
 
+// 天脈追加
+// DivineVeinTypeに追加
+// DIVINE_VEIN_STRINGSに追加
+// getDivineVeinImgPathに追加
+// 画像ファイルを追加(https://feheroes.fandom.com/wiki/Divine_Vein#Gallery)
+// 氷系の場合はbreakDivineVein(), hasBreakableDivineVein()に追加
 const DivineVeinType = {
     None: 0,
     Stone: 1,
@@ -47,10 +53,12 @@ const DivineVeinType = {
     Haze: 4,
     Water: 5,
     Ice: 6,
+    Icicle: 7,
+    Vert: 8,
 };
-const DIVINE_VEIN_STRINGS = ['', '護', '炎', '緑', '瘴', '水', '氷'];
+const DIVINE_VEIN_NAMES = ['', '護', '炎', '緑', '瘴', '水', '氷', '深緑氷', '深緑'];
 function getDivineVeinName(divineVein) {
-    return DIVINE_VEIN_STRINGS[divineVein] ?? 'なし';
+    return DIVINE_VEIN_NAMES[divineVein] ?? 'なし';
 }
 
 function divineVeinColor(divineVeinGroup) {
@@ -949,7 +957,13 @@ class Tile extends BattleMapElement {
     }
 
     hasBreakableDivineVein() {
-        return this.divineVein === DivineVeinType.Ice;
+        return this.divineVein === DivineVeinType.Ice
+            || this.divineVein === DivineVeinType.Icicle;
+    }
+
+    hasIceTypeDivineVein() {
+        return this.divineVein === DivineVeinType.Ice
+            || this.divineVein === DivineVeinType.Icicle;
     }
 
     /**
@@ -965,6 +979,24 @@ class Tile extends BattleMapElement {
         this.divineVein = DivineVeinType.None;
         this.divineVeinGroup = null;
         this.divineVeinTurns = 0;
+    }
+
+    // TODO: 天脈のHPを考慮する
+    /**
+     * 攻撃によって天脈を破壊
+     * @param {number} damage
+     */
+    breakDivineVein(damage = 1) {
+        switch (this.divineVein) {
+            case DivineVeinType.Ice:
+                this.reserveDivineVein(DivineVeinType.None, null, 0);
+                break;
+            case DivineVeinType.Icicle:
+                this.reserveDivineVein(DivineVeinType.Vert, this.divineVeinGroup, this.divineVeinTurns);
+                break;
+            default:
+                break;
+        }
     }
 
     initializePerTurn(group) {

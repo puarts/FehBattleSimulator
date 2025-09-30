@@ -1314,6 +1314,9 @@ function getDivineVeinImgPath(divineVein) {
         'DivineVein_Haze.webp',
         'DivineVein_Water.jpg',
         'DivineVein_Ice.webp',
+        // TODO: 画像を追加
+        'DivineVein_Ice.webp',
+        'DivineVein_Green.webp',
     ].map(img => `${g_imageRootPath}${img}`)[divineVein] ?? null;
 }
 
