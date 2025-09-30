@@ -1156,6 +1156,8 @@
                          v-bind:alt="DIVINE_VEIN_NAMES[value.divineVein]"
                          class="tile-info-icon">
                 </a>
+                天脈{{ getDivineVeinName(value.divineVein) }},
+                Level: {{ value.divineVeinTurns }}
             </div>
         </div>
     </script>
@@ -1187,6 +1189,11 @@
                 <input v-model="value.isDisabled" type="checkbox" @change="updateAllUi"/>
                 発動済み
             </label>
+            <div v-if="value.placedTile && value.placedTile.hasDivineVein()">
+                {{ value.placedTile.divineVeinGroup === UnitGroupType.Ally ? '自軍' : '敵軍' }}:
+                天脈{{ getDivineVeinName(value.placedTile.divineVein) }},
+                Level: {{ value.placedTile.divineVeinTurns }}
+            </div>
         </div>
     </script>
     <script type="text/x-template" id="status-label-template">
