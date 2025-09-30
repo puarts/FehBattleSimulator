@@ -3978,6 +3978,14 @@ Weapon.DoublerAxePlus = 3411; // 強化増幅の斧+
 Weapon.EntwiningHorn = 3403; // 結ぶ者の角
 Special.FlameWall = 3413; // 壁炎
 PassiveC.HeirOfOpenness = 3414; // 開神の娘
+Weapon.SwordOfFate = 3416; // 未来を選びし者の剣
+Special.TorrentialRoar = 3417; // 竜穿砲
+PassiveA.TorrentialBoost = 3418; // 火風水の命脈
+PassiveB.PairUp4 = 3419; // 防陣4
+PassiveC.SRBriarMSave = 3420; // 衣の護り手・魔・茨
+Weapon.WindsOfDuality = 3421; // 光と闇の疾風
+PassiveA.RejectTyranny = 3422; // 暴虐への怒り
+PassiveA.DarkBeastForce = 3423; // 暗獣・不屈
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

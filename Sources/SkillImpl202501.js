@@ -1,5 +1,261 @@
 // スキル実装
 
+    // Sword of Fate
+    // Mt: 16   Rng: 1
+    //
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit can counterattack regardless of foe’s range.
+    //
+    // At start of player phase or enemy phase,
+    // if unit is within 2 spaces of an ally,
+    // grants [Draconic Hex] and
+    // “reduces the percentage of foe’s non-Special
+    // ‘reduce damage by X%’ skills by 50% during combat
+    // (excluding area-of-effect Specials)”
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // If unit is within 3 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of allies within 3 spaces of unit × 3, + 5 (max 14;
+    // if unit triggers Savior, value is treated as 14),
+    // deals damage = 20% of unit’s Res
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 20% of unit’s Res
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe’s Specials
+    // by an additional 20% of unit’s Res
+    // (excluding area-of-effect Specials), and
+    // neutralizes effects that guarantee foe’s follow-up attacks
+    // and effects that prevent unit’s follow-up attacks during combat.
+
+    // Torrential Roar
+    // CD: 3
+    //
+    // Boosts damage by 60% of unit’s Res when Special triggers.
+    //
+    // Neutralizes effects that inflict
+    // “Special cooldown charge -X” on unit and
+    // reduces damage from foe’s attacks by 40% during combat
+    // (excluding area-of-effect Specials).
+    //
+    // If unit’s Res > foe’s Res,
+    // decreases Spd difference necessary
+    // for unit to make a follow-up attack by X and
+    // increases Spd difference necessary
+    // for foe to make a follow-up attack by X during combat
+    // (X = difference between Res stats; max 10).
+    //
+    // At start of enemy phase (except for in Pawns of Loki),
+    // if there is no [Divine Vein (Icicle)] currently applied
+    // by unit or allies,
+    // applies [Divine Vein (Icicle)]
+    // to spaces 2 spaces away from both unit
+    // and certain target ally within 2 spaces of unit
+    // for 1 turn (excluding spaces adjacent to or occupied by unit
+    // or target ally, spaces occupied by a foe,
+    // destructible terrain other than Divine Vein,
+    // or warp spaces in Rival Domains), and
+    // [Divine Vein (Vert)] to unit’s space and
+    // spaces within 4 spaces of unit for 1 turn
+    // (excluding spaces with [Divine Vein (Icicle)] applied).
+    //
+    // (If support partner is on player team, targets any support partner;
+    // otherwise, targets ally with the highest Def at start of battle,
+    // excluding unit; “at start of battle” excludes increases to Def
+    // granted after ally is deployed,
+    // such as Legendary Effects, Mythic Effects, Bonus Heroes,
+    // Great Talent, etc.;
+    // if number of allies that qualify ≥ 2,
+    // it’s treated as though there is no target ally.)
+    //
+    // [Divine Vein (Icicle)]
+    // Applies the following status on space:
+    // Foes treat space as impassable terrain while status is active,
+    // but status is destructible (with 1 HP).
+    // When destroyed, it changes to [Divine Vein (Vert)].
+    // Allies can move into and occupy space.
+    // If any allies occupy spaces with Divine Vein (Icicle) applied,
+    // attacks targeting those spaces will hit the ally
+    // over destroying the Divine Vein (Icicle).
+    //
+    // [Divine Vein (Vert)]
+    // Applies the following effects on space for foes:
+    // Foe cannot warp from this space or into this space
+    // (does not affect units with Pass skills or warp effects
+    // from structures like camps and fortresses in Rival Domains).
+    // Inflicts [Canto Control] on foes that trigger Canto in this space
+    // through their next action.
+    // Inflicts Atk/Spd-5 and Special cooldown charge -1
+    // on foe per attack during combat
+    // (only highest value applied; does not stack), and also,
+    // if foe’s attack can trigger foe’s Special,
+    // inflicts Special cooldown count+1 on foe
+    // before foe’s first attack during combat
+    // (cannot exceed the foe’s maximum Special cooldown).
+
+    // Torrential Boost
+    // A-Skill
+    //
+    // Grants HP+5.
+    //
+    // If foe initiates combat or if unit’s HP ≥ 50%
+    // at start of combat,
+    // grants Atk/Spd/Res+9 to unit during combat
+    // and restores 7 HP to unit after combat.
+
+    // Pair Up 4
+    // B-Skill
+    //
+    // If unit is within 3 spaces of an ally,
+    // inflicts Atk/Spd-4 on foe,
+    // increases Spd difference necessary
+    // for foe to make a follow-up attack by 10,
+    // neutralizes penalties on unit,
+    // unit deals +15 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by 10 during combat
+    // (excluding area-of-effect Specials).
+    //
+    // And also, if foe triggers the “attacks twice” effect during combat,
+    // reduces damage by an additional 7
+    // (excluding area-of-effect Specials).
+    //
+    // If unit is within 3 spaces of an ally and foe initiates combat,
+    // reduces damage by an additional X × 2
+    // (X = distance from unit to foe;
+    // excluding area-of-effect Specials).
+
+    // S/R Briar M Save
+    // C-Skill
+    //
+    // If magic, staff, or dragon foe initiates combat
+    // against an ally within 2 spaces of unit,
+    // triggers [Savior] on unit.
+    //
+    // If foe uses magic, staff, or dragonstone,
+    // grants Spd/Res+4 to unit,
+    // disables foe’s effects that
+    // “calculate damage using the lower of foe’s Def or Res”
+    // (including area-of-effect Specials),
+    // and reduces damage from foe’s first attack by 5
+    // during combat (“first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,”
+    // it means the first and second strikes).
+    //
+    // And unit’s next attack deals damage =
+    // 40% of foe’s attack damage prior to reductions
+    // (resets at end of combat; only highest value applied; does not stack).
+
+    // Emblem Effect
+    //
+    // Enhanced Engaged Special:
+    // When Special triggers,
+    // boosts damage by unit’s max Special cooldown count value × 4
+    // (excluding area-of-effect Specials).
+    //
+    // At start of enemy phase (except for in Pawns of Loki),
+    // if there is no [Divine Vein (Icicle)]
+    // currently applied by unit or allies,
+    // applies [Divine Vein (Icicle)]
+    // to spaces 2 spaces away from unit for 1 turn
+    // (excluding spaces occupied by a foe, destructible terrain
+    // other than Divine Vein, or warp spaces in Rival Domains), and
+    // [Divine Vein (Vert)] to unit’s space and
+    // spaces within 3 spaces of unit for 1 turn
+    // (excluding spaces with [Divine Vein (Icicle)] applied).
+
+    // Winds of Duality
+    // Mt: 14　Rng: 1　Eff: 🪶
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+    //
+    // At start of turn, if unit’s HP ≥ 25%,
+    // inflicts [Exposure], [Spd Shackle], and [Def Shackle]
+    // on closest foes and any foe within 2 spaces of those foes
+    // through their next actions.
+    //
+    // If unit is transformed or unit’s HP ≥ 25% at start of combat,
+    // grants bonus to unit’s Atk/Spd/Def/Res = number of foes
+    // within 3 rows or 3 columns centered on unit × 3, +5 (max 14),
+    // unit deals +X × 5 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by X × 3 during combat
+    // (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit, excluding stat bonuses
+    //
+    // number of Penalty effects active on foe, excluding stat penalties; max 5).
+    // And also, if decreasing the Spd difference necessary to make a follow-up attack
+    // by 10 would allow unit to trigger a follow-up attack
+    // (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow 100%] during combat.
+    //
+    // At start of turn, if unit is adjacent to only beast or dragon allies
+    // or if unit is not adjacent to any ally, unit transforms (otherwise, unit reverts).
+    // If unit transforms, grants Atk+2,
+    // inflicts Atk/Def-Y on foe during combat
+    // (Y = number of spaces from start position
+    // to end position of whoever initiated combat + 3; max 6),
+    // and also, if Y ≥ 5, reduces damage from foe’s first attack during combat by 30%.
+
+    // Reject Tyranny (A slot)
+    // If unit can transform, transformation effects gain
+    // “if any foe is within 3 columns or 3 rows centered on unit”
+    // as a trigger condition (in addition to existing conditions).
+    //
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met, unit transforms.
+    //
+    // At start of turn, if unit’s HP ≥ 25%,
+    // grants “reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills
+    // by 50% during combat (excluding area-of-effect Specials)”
+    // to unit and allies within 2 spaces of unit for 1 turn,
+    // and grants [Range: 2 Style] to unit and sword, lance, axe, dragon, or beast allies
+    // within 2 spaces of unit for 1 turn.
+    //
+    // If unit is transformed or HP ≥ 25% at start of combat,
+    // grants Atk/Spd/Def/Res+X+8 to unit,
+    // unit deals +X × 4 damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by X × 4 (excluding area-of-effect Specials),
+    // reduces damage from foe’s Specials by an additional X × 4
+    // (excluding area-of-effect Specials;
+    // X = number of spaces from start to end position of whoever initiated combat; max 3),
+    // neutralizes effects that inflict “Special cooldown charge -X” on unit,
+    // and grants Special cooldown count-Y to unit before unit’s first attack during combat
+    // (Y = number of Penalty effects active on foe, excluding stat penalties; max 2).
+    //
+    // [Range: 2 Style]
+    // Unit can use the following [Style]:
+    // Range: 2 Style
+
+    // Dark Beast Force (C slot)
+    // Inflicts Spd/Def-4 on foe,
+    // disables skills of all foes excluding foe in combat,
+    // neutralizes penalties on unit,
+    // and unit deals +5 damage during combat
+    // (excluding area-of-effect Specials).
+
+    // Style
+    // Unit can use the following [Style]:
+    // Range: 2 Style
+    //
+    // Unit can attack foes 2 spaces away (cannot attack adjacent foes).
+    //
+    // Cannot move through spaces within 2 spaces of foe
+    // that has triggered the Bulwark effect (does not apply if unit has Pass).
+    // Unit suffers a counterattack if any of the following are met:
+    //
+    // Foe is armored with Range = 1
+    //
+    // Foe can counterattack regardless of unit’s range
+    //
+    // Foe’s Range is the same as the distance between unit and foe
+    //
+    // After-combat movement effects do not occur.
+    // Skill effect’s Range is treated as 1.
+    // This Style can only be used if unit has Range = 1.
+    //
+    // This Style is disabled when unit has another [Style].
+    // After combat where this [Style] is used, removes this status.
+
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.Frozen);
     WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
