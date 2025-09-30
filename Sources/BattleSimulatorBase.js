@@ -1258,6 +1258,45 @@ class BattleSimulatorBase {
         return false;
     }
 
+    /**
+     * ボタンを表示して良いか
+     * 条件により効果が発動できなくても比翼・双界ならばボタンは表示される(true)
+     * 敵の鳥籠の効果中はグレーアウト表示（このメソッドではtrueを返す）
+     * 発動済みの場合は表示しない(false)
+     * 味方の鳥の効果ターン中は発動済みでもグレーアウト表示(true)
+     * 飛翔の効果が切れた場合は表示しない(false)
+     * @param duoUnit
+     */
+    canDisplayDuoOrHarmonizedButton(duoUnit) {
+        if (!duoUnit) {
+            return false;
+        }
+        if (!duoUnit.isDuoAllyHero && !duoUnit.isHarmonicAllyHero) {
+            return false;
+        }
+
+        // 飛翔の効果中の場合である場合は表示を行う
+        if (duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn) {
+            for (let st of this.__enumerateOffenceStructuresOnMap()) {
+                if (st instanceof OfHiyokuNoHisyo) {
+                    let limitTurn = st.amount;
+                    if (g_appData.currentTurn <= limitTurn) {
+                        return true;
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+
+        // スタイルを持っている場合は行動済みならば表示する(true)
+        if (duoUnit.hasAvailableStyle()) {
+            return duoUnit.isActionDone;
+        }
+
+        return true;
+    }
+
     canActivateDuoSkillOrHarmonizedSkill(duoUnit) {
         if (!duoUnit) {
             return false;
@@ -1266,11 +1305,12 @@ class BattleSimulatorBase {
             return false;
         }
 
+        // 1ターンに一度だけ発動可能(比翼の飛翔の場合でもこのターンでは無理、canDisplayでは一度使用していても飛翔があれば表示する)
         if (duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn) {
             return false;
         }
 
-        if (duoUnit.hasAvailableStyle()) {
+        if (duoUnit.hasAvailableStyle() && !duoUnit.isActionDone) {
             return false;
         }
 
@@ -1309,18 +1349,12 @@ class BattleSimulatorBase {
                 break;
         }
 
-        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoEnemyHero || x.isHarmonicEnemyHero)) {
-            for (let st of this.__enumerateDefenseStructuresOnMap()) {
-                if (st instanceof DefHiyokuNoTorikago) {
-                    let limitTurn = st.amount;
-                    if (g_appData.currentTurn <= limitTurn) {
-                        return false;
-                    }
-                    break;
-                }
-            }
+        // 鳥籠
+        if (this.isDuosHindranceActivating()) {
+            return false;
         }
 
+        // ターン数で再発動
         let activatableCount = 1;
         for (let st of this.__enumerateOffenceStructuresOnMap()) {
             if (st instanceof OfHiyokuNoHisyo) {
@@ -1333,6 +1367,25 @@ class BattleSimulatorBase {
         }
 
         return duoUnit.duoOrHarmonizedSkillActivationCount < activatableCount;
+    }
+
+    /**
+     * 鳥籠によってスキルが発動不能になっているか
+     * @returns {boolean}
+     */
+    isDuosHindranceActivating() {
+        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoEnemyHero || x.isHarmonicEnemyHero)) {
+            for (let st of this.__enumerateDefenseStructuresOnMap()) {
+                if (st instanceof DefHiyokuNoTorikago) {
+                    let limitTurn = st.amount;
+                    if (g_appData.currentTurn <= limitTurn) {
+                        return true;
+                    }
+                    break;
+                }
+            }
+        }
+        return false;
     }
 
     canActivateStyleSkill(unit) {

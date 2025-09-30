@@ -77,6 +77,7 @@ const Hero = {
     DuoCorrinM: 1259,
     DuoMarth: 1266,
     DuoJulia: 1276,
+    HarmonizedCelica: 1288,
     DuoHapi: 1294,
     HarmonizedIngrid: 1309,
     HarmonizedFir: 1322,

@@ -804,10 +804,19 @@ function initVueComponents() {
         },
         methods: {
             canDisplayDuoButton: function () {
-                return this.getAttacker()?.isDuoAllyHero && !this.getAttacker()?.hasAvailableStyle();
+                let attacker = this.getAttacker();
+                if (!attacker) return false;
+                return attacker.isDuoAllyHero && this.getApp()?.canDisplayDuoOrHarmonizedButton(attacker);
             },
             canDisplayHarmonicButton: function () {
-                return this.getAttacker()?.isHarmonicAllyHero && !this.getAttacker()?.hasAvailableStyle();
+                let attacker = this.getAttacker();
+                if (!attacker) return false;
+                return attacker.isHarmonicAllyHero && this.getApp()?.canDisplayDuoOrHarmonizedButton(attacker);
+            },
+            canDisplayStyleButton: function () {
+                let currentUnit = this.getCurrentUnit();
+                if (!currentUnit) return false;
+                return currentUnit.hasAvailableStyle() && !currentUnit.isActionDone;
             },
             duoOrHarmonizedSkillButtonStyle(type) {
                 const enabled = this.canActivateDuoSkillOrHarmonizedSkill();
@@ -827,10 +836,14 @@ function initVueComponents() {
                 return this.getApp().canActivateDuoSkillOrHarmonizedSkill(this.getAttacker());
             },
             canActivateStyle: function () {
-                return this.getCurrentUnit()?.canActivateStyle();
+                let currentUnit = this.getCurrentUnit();
+                if (!currentUnit) return false;
+                return currentUnit.canActivateStyle();
             },
             canDeactivateStyle: function () {
-                return this.getCurrentUnit()?.canDeactivateStyle();
+                let currentUnit = this.getCurrentUnit();
+                if (!currentUnit) return false;
+                return currentUnit.canDeactivateStyle();
             },
         },
         template: `
@@ -853,23 +866,25 @@ function initVueComponents() {
                     @click="onDuoOrHarmonizedSkillClick()"
                 />
 
-                <input
-                    v-if="canActivateStyle() || canDeactivateStyle()"
-                    type="button"
-                    class="fehButton map-control-button"
-                    :class="canActivateStyle()
-                      ? 'map-activate-style-button'
-                      : 'map-deactivate-style-button'"
-                    @click="canActivateStyle()
-                      ? getApp().activateStyleSkill(getCurrentUnit())
-                      : getApp().deactivateStyleSkill(getCurrentUnit())"
-                />
-                <span v-if="getCurrentUnit()?.hasAvailableStyleButCannotActivate()">
-                    <input type="button"
-                           disabled
-                           class="fehButtonDisabled map-control-button map-activate-style-button"
-                    >
-                </span>
+                <div v-if="canDisplayStyleButton()">
+                  <input
+                      v-if="canActivateStyle() || canDeactivateStyle()"
+                      type="button"
+                      class="fehButton map-control-button"
+                      :class="canActivateStyle()
+                        ? 'map-activate-style-button'
+                        : 'map-deactivate-style-button'"
+                      @click="canActivateStyle()
+                        ? getApp().activateStyleSkill(getCurrentUnit())
+                        : getApp().deactivateStyleSkill(getCurrentUnit())"
+                  />
+                  <span v-if="getCurrentUnit()?.hasAvailableStyleButCannotActivate()">
+                      <input type="button"
+                             disabled
+                             class="fehButtonDisabled map-control-button map-activate-style-button"
+                      >
+                  </span>
+                </div>
             </span>
         `,
     });
