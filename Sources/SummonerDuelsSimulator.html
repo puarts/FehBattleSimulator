@@ -1283,7 +1283,7 @@
             <div v-if="value.placedTile && value.placedTile.hasDivineVein()">
                 {{ value.placedTile.divineVeinGroup === UnitGroupType.Ally ? '自軍' : '敵軍' }}:
                 天脈{{ getDivineVeinName(value.placedTile.divineVein) }},
-                Level: {{ value.placedTile.divineVeinTurns }}
+                ターン: {{ value.placedTile.divineVeinTurns }}
             </div>
         </div>
     </script>
