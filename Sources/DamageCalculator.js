@@ -83,6 +83,11 @@ class CombatResult extends DamageCalcResult {
         this.defUnit_def = 0;
         this.defUnit_res = 0;
 
+        this.atkUnitFollowUpPriorityInc = 0;
+        this.atkUnitFollowUpPriorityDec = 0;
+        this.defUnitFollowUpPriorityInc = 0;
+        this.defUnitFollowUpPriorityDec = 0;
+
         this.preCombatDamage = 0;
         this.preCombatDamageWithOverkill = 0;
         this.wasPrecombatSpecialActivated = false;

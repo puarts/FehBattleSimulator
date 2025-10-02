@@ -1900,13 +1900,13 @@ function initVueComponents() {
             defUnit: vm => vm.combatResult?.defUnit || null,
             atkSpd: vm => MathUtil.ensureMin(vm.combatResult?.atkUnit_spd || 0, 0),
             defSpd: vm => MathUtil.ensureMin(vm.combatResult?.defUnit_spd || 0, 0),
-            spdDiff: vm => MathUtil.ensureMin(vm.atkSpd - vm.defSpd, 0),
-            atkSpdDiff: vm => MathUtil.ensureMin(vm.atkSpd - vm.defSpd, 0),
-            defSpdDiff: vm => MathUtil.ensureMin(vm.defSpd - vm.atkSpd, 0),
-            atkFollowUpInc: vm => vm.atkUnit?.battleContext?.followupAttackPriorityIncrement || 0,
-            defFollowUpInc: vm => vm.defUnit?.battleContext?.followupAttackPriorityIncrement || 0,
-            atkFollowUpDec: vm => vm.atkUnit?.battleContext?.followupAttackPriorityDecrement || 0,
-            defFollowUpDec: vm => vm.defUnit?.battleContext?.followupAttackPriorityDecrement || 0,
+            spdDiff: vm => vm.atkSpd - vm.defSpd,
+            atkSpdDiff: vm => vm.atkSpd - vm.defSpd,
+            defSpdDiff: vm => vm.defSpd - vm.atkSpd,
+            atkFollowUpInc: vm => vm.combatResult?.atkUnitFollowUpPriorityInc || 0,
+            defFollowUpInc: vm => vm.combatResult?.defUnitFollowUpPriorityInc || 0,
+            atkFollowUpDec: vm => vm.combatResult?.atkUnitFollowUpPriorityDec || 0,
+            defFollowUpDec: vm => vm.combatResult?.defUnitFollowUpPriorityDec || 0,
             atkFollowUp: vm => vm.atkFollowUpInc + vm.atkFollowUpDec,
             defFollowUp: vm => vm.defFollowUpInc + vm.defFollowUpDec,
             atkNeutralizesOwnFollowUpDec: vm => vm.atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack,
@@ -2016,6 +2016,18 @@ function initVueComponents() {
                   <div>戦闘前ダメージ: {{ precombatDamage }}</div>
                 </div>
                 
+                <div v-if="showsSkillLogs">
+                  <log-node 
+                    v-for="(n, i) in rootChildren"
+                    :key="i"
+                    :node="n"
+                    :default-open="true"
+                    :child-default-open="true"
+                    :detail-level="detailLevel"
+                    :log-filter-text="logFilterText"
+                  />
+                </div>
+
                 <div v-if="detailLevel >= DetailLevel.NORMAL"
                      class="follow-up-result"
                 >
@@ -2078,10 +2090,15 @@ function initVueComponents() {
                     </div>
                     <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value"></div>
 
-                    <div v-if="detailLevel >= DetailLevel.DETAIL">追撃の速さ条件</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL">追撃の速さ条件増減</div>
                     <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ atkAdditionalSpdDiff }}</div>
                     <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ defAdditionalSpdDiff }}</div>
                     <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number"></div>
+
+                    <div>追撃に必要な速さの差</div>
+                    <div class="follow-up-number">{{ 5 + atkAdditionalSpdDiff }}</div>
+                    <div class="follow-up-number">{{ 5 + defAdditionalSpdDiff }}</div>
+                    <div class="follow-up-number"></div>
 
                     <div>速さの差</div>
                     <div class="follow-up-number" 
@@ -2099,24 +2116,7 @@ function initVueComponents() {
                       {{ defSpdDiff }}
                     </div>
                     <div class="follow-up-number"></div>
-
-                    <div>追撃に必要な速さの差</div>
-                    <div class="follow-up-number">{{ 5 + atkAdditionalSpdDiff }}</div>
-                    <div class="follow-up-number">{{ 5 + defAdditionalSpdDiff }}</div>
-                    <div class="follow-up-number"></div>
                   </div>
-                </div>
-                
-                <div v-if="showsSkillLogs">
-                  <log-node 
-                    v-for="(n, i) in rootChildren"
-                    :key="i"
-                    :node="n"
-                    :default-open="true"
-                    :child-default-open="true"
-                    :detail-level="detailLevel"
-                    :log-filter-text="logFilterText"
-                  />
                 </div>
 
                 <div class="attacks-result" v-if="attackResults">
