@@ -399,6 +399,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.ResShackle, ["ResShackle.webp", "魔防の枷", "魔防が減少、自分の不利な状態異常の数+4（最大8）"]],
     [StatusEffectType.CreationPulse, ["CreationPulse.webp", "開闢の鼓動", "攻撃前に、奥義発動カウント-敵の不利な状態異常の数"]],
     [StatusEffectType.ChangeOfFate, ["ChangeOfFate.webp", "運命を変える!", ""]],
+    [StatusEffectType.Range2Style, ["Range2Style.webp", "スタイル・射程2", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

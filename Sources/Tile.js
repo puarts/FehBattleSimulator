@@ -61,6 +61,16 @@ function getDivineVeinName(divineVein) {
     return DIVINE_VEIN_NAMES[divineVein] ?? 'なし';
 }
 
+const DIVINE_VEIN_ICE_TYPES = new Set([
+    DivineVeinType.Ice,
+    DivineVeinType.Icicle
+]);
+
+const DIVINE_VEIN_GREEN_TYPES = new Set([
+    DivineVeinType.Green,
+    DivineVeinType.Vert
+]);
+
 function divineVeinColor(divineVeinGroup) {
     switch (divineVeinGroup) {
         case UnitGroupType.Ally:
@@ -957,13 +967,15 @@ class Tile extends BattleMapElement {
     }
 
     hasBreakableDivineVein() {
-        return this.divineVein === DivineVeinType.Ice
-            || this.divineVein === DivineVeinType.Icicle;
+        return DIVINE_VEIN_ICE_TYPES.has(this.divineVein);
     }
 
     hasIceTypeDivineVein() {
-        return this.divineVein === DivineVeinType.Ice
-            || this.divineVein === DivineVeinType.Icicle;
+        return DIVINE_VEIN_ICE_TYPES.has(this.divineVein);
+    }
+
+    hasGreenTypeDivineVein() {
+        return DIVINE_VEIN_GREEN_TYPES.has(this.divineVein);
     }
 
     /**

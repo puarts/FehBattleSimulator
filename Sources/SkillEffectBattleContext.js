@@ -532,6 +532,21 @@ const FOE_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_UNITS_FOLLOW_UP_ATTACKS_DURING_COMB
     }
 }
 
+class NeutralizesEffectsThatPreventTargetsFollowUpAttacksDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.unitDuringCombat.battleContext.invalidatesInvalidationOfFollowupAttack = true;
+        env.info(`${unit.nameWithGroup}は自身の追撃不可を無効`);
+    }
+}
+
+const NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE =
+    new NeutralizesEffectsThatPreventTargetsFollowUpAttacksDuringCombatNode();
+
 // noinspection JSUnusedGlobalSymbols
 /**
  * neutralizes effects that prevent unit's follow-up attacks during combat.
@@ -1075,6 +1090,8 @@ class ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode extends ApplyingNum
 
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesAttacksByXDuringCombatNode(n);
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE =
+    n => REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_DURING_COMBAT_NODE(n);
 
 class ReducesDamageFromTargetsFoesAttacksByXDuringCombatPerAttackNode extends ApplyingNumberNode {
     static {
@@ -1184,6 +1201,8 @@ class ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode extends FromPosi
 
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE =
     n => new ReduceDamageFromTargetsFoesAttacksByXPercentBySpecialNode(n);
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_EXCLUDING_AOE_SPECIALS_BY_SPECIAL_NODE =
+    n => REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(n);
 
 /**
  * reduces damage from foe's first attack by X% during combat
@@ -1315,6 +1334,8 @@ class ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode extends ApplyingNumber
 
 const REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE =
     n => new ReducesDamageWhenFoesSpecialExcludingAoeSpecialNode(n);
+const REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_X_EXCLUDING_AOE_SPECIAL_NODE =
+    n => REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(n);
 
 class ReducesDamageWhenFoesSpecialExcludingAoeSpecialPerAttackNode extends ApplyingNumberNode {
     getDescription(n) {
@@ -1450,13 +1471,26 @@ const NEUTRALIZES_SPECIAL_COOLDOWN_CHARGE_MINUS_NODE = new class extends SkillEf
     }
 }();
 
-const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE = new class extends SkillEffectNode {
+class InflictsSpecialCooldownChargeMinus1OnTargetsFoeNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
     evaluate(env) {
-        let unit = env.unitDuringCombat;
+        let unit = this.getUnit(env);
         env.info(`${unit.nameWithGroup}は敵の奥義発動カウント変動量-1`);
         unit.battleContext.reducesCooldownCount = true;
     }
-}();
+}
+
+const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE =
+    new InflictsSpecialCooldownChargeMinus1OnTargetsFoeNode();
+
+const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGET_NODE =
+    FOR_TARGETS_FOE_NODE(INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE);
+
+const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE =
+    INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE;
 
 const UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE = new class extends SkillEffectNode {
     evaluate(env) {

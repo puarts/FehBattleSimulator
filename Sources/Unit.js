@@ -2374,6 +2374,10 @@ class Unit extends BattleMapElement {
         this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectSetToNeutralize.add(e));
     }
 
+    reserveToNeutralizeStatusEffects(...statusEffects) {
+        statusEffects.forEach(e => this.reservedStatusEffectSetToNeutralize.add(e));
+    }
+
     /**
      * @param statusEffect
      * @returns {boolean} Return true if had the status effect and removed.
@@ -5251,10 +5255,16 @@ class Unit extends BattleMapElement {
         yield* this.enumerateEquippedSkills();
         // 受けているステータス
         yield* this.getStatusEffects().map(getStatusEffectSkillId);
-        // スタイル
-        yield* this.getStyles().map(getStyleSkillId);
+        // 装備でのスタイル
+        yield* this.getStylesOfSkill().map(getStyleSkillId);
+        // 状態でのスタイル
+        yield* this.getStylesOfStatusEffect().map(getStyleSkillId);
         // 比翼・双界スキル
         yield getDuoOrHarmonizedSkillId(this.heroIndex);
+        // 天脈
+        if (this.placedTile && this.placedTile.hasDivineVein()) {
+            yield getDivineVeinSkillId(this.placedTile.divineVein);
+        }
     }
 
     * enumerateSkillsWithoutStyle() {
@@ -6819,12 +6829,22 @@ class Unit extends BattleMapElement {
      * @returns {number}
      */
     getAvailableStyle() {
-        let skills = this.getStyles();
-        // TODO: 状態によるスタイルを考慮する
-        // getStylesのrename(装備スキルからのスタイルにする)
-        // 装備スキルからのスタイルがない場合に状態からのスタイルを見る
-        if (skills.length === 1) {
-            return skills[0];
+        let styles = this.getStylesOfSkill();
+        styles = styles.concat(this.getStylesOfStatusEffect());
+        const [disabledStyles, normalStyles] = styles.reduce(
+            ([yes, no], x) => {
+                (STYLES_THAT_IS_DISABLED_WHEN_UNIT_HAS_ANOTHER_STYLE.has(x) ? yes : no).push(x);
+                return [yes, no];
+            },
+            [[], []]
+        );
+
+        if (normalStyles.length === 1) {
+            return normalStyles[0];
+        }
+        // 装備スキルからのスタイルがない場合に状態からのスタイル(自分が無効になるスタイル)を見る
+        if (normalStyles.length === 0 && disabledStyles.length === 1) {
+            return disabledStyles[0];
         }
         return StyleType.NONE;
     }
@@ -6842,15 +6862,20 @@ class Unit extends BattleMapElement {
      * 所有スキルにある全てのスタイルを返す。
      * @returns {number[]}
      */
-    getStyles() {
-        let styles = [];
-        // enumerateSkillsだと内部でgetStylesを呼び出してしまう
-        for (let skillId of this.enumerateEquippedSkills()) {
-            if (SKILL_ID_TO_STYLE_TYPE.has(skillId)) {
-                styles.push(SKILL_ID_TO_STYLE_TYPE.get(skillId));
-            }
-        }
-        return styles;
+    getStylesOfSkill() {
+        return Array.from(this.enumerateEquippedSkills())
+            .filter(skillId => SKILL_ID_TO_STYLE_TYPE.has(skillId))
+            .map(skillId => SKILL_ID_TO_STYLE_TYPE.get(skillId));
+    }
+
+    /**
+     * 状態にある全てのスタイルを返す。
+     * @returns {number[]}
+     */
+    getStylesOfStatusEffect() {
+        return this.getStatusEffects()
+            .filter(se => STATUS_EFFECT_TYPE_TO_STYLE_TYPE.has(se))
+            .map(se => STATUS_EFFECT_TYPE_TO_STYLE_TYPE.get(se));
     }
 
     hasAvailableStyle() {

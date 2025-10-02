@@ -556,21 +556,36 @@ class NodeEnv {
         let logMessage = `[${paddedLevel}] ${messageWithName}`;
         this.#logFunc(logMessage);
 
-        if (this.damageCalculatorWrapper) {
-            if (this.damageType !== null && this.damageType === DamageType.ActualDamage) {
-                ConsoleLogger.logWithLevel(level, messageWithName, ConsoleLogger.BLACK_BG_STYLES);
-            }
-        } else if (this.damageCalculator) {
-            if (this.damageType !== null && this.damageType === DamageType.ActualDamage) {
-                ConsoleLogger.logWithLevel(level, messageWithName, ConsoleLogger.BLACK_BG_STYLES);
-            }
-        } else {
+        if (this.shouldLogToConsole()) {
             ConsoleLogger.logWithLevel(level, messageWithName, ConsoleLogger.BLACK_BG_STYLES);
         }
     }
 
     #groupLog(level, message) {
         this.groupLogger.push(level, new NodeEnv.SkillLogContent(this.name, message));
+    }
+
+    isActualDamage() {
+        return this.damageType !== null && this.damageType === DamageType.ActualDamage;
+    }
+
+    shouldLogToConsole() {
+        if (this.damageCalculatorWrapper || this.damageCalculator) {
+            return this.isActualDamage();
+        }
+        return true;
+    }
+
+    consoleGroup(level, message) {
+        if (this.getLogLevel() < level) return;
+        if (!this.shouldLogToConsole()) return;
+        ConsoleLogger.group(level, message, ConsoleLogger.BLACK_BG_STYLES);
+    }
+
+    consoleGroupEnd(level, message) {
+        if (this.getLogLevel() < level) return;
+        if (!this.shouldLogToConsole()) return;
+        ConsoleLogger.groupEnd();
     }
 
     /**

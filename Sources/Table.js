@@ -174,6 +174,9 @@ class Table {
                 }
                 cellElem.setAttribute("style", style);
                 cellElem.setAttribute("id", getCellId(x, y));
+                if (g_appData.isDebugMenuEnabled) {
+                    cellElem.setAttribute("title", `(${x}, ${y})`);
+                }
 
                 if (this._onDragOverEvent != null) {
                     cellElem.setAttribute("ondragover", this._onDragOverEvent);

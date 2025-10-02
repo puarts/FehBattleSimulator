@@ -3829,6 +3829,12 @@ class BattleSimulatorBase {
             env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
             STYLE_ACTIVATED_HOOKS.evaluateWithUnit(atkUnit, env);
             atkUnit.deactivateStyle();
+            for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedState(false);
+                unit.applyReservedHp(false);
+            }
+            // TODO: 予約に関して戦闘後スキルのタイミングと同時か確認する
+            this.map.applyReservedDivineVein();
         }
 
         // battleContextが必要なスキル発動後に追跡対象を更新する(追跡対象更新時にbattleContextが初期化されるため)
@@ -7780,10 +7786,6 @@ class BattleSimulatorBase {
                             break;
                     }
                 }
-            }
-            if (unit.placedTile.divineVein === DivineVeinType.Vert &&
-                unit.placedTile.divineVeinGroup !== unit.groupId) {
-                isCantoControlled = true;
             }
             unit.activateCantoIfPossible(count, isCantoControlled);
             return true;

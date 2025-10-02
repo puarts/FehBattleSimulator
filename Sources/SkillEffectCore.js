@@ -134,7 +134,10 @@ class SkillEffectHooks {
         }
 
         const skillLogContent = this.#getSkillNameLogContent(skillId, env);
-        return logger.withGroup(LoggerBase.LogLevel.NOTICE, skillLogContent, evaluateAll);
+        env.consoleGroup(LoggerBase.LogLevel.NOTICE, `[${skillLogContent.name}] ${skillLogContent.message}`);
+        let result = logger.withGroup(LoggerBase.LogLevel.NOTICE, skillLogContent, evaluateAll);
+        env.consoleGroupEnd(LoggerBase.LogLevel.NOTICE, `[${skillLogContent.name}] ${skillLogContent.message}`);
+        return result;
     }
 
     #getSkillNameLogContent(skillId, env) {
@@ -166,6 +169,9 @@ class SkillEffectHooks {
             case 'duo-or-harmonized':
                 type = '比翼・双界スキル'
                 break;
+            case 'divine-vein':
+                type = '天脈'
+                break;
             case 'custom':
                 type = 'カスタムスキル'
                 break;
@@ -176,9 +182,11 @@ class SkillEffectHooks {
         } else if (prefix === 'se') {
             name = getStatusEffectName(suffix);
         } else if (prefix === 'style') {
-            name = ObjectUtil.getKeyName(StyleType, Number(suffix));
+            name = getStyleTypeName(Number(suffix));
         } else if (prefix === 'duo-or-harmonized') {
             name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
+        } else if (prefix === 'divine-vein') {
+            name = `・${getDivineVeinName(Number(suffix))}`;
         } else if (prefix === 'custom') {
             let funcId = skillId.split('_')[1];
             name = CustomSkill.FUNC_ID_TO_NAME.get(funcId) ?? skillId;
@@ -1530,7 +1538,11 @@ class CacheNode extends SkillEffectNode {
             return cache;
         }
 
-        const [value] = this.evaluateChildren(env);
+        let [value] = this.evaluateChildren(env);
+        // IteratorをキャッシュしてしまうといけないのでArrayにする
+        if (value && typeof value[Symbol.iterator] === "function") {
+            value = Array.from(value);
+        }
         env.trace(`cache value: ${value}`);
 
         env.setCache(this._key, value);
@@ -1539,11 +1551,30 @@ class CacheNode extends SkillEffectNode {
 }
 
 /**
+ * @template {SkillEffectNode} N
  * @param {string} key
- * @param {SkillEffectNode} node
- * @returns {CacheNode}
- * @constructor
+ * @param {N} node
+ * @returns {N}
  */
 const CACHE_NODE = (key, node) => new CacheNode(key, node);
+
+class ReadCacheNode extends NumberNode {
+    constructor(key) {
+        super();
+        this._key = key;
+    }
+
+    evaluate(env) {
+        if (env.hasCache(this._key)) {
+            let cache = env.getCache(this._key);
+            env.trace(`return cache: ${cache}`);
+            return cache;
+        } else {
+            env.error(`key not found: ${this._key}`);
+        }
+    }
+}
+
+const READ_CACHE_NODE = (key) => new ReadCacheNode(key);
 
 const SET_SKILL_FUNCS = new Map();

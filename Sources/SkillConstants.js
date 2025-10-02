@@ -3985,7 +3985,7 @@ PassiveB.PairUp4 = 3419; // 防陣4
 PassiveC.SRBriarMSave = 3420; // 衣の護り手・魔・茨
 Weapon.WindsOfDuality = 3421; // 光と闇の疾風
 PassiveA.RejectTyranny = 3422; // 暴虐への怒り
-PassiveA.DarkBeastForce = 3423; // 暗獣・不屈
+PassiveC.DarkBeastForce = 3423; // 暗獣・不屈
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -4085,6 +4085,7 @@ const EmblemHero = {
     Lyn: 1216,
     Eirika: 1255,
     Micaiah: 1290,
+    Corrin: 1331,
     Debug: 100000,
 };
 
@@ -4101,6 +4102,7 @@ EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Ho
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_engagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Eirika] = `${g_engagedSpecialIconRoot}Eirika_Of_The_Sacred_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Micaiah] = `${g_debugEngagedSpecialIconRoot}Micaiah_Of_Dawn_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Corrin] = `${g_debugEngagedSpecialIconRoot}Corrin_Of_Fates_ES.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_imageRootPath}Special.png`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_debugEngagedSpecialIconRoot}XXX.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_engagedSpecialIconRoot}XXX.webp`;
@@ -4169,6 +4171,20 @@ const StyleType = {
     SUBLIME_HEAVEN: 4,
     WEAPON_TRIANGLE_GREEN: 5,
     HOSHIDO_RAIJINTO: 6,
+    RANGE_2: 7,
+}
+const STYLE_TYPE_NAMES = [
+    '流星群',
+    '紋章士リン',
+    'かぜの剣',
+    '重唱',
+    '覇天',
+    '3すくみ・緑',
+    '白夜雷神刀',
+    '射程2',
+];
+function getStyleTypeName(styleType) {
+    return STYLE_TYPE_NAMES[styleType] ?? '';
 }
 
 /**
@@ -4176,6 +4192,8 @@ const StyleType = {
  * @type {Map<number|string, number>}
  */
 const SKILL_ID_TO_STYLE_TYPE = new Map();
+
+const STATUS_EFFECT_TYPE_TO_STYLE_TYPE = new Map();
 
 /**
  * @type {Set<number>}
@@ -4194,6 +4212,8 @@ const STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2 = new Set();
 
 const SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1 = new Set();
 const SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2 = new Set();
+
+const STYLES_THAT_IS_DISABLED_WHEN_UNIT_HAS_ANOTHER_STYLE = new Set();
 
 const ACCELERATES_SPECIAL_TRIGGER_SET = new Set();
 const REDUCE_SPECIAL_COUNT_WHEN_NO_WEAPON_SKILL_INFO_SET = new Set();

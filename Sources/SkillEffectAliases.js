@@ -1,3 +1,6 @@
+const IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE =
+    IS_THERE_NO_DIVINE_VEIN_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE(DivineVeinType.Ice);
+
 // フェーズによって適切な値を返す
 const UNITS_STAT_NODE = i =>
     COND_OP(IS_IN_COMBAT_PHASE_NODE,
@@ -923,7 +926,7 @@ const HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES
  * @returns {UnitsNode}
  * @constructor
  */
-const PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE = index =>
+const SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE = index =>
     IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
         SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
         HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(index),
@@ -935,7 +938,7 @@ const PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE = index =>
  * @returns {UnitsNode}
  * @constructor
  */
-const PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE = (index, statFuncNode) =>
+const SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE = (index, statFuncNode) =>
     IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
         SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
         HIGHEST_SKILL_OWNERS_ALLIES_ON_MAP_NODE(
@@ -1540,6 +1543,10 @@ function setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, no
             nodeFunc(),
         ),
     ));
+}
+
+function setAtStartOfEnemyPhaseExceptForInPawnsOfLoki(skillId, nodeFunc) {
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc)
 }
 
 function setAtStartOfPlayerPhaseOrAfterActsIfCantoAfterCanto(skillId, nodeFunc) {

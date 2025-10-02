@@ -350,7 +350,7 @@
     // Restores HP = 40% of unit's Atk (min: 6 HP) to target ally and grants Def/Res+6 to target ally for 1 turn,
     // and also,
     setRallyHealSkill(skillId, [0, 0, 6, 6], 6, 0.4, [],
-        new IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode());
+        IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE);
 
     AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // if there is no【Divine Vein (Ice)】 currently applied by unit or allies,
@@ -3186,8 +3186,11 @@ function setDiscord(skillId, statsRatios) {
     setBriarSave(PassiveC.ADBriarFSave, FOES_RANGE_IS_2_NODE, ATK_DEF_NODE(4),
         false, true, false, false);
     // 理
-    setBriarSave(PassiveC.ADBriarPSave, FOR_FOE_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
+    setBriarSave(PassiveC.ADBriarPSave, FOR_TARGETS_FOE_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
         false, false, true, false);
+    // 魔
+    setBriarSave(PassiveC.SRBriarMSave, FOR_TARGETS_FOE_NODE(IS_TARGET_MAGIC_WEAPON_NODE), SPD_RES_NODE(4),
+        false, false, false, true);
 }
 
 // 竜の堅鱗

@@ -451,7 +451,7 @@ const CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS = new SkillEffectHooks();
 const CAN_ACTIVATE_STYLE_HOOKS = new SkillEffectHooks();
 
 /**
- * スタイル発動後に呼び出される。クールタイムの設定などに使用。
+ * スタイル発動後に呼び出される(スタイル発動判定済み)。クールタイムの設定などに使用。
  * @type {SkillEffectHooks<SkillEffectNode, NodeEnv>}
  */
 const STYLE_ACTIVATED_HOOKS = new SkillEffectHooks();

@@ -2420,7 +2420,7 @@ class BattleMap {
             return true;
         }
         if (warpUnit.canActivatePass()) return true;
-        if (targetTile.divineVein === DivineVeinType.Green &&
+        if (targetTile.hasGreenTypeDivineVein() &&
             targetTile.divineVeinGroup !== warpUnit.groupId) {
             return false;
         }
@@ -2484,8 +2484,9 @@ class BattleMap {
         }
 
         if (!ignoresTeleportTile) {
+            // 移動前がGreen
             let isOnGreenTile =
-                startTile.divineVein === DivineVeinType.Green &&
+                startTile.hasGreenTypeDivineVein() &&
                 startTile.divineVeinGroup !== unit.groupId;
             let cannotWarpFromHere = isOnGreenTile && !unit.canActivatePass();
             if (!cannotWarpFromHere) {
@@ -3003,6 +3004,7 @@ class BattleMap {
                 if (this._showEnemyAttackRange && tile.allyDangerLevel > 0) {
                     isBorderEnabled = true;
                     // 危険度の表示
+
                     additionalInnerText += "<span style='color:#f80;font-size:12px;" + shadowCss + ";'><b>" + tile.allyDangerLevel + "</b></span>";
                 }
                 if (tile.divineVein !== DivineVeinType.None &&
