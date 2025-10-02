@@ -196,7 +196,10 @@ class DamageCalculatorWrapper {
         if (atkUnit.canActivatePrecombatSpecial() &&
             !atkUnit.battleContext.cannotTriggerPrecombatSpecial) {
             // 範囲攻撃ダメージを周囲の敵に反映
-            let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
+            let tiles;
+            damageCalcEnv.withBeforeCombatPhaseGroup('範囲奥義の範囲取得時', () => {
+                tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit, damageCalcEnv);
+            });
             for (let tile of tiles) {
                 let isNotDefUnit = tile.placedUnit !== defUnit;
                 let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit, DamageType.ActualDamage);
@@ -389,8 +392,10 @@ class DamageCalculatorWrapper {
         if (canActivatePrecombatSpecial && !calcPotentialDamage) {
             wasPrecombatSpecialActivated = true;
             if (damageType === DamageType.EstimatedDamage) {
-                atkUnit.precombatSpecialTiles =
-                    Array.from(this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit));
+                damageCalcEnv.withBeforeCombatPhaseGroup('範囲奥義の範囲取得時', () => {
+                    atkUnit.precombatSpecialTiles =
+                        Array.from(this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit, damageCalcEnv));
+                });
             }
             [preCombatDamage, preCombatDamageWithOverkill] =
                 self.calcPrecombatSpecialResult(atkUnit, defUnit, damageCalcEnv);
@@ -413,7 +418,10 @@ class DamageCalculatorWrapper {
                 self.__initSaverUnit(saverUnit, defUnit, damageType);
                 if (canActivatePrecombatSpecial) {
                     // 戦闘前奥義の範囲にいるユニットを列挙して護り手がいれば範囲奥義の計算を行う
-                    let tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit);
+                    let tiles;
+                    damageCalcEnv.withBeforeCombatPhaseGroup('範囲奥義の範囲取得時', () => {
+                        tiles = this.map.enumerateRangedSpecialTiles(defUnit.placedTile, atkUnit, damageCalcEnv);
+                    });
                     for (let tile of tiles) {
                         if (tile.placedUnit === saverUnit) {
                             [preCombatDamage, preCombatDamageWithOverkill] =

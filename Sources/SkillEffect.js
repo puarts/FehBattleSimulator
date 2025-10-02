@@ -5242,7 +5242,7 @@ class CrossSpacesNode extends SpacesNode {
     }
 }
 
-class OverrideAoeSpacesNode extends SpacesNode {
+class TargetsOverrideAoeSpacesWithRange1Node extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -5277,6 +5277,28 @@ class OverrideAoeSpacesNode extends SpacesNode {
         return env.battleMap.enumerateTiles(isInRange);
     }
 }
+
+const TARGETS_OVERRIDE_AOE_SPACES_WITH_RANGE_1_NODE = new TargetsOverrideAoeSpacesWithRange1Node();
+
+class TargetsOverrideAoeSpacesWithRange2DiagNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let unitTile = unit.placedTile;
+        let targetTile = env.tile;
+        let tiles = new Set(env.battleMap.enumerateTilesWithinSpecifiedDistance(targetTile, 2));
+        tiles = SetUtil.difference(tiles, new Set(env.battleMap.enumerateTilesInSquare(unitTile, 3)));
+        tiles.add(targetTile);
+        env.debug(`2距離斜めのオーバードライヴの対象のマス: ${Array.from(tiles).map(t => t.positionToString()).join(', ')}`);
+        return tiles;
+    }
+}
+
+const TARGETS_OVERRIDE_AOE_SPACES_WITH_RANGE_2_DIAG_NODE =
+    new TargetsOverrideAoeSpacesWithRange2DiagNode();
 
 // Tileを返す END
 
@@ -6656,7 +6678,7 @@ class DistanceBetweenTargetAndTargetsFoeNode extends PositiveNumberNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let foe = env.getFoeDuringCombatOf(unit);
+        let foe = env.getFoeDuringCombatOf(unit) || env.targetFoe;
         let distance = unit.distance(foe);
         env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}は${distance}マス離れている`);
         return distance;
@@ -6664,6 +6686,22 @@ class DistanceBetweenTargetAndTargetsFoeNode extends PositiveNumberNode {
 }
 
 const DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE = new DistanceBetweenTargetAndTargetsFoeNode();
+
+class AreTargetAndTargetFoeInSameLineNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit) || env.targetFoe;
+        let result = unit.isInCrossOf(foe);
+        env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}は十字上にいるか: ${result}`);
+        return result;
+    }
+}
+
+const ARE_TARGET_AND_TARGET_FOE_IN_SAME_LINE_NODE = new AreTargetAndTargetFoeInSameLineNode();
 
 class EndsTargetsActionByStatusEffectNode extends SkillEffectNode {
     static {

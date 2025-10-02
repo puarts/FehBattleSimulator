@@ -1964,11 +1964,13 @@ class BattleMap {
     /**
      * @param {Tile} targetTile
      * @param {Unit} atkUnit
+     * @param {DamageCalcEnv} damageCalcEnv
      * @returns {Generator<Tile>}
      */
-    * enumerateRangedSpecialTiles(targetTile, atkUnit) {
-        let env = new BattleMapEnv(this, atkUnit).setTile(targetTile);
-        env.setName('範囲奥義の範囲取得時').setLogLevel(getSkillLogLevel());
+    * enumerateRangedSpecialTiles(targetTile, atkUnit, damageCalcEnv) {
+        let env = new BattleMapEnv(this, atkUnit).setTile(targetTile).setTargetFoe(targetTile.placedUnit);
+        env.setName('範囲奥義の範囲取得時').setLogLevel(getSkillLogLevel())
+            .setGroupLogger(damageCalcEnv.getBeforeCombatLogger());
         yield* AOE_SPECIAL_SPACES_HOOKS.evaluateConcatUniqueWithUnit(atkUnit, env);
         for (let tile of this.__enumerateRangedSpecialTiles(targetTile, atkUnit.special)) {
             if (tile != null) {

@@ -3642,7 +3642,15 @@ function setDiscord(skillId, statsRatios) {
 
     // 十字範囲
     AOE_SPECIAL_SPACES_HOOKS.addSkill(skillId, () =>
-        new OverrideAoeSpacesNode(),
+        /** @type {SpacesNode} */
+        IF_ELSE_NODE(
+            AND_NODE(
+                EQ_NODE(DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE, 2),
+                NOT_NODE(ARE_TARGET_AND_TARGET_FOE_IN_SAME_LINE_NODE),
+            ),
+            TARGETS_OVERRIDE_AOE_SPACES_WITH_RANGE_2_DIAG_NODE,
+            TARGETS_OVERRIDE_AOE_SPACES_WITH_RANGE_1_NODE,
+        ),
     );
 
     // When unit deals damage to 2 or more foes at the same time using a Special (including target; including foes dealt 0 damage),
