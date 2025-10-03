@@ -1863,6 +1863,63 @@ function initVueComponents() {
         `
     });
 
+    Vue.component('divine-vein-opacity-settings', {
+        model: {
+            prop: 'divineVeinOpacities',
+            event: 'change'
+        },
+        props: {
+            divineVeinOpacities: { type: Object, required: true }
+        },
+        data() {
+            return {
+                divineVeinPairs: Object.values(DivineVeinType)
+                    .filter(v => v !== DivineVeinType.None)
+                    .map(v => [v, getDivineVeinName(v)]),
+                storageKey: 'divine-vein-opacity-settings',
+            };
+        },
+        methods: {
+            updateOpacity(divineVein, newValue) {
+                // オブジェクトをコピーして特定キーだけ更新
+                const newOpacities = { ...this.divineVeinOpacities, [divineVein]: newValue };
+                LocalStorageUtil.setJson(this.storageKey, newOpacities);
+                this.$emit('change', newOpacities);
+            },
+        },
+        mounted() {
+            const newOpacities = {...this.divineVeinOpacities};
+            let opacities = LocalStorageUtil.getJson(this.storageKey, {});
+            for (const [divineVein] of this.divineVeinPairs) {
+                if (opacities[divineVein]) {
+                    newOpacities[divineVein] = opacities[divineVein];
+                }
+            }
+            this.$emit('change', newOpacities);
+        },
+        template: `
+          <div>
+            <details>
+              <summary>天脈の透明度の設定</summary>
+              <div
+                v-for="([divineVein, veinName]) in divineVeinPairs"
+                :key="divineVein"
+              >
+                <label :for="'divine-vein-opacity-setting-' + divineVein">
+                  {{ veinName }} :
+                </label>
+                <input
+                  :id="'divine-vein-opacity-setting-' + divineVein"
+                  type="number" min="0" max="1" step="0.1"
+                  :value="divineVeinOpacities[divineVein]"
+                  @input="updateOpacity(divineVein, parseFloat($event.target.value) || 0)"
+                >
+              </div>
+            </details>
+          </div>
+        `,
+    });
+
     Vue.component('damage-calc-result', {
         props: {
             combatResult: {

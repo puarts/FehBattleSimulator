@@ -264,6 +264,12 @@ class AppData extends UnitManager {
         this.showMovableRangeWhenMovingUnit = true;
         this.showDivineVeinImageWithoutBreakable = true;
         this.changeEnemyIceColor = LocalStorageUtil.getBoolean('change_enemy_ice_color', false);
+        this.divineVeinOpacities =
+            Object.fromEntries(
+                Object.values(DivineVeinType)
+                    .filter(v => v !== DivineVeinType.None)      // None を除外
+                    .map(v => [v, 1])                            // 各キーを 1 で初期化
+            );
 
         this.isEnemyActionTriggered = true;
         this.isAutoLoadTurnSettingEnabled = false;

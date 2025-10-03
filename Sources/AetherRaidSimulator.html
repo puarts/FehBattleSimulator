@@ -639,12 +639,17 @@
                            v-model="changeEnemyIceColor"
                            @change="onChangeEnemyIceColor">
                     <label class="normal" for="onChangeEnemyIceColor">敵の天脈・氷の色をかえる</label>
+                    <divine-vein-opacity-settings
+                            v-model="divineVeinOpacities"
+                            @change="updateAllUi"
+                    >
+                    </divine-vein-opacity-settings>
                     <br/>
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
                     <br />
                     <input id="isBgImageEnabled" type="checkbox" v-model="map.isBackgroundImageEnabled"
-                        @change="backgroundImageEnabledChanged"><label class="normal"
-                        for="isBgImageEnabled"></label>
+                           @change="backgroundImageEnabledChanged">
+                    <label class="normal" for="isBgImageEnabled">マップの背景画像を有効にする</label>
                     <br />
                 </fieldset>
                 <fieldset>

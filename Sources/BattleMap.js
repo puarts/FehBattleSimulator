@@ -3133,6 +3133,7 @@ class BattleMap {
                 g_appData.showDivineVeinImageWithoutBreakable) {
                 let divineVeinTag = getDivineVeinTag(tile.divineVein);
                 divineVeinTag.classList.add('map-divine-vein-img');
+                divineVeinTag.style.opacity = `${g_appData.divineVeinOpacities[tile.divineVein]}`;
                 if (tile.hasIceTypeDivineVein() &&
                     tile.divineVeinGroup === UnitGroupType.Enemy &&
                     g_appData.changeEnemyIceColor) {
