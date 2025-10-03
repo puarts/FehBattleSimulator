@@ -503,6 +503,16 @@ class ConsoleLogger extends LoggerBase {
         console.log(`[%c${paddedLevel}%c] ` + message, styles.get(level), '');
     }
 
+    static group(level, message, styles = ConsoleLogger.BLACK_BG_STYLES) {
+        let levelStr = LoggerBase.levelStr(level);
+        let paddedLevel = levelStr.padEnd(5);
+        console.group(`[%c${paddedLevel}%c] ` + message, styles.get(level), '');
+    }
+
+    static groupEnd() {
+        console.groupEnd();
+    }
+
     clearLog() {
         // console.clear();
     }

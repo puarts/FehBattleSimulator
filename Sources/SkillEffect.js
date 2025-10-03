@@ -146,9 +146,7 @@ class TargetsFoeNode extends UnitNode {
     }
 
     evaluate(env) {
-        let unit = this.getUnit(env);
-        let foe = env.getFoeDuringCombatOf(unit);
-        return unit;
+        return env.getFoeDuringCombatOf(this.getUnit(env));
     }
 }
 
@@ -216,6 +214,8 @@ const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
  */
 const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
 
+const FOR_TARGETS_FOE_NODE = node => FOR_TARGET_NODE(TARGETS_FOE_NODE, node);
+
 /**
  * @extends {CollectionNode<*, Unit>}
  * @abstract
@@ -238,6 +238,10 @@ class UnitsNode extends CollectionNode {
     }
 
     static EMPTY_UNITS_NODE = new class extends UnitsNode {
+        evaluate(env) {
+            env.debug('ユニットなし');
+            return [];
+        }
     }
 
     /**
@@ -257,6 +261,11 @@ class UnitsNode extends CollectionNode {
         return super.evaluate(env);
     }
 }
+
+// if number of allies that qualify ≥ 2,
+// it’s treated as though there is no target ally.)
+const IF_NUMBER_OF_UNITS_GTE_N_ITS_TREATED_AS_THOUGH_THERE_IS_NO_UNIT =
+    (units, n) => IF_ELSE_NODE(GTE_NODE(COUNT_UNITS_NODE(units), n), UnitsNode.EMPTY_UNITS_NODE, units);
 
 const TARGET_AND_TARGET_FOE_NODE = UnitsNode.makeFromUnits(TARGET_NODE, TARGETS_FOE_NODE);
 
@@ -532,7 +541,7 @@ class UniteUnitsNode extends UnitsNode {
     }
 
     evaluate(env) {
-        return IterUtil.concat(...this.evaluateChildren(env));
+        return Array.from(IterUtil.concat(...this.evaluateChildren(env)));
     }
 }
 
@@ -626,6 +635,16 @@ class MapUnitsNode extends MapCollectionNode {
  * @constructor
  */
 const MAP_UNITS_NODE = (unitsNode, funcNode) => new MapUnitsNode(unitsNode, funcNode);
+
+/**
+ * @template T
+ * @param {UnitsNode} unitsNode
+ * @param {T} funcNode
+ * @returns {T}
+ * @constructor
+ */
+const FLAT_MAP_UNITS_NODE =
+    (unitsNode, funcNode) => FLATTEN_COLLECTION_NODE(MAP_UNITS_NODE(unitsNode, funcNode));
 
 class FilterUnitsNode extends UnitsNode {
     /**
@@ -860,6 +879,25 @@ class IntersectSpacesNode extends SpacesNode {
     }
 }
 
+class DifferenceSpacesNode extends SpacesNode {
+    constructor(baseNode, ...children) {
+        super(...children);
+        this._baseNode = baseNode;
+    }
+
+    evaluate(env) {
+        let baseSet = new Set(this._baseNode.evaluate(env));
+        let subSet = SetUtil.union(...this.evaluateChildren(env).map(s => new Set(s)));
+        env.trace2(`Difference spaces, base: ${Array.from(baseSet).map(t => t.positionToString()).join(', ')}`);
+        env.trace2(`Difference spaces, sub: ${Array.from(subSet).map(t => t.positionToString()).join(', ')}`);
+        let resultSet = SetUtil.difference(baseSet, subSet);
+        env.trace2(`Difference spaces, result: ${Array.from(resultSet).map(t => t.positionToString()).join(', ')}`);
+        return resultSet;
+    }
+}
+
+const DIFFERENCE_SPACES_NODE = (baseNode, ...children) => new DifferenceSpacesNode(baseNode, ...children);
+
 class FilterSpacesNode extends SpacesNode {
     /**
      * @param {SpacesNode} spacesNode
@@ -970,13 +1008,25 @@ class SpacesWithinNSpacesOfTargetNode extends SpacesNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this._nNode.evaluate(env);
-        let result = env.battleMap.enumerateTilesWithinSpecifiedDistance(unit.placedTile, n);
-        env.trace(`Spaces within ${n} spaces of ${unit.nameWithGroup}`);
+        let result = Array.from(env.battleMap.enumerateTilesWithinSpecifiedDistance(unit.placedTile, n));
+        env.trace(`Spaces within ${n} spaces of ${unit.nameWithGroup}: ${result.map(t => t.positionToString()).join(',')}`);
         return result;
     }
 }
 
 const SPACES_WITHIN_N_SPACES_OF_TARGET_NODE = n => new SpacesWithinNSpacesOfTargetNode(n);
+
+class SpacesNSpacesAwayFromTargetNode extends SpacesWithinNSpacesOfTargetNode {
+    * evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
+        let result = Array.from(env.battleMap.enumerateTilesAtDistanceFrom(unit.placedTile, n));
+        env.trace(`Spaces ${n} spaces away from ${unit.nameWithGroup}: ${result.map(t => t.positionToString()).join(',')}`);
+        yield* result;
+    }
+}
+
+const SPACES_N_SPACES_AWAY_FROM_TARGET_NODE = n => new SpacesNSpacesAwayFromTargetNode(n);
 
 class SpacesWithinNSpacesOfSkillOwnerNode extends SpacesWithinNSpacesOfTargetNode {
     static {
@@ -1251,6 +1301,21 @@ class TargetGroupNode extends NumberNode {
 }
 
 const TARGET_GROUP_NODE = new TargetGroupNode();
+
+class TargetFoeGroupNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.enemyGroupId;
+        env.debug(`${unit.nameWithGroup}の敵軍は${groupIdToString(result)}軍`);
+        return result;
+    }
+}
+
+const TARGET_FOE_GROUP_NODE = new TargetFoeGroupNode();
 
 /**
  * ターゲットとスキル所有者が同じ場合はfalse
@@ -1974,13 +2039,15 @@ class CanTargetsAttackTriggerTargetsSpecialNode extends BoolNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = unit.hasNormalAttackSpecial();
+        let result = unit.hasNormalAttackSpecial() || unit.hasRangedAttackSpecial();
         env.debug(`${unit.nameWithGroup}が攻撃時に発動する奥義を装備しているか: ${result}, 奥義: ${unit.specialInfo?.name}`);
         return result;
     }
 }
 
 const CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE = new CanTargetsAttackTriggerTargetsSpecialNode();
+const CAN_TARGETS_FOES_ATTACK_TRIGGER_TARGETS_FOES_SPECIAL_NODE =
+    FOR_TARGETS_FOE_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE);
 
 /**
  * if unit has an area-of-effect Special equipped,
@@ -2141,6 +2208,8 @@ const GRANTS_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
 
 const GRANTS_ATK_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE =
     (atk, spd = atk, def = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, def, 0);
+const GRANTS_ATK_SPD_RES_TO_TARGET_DURING_COMBAT_NODE =
+    (atk, spd = atk, res = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, spd, 0, res);
 const GRANTS_ATK_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
     (atk, def = atk, res = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, def, res);
 const GRANTS_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
@@ -2392,6 +2461,15 @@ class GetStatAtNode extends NumberNode {
  * @constructor
  */
 const GET_STAT_AT_NODE = (statsNode, index) => new GetStatAtNode(statsNode, index);
+const GET_ATK_NODE = statsNode => GET_STAT_AT_NODE(statsNode, StatusIndex.ATK);
+const GET_DEF_NODE = statsNode => GET_STAT_AT_NODE(statsNode, StatusIndex.DEF);
+const GET_SPD_NODE = statsNode => GET_STAT_AT_NODE(statsNode, StatusIndex.SPD);
+const GET_RES_NODE = statsNode => GET_STAT_AT_NODE(statsNode, StatusIndex.RES);
+
+const GET_ATK_DIFF_NODE = (statsNode1, statsNode2) => SUB_NODE(GET_ATK_NODE(statsNode1), GET_ATK_NODE(statsNode2));
+const GET_DEF_DIFF_NODE = (statsNode1, statsNode2) => SUB_NODE(GET_DEF_NODE(statsNode1), GET_DEF_NODE(statsNode2));
+const GET_SPD_DIFF_NODE = (statsNode1, statsNode2) => SUB_NODE(GET_SPD_NODE(statsNode1), GET_SPD_NODE(statsNode2));
+const GET_RES_DIFF_NODE = (statsNode1, statsNode2) => SUB_NODE(GET_RES_NODE(statsNode1), GET_RES_NODE(statsNode2));
 
 class StatsFromStatNode extends StatsNode {
     /**
@@ -2512,6 +2590,10 @@ class InflictsStatsMinusOnTargetDuringCombatNode extends FromPositiveStatsNode {
 
 const INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE =
     (atkOrStats, spd, def, res) => new InflictsStatsMinusOnTargetDuringCombatNode(atkOrStats, spd, def, res);
+const INFLICTS_ATK_SPD_DEF_RES_ON_TARGET_DURING_COMBAT_NODE = INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE;
+const INFLICTS_STATS_MINUS_ON_TARGETS_FOE_DURING_COMBAT_NODE =
+    (atkOrStats, spd, def, res) =>
+        FOR_TARGETS_FOE_NODE(INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE(atkOrStats, spd, def, res));
 
 class InflictsStatsMinusOnUnitDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
     static {
@@ -2953,6 +3035,33 @@ class TargetsStatsOnMapNode extends StatsNode {
 }
 
 const TARGETS_STATS_ON_MAP_NODE = new TargetsStatsOnMapNode();
+
+class TargetsEvalStatsNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let stats = env.isInCombatPhase() ?
+            unit.getEvalStatusesInCombat(env.getFoeDuringCombatOf(unit)) : unit.getEvalStatusesInPrecombat();
+        env.debug(`${unit.nameWithGroup}の${env.isInCombatPhase() ? '戦闘中' : '戦闘開始時(マップ)'}のステータス: [${stats}]`);
+        return stats;
+    }
+}
+
+const TARGETS_EVAL_STATS_NODE = new TargetsEvalStatsNode();
+
+const TARGETS_EVAL_ATK_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.ATK);
+const TARGETS_EVAL_SPD_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.SPD);
+const TARGETS_EVAL_DEF_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.DEF);
+const TARGETS_EVAL_RES_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.RES);
+
+const TARGETS_EVAL_ATK_DIFF_NODE = GET_ATK_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_SPD_DIFF_NODE = GET_SPD_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_DEF_DIFF_NODE = GET_DEF_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_RES_DIFF_NODE = GET_RES_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+
 
 /**
  * @abstract
@@ -3601,6 +3710,7 @@ class IsTargetMeleeWeaponNode extends BoolNode {
 }
 
 const IS_TARGET_MELEE_WEAPON_NODE = new IsTargetMeleeWeaponNode();
+const IS_SWORD_LANCE_AXE_DRAGON_OR_BEAST_NODE = IS_TARGET_MELEE_WEAPON_NODE;
 
 class IsFoeMeleeWeaponNode extends IsTargetMeleeWeaponNode {
     static {
@@ -4871,9 +4981,17 @@ const IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE = new class ex
     }
 }();
 
-class IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode extends BoolNode {
+class IsThereNoDivineVeinCurrentlyAppliedByTargetOrTargetsAlliesNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number} divineVeinType
+     */
+    constructor(divineVeinType) {
+        super();
+        this._divineVeinType = NumberNode.makeNumberNodeFrom(divineVeinType);
     }
 
     evaluate(env) {
@@ -4881,20 +4999,23 @@ class IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode extends 
         let unit = this.getUnit(env);
         // TODO: envで渡すようにする
         let tiles = g_appData.map.enumerateTiles();
+        let targetDivineVeinType = this._divineVeinType.evaluate(env);
+        let divineVeinName = getDivineVeinName(targetDivineVeinType);
         for (let tile of tiles) {
-            if (tile.divineVein === DivineVeinType.Ice &&
+            if (tile.divineVein === targetDivineVeinType &&
                 tile.divineVeinGroup === unit.groupId) {
-                env.debug(`天脈・氷がすでに存在: ${tile}`);
+                env.debug(`天脈・${divineVeinName}がすでに存在: ${tile}`);
                 return false;
             }
         }
-        env.debug(`天脈・氷が存在しない`);
+        env.debug(`天脈・${divineVeinName}が存在しない`);
         return true;
     }
 }
 
-const IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE =
-    new IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode();
+const IS_THERE_NO_DIVINE_VEIN_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE =
+    (divineVeinType) =>
+        new IsThereNoDivineVeinCurrentlyAppliedByTargetOrTargetsAlliesNode(divineVeinType);
 
 class IsTargetIsInSpaceWhereDivineVeinEffectIsAppliedNode extends BoolNode {
     getUnit(env) {
@@ -4962,10 +5083,19 @@ class ApplyDivineVeinNode extends SkillEffectNode {
         let divineVein = this._divineVein.evaluate(env);
         let groupId = this._group.evaluate(env);
         let turns = this._turns.evaluate(env);
+        let groupName = groupId === UnitGroupType.Ally ? '自軍' : '敵軍';
+        env.info(`${tile.positionToString()}に天脈${getDivineVeinName(divineVein)}(${groupName})を付与(${turns}ターン)`)
         tile.reserveDivineVein(divineVein, groupId, turns);
     }
 }
 
+/**
+ * @param {number|NumberNode} divineVein
+ * @param {number|NumberNode} group
+ * @param {number|NumberNode} turns
+ * @returns {ApplyDivineVeinNode}
+ * @constructor
+ */
 const APPLY_DIVINE_VEIN_NODE = (divineVein, group, turns) => new ApplyDivineVeinNode(divineVein, group, turns);
 
 // Tileへの効果 END
@@ -5112,7 +5242,7 @@ class CrossSpacesNode extends SpacesNode {
     }
 }
 
-class OverrideAoeSpacesNode extends SpacesNode {
+class TargetsOverrideAoeSpacesWithRange1Node extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -5147,6 +5277,28 @@ class OverrideAoeSpacesNode extends SpacesNode {
         return env.battleMap.enumerateTiles(isInRange);
     }
 }
+
+const TARGETS_OVERRIDE_AOE_SPACES_WITH_RANGE_1_NODE = new TargetsOverrideAoeSpacesWithRange1Node();
+
+class TargetsOverrideAoeSpacesWithRange2DiagNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let unitTile = unit.placedTile;
+        let targetTile = env.tile;
+        let tiles = new Set(env.battleMap.enumerateTilesWithinSpecifiedDistance(targetTile, 2));
+        tiles = SetUtil.difference(tiles, new Set(env.battleMap.enumerateTilesInSquare(unitTile, 3)));
+        tiles.add(targetTile);
+        env.debug(`2距離斜めのオーバードライヴの対象のマス: ${Array.from(tiles).map(t => t.positionToString()).join(', ')}`);
+        return tiles;
+    }
+}
+
+const TARGETS_OVERRIDE_AOE_SPACES_WITH_RANGE_2_DIAG_NODE =
+    new TargetsOverrideAoeSpacesWithRange2DiagNode();
 
 // Tileを返す END
 
@@ -6479,7 +6631,8 @@ class TargetsCurrentStyleNode extends NumberNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.getCurrentStyle();
-        env.debug(`${unit.nameWithGroup}の現在のスタイル: ${ObjectUtil.getKeyName(STYLE_TYPE, result)}`);
+        env.debug(`${unit.nameWithGroup}の現在のスタイル: ${ObjectUtil.getKeyName(StyleType, result)}`);
+        env.trace(`${unit.nameWithGroup}の現在のスタイルタイプ: ${result}`);
         return result;
     }
 }
@@ -6525,7 +6678,7 @@ class DistanceBetweenTargetAndTargetsFoeNode extends PositiveNumberNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let foe = env.getFoeDuringCombatOf(unit);
+        let foe = env.getFoeDuringCombatOf(unit) || env.targetFoe;
         let distance = unit.distance(foe);
         env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}は${distance}マス離れている`);
         return distance;
@@ -6533,6 +6686,22 @@ class DistanceBetweenTargetAndTargetsFoeNode extends PositiveNumberNode {
 }
 
 const DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE = new DistanceBetweenTargetAndTargetsFoeNode();
+
+class AreTargetAndTargetFoeInSameLineNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit) || env.targetFoe;
+        let result = unit.isInCrossOf(foe);
+        env.debug(`${unit.nameWithGroup}と${foe.nameWithGroup}は十字上にいるか: ${result}`);
+        return result;
+    }
+}
+
+const ARE_TARGET_AND_TARGET_FOE_IN_SAME_LINE_NODE = new AreTargetAndTargetFoeInSameLineNode();
 
 class EndsTargetsActionByStatusEffectNode extends SkillEffectNode {
     static {
@@ -6856,3 +7025,55 @@ class AnyEffectThatCanBeTriggeredOnlyOncePerTurnByTargetsEquippedSpecialSkillCan
 
 const ANY_EFFECT_THAT_CAN_BE_TRIGGERED_ONLY_ONCE_PER_TURN_BY_TARGETS_EQUIPPED_SPECIAL_SKILL_CAN_BE_TRIGGERED_AGAIN_EXCLUDES_ENGAGING_NODE =
     new AnyEffectThatCanBeTriggeredOnlyOncePerTurnByTargetsEquippedSpecialSkillCanBeTriggeredAgainExcludesEngagingNode();
+
+class IsTargetOnDivineVeinNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(divineVein, group) {
+        super();
+        this._divineVeinNode = NumberNode.makeNumberNodeFrom(divineVein);
+        this._groupNode = NumberNode.makeNumberNodeFrom(group);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        if (!unit.placedTile) {
+            env.warn(`${unit.nameWithGroup}はマップにいない`);
+            return false;
+        }
+        let tile = unit.placedTile;
+        let targetDivineVein = this._divineVeinNode.evaluate(env);
+        let targetDivineVeinGroup = this._groupNode.evaluate(env);
+        let groupName = targetDivineVeinGroup === UnitGroupType.Ally ? '自軍' : '敵軍';
+        let result = false;
+        if (tile.hasDivineVein()) {
+            result = tile.divineVein === targetDivineVein && tile.divineVeinGroup === targetDivineVeinGroup;
+        }
+        env.debug(`${unit.nameWithGroup}は天脈・${getDivineVeinName(targetDivineVein)}(${groupName})の上にいるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_ON_DIVINE_VEIN_NODE = (divineVein, group) => new IsTargetOnDivineVeinNode(divineVein, group);
+
+class RemoveTargetsStatusEffectsNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(...statusEffects) {
+        super();
+        this._statusEffects = statusEffects;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.reserveToNeutralizeStatusEffects(...this._statusEffects);
+        let names = this._statusEffects.map(effect => getStatusEffectName(effect)).join(", ");
+        env.debug(`${unit.nameWithGroup}はステータス[${names}]を解除予約`);
+    }
+}
+
+const REMOVE_TARGETS_STATUS_EFFECTS_NODE = (...statusEffects) => new RemoveTargetsStatusEffectsNode(...statusEffects);

@@ -264,6 +264,12 @@ class AppData extends UnitManager {
         this.showMovableRangeWhenMovingUnit = true;
         this.showDivineVeinImageWithoutBreakable = true;
         this.changeEnemyIceColor = LocalStorageUtil.getBoolean('change_enemy_ice_color', false);
+        this.divineVeinOpacities =
+            Object.fromEntries(
+                Object.values(DivineVeinType)
+                    .filter(v => v !== DivineVeinType.None)      // None を除外
+                    .map(v => [v, 1])                            // 各キーを 1 で初期化
+            );
 
         this.isEnemyActionTriggered = true;
         this.isAutoLoadTurnSettingEnabled = false;
@@ -302,6 +308,7 @@ class AppData extends UnitManager {
         this.skillLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LogLevel);
 
         this.showsSkillLogs = LocalStorageUtil.getBoolean('showsSkillLogs');
+        this.damageCalcDetailLevel = LocalStorageUtil.getNumber('damageCalcDetailLevel', DetailLevel.NORMAL);
 
         /**
          * ダブル補正が有効かどうか
@@ -2312,9 +2319,9 @@ class AppData extends UnitManager {
     }
 
     /**
-     * @returns {Unit[]}
+     * @returns {Generator<Unit>}
      */
-    *enumerateUnits() {
+    * enumerateUnits() {
         for (let unit of this.enumerateEnemyUnits()) {
             yield unit;
         }
@@ -2347,6 +2354,55 @@ class AppData extends UnitManager {
      */
     enumerateEnemyUnits() {
         return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, this.enemyUnits.length);
+    }
+
+    getDuplicateEmblemHeroUnits(units) {
+        const unitsWithEmblemHero = units.filter(u => u.hasEmblemHero());
+        const seen = new Set();
+        const duplicates = new Set();
+
+        // 重複している ID を Set に格納
+        for (const u of unitsWithEmblemHero) {
+            if (seen.has(u.emblemHeroIndex)) {
+                duplicates.add(u.emblemHeroIndex);
+            }
+            seen.add(u.emblemHeroIndex);
+        }
+
+        // 重複 ID を持つユニットだけ返す
+        return unitsWithEmblemHero.filter(u => duplicates.has(u.emblemHeroIndex));
+    }
+
+    /**
+     * 味方チーム内で「重複した Emblem Hero」を持つユニットの配列を返す
+     * @returns {Unit[]} 重複した Emblem Hero を持つユニットの配列
+     */
+    getDuplicateAllyEmblemHeroUnits() {
+        return this.getDuplicateEmblemHeroUnits(Array.from(this.enumerateAllyUnits()));
+    }
+
+    /**
+     * 敵チーム内で「重複した Emblem Hero」を持つユニットの配列を返す
+     * @returns {Unit[]} 重複した Emblem Hero を持つユニットの配列
+     */
+    getDuplicateEnemyEmblemHeroUnits() {
+        return this.getDuplicateEmblemHeroUnits(Array.from(this.enumerateEnemyUnits()));
+    }
+
+    hasDuplicateEmblemHero(units) {
+        const emblemIndexes = units
+            .filter(u => u.hasEmblemHero())
+            .map(u => u.emblemHeroIndex);
+
+        return new Set(emblemIndexes).size !== emblemIndexes.length;
+    }
+
+    hasDuplicateEmblemHeroInAllyTeam() {
+        return this.hasDuplicateEmblemHero(Array.from(this.enumerateAllyUnits()));
+    }
+
+    hasDuplicateEmblemHeroInEnemyTeam() {
+        return this.hasDuplicateEmblemHero(Array.from(this.enumerateEnemyUnits()));
     }
 
     /**
@@ -2488,6 +2544,16 @@ class AppData extends UnitManager {
         for (let unit of this.units) {
             unit.clearReservedSkills();
         }
+    }
+
+    saveShowsSkills(value) {
+        this.showsSkillLogs = value;
+        LocalStorageUtil.setBoolean('showsSkillLogs', this.showsSkillLogs);
+    }
+
+    saveDamageCalcDetailLevel(value) {
+        this.damageCalcDetailLevel = value;
+        LocalStorageUtil.setNumber('damageCalcDetailLevel', this.damageCalcDetailLevel);
     }
 }
 

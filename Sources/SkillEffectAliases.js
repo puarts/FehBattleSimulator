@@ -1,3 +1,6 @@
+const IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE =
+    IS_THERE_NO_DIVINE_VEIN_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE(DivineVeinType.Ice);
+
 // フェーズによって適切な値を返す
 const UNITS_STAT_NODE = i =>
     COND_OP(IS_IN_COMBAT_PHASE_NODE,
@@ -359,10 +362,15 @@ const BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_SET_NODE =
 const NUM_OF_BONUSES_ON_TARGET_AND_PENALTIES_ON_FOE_EXCLUDING_STAT_NODE =
     SUM_NODE(NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE, NUM_OF_PENALTIES_ACTIVE_ON_FOE_EXCLUDING_STAT_NODE);
 
+const TARGET_DEALS_DAMAGE_X_NODE = n =>
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        TARGET_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
+        TARGET_DEALS_DAMAGE_AT_AOE_NODE(n),
+    );
 const DEALS_DAMAGE_X_NODE = n =>
     IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
         UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
-        UNIT_DEALS_DAMAGE_AT_AOE(n),
+        UNIT_DEALS_DAMAGE_AT_AOE_NODE(n),
     );
 const DEALS_DAMAGE_X_PERCENTAGE_OF_UNITS_STAT_NODE = (index, percentage) =>
     DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(percentage, UNITS_STAT_NODE(index)));
@@ -760,7 +768,10 @@ function setSpecialCount(skillId, n) {
     }
 }
 
-function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense, isGaleforce = false) {
+function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense,
+                                isGaleforce = false,
+                                isRanged = false,
+                                rangedDamageRatio = 1) {
     setSpecialCount(skillId, n);
     if (isNormalAttack) {
         NORMAL_ATTACK_SPECIAL_SET.add(skillId);
@@ -770,6 +781,9 @@ function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense, isGalefor
     }
     if (isGaleforce) {
         GALEFORCE_SKILLS.add(skillId);
+    }
+    if (isRanged) {
+        RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP.set(skillId, rangedDamageRatio);
     }
 }
 
@@ -912,7 +926,7 @@ const HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES
  * @returns {UnitsNode}
  * @constructor
  */
-const PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE = index =>
+const SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE = index =>
     IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
         SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
         HIGHEST_STAT_SKILL_OWNER_ALLIES_ON_MAP_NODE(index),
@@ -924,7 +938,7 @@ const PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE = index =>
  * @returns {UnitsNode}
  * @constructor
  */
-const PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE = (index, statFuncNode) =>
+const SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE = (index, statFuncNode) =>
     IF_EXPRESSION_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
         SKILL_OWNERS_PARTNERS_ON_MAP_NODE,
         HIGHEST_SKILL_OWNERS_ALLIES_ON_MAP_NODE(
@@ -1529,6 +1543,10 @@ function setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, no
             nodeFunc(),
         ),
     ));
+}
+
+function setAtStartOfEnemyPhaseExceptForInPawnsOfLoki(skillId, nodeFunc) {
+    AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc)
 }
 
 function setAtStartOfPlayerPhaseOrAfterActsIfCantoAfterCanto(skillId, nodeFunc) {

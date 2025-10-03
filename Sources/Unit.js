@@ -2374,6 +2374,10 @@ class Unit extends BattleMapElement {
         this.getNegativeStatusEffects().forEach(e => this.reservedStatusEffectSetToNeutralize.add(e));
     }
 
+    reserveToNeutralizeStatusEffects(...statusEffects) {
+        statusEffects.forEach(e => this.reservedStatusEffectSetToNeutralize.add(e));
+    }
+
     /**
      * @param statusEffect
      * @returns {boolean} Return true if had the status effect and removed.
@@ -2671,7 +2675,7 @@ class Unit extends BattleMapElement {
 
     /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
     canActivateObstructToAdjacentTiles(moveUnit) {
-        let hasSkills = this.hasStatusEffect(StatusEffectType.Bulwark);
+        let hasSkills = false;
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(1マス以内)').setLogLevel(getSkillLogLevel());
         env.setName('移動時(1マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
@@ -4135,12 +4139,18 @@ class Unit extends BattleMapElement {
         return this.getSpdInPrecombat() + this.__getEvalSpdAdd();
     }
 
+    __getEvalStatsAdd() {
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this).setName('ステータス比較時')
+            .setLogLevel(getSkillLogLevel());
+        return AT_COMPARING_STATS_HOOKS.evaluateStatsSumWithUnit(this, env);
+    }
+
     __getEvalAtkAdd() {
-        return 0;
+        return this.__getEvalStatsAdd()[StatusIndex.ATK] ?? 0;
     }
 
     __getEvalSpdAdd() {
-        return getEvalSpdAdd(this);
+        return getEvalSpdAdd(this) + this.__getEvalStatsAdd()[StatusIndex.SPD] ?? 0;
     }
 
     getAtkInPrecombatWithoutDebuff() {
@@ -4574,18 +4584,11 @@ class Unit extends BattleMapElement {
     }
 
     __getEvalDefAdd() {
-        switch (this.passiveS) {
-            default:
-                return 0;
-        }
+        return this.__getEvalStatsAdd()[StatusIndex.DEF] ?? 0;
     }
 
     __getEvalResAdd() {
-        let value = getEvalResAdd(this);
-        if (value) {
-            return value;
-        }
-        return 0;
+        return getEvalResAdd(this) + this.__getEvalStatsAdd()[StatusIndex.RES] ?? 0;
     }
 
     // TODO: 削除する
@@ -5252,8 +5255,22 @@ class Unit extends BattleMapElement {
         yield* this.enumerateEquippedSkills();
         // 受けているステータス
         yield* this.getStatusEffects().map(getStatusEffectSkillId);
-        // スタイル
-        yield* this.getStyles().map(getStyleSkillId);
+        // 装備でのスタイル
+        yield* this.getStylesOfSkill().map(getStyleSkillId);
+        // 状態でのスタイル
+        yield* this.getStylesOfStatusEffect().map(getStyleSkillId);
+        // 比翼・双界スキル
+        yield getDuoOrHarmonizedSkillId(this.heroIndex);
+        // 天脈
+        if (this.placedTile && this.placedTile.hasDivineVein()) {
+            yield getDivineVeinSkillId(this.placedTile.divineVein);
+        }
+    }
+
+    * enumerateSkillsWithoutStyle() {
+        yield* this.enumerateEquippedSkills();
+        // 受けているステータス
+        yield* this.getStatusEffects().map(getStatusEffectSkillId);
         // 比翼・双界スキル
         yield getDuoOrHarmonizedSkillId(this.heroIndex);
     }
@@ -6578,6 +6595,10 @@ class Unit extends BattleMapElement {
         return isDefenseSpecial(this.special);
     }
 
+    hasRangedAttackSpecial() {
+        return isRangedAttackSpecial(this.special);
+    }
+
     isAttackSpecialReady() {
         return this.hasNormalAttackSpecial() && this.tmpSpecialCount === 0;
     }
@@ -6808,11 +6829,24 @@ class Unit extends BattleMapElement {
      * @returns {number}
      */
     getAvailableStyle() {
-        let skills = this.getStyles();
-        if (skills.length === 1) {
-            return skills[0];
+        let styles = this.getStylesOfSkill();
+        styles = styles.concat(this.getStylesOfStatusEffect());
+        const [disabledStyles, normalStyles] = styles.reduce(
+            ([yes, no], x) => {
+                (STYLES_THAT_IS_DISABLED_WHEN_UNIT_HAS_ANOTHER_STYLE.has(x) ? yes : no).push(x);
+                return [yes, no];
+            },
+            [[], []]
+        );
+
+        if (normalStyles.length === 1) {
+            return normalStyles[0];
         }
-        return STYLE_TYPE.NONE;
+        // 装備スキルからのスタイルがない場合に状態からのスタイル(自分が無効になるスタイル)を見る
+        if (normalStyles.length === 0 && disabledStyles.length === 1) {
+            return disabledStyles[0];
+        }
+        return StyleType.NONE;
     }
 
     /**
@@ -6821,25 +6855,31 @@ class Unit extends BattleMapElement {
      * @returns {number}
      */
     getCurrentStyle() {
-        return this.isStyleActive ? this.getAvailableStyle() : STYLE_TYPE.NONE;
+        return this.isStyleActive ? this.getAvailableStyle() : StyleType.NONE;
     }
 
     /**
      * 所有スキルにある全てのスタイルを返す。
      * @returns {number[]}
      */
-    getStyles() {
-        let styles = [];
-        for (let skillId of this.enumerateEquippedSkills()) {
-            if (SKILL_ID_TO_STYLE_TYPE.has(skillId)) {
-                styles.push(SKILL_ID_TO_STYLE_TYPE.get(skillId));
-            }
-        }
-        return styles;
+    getStylesOfSkill() {
+        return Array.from(this.enumerateEquippedSkills())
+            .filter(skillId => SKILL_ID_TO_STYLE_TYPE.has(skillId))
+            .map(skillId => SKILL_ID_TO_STYLE_TYPE.get(skillId));
+    }
+
+    /**
+     * 状態にある全てのスタイルを返す。
+     * @returns {number[]}
+     */
+    getStylesOfStatusEffect() {
+        return this.getStatusEffects()
+            .filter(se => STATUS_EFFECT_TYPE_TO_STYLE_TYPE.has(se))
+            .map(se => STATUS_EFFECT_TYPE_TO_STYLE_TYPE.get(se));
     }
 
     hasAvailableStyle() {
-        return this.getAvailableStyle() !== STYLE_TYPE.NONE;
+        return this.getAvailableStyle() !== StyleType.NONE;
     }
 
     /**

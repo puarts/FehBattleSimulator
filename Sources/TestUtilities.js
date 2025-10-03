@@ -144,7 +144,7 @@ class test_DamageCalculator {
         this.damageCalc.isLogEnabled = this.isLogEnabled;
         this.damageCalc.updateUnitSpur(atkUnit, defUnit);
         this.damageCalc.updateUnitSpur(defUnit, atkUnit);
-        let result = this.damageCalc.calcDamage(atkUnit, defUnit, null);
+        let result = this.damageCalc.calcDamage(atkUnit, defUnit, null, DamageType.EstimatedDamage);
         if (this.isLogEnabled) {
             console.log(this.damageCalc.log);
         }

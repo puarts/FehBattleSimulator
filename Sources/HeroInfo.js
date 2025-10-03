@@ -256,7 +256,7 @@ class HeroInfo {
     get maxDragonflower() {
         let releaseDate = this.releaseDateAsNumber;
         let i = 1;
-        for (let year = 2025; year >= 2020; --year) {
+        for (let year = HeroInfo.getElectionYear(HeroInfo.getTodayAsNumber()); year >= 2020; --year) {
             let date = year * 10000 + 812; // 8/12に総選挙がリリースされたことはないので12固定にしておく
             if (releaseDate > date) {
                 return 5 * i;
@@ -279,6 +279,26 @@ class HeroInfo {
             default:
                 return 5 * i;
         }
+    }
+
+    /**
+     * releaseDateAsNumber: YYYYMMDD を数値で渡す（例: 20250815）
+     * 基準日は毎年 8/12 固定
+     */
+    static getElectionYear(releaseDateAsNumber) {
+        const year = Math.floor(releaseDateAsNumber / 10000); // 年だけ取り出す
+        const threshold = year * 10000 + 812; // その年の 8/12
+        return releaseDateAsNumber >= threshold ? year : year - 1;
+    }
+
+    static getTodayAsNumber() {
+        const d = new Date();
+
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0"); // 月は 0 始まりなので +1
+        const day = String(d.getDate()).padStart(2, "0");
+
+        return Number(`${year}${month}${day}`);
     }
 
     getPureGrowthRate(growthAmountOfStar5, statusName) {

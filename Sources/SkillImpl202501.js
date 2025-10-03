@@ -1,5 +1,517 @@
 // スキル実装
 
+// Sword of Fate
+{
+    let skillId = Weapon.SwordOfFate;
+    // Mt: 16   Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit can counterattack regardless of foe’s range.
+    //
+    // At start of player phase or enemy phase,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
+        // if unit is within 2 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
+            // grants [Draconic Hex] and
+            // “reduces the percentage of foe’s non-Special
+            // ‘reduce damage by X%’ skills by 50% during combat
+            // (excluding area-of-effect Specials)”
+            // to unit and allies within 2 spaces of unit for 1 turn.
+            GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                StatusEffectType.DraconicHex,
+                StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
+            ),
+        ),
+    ));
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        // If unit is within 3 spaces of an ally,
+        IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+        // grants bonus to unit’s Atk/Spd/Def/Res =
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+            // number of allies within 3 spaces of unit × 3, + 5 (max 14;
+            // if unit triggers Savior, value is treated as 14),
+            COND_OP(IS_TARGETS_SAVIOR_TRIGGERED_NODE,
+                14,
+                MULT_ADD_MAX_NODE(NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE, 3, 5, 14),
+            ),
+        ),
+        SKILL_EFFECT_NODE(
+            // deals damage = 20% of unit’s Res
+            // (excluding area-of-effect Specials),
+            DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE)),
+            // reduces damage from foe’s attacks by 20% of unit’s Res
+            // (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE)),
+            // reduces damage from foe’s Specials
+            // by an additional 20% of unit’s Res
+            // (excluding area-of-effect Specials), and
+            REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_X_EXCLUDING_AOE_SPECIAL_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE)),
+            // neutralizes effects that guarantee foe’s follow-up attacks
+            NEUTRALIZES_EFFECTS_THAT_GUARANTEE_TARGETS_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+            // and effects that prevent unit’s follow-up attacks during combat.
+            NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+        ),
+    );
+}
+
+// Torrential Roar
+{
+    let skillId = Special.TorrentialRoar;
+    // CD: 3
+    setSpecialCountAndType(skillId, 3, true, false);
+    // Boosts damage by 60% of unit’s Res when Special triggers.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_RES_NODE)),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Neutralizes effects that inflict
+        // “Special cooldown charge -X” on unit and
+        NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+        // reduces damage from foe’s attacks by 40% during combat
+        // (excluding area-of-effect Specials).
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_EXCLUDING_AOE_SPECIALS_BY_SPECIAL_NODE(40),
+    ));
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit’s Res > foe’s Res,
+        IF_NODE(GT_NODE(UNITS_RES_NODE, FOES_RES_NODE),
+            X_NUM_NODE(
+                // decreases Spd difference necessary
+                // for unit to make a follow-up attack by X and
+                DECREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE),
+                // increases Spd difference necessary
+                // for foe to make a follow-up attack by X during combat
+                FOR_TARGETS_FOE_NODE(INCREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE)),
+                // (X = difference between Res stats; max 10).
+                ENSURE_MAX_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 10),
+            ),
+        ),
+    ));
+    // (If support partner is on player team, targets any support partner;
+    // otherwise, targets ally with the highest Def at start of battle,
+    // excluding unit; “at start of battle” excludes increases to Def
+    // granted after ally is deployed,
+    // such as Legendary Effects, Mythic Effects, Bonus Heroes,
+    // Great Talent, etc.;
+    // if number of allies that qualify ≥ 2,
+    // it’s treated as though there is no target ally.)
+    let certainTargetNode =
+        IF_NUMBER_OF_UNITS_GTE_N_ITS_TREATED_AS_THOUGH_THERE_IS_NO_UNIT(
+            SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE(
+                StatusIndex.DEF,
+                TARGETS_STAT_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE,
+            ),
+            2
+        );
+    let targetAndCertainAlliesWithin2SpaceNode =
+        CACHE_NODE(`${skillId}_target-and-certain-allies`,
+            UNITE_UNITS_NODE(
+                SKILL_OWNER_NODE,
+                FILTER_UNITS_NODE(certainTargetNode, IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE)
+            ));
+    // to spaces 2 spaces away from both unit
+    // and certain target ally within 2 spaces of unit
+    // for 1 turn (excluding spaces adjacent to or occupied by unit
+    // or target ally, spaces occupied by a foe,
+    // destructible terrain other than Divine Vein,
+    // or warp spaces in Rival Domains), and
+    let targetUnitsSpacesOfIcicleNode =
+        // ターゲットから2マス離れたマス - 氷を置いてはいけないマス(本人と対象の味方の1マス以内)
+        DIFFERENCE_SPACES_NODE(
+            SPACES_N_SPACES_AWAY_FROM_TARGET_NODE(2),
+            FLAT_MAP_UNITS_NODE(
+                targetAndCertainAlliesWithin2SpaceNode,
+                SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(1)
+            ),
+        );
+    // 本人と対象の味方の氷を置くマスのキャッシュ
+    let icicleSpacesCacheNode =
+        CACHE_NODE(`${skillId}_icicle-spaces`,
+            FLAT_MAP_UNITS_NODE(
+                targetAndCertainAlliesWithin2SpaceNode,
+                targetUnitsSpacesOfIcicleNode,
+            ),
+        );
+    // At start of enemy phase (except for in Pawns of Loki),
+    setAtStartOfEnemyPhaseExceptForInPawnsOfLoki(skillId, NODE_FUNC(
+        // if there is no [Divine Vein (Icicle)] currently applied
+        // by unit or allies,
+        IF_NODE(IS_THERE_NO_DIVINE_VEIN_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE(DivineVeinType.Icicle),
+            // applies [Divine Vein (Icicle)]
+            FOR_EACH_SPACES_NODE(
+                icicleSpacesCacheNode,
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Icicle, TARGET_GROUP_NODE, 1),
+            ),
+            // applies [Divine Vein (Vert)]
+            FOR_EACH_SPACES_NODE(
+                // 4マス以内 - 氷のマス
+                DIFFERENCE_SPACES_NODE(
+                    FLAT_MAP_UNITS_NODE(
+                        targetAndCertainAlliesWithin2SpaceNode,
+                        SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(4),
+                    ),
+                    icicleSpacesCacheNode,
+                ),
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Vert, TARGET_GROUP_NODE, 1),
+            ),
+        ),
+    ));
+
+    // [Divine Vein (Icicle)]
+    // Applies the following status on space:
+    // Foes treat space as impassable terrain while status is active,
+    // but status is destructible (with 1 HP).
+    // When destroyed, it changes to [Divine Vein (Vert)].
+    // Allies can move into and occupy space.
+    // If any allies occupy spaces with Divine Vein (Icicle) applied,
+    // attacks targeting those spaces will hit the ally
+    // over destroying the Divine Vein (Icicle).
+}
+
+{
+    let skillId = getDivineVeinSkillId(DivineVeinType.Vert);
+    // [Divine Vein (Vert)]
+    // Applies the following effects on space for foes:
+    // Foe cannot warp from this space or into this space
+    // (does not affect units with Pass skills or warp effects
+    // from structures like camps and fortresses in Rival Domains).
+
+    // Inflicts [Canto Control] on foes that trigger Canto in this space
+    // through their next action.
+    CAN_INFLICT_CANTO_CONTROL_HOOKS.addSkill(skillId, () =>
+        IS_TARGET_ON_DIVINE_VEIN_NODE(DivineVeinType.Vert, TARGET_FOE_GROUP_NODE)
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_TARGET_ON_DIVINE_VEIN_NODE(DivineVeinType.Vert, TARGET_FOE_GROUP_NODE),
+            FOR_TARGETS_FOE_NODE(SKILL_EFFECT_NODE(
+                // Inflicts Atk/Spd-5 and
+                INFLICTS_STATS_MINUS_ON_TARGETS_FOE_DURING_COMBAT_NODE(ATK_SPD_NODE(5)),
+                // Special cooldown charge -1
+                // on foe per attack during combat
+                // (only highest value applied; does not stack), and also,
+                INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE,
+                // if foe’s attack can trigger foe’s Special,
+                IF_NODE(CAN_TARGETS_FOES_ATTACK_TRIGGER_TARGETS_FOES_SPECIAL_NODE,
+                    // inflicts Special cooldown count+1 on foe
+                    // before foe’s first attack during combat
+                    // (cannot exceed the foe’s maximum Special cooldown).
+                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FIRST_ATTACK_NODE(1)
+                ),
+            )),
+        ),
+    ));
+}
+
+// Pair Up 4
+{
+    let skillId = PassiveB.PairUp4;
+    // B-Skill
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit is within 3 spaces of an ally,
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // inflicts Atk/Spd-4 on foe,
+            INFLICTS_ATK_SPD_ON_FOE_DURING_COMBAT_NODE(4),
+            // increases Spd difference necessary
+            // for foe to make a follow-up attack by 10,
+            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE(10),
+            // neutralizes penalties on unit,
+            NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+            // unit deals +15 damage (excluding area-of-effect Specials),
+            UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(15),
+            // and reduces damage from foe’s attacks by 10 during combat
+            // (excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(10),
+            // And also, if foe triggers the “attacks twice” effect during combat,
+            IF_NODE(FOR_TARGETS_FOE_NODE(DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
+                // reduces damage by an additional 7
+                // (excluding area-of-effect Specials).
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(7),
+            ),
+            // If unit is within 3 spaces of an ally and foe initiates combat,
+            IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
+                X_NUM_NODE(
+                    // reduces damage by an additional X × 2
+                    REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(
+                        MULT_NODE(READ_NUM_NODE, 2)
+                    ),
+                    // (X = distance from unit to foe;
+                    // excluding area-of-effect Specials).
+                    DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE,
+                ),
+            ),
+        ),
+    ));
+}
+
+// Emblem Effect
+{
+    let skillId = getEmblemHeroSkillId(EmblemHero.Corrin);
+    // Enhanced Engaged Special:
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // boosts damage by unit’s max Special cooldown count value × 4
+        // (excluding area-of-effect Specials).
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(MULT_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE, 4)),
+    ));
+    // At start of enemy phase (except for in Pawns of Loki),
+    setAtStartOfEnemyPhaseExceptForInPawnsOfLoki(skillId, NODE_FUNC(
+        // if there is no [Divine Vein (Icicle)]
+        // currently applied by unit or allies,
+        IF_NODE(IS_THERE_NO_DIVINE_VEIN_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE(DivineVeinType.Icicle),
+            FOR_EACH_SPACES_NODE(
+                CACHE_NODE(`${skillId}_icicle-spaces`,
+                    SPACES_N_SPACES_AWAY_FROM_TARGET_NODE(2),
+                ),
+                // applies [Divine Vein (Icicle)]
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Icicle, TARGET_GROUP_NODE, 1),
+            ),
+            // to spaces 2 spaces away from unit for 1 turn
+            // (excluding spaces occupied by a foe, destructible terrain
+            // other than Divine Vein, or warp spaces in Rival Domains), and
+
+            FOR_EACH_SPACES_NODE(
+                DIFFERENCE_SPACES_NODE(
+                    SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(3),
+                    READ_CACHE_NODE(`${skillId}_icicle-spaces`),
+                ),
+                // [Divine Vein (Vert)] to unit’s space and
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Vert, TARGET_GROUP_NODE, 1),
+            ),
+            // spaces within 3 spaces of unit for 1 turn
+            // (excluding spaces with [Divine Vein (Icicle)] applied).
+        ),
+    ));
+}
+
+// Winds of Duality
+{
+    let skillId = Weapon.WindsOfDuality;
+    // Mt: 14 Rng: 1 Eff: 🪶
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+    //
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // if unit’s HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // inflicts [Exposure], [Spd Shackle], and [Def Shackle]
+            // on closest foes and any foe within 2 spaces of those foes
+            // through their next actions.
+            INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
+                StatusEffectType.Exposure,
+                StatusEffectType.SpdShackle,
+                StatusEffectType.DefShackle,
+            ),
+        ),
+    ));
+    // If unit is transformed or unit’s HP ≥ 25% at start of combat,
+    setCondHooks(skillId,
+        OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+        [
+            AT_START_OF_COMBAT_HOOKS,
+            NODE_FUNC(
+                // grants bonus to unit’s Atk/Spd/Def/Res =
+                GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
+                    // number of foes
+                    // within 3 rows or 3 columns centered on unit × 3, +5 (max 14),
+                    MULT_ADD_MAX_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
+                ),
+                X_NUM_NODE(
+                    // unit deals +X × 5 damage (excluding area-of-effect Specials),
+                    DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 5)),
+                    // and reduces damage from foe’s attacks by X × 3 during combat
+                    // (excluding area-of-effect Specials;
+                    REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(
+                        MULT_NODE(READ_NUM_NODE, 3)
+                    ),
+                    // X = number of Bonus effects active on unit, excluding stat bonuses
+                    // number of Penalty effects active on foe, excluding stat penalties; max 5).
+                    ENSURE_MAX_NODE(NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 5),
+                ),
+            ),
+        ],
+        [
+            WHEN_APPLIES_POTENT_EFFECTS_HOOKS,
+            NODE_FUNC(
+                // And also, if decreasing the Spd difference necessary to make a follow-up attack
+                // by 10 would allow unit to trigger a follow-up attack
+                // (excluding guaranteed or prevented follow-ups),
+                // triggers [Potent Follow 100%] during combat.
+                POTENT_FOLLOW_N_PERCENT_NODE(100, -10, true),
+            ),
+        ],
+    );
+    // At start of turn, if unit is adjacent to only beast or dragon allies
+    // or if unit is not adjacent to any ally, unit transforms (otherwise, unit reverts).
+    // If unit transforms, grants Atk+2,
+    // inflicts Atk/Def-Y on foe during combat
+    // (Y = number of spaces from start position
+    // to end position of whoever initiated combat + 3; max 6),
+    // and also, if Y ≥ 5, reduces damage from foe’s first attack during combat by 30%.
+    setBeastSkill(skillId, BeastCommonSkillType.Cavalry2);
+}
+
+// Reject Tyranny (A slot)
+{
+    let skillId = PassiveA.RejectTyranny;
+    // If unit can transform, transformation effects gain
+    CAN_TRANSFORM_AT_START_OF_TURN_HOOKS.addSkill(skillId, () =>
+        // “if any foe is within 3 columns or 3 rows centered on unit”
+        IS_THERE_SKILL_OWNERS_FOE_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(3, 3),
+        // as a trigger condition (in addition to existing conditions).
+    );
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met, unit transforms.
+    setEffectThatIfDefendingInARAtStartOfEnemyTurn1UnitTransforms(skillId);
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // if unit’s HP ≥ 25%,
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
+            // grants “reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills
+            // by 50% during combat (excluding area-of-effect Specials)”
+            // to unit and allies within 2 spaces of unit for 1 turn,
+            GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
+                StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
+            ),
+            FOR_EACH_UNIT_NODE(
+                UNITE_UNITS_NODE(
+                    SKILL_OWNER_NODE,
+                    FILTER_UNITS_NODE(TARGETS_ALLIES_WITHIN_2_SPACES_NODE(), IS_SWORD_LANCE_AXE_DRAGON_OR_BEAST_NODE),
+                ),
+                // and grants [Range: 2 Style] to unit and sword, lance, axe, dragon, or beast allies
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Range2Style),
+                // within 2 spaces of unit for 1 turn.
+            ),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // If unit is transformed or HP ≥ 25% at start of combat,
+        IF_NODE(OR_NODE(IS_TARGET_TRANSFORMED_NODE, IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE),
+            // grants Atk/Spd/Def/Res+X+8 to unit,
+            GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE,
+            X_NUM_NODE(
+                // unit deals +X × 4 damage (excluding area-of-effect Specials),
+                DEALS_DAMAGE_X_NODE(MULT_NODE(READ_NUM_NODE, 4)),
+                // reduces damage from foe’s attacks by X × 4 (excluding area-of-effect Specials),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(
+                    MULT_NODE(READ_NUM_NODE, 4)
+                ),
+                // reduces damage from foe’s Specials by an additional X × 4
+                // (excluding area-of-effect Specials;
+                REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_X_EXCLUDING_AOE_SPECIAL_NODE(MULT_NODE(READ_NUM_NODE, 4)),
+                // X = number of spaces from start to end position of whoever initiated combat; max 3),
+                ENSURE_MAX_NODE(NUMBER_OF_SPACES_FROM_START_POSITION_TO_END_POSITION_OF_WHOEVER_INITIATED_COMBAT, 3),
+            ),
+            // neutralizes effects that inflict “Special cooldown charge -X” on unit,
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+            X_NUM_NODE(
+                // and grants Special cooldown count-Y to unit before unit’s first attack during combat
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(
+                    READ_NUM_NODE
+                ),
+                // (Y = number of Penalty effects active on foe, excluding stat penalties; max 2).
+                ENSURE_MAX_NODE(NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE, 2),
+            ),
+        ),
+    ));
+    // [Range: 2 Style]
+    // Unit can use the following [Style]:
+    // Range: 2 Style
+    STATUS_EFFECT_TYPE_TO_STYLE_TYPE.set(StatusEffectType.Range2Style, StyleType.RANGE_2);
+}
+
+// Dark Beast Force (C slot)
+{
+    let skillId = PassiveC.DarkBeastForce;
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Inflicts Spd/Def-4 on foe,
+        INFLICTS_SPD_DEF_ON_FOE_DURING_COMBAT_NODE(4),
+        // disables skills of all foes excluding foe in combat,
+        UNIT_DISABLES_SKILLS_OF_ALL_OTHERS_IN_COMBAT_EXCLUDING_UNIT_AND_FOE_NODE,
+        // neutralizes penalties on unit,
+        NEUTRALIZES_PENALTIES_ON_UNIT_NODE,
+        // and unit deals +5 damage during combat
+        // (excluding area-of-effect Specials).
+        UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(5),
+    ));
+}
+
+// Style
+{
+    let style = StyleType.RANGE_2;
+    let skillId = getStyleSkillId(style);
+    // Unit can use the following [Style]:
+    // Range: 2 Style
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(
+            HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Range2Style),
+            // This Style can only be used if unit has Range = 1.
+            IS_TARGET_MELEE_WEAPON_NODE,
+        ),
+    );
+    // Unit can attack foes 2 spaces away (cannot attack adjacent foes).
+    CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () => CONSTANT_NUMBER_NODE(2));
+    // Cannot move through spaces within 2 spaces of foe
+    // that has triggered the Bulwark effect (does not apply if unit has Pass).
+    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => IS_STYLE_ACTIVE(style));
+    // Unit suffers a counterattack if any of the following are met:
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // Foe is armored with Range = 1
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_1_NODE),
+            // Foe can counterattack regardless of unit’s range
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // Foe’s Range is the same as the distance between unit and foe
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
+    // After-combat movement effects do not occur.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After-combat movement effects do not occur.
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
+    ));
+    // Skill effect’s Range is treated as 1.
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(style);
+    // This Style is disabled when unit has another [Style].
+    STYLES_THAT_IS_DISABLED_WHEN_UNIT_HAS_ANOTHER_STYLE.add(style);
+    // After combat where this [Style] is used, removes this status.
+    STYLE_ACTIVATED_HOOKS.addSkill(skillId, NODE_FUNC(
+        REMOVE_TARGETS_STATUS_EFFECTS_NODE(StatusEffectType.Range2Style),
+    ));
+}
+
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Frozen);
+    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        X_NUM_NODE(
+            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE),
+            FOR_TARGETS_FOE_NODE(DECREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE)),
+            COND_OP(
+                GTE_NODE(FOR_TARGETS_FOE_NODE(TARGETS_EVAL_DEF_NODE), TARGETS_EVAL_DEF_NODE),
+                ADD_MULT_NODE(10, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_DEF_DIFF_NODE), 2),
+                10,
+            ),
+        ),
+    ));
+}
+
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Bulwark);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+}
+
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.Exposure);
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_FOE_NODE(TARGET_DEALS_DAMAGE_X_NODE(10)),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_FOE_NODE(TARGET_DEALS_DAMAGE_X_NODE(10)),
+    ));
+}
+
 // Hoshido Raijinto
 {
     let skillId = Weapon.HoshidoRaijinto;
@@ -42,7 +554,7 @@
     );
     // Unit can use the following [Style]:
     // Hoshido Raijinto Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.HOSHIDO_RAIJINTO);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.HOSHIDO_RAIJINTO);
 }
 
 // Duelist’s Blow
@@ -90,7 +602,7 @@
         // When unit’s Special triggers,
         DEALS_DAMAGE_WHEN_TRIGGERING_SPECIAL_DURING_COMBAT_NODE(
             // deals damage = 15 + unit’s max Special cooldown count value × 5 (excluding area-of-effect Specials)
-            ADD_MULT_MAX_NODE(15, TARGETS_MAX_SPECIAL_COUNT_NODE, 5),
+            ADD_MULT_NODE(15, TARGETS_MAX_SPECIAL_COUNT_NODE, 5),
         ),
         // and neutralizes foe’s “reduces damage by X%” effects from foe’s non-Special skills (excluding area-of-effect Specials).
         WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
@@ -117,7 +629,7 @@
 
 // Style
 {
-    let style = STYLE_TYPE.HOSHIDO_RAIJINTO;
+    let style = StyleType.HOSHIDO_RAIJINTO;
     let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // Hoshido Raijinto Style
@@ -129,7 +641,7 @@
     // Decreases Spd difference necessary for unit to make a follow-up attack by 10 during combat.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         IF_NODE(IS_STYLE_ACTIVE(style),
-            DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE(10),
+            DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_TO_MAKE_FOLLOW_UP_NODE(10),
         ),
     ));
     // Cannot move through spaces within 2 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
@@ -633,7 +1145,7 @@
     setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
         // on closest foes to both unit and target ally or unit and targeting ally after movement
         // and foes within 2 spaces of those foes through their next actions.
-        FOR_EACH_UNIT_NODE(TARGET_AND_TARGET_FOE_NODE,
+        FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
                 // inflicts Atk/Def-7, [Exposure], [Discord],
                 // and a penalty that neutralizes non-Special “if foe would reduce unit’s HP to 0, unit survives with 1 HP” effects
@@ -693,7 +1205,9 @@
             // grants [Change of Fate] to unit and target ally for 1 turn,
             GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ChangeOfFate),
             // grants Special cooldown count-1 to unit and target ally,
-            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+            FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
+            ),
             // and grants any Bonus active on unit to target ally,
             GRANTS_ANY_BONUS_ACTIVE_ON_UNIT_A_TO_UNIT_B_EXCLUDE_STAT_BONUSES_INVERTED_BY_PANIC_NODE(
                 ASSIST_TARGETING_NODE,
@@ -980,7 +1494,7 @@
                 // neutralizes effects that guarantee follow-up attacks,
                 NEUTRALIZES_EFFECTS_THAT_GUARANTEE_TARGETS_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
                 // and increases Spd difference necessary to make a follow-up attack by 20 during combat.
-                INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(20),
+                INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE(20),
             ),
             // If unit initiates combat,
             IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
@@ -1850,7 +2364,7 @@
     ));
     // Unit can use the following [Style]:
     // Sublime Heaven Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.SUBLIME_HEAVEN);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.SUBLIME_HEAVEN);
 }
 
 // 🛡️ Prof’s Guidance
@@ -1952,7 +2466,7 @@
 
 // 🔷 Style
 {
-    let style = STYLE_TYPE.SUBLIME_HEAVEN
+    let style = StyleType.SUBLIME_HEAVEN
     let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // Sublime Heaven Style
@@ -2067,7 +2581,7 @@
     );
     // Unit can use the following [Style]:
     // Weapon Triangle: Green Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.WEAPON_TRIANGLE_GREEN);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.WEAPON_TRIANGLE_GREEN);
 }
 
 // 🌙 Archrival
@@ -2149,7 +2663,7 @@
 
 // 🎯 Style
 {
-    let style = STYLE_TYPE.WEAPON_TRIANGLE_GREEN;
+    let style = StyleType.WEAPON_TRIANGLE_GREEN;
     let skillId = getStyleSkillId(style);
     setStyleRange(skillId, TARGETS_RANGE_NODE);
     // Unit can use the following [Style]:
@@ -2300,7 +2814,7 @@
             ),
             FOR_EACH_UNIT_NODE(
                 // (if support partner is on player team, targets any support partner; otherwise,
-                PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE(
+                SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_TARGET_STAT_ALLIES_NODE(
                     // targets ally with the highest RES at start of battle, excluding unit;
                     StatusIndex.RES,
                     // “at start of battle” excludes increases to RES granted after ally is deployed,
@@ -5956,7 +6470,7 @@
     ));
     // Unit can use the following 【Style】:
     // Echo Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ECHO);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.ECHO);
 }
 
 // 🌙 Magic Light ⏳3
@@ -6009,7 +6523,7 @@
 
 // 🎭 Style
 {
-    let style = STYLE_TYPE.ECHO;
+    let style = StyleType.ECHO;
     let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // ――― Echo Style ―――
@@ -6431,7 +6945,7 @@
             // (If support partner is on player team,
             // targets any support partner;
             // otherwise, targets ally with the highest DEF on player team, excluding unit.)
-            INCLUDES_UNIT_NODE(TARGET_NODE, PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.DEF))),
+            INCLUDES_UNIT_NODE(TARGET_NODE, SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.DEF))),
         // grants ATK/SPD/DEF+5,
         GRANTS_ATK_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE(5),
         SKILL_EFFECT_NODE(
@@ -8116,7 +8630,7 @@
             UNITE_UNITS_NODE(
                 SKILL_OWNER_NODE,
                 FILTER_UNITS_NODE(
-                    PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.DEF),
+                    SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.DEF),
                     IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE),
             ),
             GRANTS_DEF_RES_TO_TARGET_ON_MAP_NODE(6),
@@ -8506,7 +9020,7 @@
         // triggers [Savior] on unit.
         AND_NODE(
             IS_TARGET_WITHIN_4_SPACES_OF_SKILL_OWNER_NODE,
-            INCLUDES_UNIT_NODE(TARGET_NODE, PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.ATK)),
+            INCLUDES_UNIT_NODE(TARGET_NODE, SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.ATK)),
         ),
     );
     // (If support partner is on player team,
@@ -8515,7 +9029,7 @@
     // Unit can move to a space within 2 spaces of target ally.
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
         TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE(2,
-            PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.ATK))
+            SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.ATK))
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // If unit is transformed or if foe initiates combat,
@@ -9973,6 +10487,7 @@
     };
     setSkill(PassiveA.PrimordialBoost, GRANTS_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(9));
     setSkill(PassiveA.DiluvialBoost, GRANTS_ATK_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(9));
+    setSkill(PassiveA.TorrentialBoost, GRANTS_ATK_SPD_RES_TO_TARGET_DURING_COMBAT_NODE(9));
 }
 
 // Duo Skill
@@ -10189,7 +10704,7 @@
 
 // Wind Sword Style
 {
-    let style = STYLE_TYPE.WIND_SWORD;
+    let style = StyleType.WIND_SWORD;
     let skillId = getStyleSkillId(style);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // Unit can attack foes 2 spaces away (unit cannot attack adjacent foes).
@@ -10269,7 +10784,7 @@
     ));
     // Unit can use the following [Style] :
     // Wind Sword Style
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.WIND_SWORD);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.WIND_SWORD);
 }
 
 // Twin Strike
@@ -12017,7 +12532,7 @@
             // inflicts Spd/Def/Res-4 on foe,
             INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(0, 4, 4, 4),
             // and increases the Spd difference necessary for foe to make a follow-up attack by 10 during combat,
-            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(10),
+            INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE(10),
         ),
         SKILL_EFFECT_NODE(
             // deals damage = 15% of foe's Atk (excluding area-of-effect Specials),
@@ -13935,7 +14450,7 @@
             // if foe initiates combat,
             IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
                 // decreases Spd difference necessary for unit to make a follow-up attack by 10 and
-                DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_FOLLOW_UP_NODE(10),
+                DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_TO_MAKE_FOLLOW_UP_NODE(10),
                 // unit deals +7 damage during combat (excluding area-of-effect Specials).
                 UNIT_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(7),
             ),
@@ -13984,7 +14499,7 @@
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.IncreasesSpdDifferenceNecessaryForFoeToMakeAFollowUpAttackBy10DuringCombat);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
-        INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_FOLLOW_UP_NODE(10),
+        INCREASES_SPD_DIFF_NECESSARY_FOR_TARGETS_FOES_TO_MAKE_FOLLOW_UP_NODE(10),
     ));
 }
 
@@ -14895,7 +15410,7 @@
     // deals damage = 20% of unit's Res (including when dealing damage with an area-of-effect Special),
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
-            UNIT_DEALS_DAMAGE_AT_AOE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE)),
+            UNIT_DEALS_DAMAGE_AT_AOE_NODE(PERCENTAGE_NODE(20, UNITS_RES_AT_START_OF_COMBAT_NODE)),
         ),
     ));
 }

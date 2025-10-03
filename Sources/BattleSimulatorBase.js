@@ -1258,6 +1258,45 @@ class BattleSimulatorBase {
         return false;
     }
 
+    /**
+     * ボタンを表示して良いか
+     * 条件により効果が発動できなくても比翼・双界ならばボタンは表示される(true)
+     * 敵の鳥籠の効果中はグレーアウト表示（このメソッドではtrueを返す）
+     * 発動済みの場合は表示しない(false)
+     * 味方の鳥の効果ターン中は発動済みでもグレーアウト表示(true)
+     * 飛翔の効果が切れた場合は表示しない(false)
+     * @param duoUnit
+     */
+    canDisplayDuoOrHarmonizedButton(duoUnit) {
+        if (!duoUnit) {
+            return false;
+        }
+        if (!duoUnit.isDuoAllyHero && !duoUnit.isHarmonicAllyHero) {
+            return false;
+        }
+
+        // 飛翔の効果中の場合である場合は表示を行う
+        if (duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn) {
+            for (let st of this.__enumerateOffenceStructuresOnMap()) {
+                if (st instanceof OfHiyokuNoHisyo) {
+                    let limitTurn = st.amount;
+                    if (g_appData.currentTurn <= limitTurn) {
+                        return true;
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+
+        // スタイルを持っている場合は行動済みならば表示する(true)
+        if (duoUnit.hasAvailableStyle()) {
+            return duoUnit.isActionDone;
+        }
+
+        return true;
+    }
+
     canActivateDuoSkillOrHarmonizedSkill(duoUnit) {
         if (!duoUnit) {
             return false;
@@ -1266,11 +1305,12 @@ class BattleSimulatorBase {
             return false;
         }
 
+        // 1ターンに一度だけ発動可能(比翼の飛翔の場合でもこのターンでは無理、canDisplayでは一度使用していても飛翔があれば表示する)
         if (duoUnit.isDuoOrHarmonicSkillActivatedInThisTurn) {
             return false;
         }
 
-        if (duoUnit.hasAvailableStyle()) {
+        if (duoUnit.hasAvailableStyle() && !duoUnit.isActionDone) {
             return false;
         }
 
@@ -1309,18 +1349,12 @@ class BattleSimulatorBase {
                 break;
         }
 
-        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoEnemyHero || x.isHarmonicEnemyHero)) {
-            for (let st of this.__enumerateDefenseStructuresOnMap()) {
-                if (st instanceof DefHiyokuNoTorikago) {
-                    let limitTurn = st.amount;
-                    if (g_appData.currentTurn <= limitTurn) {
-                        return false;
-                    }
-                    break;
-                }
-            }
+        // 鳥籠
+        if (this.isDuosHindranceActivating()) {
+            return false;
         }
 
+        // ターン数で再発動
         let activatableCount = 1;
         for (let st of this.__enumerateOffenceStructuresOnMap()) {
             if (st instanceof OfHiyokuNoHisyo) {
@@ -1333,6 +1367,25 @@ class BattleSimulatorBase {
         }
 
         return duoUnit.duoOrHarmonizedSkillActivationCount < activatableCount;
+    }
+
+    /**
+     * 鳥籠によってスキルが発動不能になっているか
+     * @returns {boolean}
+     */
+    isDuosHindranceActivating() {
+        if (this.__isThereAnyUnit(UnitGroupType.Enemy, x => x.isDuoEnemyHero || x.isHarmonicEnemyHero)) {
+            for (let st of this.__enumerateDefenseStructuresOnMap()) {
+                if (st instanceof DefHiyokuNoTorikago) {
+                    let limitTurn = st.amount;
+                    if (g_appData.currentTurn <= limitTurn) {
+                        return true;
+                    }
+                    break;
+                }
+            }
+        }
+        return false;
     }
 
     canActivateStyleSkill(unit) {
@@ -3776,6 +3829,12 @@ class BattleSimulatorBase {
             env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
             STYLE_ACTIVATED_HOOKS.evaluateWithUnit(atkUnit, env);
             atkUnit.deactivateStyle();
+            for (let unit of this.enumerateUnitsOnMap()) {
+                unit.applyReservedState(false);
+                unit.applyReservedHp(false);
+            }
+            // TODO: 予約に関して戦闘後スキルのタイミングと同時か確認する
+            this.map.applyReservedDivineVein();
         }
 
         // battleContextが必要なスキル発動後に追跡対象を更新する(追跡対象更新時にbattleContextが初期化されるため)
@@ -4491,25 +4550,31 @@ class BattleSimulatorBase {
      * @param {Unit} targetUnit
      */
     updatePartner(targetUnit) {
-        let allUnits = this.enumerateAllyUnits();
-        for (let unit of allUnits) {
-            if (unit.groupId !== targetUnit.groupId) {
-                continue;
-            }
-            if (unit.heroIndex === targetUnit.heroIndex) {
-                // 他のインデックスが等しいユニットにも支援を設定する
-                unit.partnerHeroIndex = targetUnit.partnerHeroIndex;
-                unit.partnerLevel = targetUnit.partnerLevel;
-            } else if (unit.heroIndex === targetUnit.partnerHeroIndex) {
-                // 自分の支援相手に自分を設定する
-                unit.partnerHeroIndex = targetUnit.heroIndex;
-                unit.partnerLevel = targetUnit.partnerLevel;
-            } else {
-                if (unit.partnerHeroIndex === targetUnit.partnerHeroIndex) {
-                    // 他のユニットが同じユニットを支援相手にしていた場合に支援を外す
-                    unit.partnerHeroIndex = -1;
-                    unit.partnerLevel = PartnerLevel.None;
-                }
+        let partnerIndex = targetUnit.partnerHeroIndex;
+        for (let allyUnit of this.enumerateAllyUnits()) {
+            if (targetUnit === allyUnit) continue;
+            if (targetUnit.groupId !== allyUnit.groupId) continue;
+            if (allyUnit.heroIndex === partnerIndex) {
+                // 味方が支援相手の場合
+                // 味方に自分を設定する
+                allyUnit.partnerHeroIndex = targetUnit.heroIndex;
+                allyUnit.partnerLevel = targetUnit.partnerLevel;
+            } else if (allyUnit.heroIndex === targetUnit.heroIndex) {
+                // 味方が自分と同キャラの場合
+                // 味方に自分の支援相手を設定する
+                allyUnit.partnerHeroIndex = partnerIndex;
+                allyUnit.partnerLevel = targetUnit.partnerLevel;
+            } else if (allyUnit.partnerHeroIndex === partnerIndex) {
+                // 味方の支援相手が自分の支援相手だった場合
+                // 味方の支援相手の設定を削除する
+                allyUnit.partnerHeroIndex = -1;
+                allyUnit.partnerLevel = PartnerLevel.None;
+            } else if (allyUnit.partnerHeroIndex === targetUnit.heroIndex) {
+                // targetUnitのパートナーはpartnerIndexに変更されたので
+                // partnerIndexではないallyUnitでtargetUnitが設定されている場合は削除する
+                // ※ allyUnit.heroIndex !== partnerIndexは一番上のif分で判定されている
+                allyUnit.partnerHeroIndex = -1;
+                allyUnit.partnerLevel = PartnerLevel.None;
             }
         }
     }
@@ -7670,8 +7735,8 @@ class BattleSimulatorBase {
                 g_app.writeLogLine(unit.getNameWithGroup() + "は天脈を破壊");
             }
 
-            // TODO: 予約しなくて良いのか検討
-            targetTile.removeDivineVein();
+            targetTile.breakDivineVein();
+            g_appData.map.applyReservedDivineVein();
             if (unit.isStyleActive) {
                 unit.isStyleActivatedInThisTurn = true;
                 unit.styleActivationsCount++;
@@ -7682,7 +7747,7 @@ class BattleSimulatorBase {
         };
         return this.__createCommand(
             `${unit.id}-bd-${targetTile.divineVein}-${moveTile.id}`,
-            `天脈・${DIVINE_VEIN_STRINGS[targetTile.divineVein]}破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
+            `天脈・${getDivineVeinName(targetTile.divineVein)}破壊(${unit.getNameWithGroup()} [${moveTile.posX},${moveTile.posY}])`,
             func,
             serial,
             commandType
@@ -7699,30 +7764,30 @@ class BattleSimulatorBase {
             this.writeDebugLogLine("再移動の発動");
             // Nマス以内にいるだけで再移動発動時に効果を発揮する
             // activateCantoIfPossible内で再移動の発動を判定しているのでここではNマス以内の判定結果だけを保存
-            let isThereAnyUnitThatInflictCantoControlWithinRange = false;
+            let isCantoControlled = false;
             for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
                 let env = new CantoControlEnv(unit, u);
                 env.setName('再移動制限時').setLogLevel(getSkillLogLevel());
-                isThereAnyUnitThatInflictCantoControlWithinRange |=
+                isCantoControlled |=
                     CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
                 for (let skillId of u.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DotingStaff:
                             if (u.isWeaponSpecialRefined) {
                                 if (unit.distance(u) <= 4) {
-                                    isThereAnyUnitThatInflictCantoControlWithinRange = true;
+                                    isCantoControlled = true;
                                 }
                             }
                             break;
                         case PassiveC.CantoControl3:
                             if (unit.distance(u) <= 4) {
-                                isThereAnyUnitThatInflictCantoControlWithinRange = true;
+                                isCantoControlled = true;
                             }
                             break;
                     }
                 }
             }
-            unit.activateCantoIfPossible(count, isThereAnyUnitThatInflictCantoControlWithinRange);
+            unit.activateCantoIfPossible(count, isCantoControlled);
             return true;
         }
         return false;

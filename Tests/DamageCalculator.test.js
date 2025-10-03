@@ -280,25 +280,37 @@ describe('Test invalidation skills', () => {
     calclator.unitManager.units = [atkUnit, atkAllyUnit, defUnit, defAllyUnit];
   });
 
-  // 追撃操作無効
+    // 追撃操作無効
   describe('Test invalidates invalidation of followup attack', () => {
-    // 絶対追撃
-    test('Test followup attack', () => {
-      let result = test_calcDamage(atkUnit, defUnit, false);
-      expect(result.atkUnit_spd - result.defUnit_spd).toBe(6);
-      expect(result.atkUnit_totalAttackCount).toBe(1);
-      expect(result.defUnit_totalAttackCount).toBe(2); // 剣殺しでの追撃
-    });
+      // 絶対追撃
+      test('Test followup attack', () => {
+          let result = test_calcDamage(atkUnit, defUnit, false);
+          expect(result.atkUnit_spd - result.defUnit_spd).toBe(6);
+          expect(result.atkUnitFollowUpPriorityInc).toBe(0);
+          expect(result.atkUnitFollowUpPriorityDec).toBe(-1); // 追撃不可
+          expect(result.defUnitFollowUpPriorityInc).toBe(1); // 絶対追撃
+          expect(result.defUnitFollowUpPriorityDec).toBe(0);
+          expect(result.atkUnit_totalAttackCount).toBe(1);
+          expect(result.defUnit_totalAttackCount).toBe(2); // 絶対追撃
+      });
 
-    // 絶対追撃無効
-    test('Test invalidates followup effect', () => {
-      atkUnit.weapon = Weapon.TenteiNoKen;
-      heroDatabase.updateUnitSkillInfo(atkUnit); // 奥義を変えた場合は奥義カウントをセットするために必要
-      let result = test_calcDamage(atkUnit, defUnit, false);
-      expect(result.atkUnit_spd - result.defUnit_spd).toBe(6);
-      expect(result.atkUnit_totalAttackCount).toBe(1);
-      expect(result.defUnit_totalAttackCount).toBe(1); // 剣殺しでの絶対追撃を無効
-    });
+      // 絶対追撃無効
+      test('Test invalidates followup effect', () => {
+          atkUnit.weapon = Weapon.TenteiNoKen;
+          heroDatabase.updateUnitSkillInfo(atkUnit); // 奥義を変えた場合は奥義カウントをセットするために必要
+          let result = test_calcDamage(atkUnit, defUnit, false);
+          expect(result.atkUnit_spd - result.defUnit_spd).toBe(6);
+          expect(result.atkUnitFollowUpPriorityInc).toBe(0);
+          expect(result.atkUnitFollowUpPriorityDec).toBe(-1); // 追撃不可
+          expect(result.defUnitFollowUpPriorityInc).toBe(1); // 絶対追撃
+          expect(result.defUnitFollowUpPriorityDec).toBe(0);
+          expect(atkUnit.battleContext.invalidatesAbsoluteFollowupAttack).toBe(true);
+          expect(atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack).toBe(true);
+          expect(defUnit.battleContext.invalidatesAbsoluteFollowupAttack).toBe(false);
+          expect(defUnit.battleContext.invalidatesInvalidationOfFollowupAttack).toBe(false);
+          expect(result.atkUnit_totalAttackCount).toBe(2); // 剣殺しでの追撃不可を無効
+          expect(result.defUnit_totalAttackCount).toBe(1); // 剣殺しでの絶対追撃を無効
+      });
   });
 
   // 奥義カウント変動量操作無効

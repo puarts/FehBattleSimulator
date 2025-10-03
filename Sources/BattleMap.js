@@ -1558,6 +1558,24 @@ class BattleMap {
     }
 
     /**
+     * @param {Tile} targetTile
+     * @param {Number} targetDistance
+     * @returns {Generator<Tile>}
+     */
+    * enumerateTilesAtDistanceFrom(targetTile, targetDistance) {
+        for (let y = 0; y < this._height; ++y) {
+            for (let x = 0; x < this._width; ++x) {
+                let index = y * this._width + x;
+                let tile = this._tiles[index];
+                let distance = tile.calculateDistance(targetTile);
+                if (distance === targetDistance) {
+                    yield tile;
+                }
+            }
+        }
+    }
+
+    /**
      * @param {number} size
      * @param {Unit} targetUnit
      * @param {Unit} enemyUnit
@@ -1946,11 +1964,13 @@ class BattleMap {
     /**
      * @param {Tile} targetTile
      * @param {Unit} atkUnit
+     * @param {DamageCalcEnv} damageCalcEnv
      * @returns {Generator<Tile>}
      */
-    * enumerateRangedSpecialTiles(targetTile, atkUnit) {
-        let env = new BattleMapEnv(this, atkUnit).setTile(targetTile);
-        env.setName('範囲奥義の範囲取得時').setLogLevel(getSkillLogLevel());
+    * enumerateRangedSpecialTiles(targetTile, atkUnit, damageCalcEnv) {
+        let env = new BattleMapEnv(this, atkUnit).setTile(targetTile).setTargetFoe(targetTile.placedUnit);
+        env.setName('範囲奥義の範囲取得時').setLogLevel(getSkillLogLevel())
+            .setGroupLogger(damageCalcEnv.getBeforeCombatLogger());
         yield* AOE_SPECIAL_SPACES_HOOKS.evaluateConcatUniqueWithUnit(atkUnit, env);
         for (let tile of this.__enumerateRangedSpecialTiles(targetTile, atkUnit.special)) {
             if (tile != null) {
@@ -2402,7 +2422,7 @@ class BattleMap {
             return true;
         }
         if (warpUnit.canActivatePass()) return true;
-        if (targetTile.divineVein === DivineVeinType.Green &&
+        if (targetTile.hasGreenTypeDivineVein() &&
             targetTile.divineVeinGroup !== warpUnit.groupId) {
             return false;
         }
@@ -2466,8 +2486,9 @@ class BattleMap {
         }
 
         if (!ignoresTeleportTile) {
+            // 移動前がGreen
             let isOnGreenTile =
-                startTile.divineVein === DivineVeinType.Green &&
+                startTile.hasGreenTypeDivineVein() &&
                 startTile.divineVeinGroup !== unit.groupId;
             let cannotWarpFromHere = isOnGreenTile && !unit.canActivatePass();
             if (!cannotWarpFromHere) {
@@ -2985,12 +3006,13 @@ class BattleMap {
                 if (this._showEnemyAttackRange && tile.allyDangerLevel > 0) {
                     isBorderEnabled = true;
                     // 危険度の表示
+
                     additionalInnerText += "<span style='color:#f80;font-size:12px;" + shadowCss + ";'><b>" + tile.allyDangerLevel + "</b></span>";
                 }
                 if (tile.divineVein !== DivineVeinType.None &&
                     !g_appData.showDivineVeinImageWithoutBreakable) {
                     let divineString = "";
-                    divineString = DIVINE_VEIN_STRINGS[tile.divineVein];
+                    divineString = getDivineVeinName(tile.divineVein);
                     let divineColor = divineVeinColor(tile.divineVeinGroup);
                     additionalInnerText += `<span style='color:${divineColor};font-size:12px;${shadowCss};'><b>${divineString}</b></span>`;
                 }
@@ -3111,7 +3133,8 @@ class BattleMap {
                 g_appData.showDivineVeinImageWithoutBreakable) {
                 let divineVeinTag = getDivineVeinTag(tile.divineVein);
                 divineVeinTag.classList.add('map-divine-vein-img');
-                if (tile.divineVein === DivineVeinType.Ice &&
+                divineVeinTag.style.opacity = `${g_appData.divineVeinOpacities[tile.divineVein]}`;
+                if (tile.hasIceTypeDivineVein() &&
                     tile.divineVeinGroup === UnitGroupType.Enemy &&
                     g_appData.changeEnemyIceColor) {
                     divineVeinTag.style.filter = 'hue-rotate(180deg)';

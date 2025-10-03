@@ -1314,6 +1314,8 @@ function getDivineVeinImgPath(divineVein) {
         'DivineVein_Haze.webp',
         'DivineVein_Water.jpg',
         'DivineVein_Ice.webp',
+        'DivineVein_Icicle.webp',
+        'DivineVein_Vert.webp',
     ].map(img => `${g_imageRootPath}${img}`)[divineVein] ?? null;
 }
 
@@ -1534,9 +1536,30 @@ class IterUtil {
     }
 
     /**
+     * 複数の {@link Iterable} を順番につなげて 1 本のイテラブルとして返します。
+     * 配列・Set・Map・文字列・ジェネレーターなど、Iterable であればすべて渡せます。
+     *
      * @template T
-     * @param {...Iterable<T>} iterables
-     * @returns {Iterable<T>}
+     * @param {...Iterable<T>} iterables - 結合したい複数のイテラブル
+     * @returns {Iterable<T>} 各イテラブルの要素を順に返す新しいイテラブル
+     *
+     * @example <caption>配列を結合する</caption>
+     * const result = IterableUtil.concat([1, 2], [3, 4]);
+     * console.log([...result]); // => [1, 2, 3, 4]
+     *
+     * @example <caption>Set や Generator を結合する</caption>
+     * const set = new Set([10, 20]);
+     * function* gen() { yield 30; yield 40; }
+     * const combined = IterableUtil.concat(set, gen());
+     * console.log([...combined]); // => [10, 20, 30, 40]
+     *
+     * @example <caption>遅延評価（lazy）なので、大量データや無限シーケンスにも対応可能</caption>
+     * function* infinite() { let i = 0; while (true) yield i++; }
+     * const firstTen = IterableUtil.concat([100], infinite());
+     * for (const x of firstTen) {
+     *   console.log(x);
+     *   if (x > 10) break; // 必要な分だけ読み出せる
+     * }
      */
     static* concat(...iterables) {
         for (const iterable of iterables) {
@@ -1837,6 +1860,13 @@ class SetUtil {
      * @param {Set<T>} baseSet - The base set.
      * @param {...Set<T>} sets - A list of sets to subtract from the base set.
      * @returns {Set<T>} A new set that contains elements in the base set but not in the other sets.
+     *
+     * @example
+     * // Basic usage with two sets
+     * const setA = new Set([1, 2, 3, 4, 5]);
+     * const setB = new Set([2, 4]);
+     * const result = SetUtils.difference(setA, setB);
+     * console.log(result); // Set { 1, 3, 5 }
      */
     static difference(baseSet, ...sets) {
         return sets.reduce((acc, set) => new Set([...acc].filter(item => !set.has(item))), baseSet);

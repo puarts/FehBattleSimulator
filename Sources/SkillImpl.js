@@ -7094,36 +7094,23 @@ function setLantern(skillId) {
 {
     let skillId = Special.DragonsRoar;
     // 通常攻撃奥義(範囲奥義・疾風迅雷などは除く)
-    NORMAL_ATTACK_SPECIAL_SET.add(skillId);
-
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT3_SPECIALS.push(skillId);
-    INHERITABLE_COUNT3_SPECIALS.push(skillId);
+    setSpecialCountAndType(skillId, 3, true, false, false);
 
-    applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
-        function (targetUnit, enemyUnit) {
-            let status = targetUnit.getResInCombat(enemyUnit);
-            targetUnit.battleContext.addSpecialAddDamage(Math.trunc(status * 0.4));
-        }
-    );
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(40, UNITS_RES_NODE)),
+    ));
 
     // 攻撃奥義のダメージ軽減
-    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
-        function (atkUnit, defUnit) {
-            let canActivateSpecial =
-                defUnit.tmpSpecialCount === 0 ||
-                atkUnit.tmpSpecialCount === 0;
-            let hasSpecialActivated =
-                defUnit.battleContext.hasSpecialActivated ||
-                atkUnit.battleContext.hasSpecialActivated;
-            if (canActivateSpecial || hasSpecialActivated) {
-                // 40%軽減
-                if (defUnit.getEvalResInCombat(atkUnit) >= atkUnit.getEvalResInCombat(defUnit) - 4) {
-                    defUnit.battleContext.nTimesDamageReductionRatiosByNonDefenderSpecial.push(0.4);
-                }
-            }
-        }
-    );
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(
+            IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
+            IF_NODE(
+                GTE_NODE(UNITS_EVAL_RES_NODE, SUB_NODE(FOES_EVAL_RES_NODE, 4)),
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE(40),
+            ),
+        ),
+    ));
 }
 
 // 神竜王の体術

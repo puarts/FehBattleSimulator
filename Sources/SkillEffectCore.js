@@ -134,7 +134,10 @@ class SkillEffectHooks {
         }
 
         const skillLogContent = this.#getSkillNameLogContent(skillId, env);
-        return logger.withGroup(LoggerBase.LogLevel.NOTICE, skillLogContent, evaluateAll);
+        env.consoleGroup(LoggerBase.LogLevel.NOTICE, `[${skillLogContent.name}] ${skillLogContent.message}`);
+        let result = logger.withGroup(LoggerBase.LogLevel.NOTICE, skillLogContent, evaluateAll);
+        env.consoleGroupEnd(LoggerBase.LogLevel.NOTICE, `[${skillLogContent.name}] ${skillLogContent.message}`);
+        return result;
     }
 
     #getSkillNameLogContent(skillId, env) {
@@ -166,6 +169,9 @@ class SkillEffectHooks {
             case 'duo-or-harmonized':
                 type = '比翼・双界スキル'
                 break;
+            case 'divine-vein':
+                type = '天脈'
+                break;
             case 'custom':
                 type = 'カスタムスキル'
                 break;
@@ -176,9 +182,11 @@ class SkillEffectHooks {
         } else if (prefix === 'se') {
             name = getStatusEffectName(suffix);
         } else if (prefix === 'style') {
-            name = ObjectUtil.getKeyName(STYLE_TYPE, Number(suffix));
+            name = getStyleTypeName(Number(suffix));
         } else if (prefix === 'duo-or-harmonized') {
             name = `（${ObjectUtil.getKeyName(Hero, Number(suffix))}）`;
+        } else if (prefix === 'divine-vein') {
+            name = `・${getDivineVeinName(Number(suffix))}`;
         } else if (prefix === 'custom') {
             let funcId = skillId.split('_')[1];
             name = CustomSkill.FUNC_ID_TO_NAME.get(funcId) ?? skillId;
@@ -977,15 +985,23 @@ const MULT_MAX_NODE = (mult1, mult2, max) => ENSURE_MAX_NODE(MULT_NODE(mult1, mu
  */
 const MULT_ADD_MAX_NODE = (mult1, mult2, add, max) =>
     ENSURE_MAX_NODE(ADD_NODE(MULT_NODE(mult1, mult2), add), max);
-
 /**
- * @param add
- * @param mult1
- * @param mult2
+ * @param {number|NumberNode} add
+ * @param {number|NumberNode} mult1
+ * @param {number|NumberNode} mult2
  * @returns {NumberNode}
  * @constructor
  */
-const ADD_MULT_MAX_NODE = (add, mult1, mult2) => ADD_NODE(add, MULT_NODE(mult1, mult2));
+const ADD_MULT_NODE = (add, mult1, mult2) => ADD_NODE(add, MULT_NODE(mult1, mult2));
+/**
+ * @param {number|NumberNode} add
+ * @param {number|NumberNode} mult1
+ * @param {number|NumberNode} mult2
+ * @param {number|NumberNode} max
+ * @returns {NumberNode}
+ * @constructor
+ */
+const ADD_MULT_MAX_NODE = (add, mult1, mult2, max) => ENSURE_MAX_NODE(ADD_MULT_NODE(add, mult1, mult2), max);
 
 /**
  * @param add1
@@ -1241,7 +1257,9 @@ const GT_NODE = (a, b) => new GtNode(a, b);
 class GteNode extends CompareNode {
     evaluate(env) {
         let [left, right] = this.evaluateChildren(env);
-        return left >= right;
+        let result = left >= right;
+        env?.trace(`[GteNode] ${left} >= ${right}: ${result}`);
+        return result;
     }
 }
 
@@ -1520,7 +1538,11 @@ class CacheNode extends SkillEffectNode {
             return cache;
         }
 
-        const [value] = this.evaluateChildren(env);
+        let [value] = this.evaluateChildren(env);
+        // IteratorをキャッシュしてしまうといけないのでArrayにする
+        if (value && typeof value[Symbol.iterator] === "function") {
+            value = Array.from(value);
+        }
         env.trace(`cache value: ${value}`);
 
         env.setCache(this._key, value);
@@ -1529,11 +1551,30 @@ class CacheNode extends SkillEffectNode {
 }
 
 /**
+ * @template {SkillEffectNode} N
  * @param {string} key
- * @param {SkillEffectNode} node
- * @returns {CacheNode}
- * @constructor
+ * @param {N} node
+ * @returns {N}
  */
 const CACHE_NODE = (key, node) => new CacheNode(key, node);
+
+class ReadCacheNode extends NumberNode {
+    constructor(key) {
+        super();
+        this._key = key;
+    }
+
+    evaluate(env) {
+        if (env.hasCache(this._key)) {
+            let cache = env.getCache(this._key);
+            env.trace(`return cache: ${cache}`);
+            return cache;
+        } else {
+            env.error(`key not found: ${this._key}`);
+        }
+    }
+}
+
+const READ_CACHE_NODE = (key) => new ReadCacheNode(key);
 
 const SET_SKILL_FUNCS = new Map();

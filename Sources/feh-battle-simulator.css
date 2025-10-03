@@ -434,6 +434,14 @@ input[class="fehButton"]:not(:checked) + label {
     /* 任意のスタイル */
 }
 
+.team-container .warning-icon {
+    position: absolute;
+    font-size: 12px;
+    top: -3px;
+    left: -3px;
+    border-radius: 50%;
+}
+
 .tile-info-icon {
     height: 30px;
     width: 30px;
@@ -1122,7 +1130,7 @@ td.enemy {
     border: none;
     outline: none;
     font-size: 12px;
-    height: 100%;
+    height: calc(100% - 2px);
 
     /*width: 100%;*/
     /*!*max-width: 400px;*!*/
@@ -1571,6 +1579,72 @@ td.enemy {
     margin: 0.2em 0em 0.2em 0em;
 }
 
+.follow-up-result {
+    font-size: 0.9em;
+    /*color: #aaaaaa;*/
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.1em;
+    margin: 0.2em 0em 0.2em 0em;
+}
+
+.follow-up-grid {
+    width: 80%;
+    display: grid;
+    grid-template-columns: 20ch 18ch 18ch 18ch;
+}
+
+.follow-up-title {
+    font-weight: bold;
+}
+
+.follow-up-header {
+    text-align: center;
+    padding-bottom: 0.2em;
+}
+
+.follow-up-number {
+    width: 50%;
+    padding-left: 0.5ch;
+    text-align: right;
+}
+
+.follow-up-value {
+    text-align: center;
+}
+
+.follow-up-neutralized {
+    text-decoration: line-through;
+}
+
+.follow-up-enabled {
+    color: #00eeee;
+    font-weight: bold;
+}
+
+.follow-up-plus {
+    color: #00eeee;
+    font-weight: bold;
+}
+
+.follow-up-plus::after {
+    content: "(絶対追撃)";
+}
+
+.follow-up-disabled {
+    color: #ffaaaa;
+    font-weight: bold;
+}
+
+.follow-up-minus {
+    color: #ffaaaa;
+    font-weight: bold;
+}
+
+.follow-up-minus::after {
+    content: "(追撃不可)";
+}
+
 .attack-result {
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -1837,4 +1911,27 @@ td.enemy {
 
 .icon-glow {
     animation: glow-bright 1s ease;
+}
+
+/* 汎用警告メッセージ */
+.warning {
+    background-color: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
+    border-radius: 4px;
+}
+
+.warning-icon {
+    background-color: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
+    border-radius: 4px;
+}
+
+.team-warning {
+    font-size: 0.8em;
+}
+
+.warning-inline {
+    color: #d39e00;
 }

@@ -804,10 +804,19 @@ function initVueComponents() {
         },
         methods: {
             canDisplayDuoButton: function () {
-                return this.getAttacker()?.isDuoAllyHero && !this.getAttacker()?.hasAvailableStyle();
+                let attacker = this.getAttacker();
+                if (!attacker) return false;
+                return attacker.isDuoAllyHero && this.getApp()?.canDisplayDuoOrHarmonizedButton(attacker);
             },
             canDisplayHarmonicButton: function () {
-                return this.getAttacker()?.isHarmonicAllyHero && !this.getAttacker()?.hasAvailableStyle();
+                let attacker = this.getAttacker();
+                if (!attacker) return false;
+                return attacker.isHarmonicAllyHero && this.getApp()?.canDisplayDuoOrHarmonizedButton(attacker);
+            },
+            canDisplayStyleButton: function () {
+                let currentUnit = this.getCurrentUnit();
+                if (!currentUnit) return false;
+                return currentUnit.hasAvailableStyle() && !currentUnit.isActionDone;
             },
             duoOrHarmonizedSkillButtonStyle(type) {
                 const enabled = this.canActivateDuoSkillOrHarmonizedSkill();
@@ -827,10 +836,14 @@ function initVueComponents() {
                 return this.getApp().canActivateDuoSkillOrHarmonizedSkill(this.getAttacker());
             },
             canActivateStyle: function () {
-                return this.getCurrentUnit()?.canActivateStyle();
+                let currentUnit = this.getCurrentUnit();
+                if (!currentUnit) return false;
+                return currentUnit.canActivateStyle();
             },
             canDeactivateStyle: function () {
-                return this.getCurrentUnit()?.canDeactivateStyle();
+                let currentUnit = this.getCurrentUnit();
+                if (!currentUnit) return false;
+                return currentUnit.canDeactivateStyle();
             },
         },
         template: `
@@ -853,23 +866,25 @@ function initVueComponents() {
                     @click="onDuoOrHarmonizedSkillClick()"
                 />
 
-                <input
-                    v-if="canActivateStyle() || canDeactivateStyle()"
-                    type="button"
-                    class="fehButton map-control-button"
-                    :class="canActivateStyle()
-                      ? 'map-activate-style-button'
-                      : 'map-deactivate-style-button'"
-                    @click="canActivateStyle()
-                      ? getApp().activateStyleSkill(getCurrentUnit())
-                      : getApp().deactivateStyleSkill(getCurrentUnit())"
-                />
-                <span v-if="getCurrentUnit()?.hasAvailableStyleButCannotActivate()">
-                    <input type="button"
-                           disabled
-                           class="fehButtonDisabled map-control-button map-activate-style-button"
-                    >
-                </span>
+                <div v-if="canDisplayStyleButton()">
+                  <input
+                      v-if="canActivateStyle() || canDeactivateStyle()"
+                      type="button"
+                      class="fehButton map-control-button"
+                      :class="canActivateStyle()
+                        ? 'map-activate-style-button'
+                        : 'map-deactivate-style-button'"
+                      @click="canActivateStyle()
+                        ? getApp().activateStyleSkill(getCurrentUnit())
+                        : getApp().deactivateStyleSkill(getCurrentUnit())"
+                  />
+                  <span v-if="getCurrentUnit()?.hasAvailableStyleButCannotActivate()">
+                      <input type="button"
+                             disabled
+                             class="fehButtonDisabled map-control-button map-activate-style-button"
+                      >
+                  </span>
+                </div>
             </span>
         `,
     });
@@ -1848,6 +1863,63 @@ function initVueComponents() {
         `
     });
 
+    Vue.component('divine-vein-opacity-settings', {
+        model: {
+            prop: 'divineVeinOpacities',
+            event: 'change'
+        },
+        props: {
+            divineVeinOpacities: { type: Object, required: true }
+        },
+        data() {
+            return {
+                divineVeinPairs: Object.values(DivineVeinType)
+                    .filter(v => v !== DivineVeinType.None)
+                    .map(v => [v, getDivineVeinName(v)]),
+                storageKey: 'divine-vein-opacity-settings',
+            };
+        },
+        methods: {
+            updateOpacity(divineVein, newValue) {
+                // オブジェクトをコピーして特定キーだけ更新
+                const newOpacities = { ...this.divineVeinOpacities, [divineVein]: newValue };
+                LocalStorageUtil.setJson(this.storageKey, newOpacities);
+                this.$emit('change', newOpacities);
+            },
+        },
+        mounted() {
+            const newOpacities = {...this.divineVeinOpacities};
+            let opacities = LocalStorageUtil.getJson(this.storageKey, {});
+            for (const [divineVein] of this.divineVeinPairs) {
+                if (opacities[divineVein]) {
+                    newOpacities[divineVein] = opacities[divineVein];
+                }
+            }
+            this.$emit('change', newOpacities);
+        },
+        template: `
+          <div>
+            <details>
+              <summary>天脈の透明度の設定</summary>
+              <div
+                v-for="([divineVein, veinName]) in divineVeinPairs"
+                :key="divineVein"
+              >
+                <label :for="'divine-vein-opacity-setting-' + divineVein">
+                  {{ veinName }} :
+                </label>
+                <input
+                  :id="'divine-vein-opacity-setting-' + divineVein"
+                  type="number" min="0" max="1" step="0.1"
+                  :value="divineVeinOpacities[divineVein]"
+                  @input="updateOpacity(divineVein, parseFloat($event.target.value) || 0)"
+                >
+              </div>
+            </details>
+          </div>
+        `,
+    });
+
     Vue.component('damage-calc-result', {
         props: {
             combatResult: {
@@ -1865,10 +1937,13 @@ function initVueComponents() {
                 type: Boolean,
                 required: true,
             },
+            detailLevel: {
+                type: Boolean,
+                required: true,
+            }
         },
         data() {
             return {
-                detailLevel: DetailLevel.NORMAL,
                 detailLevelOptions: DetailUtils.getOptions(),
                 logFilterText: '',
                 groupFilterText: '',
@@ -1878,6 +1953,25 @@ function initVueComponents() {
             hasResult: vm => !!vm.combatResult,
             atkName: vm => vm.combatResult?.atkUnit?.name || '',
             defName: vm => vm.combatResult?.defUnit?.name || '',
+            atkUnit: vm => vm.combatResult?.atkUnit || null,
+            defUnit: vm => vm.combatResult?.defUnit || null,
+            atkSpd: vm => MathUtil.ensureMin(vm.combatResult?.atkUnit_spd || 0, 0),
+            defSpd: vm => MathUtil.ensureMin(vm.combatResult?.defUnit_spd || 0, 0),
+            spdDiff: vm => vm.atkSpd - vm.defSpd,
+            atkSpdDiff: vm => vm.atkSpd - vm.defSpd,
+            defSpdDiff: vm => vm.defSpd - vm.atkSpd,
+            atkFollowUpInc: vm => vm.combatResult?.atkUnitFollowUpPriorityInc || 0,
+            defFollowUpInc: vm => vm.combatResult?.defUnitFollowUpPriorityInc || 0,
+            atkFollowUpDec: vm => vm.combatResult?.atkUnitFollowUpPriorityDec || 0,
+            defFollowUpDec: vm => vm.combatResult?.defUnitFollowUpPriorityDec || 0,
+            atkFollowUp: vm => vm.atkFollowUpInc + vm.atkFollowUpDec,
+            defFollowUp: vm => vm.defFollowUpInc + vm.defFollowUpDec,
+            atkNeutralizesOwnFollowUpDec: vm => vm.atkUnit.battleContext.invalidatesInvalidationOfFollowupAttack,
+            defNeutralizesOwnFollowUpDec: vm => vm.defUnit.battleContext.invalidatesInvalidationOfFollowupAttack,
+            atkNeutralizesFoesFollowUpInc: vm => vm.atkUnit.battleContext.invalidatesAbsoluteFollowupAttack,
+            defNeutralizesFoesFollowUpInc: vm => vm.defUnit.battleContext.invalidatesAbsoluteFollowupAttack,
+            atkAdditionalSpdDiff: vm => vm.atkUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack,
+            defAdditionalSpdDiff: vm => vm.defUnit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack,
             precombatDamage: vm => vm.combatResult?.preCombatDamage ?? 0,
             wasPrecombatSpecialActivated: vm => vm.combatResult?.wasPrecombatSpecialActivated ?? false,
             attackResults: vm => vm.combatResult?.attackResults?.filter(ar => !ar.isAlreadyDead) ?? [],
@@ -1903,6 +1997,10 @@ function initVueComponents() {
                 get() { return this.showsSkillLogs; },
                 set(v) { this.$emit('update:shows-skill-logs', v); } // 親に反映
             },
+            modelDetailLevel: {
+                get() { return this.detailLevel; },
+                set(v) { this.$emit('update:detail-level', v); }
+            }
         },
         methods: {
             levelKey(s) {
@@ -1914,6 +2012,9 @@ function initVueComponents() {
             levelTagClass(levelStr) {
                 return `${this.levelClass(levelStr)}-tag`;
             },
+            boolToStr(bool) {
+                return bool ? '◯' : ' ';
+            }
         },
         template: `
             <div class="pop damage-calc-result theme-dark">
@@ -1922,7 +2023,7 @@ function initVueComponents() {
                 <div v-else>結果はまだありません</div>
                 <div>
                   <!-- 詳細度 -->
-                  <select v-model="detailLevel" class="select-btn">
+                  <select v-model="modelDetailLevel" class="select-btn">
                     <option v-for="option in detailLevelOptions" 
                             :key="option.value" 
                             :value="option.value">
@@ -1982,6 +2083,97 @@ function initVueComponents() {
                     :detail-level="detailLevel"
                     :log-filter-text="logFilterText"
                   />
+                </div>
+
+                <div v-if="detailLevel >= DetailLevel.NORMAL"
+                     class="follow-up-result"
+                >
+                  <div class="follow-up-grid">
+                    <!-- ヘッダー -->
+                    <div class="follow-up-title">【追撃評価】</div>
+                    <div class="follow-up-header">{{ atkName }}</div>
+                    <div class="follow-up-header">{{ defName }}</div>
+                    <div class="follow-up-header">差分</div>
+
+                    <!-- データ行 -->
+                    <div v-if="detailLevel >= DetailLevel.DETAIL">速さ</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ atkSpd }}</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ defSpd }}</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ spdDiff }}</div>
+
+                    <div>攻撃側の追撃値</div>
+                    <div class="follow-up-number">{{ atkFollowUpInc }}</div>
+                    <div class="follow-up-number">{{ atkFollowUpDec }}</div>
+                    <div class="follow-up-value"
+                         :class="{
+                           'follow-up-neutralized': (atkFollowUp < 0 && atkNeutralizesOwnFollowUpDec) ||
+                                                    (atkFollowUp > 0 && defNeutralizesFoesFollowUpInc),
+                           'follow-up-plus': atkFollowUp > 0,
+                           'follow-up-minus': atkFollowUp < 0
+                         }"
+                    >
+                      {{ atkFollowUp }}
+                    </div>
+
+                    <div>守備側の追撃値</div>
+                    <div class="follow-up-number">{{ defFollowUpDec }}</div>
+                    <div class="follow-up-number">{{ defFollowUpInc }}</div>
+                    <div class="follow-up-value"
+                         :class="{
+                           'follow-up-neutralized': (atkFollowUp < 0 && atkNeutralizesOwnFollowUpDec) ||
+                                                    (defFollowUp > 0 && atkNeutralizesFoesFollowUpInc),
+                           'follow-up-plus': defFollowUp > 0,
+                           'follow-up-minus': defFollowUp < 0
+                         }"
+                    >
+                      {{ defFollowUp }}
+                    </div>
+
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" >自身の追撃不可を無効</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value">
+                      {{ boolToStr(atkNeutralizesOwnFollowUpDec) }}
+                    </div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value">
+                      {{ boolToStr(defNeutralizesOwnFollowUpDec) }}
+                    </div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value"></div>
+
+                    <div v-if="detailLevel >= DetailLevel.DETAIL">相手の絶対追撃を無効</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value">
+                      {{ boolToStr(atkNeutralizesFoesFollowUpInc) }}
+                    </div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value">
+                      {{ boolToStr(defNeutralizesFoesFollowUpInc) }}
+                    </div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-value"></div>
+
+                    <div v-if="detailLevel >= DetailLevel.DETAIL">追撃の速さ条件増減</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ atkAdditionalSpdDiff }}</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number">{{ defAdditionalSpdDiff }}</div>
+                    <div v-if="detailLevel >= DetailLevel.DETAIL" class="follow-up-number"></div>
+
+                    <div>追撃に必要な速さの差</div>
+                    <div class="follow-up-number">{{ 5 + atkAdditionalSpdDiff }}</div>
+                    <div class="follow-up-number">{{ 5 + defAdditionalSpdDiff }}</div>
+                    <div class="follow-up-number"></div>
+
+                    <div>速さの差</div>
+                    <div class="follow-up-number" 
+                         :class="{
+                           'follow-up-enabled': atkSpdDiff - (5 + atkAdditionalSpdDiff) > 0,
+                           'follow-up-neutralized': !atkNeutralizesOwnFollowUpDec && atkFollowUp < 0
+                         }">
+                      {{ atkSpdDiff }}
+                    </div>
+                    <div class="follow-up-number" 
+                         :class="{
+                           'follow-up-enabled': defSpdDiff - (5 + defAdditionalSpdDiff) > 0,
+                           'follow-up-neutralized': !defNeutralizesOwnFollowUpDec && defFollowUp < 0
+                         }">
+                      {{ defSpdDiff }}
+                    </div>
+                    <div class="follow-up-number"></div>
+                  </div>
                 </div>
 
                 <div class="attacks-result" v-if="attackResults">

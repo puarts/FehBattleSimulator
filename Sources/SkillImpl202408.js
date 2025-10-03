@@ -102,11 +102,11 @@
     ));
 
     // Unit can use the following【Style】:
-    SKILL_ID_TO_STYLE_TYPE.set(skillId, STYLE_TYPE.ASTRA_STORM);
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.ASTRA_STORM);
 }
 
 {
-    let style = STYLE_TYPE.ASTRA_STORM;
+    let style = StyleType.ASTRA_STORM;
     let skillId = getStyleSkillId(style);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // ――――― Astra Storm Style ―――――
@@ -152,7 +152,7 @@
 
 // 紋章士リン
 {
-    let style = STYLE_TYPE.EMBLEM_LYN;
+    let style = StyleType.EMBLEM_LYN;
     let skillId = getEmblemHeroSkillId(EmblemHero.Lyn);
     SKILL_ID_TO_STYLE_TYPE.set(skillId, style);
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
@@ -350,7 +350,7 @@
     // Restores HP = 40% of unit's Atk (min: 6 HP) to target ally and grants Def/Res+6 to target ally for 1 turn,
     // and also,
     setRallyHealSkill(skillId, [0, 0, 6, 6], 6, 0.4, [],
-        new IsThereNoDivineVeinIceCurrentlyAppliedByTargetOrTargetsAlliesNode());
+        IS_THERE_NO_DIVINE_VEIN_ICE_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE);
 
     AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // if there is no【Divine Vein (Ice)】 currently applied by unit or allies,
@@ -3186,8 +3186,11 @@ function setDiscord(skillId, statsRatios) {
     setBriarSave(PassiveC.ADBriarFSave, FOES_RANGE_IS_2_NODE, ATK_DEF_NODE(4),
         false, true, false, false);
     // 理
-    setBriarSave(PassiveC.ADBriarPSave, FOR_FOE_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
+    setBriarSave(PassiveC.ADBriarPSave, FOR_TARGETS_FOE_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
         false, false, true, false);
+    // 魔
+    setBriarSave(PassiveC.SRBriarMSave, FOR_TARGETS_FOE_NODE(IS_TARGET_MAGIC_WEAPON_NODE), SPD_RES_NODE(4),
+        false, false, false, true);
 }
 
 // 竜の堅鱗
@@ -3639,7 +3642,15 @@ function setDiscord(skillId, statsRatios) {
 
     // 十字範囲
     AOE_SPECIAL_SPACES_HOOKS.addSkill(skillId, () =>
-        new OverrideAoeSpacesNode(),
+        /** @type {SpacesNode} */
+        IF_ELSE_NODE(
+            AND_NODE(
+                EQ_NODE(DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE, 2),
+                NOT_NODE(ARE_TARGET_AND_TARGET_FOE_IN_SAME_LINE_NODE),
+            ),
+            TARGETS_OVERRIDE_AOE_SPACES_WITH_RANGE_2_DIAG_NODE,
+            TARGETS_OVERRIDE_AOE_SPACES_WITH_RANGE_1_NODE,
+        ),
     );
 
     // When unit deals damage to 2 or more foes at the same time using a Special (including target; including foes dealt 0 damage),
@@ -4037,7 +4048,7 @@ function setDiscord(skillId, statsRatios) {
                     // decreases Spd difference necessary for unit to make a follow-up attack by X and
                     new DecreasesSpdDiffNecessaryForUnitFollowUpNode(READ_NUM_NODE),
                     // increases Spd difference necessary for foe to make a follow-up attack by X during combat
-                    new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(READ_NUM_NODE),
+                    new IncreasesSpdDiffNecessaryForTargetsFoesToMakeFollowUpNode(READ_NUM_NODE),
                 ),
                 // (X = difference between Def stats; max 10;
                 new EnsureMaxNode(DIFFERENCE_BETWEEN_DEF_STATS_DURING_COMBAT_NODE, 10),
@@ -6052,7 +6063,7 @@ function setDiscord(skillId, statsRatios) {
                     ),
                     UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
                     FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
-                    new IncreasesSpdDiffNecessaryForTargetsFoesFollowUpNode(20),
+                    new IncreasesSpdDiffNecessaryForTargetsFoesToMakeFollowUpNode(20),
                 ),
             ),
         ),
