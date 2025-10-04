@@ -125,9 +125,17 @@
     // 本人と対象の味方の氷を置くマスのキャッシュ
     let icicleSpacesCacheNode =
         CACHE_NODE(`${skillId}_icicle-spaces`,
-            FLAT_MAP_UNITS_NODE(
-                targetAndCertainAlliesWithin2SpaceNode,
-                targetUnitsSpacesOfIcicleNode,
+            FILTER_SPACES_NODE(
+                FLAT_MAP_UNITS_NODE(
+                    targetAndCertainAlliesWithin2SpaceNode,
+                    targetUnitsSpacesOfIcicleNode,
+                ),
+                NOT_NODE(
+                    OR_NODE(
+                        IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                        IS_TARGETS_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_NODE,
+                    ),
+                ),
             ),
         );
     // At start of enemy phase (except for in Pawns of Loki),
@@ -258,14 +266,22 @@
         IF_NODE(IS_THERE_NO_DIVINE_VEIN_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE(DivineVeinType.Icicle),
             FOR_EACH_SPACES_NODE(
                 CACHE_NODE(`${skillId}_icicle-spaces`,
-                    SPACES_N_SPACES_AWAY_FROM_TARGET_NODE(2),
+                    FILTER_SPACES_NODE(
+                        SPACES_N_SPACES_AWAY_FROM_TARGET_NODE(2),
+                        NOT_NODE(
+                            OR_NODE(
+                                IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                                IS_TARGETS_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_NODE,
+                            ),
+                        ),
+                    ),
                 ),
                 // applies [Divine Vein (Icicle)]
+                // to spaces 2 spaces away from unit for 1 turn
+                // (excluding spaces occupied by a foe,
+                // destructible terrain other than Divine Vein, or warp spaces in Rival Domains), and
                 APPLY_DIVINE_VEIN_NODE(DivineVeinType.Icicle, TARGET_GROUP_NODE, 1),
             ),
-            // to spaces 2 spaces away from unit for 1 turn
-            // (excluding spaces occupied by a foe, destructible terrain
-            // other than Divine Vein, or warp spaces in Rival Domains), and
 
             FOR_EACH_SPACES_NODE(
                 DIFFERENCE_SPACES_NODE(
@@ -1202,10 +1218,10 @@
     AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
             `${skillId}-運命に打ち勝つ!の補助効果`,
-            // grants [Change of Fate] to unit and target ally for 1 turn,
-            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ChangeOfFate),
-            // grants Special cooldown count-1 to unit and target ally,
             FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
+                // grants [Change of Fate] to unit and target ally for 1 turn,
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.ChangeOfFate),
+                // grants Special cooldown count-1 to unit and target ally,
                 GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_ON_TARGET_ON_MAP_NODE(1),
             ),
             // and grants any Bonus active on unit to target ally,
