@@ -11371,6 +11371,11 @@ class BattleSimulatorBase {
                 updateAllUi();
             }
         }
+        // キャラ以外のマスを右クリックした場合に天脈を透過
+        if (!this.currentUnit && button === 2) {
+            g_appData.enableDivineVeinTransparency = !g_appData.enableDivineVeinTransparency;
+            updateAllUi();
+        }
     }
     selectItemToggle(targetId) {
         let item = g_appData.findItemById(targetId);

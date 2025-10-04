@@ -4950,7 +4950,7 @@ class IsTargetInCardinalDirectionsOfSkillOwnerNode extends BoolNode {
 const IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_SKILL_OWNER_NODE = new IsTargetInCardinalDirectionsOfSkillOwnerNode();
 
 // TODO: renameを検討
-class IsNotSpaceOccupiedByTargetsFoeNode extends BoolNode {
+class IsSpaceOccupiedByTargetsFoeNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -4958,11 +4958,42 @@ class IsNotSpaceOccupiedByTargetsFoeNode extends BoolNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let placedUnit = env.tile.placedUnit;
-        return !(placedUnit && placedUnit.groupId !== unit.groupId);
+        let result = placedUnit && placedUnit.groupId !== unit.groupId;
+        env.debug(`${env.tile}に${unit.nameWithGroup}の敵がいるか: ${result}`);
+        return result;
     }
 }
 
-const IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE = new IsNotSpaceOccupiedByTargetsFoeNode();
+const IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE = new IsSpaceOccupiedByTargetsFoeNode();
+const IS_NOT_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE = NOT_NODE(IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE);
+
+class IsTargetsDestructibleTerrainOtherThanDivineVeinNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        // TODO: ターゲットにとって破壊可能かどうかを判定するか検討する
+        let unit = this.getUnit(env);
+        let tile = env.tile;
+        let obj = tile.obj;
+        if (!obj) {
+            env.debug(`${tile}は破壊可能地形のマス（天脈以外）か: false`);
+            return false;
+        }
+        if (obj instanceof OffenceStructureBase || obj instanceof DefenceStructureBase) {
+            if (obj.isBreakable) {
+                env.debug(`${tile}は破壊可能地形のマス（天脈以外）か: true`);
+                return true;
+            }
+        }
+        env.debug(`${tile}は破壊可能地形のマス（天脈以外）か: false`);
+        return false;
+    }
+}
+
+const IS_TARGETS_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_NODE =
+    new IsTargetsDestructibleTerrainOtherThanDivineVeinNode();
 
 const IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE = new class extends BoolNode {
     evaluate(env) {

@@ -361,7 +361,7 @@
                 AND_NODE(
                     new IsSpacesNSpacesAwayFromAssistedNode(2),
                     // (excludes spaces occupied by a foe,
-                    IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                    IS_NOT_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
                     // destructible terrain other than【Divine Vein (Ice)】, and
                     IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE,
                     // TODO: ワープができるコンテンツが来たら実装する
@@ -5295,7 +5295,7 @@ function setDiscord(skillId, statsRatios) {
                 AND_NODE(
                     new IsSpacesNSpacesAwayFromAssistedNode(2),
                     // (excludes spaces occupied by a foe,
-                    IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                    IS_NOT_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
                     // destructible terrain other than【Divine Vein (Ice)】, and
                     IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE,
                     // TODO: ワープができるコンテンツが来たら実装する
@@ -5314,7 +5314,7 @@ function setDiscord(skillId, statsRatios) {
                 AND_NODE(
                     new IsSpacesNSpacesAwayFromTargetNode(2),
                     // (excludes spaces occupied by a foe,
-                    IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                    IS_NOT_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
                     // destructible terrain other than【Divine Vein (Ice)】, and
                     IS_NOT_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_ICE_NODE,
                     // TODO: ワープができるコンテンツが来たら実装する

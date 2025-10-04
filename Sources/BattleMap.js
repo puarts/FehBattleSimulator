@@ -3134,6 +3134,9 @@ class BattleMap {
                 let divineVeinTag = getDivineVeinTag(tile.divineVein);
                 divineVeinTag.classList.add('map-divine-vein-img');
                 divineVeinTag.style.opacity = `${g_appData.divineVeinOpacities[tile.divineVein]}`;
+                if (g_appData.enableDivineVeinTransparency) {
+                    divineVeinTag.style.opacity = '0.25';
+                }
                 if (tile.hasIceTypeDivineVein() &&
                     tile.divineVeinGroup === UnitGroupType.Enemy &&
                     g_appData.changeEnemyIceColor) {
