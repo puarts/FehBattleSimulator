@@ -270,6 +270,7 @@ class AppData extends UnitManager {
                     .filter(v => v !== DivineVeinType.None)      // None を除外
                     .map(v => [v, 1])                            // 各キーを 1 で初期化
             );
+        this.enableDivineVeinTransparency = false;
 
         this.isEnemyActionTriggered = true;
         this.isAutoLoadTurnSettingEnabled = false;
