@@ -3986,6 +3986,18 @@ PassiveC.SRBriarMSave = 3420; // 衣の護り手・魔・茨
 Weapon.WindsOfDuality = 3421; // 光と闇の疾風
 PassiveA.RejectTyranny = 3422; // 暴虐への怒り
 PassiveC.DarkBeastForce = 3423; // 暗獣・不屈
+Weapon.GleeOfTheLand = 3424; // 地の女神の祝祭
+PassiveB.MoonlitSlumber = 3425; // 月を浴び地に眠る
+PassiveC.ASBellow = 3426; // 攻速鼓譟・呼吸
+Weapon.SpookyLantern = 3427; // 妖精の悪戯の明かり
+Support.PleasantNight = 3428; // やさしいよるのゆめ
+PassiveB.DRCantrip3 = 3429; // 守備魔防の魅了3
+PassiveC.ShadowShove4 = 3430; // 影助・体当たり4
+Weapon.PreyingFang = 3431; // 肉食らう獅子の爪牙
+Weapon.NightmareStaff = 3432; // 悪夢の女王の魔杖
+Special.Comet = 3433; // 彗星
+PassiveB.HauntingChoker = 3434; // 追憶の首飾り
+Weapon.SaintshipTome = 3435; // 聖女の慈愛の書
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
