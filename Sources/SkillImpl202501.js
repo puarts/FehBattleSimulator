@@ -1,5 +1,267 @@
 // スキル実装
 
+{
+    let skillId = PassiveA.Duality;
+    // Grants Atk/Res+9.
+    // Grants weapon-triangle advantage against and inflicts weapon-triangle disadvantage
+    // on red, blue, and green foes during combat.
+    CALC_TRIANGLE_ADVANTAGE_HOOKS.addSkill(skillId, () => SUM_NODE(
+        IF_ELSE_NODE(
+            FOR_TARGETS_FOE_NODE(
+                OR_NODE(
+                    EQ_NODE(TARGETS_COLOR_NODE, ColorType.Red),
+                    EQ_NODE(TARGETS_COLOR_NODE, ColorType.Blue),
+                    EQ_NODE(TARGETS_COLOR_NODE, ColorType.Green),
+                ),
+            ),
+            TARGETS_TRIANGLE_ADVANTAGE_NODE,
+            TARGETS_NO_TRIANGLE_ADVANTAGE_NODE,
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Neutralizes effects that
+        // boost values along with weapon-triangle advantage or
+        // reduce values along with weapon-triangle disadvantage (Triangle Adept)
+        // on unit and foe.
+        FOR_EACH_UNIT_NODE(TARGET_AND_TARGET_FOE_NODE,
+            NEUTRALIZES_TARGETS_EFFECTS_THAT_BOOST_VALUES_ALONG_WITH_WEAPON_TRIANGLE_ADVANTAGE_NODE,
+            NEUTRALIZES_TARGETS_EFFECTS_THAT_REDUCE_VALUES_ALONG_WITH_WEAPON_TRIANGLE_DISADVANTAGE_NODE,
+        ),
+        // At start of combat,
+        // if unit's HP ≥ 25%, unit makes a guaranteed follow-up attack during combat.
+        IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+        ),
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.FaithfulBreath);
+    // 「歌う」「踊る」を使用時、自分と対象それぞれの周囲4マス以内にいる、最も近い敵の守備、魔防-6(敵の次回行動終了時まで)
+    AFTER_REFRESH_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_EACH_UNIT_NODE(
+            FLAT_MAP_UNITS_NODE(
+                ASSIST_TARGETING_AND_TARGET_NODE,
+                TARGETS_CLOSEST_FOES_WITHIN_4_SPACES_NODE,
+            ),
+            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(DEF_RES_NODE(6)),
+        ),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 戦闘開始時、自身のHPが40%以上なら、戦闘中、攻撃、速さ+6、かつ自分から攻撃した時、自分の追撃不可を無効
+        IF_NODE(IS_UNTIS_HP_GTE_N_PERCENT_AT_START_OF_COMBAT_NODE(40),
+            GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(6),
+            IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+                NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+            ),
+        ),
+        // 戦闘開始時、自身のHPが40%以上なら、自分から攻撃した時、かつ、相性有利か敵が【不利な状態異常】を受けている時、敵は反撃不可
+        IF_NODE(IS_UNTIS_HP_GTE_N_PERCENT_AT_START_OF_COMBAT_NODE(40),
+            IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
+                IF_NODE(
+                    OR_NODE(
+                        HAS_TARGET_WEAPON_TRIANGLE_ADVANTAGE_NODE,
+                        IS_PENALTY_ACTIVE_ON_FOE_NODE,
+                    ),
+                    FOE_CANNOT_COUNTERATTACK_NODE,
+                ),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.FaithfulBreath);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.FaithfulBreath);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.RiteOfSouls);
+    // ターン開始時、自身を中心とした縦3列と横3列にいる敵のうち、魔防が自分より1以上低い敵に【キャンセル】を付与
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_EACH_UNIT_NODE(
+            SKILL_OWNERS_FOES_WITHIN_N_ROWS_OR_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(3),
+            IF_NODE(LT_NODE(TARGETS_EVAL_RES_NODE, SKILL_OWNERS_EVAL_RES_ON_MAP),
+                INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Guard),
+            ),
+        ),
+    ));
+    // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、戦闘中、自身の攻撃、速さ、守備、魔防+5、ダメージ+魔防の20%(戦闘前奥義も含む)、敵は追撃不可
+    setCondHooks(skillId,
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        [
+            AT_START_OF_COMBAT_HOOKS,
+            NODE_FUNC(
+                GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+                FOE_CANNOT_MAKE_FOLLOW_UP_ATTACK_NODE,
+            ),
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE))),
+        ],
+        [
+            BEFORE_AOE_SPECIAL_HOOKS,
+            NODE_FUNC(DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE))),
+        ]
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.RiteOfSouls);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.RiteOfSouls);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.HonorableBlade);
+    // 【再移動(2)】を発動可能
+    enablesCantoN(skillId, 2);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // ターン開始時、自身の移動+1(1ターン、重複しない)
+        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.MobilityIncreased),
+    ));
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 戦闘開始時、敵のHPが50%以上なら、戦闘中、攻撃、速さ+6
+        IF_NODE(IS_UNTIS_HP_GTE_N_PERCENT_AT_START_OF_COMBAT_NODE(50),
+            GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(6),
+        ),
+    ));
+    // 【暗器(7)】効果
+}
+{
+    let skillId = getRefinementSkillId(Weapon.HonorableBlade);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.HonorableBlade);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.CarnageAmatsu);
+    // 周囲1マス以内に味方がいなければ、速さが敵より高い時、
+    // 受けた範囲奥義のダメージと、
+    // 戦闘中に攻撃を受けた時のダメージを速さの差×4%軽減(最大40%)(巨影の範囲奥義を除く)
+    setCondHooks(skillId,
+        OR_NODE(
+            LT_NODE(NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET, 1),
+            CALC_POTENTIAL_DAMAGE_NODE,
+        ),
+        [
+            BEFORE_AOE_SPECIAL_HOOKS,
+            NODE_FUNC(
+                REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(
+                    ENSURE_MIN_MAX_NODE(MULT_TRUNC_NODE(SPD_DIFF_NODE, 4), 0, 40),
+                ),
+            )
+        ],
+        [
+            WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS,
+            NODE_FUNC(
+                REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(
+                    ENSURE_MIN_MAX_NODE(MULT_TRUNC_NODE(SPD_DIFF_NODE, 4), 0, 40),
+                ),
+            )
+        ]
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.CarnageAmatsu);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.CarnageAmatsu);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.Thjalfi);
+    let condKey = `${skillId}_シャールヴィの3マス以内条件`;
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // 周囲3マス以内に味方がいる時、戦闘中、自身の攻撃、速さ、守備、魔防+6、
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            GRANTS_ALL_STATS_PLUS_6_TO_TARGET_DURING_COMBAT_NODE,
+            // 絶対追撃、かつ、
+            UNIT_MAKES_GUARANTEED_FOLLOW_UP_ATTACK_NODE,
+            // 敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て。
+            // 例えば敵の「ダメージを45%軽減」なら半分の「22%」分を無効にし、「ダメージを23%軽減」にする)
+            REDUCES_PERCENTAGE_OF_UNITS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
+            // その状態で攻撃した時、戦闘後、最も近い味方に20ダメージ
+            TARGET_SATISFIED_CONDITION_DURING_COMBAT_NODE(condKey),
+        ),
+    ));
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(
+            AND_NODE(
+                HAS_TARGET_SATISFIED_CONDITION_DURING_COMBAT_NODE(condKey),
+                HAS_TARGET_ATTACKED_DURING_COMBAT_NODE,
+            ),
+            // その状態で攻撃した時、戦闘後、最も近い味方に20ダメージ
+            FOR_EACH_UNIT_NODE(
+                TARGETS_CLOSEST_ALLIES_NODE(),
+                DEALS_DAMAGE_TO_TARGET_ON_MAP_NODE(20),
+            ),
+        ),
+    ));
+}
+{
+    let skillId = getRefinementSkillId(Weapon.Thjalfi);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.Thjalfi);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
+{
+    let skillId = getNormalSkillId(Weapon.FairFuryAxe);
+    // 自分から攻撃した時、または、周囲2マス以内に味方がいる時、ダメージ+攻撃の15%、戦闘中、攻撃、速さ+6
+    setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
+        OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE(6),
+        DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(15, UNITS_ATK_NODE)),
+    );
+}
+{
+    let skillId = getRefinementSkillId(Weapon.FairFuryAxe);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+{
+    let skillId = getSpecialRefinementSkillId(Weapon.FairFuryAxe);
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE());
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    ));
+}
+
 // Sword of Fate
 {
     let skillId = Weapon.SwordOfFate;
@@ -79,7 +341,7 @@
                 DECREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE),
                 // increases Spd difference necessary
                 // for foe to make a follow-up attack by X during combat
-                FOR_TARGETS_FOE_NODE(INCREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE)),
+                FOR_TARGETS_FOE_DURING_COMBAT_NODE(INCREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE)),
                 // (X = difference between Res stats; max 10).
                 ENSURE_MAX_NODE(DIFFERENCE_BETWEEN_RES_STATS_NODE, 10),
             ),
@@ -189,7 +451,7 @@
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_ON_DIVINE_VEIN_NODE(DivineVeinType.Vert, TARGET_FOE_GROUP_NODE),
-            FOR_TARGETS_FOE_NODE(SKILL_EFFECT_NODE(
+            FOR_TARGETS_FOE_DURING_COMBAT_NODE(SKILL_EFFECT_NODE(
                 // Inflicts Atk/Spd-5 and
                 INFLICTS_STATS_MINUS_ON_TARGETS_FOE_DURING_COMBAT_NODE(ATK_SPD_NODE(5)),
                 // Special cooldown charge -1
@@ -228,7 +490,7 @@
             // (excluding area-of-effect Specials).
             REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(10),
             // And also, if foe triggers the “attacks twice” effect during combat,
-            IF_NODE(FOR_TARGETS_FOE_NODE(DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
+            IF_NODE(FOR_TARGETS_FOE_DURING_COMBAT_NODE(DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
                 // reduces damage by an additional 7
                 // (excluding area-of-effect Specials).
                 REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(7),
@@ -502,10 +764,10 @@
     WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         X_NUM_NODE(
             INCREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE),
-            FOR_TARGETS_FOE_NODE(DECREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE)),
+            FOR_TARGETS_FOE_DURING_COMBAT_NODE(DECREASES_SPD_DIFF_NECESSARY_FOR_TARGET_TO_MAKE_FOLLOW_UP_NODE(READ_NUM_NODE)),
             COND_OP(
-                GTE_NODE(FOR_TARGETS_FOE_NODE(TARGETS_EVAL_DEF_NODE), TARGETS_EVAL_DEF_NODE),
-                ADD_MULT_NODE(10, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_DEF_DIFF_NODE), 2),
+                GTE_NODE(FOR_TARGETS_FOE_DURING_COMBAT_NODE(TARGETS_EVAL_DEF_NODE), TARGETS_EVAL_DEF_NODE),
+                ADD_MULT_NODE(10, FOR_TARGETS_FOE_DURING_COMBAT_NODE(TARGETS_EVAL_DEF_DIFF_NODE), 2),
                 10,
             ),
         ),

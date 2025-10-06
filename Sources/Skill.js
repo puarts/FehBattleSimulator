@@ -1166,7 +1166,7 @@ const BEAST_COMMON_SKILL_MAP = new Map([
     [Weapon.JunaruSenekoNoTsumekiba, BeastCommonSkillType.Cavalry],
 ]);
 
-const ADVANTAGEOUS_AGAINST_COLORLESS_WEAPON_SET = new Set([
+const ADVANTAGEOUS_AGAINST_COLORLESS_WEAPONS = new Set([
     Weapon.EtherealBreath,
     Weapon.KinsekiNoSyo,
     Weapon.GunshiNoRaisyo,
@@ -1182,10 +1182,6 @@ const ADVANTAGEOUS_AGAINST_COLORLESS_WEAPON_SET = new Set([
     Weapon.Nagurufaru,
     Weapon.TomeOfOrder,
 ]);
-
-function isAdvantageousForColorless(weapon) {
-    return ADVANTAGEOUS_AGAINST_COLORLESS_WEAPON_SET.has(weapon);
-}
 
 const BREAKER_SKILL_TO_TARGET_WEAPON_TYPE_MAP = new Map([
     [PassiveB.Swordbreaker3, WeaponType.Sword],

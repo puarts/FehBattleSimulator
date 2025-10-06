@@ -160,6 +160,7 @@ const PERCENTAGE_ADD_NODE = (percentage, num, add) =>
 const PERCENTAGE_SUB_NODE = (percentage, num, sub) =>
     SUB_NODE(PERCENTAGE_NODE(percentage, num), sub);
 
+const TARGETS_CLOSEST_FOES_WITHIN_4_SPACES_NODE = new TargetsClosestFoesWithinNSpacesNode(4);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE = new TargetsClosestFoesWithinNSpacesNode(5);
 const TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_AND_FOES_ALLIES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE =
     new TargetsAndThoseAlliesWithinNSpacesNode(2, TARGETS_CLOSEST_FOES_WITHIN_5_SPACES_NODE);
@@ -686,9 +687,6 @@ const CALC_POTENTIAL_DAMAGE_NODE = new CalcPotentialDamageNode();
 
 const IS_NOT_TARGET_ADJACENT_TO_AN_ALLY =
     OR_NODE(CALC_POTENTIAL_DAMAGE_NODE, NOT_NODE(GT_NODE(new NumOfTargetsAlliesWithinNSpacesNode(1), 0)));
-
-const NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET =
-    () => new NumOfTargetsAlliesWithinNSpacesNode(1);
 
 const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = (...nodes) =>
     IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE, ...nodes);

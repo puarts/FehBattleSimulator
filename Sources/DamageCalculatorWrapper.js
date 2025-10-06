@@ -247,7 +247,7 @@ class DamageCalculatorWrapper {
         }
 
         // 戦闘後発動のスキル等を評価
-        this._combatHander.applyPostCombatProcess(atkUnit, result.defUnit, result);
+        this._combatHander.applyPostCombatProcess(atkUnit, result.defUnit, damageCalcEnv);
 
         if (defUnit !== result.defUnit) {
             // 護り手で一時的に戦闘対象が入れ替わっていたので元に戻す
@@ -1158,12 +1158,6 @@ class DamageCalculatorWrapper {
                             let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
                             defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                         }
-                    }
-                    break;
-                case Weapon.CarnageAmatsu:
-                    if (this.__isSolo(defUnit)) {
-                        let ratio = DamageCalculationUtility.getDodgeDamageReductionRatioForPrecombat(atkUnit, defUnit);
-                        defUnit.battleContext.multDamageReductionRatioOfPrecombatSpecial(ratio);
                     }
                     break;
                 case Weapon.Roputous:
@@ -2556,6 +2550,10 @@ class DamageCalculatorWrapper {
             }
             getSkillFunc(skillId, applySkillEffectForUnitFuncMap)?.call(this, targetUnit, enemyUnit,
                 damageCalcEnv.calcPotentialDamage);
+            // 無色への相性有利の評価
+            if (ADVANTAGEOUS_AGAINST_COLORLESS_WEAPONS.has(skillId)) {
+                targetUnit.battleContext.isAdvantageForColorless = true;
+            }
         }
     }
 
@@ -4633,17 +4631,6 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[PassiveB.SealRes4] = (targetUnit, enemyUnit) => {
             enemyUnit.resSpur -= 4;
         }
-        this._applySkillEffectForUnitFuncDict[PassiveA.Duality] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.RiteOfSouls] = (targetUnit, enemyUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.addAllSpur(5);
-                enemyUnit.battleContext.followupAttackPriorityDecrement--;
-            }
-        }
         {
             let func = (targetUnit, enemyUnit) => {
                 if (enemyUnit.battleContext.restHpPercentage >= 75) {
@@ -4814,14 +4801,6 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(5);
                 targetUnit.battleContext.increaseCooldownCountForAttack = true;
                 targetUnit.battleContext.reducesCooldownCount = true;
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.FaithfulBreath] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 40) {
-                targetUnit.addSpurs(6, 6, 0, 0);
-                if (targetUnit.battleContext.initiatesCombat) {
-                    targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                }
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.WarriorsSword] = (targetUnit) => {
@@ -6282,12 +6261,6 @@ class DamageCalculatorWrapper {
                 }
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.HonorableBlade] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 50) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.DuskDragonstone] = (targetUnit, enemyUnit) => {
             if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                 targetUnit.addAllSpur(4);
@@ -7205,13 +7178,6 @@ class DamageCalculatorWrapper {
             if (self.__isThereAnyPartnerPairsIn3Spaces(targetUnit)) {
                 targetUnit.addAllSpur(6);
                 targetUnit.battleContext.healedHpByAttack += 5;
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.Thjalfi] = (targetUnit, enemyUnit, calcPotentialDamage) => {
-            if (!calcPotentialDamage && self.__isThereAllyInSpecifiedSpaces(targetUnit, 3)) {
-                targetUnit.battleContext.reductionRatiosOfDamageReductionRatioExceptSpecial.push(0.5);
-                targetUnit.addAllSpur(6);
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         };
         this._applySkillEffectForUnitFuncDict[PassiveC.WithEveryone2] = (targetUnit) => {
@@ -9253,7 +9219,6 @@ class DamageCalculatorWrapper {
                     targetUnit.spdSpur += 6;
                 }
             };
-            this._applySkillEffectForUnitFuncDict[Weapon.FairFuryAxe] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.WeddingBellAxe] = func;
             this._applySkillEffectForUnitFuncDict[Weapon.RoseQuartsBow] = func;
         }
@@ -12841,11 +12806,6 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
-            case Weapon.CarnageAmatsu:
-                if (this.__isSolo(defUnit)) {
-                    return DamageCalculationUtility.getDodgeDamageReductionRatio(atkUnit, defUnit, 4, 40);
-                }
-                break;
             case Weapon.LilacJadeBreath:
                 if (atkUnit.battleContext.initiatesCombat || atkUnit.battleContext.restHpPercentage === 100) {
                     return 0.4;
@@ -13359,12 +13319,6 @@ class DamageCalculatorWrapper {
                     }
                 }
                 break;
-            case Weapon.RiteOfSouls:
-                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyIn2Spaces(atkUnit)) {
-                    let res = DamageCalculatorWrapper.__getRes(atkUnit, defUnit, isPrecombat);
-                    atkUnit.battleContext.additionalDamage += Math.trunc(res * 0.2);
-                }
-                break;
             case Weapon.TaguelChildFang:
                 if (atkUnit.isWeaponSpecialRefined) {
                     if (defUnit.battleContext.restHpPercentage >= 50) {
@@ -13474,11 +13428,6 @@ class DamageCalculatorWrapper {
                     if (defUnit.restHpPercentage >= 75) {
                         atkUnit.battleContext.additionalDamageOfSpecial += 7;
                     }
-                }
-                break;
-            case Weapon.FairFuryAxe:
-                if (atkUnit.battleContext.initiatesCombat || this.__isThereAllyInSpecifiedSpaces(atkUnit, 2)) {
-                    atkUnit.battleContext.additionalDamage += Math.trunc(atkUnit.getEvalAtkInCombat() * 0.15);
                 }
                 break;
             case Weapon.RoseQuartsBow:
@@ -14049,16 +13998,6 @@ class DamageCalculatorWrapper {
                         }
                     }
                     break;
-                case Weapon.FaithfulBreath:
-                    if (atkUnit.battleContext.restHpPercentage >= 40) {
-                        if (atkUnit.battleContext.initiatesCombat) {
-                            if (DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit) === TriangleAdvantage.Advantageous ||
-                                defUnit.hasNegativeStatusEffect()) {
-                                return true;
-                            }
-                        }
-                    }
-                    break;
                 case Weapon.LunaArc:
                     if (atkUnit.isWeaponSpecialRefined) {
                         if (defUnit.isPhysicalAttacker() &&
@@ -14280,11 +14219,9 @@ class DamageCalculatorWrapper {
      * @returns {[number, number]} [inc, dec]: 絶対追撃値、追撃不可値(負の値)
      */
     getFollowupAttackPriorityForBoth(atkUnit, defUnit, damageCalcEnv) {
-        let followupAttackPriorityInc = 0;
-        let followupAttackPriorityDec = 0;
+        let followupAttackPriorityInc = atkUnit.battleContext.followupAttackPriorityIncrement;
+        let followupAttackPriorityDec = atkUnit.battleContext.followupAttackPriorityDecrement;
         {
-            followupAttackPriorityInc += atkUnit.battleContext.followupAttackPriorityIncrement;
-
             if (DamageCalculatorWrapper.canActivateBreakerSkill(atkUnit, defUnit)) {
                 followupAttackPriorityInc++;
             }
@@ -14381,8 +14318,6 @@ class DamageCalculatorWrapper {
         }
 
         {
-            followupAttackPriorityDec -= atkUnit.battleContext.followupAttackPriorityDecrement;
-
             if (defUnit.hasStatusEffect(StatusEffectType.FollowUpAttackMinus)) {
                 followupAttackPriorityDec--;
             }

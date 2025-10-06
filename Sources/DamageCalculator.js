@@ -114,6 +114,9 @@ class CombatResult extends DamageCalcResult {
 
         /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
         this.skillLogger = new GroupLogger();
+
+        /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
+        this.afterCombatSkillLogger = new GroupLogger();
     }
 
     setPreCombatDamage(damage) {
@@ -246,6 +249,10 @@ class CombatResult extends DamageCalcResult {
     getCurrentStrikeResult() {
         return this.strikeResults[this.strikeResults.length - 1];
     }
+
+    hasAttacked(atkUnit) {
+        return this.damageHistory.some(log => log.atkUnit === atkUnit);
+    }
 }
 
 class AttackResult extends DamageCalcResult {
@@ -258,6 +265,9 @@ class AttackResult extends DamageCalcResult {
          * 奥義ダメージ
          */
         this.specialAddDamage = 0;
+
+        /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
+        this.skillLogger = new GroupLogger();
     }
 
     /**
@@ -611,6 +621,13 @@ class DamageCalcEnv {
         return this.combatResult.skillLogger;
     }
 
+    /**
+     * @returns {GroupLogger<NodeEnv.SkillLogContent>}
+     */
+    getAfterCombatLogger() {
+        return this.combatResult.afterCombatSkillLogger;
+    }
+
     withBeforeCombatPhaseGroup(name, fn) {
         this.getBeforeCombatLogger().withGroup(
             LoggerBase.LogLevel.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
@@ -627,8 +644,24 @@ class DamageCalcEnv {
         );
     }
 
+    withAttackPhaseGroup(name, fn) {
+        this.getCurrentAttackLogger().withGroup(
+            LoggerBase.LogLevel.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
+                return fn();
+            }
+        );
+    }
+
     withStrikePhaseGroup(name, fn) {
         this.getCurrentStrikeLogger().withGroup(
+            LoggerBase.LogLevel.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
+                return fn();
+            }
+        );
+    }
+
+    withAfterCombatPhaseGroup(name, fn) {
+        this.getAfterCombatLogger().withGroup(
             LoggerBase.LogLevel.NOTICE, new NodeEnv.SkillLogContent('', '', name), () => {
                 return fn();
             }
@@ -1278,7 +1311,7 @@ class DamageCalculator {
         this.calcSkillEffectThatNeutralizesNonSpecialDamageReductionInAttack(atkUnit, attackResult, context);
 
         // 特効、色相性から最終的な攻撃力を計算する
-        this.calcFinalAtkInAttack(atkUnit, defUnit, attackResult);
+        this.calcFinalAtkInAttack(atkUnit, defUnit, attackResult, context.damageCalcEnv);
 
         // 防御床、奥義効果から最終的な防御を計算する
         this.calcFinalMitInAttack(atkUnit, defUnit, attackResult);
@@ -1427,7 +1460,13 @@ class DamageCalculator {
         attackResult.setFinalMit(finalMit, specialFinalMit);
     }
 
-    calcFinalAtkInAttack(atkUnit, defUnit, attackResult) {
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {AttackResult} attackResult
+     * @param {DamageCalcEnv} damageCalcEnv
+     */
+    calcFinalAtkInAttack(atkUnit, defUnit, attackResult, damageCalcEnv) {
         let finalAtk = attackResult.atk;
         let specialFinalAtk = attackResult.specialAtk;
         if (atkUnit.battleContext.isEffectiveToOpponent) {
@@ -1436,12 +1475,14 @@ class DamageCalculator {
             specialFinalAtk = floorNumberWithFloatError(specialFinalAtk * 1.5);
         }
 
-        let attackAdvRatio = this.#getAttackAdvRatio(atkUnit, defUnit);
-        attackResult.setAdvantage(
-            attackAdvRatio,
-            truncNumberWithFloatError(finalAtk * attackAdvRatio),
-            truncNumberWithFloatError(specialFinalAtk * attackAdvRatio)
-        );
+        damageCalcEnv.withCombatPhaseGroup('3すくみダメージ判定時', () => {
+            let attackAdvRatio = this.#getAttackAdvRatio(atkUnit, defUnit, damageCalcEnv);
+            attackResult.setAdvantage(
+                attackAdvRatio,
+                truncNumberWithFloatError(finalAtk * attackAdvRatio),
+                truncNumberWithFloatError(specialFinalAtk * attackAdvRatio)
+            );
+        });
         finalAtk += attackResult.atkAdvantageAddition;
         specialFinalAtk += attackResult.specialAtkAdvantageAddition;
         attackResult.setFinalAtk(finalAtk, specialFinalAtk);
@@ -1569,9 +1610,12 @@ class DamageCalculator {
     /**
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
+     * @param {DamageCalcEnv} damageCalcEnv
      */
-    #getAttackAdvRatio(atkUnit, defUnit) {
-        let attackTriangleAdv = DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit);
+    #getAttackAdvRatio(atkUnit, defUnit, damageCalcEnv) {
+        let attackTriangleAdv =
+            DamageCalculationUtility.calcAttackerTriangleAdvantage(atkUnit, defUnit,
+                damageCalcEnv, damageCalcEnv.getCurrentAttackLogger());
         let triangleAdeptRate = 0;
         let triangleMult = 0;
         switch (attackTriangleAdv) {
@@ -1596,6 +1640,18 @@ class DamageCalculator {
             atkAdditionalRatio = 0;
         }
         if (defUnit.neutralizesSelfTriangleAdvantage()) {
+            defAdditionalRatio = 0;
+        }
+        if (triangleMult === 1 && atkUnit.battleContext.neutralizesBoostingTriangleAdvantage) {
+            atkAdditionalRatio = 0;
+        }
+        if (triangleMult === -1 && atkUnit.battleContext.neutralizesReducingTriangleDisadvantage) {
+            atkAdditionalRatio = 0;
+        }
+        if (triangleMult === 1 && defUnit.battleContext.neutralizesBoostingTriangleAdvantage) {
+            defAdditionalRatio = 0;
+        }
+        if (triangleMult === -1 && defUnit.battleContext.neutralizesReducingTriangleDisadvantage) {
             defAdditionalRatio = 0;
         }
         let additionalRatio = Math.max(atkAdditionalRatio, defAdditionalRatio);
@@ -1701,7 +1757,7 @@ class DamageCalculator {
 
     getUnitColorLog(unit) {
         let result = colorTypeToString(unit.color);
-        if (unit.isAdvantageForColorless()) {
+        if (unit.battleContext.isAdvantageForColorless) {
             return result + "(無属性有利)";
         }
         return result;

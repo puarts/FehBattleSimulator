@@ -85,6 +85,8 @@ class NodeEnv {
     canActivateAttackerSpecial = false;
     /** @type {DamageCalcContext} */
     damageCalcContext = null;
+    /** @type {DamageCalcEnv} */
+    damageCalcEnv = null;
     /** @type {BattleSimulatorBase} */
     battleSimulatorBase = null;
     /** @type {PostCombatSkillHander} */
@@ -154,10 +156,12 @@ class NodeEnv {
         return copyInstance;
     }
 
-    setUnitsDuringCombat(unit, foe) {
-        // TODO: 自動的にターゲットに設定するか検討する
+    setUnitsDuringCombat(unit, foe, setsTarget = false) {
         this.#unitDuringCombat = unit;
         this.#foeDuringCombat = foe;
+        if (setsTarget) {
+            this.setTarget(unit).setTargetFoe(foe);
+        }
         return this;
     }
 
@@ -199,6 +203,11 @@ class NodeEnv {
     setDamageCalcContext(context) {
         this.damageCalcContext = context;
         return this;
+    }
+
+    setDamageCalcEnv(env) {
+        this.damageCalcEnv = env;
+        return this.setDamageType(this.damageCalcEnv.damageType);
     }
 
     /**
@@ -303,9 +312,8 @@ class NodeEnv {
     }
 
     setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit) {
-        this.setSkillOwner(targetUnit);
-        this.setTarget(targetUnit);
-        this.setUnitsDuringCombat(targetUnit, enemyUnit);
+        this.setSkillOwner(targetUnit).setTarget(targetUnit).setTargetFoe(enemyUnit)
+            .setUnitsDuringCombat(targetUnit, enemyUnit);
         return this;
     }
 
@@ -570,7 +578,7 @@ class NodeEnv {
     }
 
     shouldLogToConsole() {
-        if (this.damageCalculatorWrapper || this.damageCalculator) {
+        if (this.damageCalculatorWrapper || this.damageCalculator || this.damageCalcEnv) {
             return this.isActualDamage();
         }
         return true;
@@ -768,11 +776,9 @@ class ForFoesEnv extends NodeEnv {
                 targetUnit, enemyUnit, enemyAllyUnit,
                 calcPotentialDamage) {
         super();
-        this.setDamageCalculatorWrapper(damageCalculator);
-
-        this.setSkillOwner(enemyAllyUnit);
-        this.setTarget(targetUnit);
-        this.setUnitsDuringCombat(enemyUnit, targetUnit);
+        this.setDamageCalculatorWrapper(damageCalculator)
+            .setSkillOwner(enemyAllyUnit).setTarget(targetUnit).setTargetFoe(enemyUnit)
+            .setUnitsDuringCombat(enemyUnit, targetUnit);
         this.calcPotentialDamage = calcPotentialDamage;
     }
 }
@@ -787,10 +793,9 @@ class ForAlliesEnv extends NodeEnv {
      */
     constructor(damageCalculator, targetUnit, enemyUnit, allyUnit) {
         super();
-        this.setDamageCalculatorWrapper(damageCalculator);
-        this.setSkillOwner(allyUnit);
-        this.setTarget(targetUnit);
-        this.setUnitsDuringCombat(targetUnit, enemyUnit);
+        this.setDamageCalculatorWrapper(damageCalculator)
+            .setSkillOwner(allyUnit).setTarget(targetUnit).setTargetFoe(enemyUnit)
+            .setUnitsDuringCombat(targetUnit, enemyUnit);
     }
 }
 

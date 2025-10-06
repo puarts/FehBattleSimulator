@@ -363,6 +363,11 @@ class BattleContext {
         // 無属性に対して有利
         this.isAdvantageForColorless = false;
 
+        // 自分の相性有利だと、さらに有利になる効果を無効
+        this.neutralizesBoostingTriangleAdvantage = false;
+        // 自分の相性不利だと、さらに不利になる効果を無効
+        this.neutralizesReducingTriangleDisadvantage = false;
+
         // ダメージ加算する「攻撃-守備」の割合
         this.rateOfAtkMinusDefForAdditionalDamage = 0;
 
@@ -539,6 +544,10 @@ class BattleContext {
         this.isAfterCombatMovementDisabled = false;
 
         this.activatedSkillsPerTurn = new Set();
+
+        // 戦闘中に満たした条件
+        /** @type {Set<string>} */
+        this.satisfiedConditionsDuringCombat = new Set();
 
         //
         // フック関数

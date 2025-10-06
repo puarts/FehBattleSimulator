@@ -95,6 +95,21 @@ const ForUnitMixin = {
     }
 };
 
+class DebugNodeNode extends SkillEffectNode {
+    constructor(node) {
+        super();
+        this._node = node;
+    }
+
+    evaluate(env) {
+        const result = this._node.evaluate(env);
+        env.info(`Debug node: ${result}`);
+        return result;
+    }
+}
+
+const DEBUG_NODE_NODE = node => new DebugNodeNode(node);
+
 class DebugEnvNode extends SkillEffectNode {
     evaluate(env) {
         console.log('env: %o', env);
@@ -140,13 +155,21 @@ class TargetNode extends UnitNode {
 
 const TARGET_NODE = new TargetNode();
 
-class TargetsFoeNode extends UnitNode {
+class TargetsFoeDuringCombatNode extends UnitNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
     evaluate(env) {
         return env.getFoeDuringCombatOf(this.getUnit(env));
+    }
+}
+
+const TARGETS_FOE_DURING_COMBAT_NODE = new TargetsFoeDuringCombatNode();
+
+class TargetsFoeNode extends UnitNode {
+    evaluate(env) {
+        return env.targetFoe;
     }
 }
 
@@ -214,6 +237,7 @@ const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
  */
 const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
 
+const FOR_TARGETS_FOE_DURING_COMBAT_NODE = node => FOR_TARGET_NODE(TARGETS_FOE_DURING_COMBAT_NODE, node);
 const FOR_TARGETS_FOE_NODE = node => FOR_TARGET_NODE(TARGETS_FOE_NODE, node);
 
 /**
@@ -267,7 +291,7 @@ class UnitsNode extends CollectionNode {
 const IF_NUMBER_OF_UNITS_GTE_N_ITS_TREATED_AS_THOUGH_THERE_IS_NO_UNIT =
     (units, n) => IF_ELSE_NODE(GTE_NODE(COUNT_UNITS_NODE(units), n), UnitsNode.EMPTY_UNITS_NODE, units);
 
-const TARGET_AND_TARGET_FOE_NODE = UnitsNode.makeFromUnits(TARGET_NODE, TARGETS_FOE_NODE);
+const TARGET_AND_TARGET_FOE_NODE = UnitsNode.makeFromUnits(TARGET_NODE, TARGETS_FOE_DURING_COMBAT_NODE);
 
 class IncludesUnitNode extends BoolNode {
     /**
@@ -479,6 +503,11 @@ class TargetsClosestAlliesWithinNSpacesNode extends UnitsNode {
         );
     }
 }
+
+const TARGETS_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE = (n, includesTargetNode, predNode) =>
+    new TargetsClosestAlliesWithinNSpacesNode(n, includesTargetNode, predNode);
+const TARGETS_CLOSEST_ALLIES_NODE = (predNode = TRUE_NODE) =>
+    TARGETS_CLOSEST_ALLIES_WITHIN_N_SPACES_NODE(99, FALSE_NODE, predNode);
 
 class FoesClosestAlliesWithinNSpacesNode extends TargetsClosestAlliesWithinNSpacesNode {
     static {
@@ -1450,6 +1479,7 @@ class NumOfTargetsAlliesWithinNSpacesNode extends NumberNode {
 const NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(1);
 const NUM_OF_TARGETS_ALLIES_WITHIN_2_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(2);
 const NUM_OF_TARGETS_ALLIES_WITHIN_3_SPACES_NODE = new NumOfTargetsAlliesWithinNSpacesNode(3);
+const NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET = NUM_OF_TARGETS_ALLIES_WITHIN_1_SPACES_NODE;
 const NUM_OF_TARGETS_ALLIES_NODE = pred => new NumOfTargetsAlliesWithinNSpacesNode(99, pred);
 
 class NumOfFoesAlliesWithinNSpacesNode extends NumOfTargetsAlliesWithinNSpacesNode {
@@ -2047,7 +2077,7 @@ class CanTargetsAttackTriggerTargetsSpecialNode extends BoolNode {
 
 const CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE = new CanTargetsAttackTriggerTargetsSpecialNode();
 const CAN_TARGETS_FOES_ATTACK_TRIGGER_TARGETS_FOES_SPECIAL_NODE =
-    FOR_TARGETS_FOE_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE);
+    FOR_TARGETS_FOE_DURING_COMBAT_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE);
 
 /**
  * if unit has an area-of-effect Special equipped,
@@ -2300,6 +2330,7 @@ const GRANTS_ALL_STATS_PLUS_N_TO_UNIT_DURING_COMBAT_NODE = n => new GrantsAllSta
 
 const GRANTS_ALL_STATS_PLUS_4_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(5);
+const GRANTS_ALL_STATS_PLUS_6_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(6);
 const GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(8);
 const GRANTS_ALL_STATS_PLUS_9_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(9);
 
@@ -2593,7 +2624,7 @@ const INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE =
 const INFLICTS_ATK_SPD_DEF_RES_ON_TARGET_DURING_COMBAT_NODE = INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE;
 const INFLICTS_STATS_MINUS_ON_TARGETS_FOE_DURING_COMBAT_NODE =
     (atkOrStats, spd, def, res) =>
-        FOR_TARGETS_FOE_NODE(INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE(atkOrStats, spd, def, res));
+        FOR_TARGETS_FOE_DURING_COMBAT_NODE(INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE(atkOrStats, spd, def, res));
 
 class InflictsStatsMinusOnUnitDuringCombatNode extends InflictsStatsMinusOnTargetDuringCombatNode {
     static {
@@ -2901,13 +2932,13 @@ const FOES_SPD_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(StatusI
 const FOES_DEF_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(StatusIndex.DEF);
 const FOES_RES_AT_START_OF_COMBAT_NODE = new FoesStatAtStartOfCombatNode(StatusIndex.RES);
 
-const UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new UnitsEvalStatAtStartOfCombatNode(StatusIndex.ATK);
+const UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new UnitsEvalStatAtStartOfCombatNode(index);
 const UNITS_EVAL_ATK_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.ATK);
 const UNITS_EVAL_SPD_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.SPD);
 const UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.DEF);
 const UNITS_EVAL_RES_AT_START_OF_COMBAT_NODE = UNITS_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.RES);
 
-const FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new FoesEvalStatAtStartOfCombatNode(StatusIndex.ATK);
+const FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE = index => new FoesEvalStatAtStartOfCombatNode(index);
 const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.ATK);
 const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.SPD);
 const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.DEF);
@@ -2992,12 +3023,9 @@ class UnitsEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
     }
 }
 
-// noinspection JSUnusedGlobalSymbols
 const UNITS_EVAL_ATK_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(StatusIndex.ATK);
 const UNITS_EVAL_SPD_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(StatusIndex.SPD);
-// noinspection JSUnusedGlobalSymbols
 const UNITS_EVAL_DEF_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(StatusIndex.DEF);
-// noinspection JSUnusedGlobalSymbols
 const UNITS_EVAL_RES_DURING_COMBAT_NODE = new UnitsEvalStatsDuringCombatNode(StatusIndex.RES);
 
 class FoesEvalStatsDuringCombatNode extends TargetsStatsDuringCombat {
@@ -3057,10 +3085,10 @@ const TARGETS_EVAL_SPD_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIn
 const TARGETS_EVAL_DEF_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.DEF);
 const TARGETS_EVAL_RES_NODE = GET_STAT_AT_NODE(TARGETS_EVAL_STATS_NODE, StatusIndex.RES);
 
-const TARGETS_EVAL_ATK_DIFF_NODE = GET_ATK_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
-const TARGETS_EVAL_SPD_DIFF_NODE = GET_SPD_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
-const TARGETS_EVAL_DEF_DIFF_NODE = GET_DEF_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
-const TARGETS_EVAL_RES_DIFF_NODE = GET_RES_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_ATK_DIFF_NODE = GET_ATK_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_DURING_COMBAT_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_SPD_DIFF_NODE = GET_SPD_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_DURING_COMBAT_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_DEF_DIFF_NODE = GET_DEF_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_DURING_COMBAT_NODE(TARGETS_EVAL_STATS_NODE));
+const TARGETS_EVAL_RES_DIFF_NODE = GET_RES_DIFF_NODE(TARGETS_EVAL_STATS_NODE, FOR_TARGETS_FOE_DURING_COMBAT_NODE(TARGETS_EVAL_STATS_NODE));
 
 
 /**
@@ -5411,7 +5439,7 @@ class InflictsStatsMinusOnTargetOnMapNode extends ApplyingNumberToEachStatNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let amounts = this.evaluateChildren(env).map(v => -v);
-        env.debug(`${unit.nameWithGroup}にデバフ予約: [${amounts}]`);
+        env.info(`${unit.nameWithGroup}にデバフ予約: [${amounts}]`);
         unit.reserveToApplyDebuffs(...amounts);
     }
 }
@@ -5597,7 +5625,7 @@ class DealsDamageToTargetAtStartOfTurnNode extends FromPositiveNumberNode {
         let unit = env.target;
         let result = this.evaluateChildren(env);
         unit.reservedDamage += result;
-        env.debug(`${unit.nameWithGroup}は${result}ダメージを予約`);
+        env.info(`${unit.nameWithGroup}は${result}ダメージを予約`);
     }
 }
 
@@ -6933,6 +6961,48 @@ class HasTargetWeaponTriangleAdvantageNode extends BoolNode {
 
 const HAS_TARGET_WEAPON_TRIANGLE_ADVANTAGE_NODE = new HasTargetWeaponTriangleAdvantageNode();
 
+class TargetsTriangleAdvantageNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.info(`${unit.nameWithGroup}は3すくみ有利`);
+        return TriangleAdvantage.Advantageous;
+    }
+}
+
+const TARGETS_TRIANGLE_ADVANTAGE_NODE = new TargetsTriangleAdvantageNode();
+
+class TargetsNoTriangleAdvantageNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.info(`${unit.nameWithGroup}は3すくみ有利・不利なし`);
+        return TriangleAdvantage.None;
+    }
+}
+
+const TARGETS_NO_TRIANGLE_ADVANTAGE_NODE = new TargetsNoTriangleAdvantageNode();
+
+class TargetsTriangleDisadvantageNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.info(`${unit.nameWithGroup}は3すくみ不利`);
+        return TriangleAdvantage.Disadvantageous;
+    }
+}
+
+const TARGETS_TRIANGLE_DISADVANTAGE_NODE = new TargetsTriangleDisadvantageNode();
+
 class HasTargetsAttackCanceledNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -7108,3 +7178,26 @@ class RemoveTargetsStatusEffectsNode extends SkillEffectNode {
 }
 
 const REMOVE_TARGETS_STATUS_EFFECTS_NODE = (...statusEffects) => new RemoveTargetsStatusEffectsNode(...statusEffects);
+
+/**
+ * 戦闘後に戦闘中に攻撃したか調べる
+ */
+class HasTargetAttackedDuringCombatNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let damageCalcEnv = env.damageCalcEnv;
+        if (!damageCalcEnv) {
+            env.error('No damageCalcEnv');
+            return false;
+        }
+        let result = damageCalcEnv.combatResult.hasAttacked(unit);
+        env.debug(`${unit.nameWithGroup}は戦闘中に攻撃したか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_ATTACKED_DURING_COMBAT_NODE = new HasTargetAttackedDuringCombatNode();

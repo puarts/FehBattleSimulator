@@ -88,9 +88,10 @@ class PostCombatSkillHander {
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
-     * @param  {CombatResult} result
+     * @param  {DamageCalcEnv} damageCalcEnv
      */
-    applyPostCombatProcess(atkUnit, defUnit, result) {
+    applyPostCombatProcess(atkUnit, defUnit, damageCalcEnv) {
+        let result = damageCalcEnv.combatResult;
         // 戦闘後のダメージ、回復の合計を反映させないといけないので予約HPとして計算
         for (let unit of this.enumerateAllUnitsOnMap()) {
             unit.initReservedHp();
@@ -109,7 +110,9 @@ class PostCombatSkillHander {
                 this.__applyOverlappableSkillEffectFromAttackerAfterCombat(atkUnit, defUnit);
                 this.__applyAttackSkillEffectAfterCombat(atkUnit, defUnit);
             }
-            this.__applySkillEffectAfterCombatForUnit(atkUnit, defUnit);
+            damageCalcEnv.withAfterCombatPhaseGroup('戦闘後(攻撃側)', () => {
+                this.__applySkillEffectAfterCombatForUnit(atkUnit, defUnit, damageCalcEnv);
+            });
             this.__applySkillEffectAfterCombatForUnitFromAllies(atkUnit, defUnit);
         }
 
@@ -119,7 +122,9 @@ class PostCombatSkillHander {
                 this.__applyAttackSkillEffectForDefenseAfterCombat(defUnit, atkUnit);
                 this.__applyAttackSkillEffectAfterCombat(defUnit, atkUnit);
             }
-            this.__applySkillEffectAfterCombatForUnit(defUnit, atkUnit);
+            damageCalcEnv.withAfterCombatPhaseGroup('戦闘後(守備側)', () => {
+                this.__applySkillEffectAfterCombatForUnit(defUnit, atkUnit, damageCalcEnv);
+            });
             this.__applySkillEffectAfterCombatForUnitFromAllies(defUnit, atkUnit);
         }
 
@@ -361,8 +366,9 @@ class PostCombatSkillHander {
     /**
      * @param  {Unit} targetUnit
      * @param  {Unit} enemyUnit
+     * @param  {DamageCalcEnv} damageCalcEnv
      */
-    __applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit) {
+    __applySkillEffectAfterCombatForUnit(targetUnit, enemyUnit, damageCalcEnv) {
         for (let func of targetUnit.battleContext.applySkillEffectAfterCombatForUnitFuncs) {
             func(targetUnit, enemyUnit);
         }
@@ -384,7 +390,7 @@ class PostCombatSkillHander {
             }
         }
         let env = new AfterCombatEnv(this, targetUnit, enemyUnit, this.map);
-        env.setName('戦闘後').setLogLevel(getSkillLogLevel());
+        env.setName('戦闘後').setLogLevel(getSkillLogLevel()).setDamageCalcEnv(damageCalcEnv);
         AFTER_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillEffectAfterCombatForUnitFuncMap)?.call(this, targetUnit, enemyUnit);
@@ -1203,13 +1209,6 @@ class PostCombatSkillHander {
                     }
                 }
             }
-                break;
-            case Weapon.Thjalfi:
-                if (this.__isThereAllyInSpecifiedSpaces(attackUnit, 3)) {
-                    for (let unit of this.__findNearestAllies(attackUnit)) {
-                        unit.reserveTakeDamage(20);
-                    }
-                }
                 break;
             case Weapon.LightBreath:
             case Weapon.LightBreathPlus:

@@ -257,6 +257,7 @@ class IsUnitsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
     }
 }
 
+const IS_UNTIS_HP_GTE_N_PERCENT_AT_START_OF_COMBAT_NODE = n => new IsUnitsHpGteNPercentAtStartOfCombatNode(n);
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpGteNPercentAtStartOfCombatNode(25);
 const IS_UNITS_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpGteNPercentAtStartOfCombatNode(50);
 
@@ -1487,7 +1488,7 @@ const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE =
     new InflictsSpecialCooldownChargeMinus1OnTargetsFoeNode();
 
 const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGET_NODE =
-    FOR_TARGETS_FOE_NODE(INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE);
+    FOR_TARGETS_FOE_DURING_COMBAT_NODE(INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE);
 
 const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE =
     INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE;
@@ -2789,3 +2790,85 @@ class ReducesDamageFromTargetToZeroNode extends ReducesDamageFromTargetFoeToZero
 }
 
 const REDUCES_DAMAGE_FROM_TARGET_TO_ZERO_NODE = new ReducesDamageFromTargetToZeroNode();
+
+class TargetSatisfiedConditionDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {string} key
+     */
+    constructor(key) {
+        super();
+        if (typeof key !== 'string' || key.trim() === '') {
+            throw new TypeError('TargetSatisfiedConditionDuringCombatNode: key must be a non-empty string');
+        }
+        this._key = key;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.satisfiedConditionsDuringCombat.add(this._key);
+        env.debug(`${unit.nameWithGroup}は戦闘中に条件「${this._key}」を満たした`);
+    }
+}
+
+const TARGET_SATISFIED_CONDITION_DURING_COMBAT_NODE = key => new TargetSatisfiedConditionDuringCombatNode(key);
+
+class HasTargetSatisfiedConditionDuringCombatNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {string} key
+     */
+    constructor(key) {
+        super();
+        if (typeof key !== 'string' || key.trim() === '') {
+            throw new TypeError('HasTargetSatisfiedConditionDuringCombatNode: key must be a non-empty string');
+        }
+        this._key = key;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.satisfiedConditionsDuringCombat.has(this._key);
+        env.debug(`${unit.nameWithGroup}は戦闘中に条件「${this._key}」を満たしたか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_SATISFIED_CONDITION_DURING_COMBAT_NODE = key => new HasTargetSatisfiedConditionDuringCombatNode(key);
+
+class NeutralizesTargetsEffectsThatBoostValuesAlongWithWeaponTriangleAdvantageNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.neutralizesBoostingTriangleAdvantage = true;
+        env.info(`${unit.nameWithGroup}は3すくみが有利だと、さらに有利になる効果を無効`);
+    }
+}
+
+const NEUTRALIZES_TARGETS_EFFECTS_THAT_BOOST_VALUES_ALONG_WITH_WEAPON_TRIANGLE_ADVANTAGE_NODE =
+    new NeutralizesTargetsEffectsThatBoostValuesAlongWithWeaponTriangleAdvantageNode();
+
+class NeutralizesTargetsEffectsThatReduceValuesAlongWithWeaponTriangleDisadvantageNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.neutralizesReducingTriangleDisadvantage = true;
+        env.info(`${unit.nameWithGroup}は3すくみが不利だと、さらに不利になる効果を無効`);
+    }
+}
+
+const NEUTRALIZES_TARGETS_EFFECTS_THAT_REDUCE_VALUES_ALONG_WITH_WEAPON_TRIANGLE_DISADVANTAGE_NODE =
+    new NeutralizesTargetsEffectsThatReduceValuesAlongWithWeaponTriangleDisadvantageNode();
+

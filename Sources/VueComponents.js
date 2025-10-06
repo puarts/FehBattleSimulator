@@ -2014,7 +2014,15 @@ function initVueComponents() {
             },
             boolToStr(bool) {
                 return bool ? '◯' : ' ';
-            }
+            },
+            getRootChildren(result) {
+                const logger = result.skillLogger;
+                if (this.groupFilterText) {
+                    const pred = node => node.isGroup && node.matches(this.groupFilterText);
+                    return logger.filteredRoot(pred)?.children ?? [];
+                }
+                return logger.rootLog.children;
+            },
         },
         template: `
             <div class="pop damage-calc-result theme-dark">
@@ -2085,6 +2093,7 @@ function initVueComponents() {
                   />
                 </div>
 
+                <!-- 追撃評価 -->
                 <div v-if="detailLevel >= DetailLevel.NORMAL"
                      class="follow-up-result"
                 >
@@ -2178,6 +2187,17 @@ function initVueComponents() {
 
                 <div class="attacks-result" v-if="attackResults">
                   <div v-for="(attackResult, ai) in attackResults" :key="ai">
+                    <div v-if="showsSkillLogs">
+                      <log-node 
+                        v-for="(n, i) in getRootChildren(attackResult)" 
+                        :key="i"
+                        :node="n"
+                        :default-open="true"
+                        :child-default-open="true"
+                        :detail-level="detailLevel"
+                        :log-filter-text="logFilterText"
+                      />
+                    </div>
                     <attack-calc-result 
                       :combat-result="combatResult"
                       :attack-result="attackResult"

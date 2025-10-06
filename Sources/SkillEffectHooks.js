@@ -496,3 +496,8 @@ const HAS_PATHFINDER_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<NumberNode, NodeEnv>}
  */
 const GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<NumberNode, NodeEnv>}
+ */
+const CALC_TRIANGLE_ADVANTAGE_HOOKS = new SkillEffectHooks();
