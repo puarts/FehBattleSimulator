@@ -1,5 +1,275 @@
 // スキル実装
 
+    // Glee of the Land
+    // Mt: 14 Rng: 1
+    //
+    // Grants Spd+3.
+    //
+    // For allies within 3 rows or 3 columns centered on unit,
+    // grants Atk/Spd+5 during combat, and also,
+    // if ally has a Special,
+    // grants Special cooldown count-1 before ally's first attack during combat, and also,
+    // if ally has a Special and
+    // decreasing the Spd difference necessary to make a follow-up attack by 25
+    // would allow ally to trigger a follow-up attack
+    // (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow X%] during combat.
+    //
+    // If unit is transformed or unit's HP ≥ 25% at start of combat,
+    // grants bonus to unit's Atk/Spd/Def/Res during combat =
+    // number of allies within 3 rows or 3 columns centered on unit × 3 + 5 (max 14), and also,
+    // if unit has a Special,
+    // unit deals damage = max Special cooldown count value × 5
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe's attacks by
+    // unit's max Special cooldown count value × 3
+    // (excluding area-of-effect Specials),
+    // grants Special cooldown count-1 to unit before unit's first attack during combat, and also,
+    // if decreasing the Spd difference necessary to make a follow-up attack by 25
+    // would allow unit to trigger a follow-up attack
+    // (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow X%] during combat.
+    // (If ally or unit cannot perform follow-up and attack twice,
+    // X = max Special cooldown count value × 40;
+    // otherwise, X = max Special cooldown count value × 20; max 100).
+    //
+    // If unit is transformed or unit's HP ≥ 25% at start of combat,
+    // restores HP by max Special cooldown count value × 3 after combat.
+    //
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies
+    // or if unit is not adjacent to any ally,
+    // unit transforms (otherwise, unit reverts).
+    //
+    // If unit transforms,
+    // grants Atk+2 to unit,
+    // inflicts Atk/Def-Y on foe during combat
+    // (Y = number of spaces from start position to end position of whoever initiated combat + 3; max 6), and also,
+    // if Y ≥ 5,
+    // reduces damage from foe's first attack by 30% during combat.
+
+    // Moonlit Slumber
+    //
+    // Enables [Canto (Rem. +1; Min 2)].
+    //
+    // If unit can transform,
+    // transformation effects gain
+    // "if unit is within 2 spaces of a beast or dragon ally,
+    // or if number of adjacent allies other than beast or dragon allies ≤ 2"
+    // as a trigger condition (in addition to existing conditions).
+    //
+    // If defending in Aether Raids,
+    // at the start of enemy turn 1,
+    // if conditions for transforming are met,
+    // unit transforms.
+    //
+    // At start of turn,
+    // grants
+    // "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% during combat
+    // (excluding area-of-effect Specials)"
+    // to unit and allies within 2 spaces of unit for 1 turn, and
+    // inflicts [Spd Shackle] and [Def Shackle]
+    // on closest foes and any foe within 2 spaces of those foes
+    // through their next actions.
+    //
+    // Inflicts Atk/Spd/Def-5 on foe,
+    // neutralizes effects that guarantee foe's follow-up attacks and
+    // effects that prevent unit's follow-up attacks,
+    // deals damage = 20% of unit's Spd
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe's attacks by 20% of unit's Spd
+    // (excluding area-of-effect Specials), and
+    // unit's next attack deals damage =
+    // total damage reduced from foe's first attack during combat
+    // (by any source, including other skills; resets at end of combat).
+
+    // A/S Bellow
+    //
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // grants Atk/Spd+6 and
+    // "grants Special cooldown charge +1 per attack during combat
+    // (only highest value applied; does not stack)"
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // Grants bonus to unit's Atk/Spd =
+    // 2 + number of allies on the map with the
+    // "Special cooldown charge +1 per attack during combat
+    // (only highest value applied; does not stack)" status effect active
+    // (excluding unit; max 5), and
+    //
+    // deals damage = number of spaces from start position to end position
+    // of whoever initiated combat × 2 during combat
+    // (max 8; excluding area-of-effect Specials).
+
+    // Spooky Lantern
+    // Mt: 14 Rng: 2
+    //
+    // Enables [Canto (Rem.; Min 1)].
+    // Grants Spd+3.
+    //
+    // At start of turn,
+    // grants [Canto (1)] to allies within 2 spaces of unit for 1 turn.
+    //
+    // For allies within 3 rows or 3 columns centered on unit,
+    // grants Atk/Spd+5,
+    // neutralizes penalties on ally,
+    // and ally deals +10 damage (excluding area-of-effect Specials) during combat,
+    // and restores 7 HP to ally after combat.
+    //
+    // If there is an ally within 3 rows or 3 columns centered on unit,
+    // grants bonus to unit's Atk/Spd/Def/Res =
+    // number of allies within 3 rows or 3 columns centered on unit × 3 + 5 (max 14),
+    // unit deals +10 damage (excluding area-of-effect Specials),
+    // reduces damage from foe's attacks by 10
+    // (excluding area-of-effect Specials), and
+    // neutralizes effects that guarantee foe's follow-up attacks and
+    // effects that prevent unit's follow-up attacks during combat.
+
+    // Pleasant Night
+    // Rng: 1
+    //
+    // Grants another action to target ally,
+    // and if Canto has already been triggered by target ally,
+    // re-enables Canto.
+    //
+    // Grants Atk/Spd/Def/Res+5, [Reflex], and [Empathy]
+    // to target ally and allies in cardinal directions of unit and target ally
+    // (excluding unit) for 1 turn.
+    // (Cannot target an ally with Sing or Dance;
+    // this skill treated as Sing or Dance.)
+
+    // B D/R Cantrip 3
+    //
+    // If Sing or Dance is used,
+    // inflicts Def/Res-7 and [Exposure]
+    // on foes in cardinal directions of unit and target
+    // through their next actions.
+
+    // Shadow Shove 4
+    //
+    // When Canto triggers,
+    // enables unit to use [Shove] on ally
+    // (this effect is not treated as an Assist skill;
+    // if similar effects are active, this effect does not trigger).
+    //
+    // If unit is within 3 spaces of an ally,
+    // grants Atk/Spd/Def/Res+3 to unit during combat and
+    // restores 7 HP to unit after combat.
+    //
+    // (Shove)
+    // Range = 1.
+    // Pushes target ally 1 space away.
+
+    // Preying Fang
+    // Mt: 14 Rng: 1
+    //
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // If unit's HP ≥ 25% at start of player phase or enemy phase,
+    // grants Atk/Def+6, [Imbue], and
+    // "Special cooldown charge +1 per attack during combat
+    // (only highest value applied; does not stack)"
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // If unit is transformed or unit's HP ≥ 25% at start of combat,
+    // grants bonus to unit's Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns centered on unit × 3 + 5
+    // (max 14; if unit triggers Savior, value is treated as 14),
+    // unit deals damage = 20% of unit's Def
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe's attacks by 20% of unit's Def
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe's Specials by an additional 20% of unit's Def
+    // (excluding area-of-effect Specials), and
+    // grants Special cooldown count-2 to unit
+    // before foe's first attack during combat.
+    //
+    // At start of turn,
+    // if unit is adjacent to only beast or dragon allies
+    // or if unit is not adjacent to any ally,
+    // unit transforms (otherwise, unit reverts).
+    //
+    // If unit transforms,
+    // grants Atk+2, and
+    // unit can counterattack regardless of foe's range.
+
+    // Nightmare Staff
+    // Rng: 2
+    //
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // At start of turn,
+    // if unit's HP ≥ 25%,
+    // grants [Dodge] to unit, and
+    // inflicts Spd/Res-7, [Sabotage], and
+    // a penalty that neutralizes non-Special
+    // "if foe would reduce unit's HP to 0, unit survives with 1 HP" effects
+    // on closest foes and foes within 2 spaces of those foes
+    // through their next actions.
+    //
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // grants bonus to unit's Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns centered on unit × 3 + 5 (max 14),
+    // grants bonus to unit's Atk = max Special cooldown count value × 4,
+    // reduces damage from foe's attacks by 20% of unit's Spd during combat
+    // (excluding area-of-effect Specials), and also,
+    // if unit's Spd > foe's Spd,
+    // foe cannot trigger Specials during combat
+    // (excluding area-of-effect Specials).
+    //
+    // Comet
+    // CD: 5
+    //
+    // When Special triggers,
+    // boosts damage dealt by 200%.
+    //
+    // At start of turn,
+    // grants Special cooldown count-1 to unit.
+    //
+    // Reduces damage from foe's first attack by 40% during combat
+    // ("first attack" normally means only the first strike;
+    // for effects that grant "unit attacks twice,"
+    // it means the first and second strikes).
+
+    // Haunting Choker
+    //
+    // For foes within 3 rows or 3 columns centered on unit,
+    // inflicts Atk/Spd/Def/Res-5 on foe and
+    // reduces the percentage of foe's non-Special
+    // "reduce damage by X%" skills by 50% during combat
+    // (excluding area-of-effect Specials), and also,
+    // if foe has bonuses,
+    // inflicts a penalty on foe's Atk/Spd/Def/Res and
+    // grants a bonus to foe's combat targets' Atk/Spd/Def/Res during combat =
+    // current bonus on each of that foe's stats
+    // (calculates each stat bonus and penalty independently).
+    //
+    // At start of combat,
+    // if unit's HP ≥ 25%,
+    // inflicts Spd/Res - (X × 4) on foe
+    // (X = number of [Bonus] effects active on foe
+    //
+    // number of [Penalty] effects active on foe;
+    // excluding stat bonuses and stat penalties; max 3),
+    // neutralizes effects that guarantee foe's follow-up attacks and
+    // effects that prevent unit's follow-up attacks,
+    // reduces damage from attacks by X × 20%
+    // (excluding area-of-effect Specials), and
+    // reduces damage from attacks by an additional X × 3 during combat
+    // (excluding area-of-effect Specials), and
+    // restores 7 HP after combat.
+
+    // Duo Skill
+    //
+    // Neutralizes two [Bonus] effects
+    // (excluding stat bonuses), and
+    // inflicts [Frozen] and [Discord]
+    // on foes within 5 rows or 5 columns centered on unit
+    // (neutralizes the first applicable [Bonus] effects
+    // on foe's list of active effects).
+
 {
     let skillId = PassiveA.Duality;
     // Grants Atk/Res+9.
