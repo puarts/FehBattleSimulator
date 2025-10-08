@@ -2450,11 +2450,15 @@ function initVueComponents() {
             <div>
               {{ damageBeforeAdditional }}
               =
+              <span v-if="isSpecialAttack">(</span>
               {{ atk }} <value-label>(攻撃)</value-label>
               <span v-if="strikeResult.isAttackerSpecialActive">
                 + {{ attackResult.specialAddDamage }} <value-label>(奥義ダメージ)</value-label>
               </span>
               - {{ mit }} <value-label>(防御)</value-label>
+              <span v-if="isSpecialAttack">)</span>
+              <span v-if="isSpecialAttack">&times {{ attackResult.specialMultDamage }}</span>
+              <value-label>(奥義ダメージ倍率)</value-label>
             </div>
 
             <div>

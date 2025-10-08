@@ -785,6 +785,10 @@ function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense,
     }
 }
 
+function setRefresh(skillId) {
+    REFRESH_SUPPORT_SKILL_SET.add(skillId);
+}
+
 function setPathfinder(skillId) {
     PATHFINDER_SKILL_SET.add(skillId);
 }
@@ -802,6 +806,10 @@ const SKILL_OWNERS_ALLIES_WITHIN_4_SPACES = SKILL_OWNERS_ALLIES_WITHIN_N_SPACES(
 const SKILL_OWNERS_FOES_HAVE_HIGHEST_VALUE_ON_MAP = func => MAX_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE, func);
 const SKILL_OWNERS_FOES_HAVE_HIGHEST_AND_THOSE_ALLIES_WITHIN_N_SPACES_ON_MAP = (n, func) =>
     new TargetsAndThoseAlliesWithinNSpacesNode(n, SKILL_OWNERS_FOES_HAVE_HIGHEST_VALUE_ON_MAP(func));
+/**
+ * ターゲットは含まない
+ * @type {UnitsNode}
+ */
 const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
 const FILTER_MAP_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
 const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);

@@ -659,11 +659,23 @@ class DamageCalculatorWrapper {
         this.combatPhase = NodeEnv.CombatPhase.APPLYING_STATUS_SKILL_AFTER_STATUS_FIXED;
         damageCalcEnv.applySkill('戦闘中バフ決定後のバフ', atkUnit, defUnit,
             this.__applySpurForUnitAfterCombatStatusFixed, this);
+        // 周囲の味方
+        damageCalcEnv.applySkill('周囲の味方からのバフ(戦闘中バフ決定後)', atkUnit, defUnit,
+            this.__applySpursFromAlliesAfterCombatStatusFixedSkills, this);
+        // 周囲の敵
+        damageCalcEnv.applySkill('周囲の敵からのバフ(戦闘中バフ決定後)', atkUnit, defUnit,
+            this.__applySpursFromEnemyAlliesAfterCombatStatusFixed, this);
 
         // 戦闘中バフが決まった後に評価するスキル効果
         this.combatPhase = NodeEnv.CombatPhase.APPLYING_SKILL_AFTER_STATUS_FIXED;
         damageCalcEnv.applySkill('戦闘中バフ決定後のスキル', atkUnit, defUnit,
             this.__applySkillEffectForUnitAfterCombatStatusFixed, this);
+        // 周囲の味方
+        damageCalcEnv.applySkill('周囲の味方からのスキル効果(戦闘中バフ決定後)', atkUnit, defUnit,
+            this.__applySkillEffectFromAlliesAfterCombatStatusFixedSkills, this);
+        // 周囲の敵
+        damageCalcEnv.applySkill('周囲の敵からのスキル効果(戦闘中バフ決定後)', atkUnit, defUnit,
+            this.__applySkillEffectFromEnemyAlliesAfterCombatStatusFixed, this);
 
         // self.profile.profile("__applySkillEffectFromSkillInfo", () => {
         this.combatPhase = NodeEnv.CombatPhase.APPLYING_ATTACK_COUNT;
@@ -713,6 +725,8 @@ class DamageCalculatorWrapper {
         // 神速自体も追撃可能かどうかを条件とするので追撃判定の後に効果を適用しなければならない
         this.combatPhase = NodeEnv.CombatPhase.APPLYING_POTENT;
         damageCalcEnv.applySkill('神速判定時', atkUnit, defUnit, this.__applyPotentSkillEffect, this);
+        damageCalcEnv.applySkill('周囲の味方からの神速判定時', atkUnit, defUnit,
+            this.__applyPotentSkillEffectFromAllies, this);
         this.combatPhase = NodeEnv.CombatPhase.AFTER_FOLLOWUP_CONFIGURED;
 
         // 追撃可能かどうかが条件として必要なスキル効果の適用
@@ -9952,6 +9966,62 @@ class DamageCalculatorWrapper {
     }
 
     /**
+     * 戦闘中のバフ決定後の戦闘中の味方からのバフ
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {DamageCalcEnv} damageCalcEnv
+     */
+    __applySpursFromAlliesAfterCombatStatusFixedSkills(targetUnit, enemyUnit, damageCalcEnv) {
+        if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+            return;
+        }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
+        if (damageCalcEnv.calcPotentialDamage) {
+            return;
+        }
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+            if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
+                continue
+            }
+            let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
+            env.setName('周囲の味方からのバフ(戦闘中バフ決定後)').setLogLevel(getSkillLogLevel())
+                .setDamageType(damageCalcEnv.damageType)
+                .setCombatPhase(this.combatPhase).setGroupLogger(damageCalcEnv.getCombatLogger());
+            FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_AFTER_STATS_DETERMINED_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
+    }
+
+    /**
+     * 戦闘中のバフ決定後の戦闘中の味方からのスキル効果
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {DamageCalcEnv} damageCalcEnv
+     */
+    __applySkillEffectFromAlliesAfterCombatStatusFixedSkills(targetUnit, enemyUnit, damageCalcEnv) {
+        if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+            return;
+        }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
+        if (damageCalcEnv.calcPotentialDamage) {
+            return;
+        }
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+            if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
+                continue
+            }
+            let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
+            env.setName('周囲の味方からのスキル効果(戦闘中バフ決定後)').setLogLevel(getSkillLogLevel())
+                .setDamageType(damageCalcEnv.damageType)
+                .setCombatPhase(this.combatPhase).setGroupLogger(damageCalcEnv.getCombatLogger());
+            FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_STATS_DETERMINED_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
+    }
+
+    /**
      * 戦闘中のユニットのスキル適用後の戦闘中の味方からのスキル効果
      * @param  {Unit} targetUnit
      * @param  {Unit} enemyUnit
@@ -10209,6 +10279,64 @@ class DamageCalculatorWrapper {
                 }
             }
         }
+    }
+
+    /**
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {DamageCalcEnv} damageCalcEnv
+     * @param {SkillEffectHooks} hooks
+     * @param {NodeEnv} env
+     * @private
+     */
+    __applySkillsFromEnemyAllies(targetUnit, enemyUnit, damageCalcEnv, hooks, env) {
+        let disablesSkillsFromEnemyAlliesInCombat = false;
+        if (enemyUnit) {
+            if (enemyUnit.hasStatusEffect(StatusEffectType.Feud) ||
+                targetUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+                disablesSkillsFromEnemyAlliesInCombat = true;
+            }
+        }
+        // enemyAllyにはenemyUnitも含まれる
+        for (let enemyAlly of this.enumerateUnitsInTheSameGroupOnMap(enemyUnit, true)) {
+            let isEnemyAllyNotEnemy = enemyAlly !== enemyUnit;
+            if (disablesSkillsFromEnemyAlliesInCombat && isEnemyAllyNotEnemy) {
+                continue;
+            }
+            // 特定の色か確認
+            if (enemyUnit && this.__canDisableSkillsFrom(targetUnit, enemyUnit, enemyAlly)) {
+                continue;
+            }
+            env.setSkillOwner(enemyAlly);
+            hooks.evaluateWithUnit(enemyAlly, env);
+        }
+    }
+
+    __makeFoeFoeEnv(targetUnit, enemyUnit, damageCalcEnv, name) {
+        // enemyAlly(skillOwner)は後から設定する
+        let env = new ForFoesEnv(this, targetUnit, enemyUnit, null, damageCalcEnv.calcPotentialDamage);
+        env.setName(name).setLogLevel(getSkillLogLevel())
+            .setDamageType(damageCalcEnv.damageType).setCombatPhase(this.combatPhase)
+            .setGroupLogger(damageCalcEnv.getCombatLogger());
+        return env;
+    }
+
+    __applySpursFromEnemyAlliesAfterCombatStatusFixed(targetUnit, enemyUnit, damageCalcEnv) {
+        let env = this.__makeFoeFoeEnv(targetUnit, enemyUnit, damageCalcEnv,
+            '周囲の敵からのデバフ(戦闘中のステータス決定後)');
+        this.__applySkillsFromEnemyAllies(
+            targetUnit, enemyUnit, damageCalcEnv,
+            FOR_FOES_INFLICTS_STATS_MINUS_AFTER_STATS_DETERMINED_HOOKS, env
+        );
+    }
+
+    __applySkillEffectFromEnemyAlliesAfterCombatStatusFixed(targetUnit, enemyUnit, damageCalcEnv) {
+        let env = this.__makeFoeFoeEnv(targetUnit, enemyUnit, damageCalcEnv,
+            '周囲の敵からのスキル効果(戦闘中のステータス決定後)');
+        this.__applySkillsFromEnemyAllies(
+            targetUnit, enemyUnit, damageCalcEnv,
+            FOR_FOES_INFLICTS_EFFECTS_AFTER_STATS_DETERMINED_HOOKS, env
+        );
     }
 
     /**
@@ -14488,6 +14616,35 @@ class DamageCalculatorWrapper {
             getSkillFunc(skillId, applyPotentSkillEffectFuncMap)?.call(this, targetUnit, enemyUnit);
         }
     }
+
+    /**
+     * 周囲の味方からの神速追撃を行うスキル
+     * @param  {Unit} targetUnit
+     * @param  {Unit} enemyUnit
+     * @param  {DamageCalcEnv} damageCalcEnv
+     */
+    __applyPotentSkillEffectFromAllies(targetUnit, enemyUnit, damageCalcEnv) {
+        if (enemyUnit.battleContext.disablesSkillsFromEnemyAlliesInCombat) {
+            return;
+        }
+        if (targetUnit.hasStatusEffect(StatusEffectType.Feud)) {
+            return;
+        }
+
+        if (damageCalcEnv.calcPotentialDamage) {
+            return;
+        }
+        for (let allyUnit of this.enumerateUnitsInTheSameGroupOnMap(targetUnit)) {
+            if (this.__canDisableSkillsFrom(enemyUnit, targetUnit, allyUnit)) {
+                continue
+            }
+            let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
+            env.setName('周囲の味方からの神速追撃判定時').setLogLevel(getSkillLogLevel()).setDamageType(damageCalcEnv.damageType)
+                .setCombatPhase(this.combatPhase).setGroupLogger(damageCalcEnv.getCombatLogger());
+            FOR_ALLIES_WHEN_APPLIES_POTENT_EFFECTS_HOOKS.evaluateWithUnit(allyUnit, env);
+        }
+    }
+
 
     /// 追撃可能かどうかが条件として必要なスキル効果の適用
     /**

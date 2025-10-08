@@ -759,6 +759,9 @@ class NeutralizesPenaltiesToTargetsStatsNode extends SetBoolToEachStatusNode {
     }
 }
 
+const NEUTRALIZES_PENALTIES_ON_TARGETS_NODE =
+    new NeutralizesPenaltiesToTargetsStatsNode(true, true, true, true);
+
 class NeutralizesPenaltiesToUnitsStatsNode extends NeutralizesPenaltiesToTargetsStatsNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
@@ -1411,6 +1414,7 @@ class RestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
 
 const RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE = n => new RestoresHpToUnitAfterCombatNode(n);
 const RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(7);
+const RESTORES_7_HP_TO_TARGET_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(7);
 const RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(10);
 
 const WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE = new class extends SkillEffectNode {
@@ -1439,6 +1443,10 @@ const REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_N_PERCE
     n => new ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode(n);
 const REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
     = new ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode(50);
+const REDUCES_PERCENTAGE_OF_TARGETS_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE =
+    FOR_TARGETS_FOE_DURING_COMBAT_NODE(
+        REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
+    );
 
 class ReducesPercentageOfUnitsFoesNonSpecialDamageReductionByNPercentDuringCombatNode extends ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode {
     static {
@@ -2872,3 +2880,18 @@ class NeutralizesTargetsEffectsThatReduceValuesAlongWithWeaponTriangleDisadvanta
 const NEUTRALIZES_TARGETS_EFFECTS_THAT_REDUCE_VALUES_ALONG_WITH_WEAPON_TRIANGLE_DISADVANTAGE_NODE =
     new NeutralizesTargetsEffectsThatReduceValuesAlongWithWeaponTriangleDisadvantageNode();
 
+class BoostDamageDealtByXPercentNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        let ratio = 1 + percentage / 100.0;
+        unit.battleContext.specialMultDamage = ratio;
+        env.debug(`${unit.nameWithGroup}は奥義発動時、与えるダメージ${ratio}倍`);
+    }
+}
+
+const BOOST_DAMAGE_DEALT_BY_X_PERCENT_NODE = n => new BoostDamageDealtByXPercentNode(n);

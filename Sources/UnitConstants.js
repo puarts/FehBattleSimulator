@@ -81,6 +81,7 @@ const Hero = {
     DuoHapi: 1294,
     HarmonizedIngrid: 1309,
     HarmonizedFir: 1322,
+    DuoFreyja: 1336,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -131,6 +132,7 @@ const DUO_HERO_SET = new Set([
     Hero.DuoMarth,
     Hero.DuoJulia,
     Hero.DuoHapi,
+    Hero.DuoFreyja,
 ]);
 
 const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();

@@ -265,6 +265,7 @@ class AttackResult extends DamageCalcResult {
          * 奥義ダメージ
          */
         this.specialAddDamage = 0;
+        this.specialMultDamage = 1;
 
         /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
         this.skillLogger = new GroupLogger();
@@ -1409,6 +1410,7 @@ class DamageCalculator {
         }
 
         let specialMultDamage = atkUnit.battleContext.specialMultDamage;
+        attackResult.specialMultDamage = specialMultDamage;
         let specialAddDamage = atkUnit.battleContext.getSpecialAddDamage();
         specialAddDamage += floorNumberWithFloatError((atkUnit.maxHpWithSkills - atkUnit.restHp) * atkUnit.battleContext.selfDamageDealtRateToAddSpecialDamage);
         attackResult.specialAddDamage = specialAddDamage;

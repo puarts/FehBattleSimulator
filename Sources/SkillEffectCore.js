@@ -1557,7 +1557,7 @@ class CacheNode extends SkillEffectNode {
     evaluate(env) {
         if (env.hasCache(this._key)) {
             let cache = env.getCache(this._key);
-            env.trace(`return cache: ${cache}`);
+            env.trace(`return cache: ${cache}, key: ${this._key}`);
             return cache;
         }
 
@@ -1566,7 +1566,7 @@ class CacheNode extends SkillEffectNode {
         if (value && typeof value[Symbol.iterator] === "function") {
             value = Array.from(value);
         }
-        env.trace(`cache value: ${value}`);
+        env.trace(`cache value: ${value}, key: ${this._key}`);
 
         env.setCache(this._key, value);
         return value;
@@ -1590,7 +1590,7 @@ class ReadCacheNode extends NumberNode {
     evaluate(env) {
         if (env.hasCache(this._key)) {
             let cache = env.getCache(this._key);
-            env.trace(`return cache: ${cache}`);
+            env.trace(`return cache: ${cache}, key: ${this._key}`);
             return cache;
         } else {
             env.error(`key not found: ${this._key}`);

@@ -2473,6 +2473,10 @@ class Unit extends BattleMapElement {
         if (this.getPositiveStatusEffects().length > 0) {
             return true;
         }
+        return this.hasBuffs(enemyUnit);
+    }
+
+    hasBuffs(enemyUnit) {
         let buffs = enemyUnit == null ? this.buffs : this.getBuffsInCombat(enemyUnit);
         return buffs.some(buff => buff > 0);
     }

@@ -120,6 +120,16 @@ const FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS = new SkillEffe
 const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
+ * 周囲に対する紋章効果(ステータス決定後)
+ * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
+const FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_AFTER_STATS_DETERMINED_DURING_COMBAT_HOOKS = new SkillEffectHooks();
+
+/**
+ * 周囲に対する紋章効果(ステータス決定後)
+ * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
+const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_STATS_DETERMINED_DURING_COMBAT_HOOKS = new SkillEffectHooks();
+
+/**
  * 周囲に対するスキル効果(適用後)
  * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
 const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_OTHER_SKILLS_DURING_COMBAT_HOOKS = new SkillEffectHooks();
@@ -134,6 +144,16 @@ const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS = new SkillEffectHo
  * 周囲の敵から受ける紋章効果。targetがデバフを受けるユニット
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
 const FOR_FOES_INFLICTS_STATS_MINUS_HOOKS = new SkillEffectHooks();
+
+/**
+ * 周囲の敵から受ける紋章効果。targetがデバフを受けるユニット
+ * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
+const FOR_FOES_INFLICTS_STATS_MINUS_AFTER_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
+
+/**
+ * 周囲の敵から受けるスキル効果。targetがデバフを受けるユニット
+ * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
+const FOR_FOES_INFLICTS_EFFECTS_AFTER_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲の敵から受けるスキル効果
@@ -164,6 +184,11 @@ const CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
  * 神速追撃
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
 const WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
+
+/**
+ * 周囲の味方からの神速追撃
+ * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
+const FOR_ALLIES_WHEN_APPLIES_POTENT_EFFECTS_HOOKS = new SkillEffectHooks();
 
 /**
  * 護り手判定時

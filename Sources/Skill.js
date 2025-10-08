@@ -1392,6 +1392,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.FellSpirit,
     // 師の導き
     StatusEffectType.ProfsGuidance,
+    // 運命を変える!
+    StatusEffectType.ChangeOfFate,
 // 強化ダメージ+
     StatusEffectType.Treachery,
 // 敵弱化ダメージ+
@@ -1492,6 +1494,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Bonded,
     // 予知の罠
     StatusEffectType.ForesightSnare,
+    // スタイル・射程2
+    StatusEffectType.Range2Style,
 ];
 const POSITIVE_STATUS_EFFECT_ORDER_MAP = new Map();
 POSITIVE_STATUS_EFFECT_ARRAY.forEach((v, i) => POSITIVE_STATUS_EFFECT_ORDER_MAP.set(v, i));
@@ -1524,6 +1528,7 @@ const NEGATIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.TimesGrip,
     StatusEffectType.Gravity,
     StatusEffectType.Stall,
+    StatusEffectType.CantoControl,
     StatusEffectType.Guard,
     StatusEffectType.Frozen,
     StatusEffectType.TriangleAdept,
