@@ -1920,6 +1920,59 @@ function initVueComponents() {
         `,
     });
 
+    Vue.component('log-action-buttons', {
+        props: {
+            getApp: {type: Function, required: true},
+            onCopy: {type: Function, required: true},
+            onInfo: {type: Function, required: false},
+            showFlash: {type: Function, required: true},
+        },
+        methods: {
+            defaultInfoHandler() {
+                // onInfo が渡されなかった場合のデフォルト動作
+                const pop = document.getElementById('info-pop');
+                if (pop?.togglePopover) pop.togglePopover();
+            },
+            enableDivineVeinTransparency() {
+                return this.getApp().vm.enableDivineVeinTransparency;
+            },
+        },
+        template: `
+          <div class="button-row">
+            <!-- クリア -->
+            <i 
+              class="fa-solid fa-eraser clear-icon button-row-item button-row-icon"
+              title="クリア"
+              @click="getApp().clearSimpleLog();"
+            ></i>
+
+            <!-- コピー（クリップボード） -->
+            <i 
+              class="fa-solid fa-copy copy-icon button-row-item button-row-icon"
+              title="コピー"
+              @click="onCopy();showFlash('ログをクリップボードにコピーしました', 'success')"
+            ></i>
+
+            <!-- 天脈透過 -->
+            <img v-bind:src="getDivineVeinImgPath(DivineVeinType.Vert)"
+                 v-bind:title="getDivineVeinTitle(DivineVeinType.Vert)"
+                 v-bind:alt="DIVINE_VEIN_NAMES[DivineVeinType.Vert]"
+                 title="天脈透過切り替え"
+                 class="button-row-item"
+                 :class="enableDivineVeinTransparency() ? 'grayscale-image' : ''"
+                 @click="getApp().vm.enableDivineVeinTransparency = !enableDivineVeinTransparency();updateAllUi()"
+            >
+
+            <!-- スキルログ表示 -->
+            <i
+              class="fas fa-info-circle damage-calc-info-icon"
+              title="ダメージ計算ログ表示"
+              @click="onInfo ? onInfo() : defaultInfoHandler()"
+            ></i>
+          </div>
+        `,
+    });
+
     Vue.component('damage-calc-result', {
         props: {
             combatResult: {

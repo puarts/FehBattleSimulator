@@ -188,6 +188,11 @@ class Table {
                     cellElem.setAttribute("ondragend", this.onDragEndEvent);
                 }
                 cellElem.setAttribute("onmousedown", 'onItemSelected(event);');
+                cellElem.addEventListener("contextmenu", (e) => {
+                    if (!e.altKey) {
+                        e.preventDefault();
+                    }
+                });
 
                 cellElem.innerHTML = cell.innerText;
             }
