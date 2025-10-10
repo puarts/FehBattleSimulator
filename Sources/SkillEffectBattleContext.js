@@ -257,6 +257,7 @@ class IsUnitsHpGteNPercentAtStartOfCombatNode extends PercentageCondNode {
     }
 }
 
+const IS_UNTIS_HP_GTE_N_PERCENT_AT_START_OF_COMBAT_NODE = n => new IsUnitsHpGteNPercentAtStartOfCombatNode(n);
 const IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpGteNPercentAtStartOfCombatNode(25);
 const IS_UNITS_HP_GTE_50_PERCENT_AT_START_OF_COMBAT_NODE = new IsUnitsHpGteNPercentAtStartOfCombatNode(50);
 
@@ -757,6 +758,9 @@ class NeutralizesPenaltiesToTargetsStatsNode extends SetBoolToEachStatusNode {
         unit.battleContext.invalidateOwnDebuffs(...values);
     }
 }
+
+const NEUTRALIZES_PENALTIES_ON_TARGETS_NODE =
+    new NeutralizesPenaltiesToTargetsStatsNode(true, true, true, true);
 
 class NeutralizesPenaltiesToUnitsStatsNode extends NeutralizesPenaltiesToTargetsStatsNode {
     static {
@@ -1410,6 +1414,7 @@ class RestoresHpToUnitAfterCombatNode extends ApplyingNumberNode {
 
 const RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE = n => new RestoresHpToUnitAfterCombatNode(n);
 const RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(7);
+const RESTORES_7_HP_TO_TARGET_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(7);
 const RESTORES_10_HP_TO_UNIT_AFTER_COMBAT_NODE = new RestoresHpToUnitAfterCombatNode(10);
 
 const WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE = new class extends SkillEffectNode {
@@ -1438,6 +1443,10 @@ const REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_N_PERCE
     n => new ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode(n);
 const REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
     = new ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode(50);
+const REDUCES_PERCENTAGE_OF_TARGETS_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE =
+    FOR_TARGETS_FOE_DURING_COMBAT_NODE(
+        REDUCES_PERCENTAGE_OF_TARGETS_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE
+    );
 
 class ReducesPercentageOfUnitsFoesNonSpecialDamageReductionByNPercentDuringCombatNode extends ReducesPercentageOfTargetsFoesNonSpecialDamageReductionByNPercentDuringCombatNode {
     static {
@@ -1487,7 +1496,7 @@ const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE =
     new InflictsSpecialCooldownChargeMinus1OnTargetsFoeNode();
 
 const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGET_NODE =
-    FOR_TARGETS_FOE_NODE(INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE);
+    FOR_TARGETS_FOE_DURING_COMBAT_NODE(INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE);
 
 const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_FOE_NODE =
     INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE;
@@ -2789,3 +2798,100 @@ class ReducesDamageFromTargetToZeroNode extends ReducesDamageFromTargetFoeToZero
 }
 
 const REDUCES_DAMAGE_FROM_TARGET_TO_ZERO_NODE = new ReducesDamageFromTargetToZeroNode();
+
+class TargetSatisfiedConditionDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {string} key
+     */
+    constructor(key) {
+        super();
+        if (typeof key !== 'string' || key.trim() === '') {
+            throw new TypeError('TargetSatisfiedConditionDuringCombatNode: key must be a non-empty string');
+        }
+        this._key = key;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.satisfiedConditionsDuringCombat.add(this._key);
+        env.debug(`${unit.nameWithGroup}は戦闘中に条件「${this._key}」を満たした`);
+    }
+}
+
+const TARGET_SATISFIED_CONDITION_DURING_COMBAT_NODE = key => new TargetSatisfiedConditionDuringCombatNode(key);
+
+class HasTargetSatisfiedConditionDuringCombatNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {string} key
+     */
+    constructor(key) {
+        super();
+        if (typeof key !== 'string' || key.trim() === '') {
+            throw new TypeError('HasTargetSatisfiedConditionDuringCombatNode: key must be a non-empty string');
+        }
+        this._key = key;
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.satisfiedConditionsDuringCombat.has(this._key);
+        env.debug(`${unit.nameWithGroup}は戦闘中に条件「${this._key}」を満たしたか: ${result}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_SATISFIED_CONDITION_DURING_COMBAT_NODE = key => new HasTargetSatisfiedConditionDuringCombatNode(key);
+
+class NeutralizesTargetsEffectsThatBoostValuesAlongWithWeaponTriangleAdvantageNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.neutralizesBoostingTriangleAdvantage = true;
+        env.info(`${unit.nameWithGroup}は3すくみが有利だと、さらに有利になる効果を無効`);
+    }
+}
+
+const NEUTRALIZES_TARGETS_EFFECTS_THAT_BOOST_VALUES_ALONG_WITH_WEAPON_TRIANGLE_ADVANTAGE_NODE =
+    new NeutralizesTargetsEffectsThatBoostValuesAlongWithWeaponTriangleAdvantageNode();
+
+class NeutralizesTargetsEffectsThatReduceValuesAlongWithWeaponTriangleDisadvantageNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.neutralizesReducingTriangleDisadvantage = true;
+        env.info(`${unit.nameWithGroup}は3すくみが不利だと、さらに不利になる効果を無効`);
+    }
+}
+
+const NEUTRALIZES_TARGETS_EFFECTS_THAT_REDUCE_VALUES_ALONG_WITH_WEAPON_TRIANGLE_DISADVANTAGE_NODE =
+    new NeutralizesTargetsEffectsThatReduceValuesAlongWithWeaponTriangleDisadvantageNode();
+
+class BoostDamageDealtByXPercentNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let percentage = this.evaluateChildren(env);
+        let ratio = 1 + percentage / 100.0;
+        unit.battleContext.specialMultDamage = ratio;
+        env.debug(`${unit.nameWithGroup}は奥義発動時、与えるダメージ${ratio}倍`);
+    }
+}
+
+const BOOST_DAMAGE_DEALT_BY_X_PERCENT_NODE = n => new BoostDamageDealtByXPercentNode(n);

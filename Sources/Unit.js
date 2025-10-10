@@ -2233,10 +2233,6 @@ class Unit extends BattleMapElement {
         return this.hasSpecial && this.specialCount === 0;
     }
 
-    isAdvantageForColorless() {
-        return isAdvantageousForColorless(this.weapon) || this.battleContext.isAdvantageForColorless;
-    }
-
     getBuffTotalInPreCombat() {
         return this.getBuffsInPreCombat().reduce((a, b) => a + b, 0);
     }
@@ -2477,6 +2473,10 @@ class Unit extends BattleMapElement {
         if (this.getPositiveStatusEffects().length > 0) {
             return true;
         }
+        return this.hasBuffs(enemyUnit);
+    }
+
+    hasBuffs(enemyUnit) {
         let buffs = enemyUnit == null ? this.buffs : this.getBuffsInCombat(enemyUnit);
         return buffs.some(buff => buff > 0);
     }
@@ -3637,8 +3637,8 @@ class Unit extends BattleMapElement {
     getColorWhenDeterminingWeaponTriangle() {
         let env = new NodeEnv().setTarget(this).setSkillOwner(this)
             .setName('3すくみ決定時の色').setLogLevel(LoggerBase.LogLevel.OFF);
-        let color = GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS.evaluateMaxWithUnit(this, env);
-        if (color >= 0) {
+        let color = GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS.evaluateOneNumberWithUnit(this, env);
+        if (color && color >= 0) {
             return color;
         }
         return getColorFromWeaponType(this.weaponType);
@@ -3949,9 +3949,6 @@ class Unit extends BattleMapElement {
     }
 
     getTriangleAdeptAdditionalRatio() {
-        if (this.passiveA === PassiveA.Duality) {
-            return 0;
-        }
         if (isTriangleAdeptSkill(this.passiveA)
             || isTriangleAdeptSkill(this.weapon)
             || (this.weapon === Weapon.Forukuvangu && this.isWeaponSpecialRefined)
@@ -3971,13 +3968,15 @@ class Unit extends BattleMapElement {
     // 「自分のスキルによる3すくみ激化を無効化」
     neutralizesSelfTriangleAdvantage() {
         // @TODO: 相性相殺1,2も同様
-        return this.hasPassiveSkill(PassiveB.AisyoSosatsu3) || this.hasStatusEffect(StatusEffectType.CancelAffinity);
+        return this.hasPassiveSkill(PassiveB.AisyoSosatsu3)
+            || this.hasStatusEffect(StatusEffectType.CancelAffinity);
     }
 
     // 「相性不利の時、敵スキルによる3すくみ激化を反転」
     reversesTriangleAdvantage() {
         // @TODO: 相性相殺1,2は反転しない
-        return this.hasPassiveSkill(PassiveB.AisyoSosatsu3) || this.hasStatusEffect(StatusEffectType.CancelAffinity);
+        return this.hasPassiveSkill(PassiveB.AisyoSosatsu3)
+            || this.hasStatusEffect(StatusEffectType.CancelAffinity);
     }
 
     __getBuffMultiply() {
@@ -6490,7 +6489,6 @@ class Unit extends BattleMapElement {
                 case PassiveB.LunarBrace2:
                 case Weapon.NidavellirSprig:
                 case Weapon.NidavellirLots:
-                case Weapon.HonorableBlade:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
                 case Weapon.DolphinDiveAxe:
@@ -7092,7 +7090,8 @@ function calcHealAmount(assistUnit, targetUnit) {
 /// Tier 1 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 // noinspection JSUnusedLocalSymbols
 function isDebufferTier1(attackUnit, targetUnit) {
-    let env = new NodeEnv().setUnitsDuringCombat(attackUnit, targetUnit).setSkillOwner(attackUnit)
+    let env = new NodeEnv().setUnitsDuringCombat(attackUnit, targetUnit, true)
+        .setSkillOwner(attackUnit)
         .setName('Tier1のデバッファー判定').setLogLevel(LoggerBase.LogLevel.OFF);
     if (IS_DEBUFFER_TIER_1_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
         return true;
@@ -7102,7 +7101,8 @@ function isDebufferTier1(attackUnit, targetUnit) {
 
 /// Tier 2 のデバッファーであるかどうかを判定します。 https://vervefeh.github.io/FEH-AI/charts.html#chartG
 function isDebufferTier2(attackUnit, targetUnit) {
-    let env = new NodeEnv().setUnitsDuringCombat(attackUnit, targetUnit).setSkillOwner(attackUnit)
+    let env = new NodeEnv().setUnitsDuringCombat(attackUnit, targetUnit, true)
+        .setSkillOwner(attackUnit)
         .setName('Tier2のデバッファー判定').setLogLevel(LoggerBase.LogLevel.OFF);
     if (IS_DEBUFFER_TIER_2_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
         return true;
@@ -7148,7 +7148,8 @@ function isDebufferTier2(attackUnit, targetUnit) {
  */
 function isAfflictor(attackUnit, lossesInCombat, result) {
     // TODO: envにlossesInCombat, resultを取れるようにする
-    let env = new NodeEnv().setTarget(attackUnit).setUnitsDuringCombat(attackUnit).setSkillOwner(attackUnit)
+    let env = new NodeEnv().setTarget(attackUnit).setUnitsDuringCombat(attackUnit, null, true)
+        .setSkillOwner(attackUnit)
         .setName('アフリクター判定').setLogLevel(LoggerBase.LogLevel.OFF);
     if (IS_AFFLICTOR_HOOKS.evaluateSomeWithUnit(attackUnit, env)) {
         return true;

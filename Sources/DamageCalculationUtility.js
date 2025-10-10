@@ -66,59 +66,53 @@ class DamageCalculationUtility {
      * 相性有利不利を判定して返します。
      * @param {Unit} atkUnit
      * @param {Unit} defUnit
+     * @param {DamageCalcEnv} damageCalcEnv
+     * @param {GroupLogger} logger
      * @returns {number} TriangleAdvantage
      */
-    static calcAttackerTriangleAdvantage(atkUnit, defUnit) {
-        for (let skillId of atkUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveA.Duality:
-                    switch (defUnit.color) {
-                        case ColorType.Red:
-                        case ColorType.Blue:
-                        case ColorType.Green:
-                            if (defUnit.isAdvantageForColorless() &&
-                                atkUnit.getColorWhenDeterminingWeaponTriangle() === ColorType.Colorless) {
-                                return TriangleAdvantage.None;
-                            } else {
-                                return TriangleAdvantage.Advantageous;
-                            }
-                    }
-                    break;
-            }
+    static calcAttackerTriangleAdvantage(atkUnit, defUnit,
+                                         damageCalcEnv = null, logger = null) {
+        let advantage = 0;
+        let env = new NodeEnv();
+        env.setName('相性有利判定時').setLogLevel(getSkillLogLevel());
+        if (damageCalcEnv) {
+            env.setDamageCalcEnv(damageCalcEnv);
         }
-        for (let skillId of defUnit.enumerateSkills()) {
-            switch (skillId) {
-                case PassiveA.Duality:
-                    switch (atkUnit.color) {
-                        case ColorType.Red:
-                        case ColorType.Blue:
-                        case ColorType.Green:
-                            if (atkUnit.isAdvantageForColorless() &&
-                                defUnit.getColorWhenDeterminingWeaponTriangle() === ColorType.Colorless) {
-                                return TriangleAdvantage.None;
-                            } else {
-                                return TriangleAdvantage.Disadvantageous;
-                            }
-                    }
-                    break;
-            }
+        if (logger) {
+            env.setGroupLogger(logger);
+            logger.group(LoggerBase.LogLevel.NOTICE, new NodeEnv.SkillLogContent('', '', '相性有利判定時'));
         }
+        env.setTarget(atkUnit).setTargetFoe(defUnit).setSkillOwner(atkUnit);
+        advantage += CALC_TRIANGLE_ADVANTAGE_HOOKS.evaluateSumWithUnit(atkUnit, env);
+        env.setTarget(defUnit).setTargetFoe(atkUnit).setSkillOwner(defUnit);
+        advantage -= CALC_TRIANGLE_ADVANTAGE_HOOKS.evaluateSumWithUnit(defUnit, env);
+        if (logger) {
+            logger.groupEnd();
+        }
+
+        let atkColor = atkUnit.getColorWhenDeterminingWeaponTriangle();
+        let defColor = defUnit.getColorWhenDeterminingWeaponTriangle();
+
         // 無色に有利な効果を持つ場合
-        if (atkUnit.isAdvantageForColorless() &&
-            defUnit.getColorWhenDeterminingWeaponTriangle() === ColorType.Colorless) {
+        if (atkUnit.battleContext.isAdvantageForColorless && defColor === ColorType.Colorless) {
+            advantage++;
+        }
+
+        if (defUnit.battleContext.isAdvantageForColorless && atkColor === ColorType.Colorless) {
+            advantage--;
+        }
+
+        if (advantage > 0) {
             return TriangleAdvantage.Advantageous;
-        }
-
-        if (defUnit.isAdvantageForColorless(atkUnit) &&
-            atkUnit.getColorWhenDeterminingWeaponTriangle() === ColorType.Colorless) {
+        } else if (advantage < 0) {
             return TriangleAdvantage.Disadvantageous;
+        } else {
+            // 通常の有利判定
+            let tableIndex =
+                atkColor * 4 +
+                defColor;
+            return ColorToTriangleAdvantageTable[tableIndex];
         }
-
-        // 通常の有利判定
-        let tableIndex =
-            atkUnit.getColorWhenDeterminingWeaponTriangle() * 4 +
-            defUnit.getColorWhenDeterminingWeaponTriangle();
-        return ColorToTriangleAdvantageTable[tableIndex];
     }
 
     /**

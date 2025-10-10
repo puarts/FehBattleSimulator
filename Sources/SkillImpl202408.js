@@ -2826,7 +2826,7 @@ function setDiscord(skillId, statsRatios) {
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or the number of allies adjacent to unit ≤ 1,
-        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET(), 1)),
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET, 1)),
             // grants Atk/Spd/Def/Res+5 to unit and
             GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE,
             // unit makes a guaranteed follow-up attack during combat.
@@ -2969,7 +2969,7 @@ function setDiscord(skillId, statsRatios) {
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode());
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit initiates combat or if the number of allies adjacent to unit ≤ 1,
-        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET(), 1)),
+        IF_NODE(OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, LTE_NODE(NUM_OF_TARGET_ALLIES_ADJACENT_TO_TARGET, 1)),
             // grants Def/Res+5 to unit,
             new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 5, 5),
             // inflicts Def/Res-5 on foe,
@@ -3186,10 +3186,10 @@ function setDiscord(skillId, statsRatios) {
     setBriarSave(PassiveC.ADBriarFSave, FOES_RANGE_IS_2_NODE, ATK_DEF_NODE(4),
         false, true, false, false);
     // 理
-    setBriarSave(PassiveC.ADBriarPSave, FOR_TARGETS_FOE_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
+    setBriarSave(PassiveC.ADBriarPSave, FOR_TARGETS_FOE_DURING_COMBAT_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
         false, false, true, false);
     // 魔
-    setBriarSave(PassiveC.SRBriarMSave, FOR_TARGETS_FOE_NODE(IS_TARGET_MAGIC_WEAPON_NODE), SPD_RES_NODE(4),
+    setBriarSave(PassiveC.SRBriarMSave, FOR_TARGETS_FOE_DURING_COMBAT_NODE(IS_TARGET_MAGIC_WEAPON_NODE), SPD_RES_NODE(4),
         false, false, false, true);
 }
 

@@ -783,16 +783,6 @@ class BeginningOfTurnSkillHandler {
                 }
             }
                 break;
-            case Weapon.RiteOfSouls:
-                for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
-                    if (Math.abs(skillOwner.posX - unit.posX) <= 1 ||
-                        Math.abs(skillOwner.posY - unit.posY) <= 1) {
-                        if (skillOwner.getResInPrecombat() >= unit.getResInPrecombat() + 1) {
-                            unit.reserveToAddStatusEffect(StatusEffectType.Guard);
-                        }
-                    }
-                }
-                break;
             case Weapon.BladeOfFavors: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(skillOwner)) {
@@ -1221,9 +1211,6 @@ class BeginningOfTurnSkillHandler {
                         skillOwner.reserveToApplyDefBuff(6);
                     }
                 }
-                break;
-            case Weapon.HonorableBlade:
-                skillOwner.reserveToAddStatusEffect(StatusEffectType.MobilityIncreased);
                 break;
             case Weapon.Sangurizuru:
                 if (skillOwner.isWeaponSpecialRefined) {

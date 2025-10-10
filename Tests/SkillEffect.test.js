@@ -364,3 +364,37 @@ describe('Skills during combat', () => {
         );
     });
 });
+
+test("Status Effects", () => {
+    const unclassified = Object.entries(StatusEffectType).filter(
+        ([key, value]) =>
+            value !== -1 &&
+            !POSITIVE_STATUS_EFFECT_ARRAY.includes(value) &&
+            !NEGATIVE_STATUS_EFFECT_ARRAY.includes(value)
+    );
+
+    const notInInfoMap = Object.entries(StatusEffectType).filter(
+        ([key, value]) => value !== -1 && !STATUS_EFFECT_INFO_MAP.has(value)
+    );
+
+    // --- 未分類チェック ---
+    if (unclassified.length !== 0) {
+        console.log("❌ 未分類のステータス効果があります:");
+        for (const [key, value] of unclassified) {
+            console.log(` - ${key}: ${value}`);
+        }
+        throw new Error(`未分類: ${unclassified.length} 件`);
+    }
+
+    // --- 未登録チェック ---
+    if (notInInfoMap.length !== 0) {
+        console.log("❌ STATUS_EFFECT_INFO_MAP に未登録のステータス効果があります:");
+        for (const [key, value] of notInInfoMap) {
+            console.log(` - ${key}: ${value}`);
+        }
+        throw new Error(`未登録: ${notInInfoMap.length} 件`);
+    }
+
+    expect(unclassified.length).toBe(0);
+    expect(notInInfoMap.length).toBe(0);
+});

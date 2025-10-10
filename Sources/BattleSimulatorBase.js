@@ -3868,12 +3868,13 @@ class BattleSimulatorBase {
         }
 
         // 優先度が高いスキルの後かつ奥義の再行動の前
-        let env = new BattleSimulatorBaseEnv(this, atkUnit).setUnitsDuringCombat(atkUnit, defUnit);
-        env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel());
+        let env = new BattleSimulatorBaseEnv(this, atkUnit);
+        env.setName('奥義以外の再行動時').setLogLevel(getSkillLogLevel())
+            .setUnitsDuringCombat(atkUnit, defUnit, true);
         AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS.evaluateWithUnit(atkUnit, env);
         let foeEnv =
             new BattleSimulatorBaseEnv(this, atkUnit)
-                .setUnitsDuringCombat(atkUnit, defUnit)
+                .setUnitsDuringCombat(atkUnit, defUnit, true)
                 .setSkillOwner(defUnit)
                 .setName('奥義以外の再行動時（敵）').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_FOR_FOES_ANOTHER_ACTION_HOOKS.evaluateWithUnit(defUnit, foeEnv);
@@ -7893,7 +7894,6 @@ class BattleSimulatorBase {
                 case Weapon.JollyJadeLance:
                 case PassiveB.HodrsZeal:
                 case PassiveB.LunarBrace2:
-                case Weapon.HonorableBlade:
                 case Weapon.BowOfTwelve:
                 case PassiveB.SolarBrace2:
                 case PassiveB.MoonlightBangle:
@@ -10074,16 +10074,6 @@ class BattleSimulatorBase {
                 break;
             case Support.FrightfulDream:
                 this.__applyRuse(supportUnit, supportTargetUnit, unit => unit.applyAllDebuff(-3));
-                break;
-            case Weapon.FaithfulBreath:
-                for (let unit of this.__findNearestEnemies(supportUnit, 4)) {
-                    unit.applyDefDebuff(-6);
-                    unit.applyResDebuff(-6);
-                }
-                for (let unit of this.__findNearestEnemies(supportTargetUnit, 4)) {
-                    unit.applyDefDebuff(-6);
-                    unit.applyResDebuff(-6);
-                }
                 break;
             case Weapon.EnvelopingBreath:
                 for (let unit of this.enumerateUnitsInDifferentGroupOnMap(supportUnit)) {

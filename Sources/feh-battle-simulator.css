@@ -1263,7 +1263,7 @@ td.enemy {
 
 .delete-button {
     color: #ff5555; /* アイコンの色を赤に設定 */
-    font-size: 18px; /* アイコンのサイズ */
+    font-size: 1em; /* アイコンのサイズ */
 }
 
 .delete-button:hover {
@@ -1696,6 +1696,37 @@ td.enemy {
 
 .button-row input {
     margin-right: 4px; /* ボタンの間隔調整 */
+}
+
+.button-row-item {
+    width: 1em;
+    height: 1em;
+    margin: 0em 0.2em 0em 0.2em;
+}
+
+.button-row-icon {
+    font-size: 0.85em;
+}
+
+.grayscale-image {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.clear-icon {
+    color: #ff6600;
+}
+
+.clear-icon:hover {
+    color: #bb5500;
+}
+
+.copy-icon {
+    color: #007bff;
+}
+
+.copy-icon:hover {
+    color: #0056b3;
 }
 
 .damage-calc-info-icon {

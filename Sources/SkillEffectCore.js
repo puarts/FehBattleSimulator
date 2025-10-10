@@ -248,6 +248,27 @@ class SkillEffectHooks {
     /**
      * @param {Unit} unit
      * @param {E} env
+     * @returns {number|null}
+     */
+    evaluateOneNumberWithUnit(unit, env) {
+        /** @type {number[]} */
+        let results = this.evaluateWithUnit(unit, env)
+            .filter(v => typeof v === 'number');
+        switch (results.length) {
+            case 1:
+                // 有効な値が1つのときはそれを返す
+                return results[0];
+            case 0:
+                return null;
+            default:
+                // 複数の値がある場合はエラーにする
+                throw new Error(`Expected length <= 1 but received ${results.length}`);
+        }
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {E} env
      * @returns {[number, number, number, number]}
      */
     evaluateStatsSumWithUnit(unit, env) {
@@ -1134,7 +1155,9 @@ class FlattenCollectionNode extends CollectionNode {
 
     evaluate(env) {
         let results = this._collectionNode.evaluate(env);
-        return Array.from(IterUtil.concat(...results));
+        let flattened = Array.from(IterUtil.concat(...results));
+        env?.trace(`[Flatten Collection Node] flattened: ${flattened}`);
+        return flattened;
     }
 }
 
@@ -1534,7 +1557,7 @@ class CacheNode extends SkillEffectNode {
     evaluate(env) {
         if (env.hasCache(this._key)) {
             let cache = env.getCache(this._key);
-            env.trace(`return cache: ${cache}`);
+            env.trace(`return cache: ${cache}, key: ${this._key}`);
             return cache;
         }
 
@@ -1543,7 +1566,7 @@ class CacheNode extends SkillEffectNode {
         if (value && typeof value[Symbol.iterator] === "function") {
             value = Array.from(value);
         }
-        env.trace(`cache value: ${value}`);
+        env.trace(`cache value: ${value}, key: ${this._key}`);
 
         env.setCache(this._key, value);
         return value;
@@ -1567,7 +1590,7 @@ class ReadCacheNode extends NumberNode {
     evaluate(env) {
         if (env.hasCache(this._key)) {
             let cache = env.getCache(this._key);
-            env.trace(`return cache: ${cache}`);
+            env.trace(`return cache: ${cache}, key: ${this._key}`);
             return cache;
         } else {
             env.error(`key not found: ${this._key}`);
