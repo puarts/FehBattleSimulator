@@ -1933,8 +1933,15 @@ function initVueComponents() {
                 const pop = document.getElementById('info-pop');
                 if (pop?.togglePopover) pop.togglePopover();
             },
-            enableDivineVeinTransparency() {
-                return this.getApp().vm.enableDivineVeinTransparency;
+            enablesDivineVeinTransparency() {
+                return this.getApp()?.vm?.enableDivineVeinTransparency || false;
+            },
+            onClick() {
+                let appData = this.getApp()?.vm;
+                if (appData) {
+                    appData.enableDivineVeinTransparency = !appData.enableDivineVeinTransparency;
+                    updateAllUi();
+                }
             },
         },
         template: `
@@ -1959,8 +1966,8 @@ function initVueComponents() {
                  v-bind:alt="DIVINE_VEIN_NAMES[DivineVeinType.Vert]"
                  title="天脈透過切り替え"
                  class="button-row-item"
-                 :class="enableDivineVeinTransparency() ? 'grayscale-image' : ''"
-                 @click="getApp().vm.enableDivineVeinTransparency = !enableDivineVeinTransparency();updateAllUi()"
+                 :class="enablesDivineVeinTransparency() ? 'grayscale-image' : ''"
+                 @click="onClick"
             >
 
             <!-- スキルログ表示 -->
@@ -2000,7 +2007,21 @@ function initVueComponents() {
                 detailLevelOptions: DetailUtils.getOptions(),
                 logFilterText: '',
                 groupFilterText: '',
+                logFilterTextKey: 'logFilterText',
+                groupFilterTextKey: 'groupFilterText',
             };
+        },
+        watch: {
+            logFilterText(newValue) {
+                localStorage.setItem(this.logFilterTextKey, newValue);
+            },
+            groupFilterText(newValue) {
+                localStorage.setItem(this.groupFilterTextKey, newValue);
+            },
+        },
+        created() {
+            this.logFilterText = localStorage.getItem(this.logFilterTextKey) || '';
+            this.groupFilterText = localStorage.getItem(this.groupFilterTextKey) || '';
         },
         computed: {
             hasResult: vm => !!vm.combatResult,
@@ -2056,6 +2077,14 @@ function initVueComponents() {
             }
         },
         methods: {
+            updateLogFilterText(e) {
+                this.logFilterText = e.target.value;
+                localStorage.setItem(this.logFilterTextKey, this.logFilterText);
+            },
+            updateGroupFilterText(e) {
+                this.groupFilterText = e.target.value;
+                localStorage.setItem(this.groupFilterTextKey, this.groupFilterText);
+            },
             levelKey(s) {
                 return String(s).toLowerCase();
             },
