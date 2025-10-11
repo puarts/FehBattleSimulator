@@ -655,13 +655,13 @@ class BattleSimulatorBase {
             slotOrderChanged: function () {
                 updateMapUi();
             },
-            saveSimulatorLogLevel: function(simulatorLogLevel) {
+            saveSimulatorLogLevel: function (simulatorLogLevel) {
                 LocalStorageUtil.setNumber('simulatorLogLevel', simulatorLogLevel);
                 this.simulatorLogLevel = simulatorLogLevel;
                 this.damageCalcLogger.logLevel = simulatorLogLevel;
                 this.beginningOfTurnSkillHanderLogger.logLevel = simulatorLogLevel;
             },
-            saveSkillLogLevel: function(skillLogLevel) {
+            saveSkillLogLevel: function (skillLogLevel) {
                 this.skillLogLevel = skillLogLevel;
                 LocalStorageUtil.setNumber('skillLogLevel', skillLogLevel);
             },
@@ -7544,7 +7544,7 @@ class BattleSimulatorBase {
                     break;
             }
             if (self.isCommandLogEnabled) {
-                self.writeLogLine( `${unit.getNameWithGroup()}は${assistTargetUnit.getNameWithGroup()}に${skillName}を実行`);
+                self.writeLogLine(`${unit.getNameWithGroup()}は${assistTargetUnit.getNameWithGroup()}に${skillName}を実行`);
             }
             self.applySupportSkill(unit, assistTargetUnit);
         };
@@ -7597,7 +7597,7 @@ class BattleSimulatorBase {
             // TODO: サウンド
 
             if (self.isCommandLogEnabled) {
-                self.writeLogLine( `${unit.getNameWithGroup()}は${assistTargetUnit.getNameWithGroup()}に${skillName}を実行`);
+                self.writeLogLine(`${unit.getNameWithGroup()}は${assistTargetUnit.getNameWithGroup()}に${skillName}を実行`);
             }
             self.applyCantoAssistSkill(unit, assistTargetUnit);
         };
@@ -9110,8 +9110,8 @@ class BattleSimulatorBase {
     }
 
     __setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc,
-                                     attackRange = unit.attackRangeOnMapForAttackingUnit,
-                                     usesStyle = false) {
+        attackRange = unit.attackRangeOnMapForAttackingUnit,
+        usesStyle = false) {
         for (let tile of g_appData.map.enumerateMovableTiles(unit, false, false)) {
             if (acceptTileFunc != null && !acceptTileFunc?.(tile)) {
                 continue;
@@ -11356,7 +11356,7 @@ class BattleSimulatorBase {
             if (this.currentUnit.canActivateStyle()) {
                 this.currentUnit.activateStyle();
                 updateAllUi();
-            } else if (this.currentUnit.canDeactivateStyle()){
+            } else if (this.currentUnit.canDeactivateStyle()) {
                 this.currentUnit.deactivateStyle();
                 updateAllUi();
             }

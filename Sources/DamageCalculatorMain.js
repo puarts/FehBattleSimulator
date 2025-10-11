@@ -127,7 +127,7 @@ class DamageCalcHeroDatabase extends HeroDatabase {
      * @param  {SkillInfo[]} passiveXs
      */
     constructor(inputHeroInfos, weapons, supports, specials,
-                passiveAs, passiveBs, passiveCs, passiveSs, passiveXs) {
+        passiveAs, passiveBs, passiveCs, passiveSs, passiveXs) {
         super(inputHeroInfos);
         this.skillDatabase = new SkillDatabase();
         this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs);
@@ -305,7 +305,6 @@ class DamageCalcData {
         this.specialGraphMode = SpecialDamageGraphMode.AllInheritableSpecials;
         this.attackerTriangleAdvantage = TriangleAdvantage.None;
         this.triangleAdeptType = TriangleAdeptType.None;
-
 
         /** @type {Unit} */
         this.atkUnit = createDefaultUnit("攻撃者");

@@ -82,13 +82,10 @@
         <div class="sk-circle12 sk-circle"></div>
     </div>
     <div id="app" style="display: none;">
-        <flash-message
-                :flash-messages="flashMessages"
-                :remove-flash="removeFlash"
-        >
+        <flash-message :flash-messages="flashMessages" :remove-flash="removeFlash">
         </flash-message>
         <table style="border-style: none;">
-        <tr>
+            <tr>
                 <td style="width: 450px" valign="top">
                     <table style="border-width: 0px;border-style: none;">
                         <tr>
@@ -101,7 +98,8 @@
                                         {{ option.label }}
                                     </option>
                                 </select>
-                                <input id="summonerMode" type="checkbox" v-model="isSummonerDualCalcEnabled">
+                                <input id="summonerMode" type="checkbox"
+                                    v-model="getApp().damageCalc.isSummonerDualCalcEnabled">
                                 <label for="summonerMode" style="font-size: 12px">決闘1距離ステ+7補正</label>
                             </td>
                         </tr>
@@ -208,12 +206,12 @@
                                                             v-bind:style="attackInfoTdStyle">
                                                             {{getAttackerName()}}
                                                         </td>
-                                                                <!-- <td style="font-size:10px"></td> -->
+                                                        <!-- <td style="font-size:10px"></td> -->
                                                         <td class="enemy summary-text-shadow" align="center"
                                                             v-bind:style="attackInfoTdStyle">
                                                             {{getAttackTargetName()}}
                                                         </td>
-                                                                <!-- <td class="enemy" rowspan="2" style="width:38px"><img style="width:38px;"
+                                                        <!-- <td class="enemy" rowspan="2" style="width:38px"><img style="width:38px;"
                                                                                         v-bind:src="units[attackTargetUnitIndex].icon"></td> -->
                                                     </tr>
                                                     <tr class="attackInfo"
@@ -253,11 +251,8 @@
                                     </tr>
                                     <tr>
                                         <td colspan="1">
-                                            <log-action-buttons
-                                                    :get-app="getApp"
-                                                    :on-copy="copySimpleLogToClipboard"
-                                                    :show-flash="showFlash"
-                                            >
+                                            <log-action-buttons :get-app="getApp" :on-copy="copySimpleLogToClipboard"
+                                                :show-flash="showFlash">
                                             </log-action-buttons>
                                             <div v-html="simpleLog" id="simpleLogPanel"
                                                 style="overflow-y:scroll; margin-bottom: 5px; height: 200px; width:190px; border: 1px solid #ddd;background-color: #fff;">
@@ -373,23 +368,14 @@
                         <tr>
                             <td colspan="2">
                                 <div class="buttonUi">
-                                    <control-buttons
-                                            :get-app="getApp"
-                                            :get-attacker="getAttacker"
-                                            :get-current-unit="getCurrentUnit"
-                                            :map="map"
-                                            :update-map="updateMap"
-                                            :end-turn="endTurn"
-                                            :save-settings="saveSettings"
-                                            :global-battle-context="globalBattleContext"
-                                            :show-setting-dialog="showSettingDialog"
-                                            :show-import-dialog="showImportDialog"
-                                            :show-export-dialog="showExportDialog"
-                                            :audio-manager="audioManager"
-                                            :bgm-enabled-changed="bgmEnabledChanged"
-                                            :load-lazy-images="loadLazyImages"
-                                            :show-flash="showFlash"
-                                    >
+                                    <control-buttons :get-app="getApp" :get-attacker="getAttacker"
+                                        :get-current-unit="getCurrentUnit" :map="map" :update-map="updateMap"
+                                        :end-turn="endTurn" :save-settings="saveSettings"
+                                        :global-battle-context="globalBattleContext"
+                                        :show-setting-dialog="showSettingDialog" :show-import-dialog="showImportDialog"
+                                        :show-export-dialog="showExportDialog" :audio-manager="audioManager"
+                                        :bgm-enabled-changed="bgmEnabledChanged" :load-lazy-images="loadLazyImages"
+                                        :show-flash="showFlash">
                                     </control-buttons>
                                     <!-- <label for='currentTurnSlider'>現在のターン:</label> -->
                                     <!-- <input type='number' id='currentTurn' v-model='globalBattleContext.currentTurn' min='0' max='7' step='1'
@@ -406,36 +392,28 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <simulation-controls
-                                        :get-app="getApp"
-                                        :is-enemy-action-triggered.sync="isEnemyActionTriggered"
-                                        :simulates-enemy-action-one-by-one.sync="simulatesEnemyActionOneByOne"
-                                        :is-icon-overlay-disabled.sync="map.isIconOverlayDisabled"
-                                        :is-trap-icon-overlay-disabled.sync="map.isTrapIconOverlayDisabled"
-                                        :is-aether-raid="gameMode == GameMode.AetherRaid"
-                                        :is-resonant="GameMode == GameMode.ResonantBattles"
-                                        :show-flash="showFlash"
-                                        @icon-overlay-disabled-changed="iconOverlayDisabledChanged"
-                                        @heal-hp-full="healHpFullForAllUnits"
-                                        @reset-placement="resetPlacement"
-                                        @open-team-formation-dialog="$('#teamFormationDialog').dialog('open')"
-                                        @open-aether-raid-dialog="$('#aetherRaidDefensePresetDialog').dialog('open')"
-                                        @open-item-dialog="$('#itemDialog').dialog('open')"
-                                        @open-durability-test="$('#durabilityTestDialog').dialog('open')"
-                                        @open-edit-map="$('#editMapDialog').dialog('open')"
-                                >
+                                <simulation-controls :get-app="getApp"
+                                    :is-enemy-action-triggered.sync="isEnemyActionTriggered"
+                                    :simulates-enemy-action-one-by-one.sync="simulatesEnemyActionOneByOne"
+                                    :is-icon-overlay-disabled.sync="map.isIconOverlayDisabled"
+                                    :is-trap-icon-overlay-disabled.sync="map.isTrapIconOverlayDisabled"
+                                    :is-aether-raid="gameMode == GameMode.AetherRaid"
+                                    :is-resonant="GameMode == GameMode.ResonantBattles" :show-flash="showFlash"
+                                    @icon-overlay-disabled-changed="iconOverlayDisabledChanged"
+                                    @heal-hp-full="healHpFullForAllUnits" @reset-placement="resetPlacement"
+                                    @open-team-formation-dialog="$('#teamFormationDialog').dialog('open')"
+                                    @open-aether-raid-dialog="$('#aetherRaidDefensePresetDialog').dialog('open')"
+                                    @open-item-dialog="$('#itemDialog').dialog('open')"
+                                    @open-durability-test="$('#durabilityTestDialog').dialog('open')"
+                                    @open-edit-map="$('#editMapDialog').dialog('open')">
                                 </simulation-controls>
                             </td>
                         </tr>
                         <tr v-bind:style="debugMenuStyle">
                             <td colspan="2">
-                                <debug-buttons
-                                        :get-app="getApp"
-                                        :reset-unit-random="resetUnitRandom"
-                                        :activate-all-unit="activateAllUnit"
-                                        :reset-unit-for-testing="resetUnitForTesting"
-                                        :open-auto-clear-dialog="() => $('#autoClearDialog').dialog('open')"
-                                >
+                                <debug-buttons :get-app="getApp" :reset-unit-random="resetUnitRandom"
+                                    :activate-all-unit="activateAllUnit" :reset-unit-for-testing="resetUnitForTesting"
+                                    :open-auto-clear-dialog="() => $('#autoClearDialog').dialog('open')">
                                 </debug-buttons>
                             </td>
                         </tr>
@@ -455,12 +433,10 @@
                         <tr>
                             <td>
                                 <div style="padding-right: 10px;">攻撃編成</div>
-                                <div v-if="g_appData.gameMode === GameMode.Arena"
-                                     style="font-size:12px">査定:{{arenaScore}}({{primeArenaScore}})
+                                <div v-if="g_appData.gameMode === GameMode.Arena" style="font-size:12px">
+                                    査定:{{arenaScore}}({{primeArenaScore}})
                                 </div>
-                                <div v-if="g_appData.hasDuplicateEmblemHeroInAllyTeam()"
-                                     class="warning team-warning"
-                                >
+                                <div v-if="g_appData.hasDuplicateEmblemHeroInAllyTeam()" class="warning team-warning">
                                     <i class="fa-solid fa-triangle-exclamation"></i>
                                     紋章士重複
                                 </div>
@@ -468,20 +444,21 @@
                             <td>
                                 <draggable tag="div" @end="enemyUnitSorted">
                                     <button type="button" @click="g_app.selectItem(unit.id)" v-for="unit in allyUnits"
-                                            v-bind:class="unit.id + ' iconButton'" style="position:relative">
+                                        v-bind:class="unit.id + ' iconButton'" style="position:relative">
                                         <span style="font-weight: bold; font-size:12px; position:absolute">
                                             <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
                                                 絆{{summonerLevelToString(unit.summonerLevel)}}</div>
                                             <div v-if="unit.isBonusChar"
-                                                 style=" color:blue;background-color: #ffffff66;">
+                                                style=" color:blue;background-color: #ffffff66;">
                                                 Bonus</div>
                                         </span>
                                         <div class="team-container">
-                                            <img :key=" unit.id" v-bind:src="unit.icon" class="unit-img" style="max-width: 35px;" />
-                                            <img v-if="unit.emblemHeroIndex !== EmblemHero.None" class="engage-img" v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20" />
+                                            <img :key=" unit.id" v-bind:src="unit.icon" class="unit-img"
+                                                style="max-width: 35px;" />
+                                            <img v-if="unit.emblemHeroIndex !== EmblemHero.None" class="engage-img"
+                                                v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20" />
                                             <div v-if="g_appData.getDuplicateAllyEmblemHeroUnits().includes(unit)"
-                                                 class="team-warning warning-icon"
-                                            >
+                                                class="team-warning warning-icon">
                                                 <i class="fa-solid fa-triangle-exclamation"></i>
                                             </div>
                                         </div>
@@ -496,16 +473,13 @@
                         <tr>
                             <td>
                                 <div style="padding-right: 10px;">防衛編成</div>
-                                <div
-                                        v-if="g_appData.gameMode === GameMode.Arena"
-                                        style="font-size:12px">査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
+                                <div v-if="g_appData.gameMode === GameMode.Arena" style="font-size:12px">
+                                    査定:{{arenaScoreForEnemy}}({{primeArenaScoreForEnemy}})
                                 </div>
-                                <div v-else-if="g_appData.gameMode === GameMode.AetherRaid"
-                                     style="font-size:12px">失敗レート:{{aetherRaidDefenseLiftLoss}}
+                                <div v-else-if="g_appData.gameMode === GameMode.AetherRaid" style="font-size:12px">
+                                    失敗レート:{{aetherRaidDefenseLiftLoss}}
                                 </div>
-                                <div v-if="g_appData.hasDuplicateEmblemHeroInEnemyTeam()"
-                                     class="warning team-warning"
-                                >
+                                <div v-if="g_appData.hasDuplicateEmblemHeroInEnemyTeam()" class="warning team-warning">
                                     <i class="fa-solid fa-triangle-exclamation"></i>
                                     紋章士重複
                                 </div>
@@ -513,23 +487,22 @@
                             <td>
                                 <draggable tag="div" @end="enemyUnitSorted" style="position:relative">
                                     <button type="button" @click="g_app.selectItem(unit.id)" v-for="unit in enemyUnits"
-                                            v-bind:class="unit.id + ' iconButton'" style="position:relative">
+                                        v-bind:class="unit.id + ' iconButton'" style="position:relative">
                                         <span style="font-weight: bold; font-size:12px; position:absolute">
                                             <div v-if="unit.summonerLevel!==SummonerLevel.None" style="color:red; ">
                                                 {{summonerLevelToString(unit.summonerLevel)}}</div>
                                             <div v-if="unit.isBonusChar"
-                                                 style=" color:blue;background-color: #ffffff66;">
+                                                style=" color:blue;background-color: #ffffff66;">
                                                 Bonus</div>
                                         </span>
                                         <div class="team-container">
                                             <img :key=" unit.id" v-bind:src="unit.icon" class="unit-img"
-                                                 style="max-width: 35px;"/>
+                                                style="max-width: 35px;" />
                                             <img v-if="unit.emblemHeroIndex !== EmblemHero.None" class="engage-img"
-                                                 v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20"/>
+                                                v-bind:src="EngagedSpecialIcon[unit.emblemHeroIndex]" width="20" />
 
                                             <div v-if="g_appData.getDuplicateEnemyEmblemHeroUnits().includes(unit)"
-                                                 class="team-warning warning-icon"
-                                            >
+                                                class="team-warning warning-icon">
                                                 <i class="fa-solid fa-triangle-exclamation"></i>
                                             </div>
                                         </div>
@@ -584,28 +557,20 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <debug-settings
-                            :is-debug-menu-enabled="isDebugMenuEnabled"
-                            :is-development-mode="isDevelopmentMode"
-                            @is-debug-changed="debugMenuEnabledChanged"
-                            @is-dev-mode-changed="developModeChanged"
-                    ></debug-settings>
+                    <debug-settings :is-debug-menu-enabled="isDebugMenuEnabled" :is-development-mode="isDevelopmentMode"
+                        @is-debug-changed="debugMenuEnabledChanged"
+                        @is-dev-mode-changed="developModeChanged"></debug-settings>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-                    <log-panel
-                            :get-app="getApp"
-                            :simulator-log-level="simulatorLogLevel"
-                            :skill-log-level="skillLogLevel"
-                            :simulator-log-level-option="simulatorLogLevelOption"
-                            :save-simulator-log-level="saveSimulatorLogLevel"
-                            :skill-log-level-option="skillLogLevelOption"
-                            :save-skill-log-level="saveSkillLogLevel"
-                            :copy-debug-log-to-clipboard="copyDebugLogToClipboard"
-                    ></log-panel>
+                    <log-panel :get-app="getApp" :simulator-log-level="simulatorLogLevel"
+                        :skill-log-level="skillLogLevel" :simulator-log-level-option="simulatorLogLevelOption"
+                        :save-simulator-log-level="saveSimulatorLogLevel" :skill-log-level-option="skillLogLevelOption"
+                        :save-skill-log-level="saveSkillLogLevel"
+                        :copy-debug-log-to-clipboard="copyDebugLogToClipboard"></log-panel>
                     <div v-html="damageCalcLog" id="debugLogPanel"
-                         style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
+                        style="height: 400px; border: 1px solid #dddddd;background-color: #ffffff;overflow-y: scroll;">
                     </div>
                 </td>
             </tr>
@@ -627,25 +592,20 @@
                         onchange="g_appData.map.switchClosestDistanceToEnemy();updateMap();"><label class="normal"
                         for="showClosestDistanceToEnemy">最も近い敵への距離を表示</label>
                     <br />
-                    <input id="showDivineVeinImage" type="checkbox"
-                           v-model="showDivineVeinImageWithoutBreakable"
-                           @change="onDivineVeinImageVisibilityChanged">
+                    <input id="showDivineVeinImage" type="checkbox" v-model="showDivineVeinImageWithoutBreakable"
+                        @change="onDivineVeinImageVisibilityChanged">
                     <label class="normal" for="showDivineVeinImage">破壊可能な天脈以外の画像表示</label>
                     <br />
-                    <input id="onChangeEnemyIceColor" type="checkbox"
-                           v-model="changeEnemyIceColor"
-                           @change="onChangeEnemyIceColor">
+                    <input id="onChangeEnemyIceColor" type="checkbox" v-model="changeEnemyIceColor"
+                        @change="onChangeEnemyIceColor">
                     <label class="normal" for="onChangeEnemyIceColor">敵の天脈・氷の色をかえる</label>
-                    <divine-vein-opacity-settings
-                            v-model="divineVeinOpacities"
-                            @change="updateAllUi"
-                    >
+                    <divine-vein-opacity-settings v-model="divineVeinOpacities" @change="updateAllUi">
                     </divine-vein-opacity-settings>
-                    <br/>
+                    <br />
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
                     <br />
                     <input id="isBgImageEnabled" type="checkbox" v-model="map.isBackgroundImageEnabled"
-                           @change="backgroundImageEnabledChanged">
+                        @change="backgroundImageEnabledChanged">
                     <label class="normal" for="isBgImageEnabled">マップの背景画像を有効にする</label>
                     <br />
                 </fieldset>
@@ -1117,13 +1077,9 @@
             <br />
         </div>
         <div id="saveUnitDialog" class="unit-dialog">
-            <unit-storage-dialog
-                    ref="unitStorageDialog"
-                    :get-app-data="getAppData"
-                    :weapon-type-icon-path="weaponTypeIconPath"
-                    :move-type-icon-path="moveTypeIconPath"
-                    :show-flash="showFlash"
-            >
+            <unit-storage-dialog ref="unitStorageDialog" :get-app-data="getAppData"
+                :weapon-type-icon-path="weaponTypeIconPath" :move-type-icon-path="moveTypeIconPath"
+                :show-flash="showFlash">
             </unit-storage-dialog>
         </div>
         <div v-bind:style="debugMenuStyle">
@@ -1169,19 +1125,17 @@
                     class="lazyTemplateImageForArena" v-bind:id="imgFile.fileName" v-bind:alt="imgFile.fileName" />
             </span>
             <span v-for="imgFile in templateEngageSpecialIconFiles">
-                <img src="/images/dummy.png" v-bind:data-src="`${g_corsImageRootPath}images/FehSkillIcons/EngagedSpecial/${imgFile.fileName}`"
-                     v-bind:id="imgFile.fileName" class="lazyTemplateImage" v-bind:alt="imgFile.fileName"/>
+                <img src="/images/dummy.png"
+                    v-bind:data-src="`${g_corsImageRootPath}images/FehSkillIcons/EngagedSpecial/${imgFile.fileName}`"
+                    v-bind:id="imgFile.fileName" class="lazyTemplateImage" v-bind:alt="imgFile.fileName" />
             </span>
         </div>
         <div id="info-pop" popover="manual">
-            <damage-calc-result
-                    :combat-result="combatResult"
-                    :on-closed="() => { document.getElementById('info-pop')?.hidePopover() }"
-                    :shows-skill-logs="showsSkillLogs"
-                    :detail-level="damageCalcDetailLevel"
-                    @update:shows-skill-logs="val => (g_appData.saveShowsSkills(val))"
-                    @update:detail-level="val => (g_appData.saveDamageCalcDetailLevel(val))"
-            >
+            <damage-calc-result :combat-result="combatResult"
+                :on-closed="() => { document.getElementById('info-pop')?.hidePopover() }"
+                :shows-skill-logs="showsSkillLogs" :detail-level="damageCalcDetailLevel"
+                @update:shows-skill-logs="val => (g_appData.saveShowsSkills(val))"
+                @update:detail-level="val => (g_appData.saveDamageCalcDetailLevel(val))">
             </damage-calc-result>
         </div>
     </div>
@@ -1885,9 +1839,9 @@
             g_app.vm.$refs.unitStorageDialog.setUnitName(g_appData.currentUnit.name);
         }
         function createDialog(elem, title,
-                              width = 370, height = 500,
-                              positionOf = "#unitSettings",
-                              modal = false, position = null) {
+            width = 370, height = 500,
+            positionOf = "#unitSettings",
+            modal = false, position = null) {
             let p = position ? position : { my: "left top", at: "left top", of: positionOf };
             elem.dialog({
                 autoOpen: false,
@@ -1918,7 +1872,7 @@
                     node.scrollTop = node.scrollHeight;
                 });
                 // オプション（監視する対象を指定）
-                let config = {childList: true, subtree: true};
+                let config = { childList: true, subtree: true };
 
                 // MutationObserverの設定
                 simpleLogPanelObserver.observe(node, config);
