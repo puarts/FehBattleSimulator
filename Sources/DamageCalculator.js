@@ -752,9 +752,10 @@ class DamageCalculator {
      * @param {LoggerBase} logger
      * @param {UnitManager} unitManager
      */
-    constructor(logger, unitManager) {
+    constructor(logger, unitManager, map) {
         this._logger = logger;
         this.unitManager = unitManager;
+        this.map = map;
     }
 
     get isLogEnabled() {
@@ -2404,7 +2405,7 @@ class DamageCalculator {
 
     #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial, context) {
         let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context);
-        env.setBattleMap(g_appData.map).setGroupLogger(context.damageCalcEnv.getCurrentStrikeLogger())
+        env.setBattleMap(this.map).setGroupLogger(context.damageCalcEnv.getCurrentStrikeLogger())
             .setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
         for (let skillId of defUnit.enumerateSkills()) {

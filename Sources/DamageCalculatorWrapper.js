@@ -62,7 +62,7 @@ class DamageCalculatorWrapper {
         this._unitManager = unitManager;
         this.map = map;
         this.globalBattleContext = globalBattleContext;
-        this._damageCalc = new DamageCalculator(logger, unitManager);
+        this._damageCalc = new DamageCalculator(logger, unitManager, map);
         this.logger = logger;
         this.profiler = new PerformanceProfile();
         this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger);
@@ -581,7 +581,8 @@ class DamageCalculatorWrapper {
     calcPrecombatSpecialResult(atkUnit, defUnit, damageCalcEnv) {
         atkUnit.battleContext.clearPrecombatState();
         this.__applyPrecombatSkills(atkUnit, defUnit, damageCalcEnv);
-        return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit, this.isSummonerDualCalcEnabled);
+        return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit,
+            damageCalcEnv.gameMode === GameMode.SummonerDuels || this.isSummonerDualCalcEnabled);
     }
 
     /**
