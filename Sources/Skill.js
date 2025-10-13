@@ -1750,6 +1750,8 @@ const COUNT3_SPECIALS = [];
 const INHERITABLE_COUNT3_SPECIALS = [];
 const COUNT4_SPECIALS = [];
 const INHERITABLE_COUNT4_SPECIALS = [];
+const COUNT5_SPECIALS = [];
+const INHERITABLE_COUNT5_SPECIALS = [];
 
 /**
  * 補助時に奥義発動カウントを進めないスキル

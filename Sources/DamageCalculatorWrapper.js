@@ -169,7 +169,8 @@ class DamageCalculatorWrapper {
     updateDamageCalculation(atkUnit, defUnit, tileToAttack = null, gameMode = GameMode.Arena) {
         /** @type {DamageCalcEnv} */
         let damageCalcEnv = new DamageCalcEnv().setUnits(atkUnit, defUnit)
-            .setTileToAttack(tileToAttack).setDamageType(DamageType.ActualDamage).setGameMode(gameMode);
+            .setTileToAttack(tileToAttack).setDamageType(DamageType.ActualDamage).setGameMode(gameMode)
+            .setBattleMap(this.map);
 
         this.#initBattleContext(atkUnit, defUnit);
         atkUnit.initReservedState();
@@ -323,7 +324,7 @@ class DamageCalculatorWrapper {
         let result;
         /** @type {DamageCalcEnv} */
         let damageCalcEnv = env || new DamageCalcEnv().setUnits(atkUnit, defUnit)
-            .setTileToAttack(tileToAttack).setDamageType(damageType).setGameMode(gameMode);
+            .setTileToAttack(tileToAttack).setDamageType(damageType).setGameMode(gameMode).setBattleMap(this.map);
 
         this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
         using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {

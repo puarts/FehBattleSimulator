@@ -924,7 +924,7 @@ class Unit extends BattleMapElement {
                 func?.call(this, moveCountForCanto, cantoControlledIfCantoActivated);
             }
             // 同時タイミングに付与された天脈を消滅させる
-            g_appData.map.applyReservedDivineVein();
+            g_appData?.map?.applyReservedDivineVein();
         }
     }
 
@@ -2532,7 +2532,7 @@ class Unit extends BattleMapElement {
      * @param {number} statusEffectType
      */
     addStatusEffect(statusEffectType) {
-        let units = g_appData.enumerateAllUnitsOnMap();
+        let units = g_appData?.enumerateAllUnitsOnMap?.() ?? [];
         for (let unit of units) {
             let env = new PreventingStatusEffectEnv(unit, this, statusEffectType);
             env.setName('ステータス付与時').setLogLevel(getSkillLogLevel());
@@ -2953,7 +2953,7 @@ class Unit extends BattleMapElement {
     }
 
     endActionBySkillEffect() {
-        let units = g_appData.enumerateAllUnitsOnMap();
+        let units = g_appData?.enumerateAllUnitsOnMap?.() ?? [];
         for (let unit of units) {
             let env = new NeutralizingEndActionEnv(unit, this);
             env.setName('スキルによる行動終了時').setLogLevel(getSkillLogLevel());
@@ -2965,7 +2965,7 @@ class Unit extends BattleMapElement {
     }
 
     endActionByStatusEffect() {
-        let units = g_appData.enumerateAllUnitsOnMap();
+        let units = g_appData?.enumerateAllUnitsOnMap?.() ?? [];
         for (let unit of units) {
             let env = new NeutralizingEndActionEnv(unit, this);
             env.setName('ステータスによる行動終了時').setLogLevel(getSkillLogLevel());
@@ -2997,7 +2997,7 @@ class Unit extends BattleMapElement {
         if (isCantoEndAction) {
             AFTER_CANTO_HOOKS.evaluateWithUnit(this, env)
         }
-        for (let unit of g_appData.enumerateAllUnitsOnMap()) {
+        for (let unit of g_appData?.enumerateAllUnitsOnMap() ?? []) {
             unit.applyReservedState(false);
         }
     }
@@ -4993,11 +4993,11 @@ class Unit extends BattleMapElement {
 
     getReinforcementMerge() {
         let mergeMax = 0;
-        if (g_appData.isReinforcementSlotUnit(this)) {
+        if (g_appData?.isReinforcementSlotUnit(this)) {
             // 増設枠以外の増援神階英雄のマージの最大値
-            for (let unit of g_appData.map.enumerateUnitsInTheSameGroup(this)) {
+            for (let unit of g_appData?.map?.enumerateUnitsInTheSameGroup(this) ?? []) {
                 if (unit === this) continue;
-                let seasons = g_appData.enumerateCurrentSeasons();
+                let seasons = g_appData?.enumerateCurrentSeasons() ?? [];
                 if (unit.hasReinforcementAbility(seasons, unit.groupId === UnitGroupType.Ally)) {
                     mergeMax = Math.max(mergeMax, unit.merge);
                 }
@@ -6732,7 +6732,9 @@ class Unit extends BattleMapElement {
         }
         this.isActionDone = false;
         this.activatedOncePerTurnSkillEffectIdsThisTurn.add(Unit.GRANTS_ANOTHER_ACTION_ON_ASSIST_ID);
-        g_appData.globalBattleContext.reservedIsAnotherActionByAssistActivatedInCurrentTurn[this.groupId] = true;
+        if (g_appData?.globalBattleContext) {
+            g_appData.globalBattleContext.reservedIsAnotherActionByAssistActivatedInCurrentTurn[this.groupId] = true;
+        }
     }
 
     grantsAnotherActionOnAssisted() {
@@ -6762,7 +6764,7 @@ class Unit extends BattleMapElement {
 
     grantAnotherActionByCallingCircleIfPossible(currentTurn = null) {
         if (currentTurn === null) {
-            currentTurn = g_appData.currentTurn;
+            currentTurn = g_appData?.currentTurn || 0;
         }
         if (currentTurn === this.anotherActionTurnForCallingCircle &&
             this.isActionDone) {

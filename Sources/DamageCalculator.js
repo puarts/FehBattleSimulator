@@ -606,6 +606,7 @@ class DamageCalcEnv {
         this.saverUnit = null;
         /** @type {CombatResult} */
         this.combatResult = new CombatResult();
+        this.battleMap = null;
     }
 
     /**
@@ -724,6 +725,11 @@ class DamageCalcEnv {
 
     setGameMode(gameMode) {
         this.gameMode = gameMode;
+        return this;
+    }
+
+    setBattleMap(battleMap) {
+        this.battleMap = battleMap;
         return this;
     }
 
@@ -2402,9 +2408,11 @@ class DamageCalculator {
         return isDefenderSpecialActivated;
     }
 
-    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit, canActivateAttackerSpecial, context) {
+    #applyDamageReductionByNoneDefenderSpecial(damageReductionRatiosByNonDefenderSpecial, atkUnit, defUnit,
+                                               canActivateAttackerSpecial, context) {
         let env = new DamageCalculatorEnv(this, defUnit, atkUnit, canActivateAttackerSpecial, context);
-        env.setBattleMap(g_appData.map).setGroupLogger(context.damageCalcEnv.getCurrentStrikeLogger())
+        env.setBattleMap(context.damageCalcEnv.battleMap)
+            .setGroupLogger(context.damageCalcEnv.getCurrentStrikeLogger())
             .setName('1戦闘に1回の奥義による軽減効果').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType);
         AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.evaluateWithUnit(defUnit, env);
         for (let skillId of defUnit.enumerateSkills()) {

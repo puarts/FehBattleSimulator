@@ -1945,7 +1945,7 @@ class MathUtil {
 
 class DebugUtil {
     static getSkillName(unit, info) {
-        return `${unit.nameWithGroup}の${info.name}`;
+        return `${unit.nameWithGroup}の${info?.name ?? ''}`;
     }
 }
 

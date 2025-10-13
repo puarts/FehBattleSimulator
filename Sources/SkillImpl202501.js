@@ -463,7 +463,7 @@
 {
     let skillId = Special.Comet;
     // CD: 5
-    setSpecialCountAndType(skillId, 5, true, false, false);
+    setSpecialCountAndType(skillId, 5, true, true, false, false);
     // When Special triggers,
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // boosts damage dealt by 200%.
@@ -895,7 +895,7 @@
 {
     let skillId = Special.TorrentialRoar;
     // CD: 3
-    setSpecialCountAndType(skillId, 3, true, false);
+    setSpecialCountAndType(skillId, 3, false, true, false);
     // Boosts damage by 60% of unit’s Res when Special triggers.
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_RES_NODE)),
@@ -1727,7 +1727,7 @@
 {
     let skillId = Special.FlameWall;
     // (CD: 4)
-    setSpecialCountAndType(skillId, 4, true, false, false);
+    setSpecialCountAndType(skillId, 4, true, true, false, false);
     // Boosts damage by 70% of unit’s Def when Special triggers.
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(70, UNITS_DEF_NODE)),
@@ -2213,7 +2213,7 @@
     // CD：5
     // If unit initiates combat,
     // when unit’s Special triggers, grants another action to unit after combat (once per turn).
-    setSpecialCountAndType(skillId, 5, false, false, true);
+    setSpecialCountAndType(skillId, 5, true, false, false, true);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // If unit initiates combat,
         IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
@@ -3442,7 +3442,7 @@
 {
     let skillId = Special.Archrival;
     // CD: 5
-    setSpecialCountAndType(skillId, 5, true, false);
+    setSpecialCountAndType(skillId, 5, true, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // When Special triggers,
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
@@ -3653,7 +3653,7 @@
 // 🦁 Mighty Roar CD: 3
 {
     let skillId = Special.MightyRoar;
-    setSpecialCountAndType(skillId, 3, true, false);
+    setSpecialCountAndType(skillId, 3, false, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // Boosts damage by 60% of unit’s Def when Special triggers.
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(60, UNITS_DEF_NODE)),
@@ -4395,7 +4395,7 @@
 {
     let skillId = Special.Immurement;
     // Cooldown: 5
-    setSpecialCountAndType(skillId, 5, true, false);
+    setSpecialCountAndType(skillId, 5, false, true, false);
     // When Special triggers,
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // boosts damage by 70% of unit’s Atk
@@ -4906,7 +4906,7 @@
 // Celestial Form
 {
     let skillId = Special.CelestialForm;
-    setSpecialCountAndType(skillId, 3, true, false);
+    setSpecialCountAndType(skillId, 3, true, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by X% of unit's Spd when Special triggers
         X_NUM_NODE(
@@ -5559,7 +5559,7 @@
 {
     let skillId = Special.TheTrueNjorun;
     // Cooldown: 3
-    setSpecialCountAndType(skillId, 3, true, false);
+    setSpecialCountAndType(skillId, 3, false, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by 50% of unit’s Def when Special triggers.
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(50, UNITS_DEF_NODE)),
@@ -5888,9 +5888,7 @@
 {
     let skillId = getRefinementSkillId(Weapon.TomeOfReglay);
     // Mt 14 Rng 2
-    //
     // Grants Atk+3.
-    //
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // At start of turn,
         // grants Atk/Spd+6 and
@@ -6814,7 +6812,7 @@
 // 🌙 Great Sacrifice ⏳3
 {
     let skillId = Special.GreatSacrifice;
-    setSpecialCountAndType(skillId, 3, true, false);
+    setSpecialCountAndType(skillId, 3, false, true, false);
     // When Special triggers,
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // boosts damage by 60% of unit’s Res
@@ -7330,7 +7328,7 @@
 // 🌙 Magic Light ⏳3
 {
     let skillId = Special.MagicLight;
-    setSpecialCountAndType(skillId, 3, true, false);
+    setSpecialCountAndType(skillId, 3, true, true, false);
     // When Special triggers,
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // treats foe’s Def/Res as if reduced by 50%
@@ -8094,7 +8092,7 @@
 {
     let skillId = Special.ArmoredGlacier;
     // [Special] CD: 3
-    setSpecialCountAndType(skillId, 3, true, false);
+    setSpecialCountAndType(skillId, 3, true, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by 40% of unit’s Res when Special triggers.
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(40, UNITS_RES_NODE)),
@@ -8341,7 +8339,7 @@
 {
     let skillId = Special.PitchDarkLuna;
     // CD: 3
-    setSpecialCount(skillId, 3);
+    setSpecialCount(skillId, 3, false);
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // When Special triggers,
@@ -9555,7 +9553,7 @@
 // Fell Blast
 {
     let skillId = Special.FellBlast;
-    setSpecialCount(skillId, 3);
+    setSpecialCount(skillId, 3, false);
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by 50% of unit’s Res when Special triggers.
@@ -10076,7 +10074,7 @@
 // The Fire Emblem
 {
     let skillId = Special.TheFireEmblem;
-    setSpecialCount(skillId, 2);
+    setSpecialCount(skillId, 2, false);
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by 40% of unit's Spd when Special triggers.
@@ -10610,7 +10608,7 @@
 // Dragon Flame (Special, Cooldown: 4)
 {
     let skillId = Special.DragonFlame;
-    setSpecialCountAndType(skillId, 4, true, false);
+    setSpecialCountAndType(skillId, 4, true, true, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Boosts damage by 80% of unit’s Def and restores 30% of unit’s maximum HP when Special triggers.
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(80, UNITS_DEF_NODE)),
@@ -11644,7 +11642,7 @@
 // Twin Strike
 {
     let skillId = Special.TwinStrike;
-    setSpecialCount(3);
+    setSpecialCount(skillId, 3, false);
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
@@ -11971,7 +11969,7 @@
 // True Lunar Flash
 {
     let skillId = Special.TrueLunarFlash;
-    setSpecialCount(skillId, 3);
+    setSpecialCount(skillId, 3, false);
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // When Special triggers,
@@ -14948,7 +14946,7 @@
 {
     let skillId = Special.CrusadersAstra;
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
-    setSpecialCount(skillId, 2);
+    setSpecialCount(skillId, 2, false);
     // Crusader's Astra
     // When Special triggers,
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -15315,7 +15313,7 @@
 {
     let skillId = Special.AethersPath;
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
-    setSpecialCount(4);
+    setSpecialCount(skillId, 4, false);
 
     // When Special triggers,
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -16076,7 +16074,7 @@
 
 {
     let skillId = Special.LifeUnending2;
-    setSpecialCountAndType(skillId, 5, false, true);
+    setSpecialCountAndType(skillId, 5, false, false, true);
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At the start of turn 1, grants Special cooldown count-5 to unit.
         IF_NODE(EQ_NODE(CURRENT_TURN_NODE, 1),
