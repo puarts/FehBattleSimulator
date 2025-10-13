@@ -4218,7 +4218,7 @@
                     MULT_TRUNC_NODE(READ_NUM_NODE, 1 / 12.0),
                 ),
                 // (X = highest total bonuses among unit and allies within 3 spaces of unit),
-                HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(3),
+                ENSURE_MIN_NODE(HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(3), 0),
             ),
         ),
         SKILL_EFFECT_NODE(
@@ -13145,7 +13145,7 @@
             FOR_EACH_TARGET_STAT_INDEX_NODE([StatusIndex.ATK, StatusIndex.SPD, StatusIndex.RES],
                 INFLICTS_STAT_MINUS_AT_ON_FOE_DURING_COMBAT_NODE(
                     READ_NUM_NODE,
-                    MULT_NODE(FOES_BONUS_NODE, 2))
+                    MULT_NODE(FOES_BONUS_NODE(READ_NUM_NODE), 2))
             ),
             // neutralizes effects that grant “Special cooldown charge +X” to foe or inflict “Special cooldown charge -X” on unit during combat,
             NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
