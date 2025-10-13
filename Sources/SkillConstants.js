@@ -2594,7 +2594,7 @@ const PassiveA = {
     VerdictOfSacae: 2191, // 大いなるサカの掟
     OstiasCounter: 587, // オスティアの反撃
     OstiasHeart: 2401, // オスティアの心魂
-    Duality: 2241, // 魂の秘儀
+    Duality: 2241, // 陰陽の法則
     SwiftSlice: 2298, // 連閃
     SelfImprover: 2329, // 自己研鑽
     Nightmare: 2334, // 漆黒の悪夢
@@ -3998,6 +3998,10 @@ Weapon.NightmareStaff = 3432; // 悪夢の女王の魔杖
 Special.Comet = 3433; // 彗星
 PassiveB.HauntingChoker = 3434; // 追憶の首飾り
 Weapon.SaintshipTome = 3435; // 聖女の慈愛の書
+// TODO: 修正
+Weapon.YeQuKeruzhanMaoNozhuaYa = 3436; // 夜駆ける戦猫の爪牙
+PassiveA.DualityPlus = 3437; // 陰陽の法則・神
+Support.Dragonsdance2 = 3438; // 尊き竜の血を…・承
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
