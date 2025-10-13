@@ -2211,7 +2211,7 @@ function initVueComponents() {
                     <div class="follow-up-number">{{ defFollowUpInc }}</div>
                     <div class="follow-up-value"
                          :class="{
-                           'follow-up-neutralized': (atkFollowUp < 0 && atkNeutralizesOwnFollowUpDec) ||
+                           'follow-up-neutralized': (defFollowUp < 0 && defNeutralizesOwnFollowUpDec) ||
                                                     (defFollowUp > 0 && atkNeutralizesFoesFollowUpInc),
                            'follow-up-plus': defFollowUp > 0,
                            'follow-up-minus': defFollowUp < 0
