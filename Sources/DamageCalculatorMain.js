@@ -29,6 +29,7 @@ const SpecialDamageGraphMode = {
     Count2Specials: 2,
     Count3Specials: 3,
     Count4Specials: 4,
+    Count5Specials: 5,
 };
 
 const SpecialDamageGraphModeOptions = [
@@ -37,6 +38,7 @@ const SpecialDamageGraphModeOptions = [
     { label: "発動カウント2の奥義", value: SpecialDamageGraphMode.Count2Specials },
     { label: "発動カウント3の奥義", value: SpecialDamageGraphMode.Count3Specials },
     { label: "発動カウント4の奥義", value: SpecialDamageGraphMode.Count4Specials },
+    { label: "発動カウント5の奥義", value: SpecialDamageGraphMode.Count5Specials },
 ];
 
 const TriangleAdeptType = {
@@ -129,6 +131,7 @@ class DamageCalcHeroDatabase extends HeroDatabase {
     constructor(inputHeroInfos, weapons, supports, specials,
         passiveAs, passiveBs, passiveCs, passiveSs, passiveXs) {
         super(inputHeroInfos);
+        /** @type {SkillDatabase} */
         this.skillDatabase = new SkillDatabase();
         this.skillDatabase.registerSkillOptions(weapons, supports, specials, passiveAs, passiveBs, passiveCs, passiveSs, passiveXs);
 
@@ -205,7 +208,7 @@ class DamageCalcHeroDatabase extends HeroDatabase {
             unit.isResplendent = false;
         }
 
-        unit.updateStatusBySkillsAndMergesForAll(true);
+        unit.updateStatusBySkillsAndMerges();
 
         unit.resetMaxSpecialCount();
         unit.specialCount = unit.maxSpecialCount;
@@ -413,6 +416,7 @@ class DamageCalcData {
 
         /** @type {DamageCalcEnv} */
         let damageCalcEnv = new DamageCalcEnv().setUnits(this.atkUnit, this.defUnit)
+            .setBattleMap(this.map)
             // .setTileToAttack(tileToAttack)
             .setDamageType(DamageType.EstimatedDamage).setGameMode(GameMode.AetherRaid);
         let result = this.damageCalc.calcCombatResult(damageCalcEnv);
@@ -526,7 +530,7 @@ class DamageCalcData {
         // ダメージ計算
         for (let special of targetSpecials) {
             this.atkUnit.special = special;
-            let specialName = this.specialOptions.filter(x => x.id == special)[0].text;
+            let specialName = this.specialOptions.filter(x => x.id == special)[0]?.text ?? '';
             let values = [];
             for (let mit = mitStart; mit <= mitEnd; mit += mitIncrement) {
                 this.defUnit.defWithSkills = mit;
@@ -544,15 +548,13 @@ class DamageCalcData {
 
         let datasets = [];
         {
-            const colors = Array.from(enumerateColors());
             let lineIndex = 0;
             let lineCount = Object.keys(specialToValuesDict).length;
             for (let special in specialToValuesDict) {
-                let values = specialToValuesDict[special];
-                const hue = lineIndex * (360 / (lineCount + 1));
-                let color = colors[lineIndex];
-                let bgColor = color.copy();
-                bgColor.luminance += 30;
+                const values = specialToValuesDict[special];
+                const hue = (lineIndex * 360 / lineCount) % 360;
+                const color = `hsl(${hue}, 70%, 50%)`;
+                const bgColor = `hsl(${hue}, 70%, 70%)`;
 
                 datasets.push({
                     label: special,
@@ -898,19 +900,25 @@ class DamageCalcData {
     __getSpecialsForCurrentGraphMode() {
         switch (this.specialGraphMode) {
             case SpecialDamageGraphMode.AllInheritableSpecials:
-                return this.__getInheritableCount2Specials()
+                return []
+                    .concat(this.__getInheritableCount2Specials())
                     .concat(this.__getInheritableCount3Specials())
-                    .concat(this.__getInheritableCount4Specials());
+                    .concat(this.__getInheritableCount4Specials())
+                    .concat(this.__getInheritableCount5Specials());
             case SpecialDamageGraphMode.AllSpecials:
-                return this.__getInheritableCount2Specials().concat(this.__getCount2Specials())
+                return []
+                    .concat(this.__getInheritableCount2Specials()).concat(this.__getCount2Specials())
                     .concat(this.__getInheritableCount3Specials()).concat(this.__getCount3Specials())
-                    .concat(this.__getInheritableCount4Specials()).concat(this.__getCount4Specials());
+                    .concat(this.__getInheritableCount4Specials()).concat(this.__getCount4Specials())
+                    .concat(this.__getInheritableCount5Specials()).concat(this.__getCount5Specials());
             case SpecialDamageGraphMode.Count2Specials:
                 return this.__getInheritableCount2Specials().concat(this.__getCount2Specials());
             case SpecialDamageGraphMode.Count3Specials:
                 return this.__getInheritableCount3Specials().concat(this.__getCount3Specials());
             case SpecialDamageGraphMode.Count4Specials:
                 return this.__getInheritableCount4Specials().concat(this.__getCount4Specials());
+            case SpecialDamageGraphMode.Count5Specials:
+                return this.__getInheritableCount5Specials().concat(this.__getCount5Specials());
         }
     }
 
@@ -949,26 +957,26 @@ class DamageCalcData {
             Special.Deadeye, // 狙撃(2倍)
             Special.BlueFrame, // ブルーフレイム(+10 or +25)
             Special.DraconicAura, // 竜穿
-            // Special.Iceberg, // 氷蒼(+魔防50%)
+            Special.Iceberg, // 氷蒼(+魔防50%)
             Special.ArmoredBeacon, // 重装の聖炎(+守備40%)
             Special.ArmoredFloe, // 重装の聖氷(+魔防40%)
             Special.Bonfire, // 緋炎(+守備50%)
-            Special.Luna, // 月光(守備魔防-50%)
         ].concat(INHERITABLE_COUNT3_SPECIALS);
     }
     __getCount3Specials() {
         return [
+            Special.Luna, // 月光(守備魔防-50%)
             Special.DragonBlast, // 神竜破
             Special.BrutalShell, // 凶弾
             Special.SeidrShell, // 魔弾(+15)
-            // Special.OpenTheFuture, // 開世(+守備50%)
+            Special.OpenTheFuture, // 開世(+守備50%)
             Special.KuroNoGekko, // 黒の月光(守備魔防-80%)
             Special.LightlessLuna, // 漆黒の月光(守備魔防-80%)
         ].concat(COUNT3_SPECIALS);
     }
     __getInheritableCount4Specials() {
         return [
-            // Special.Glacies, // 氷華(+魔防80%)
+            Special.Glacies, // 氷華(+魔防80%)
             Special.Ignis, // 華炎(+守備80%)
             Special.DragonFang, // 竜穿(+攻撃50%)
             Special.Astra, // 流星(2.5倍)
@@ -980,6 +988,14 @@ class DamageCalcData {
         return [
             Special.Lethality, // 滅殺
         ].concat(COUNT4_SPECIALS);
+    }
+
+    __getInheritableCount5Specials() {
+        return INHERITABLE_COUNT5_SPECIALS;
+    }
+
+    __getCount5Specials() {
+        return COUNT5_SPECIALS;
     }
 
     __writeLog(message) {
@@ -1041,6 +1057,7 @@ class HslColor {
     }
 }
 
+// TODO: 削除する。奥義の数が増えすぎたので今は使用していない
 function* enumerateColors() {
     const hueVariationCount = 8;
     const saturationOffset = 60;

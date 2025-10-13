@@ -51,7 +51,6 @@
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -376,7 +375,6 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
@@ -1381,7 +1379,6 @@
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT3_SPECIALS.push(skillId);
-    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -1607,7 +1604,6 @@
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2278,7 +2274,6 @@
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -2638,7 +2633,6 @@
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -4059,7 +4053,6 @@
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -4107,7 +4100,6 @@
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -5582,7 +5574,6 @@ function setLantern(skillId) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT4_SPECIALS.push(skillId);
-    INHERITABLE_COUNT4_SPECIALS.push(skillId);
 
     applySkillEffectsPerAttackFuncMap.set(skillId,
         function (targetUnit, enemyUnit, canActivateAttackerSpecial, context) {
@@ -5591,7 +5582,8 @@ function setLantern(skillId) {
             let status = targetUnit.getAtkInCombat(enemyUnit);
             let specialAddDamage = Math.trunc(status * (0.4 + count * 0.1));
             targetUnit.battleContext.addSpecialAddDamagePerAttack(specialAddDamage);
-            this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}によりダメージを${specialAddDamage}追加。status: ${status}, atk count: ${count}`);
+            let name = targetUnit.specialInfo?.name ?? '';
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の${name}によりダメージを${specialAddDamage}追加。status: ${status}, atk count: ${count}`);
         }
     );
 
@@ -5601,7 +5593,8 @@ function setLantern(skillId) {
             // ただし、連続して攻撃を受けた時の2回目以降のダメージは（70ー現在の奥義発動カウントx10）％軽減
             let basePercentage = context.isConsecutiveAttack(enemyUnit) ? 70 : 40;
             let percentage = basePercentage - targetUnit.tmpSpecialCount * 10;
-            this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}により${percentage}%軽減, base percentage: ${basePercentage}, count: ${targetUnit.tmpSpecialCount}`);
+            let name = targetUnit.specialInfo?.name ?? '';
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の${name}により${percentage}%軽減, base percentage: ${basePercentage}, count: ${targetUnit.tmpSpecialCount}`);
             targetUnit.battleContext.damageReductionRatiosBySpecialPerAttack.push(percentage / 100.0);
         }
     );
@@ -5801,7 +5794,6 @@ function setLantern(skillId) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -6979,7 +6971,6 @@ function setLantern(skillId) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -7011,7 +7002,6 @@ function setLantern(skillId) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -7042,7 +7032,6 @@ function setLantern(skillId) {
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
@@ -7343,7 +7332,6 @@ function setLantern(skillId) {
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
@@ -7772,7 +7760,6 @@ function setLantern(skillId) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT3_SPECIALS.push(skillId);
-    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillForBeginningOfTurnFuncMap.set(skillId,
         function (skillOwner) {
@@ -8197,7 +8184,6 @@ function setLantern(skillId) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -8580,7 +8566,6 @@ function setLantern(skillId) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -8599,13 +8584,14 @@ function setLantern(skillId) {
                         let targetRes = targetUnit.getEvalResInCombat(enemyUnit);
                         let enemyRes = enemyUnit.getEvalResInCombat(targetUnit);
                         let diff = targetRes - enemyRes;
-                        this.writeDebugLog(`奥義${targetUnit.specialInfo.name}による魔防参照。${targetUnit.nameWithGroup}: ${targetRes}, ${enemyUnit.nameWithGroup}: ${enemyRes}`);
+                        let name = targetUnit?.specialInfo?.name ?? '';
+                        this.writeDebugLog(`奥義${name}による魔防参照。${targetUnit.nameWithGroup}: ${targetRes}, ${enemyUnit.nameWithGroup}: ${enemyRes}`);
                         if (diff > 0) {
                             let ratio = Math.min(0.03 * diff, 0.3);
-                            this.writeDebugLog(`奥義${targetUnit.specialInfo.name}によりダメージを${ratio}軽減(diff: ${diff})`);
+                            this.writeDebugLog(`奥義${name}によりダメージを${ratio}軽減(diff: ${diff})`);
                             targetUnit.battleContext.damageReductionRatiosByNonDefenderSpecial.push(ratio);
                         } else {
-                            this.writeDebugLog(`奥義${targetUnit.specialInfo.name}は魔防条件を満たさない(diff: ${diff})`);
+                            this.writeDebugLog(`奥義${name}は魔防条件を満たさない(diff: ${diff})`);
                         }
                     }
                 }
@@ -9366,10 +9352,6 @@ function setLantern(skillId) {
     // 守備奥義
     DEFENSE_SPECIAL_SET.add(skillId);
 
-    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT3_SPECIALS.push(skillId);
-    INHERITABLE_COUNT3_SPECIALS.push(skillId);
-
     // 奥義によるダメージ軽減
     applyDamageReductionRatioBySpecialFuncMap.set(skillId,
         function (defUnit, atkUnit, attackRange) {
@@ -9919,7 +9901,6 @@ function setLantern(skillId) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
@@ -10019,7 +10000,6 @@ function setLantern(skillId) {
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
@@ -10140,7 +10120,6 @@ function setLantern(skillId) {
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     applySkillEffectForUnitAfterCombatStatusFixedFuncMap.set(skillId,
@@ -12163,7 +12142,8 @@ function setLantern(skillId) {
 
     applySkillEffectsPerAttackFuncMap.set(skillId,
         function (targetUnit, enemyUnit) {
-            this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}のHP割合: ${targetUnit.restHpPercentage}`);
+            let name = targetUnit.specialInfo?.name ?? '';
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の${name}のHP割合: ${targetUnit.restHpPercentage}`);
             let res = enemyUnit.getResInCombat(targetUnit);
             let ratio;
             if (targetUnit.restHpPercentage >= 70) {
@@ -12172,7 +12152,7 @@ function setLantern(skillId) {
                 ratio = 0.4;
                 targetUnit.battleContext.maxHpRatioToHealBySpecialPerAttack += 0.3;
             }
-            this.writeDebugLog(`${targetUnit.nameWithGroup}の${targetUnit.specialInfo.name}によるダメージ割合: ${ratio}, 魔防: ${res}`);
+            this.writeDebugLog(`${targetUnit.nameWithGroup}の${name}によるダメージ割合: ${ratio}, 魔防: ${res}`);
             targetUnit.battleContext.addSpecialAddDamagePerAttack(Math.trunc(res * ratio));
         }
     );

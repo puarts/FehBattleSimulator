@@ -52,15 +52,20 @@ class SummonerDuelsSimulator extends BattleSimulatorBase {
     }
 
     __goToNextPhaseIfPossible(groupId) {
+        console.log('__goToNextPhaseIfPossible: ' + groupId + '');
         if (this.__isCantoAtionActivatable(this.enumerateUnitsOnMap(x => x.groupId == groupId))) {
             // 再移動発動中のユニットがいる場合はフェーズを切り替えない
             return;
         }
 
         let endsCurrentPhase = !this.__hasAnyActions(this.enumerateUnitsOnMap(x => x.groupId == groupId));
+        console.log('__goToNextPhaseIfPossible: ' + groupId + ' endsCurrentPhase=' + endsCurrentPhase);
         this.data.globalBattleContext.gainSummonerDuelsPhase(endsCurrentPhase);
         if (this.data.globalBattleContext.isSummonerDuelsTurnEnded) {
+            console.log('__goToNextPhaseIfPossible: ' + groupId + ' end');
             this.simulateBeginningOfTurn();
+        } else {
+            console.log('__goToNextPhaseIfPossible: ' + groupId + ' next');
         }
         updateAllUi();
     }

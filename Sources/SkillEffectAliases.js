@@ -749,28 +749,46 @@ const TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_S
         n, NUM_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE
     );
 
-function setSpecialCount(skillId, n) {
+function setSpecialCount(skillId, n, isInheritable = false) {
     switch (n) {
         case 2:
-            COUNT2_SPECIALS.push(skillId);
-            INHERITABLE_COUNT2_SPECIALS.push(skillId);
+            if (isInheritable) {
+                INHERITABLE_COUNT2_SPECIALS.push(skillId);
+            } else {
+                COUNT2_SPECIALS.push(skillId);
+            }
             break;
         case 3:
-            COUNT3_SPECIALS.push(skillId);
-            INHERITABLE_COUNT3_SPECIALS.push(skillId);
+            if (isInheritable) {
+                INHERITABLE_COUNT3_SPECIALS.push(skillId);
+            } else {
+                COUNT3_SPECIALS.push(skillId);
+            }
             break;
         case 4:
-            COUNT4_SPECIALS.push(skillId);
-            INHERITABLE_COUNT4_SPECIALS.push(skillId);
+            if (isInheritable) {
+                INHERITABLE_COUNT4_SPECIALS.push(skillId);
+            } else {
+                COUNT4_SPECIALS.push(skillId);
+            }
+            break;
+        case 5:
+            if (isInheritable) {
+                INHERITABLE_COUNT5_SPECIALS.push(skillId);
+            } else {
+                COUNT5_SPECIALS.push(skillId);
+            }
             break;
     }
 }
 
-function setSpecialCountAndType(skillId, n, isNormalAttack, isDefense,
+function setSpecialCountAndType(skillId, n, isInheritable, isNormalAttack, isDefense,
                                 isGaleforce = false,
                                 isRanged = false,
                                 rangedDamageRatio = 1) {
-    setSpecialCount(skillId, n);
+    if (isNormalAttack) {
+        setSpecialCount(skillId, n, isInheritable);
+    }
     if (isNormalAttack) {
         NORMAL_ATTACK_SPECIAL_SET.add(skillId);
     }

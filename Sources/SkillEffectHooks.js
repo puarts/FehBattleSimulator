@@ -351,6 +351,11 @@ const AFTER_REFRESH_SKILL_IS_USED_BY_UNIT_HOOKS = new SkillEffectHooks();
 const AFTER_REFRESH_SKILL_IS_USED_BY_ALLY_HOOKS = new SkillEffectHooks();
 
 /**
+ * 再行動補助を使用した後
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_REFRESH_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();
+
+/**
  * 応援を使用して行動を終えた後
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_RALLY_ENDED_BY_UNIT_HOOKS = new SkillEffectHooks();

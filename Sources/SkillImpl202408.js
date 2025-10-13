@@ -83,7 +83,7 @@
 {
     let skillId = Special.AstraStorm;
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
-    setSpecialCount(2);
+    setSpecialCount(2, false);
 
     // Boosts damage by 40% of unit's Spd when Special triggers.
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -1279,7 +1279,7 @@
 {
     let skillId = Special.BrutalShellPlus;
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
-    setSpecialCount(3);
+    setSpecialCount(3, false);
 
     // 奥義発動時、 自分と敵の守備の高い方の値の50%を奥義ダメージに加算
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -2086,7 +2086,7 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    setSpecialCount(skillId, 3)
+    setSpecialCount(skillId, 3);
 
     // Boosts Special damage by 50% of unit's Def when Special triggers.
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -2350,7 +2350,7 @@
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    setSpecialCount(skillId, 3)
+    setSpecialCount(skillId, 3);
 
     // Boosts damage by X% of unit's Spd when Special triggers (if transformed, X = 50; otherwise, X = 40).
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -2679,7 +2679,7 @@ function setDiscord(skillId, statsRatios) {
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    setSpecialCount(skillId, 2)
+    setSpecialCount(skillId, 2, false);
 
     // When Special triggers, boosts damage by 40% of unit's Res and neutralizes "reduces damage by X%" effects from foe's non-Special skills.
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
@@ -3432,7 +3432,6 @@ function setDiscord(skillId, statsRatios) {
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT3_SPECIALS.push(skillId);
     INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     // Boosts damage by X% of unit's Def when Special triggers (if transformed, X = 50; otherwise, X = 40).
@@ -3816,7 +3815,6 @@ function setDiscord(skillId, statsRatios) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT3_SPECIALS.push(skillId);
-    INHERITABLE_COUNT3_SPECIALS.push(skillId);
 
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Boosts damage by 50% of unit's Spd and
@@ -4019,7 +4017,6 @@ function setDiscord(skillId, statsRatios) {
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
     COUNT4_SPECIALS.push(skillId);
-    INHERITABLE_COUNT4_SPECIALS.push(skillId);
 
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Boosts damage by 80% of unit's Def and
@@ -4349,10 +4346,6 @@ function setDiscord(skillId, statsRatios) {
 
     // 守備奥義
     DEFENSE_SPECIAL_SET.add(skillId);
-
-    // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT2_SPECIALS.push(skillId);
-    INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // When Special triggers,
@@ -5407,7 +5400,6 @@ function setDiscord(skillId, statsRatios) {
     NORMAL_ATTACK_SPECIAL_SET.add(skillId);
 
     // 奥義カウント設定(ダメージ計算機で使用。奥義カウント2-4の奥義を設定)
-    COUNT2_SPECIALS.push(skillId);
     INHERITABLE_COUNT2_SPECIALS.push(skillId);
 
     // Boosts Special damage by 30% of the greater of foe's Spd or Def.

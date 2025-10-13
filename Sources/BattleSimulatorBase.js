@@ -10745,6 +10745,10 @@ class BattleSimulatorBase {
         if (this.__applySupportSkill(supporterUnit, targetUnit)) {
             if (supporterUnit.supportInfo.assistType === AssistType.Refresh) {
                 supporterUnit.battleContext.isRefreshActivated = true;
+                let env = new BattleSimulatorBaseEnv(this, supporterUnit);
+                env.setName('再行動補助を使用した後').setLogLevel(getSkillLogLevel())
+                    .setAssistUnits(supporterUnit, targetUnit);
+                AFTER_REFRESH_ENDED_BY_UNIT_HOOKS.evaluateWithUnit(supporterUnit, env);
             }
             supporterUnit.isSupportDone = true;
             targetUnit.isSupportedDone = true;

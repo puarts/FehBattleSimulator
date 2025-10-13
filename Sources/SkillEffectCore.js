@@ -553,7 +553,7 @@ class FromPositiveNumberNode extends FromNumberNode {
     evaluateChildren(env) {
         let value = super.evaluateChildren(env);
         if (value < 0) {
-            throw new Error('Children must be a positive number');
+            throw new Error(`Children must be a positive number: ${value}`);
         }
         return value;
     }

@@ -1,10 +1,10 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
     <title>[FEH] ダメージ計算機</title>
     <link rel="stylesheet" href="css/main.css" type="text/css" />
     <link rel="stylesheet" href="css/loading.css">
-    <link rel="stylesheet" href="AetherRaidTacticsBoard/Release2/feh-battle-simulator.css">
     <link rel="stylesheet" href="feh-battle-simulator.css">
     <script src="Local.js"></script>
 </head>
@@ -413,6 +413,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js"></script>
 
     <script>
+        g_appData = {};
+        g_appData.isDevelopmentMode = false;
         function createScriptElement(src, onloadFunc) {
             let element = document.createElement("script");
             element.type = "text/javascript";
@@ -489,6 +491,7 @@
                     "PostCombatSkillHander.js",
                     "DamageCalculatorWrapper.js",
                     "BeginningOfTurnSkillHandler.js",
+                    "AudioManager.js",
                     "SampleSkillInfos.js",
                     "SampleHeroInfos.js",
                     "VueComponents.js",
@@ -503,6 +506,8 @@
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
                     passiveSInfos, passiveXInfos);
+                g_appData.skillDatabase = g_damageCalcData.heroDatabase.skillDatabase;
+                g_appData.map = g_damageCalcData.battleMap;
                 addKeyRepeatEvents();
 
                 const loader = document.getElementById("loader");

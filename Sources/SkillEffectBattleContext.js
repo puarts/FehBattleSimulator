@@ -759,6 +759,9 @@ class NeutralizesPenaltiesToTargetsStatsNode extends SetBoolToEachStatusNode {
     }
 }
 
+const NEUTRALIZES_EACH_PENALTIES_ON_TARGETS_NODE =
+    (atk, spd, def, res) => new NeutralizesPenaltiesToTargetsStatsNode(atk, spd, def, res);
+
 const NEUTRALIZES_PENALTIES_ON_TARGETS_NODE =
     new NeutralizesPenaltiesToTargetsStatsNode(true, true, true, true);
 
@@ -808,7 +811,8 @@ class NeutralizesTargetsFoesBonusesToStatsDuringCombatNode extends SetBoolToEach
 }
 
 const NEUTRALIZES_TARGETS_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE =
-    (...flags) => new NeutralizesTargetsFoesBonusesToStatsDuringCombatNode(...flags);
+    (...flags) =>
+        new NeutralizesTargetsFoesBonusesToStatsDuringCombatNode(...(flags.length ? flags : [true, true, true, true]))
 
 class NeutralizesTargetsBonusesToStatsDuringCombatNode extends NeutralizesTargetsFoesBonusesToStatsDuringCombatNode {
     static {
@@ -824,7 +828,11 @@ const NEUTRALIZES_TARGETS_BONUSES_TO_STATS_DURING_COMBAT_NODE =
  */
 const NUM_OF_BONUS_ON_UNIT_PLUS_NUM_OF_PENALTY_ON_FOE_EXCLUDING_STAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
-        return env.unitDuringCombat.getPositiveStatusEffects().length + env.foeDuringCombat.getNegativeStatusEffects().length;
+        let unit = env.unitDuringCombat;
+        let foe = env.foeDuringCombat;
+        let result = unit.getPositiveStatusEffects().length + foe.getNegativeStatusEffects().length;
+        env.debug(`${unit.nameWithGroup}の有利状態の数+${foe.nameWithGroup}の不利状態の数: ${result}`);
+        return result;
     }
 }();
 

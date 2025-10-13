@@ -241,6 +241,7 @@ const FOR_FOE_NODE = node => FOR_TARGET_NODE(FOE_NODE, node);
 
 const FOR_TARGETS_FOE_DURING_COMBAT_NODE = node => FOR_TARGET_NODE(TARGETS_FOE_DURING_COMBAT_NODE, node);
 const FOR_TARGETS_FOE_NODE = node => FOR_TARGET_NODE(TARGETS_FOE_NODE, node);
+const FOR_SKILL_OWNER_NODE = node => FOR_TARGET_NODE(SKILL_OWNER_NODE, node);
 
 /**
  * @extends {CollectionNode<*, Unit>}
@@ -2466,6 +2467,76 @@ class StatsNode extends NumbersNode {
 const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
 const ZERO_STATS_NODE = STATS_NODE(0, 0, 0, 0);
 
+class AddNToStatsNode extends StatsNode {
+    /**
+     * @param {number|NumberNode} n
+     * @param {StatsNode} statsNode
+     */
+    constructor(n, statsNode) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+        this._statsNode = statsNode;
+    }
+
+    evaluate(env) {
+        let n = this._n.evaluate(env);
+        let stats = this._statsNode.evaluate(env);
+        let result = stats.map(x => Math.trunc(x + n));
+        env.trace(`[Add n to stats] n: ${n} + [${stats}] = [${result}]`);
+        return result;
+    }
+}
+
+const ADD_N_TO_STATS_NODE = (n, statsNode) => new AddNToStatsNode(n, statsNode);
+
+class MultNToStatsNode extends StatsNode {
+    /**
+     * @param {number|NumberNode} n
+     * @param {StatsNode} statsNode
+     */
+    constructor(n, statsNode) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+        this._statsNode = statsNode;
+    }
+
+    evaluate(env) {
+        let n = this._n.evaluate(env);
+        let stats = this._statsNode.evaluate(env);
+        let result = stats.map(x => Math.trunc(x * n));
+        env.trace(`[Mult n to stats] n: ${n} * [${stats}] = [${result}]`);
+        return result;
+    }
+}
+
+const MULT_N_TO_STATS_NODE = (n, statsNode) => new MultNToStatsNode(n, statsNode);
+
+const ADD_N_TO_M_PERCENT_OF_STATS_NODE = (n, m, statsNode) =>
+    ADD_N_TO_STATS_NODE(n, MULT_N_TO_STATS_NODE(MULT_NODE(m, 0.01), statsNode));
+
+class MaxStatsNode extends StatsNode {
+    /**
+     * @param {CollectionNode<StatsNode, *>} statsNodes
+     */
+    constructor(statsNodes) {
+        super();
+        this._statsNodes = statsNodes;
+    }
+
+    evaluate(env) {
+        let maxStats = [0, 0, 0, 0];
+        for (let statsNode of this._statsNodes.evaluate(env)) {
+            env.trace2(`ステータス: [${statsNode}]`);
+            maxStats = ArrayUtil.maxByIndex(maxStats, statsNode);
+            env.trace2(`これまでの最大のステータス（ステータス毎に計算）: [${maxStats}]`);
+        }
+        env.debug(`最大のステータス（ステータス毎に計算）: [${maxStats}]`);
+        return maxStats;
+    }
+}
+
+const MAX_STATS_NODE = statsNodes => new MaxStatsNode(statsNodes);
+
 const ATK_NODE = n => StatsNode.makeStatsNodeFrom(n, 0, 0, 0);
 const SPD_NODE = n => StatsNode.makeStatsNodeFrom(0, n, 0, 0);
 const DEF_NODE = n => StatsNode.makeStatsNodeFrom(0, 0, n, 0);
@@ -3034,6 +3105,21 @@ const FOES_EVAL_ATK_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_
 const FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.SPD);
 const FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.DEF);
 const FOES_EVAL_RES_AT_START_OF_COMBAT_NODE = FOES_EVAL_STAT_AT_START_OF_COMBAT_NODE(StatusIndex.RES);
+
+class TargetStatsAtStartOfCombatNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getStatusesInPrecombat();
+        env.debug(`${unit.nameWithGroup}の戦闘開始時のステータス: [${result}]`);
+        return result;
+    }
+}
+
+const TARGET_STATS_AT_START_OF_COMBAT_NODE = new TargetStatsAtStartOfCombatNode();
 
 class TargetsStatsDuringCombat extends PositiveNumberNode {
     static {
@@ -6265,6 +6351,11 @@ class FoesBonusNode extends TargetsBonusNode {
     }
 }
 
+/**
+ * @param index
+ * @returns {FoesBonusNode}
+ * @constructor
+ */
 const FOES_BONUS_NODE = index => new FoesBonusNode(index);
 
 class TargetsPenaltyNode extends NumberNode {
@@ -6399,6 +6490,15 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
 
 const TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE = (id, ...nodes) =>
     new TargetsOncePerTurnSkillEffectNode(id, ...nodes);
+
+class SkillOwnersOncePerTurnSkillEffectNode extends TargetsOncePerTurnSkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const SKILL_OWNERS_ONCE_PER_TURN_SKILL_EFFECT_NODE = (id, ...nodes) =>
+    new SkillOwnersOncePerTurnSkillEffectNode(id, ...nodes);
 
 class TargetsOncePerTurnSkillEffectForEntireMapNode extends SkillEffectNode {
     static {
@@ -6883,6 +6983,24 @@ class DistanceBetweenTargetAndTargetsFoeNode extends PositiveNumberNode {
 
 const DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE = new DistanceBetweenTargetAndTargetsFoeNode();
 
+class DistanceBetweenUnitsNode extends NumberNode {
+    constructor(unit1, unit2) {
+        super();
+        this._unit1 = unit1;
+        this._unit2 = unit2;
+    }
+
+    evaluate(env) {
+        let unit1 = this._unit1.evaluate(env);
+        let unit2 = this._unit2.evaluate(env);
+        let result = unit1.distance(unit2);
+        env.debug(`${unit1.nameWithGroup}と${unit2.nameWithGroup}の距離は${result}`);
+        return result;
+    }
+}
+
+const DISTANCE_BETWEEN_UNITS_NODE = (unit1, unit2) => new DistanceBetweenUnitsNode(unit1, unit2);
+
 class AreTargetAndTargetFoeInSameLineNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -7346,3 +7464,24 @@ class HasTargetAttackedDuringCombatNode extends BoolNode {
 }
 
 const HAS_TARGET_ATTACKED_DURING_COMBAT_NODE = new HasTargetAttackedDuringCombatNode();
+
+class TargetsNearestAlliesNode extends UnitsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let allies;
+        if (env.unitManager) {
+            allies = env.unitManager.enumerateUnitsInTheSameGroupOnMap(unit, false);
+        } else if (env.battleMap) {
+            allies = env.battleMap.enumerateUnitsInTheSameGroup(unit, false);
+        }
+        let nearestAllies = IterUtil.minElements(allies, u => unit.distance(u));
+        env.trace(`${unit.nameWithGroup}の最も近い味方: ${nearestAllies.map(u => u.nameWithGroup).join(", ")}`);
+        return nearestAllies;
+    }
+}
+
+const TARGETS_NEAREST_ALLIES_NODE = new TargetsNearestAlliesNode();
