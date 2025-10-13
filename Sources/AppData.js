@@ -303,7 +303,6 @@ class AppData extends UnitManager {
         this.isDevelopmentMode = LocalStorageUtil.getNumber('isDevelopmentMode', 0) === 1;
         this.debugMenuStyle = "";
         this.attackInfoTdStyle = "";
-        this.isSummonerDualCalcEnabled = false;
 
         this.skillLogLevel = LocalStorageUtil.getNumber('skillLogLevel', LoggerBase.LogLevel.OFF);
         this.skillLogLevelOption = ObjectUtil.makeOptionFromObj(LoggerBase.LogLevel);
@@ -446,8 +445,8 @@ class AppData extends UnitManager {
             { id: -1, text: "なし" }
         ];
         this.additionalPassiveOptions = [
-            {id: -2, text: "-- 追加スキルを選択 --", disabled: true},
-            {id: -1, text: "なし"}
+            { id: -2, text: "-- 追加スキルを選択 --", disabled: true },
+            { id: -1, text: "なし" }
         ];
 
         this.ornamentTypeOptions = [
@@ -481,7 +480,7 @@ class AppData extends UnitManager {
 
         this.templateEngageSpecialIconFiles =
             Object.entries(EngagedSpecialIcon).map(([key, value]) => {
-                return {id: key, fileName: value.split('/').pop()};
+                return { id: key, fileName: value.split('/').pop() };
             }).filter(x => Number(x.id) !== EmblemHero.None);
 
         this.mapImageFiles = AetherRaidMapImageFiles;
@@ -761,14 +760,14 @@ class AppData extends UnitManager {
             return;
         }
 
-        heroInfo.registerWeaponOptions(this.weaponInfos);
-        heroInfo.registerSupportOptions(this.supportInfos);
-        heroInfo.registerSpecialOptions(this.specialInfos);
-        heroInfo.registerPassiveAOptions(this.passiveAInfos);
-        heroInfo.registerPassiveBOptions(this.passiveBInfos);
-        heroInfo.registerPassiveCOptions(this.passiveCInfos);
-        heroInfo.registerPassiveSOptions(this.passiveAInfos, this.passiveBInfos, this.passiveCInfos, this.passiveSInfos);
-        heroInfo.registerPassiveXOptions(this.passiveXInfos);
+        heroInfo.registerWeaponOptions(this.weaponInfos, this.isDevelopmentMode);
+        heroInfo.registerSupportOptions(this.supportInfos, this.isDevelopmentMode);
+        heroInfo.registerSpecialOptions(this.specialInfos, this.isDevelopmentMode);
+        heroInfo.registerPassiveAOptions(this.passiveAInfos, this.isDevelopmentMode);
+        heroInfo.registerPassiveBOptions(this.passiveBInfos, this.isDevelopmentMode);
+        heroInfo.registerPassiveCOptions(this.passiveCInfos, this.isDevelopmentMode);
+        heroInfo.registerPassiveSOptions(this.passiveAInfos, this.passiveBInfos, this.passiveCInfos, this.passiveSInfos, this.isDevelopmentMode);
+        heroInfo.registerPassiveXOptions(this.passiveXInfos, this.isDevelopmentMode);
     }
 
     registerSkillOptions(

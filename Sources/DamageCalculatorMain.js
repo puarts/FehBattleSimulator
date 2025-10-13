@@ -129,7 +129,7 @@ class DamageCalcHeroDatabase extends HeroDatabase {
      * @param  {SkillInfo[]} passiveXs
      */
     constructor(inputHeroInfos, weapons, supports, specials,
-                passiveAs, passiveBs, passiveCs, passiveSs, passiveXs) {
+        passiveAs, passiveBs, passiveCs, passiveSs, passiveXs) {
         super(inputHeroInfos);
         /** @type {SkillDatabase} */
         this.skillDatabase = new SkillDatabase();

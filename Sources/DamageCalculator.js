@@ -508,7 +508,7 @@ class StrikeResult extends DamageCalcResult {
     }
 
     toJSON() {
-        const {attackResult, ...rest} = this;
+        const { attackResult, ...rest } = this;
         return rest;
     }
 }
@@ -758,9 +758,10 @@ class DamageCalculator {
      * @param {LoggerBase} logger
      * @param {UnitManager} unitManager
      */
-    constructor(logger, unitManager) {
+    constructor(logger, unitManager, map) {
         this._logger = logger;
         this.unitManager = unitManager;
+        this.map = map;
     }
 
     get isLogEnabled() {
@@ -1775,7 +1776,7 @@ class DamageCalculator {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      */
-    calcPrecombatSpecialResult(atkUnit, defUnit) {
+    calcPrecombatSpecialResult(atkUnit, defUnit, isSummonerDualCalcEnabled) {
         if (!atkUnit.canActivatePrecombatSpecial()) {
             return [0, 0];
         }
@@ -1785,7 +1786,7 @@ class DamageCalculator {
 
         atkUnit.battleContext.hasSpecialActivated = true;
         atkUnit.battleContext.isPreCombatSpecialActivated = true;
-        let totalDamageWithOverkill = this.calcPrecombatSpecialDamage(atkUnit, defUnit);
+        let totalDamageWithOverkill = this.calcPrecombatSpecialDamage(atkUnit, defUnit, isSummonerDualCalcEnabled);
         let totalDamage = Math.min(totalDamageWithOverkill, defUnit.restHp - 1);
 
         this.__restoreMaxSpecialCount(atkUnit);
@@ -1806,13 +1807,12 @@ class DamageCalculator {
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
      */
-    calcPrecombatSpecialDamage(atkUnit, defUnit) {
+    calcPrecombatSpecialDamage(atkUnit, defUnit, isSummonerDualCalcEnabled) {
         let tmpMit = atkUnit.battleContext.refersRes ? defUnit.getResInPrecombat() : defUnit.getDefInPrecombat();
         if (defUnit.battleContext.isOnDefensiveTile) {
             tmpMit = tmpMit + floorNumberWithFloatError(tmpMit * 0.3);
         }
-        if (g_appData.gameMode === GameMode.SummonerDuels ||
-            g_appData.isSummonerDualCalcEnabled) {
+        if (isSummonerDualCalcEnabled) {
             if (atkUnit.attackRange === 2 && defUnit.attackRange === 1) {
                 tmpMit += 7;
             }

@@ -412,11 +412,6 @@ class HeroInfo {
      * @param  {SkillInfo} skillInfo
      */
     canEquipSkill(skillInfo) {
-        // 開発モードなら全てのスキルを装備可能
-        if (g_appData.isDevelopmentMode) {
-            return true;
-        }
-
         if (!skillInfo.canInherit) {
             switch (skillInfo.type) {
                 case SkillType.Weapon:
@@ -463,43 +458,43 @@ class HeroInfo {
     /**
      * @param  {SkillInfo[]} infos
      */
-    registerWeaponOptions(infos) {
-        this.__registerInheritableSkills(this.weaponOptions, [infos], x => this.canEquipSkill(x));
+    registerWeaponOptions(infos, ignoreInheritLimitation = false) {
+        this.__registerInheritableSkills(this.weaponOptions, [infos], x => ignoreInheritLimitation || this.canEquipSkill(x));
     }
 
     /**
      * @param  {SkillInfo[]} infos
      */
-    registerSupportOptions(infos) {
-        this.__registerInheritableSkills(this.supportOptions, [infos], x => this.canEquipSkill(x));
+    registerSupportOptions(infos, ignoreInheritLimitation = false) {
+        this.__registerInheritableSkills(this.supportOptions, [infos], x => ignoreInheritLimitation || this.canEquipSkill(x));
     }
 
     /**
      * @param  {SkillInfo[]} infos
      */
-    registerSpecialOptions(infos) {
-        this.__registerInheritableSkills(this.specialOptions, [infos], x => this.canEquipSkill(x));
+    registerSpecialOptions(infos, ignoreInheritLimitation = false) {
+        this.__registerInheritableSkills(this.specialOptions, [infos], x => ignoreInheritLimitation || this.canEquipSkill(x));
     }
 
     /**
      * @param  {SkillInfo[]} infos
      */
-    registerPassiveAOptions(infos) {
-        this.__registerInheritableSkills(this.passiveAOptions, [infos], x => this.canEquipSkill(x));
+    registerPassiveAOptions(infos, ignoreInheritLimitation = false) {
+        this.__registerInheritableSkills(this.passiveAOptions, [infos], x => ignoreInheritLimitation || this.canEquipSkill(x));
     }
 
     /**
      * @param  {SkillInfo[]} infos
      */
-    registerPassiveBOptions(infos) {
-        this.__registerInheritableSkills(this.passiveBOptions, [infos], x => this.canEquipSkill(x));
+    registerPassiveBOptions(infos, ignoreInheritLimitation = false) {
+        this.__registerInheritableSkills(this.passiveBOptions, [infos], x => ignoreInheritLimitation || this.canEquipSkill(x));
     }
 
     /**
      * @param  {SkillInfo[]} infos
      */
-    registerPassiveCOptions(infos) {
-        this.__registerInheritableSkills(this.passiveCOptions, [infos], x => this.canEquipSkill(x));
+    registerPassiveCOptions(infos, ignoreInheritLimitation = false) {
+        this.__registerInheritableSkills(this.passiveCOptions, [infos], x => ignoreInheritLimitation || this.canEquipSkill(x));
     }
 
     /**
@@ -508,14 +503,14 @@ class HeroInfo {
      * @param passiveCInfos
      * @param passiveSInfos
      */
-    registerPassiveSOptions(passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos) {
+    registerPassiveSOptions(passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos, ignoreInheritLimitation = false) {
         this.__registerInheritableSkills(this.passiveSOptions,
             [passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos],
-            x => (x.isSacredSealAvailable || x.type === SkillType.PassiveS) && this.canEquipSkill(x));
+            x => (x.isSacredSealAvailable || x.type === SkillType.PassiveS) && (ignoreInheritLimitation || this.canEquipSkill(x)));
     }
 
-    registerPassiveXOptions(infos) {
-        this.__registerInheritableSkills(this.passiveXOptions, [infos], x => this.canEquipSkill(x));
+    registerPassiveXOptions(infos, ignoreInheritLimitation = false) {
+        this.__registerInheritableSkills(this.passiveXOptions, [infos], x => ignoreInheritLimitation || this.canEquipSkill(x));
     }
 
     /**

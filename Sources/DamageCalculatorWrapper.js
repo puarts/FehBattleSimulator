@@ -62,10 +62,12 @@ class DamageCalculatorWrapper {
         this._unitManager = unitManager;
         this.map = map;
         this.globalBattleContext = globalBattleContext;
-        this._damageCalc = new DamageCalculator(logger, unitManager);
+        this._damageCalc = new DamageCalculator(logger, unitManager, map);
         this.logger = logger;
         this.profiler = new PerformanceProfile();
         this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger);
+
+        this.isSummonerDualCalcEnabled = false;
 
         // 高速化用
         /**
@@ -209,7 +211,7 @@ class DamageCalculatorWrapper {
                     isNotSaverUnit &&
                     tile.placedUnit.groupId === defUnit.groupId) {
                     let targetUnit = tile.placedUnit;
-                    let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit, damageCalcEnv);
+                    let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit, damageCalcEnv, this.isSummonerDualCalcEnabled);
                     this.writeLog(`atkUnit.battleContext.additionalDamageOfSpecial: ${atkUnit.battleContext.additionalDamageOfSpecial}`);
                     precombatDamages.set(targetUnit, damage);
                     this.writeLog(`${atkUnit.specialInfo.name}により${targetUnit.getNameWithGroup()}に${damage}ダメージ`);
@@ -537,7 +539,7 @@ class DamageCalculatorWrapper {
         // 攻撃者のPrecombatSkillsの効果が対象の数だけ適用されないように1回1回クリアする
         atkUnit.battleContext.clearPrecombatState();
         this.__applyPrecombatSkills(atkUnit, defUnit, damageCalcEnv);
-        return this._damageCalc.calcPrecombatSpecialDamage(atkUnit, defUnit);
+        return this._damageCalc.calcPrecombatSpecialDamage(atkUnit, defUnit, this.isSummonerDualCalcEnabled);
     }
 
     /**
@@ -580,7 +582,8 @@ class DamageCalculatorWrapper {
     calcPrecombatSpecialResult(atkUnit, defUnit, damageCalcEnv) {
         atkUnit.battleContext.clearPrecombatState();
         this.__applyPrecombatSkills(atkUnit, defUnit, damageCalcEnv);
-        return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit);
+        return this._damageCalc.calcPrecombatSpecialResult(atkUnit, defUnit,
+            damageCalcEnv.gameMode === GameMode.SummonerDuels || this.isSummonerDualCalcEnabled);
     }
 
     /**
@@ -890,7 +893,7 @@ class DamageCalculatorWrapper {
         for (let ally of allies) {
             let isNoDefTile = defUnit.placedTile === null || defUnit.placedTile === undefined;
             let cannotMoveToForSave = !defUnit.placedTile.isMovableTileForUnit(ally);
-            if (isNoDefTile || cannotMoveToForSave ) {
+            if (isNoDefTile || cannotMoveToForSave) {
                 continue;
             }
 
@@ -2509,7 +2512,7 @@ class DamageCalculatorWrapper {
         }
 
         if (damageCalcEnv.gameMode === GameMode.SummonerDuels ||
-            g_appData.isSummonerDualCalcEnabled) {
+            this.isSummonerDualCalcEnabled) {
             if (targetUnit.attackRange === 1 && enemyUnit.attackRange === 2
                 && !targetUnit.battleContext.isSaviorActivated
             ) {
