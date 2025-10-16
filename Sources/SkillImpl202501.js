@@ -1,5 +1,323 @@
 // スキル実装
 
+    // Arcane Rexbolt
+    // Mt: 14 Rng: 2
+    //
+    // Accelerates Special trigger
+    // (cooldown count-1).
+    //
+    // At start of player phase or enemy phase,
+    // grants Atk/Res+6,
+    // “grants Special cooldown charge +1 per attack
+    // (only highest value applied; does not stack),”
+    // and “neutralizes penalties on unit during combat”
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // Grants Atk/Spd/Def/Res+15 to unit,
+    // unit deals +25 damage
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 15
+    // (excluding area-of-effect Specials),
+    // and reduces the percentage of foe’s
+    // non-Special “reduce damage by X%” skills
+    // by 50% during combat
+    // (excluding area-of-effect Specials).
+
+    // Refined Magic
+    //
+    // Disables foe’s skills that
+    // “calculate damage using the lower of foe’s Def or Res”
+    // (including area-of-effect Specials).
+    //
+    // At start of player phase or enemy phase,
+    // if unit is within 2 spaces of an ally,
+    // grants Spd/Def+6, [Fringe Bonus],
+    // and “foe cannot make a follow-up attack”
+    // to unit and allies within 2 spaces of unit,
+    // and grants [Assign Decoy Twin]
+    // to target allies within 2 spaces of unit for 1 turn.
+    //
+    // (If support partner is on player team,
+    // targets any support partner;
+    // otherwise, targets ally with the highest Def
+    // at start of battle, excluding unit;
+    // “at start of battle” excludes increases to Def
+    // granted after ally is deployed,
+    // such as Legendary Effects, Mythic Effects,
+    // Bonus Heroes, Great Talent, etc.)
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+8 to unit,
+    // deals damage = 20% of unit’s Res
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 7
+    // (excluding area-of-effect Specials),
+    // and unit makes a guaranteed follow-up attack
+    // during combat,
+    // and also, if unit’s Res > foe’s Res,
+    // unit attacks twice during combat.
+    //
+    // [Assign Decoy Twin]
+    // If foe’s Range = unit’s Range
+    // and foe initiates combat against an ally
+    // within 2 spaces of unit,
+    // triggers [Savior] on unit
+    // (triggers only if unit is not equipped with a skill
+    // that can trigger another Savior effect;
+    // if unit is granted multiple statuses
+    // that enable [Savior] effects to trigger,
+    // [Savior] will not trigger).
+    //
+    // If foe’s Range = unit’s Range
+    // and foe initiates combat,
+    // any “reduces damage by X%” effect
+    // that can be triggered only once per combat
+    // by unit’s equipped Special skill
+    // can be triggered up to twice per combat
+    // (excludes boosted Special effects from engaging;
+    // only highest value applied;
+    // does not stack).
+
+    // Preempt: Ploy
+    //
+    // At start of player phase or enemy phase,
+    // if any foes within 3 rows or 3 columns centered on unit
+    // have Res < unit’s Res+5,
+    // inflicts [Ploy] and [Exposure] on those foes
+    // through their next actions.
+    //
+    // Grants bonus to unit’s Atk/Res =
+    // unit’s max Special cooldown count value + 2,
+    // and grants Special cooldown count-1 to unit
+    // before unit’s first attack during combat.
+
+    // Vague Katti
+    //
+    // Mt: 16 Rng: 1
+    //
+    // Accelerates Special trigger
+    // (cooldown count-1).
+    //
+    // At start of player phase or enemy phase
+    // (except for in Summoner Duels),
+    // for unit and allies within 2 spaces of unit,
+    // grants “neutralizes foe’s bonuses during combat”
+    // for 1 turn,
+    // and also, if Special cooldown count
+    // is at its maximum value,
+    // grants Special cooldown count-2;
+    // if Special cooldown count
+    // is at its maximum value - 1,
+    // grants Special cooldown count-1.
+    //
+    // If foe initiates combat
+    // or if unit’s HP ≥ 25% at start of combat,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns
+    // centered on unit × 3, + 5 (max 14),
+    // unit deals +X damage
+    // (excluding area-of-effect Specials);
+    // if unit’s Special is ready
+    // or unit’s Special triggered before or during this combat,
+    // X = 25; otherwise, X = 15,
+    // and reduces damage from foe’s attacks
+    // by 20% of unit’s Spd
+    // and reduces damage from foe’s Specials
+    // by an additional 20% of unit’s Spd during combat
+    // (in either case, including area-of-effect Specials;
+    // excluding Røkkr area-of-effect Specials),
+    // and also, if decreasing the Spd difference necessary
+    // to make a follow-up attack by 10
+    // would allow unit to trigger a follow-up attack
+    // (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow 100%] during combat.
+    //
+    // If foe initiates combat
+    // or if unit’s HP ≥ 25% at start of combat,
+    // after combat,
+    // if unit’s Special cooldown count
+    // is at its maximum value,
+    // grants Special cooldown count-2 to unit;
+    // if unit’s Special cooldown count
+    // is at its maximum value - 1,
+    // grants Special cooldown count-1 to unit.
+
+    // Harrowing Call
+    //
+    // If a skill compares unit’s Spd
+    // to a foe or ally’s Spd,
+    // treats unit’s Spd as if granted +7.
+    //
+    // Reduces damage from area-of-effect Specials
+    // by 80% (excluding Røkkr area-of-effect Specials).
+    //
+    // Inflicts Atk/Spd-4 on foe,
+    // deals damage = difference between unit’s Spd
+    // and foe’s Spd + 5 (max 15; excluding area-of-effect Specials);
+    // if unit’s Spd < foe’s Spd,
+    // treats Spd difference as 0,
+    // and reduces damage from foe’s attacks
+    // by 20% of unit’s Spd during combat
+    // (excluding area-of-effect Specials).
+    //
+    // If unit initiates combat,
+    // unit moves 1 space away after combat.
+
+    // Bonded Blades
+    //
+    // Mt: 11 Rng: 1
+    //
+    // Grants Atk+3.
+    // Unit attacks twice (even if foe initiates combat).
+    //
+    // Unit and target cannot trigger Specials
+    // during combat or area-of-effect Specials
+    // (excluding Røkkr area-of-effect Specials).
+    //
+    // At start of player phase or enemy phase,
+    // if unit is within 3 spaces of an ally,
+    // grants Atk/Spd+6, [Empathy], and [Dodge]
+    // to unit and allies within 3 spaces of unit for 1 turn.
+    //
+    // If unit is within 3 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of allies within 3 rows or 3 columns
+    // centered on unit × 3, + 5 (max 14),
+    // unit deals +X × 5 damage
+    // (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks
+    // by X × 3 during combat
+    // (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit and foe,
+    // excluding stat bonuses; max 5).
+
+    // Draw Back Gait
+    //
+    // Rng: 1
+    //
+    // Unit moves 1 space away from target ally.
+    // Ally moves to unit’s previous space.
+    //
+    // If unit uses an Assist skill on the current turn,
+    // enables [Canto (1)].
+
+    // Ties of Crimea
+    //
+    // Allies within 2 spaces of unit
+    // can move to any space within 2 spaces of unit.
+    //
+    // After foes’ start-of-turn skills trigger,
+    // if unit is within 3 spaces of an ally,
+    // for unit and allies within 3 spaces of unit,
+    // neutralizes stat penalties and two [Penalty] effects
+    // (does not apply to Penalty effects
+    // that are applied at the same time;
+    // neutralizes the first applicable Penalty effects
+    // on unit’s list of active effects).
+    //
+    // If unit is within 3 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit,
+    // unit deals +7 damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 7
+    // (excluding area-of-effect Specials),
+    // neutralizes effects that guarantee foe’s follow-up attacks
+    // and effects that prevent unit’s follow-up attacks,
+    // and reduces the percentage of foe’s non-Special
+    // “reduce damage by X%” skills by 50% during combat
+    // (excluding area-of-effect Specials),
+    // and also, when unit deals damage to foe during combat,
+    // restores 7 HP to unit.
+
+    // Duo Skill
+    //
+    // Grants [Bulwark]
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // Applies [Divine Vein (Stone)]
+    // to unit’s space and spaces within 2 spaces of unit for 2 turns.
+
+    // Ásjá of Askr
+    //
+    // Mt: 16 Rng: 1
+    //
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // If unit initiates combat or is within 3 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res = number of allies
+    // within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // neutralizes foe’s bonuses to Spd/Def,
+    // unit deals +X × 5 damage (X = number of Bonus effects active
+    // on unit and foe, excluding stat bonuses, max 5;
+    // excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by X × 3 during combat
+    // (excluding area-of-effect Specials),
+    // and also, if decreasing the Spd difference necessary to make
+    // a follow-up attack by 10 would allow unit to trigger
+    // a follow-up attack (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow 100%] during combat.
+    //
+    // If unit’s support partner or ally within 3 spaces of unit
+    // initiates combat, grants another action to that ally after combat
+    // (if a skill belonging to that ally triggers an effect
+    // that grants them another action, such as Galeforce,
+    // this effect is treated as not having triggered;
+    // if a skill not belonging to that ally triggers an effect
+    // that grants that ally another action at the same time as this effect,
+    // this effect is also considered to have been triggered; once per turn;
+    // “within 3 spaces” is calculated based on the position
+    // after triggering post-combat skill effects
+    // that change positioning).
+
+    // Assault Impetus
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // inflicts Spd/Def-4 on foe, deals damage = 20% of the greater
+    // of unit’s Spd or Def (including area-of-effect Specials;
+    // excluding Røkkr area-of-effect Specials),
+    // and reduces the percentage of foe’s non-Special
+    // “reduce damage by X%” skills by 50% during combat
+    // (excluding area-of-effect Specials).
+    //
+    // If unit initiates combat after moving to a different space,
+    // triggers the following effects depending on unit’s equipped Special:
+    // if unit has an area-of-effect Special equipped,
+    // grants Special cooldown count-X to unit before Special triggers
+    // before combat (excluding Røkkr area-of-effect Specials);
+    // if unit has a Special that triggers when unit attacks
+    // (excluding area-of-effect Specials),
+    // grants Special cooldown count-X to unit before unit’s first attack
+    // during combat (if number of spaces from start position
+    // to end position ≥ 3, X = 2; otherwise, X = 1).
+
+    // Entwined Onrush
+    //
+    // Enables [Canto (Dist. +1; Max 4)].
+    //
+    // At start of turn, if unit is within 3 spaces of an ally,
+    // grants “unit can move 1 extra space” to unit (that turn only; does not stack).
+    //
+    // At start of player phase or enemy phase,
+    // if unit is within 3 spaces of an ally,
+    // grants [Incited], [Resonance: Blades], and [Null Follow-Up]
+    // to unit and allies within 3 spaces of unit.
+    //
+    // If unit initiates combat or is within 3 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit, unit deals +7 damage
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 7 (excluding area-of-effect Specials),
+    // and neutralizes effects that inflict
+    // “Special cooldown charge -X” on unit during combat.
+    //
+    // After unit acts, if support partner or an ally within 3 spaces of unit
+    // initiates combat, grants another action to unit after ally’s combat,
+    // and if Canto has already been triggered,
+    // re-enables Canto (once per turn; if another effect that grants
+    // action to unit has been activated at the same time,
+    // this effect is also considered to have been triggered;
+    // “within 3 spaces” is calculated based on the position
+    // after triggering post-combat skill effects
+    // that change positioning).
+
 {
     let skillId = Weapon.YeQuKeruzhanMaoNozhuaYa;
     // 【再移動（残り＋1、最低2）】を発動可能

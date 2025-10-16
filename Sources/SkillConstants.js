@@ -4002,6 +4002,17 @@ Weapon.SaintshipTome = 3435; // 聖女の慈愛の書
 Weapon.YeQuKeruzhanMaoNozhuaYa = 3436; // 夜駆ける戦猫の爪牙
 PassiveA.DualityPlus = 3437; // 陰陽の法則・神
 Support.Dragonsdance2 = 3438; // 尊き竜の血を…・承
+Weapon.ArcaneRexbolt = 3439; // 魔器レクスボルト
+PassiveA.RefinedMagic = 3440; // 研鑽重ねし魔道の力
+PassiveC.PreemptPloy = 3441; // 初撃の鼓動・謀策
+Weapon.VagueKatti = 3442; // ヴァーグ・カティ
+PassiveB.HarrowingCall = 3443; // 真回避・一撃離脱
+Weapon.BondedBlades = 3444; // 乳姉妹の絆の剣
+Support.DrawBackGait = 3445; // 引き寄せ・歩法
+PassiveC.TiesOfCrimea = 3446; // クリミアの絆
+Weapon.AsjaOfAskr = 3447; // 開神の加護宿す刃
+PassiveB.AssaultImpetus = 3448; // 強襲・助走
+PassiveC.EntwinedOnrush = 3449; // あなたとのつながり
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
