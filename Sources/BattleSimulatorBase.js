@@ -4233,6 +4233,16 @@ class BattleSimulatorBase {
                     break;
             }
         }
+        // 一撃離脱
+        {
+            let env = new BattleSimulatorBaseEnv(this, atkUnit);
+            env.setName('一撃離脱判定時').setLogLevel(getSkillLogLevel());
+            if (DOES_UNIT_MOVE_1_SPACE_AWAY_AFTER_COMBAT_HOOKS.evaluateSomeWithUnit(atkUnit, env)) {
+                isMoved |= this.__applyMovementAssist(atkUnit, attackTargetUnit,
+                    (unit, target, tile) => this.__findTileAfterDrawback(unit, target, tile),
+                    false, false, executesTrap);
+            }
+        }
         if (isMoved) {
             this.map.createTileSnapshots();
         }
@@ -7766,28 +7776,31 @@ class BattleSimulatorBase {
             // Nマス以内にいるだけで再移動発動時に効果を発揮する
             // activateCantoIfPossible内で再移動の発動を判定しているのでここではNマス以内の判定結果だけを保存
             let isCantoControlled = false;
-            for (let u of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
-                let env = new CantoControlEnv(unit, u);
-                env.setName('再移動制限時').setLogLevel(getSkillLogLevel());
+            for (let enemy of this.enumerateUnitsInDifferentGroupOnMap(unit)) {
+                let env = new CantoControlEnv(unit, enemy);
+                env.setName('再移動制限判定（敵）').setLogLevel(getSkillLogLevel());
                 isCantoControlled |=
-                    CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(u, env);
-                for (let skillId of u.enumerateSkills()) {
+                    FOR_FOES_CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(enemy, env);
+                for (let skillId of enemy.enumerateSkills()) {
                     switch (skillId) {
                         case Weapon.DotingStaff:
-                            if (u.isWeaponSpecialRefined) {
-                                if (unit.distance(u) <= 4) {
+                            if (enemy.isWeaponSpecialRefined) {
+                                if (unit.distance(enemy) <= 4) {
                                     isCantoControlled = true;
                                 }
                             }
                             break;
                         case PassiveC.CantoControl3:
-                            if (unit.distance(u) <= 4) {
+                            if (unit.distance(enemy) <= 4) {
                                 isCantoControlled = true;
                             }
                             break;
                     }
                 }
             }
+            let env = new NodeEnv();
+            env.setTarget(unit).setSkillOwner(unit).setName('再移動制限（自分）').setLogLevel(getSkillLogLevel());
+            isCantoControlled |= CAN_INFLICT_CANTO_CONTROL_HOOKS.evaluateSomeWithUnit(unit, env);
             unit.activateCantoIfPossible(count, isCantoControlled);
             return true;
         }
@@ -10243,12 +10256,10 @@ class BattleSimulatorBase {
         if (REPOSITION_ASSIST_SKILLS.has(skillId)) {
             result = this.__findTileAfterReposition(unit, targetUnit, assistTile);
         }
+        if (DRAW_BACK_ASSIST_SKILLS.has(skillId)) {
+            result = this.__findTileAfterDrawback(unit, targetUnit, assistTile);
+        }
         switch (skillId) {
-            case Support.RescuePlus:
-            case Support.Rescue:
-            case Support.Drawback:
-                result = this.__findTileAfterDrawback(unit, targetUnit, assistTile);
-                break;
             case Support.ToChangeFate:
             case Support.ToChangeFate2:
             case Support.AFateChanged:
@@ -11068,6 +11079,9 @@ class BattleSimulatorBase {
         if (REPOSITION_ASSIST_SKILLS.has(skillId)) {
             return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
         }
+        if (DRAW_BACK_ASSIST_SKILLS.has(skillId)) {
+            return this.__findTileAfterDrawback(assistUnit, assistTargetUnit, tile);
+        }
 
         switch (assistUnit.support) {
             case Support.FateUnchanged:
@@ -11085,10 +11099,6 @@ class BattleSimulatorBase {
             case Support.Nudge:
             case Support.Shove:
                 return this.__findTileAfterShove(assistUnit, assistTargetUnit, tile);
-            case Support.RescuePlus:
-            case Support.Rescue:
-            case Support.Drawback:
-                return this.__findTileAfterDrawback(assistUnit, assistTargetUnit, tile);
             case Support.FoulPlay:
             case Support.Swap:
             case Support.FutureVision:

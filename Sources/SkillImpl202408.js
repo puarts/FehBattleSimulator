@@ -3736,7 +3736,7 @@ function setDiscord(skillId, statsRatios) {
     let skillId = Weapon.PraisePinerAxe;
     // Effective against flying foes. Grants Def+3.
     // Calculates damage using the lower of foe's Def or Res.
-    CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL(skillId);
+    setCalculatesDamageUsingTheLowerOfFoesDefOrResSkill(skillId);
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // At start of turn,
         // if unit's HP ≥ 25%,
@@ -5979,7 +5979,7 @@ function setDiscord(skillId, statsRatios) {
 // 再移動制限・不惑
 {
     let skillId = PassiveC.FirmCantoCurb;
-    CAN_INFLICT_CANTO_CONTROL_HOOKS.addSkill(skillId, () =>
+    FOR_FOES_CAN_INFLICT_CANTO_CONTROL_HOOKS.addSkill(skillId, () =>
         CAN_INFLICT_CANTO_CONTROL_WITHIN_4_SPACES_NODE,
     );
     CAN_NEUTRALIZE_END_ACTION_BY_SKILL_EFFECTS_HOOKS.addSkill(skillId, () =>

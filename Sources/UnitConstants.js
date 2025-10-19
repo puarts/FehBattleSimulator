@@ -82,6 +82,7 @@ const Hero = {
     HarmonizedIngrid: 1309,
     HarmonizedFir: 1322,
     DuoFreyja: 1336,
+    DuoElincia: 1340,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -133,6 +134,7 @@ const DUO_HERO_SET = new Set([
     Hero.DuoJulia,
     Hero.DuoHapi,
     Hero.DuoFreyja,
+    Hero.DuoElincia,
 ]);
 
 const RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET = new Set();
@@ -181,10 +183,21 @@ const PartnerLevel = {
 };
 
 // つながり英雄が増えた場合以下に追加
-const EntwinedType = {
-    None: {id: 0, value: [0, 0, 0, 0], text: "なし"},
-    Ash: {id: 1, value: [2, 0, 2, 0], text: "アシュ"},
-};
+// TODO: つながり英雄の自動設定
+// index => EntwinedTypeの辞書を作成
+// キャラ選択時にentwinedIdを設定
+// idをindexにするか検討(DBに登録されないと開発できないので残す方が良さそう)
+const EntwinedType = Object.freeze({
+    None: Object.freeze({id: 0, value: [0, 0, 0, 0], text: "なし"}),
+    Ash: Object.freeze({id: 1, value: [2, 0, 2, 0], text: "アシュ", index: 1328}),
+    Sharena: Object.freeze({id: 2, value: [2, 2, 0, 0], text: "シャロン", index: 1341}),
+});
+
+const HeroIndexToEntwinedType = new Map(
+    Object.values(EntwinedType)
+        .filter(entry => entry.index !== undefined)
+        .map(entry => [entry.index, entry])
+);
 
 const EntwinedOptions = [...Object.values(EntwinedType)];
 const EntwinedValues = new Map(
@@ -402,6 +415,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.CreationPulse, ["CreationPulse.webp", "開闢の鼓動", "攻撃前に、奥義発動カウント-敵の不利な状態異常の数"]],
     [StatusEffectType.ChangeOfFate, ["ChangeOfFate.webp", "運命を変える!", ""]],
     [StatusEffectType.Range2Style, ["Range2Style.webp", "スタイル・射程2", ""]],
+    [StatusEffectType.AssignDecoyTwin, ["AssignDecoyTwin.webp", "囮指名・双", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

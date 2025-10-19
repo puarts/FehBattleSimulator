@@ -830,22 +830,28 @@ function canRallyForciblyByPlayer(unit) {
 /**
  * @type {Set<number|string>}
  */
-SWAP_ASSIST_SKILLS = new Set();
+const SWAP_ASSIST_SKILLS = new Set();
 
 /**
  * @type {Set<number|string>}
  */
-REPOSITION_ASSIST_SKILLS = new Set();
+const REPOSITION_ASSIST_SKILLS = new Set();
+
+const DRAW_BACK_ASSIST_SKILLS = new Set([
+    Support.RescuePlus,
+    Support.Rescue,
+    Support.Drawback,
+]);
 
 /**
  * @type {Set<number|string>}
  */
-GALEFORCE_SKILLS = new Set();
+const GALEFORCE_SKILLS = new Set();
 
 /**
  * @type {Set<number|string>}
  */
-CAN_MOVE_THROUGH_FOES_SPACE_SKILLS = new Set();
+const CAN_MOVE_THROUGH_FOES_SPACE_SKILLS = new Set();
 
 /**
  * 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
@@ -1350,6 +1356,7 @@ const StatusEffectType = {
     ChangeOfFate: 94, // 運命を変える
     DefShackle: 95, // 守備の枷
     Range2Style: 96, // スタイル・射程2
+    AssignDecoyTwin: 97, // 囮指名・双
     // 1. STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 2. 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // 3. POSITIVE_STATUS_EFFECT_ARRAYまたはNEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1478,8 +1485,10 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.Paranoia,
 // 防壁
     StatusEffectType.Bulwark,
-// 囮指名
+    // 囮指名
     StatusEffectType.AssignDecoy,
+    // 囮指名・双
+    StatusEffectType.AssignDecoyTwin,
     // 護り手・魔・双
     StatusEffectType.MagicTwinSave,
 // 相性相殺

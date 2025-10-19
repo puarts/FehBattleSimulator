@@ -91,6 +91,11 @@ const BEFORE_COMBAT_HOOKS = new SkillEffectHooks();
 /**
  * 再移動制限評価時
  * @type {SkillEffectHooks<BoolNode, CantoControlEnv>} */
+const FOR_FOES_CAN_INFLICT_CANTO_CONTROL_HOOKS = new SkillEffectHooks();
+
+/**
+ * 再移動制限評価時(自分のスキル)
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
 const CAN_INFLICT_CANTO_CONTROL_HOOKS = new SkillEffectHooks();
 
 /**
@@ -531,3 +536,13 @@ const GET_COLOR_WHEN_DETERMINING_WEAPON_TRIANGLE_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<NumberNode, NodeEnv>}
  */
 const CALC_TRIANGLE_ADVANTAGE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const IS_ASSIGN_DECOY_FOR_SAME_RANGE_ACTIVE_HOOKS = new SkillEffectHooks();
+
+/**
+ * @type {SkillEffectHooks<BoolNode, NodeEnv>}
+ */
+const DOES_UNIT_MOVE_1_SPACE_AWAY_AFTER_COMBAT_HOOKS = new SkillEffectHooks();

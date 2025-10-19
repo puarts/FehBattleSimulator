@@ -175,6 +175,12 @@ class TargetsFoeNode extends UnitNode {
 
 const TARGETS_FOE_NODE = new TargetsFoeNode();
 
+const UNIT_DURING_COMBAT_NODE = new class extends TargetNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}();
+
 const FOE_NODE = new class extends TargetNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -203,6 +209,14 @@ class AssistTargetNode extends TargetNode {
 
 const ASSIST_TARGET_NODE = new AssistTargetNode();
 
+class TargetsAllyNode extends UnitNode {
+    evaluate(env) {
+        return env.targetAlly;
+    }
+}
+
+const TARGETS_ALLY_NODE = new TargetsAllyNode();
+
 class ForTargetNode extends SkillEffectNode {
     /**
      * @param {UnitNode} unitNode
@@ -230,6 +244,14 @@ class ForTargetNode extends SkillEffectNode {
  * @constructor
  */
 const FOR_TARGET_NODE = (unitNode, node) => new ForTargetNode(unitNode, node);
+
+/**
+ * @template T
+ * @param {T} node
+ * @returns {T}
+ * @constructor
+ */
+const FOR_UNIT_DURING_COMBAT_NODE = node => FOR_TARGET_NODE(UNIT_DURING_COMBAT_NODE, node);
 
 /**
  * @template T
@@ -2112,6 +2134,22 @@ const CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE = new CanTargetsAttackTrig
 const CAN_TARGETS_FOES_ATTACK_TRIGGER_TARGETS_FOES_SPECIAL_NODE =
     FOR_TARGETS_FOE_DURING_COMBAT_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE);
 
+class HasTargetSpecialThatTriggersWhenUnitAttacksExcludingAoeSpecialsNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasNormalAttackSpecial();
+        env.debug(`${unit.nameWithGroup}が攻撃時に発動する奥義を装備しているか（範囲奥義除く）: ${result}, 奥義: ${unit.specialInfo?.name}`);
+        return result;
+    }
+}
+
+const HAS_TARGET_SPECIAL_THAT_TRIGGERS_WHEN_UNIT_ATTACKS_EXCLUDING_AOE_SPECIALS_NODE =
+    new HasTargetSpecialThatTriggersWhenUnitAttacksExcludingAoeSpecialsNode();
+
 /**
  * if unit has an area-of-effect Special equipped,
  */
@@ -2367,6 +2405,7 @@ const GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsP
 const GRANTS_ALL_STATS_PLUS_6_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(6);
 const GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(8);
 const GRANTS_ALL_STATS_PLUS_9_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(9);
+const GRANTS_ALL_STATS_PLUS_15_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(15);
 
 const GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(4);
 const GRANTS_ALL_STATS_PLUS_5_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(5);
@@ -4708,24 +4747,24 @@ class TriggersTargetsPotentFollowXDuringCombatNode extends SkillEffectNode {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
-    constructor(x, spdDiff) {
+    constructor(percentage, spdDiff) {
         super();
-        this._xNode = NumberNode.makeNumberNodeFrom(x);
+        this._percentageNode = NumberNode.makeNumberNodeFrom(percentage);
         this._spdDiffNode = NumberNode.makeNumberNodeFrom(spdDiff);
     }
 
     evaluate(env) {
         let unit = this.getUnit(env);
         let foe = env.getFoeDuringCombatOf(unit);
-        let x = this._xNode.evaluate(env);
+        let percentage = this._percentageNode.evaluate(env);
         let spdDiff = -this._spdDiffNode.evaluate(env);
-        env.info(`${unit.nameWithGroup}に神速スキル(${x}%, 速さ条件${spdDiff})を適用`);
-        env.damageCalculatorWrapper.__applyPotent(unit, foe, x / 100.0, spdDiff, true);
+        env.info(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用`);
+        env.damageCalculatorWrapper.__applyPotent(unit, foe, percentage / 100.0, spdDiff, true);
     }
 }
 
 const TRIGGERS_TARGETS_POTENT_FOLLOW_X_DURING_COMBAT_NODE =
-    (x, spdDiff) => new TriggersTargetsPotentFollowXDuringCombatNode(x, spdDiff);
+    (percentage, spdDiff) => new TriggersTargetsPotentFollowXDuringCombatNode(percentage, spdDiff);
 
 class AppliesPotentEffectNode extends FromNumbersNode {
     /**
@@ -5819,6 +5858,9 @@ class GrantsSpecialCooldownCountMinusOnTargetNode extends GrantsSpecialCooldownC
 
 class GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode extends GrantsSpecialCooldownCountMinusOnTargetNode {
 }
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_SPECIAL_TRIGGERS_BEFORE_COMBAT_NODE =
+   n => new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(n);
 
 /**
  * inflicts Special cooldown count+1

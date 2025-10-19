@@ -205,13 +205,13 @@ class DamageCalculatorWrapper {
             });
             for (let tile of tiles) {
                 let isNotDefUnit = tile.placedUnit !== defUnit;
-                let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit, DamageType.ActualDamage);
+                let isNotSaverUnit = tile.placedUnit !== this.__getSaverUnitIfPossible(atkUnit, defUnit, damageCalcEnv);
                 if (tile.placedUnit != null &&
                     isNotDefUnit &&
                     isNotSaverUnit &&
                     tile.placedUnit.groupId === defUnit.groupId) {
                     let targetUnit = tile.placedUnit;
-                    let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit, damageCalcEnv, this.isSummonerDualCalcEnabled);
+                    let damage = this.calcPrecombatSpecialDamage(atkUnit, targetUnit, damageCalcEnv);
                     this.writeLog(`atkUnit.battleContext.additionalDamageOfSpecial: ${atkUnit.battleContext.additionalDamageOfSpecial}`);
                     precombatDamages.set(targetUnit, damage);
                     this.writeLog(`${atkUnit.specialInfo.name}により${targetUnit.getNameWithGroup()}に${damage}ダメージ`);
@@ -411,7 +411,7 @@ class DamageCalculatorWrapper {
 
         let actualDefUnit = defUnit;
         if (!calcPotentialDamage) {
-            let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit, damageType);
+            let saverUnit = self.__getSaverUnitIfPossible(atkUnit, defUnit, damageCalcEnv);
             damageCalcEnv.setSaverUnit(saverUnit);
             if (saverUnit != null) {
                 // 護り手がいるときは護り手に対する戦闘前奥義のダメージを結果として返す
@@ -881,7 +881,14 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __getSaverUnitIfPossible(atkUnit, defUnit, damageType) {
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcEnv} damageCalcEnv
+     * @returns {null}
+     * @private
+     */
+    __getSaverUnitIfPossible(atkUnit, defUnit, damageCalcEnv) {
         if (defUnit.hasStatusEffect(StatusEffectType.Undefended)) {
             return null;
         }
@@ -898,10 +905,10 @@ class DamageCalculatorWrapper {
             }
 
             let canActivateSaviorWithin2Spaces =
-                this.__canActivateSaveSkillWithin2Spaces(atkUnit, ally, damageType) &&
+                this.__canActivateSaveSkillWithin2Spaces(atkUnit, ally, damageCalcEnv) &&
                 ally.distance(defUnit) <= 2;
             if (canActivateSaviorWithin2Spaces ||
-                this.__canActivateSaveSkill(atkUnit, defUnit, ally, damageType)) {
+                this.__canActivateSaveSkill(atkUnit, defUnit, ally, damageCalcEnv)) {
                 if (saverUnit != null) {
                     // 複数発動可能な場合は発動しない
                     return null;
@@ -917,9 +924,10 @@ class DamageCalculatorWrapper {
      * 護られ不可は考慮しない
      * @params {Unit} atkUnit
      * @params {Unit} ally
+     * @params {DamageCalcEnv} damageCalaEnv
      * @returns {boolean}
      */
-    __canActivateSaveSkillWithin2Spaces(atkUnit, ally, damageType) {
+    __canActivateSaveSkillWithin2Spaces(atkUnit, ally, damageCalcEnv) {
         if (this.__canDisableSaveSkill(atkUnit, ally)) {
             return false;
         }
@@ -970,8 +978,13 @@ class DamageCalculatorWrapper {
             }
         }
 
+        // 囮指名
         // 通常の護り手スキルの後に判定を行う
-        if (ally.hasStatusEffect(StatusEffectType.AssignDecoy)) {
+        let isAssignDecoyForSameRangeActive = ally.hasStatusEffect(StatusEffectType.AssignDecoy);
+        let env = new NodeEnv().setTarget(ally).setSkillOwner(ally);
+        env.setName('囮指名判定時').setLogLevel(getSkillLogLevel());
+        isAssignDecoyForSameRangeActive |= IS_ASSIGN_DECOY_FOR_SAME_RANGE_ACTIVE_HOOKS.evaluateSomeWithUnit(ally, env);
+        if (isAssignDecoyForSameRangeActive) {
             if (ally.hasSaveSkills()) {
                 // 護り手スキルを持っている場合には囮指名の効果は発動しない
                 // (囮指名者が護り手スキルを持っていてその護り手スキルが発動しない場合の処理)
@@ -993,12 +1006,13 @@ class DamageCalculatorWrapper {
      * @params {Unit} atkUnit
      * @params {Unit} defUnit
      * @params {Unit} ally
+     * @params {DamageCalcEnv} damageCalcEnv
      * @returns {boolean}
      */
-    __canActivateSaveSkill(atkUnit, defUnit, ally, damageType) {
+    __canActivateSaveSkill(atkUnit, defUnit, ally, damageCalcEnv) {
         let env = new DamageCalculatorWrapperEnv(this, defUnit, atkUnit, null);
         env.setTargetAlly(ally).setSkillOwner(ally);
-        env.setName('護り手判定時').setLogLevel(getSkillLogLevel()).setDamageType(damageType)
+        env.setName('護り手判定時').setLogLevel(getSkillLogLevel()).setDamageType(damageCalcEnv.damageType)
             .setCombatPhase(this.combatPhase);
         return CAN_TRIGGER_SAVIOR_HOOKS.evaluateSomeWithUnit(ally, env);
     }

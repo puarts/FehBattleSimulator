@@ -2540,7 +2540,7 @@ function initVueComponents() {
               - {{ mit }} <value-label>(防御)</value-label>
               <span v-if="isSpecialAttack">)</span>
               <span v-if="isSpecialAttack">&times {{ attackResult.specialMultDamage }}</span>
-              <value-label>(奥義ダメージ倍率)</value-label>
+              <value-label v-if="isSpecialAttack">(奥義ダメージ倍率)</value-label>
             </div>
 
             <div>

@@ -1523,12 +1523,12 @@ const X_NUM_NODE = (...nodes) => new XNumNode(...nodes);
 class ApplyXNode extends SkillEffectNode {
     constructor(xNode, node) {
         super();
-        this._xNode = xNode;
+        this._percentageNode = xNode;
         this._node = node;
     }
 
     evaluate(env) {
-        let value = this._xNode.evaluate(env);
+        let value = this._percentageNode.evaluate(env);
         env.storeValue(value);
         env.trace(`store x value: ${value}`);
         return this._node.evaluate(env);

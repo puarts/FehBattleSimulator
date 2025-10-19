@@ -137,11 +137,21 @@ class TargetsHpAtStartOfCombatNode extends PositiveNumberNode {
 
 const TARGETS_HP_AT_START_OF_COMBAT_NODE = new TargetsHpAtStartOfCombatNode();
 
+class UnitHpAtStartOfCombatNode extends TargetsHpAtStartOfCombatNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+}
+
+const UNIT_HP_AT_START_OF_COMBAT_NODE = new UnitHpAtStartOfCombatNode();
+
 class FoesHpAtStartOfCombatNode extends TargetsHpAtStartOfCombatNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
+
+const FOES_HP_AT_START_OF_COMBAT_NODE = new FoesHpAtStartOfCombatNode();
 
 class TargetsCurrentHp extends PositiveNumberNode {
     static {
@@ -1023,6 +1033,23 @@ class TargetDealsDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
 }
 
 const TARGET_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE = n => new TargetDealsDamageExcludingAoeSpecialsNode(n);
+
+class TargetDealsDamageExcludingAoeSpecialsPerAttackNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let beforeValue = unit.battleContext.additionalDamagePerAttack;
+        unit.battleContext.additionalDamagePerAttack += n;
+        env.info(`${unit.nameWithGroup}は与えるダメージ+${n}（攻撃ごと）: ${beforeValue} → ${unit.battleContext.additionalDamagePerAttack}`);
+    }
+}
+
+const TARGET_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_PER_ATTACK_NODE =
+    n => new TargetDealsDamageExcludingAoeSpecialsPerAttackNode(n);
 
 class UnitDealsDamageExcludingAoeSpecialsNode extends TargetDealsDamageExcludingAoeSpecialsNode {
     static {
@@ -2436,7 +2463,7 @@ class AnyTargetsReduceDamageEffectOnlyOnceCanBeTriggeredUpToNTimesPerCombatNode 
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let n = this.evaluateChildren(env);
+        let n = this.evaluateChildren(env) - 1;
         unit.battleContext.addAdditionalNTimesDamageReductionRatiosByNonDefenderSpecialCount(n);
         env.info(`${unit.nameWithGroup}は1戦闘1回の奥義スキルが持つダメージ軽減の発動回数を${n}回増加（${n + 1}回発動）}`);
     }
