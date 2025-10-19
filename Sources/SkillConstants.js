@@ -4013,6 +4013,8 @@ PassiveC.TiesOfCrimea = 3446; // クリミアの絆
 Weapon.AsjaOfAskr = 3447; // 開神の加護宿す刃
 PassiveB.AssaultImpetus = 3448; // 強襲・助走
 PassiveC.EntwinedOnrush = 3449; // あなたとのつながり
+Weapon.BoltAxe = 3450; // ボルトアクス
+Weapon.BoltAxeBug = 3451; // ボルトアクス（バグ）
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

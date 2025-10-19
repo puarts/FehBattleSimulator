@@ -485,9 +485,8 @@ const IF_UNIT_INITIATES_COMBAT_OR_IS_WITHIN_3_SPACES_OF_AN_ALLY = (...nodes) =>
 /**
  * Calculates damage using the lower of foe's DEF or RES.
  * @param skillId
- * @constructor
  */
-const CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SKILL = skillId => {
+function setCalculatesDamageUsingTheLowerOfFoesDefOrResSkill(skillId) {
     // TODO: 範囲奥義発動直前のタイミングに変更するか検討する
     BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         CALCULATES_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_NODE,

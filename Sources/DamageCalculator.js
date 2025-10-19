@@ -1775,6 +1775,7 @@ class DamageCalculator {
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
+     * @param  {boolean} isSummonerDualCalcEnabled
      */
     calcPrecombatSpecialResult(atkUnit, defUnit, isSummonerDualCalcEnabled) {
         if (!atkUnit.canActivatePrecombatSpecial()) {
@@ -1806,6 +1807,7 @@ class DamageCalculator {
     /**
      * @param  {Unit} atkUnit
      * @param  {Unit} defUnit
+     * @param  {boolean} isSummonerDualCalcEnabled
      */
     calcPrecombatSpecialDamage(atkUnit, defUnit, isSummonerDualCalcEnabled) {
         let tmpMit = atkUnit.battleContext.refersRes ? defUnit.getResInPrecombat() : defUnit.getDefInPrecombat();

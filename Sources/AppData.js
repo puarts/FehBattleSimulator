@@ -1140,6 +1140,14 @@ class AppData extends UnitManager {
         if (!unit.customSkills || !(unit.customSkills instanceof Array)) {
             unit.initCustomSkills();
         }
+
+        // つながり英雄だった場合に自動的に設定する
+        let type = HeroIndexToEntwinedType.get(unit.heroIndex);
+        if (type) {
+            unit.entwinedId = type.id;
+        } else {
+            unit.entwinedId = EntwinedType.None.id;
+        }
     }
 
     getDurabilityTestAlly() {
