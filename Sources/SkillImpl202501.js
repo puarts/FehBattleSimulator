@@ -1831,7 +1831,7 @@
                 // 4マス以内 - 氷のマス
                 DIFFERENCE_SPACES_NODE(
                     FLAT_MAP_UNITS_NODE(
-                        targetAndCertainAlliesWithin2SpaceNode,
+                        UnitsNode.makeFromUnit(TARGET_NODE),
                         SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(4),
                     ),
                     icicleSpacesCacheNode,
