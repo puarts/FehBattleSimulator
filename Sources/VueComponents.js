@@ -1934,7 +1934,11 @@ function initVueComponents() {
                 if (pop?.togglePopover) pop.togglePopover();
             },
             enablesDivineVeinTransparency() {
-                return this.getApp()?.vm?.enableDivineVeinTransparency || false;
+                let appData = this.getApp()?.vm;
+                if (!appData) {
+                    return false;
+                }
+                return appData.enableDivineVeinTransparency;
             },
             onClick() {
                 let appData = this.getApp()?.vm;
@@ -1962,13 +1966,12 @@ function initVueComponents() {
 
             <!-- 天脈透過 -->
             <img v-bind:src="getDivineVeinImgPath(DivineVeinType.Vert)"
-                 v-bind:title="getDivineVeinTitle(DivineVeinType.Vert)"
                  v-bind:alt="DIVINE_VEIN_NAMES[DivineVeinType.Vert]"
                  title="天脈透過切り替え"
                  class="button-row-item"
                  :class="enablesDivineVeinTransparency() ? 'grayscale-image' : ''"
                  @click="onClick"
-            >
+            />
 
             <!-- スキルログ表示 -->
             <i

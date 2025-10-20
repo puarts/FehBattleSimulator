@@ -2075,3 +2075,22 @@ CustomSkill.setFuncId(
     },
     NON_NEGATIVE_INTEGER_ARGS,
 );
+
+CustomSkill.setFuncId(
+    'bolt-axe-bug',
+    'ボルトアクス（バグ効果）',
+    (skillId, args) => {
+        FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+            IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+                // 本来スキル効果にない
+                // 「敵の絶対追撃を無効」
+                UNIT_NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
+                // 「自身の奥義発動カウント変動量ーを無効」
+                NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+                // 「戦闘中、自身の奥義発動カウント変動量＋1（同系統効果複数時、最大値適用）」効果が発動する
+                GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+            ),
+        ));
+    },
+    []
+);
