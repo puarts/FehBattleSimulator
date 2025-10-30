@@ -4580,6 +4580,32 @@ class ForEachTargetAndFoeWithin2SpacesOfTargetNode extends ForEachTargetAndFoeWi
     }
 }
 
+class IsTargetWithinNColumnsCenteredOnSkillOwnerNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._n.evaluate(env);
+        let result = Math.abs(unit.placedTile.posX - env.skillOwner.placedTile.posX) <= n / 2;
+        env.debug(`${env.skillOwner.nameWithGroup}の縦${n}列の範囲に${unit.nameWithGroup}がいるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_WITHIN_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
+    n => new IsTargetWithinNColumnsCenteredOnSkillOwnerNode(n);
+const IS_TARGET_WITHIN_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
+    IS_TARGET_WITHIN_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(3);
+const IS_TARGET_WITHIN_5_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
+    IS_TARGET_WITHIN_N_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE(5);
+
 class IsTargetWithinNRowsOrNColumnsCenteredOnSkillOwnerNode extends BoolNode {
     /**
      * @param {number|NumberNode} n
@@ -7527,3 +7553,18 @@ class TargetsNearestAlliesNode extends UnitsNode {
 }
 
 const TARGETS_NEAREST_ALLIES_NODE = new TargetsNearestAlliesNode();
+
+class TargetsYAxisNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.placedTile.posY;
+        env.debug(`${unit.nameWithGroup}のy座標: ${result} ${unit.placedTile.toString()}`);
+        return result;
+    }
+}
+
+const TARGETS_Y_AXIS_NODE = new TargetsYAxisNode();

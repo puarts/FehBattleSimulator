@@ -4014,6 +4014,10 @@ Weapon.AsjaOfAskr = 3447; // 開神の加護宿す刃
 PassiveB.AssaultImpetus = 3448; // 強襲・助走
 PassiveC.EntwinedOnrush = 3449; // あなたとのつながり
 Weapon.BoltAxe = 3450; // ボルトアクス
+Weapon.MysticGjallarhorn = 3451; // 魔笛ギャラルホルン
+PassiveA.AtkResAria = 3452; // 攻撃魔防の詠唱
+PassiveB.AnOpenBook = 3453; // すべて読めていた
+PassiveC.ARHoneAssault = 3454; // 攻魔鼓舞・強襲
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
