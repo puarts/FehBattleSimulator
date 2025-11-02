@@ -3140,7 +3140,7 @@ class BattleMap {
                 if (tile.hasIceTypeDivineVein() &&
                     tile.divineVeinGroup === UnitGroupType.Enemy &&
                     g_appData.changeEnemyIceColor) {
-                    divineVeinTag.style.filter = 'hue-rotate(180deg)';
+                    divineVeinTag.classList.add('map-divine-vein-red-ice');
                 }
 
                 cell.innerText += divineVeinTag.outerHTML;

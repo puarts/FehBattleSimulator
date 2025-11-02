@@ -977,6 +977,10 @@ td.enemy {
     pointer-events: none;
 }
 
+.map-divine-vein-red-ice {
+    filter: sepia(1) saturate(4) hue-rotate(-30deg);
+}
+
 .map-divine-vein-turns {
     position: absolute;
     display: flex;
@@ -1016,6 +1020,13 @@ td.enemy {
     right: -2px;
     top: 12px;
     pointer-events: none;
+}
+
+.map-emblem-hero-merge {
+    position: absolute;
+    right: -0em;
+    top: 1em;
+    font-size: 8px;
 }
 
 .map-text-shadow {
