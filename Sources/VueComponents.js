@@ -1940,10 +1940,12 @@ function initVueComponents() {
                 }
                 return appData.enableDivineVeinTransparency;
             },
-            onClick() {
+            onClickDivineVeinTransparency() {
+                console.log(`onClickDivineVeinTransparency`);
                 let appData = this.getApp()?.vm;
                 if (appData) {
                     appData.enableDivineVeinTransparency = !appData.enableDivineVeinTransparency;
+                    console.log(`enableDivineVeinTransparency: ${appData.enableDivineVeinTransparency}`);
                     updateAllUi();
                 }
             },
@@ -1970,7 +1972,7 @@ function initVueComponents() {
                  title="天脈透過切り替え"
                  class="button-row-item"
                  :class="enablesDivineVeinTransparency() ? 'grayscale-image' : ''"
-                 @click="onClick"
+                 @click="onClickDivineVeinTransparency"
             />
 
             <!-- スキルログ表示 -->
