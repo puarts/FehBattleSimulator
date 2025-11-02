@@ -6900,6 +6900,12 @@ class Unit extends BattleMapElement {
         this._isStyleActive = false;
     }
 
+    deactivateStyleAfterAction() {
+        this.deactivateStyle();
+        this.isStyleActivatedInThisTurn = true;
+        this.styleActivationsCount++;
+    }
+
     isCannotMoveStyleActive() {
         return this.isAnyStyleActive(...CANNOT_MOVE_STYLES);
     }

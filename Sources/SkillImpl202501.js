@@ -2670,8 +2670,10 @@
     // This Style is disabled when unit has another [Style].
     STYLES_THAT_IS_DISABLED_WHEN_UNIT_HAS_ANOTHER_STYLE.add(style);
     // After combat where this [Style] is used, removes this status.
-    STYLE_ACTIVATED_HOOKS.addSkill(skillId, NODE_FUNC(
-        REMOVE_TARGETS_STATUS_EFFECTS_NODE(StatusEffectType.Range2Style),
+    AFTER_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_TARGETS_STYLE_USED_NODE,
+            REMOVE_TARGETS_STATUS_EFFECTS_NODE(StatusEffectType.Range2Style),
+        ),
     ));
 }
 

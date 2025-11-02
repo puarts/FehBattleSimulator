@@ -7656,6 +7656,12 @@ class BattleSimulatorBase {
                 // 移動時にトラップ発動した場合は行動終了している
                 // その場合でも天脈は発動する
                 unit.applyEndActionSkills();
+                if (unit.isStyleActive) {
+                    unit.deactivateStyleAfterAction();
+                    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
+                    env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
+                    STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
+                }
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
                 return;
@@ -7680,11 +7686,12 @@ class BattleSimulatorBase {
                 moveStructureToTrashBox(obj);
             }
             if (unit.isStyleActive) {
-                unit.isStyleActivatedInThisTurn = true;
-                unit.styleActivationsCount++;
+                let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
+                env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
+                STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
+                unit.deactivateStyleAfterAction();
             }
 
-            unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
         };
         return this.__createCommand(
@@ -7730,6 +7737,12 @@ class BattleSimulatorBase {
                 // 移動時にトラップ発動した場合は行動終了している
                 // その場合でも天脈は発動する
                 unit.applyEndActionSkills();
+                if (unit.isStyleActive) {
+                    unit.deactivateStyleAfterAction();
+                    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
+                    env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
+                    STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
+                }
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
                 return;
@@ -7749,11 +7762,12 @@ class BattleSimulatorBase {
             targetTile.breakDivineVein();
             g_appData.map.applyReservedDivineVein();
             if (unit.isStyleActive) {
-                unit.isStyleActivatedInThisTurn = true;
-                unit.styleActivationsCount++;
+                let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
+                env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
+                STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
+                unit.deactivateStyleAfterAction();
             }
 
-            unit.deactivateStyle();
             self.__endUnitActionOrActivateCanto(unit);
         };
         return this.__createCommand(
@@ -8077,9 +8091,9 @@ class BattleSimulatorBase {
                 AFTER_CANCEL_FOES_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
                 // 戦闘には入っていないので初めての戦闘判定、戦闘回数などには反映されない
                 // 一方スタイルは使用したことになる
+                // TODO: 行動後のスキルの前にスタイルを解除するのか後に解除するのか調査する
                 if (attackerUnit.isStyleActive) {
-                    attackerUnit.isStyleActivatedInThisTurn = true;
-                    attackerUnit.styleActivationsCount++;
+                    attackerUnit.deactivateStyleAfterAction();
                 }
                 // 攻撃キャンセル時も行動後の再行動の対象になる
                 env = new BattleSimulatorBaseEnv(this, attackerUnit).setHasAttackCanceled(true);

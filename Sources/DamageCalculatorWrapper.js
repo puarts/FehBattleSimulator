@@ -249,6 +249,11 @@ class DamageCalculatorWrapper {
             }
         }
 
+        // この戦闘中に満たしたフラグを反映
+        if (atkUnit.isStyleActive) {
+            atkUnit.battleContext.isStyleUsed = true;
+        }
+
         // 戦闘後発動のスキル等を評価
         this._combatHander.applyPostCombatProcess(atkUnit, result.defUnit, damageCalcEnv);
 
