@@ -3372,6 +3372,9 @@ class BattleMap {
             if (unit.emblemHeroIndex !== EmblemHero.None) {
                 cell.innerText += '<span class="map-emblem-hero-area">'
                 cell.innerText += `<img src='${EngagedSpecialIcon[unit.emblemHeroIndex]}' style='height:14px' alt="">`;
+                if (unit.emblemHeroMerge > 0) {
+                    cell.innerText += `<span class="map-emblem-hero-merge map-text-shadow">${unit.emblemHeroMerge}</span>`;
+                }
                 cell.innerText += '</span>';
             }
         }
