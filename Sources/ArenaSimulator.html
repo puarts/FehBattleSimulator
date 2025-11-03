@@ -582,6 +582,8 @@
                             @change="updateAllUi"
                     >
                     </divine-vein-opacity-settings>
+                    <divine-vein-display-settings v-model="divineVeinDisplaySettings" @change="updateAllUi">
+                    </divine-vein-display-settings>
                     <br/>
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
                     <br />

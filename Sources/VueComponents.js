@@ -1920,6 +1920,81 @@ function initVueComponents() {
         `,
     });
 
+    Vue.component('divine-vein-display-settings', {
+        model: {
+            prop: 'divineVeinDisplaySettings',
+            event: 'change'
+        },
+        props: {
+            divineVeinDisplaySettings: { type: Object, required: true }
+        },
+        data() {
+            return {
+                storageKey: 'divine-vein-display-settings',
+            };
+        },
+        methods: {
+            updateSettings(key, newValue) {
+                // オブジェクトをコピーして特定キーだけ更新
+                const newSettings = { ...this.divineVeinDisplaySettings, [key]: newValue };
+                LocalStorageUtil.setJson(this.storageKey, newSettings);
+                this.$emit('change', newSettings);
+            },
+        },
+        mounted() {
+            const initObj = {display: 'rich', ratio: 0.4, opacity: 1};
+            const localSettings = LocalStorageUtil.getJson(this.storageKey, {});
+            // LocalStorage優先でマージ
+            const mergedSettings = {...initObj, ...this.divineVeinDisplaySettings, ...localSettings};
+            LocalStorageUtil.setJson(this.storageKey, mergedSettings);
+            this.$emit('change', mergedSettings);
+        },
+        template: `
+          <div class="dv-settings">
+            <details>
+              <summary>天脈の表示設定</summary>
+              <!-- 表示モード -->
+              <div class="field">
+                <label for="dv-display">表示モード</label>
+                <select
+                  id="dv-display"
+                  :value="divineVeinDisplaySettings.display"
+                  @input="updateSettings('display', $event.target.value)"
+                >
+                  <option value="rich">リッチ</option>
+                  <option value="simple">シンプル</option>
+                  <option value="simple-non-ice">氷以外シンプル</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="dv-ratio">割合（スケール）</label>
+                <input
+                  id="dv-ratio"
+                  type="range"
+                  min="0.1" max="1" step="0.05"
+                  :value="divineVeinDisplaySettings.ratio"
+                  @input="updateSettings('ratio', +$event.target.value)"
+                />
+                <span class="value">{{ (divineVeinDisplaySettings.ratio).toFixed(2) }}</span>
+              </div>
+
+              <div class="field">
+                <label for="dv-opacity">透明度</label>
+                <input
+                  id="dv-opacity"
+                  type="range"
+                  min="0" max="1" step="0.05"
+                  :value="divineVeinDisplaySettings.opacity"
+                  @input="updateSettings('opacity', +$event.target.value)"
+                />
+                <span class="value">{{ Math.round(divineVeinDisplaySettings.opacity * 100) }}%</span>
+              </div>
+            </details>
+          </div>
+        `,
+    });
+
     Vue.component('log-action-buttons', {
         props: {
             getApp: {type: Function, required: true},

@@ -263,7 +263,7 @@ class AppData extends UnitManager {
         this.changesBgmRandomly = true;
         this.showMovableRangeWhenMovingUnit = true;
         this.showDivineVeinImageWithoutBreakable = true;
-        this.changeEnemyIceColor = LocalStorageUtil.getBoolean('change_enemy_ice_color', false);
+        this.changeEnemyIceColor = LocalStorageUtil.getBoolean('change_enemy_ice_color', true);
         this.divineVeinOpacities =
             Object.fromEntries(
                 Object.values(DivineVeinType)
@@ -271,6 +271,7 @@ class AppData extends UnitManager {
                     .map(v => [v, 1])                            // 各キーを 1 で初期化
             );
         this.enableDivineVeinTransparency = false;
+        this.divineVeinDisplaySettings = {display: 'rich', ratio: 0.4, opacity: 1};
 
         this.isEnemyActionTriggered = true;
         this.isAutoLoadTurnSettingEnabled = false;

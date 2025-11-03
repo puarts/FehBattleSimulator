@@ -3117,40 +3117,68 @@ class BattleMap {
     }
 
     _setDivineVeinCellStyle(tile, cell) {
-        // 味方の天脈、敵の天脈で処理を分ける
-        if (tile.hasDivineVein()) {
-            // 背景色
-            const alpha = "40";
-            cell.borderStyle = "solid";
-            if (tile.divineVeinGroup !== null && tile.divineVeinGroup === UnitGroupType.Ally) {
-                cell.bgColor = "#00bbff" + alpha;
+        if (!tile.hasDivineVein()) {
+            return;
+        }
+        const alpha = "40";
+        cell.borderStyle = "solid";
+        if (tile.divineVeinGroup !== null && tile.divineVeinGroup === UnitGroupType.Ally) {
+            cell.bgColor = "#00bbff" + alpha;
+        } else {
+            cell.bgColor = "#ff8800" + alpha;
+        }
+        let divineVeinDisplaySettings = g_appData.divineVeinDisplaySettings;
+        if (tile.hasBreakableDivineVein() ||
+            g_appData.showDivineVeinImageWithoutBreakable) {
+            let divineVeinTag = getDivineVeinTag(tile.divineVein);
+            divineVeinTag.classList.add('map-divine-vein-img');
+            divineVeinTag.style.opacity = `${g_appData.divineVeinOpacities[tile.divineVein]}`;
+            if (g_appData.enableDivineVeinTransparency) {
+                divineVeinTag.style.opacity = '0.25';
+            }
+            if (tile.hasIceTypeDivineVein() &&
+                tile.divineVeinGroup === UnitGroupType.Enemy &&
+                g_appData.changeEnemyIceColor) {
+                divineVeinTag.classList.add('map-divine-vein-red-ice');
+            }
+
+            // シンプル・リッチ設定
+            let isNonIce = tile.hasDivineVein() && !tile.hasIceTypeDivineVein();
+            if (divineVeinDisplaySettings.display === 'simple' ||
+                (divineVeinDisplaySettings.display === 'simple-non-ice' && isNonIce)) {
+                // シンプル表示
+                // 設定がシンプルか氷以外シンプルで氷以外の場合
+                divineVeinTag.classList.add('map-divine-vein-simple');
+                divineVeinTag.style.opacity = divineVeinDisplaySettings.opacity;
+                // ラッパーを作成（シンプル表示の最も上位のラッパー）
+                const simpleDivineVeinWrapper = document.createElement('div');
+                simpleDivineVeinWrapper.style.position = 'absolute';
+                simpleDivineVeinWrapper.style.width = `${Math.round(divineVeinDisplaySettings.ratio * 100)}%`;
+                simpleDivineVeinWrapper.style.height = `${Math.round(divineVeinDisplaySettings.ratio * 100)}%`;
+                // ラッパーを作成（position: relative;を指定するためのラッパー）
+                const wrapper = document.createElement('div');
+                wrapper.className = 'map-divine-vein-wrapper';
+                // ラベルを作成（残りターン表示）
+                const label = document.createElement('span');
+                label.classList.add('map-divine-vein-label', 'map-text-shadow');
+                const team = tile.divineVeinGroup === UnitGroupType.Ally ? 'ally' : 'enemy';
+                label.classList.add(`map-divine-vein-label-${team}-bg`);
+                label.textContent = tile.divineVeinTurns;
+                // 組み立て
+                simpleDivineVeinWrapper.appendChild(wrapper);
+                wrapper.appendChild(divineVeinTag);
+                wrapper.appendChild(label);
+                cell.innerText += simpleDivineVeinWrapper.outerHTML;
             } else {
-                cell.bgColor = "#ff8800" + alpha;
-            }
-
-            // 敵の天脈の色設定
-            if (tile.hasBreakableDivineVein() ||
-                g_appData.showDivineVeinImageWithoutBreakable) {
-                let divineVeinTag = getDivineVeinTag(tile.divineVein);
-                divineVeinTag.classList.add('map-divine-vein-img');
-                divineVeinTag.style.opacity = `${g_appData.divineVeinOpacities[tile.divineVein]}`;
-                if (g_appData.enableDivineVeinTransparency) {
-                    divineVeinTag.style.opacity = '0.25';
-                }
-                if (tile.hasIceTypeDivineVein() &&
-                    tile.divineVeinGroup === UnitGroupType.Enemy &&
-                    g_appData.changeEnemyIceColor) {
-                    divineVeinTag.classList.add('map-divine-vein-red-ice');
-                }
-
+                // リッチ表示
                 cell.innerText += divineVeinTag.outerHTML;
+                // ターン数表示
+                let divineVeinTurnsDiv = document.createElement('span');
+                divineVeinTurnsDiv.innerText = tile.divineVeinTurns;
+                divineVeinTurnsDiv.classList.add('map-divine-vein-turns');
+                cell.innerText += divineVeinTurnsDiv.outerHTML;
             }
 
-            // ターン数表示
-            let divineVeinTurnsDiv = document.createElement('span');
-            divineVeinTurnsDiv.innerText = tile.divineVeinTurns;
-            divineVeinTurnsDiv.classList.add('map-divine-vein-turns');
-            cell.innerText += divineVeinTurnsDiv.outerHTML;
         }
     }
 
