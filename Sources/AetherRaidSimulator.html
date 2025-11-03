@@ -601,6 +601,8 @@
                     <label class="normal" for="onChangeEnemyIceColor">敵の天脈・氷の色をかえる</label>
                     <divine-vein-opacity-settings v-model="divineVeinOpacities" @change="updateAllUi">
                     </divine-vein-opacity-settings>
+                    <divine-vein-display-settings v-model="divineVeinDisplaySettings" @change="updateAllUi">
+                    </divine-vein-display-settings>
                     <br />
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
                     <br />

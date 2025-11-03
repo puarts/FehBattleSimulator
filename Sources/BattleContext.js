@@ -549,6 +549,8 @@ class BattleContext {
         /** @type {Set<string>} */
         this.satisfiedConditionsDuringCombat = new Set();
 
+        this.isStyleUsed = false;
+
         //
         // フック関数
         // 固定ダメージ

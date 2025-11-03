@@ -2930,3 +2930,18 @@ class BoostDamageDealtByXPercentNode extends FromPositiveNumberNode {
 }
 
 const BOOST_DAMAGE_DEALT_BY_X_PERCENT_NODE = n => new BoostDamageDealtByXPercentNode(n);
+
+class IsTargetsStyleUsedNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.battleContext.isStyleUsed;
+        env.debug(`${unit.nameWithGroup}はスタイルを使用したか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGETS_STYLE_USED_NODE = new IsTargetsStyleUsedNode();
