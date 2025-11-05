@@ -1,5 +1,324 @@
 // スキル実装
 
+    // 🗡️ Covert Duality
+    // Mt: 9 Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    // If unit initiates combat, unit attacks twice.
+    //
+    // At start of turn and after unit acts (if Canto triggers, after Canto),
+    // inflicts Spd/Def-7, [Sabotage], and [Exposure]
+    // on closest foes and any foes within 2 spaces of those foes
+    // through their next actions.
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // neutralizes foe’s bonuses,
+    // unit deals +X × 5 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks by X × 3 during combat
+    // (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit, excluding stat bonuses
+    //
+    // number of Penalty effects active on foe, excluding stat penalties; max 5).
+    //
+    // Effect: [Dagger 7]
+
+    // 🅰️ Rapid Slice
+    // At start of player phase or enemy phase,
+    // if unit is within 2 spaces of an ally,
+    // grants “reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills by 50% during combat
+    // (excluding area-of-effect Specials)” and [Hexblade]
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+9 to unit,
+    // reduces damage from foe’s attacks by 40%
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by an additional 7
+    // (excluding area-of-effect Specials),
+    // and neutralizes effects that guarantee foe’s follow-up attacks
+    // and effects that prevent unit’s follow-up attacks during combat.
+    //
+    // If unit initiates combat against a non-dragon or non-beast infantry foe
+    // and unit’s Spd ≥ foe’s Spd+20,
+    // grants “effective against all weapon types” to unit during combat.
+    // Otherwise, if unit initiates combat and unit’s Spd ≥ foe’s Spd+5,
+    // grants “effective against all weapon types” to unit during combat.
+
+    // 🅲 Lookout Smog
+    // Enables [Canto (2)].
+    //
+    // When Canto triggers, enables unit to use [Distant Swap] on ally
+    // (this effect is not treated as an Assist skill;
+    // if similar effects are active, this effect does not trigger).
+    //
+    // If unit initiates combat or is within 2 spaces of an ally,
+    // grants Atk/Spd+4 to unit
+    // and reduces damage from foe’s first attack by 7 during combat
+    // (“first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,”
+    // it means the first and second strikes).
+    //
+    // If unit initiates combat and foe’s attack can trigger foe’s Special,
+    // inflicts Special cooldown count+1 on foe before foe’s first attack during combat
+    // (cannot exceed foe’s maximum Special cooldown).
+
+    // 🗡️ Bow of Stealth
+    // Mt: 8 Rng: 2 Eff: 🪶
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+    // Unit attacks twice
+    // (even if foe initiates combat, unit attacks twice).
+    //
+    // At start of turn and after unit acts
+    // (if Canto triggers, after Canto),
+    // inflicts [Discord], [Spd Shackle], and [Def Shackle]
+    // on closest foes and any foes within 2 spaces
+    // of those foes through their next actions.
+    //
+    // If unit initiates combat or unit's HP ≥ 25% at start of combat,
+    // grants bonus to unit's Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
+    // unit deals +X × 5 damage
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe's attacks by X × 3
+    // (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit,
+    // excluding stat bonuses + number of Penalty effects active on foe,
+    // excluding stat penalties; max 5),
+    // and neutralizes effects that grant
+    // "Special cooldown charge +X" to foe
+    // or inflict "Special cooldown charge -X" on unit during combat.
+
+    // 🅰️ Ninja-Zap
+    // Unit can move through foes’ spaces.
+    //
+    // Grants weapon-triangle advantage against colorless foes
+    // and inflicts weapon-triangle disadvantage on colorless foes during combat.
+    //
+    // At start of player phase or enemy phase, if unit’s HP ≥ 25%,
+    // grants "Special cooldown charge +1 per attack during combat
+    // (only highest value applied; does not stack)"
+    // and [Dodge] to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // If any space within 2 spaces of unit
+    // meets any of the following conditions,
+    // unit can move to that space or any space within 2 spaces of that space:
+    //
+    // There is an ally.
+    //
+    // There is a Divine Vein effect applied.
+    //
+    // It is defensive terrain.
+    //
+    // It counts as difficult terrain, excluding impassable terrain.
+    //
+    // If unit initiates combat or unit’s HP ≥ 25% at start of combat,
+    // grants Atk/Spd/Def/Res+9 to unit,
+    // unit deals +X damage
+    // (if there is a space within 2 spaces of unit that meets any of the above conditions, X = 15;
+    // otherwise, X = 7; excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by X
+    // (excluding area-of-effect Specials),
+    // and reduces the percentage of foe’s non-Special
+    // "reduce damage by X%" skills by 50% during combat
+    // (excluding area-of-effect Specials).
+
+    // 🅱️ S/D Lull Finish
+    // Inflicts Spd/Def-4 on foe,
+    // inflicts additional penalty on foe’s Spd/Def =
+    // number of [Bonus] effects on foe, excluding stat bonuses (max 4),
+    // neutralizes foe’s bonuses to Spd/Def,
+    // and reduces damage from foe’s attacks by 7 during combat
+    // (excluding area-of-effect Specials),
+    // and also, if unit’s Special is ready or triggered before or during this combat,
+    // deals +15 damage during combat
+    // (except when dealing damage with area-of-effect Specials),
+    // and when unit deals damage to foe during combat,
+    // restores 7 HP to unit.
+
+    // 🪓 Glacial Greataxe
+    // Mt：11 Rng：1
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit attacks twice
+    // (even if foe initiates combat, unit attacks twice).
+    //
+    // For foes within 3 rows or 3 columns centered on unit,
+    // inflicts Atk/Spd/Def/Res-5, neutralizes foe’s bonuses,
+    // and reduces the percentage of foe’s non-Special
+    // “reduce damage by X%” skills by 50% during combat
+    // (excluding area-of-effect Specials).
+    //
+    // At start of combat,
+    // if unit’s HP ≥ 25%,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns
+    // centered on unit × 3 (max 9),
+    // unit deals +X × 5 damage
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by X × 3
+    // (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit,
+    // excluding stat bonuses
+    //
+    // number of Penalty effects active on foe,
+    // excluding stat penalties; max 5),
+    // foe cannot make a follow-up attack,
+    // and restores 7 HP to unit
+    // when unit deals damage to foe during combat.
+
+    // 🅰️ Shatterproof
+    // Grants Atk/Def+8. Inflicts Res-8.
+    //
+    // At start of player phase or enemy phase,
+    // neutralizes [Panic]
+    // and any penalties to unit’s Atk/Def
+    // that take effect on unit at that time.
+
+    // 🅱️ Glacial Seal
+    // Enables [Canto (Rem. +1; Min 2)].
+    //
+    // At start of player phase or enemy phase,
+    // if unit’s HP ≥ 25%,
+    // inflicts Atk/Def-7, [Frozen], and [Def Shackle]
+    // on closest foes and foes within 2 spaces of those foes
+    // through their next actions.
+    //
+    // At start of enemy phase
+    // (except for in Pawns of Loki),
+    // if unit’s HP ≥ 25%
+    // after start-of-turn healing and damage effects are applied
+    // and there is no [Divine Vein (Ice)]
+    // currently applied by unit or allies,
+    // applies [Divine Vein (Ice)]
+    // to spaces 2 spaces away from the nearest foe
+    // with the lowest Def for 1 turn
+    // (excludes spaces occupied by a foe, destructible terrain,
+    // other than Divine Vein,
+    // and warp spaces in Rival Domains).
+    //
+    // At start of combat,
+    // if unit’s HP ≥ 25%,
+    // inflicts Atk/Spd/Def-5 on foe,
+    // unit makes a guaranteed follow-up attack,
+    // deals damage = 20% of unit’s Def
+    // (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks
+    // by 20% of unit’s Def during combat
+    // (excluding area-of-effect Specials).
+
+    // 🗡 Scrolls of Time
+    // Mt: 9 Rng: 2
+    // Accelerates Special trigger
+    // (cooldown count-1).
+    // If unit initiates combat, unit attacks twice.
+    //
+    // If unit entered combat on the current turn,
+    // unit can move through foes’ spaces.
+    //
+    // At start of turn, grants
+    // [Time’s Gate], [Preempt Pulse],
+    // and [Anathema] to unit and allies
+    // within 2 spaces of unit for 1 turn.
+    //
+    // If unit initiates combat or
+    // if foe’s HP ≥ 75% at start of combat,
+    // grants bonus to unit’s Atk/Spd/Def/Res =
+    // number of allies on the map with
+    // the [Time’s Gate] effect active,
+    // including unit × 3, + 5 (max 14),
+    // unit deals +X × 5 damage
+    // (excluding area-of-effect Specials),
+    // and reduces damage from foe’s attacks
+    // by X × 3 during combat
+    // (excluding area-of-effect Specials;
+    // X = number of Bonus effects active on unit,
+    // excluding stat bonuses
+    //
+    // number of Penalty effects active on foe,
+    // excluding stat penalties; max 5).
+    //
+    // If unit initiates combat,
+    // grants another action to unit after combat,
+    // and inflicts “restricts movement to 1 space”
+    // on unit and Pair Up cohort
+    // through their next action
+    // (will not trigger again for 2 turns after triggering).
+
+    // 🌙 Future and Past
+    // SP: 4
+    // Boosts damage by 80%
+    // of unit’s Spd when Special triggers.
+    //
+    // Neutralizes effects that inflict
+    // “Special cooldown charge -X”
+    // on unit during combat.
+    //
+    // If unit initiates combat,
+    // reduces damage from foe’s attacks by X%
+    // (excluding area-of-effect Specials;
+    // X = 40 + number of allies on the map
+    // with the [Time’s Gate] effect active,
+    // including unit × 5; max 60%).
+    //
+    // If unit initiates combat, after combat,
+    // if unit’s Special triggered and unit survives,
+    // grants another action to unit and inflicts
+    // “restricts movement to 1 space”
+    // on unit and Pair Up cohort
+    // through their next action (once per turn).
+    // (This effect has priority over other similar effects;
+    // in such cases, these other similar effects
+    // are treated as not having triggered.)
+
+    // 🐉 Conjuring Breath
+    // If unit initiates combat,
+    // deals 7 damage to foe as combat begins
+    // (effects that reduce damage “during combat”
+    // do not apply; will not reduce foe’s HP below 1),
+    // and foe cannot recover HP
+    // during or after combat.
+    //
+    // If unit initiates combat,
+    // inflicts Spd/Res-4 on foe,
+    // deals damage = 20% of the greater of foe’s
+    // Spd or Res (excluding area-of-effect Specials),
+    // reduces damage from foe’s first attack by 7
+    // (“first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,”
+    // it means the first and second strikes),
+    // and grants Special cooldown charge +1
+    // to unit per attack during combat
+    // (only highest value applied; does not stack).
+
+    // 🟨 A/S Assault Hone
+    // At start of turn,
+    // if unit is within 2 spaces of an ally,
+    // grants Atk/Spd+6 and
+    // “reduces the percentage of foe’s non-Special
+    // ‘reduce damage by X%’ skills by 50%
+    // during combat (excluding area-of-effect Specials)”
+    // to unit and allies within 2 spaces of unit for 1 turn.
+    //
+    // Grants bonus to unit’s Atk/Spd =
+    // number of allies on the map with
+    // the “reduces the percentage of foe’s
+    // non-Special ‘reduce damage by X%’ skills by 50%
+    // during combat (excluding area-of-effect Specials)”
+    // status effect active + 2
+    // during combat (excluding unit; max 5).
+
+    // 🟩 Duo Skill
+    // Grants unit another action,
+    // and restores 40 HP to unit.
+    // (May be used only if unit has already
+    // entered combat during the current turn.)
+
+    // 0-n-忍の戦輪+
+    // 威力：8 射程：1
+    // 2回攻撃（敵から攻撃された時も、2回攻撃可能）
+    // 戦闘開始時、自身のHPが25%以上なら、戦闘中、攻撃、速さ、守備、魔防＋5、与えるダメージ＋15（範囲奥義を除く）、受けるダメージ－10（範囲奥義を除く）、自分の攻撃でダメージを与えた時、7回復
+
 {
     let skillId = Weapon.MysticGjallarhorn;
     // Accelerates Special trigger (cooldown count-1).
