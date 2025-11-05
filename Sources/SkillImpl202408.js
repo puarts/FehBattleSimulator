@@ -5684,7 +5684,7 @@ function setDiscord(skillId, statsRatios) {
     ));
 
     // After combat,
-    AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // if unit's Special triggered,
         // grants Atk/Def/Res【Great Talent】+4 to unit and
         IF_NODE(IS_UNITS_SPECIAL_TRIGGERED,

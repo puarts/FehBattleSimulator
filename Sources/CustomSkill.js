@@ -1607,7 +1607,7 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         'after-combat-even-if-the-unit-is-defeated',
         '戦闘後（死んでも発動）',
         (skillId, nodeFunc, args) => {
-            AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => nodeFunc(args));
+            AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => nodeFunc(args));
         },
     ],
     [

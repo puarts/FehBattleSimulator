@@ -4734,7 +4734,7 @@
         ),
     ));
     // At start of player phase or enemy phase,
-    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseHooks(skillId, NODE_FUNC(
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
         // if unit is within 2 spaces of an ally,
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
             // grants "reduces the percentage of foe’s non-Special ‘reduce damage by X%’ skills by 50% during combat (excluding area-of-effect Specials)"
@@ -6275,7 +6275,7 @@
     // after combat for unit or allies on the map,
     // destroys foe's Safety Fence (0) structure
     // (triggers even if unit or ally is defeated in combat).
-    AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    let destroySafetyFenceNodeFunc = NODE_FUNC(
         IF_NODE(
             AND_NODE(
                 WHEN_DEFENDING_IN_AETHER_RAIDS_NODE,
@@ -6286,7 +6286,9 @@
             ),
             DESTROYS_OFFENCE_SAFETY_FENCE_NODE,
         ),
-    ));
+    );
+    AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, destroySafetyFenceNodeFunc);
+    AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, destroySafetyFenceNodeFunc);
     // At start of turn,
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // if unit's HP ≥ 25%,
@@ -6403,7 +6405,7 @@
 // C Truth Keeper
 {
     let skillId = PassiveC.TruthKeeper;
-    AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    let destroySafetyFenceNodeFunc = NODE_FUNC(
         // If defending in Aether Raids during Anima or Chaos season,
         IF_NODE(
             AND_NODE(
@@ -6418,7 +6420,9 @@
             // (triggers even if unit or ally is defeated in combat).
             DESTROYS_OFFENCE_SAFETY_FENCE_NODE,
         ),
-    ));
+    );
+    AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, destroySafetyFenceNodeFunc);
+    AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, destroySafetyFenceNodeFunc);
     setForAlliesHooks(skillId,
         // For allies within 3 rows or 3 columns centered on unit,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,

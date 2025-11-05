@@ -214,7 +214,7 @@ const AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS = new SkillEffectHooks();
 /**
  * 戦闘後(死んでも発動)
  * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
-const AFTER_COMBAT_NEVERTHELESS_HOOKS = new SkillEffectHooks();
+const AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘後(攻撃していれば)

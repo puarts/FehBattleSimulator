@@ -2690,6 +2690,7 @@ class Unit extends BattleMapElement {
         }
         hasSkills |=
             this.passiveB === PassiveB.ShingunSoshi3 && this.hpPercentage >= 50 ||
+            this.passiveS === PassiveB.ShingunSoshi3 && this.hpPercentage >= 50 ||
             this.weapon === Weapon.CaptainsSword ||
             this.passiveB === PassiveB.DetailedReport ||
             this.passiveB === PassiveB.AtkSpdBulwark3 ||
