@@ -825,6 +825,7 @@ class BattleMap {
             for (let x = 0; x < this._width; ++x) {
                 let tile = new Tile(x, y);
                 tile.tilePriority = x + (this._height - (y + 1)) * this._width;
+                tile.battleMap = this;
                 this._tiles.push(tile);
             }
         }
@@ -1514,6 +1515,13 @@ class BattleMap {
                 yield tile;
             }
         }
+    }
+
+    /**
+     * @returns {Tile[]}
+     */
+    get tiles() {
+        return [...this._tiles];
     }
 
     /**

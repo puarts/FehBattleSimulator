@@ -460,12 +460,12 @@ const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEf
 /**
  * ユニットが通過できない（敵ではない）
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
-const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_FOE_HOOKS = new SkillEffectHooks();
 
 /**
  * ユニットが通過できない（敵ではない）
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
-const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_FOE_HOOKS = new SkillEffectHooks();
 
 /**
  * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */

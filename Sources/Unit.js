@@ -2633,62 +2633,23 @@ class Unit extends BattleMapElement {
             || (this.weapon === Weapon.FujinYumi && !this.isWeaponRefined && this.hpPercentage >= 50);
     }
 
-    /// 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
-    canActivateObstructToTilesIn2Spaces(moveUnit) {
-        let hasSkills = false;
-        let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
-        // env.setName('移動時(2マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('移動時(2マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
-        hasSkills |=
-            CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
-
-        {
-            let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
-            // env.setName('自分が移動時(2マス以内)').setLogLevel(getSkillLogLevel());
-            env.setName('自分が移動時(2マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
-            hasSkills |=
-                CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(moveUnit, env);
-        }
-
-        hasSkills |=
-            this.weapon === Weapon.CaptainsSword ||
-            this.passiveB === PassiveB.AtkSpdBulwark3 ||
-            this.passiveB === PassiveB.AtkDefBulwark3 ||
-            this.passiveB === PassiveB.SpdDefBulwark3 ||
-            this.passiveB === PassiveB.SpdResBulwark3 ||
-            this.passiveB === PassiveB.DetailedReport;
-        return hasSkills && moveUnit.isRangedWeaponType();
-    }
-
-    canActivateObstructToTilesIn3Spaces(moveUnit) {
-        let hasSkills = false;
-        let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
-        // env.setName('自分が移動時(3マス以内)').setLogLevel(getSkillLogLevel());
-        env.setName('自分が移動時(3マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
-        hasSkills |=
-            CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(moveUnit, env);
-        let canObstruct =
-            this.canActivateObstructToAdjacentTiles(moveUnit) ||
-            this.canActivateObstructToTilesIn2Spaces(moveUnit);
-        return hasSkills && canObstruct;
-    }
-
-    /// 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
+    /**
+     * 隣接マスの敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
+     */
     canActivateObstructToAdjacentTiles(moveUnit) {
-        let hasSkills = false;
+        let canObstruct = false;
         let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
         // env.setName('移動時(1マス以内)').setLogLevel(getSkillLogLevel());
         env.setName('移動時(1マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
-        hasSkills |=
-            CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
+        canObstruct |= CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
         for (let skillId of this.enumerateSkills()) {
             let func = getSkillFunc(skillId, canActivateObstructToAdjacentTilesFuncMap);
             if (func?.call(this, moveUnit) ?? false) {
-                hasSkills = true;
+                canObstruct = true;
                 break;
             }
         }
-        hasSkills |=
+        canObstruct |=
             this.passiveB === PassiveB.ShingunSoshi3 && this.hpPercentage >= 50 ||
             this.passiveS === PassiveB.ShingunSoshi3 && this.hpPercentage >= 50 ||
             this.weapon === Weapon.CaptainsSword ||
@@ -2697,7 +2658,42 @@ class Unit extends BattleMapElement {
             this.passiveB === PassiveB.AtkDefBulwark3 ||
             this.passiveB === PassiveB.SpdDefBulwark3 ||
             this.passiveB === PassiveB.SpdResBulwark3;
-        return hasSkills || (this.passiveS === PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
+        return canObstruct || (this.passiveS === PassiveS.GoeiNoGuzo && moveUnit.isRangedWeaponType());
+    }
+
+    /**
+     * 2マス以内の敵に進軍阻止を発動できるならtrue、そうでなければfalseを返します。
+     */
+    canActivateObstructToTilesWithin2Spaces(moveUnit) {
+        let canObstruct = false;
+        let env = new NodeEnv().setSkillOwner(this).setTarget(moveUnit);
+        // env.setName('移動時(2マス以内)').setLogLevel(getSkillLogLevel());
+        env.setName('移動時(2マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
+        canObstruct |= CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.evaluateSomeWithUnit(this, env);
+
+        canObstruct |= (
+            this.weapon === Weapon.CaptainsSword ||
+            this.passiveB === PassiveB.AtkSpdBulwark3 ||
+            this.passiveB === PassiveB.AtkDefBulwark3 ||
+            this.passiveB === PassiveB.SpdDefBulwark3 ||
+            this.passiveB === PassiveB.SpdResBulwark3 ||
+            this.passiveB === PassiveB.DetailedReport
+        ) && moveUnit.isRangedWeaponType();
+        return canObstruct;
+    }
+
+    cannotMoveThroughSpacesWithin2SpacesOfUnit(enemy) {
+        let env = new NodeEnv().setSkillOwner(this).setTarget(this).setTargetFoe(enemy);
+        // env.setName('自分が移動時(2マス以内)').setLogLevel(getSkillLogLevel());
+        env.setName('自分が移動時(2マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
+        return CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_FOE_HOOKS.evaluateSomeWithUnit(this, env);
+    }
+
+    cannotMoveThroughSpacesWithin3SpacesOfUnit(enemy) {
+        let env = new NodeEnv().setSkillOwner(this).setTarget(this).setTargetFoe(enemy);
+        // env.setName('自分が移動時(3マス以内)').setLogLevel(getSkillLogLevel());
+        env.setName('自分が移動時(3マス以内)').setLogLevel(LoggerBase.LogLevel.WARN);
+        return CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_FOE_HOOKS.evaluateSomeWithUnit(this, env);
     }
 
     get isOnMap() {

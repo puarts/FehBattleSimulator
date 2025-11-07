@@ -1337,8 +1337,8 @@ function setSpikedWall(skillId, debuffAmounts, statuses) {
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
-        EQ_NODE(new TargetsRangeNode(), 2),
-    )
+        EQ_NODE(TARGETS_RANGE_NODE, 2),
+    );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts ATK/DEF-4 on foe,
         new InflictsStatsMinusOnFoeDuringCombatNode(...debuffAmounts),
@@ -1391,7 +1391,9 @@ function setCannotMoveThroughSpacesSkill(skillId) {
     // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
+        EQ_NODE(TARGETS_RANGE_NODE, 2)
+    );
 }
 
 /**
@@ -1636,4 +1638,9 @@ function setStyleRange(skillId, rangeNode) {
     CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () =>
         rangeNode,
     );
+}
+
+// Unit can use the following [Style]:
+function setUnitCanUseFollowingStyle(skillId, styleType) {
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, styleType);
 }

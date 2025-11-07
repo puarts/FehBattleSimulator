@@ -1137,6 +1137,48 @@
     SKILL_ID_TO_STYLE_TYPE.set(skillId, StyleType.RANGE_2);
 }
 
+// Style
+{
+    let style = StyleType.RANGE_2;
+    let skillId = getStyleSkillId(style);
+    // Unit can use the following [Style]:
+    // Range: 2 Style
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    // Unit can attack foes 2 spaces away (cannot attack adjacent foes).
+    CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () => CONSTANT_NUMBER_NODE(2));
+    // Cannot move through spaces within 2 spaces of foe
+    // that has triggered the Bulwark effect (does not apply if unit has Pass).
+    // TODO: 防壁を発動しているという条件を追加する
+    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_FOE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(
+            IS_STYLE_ACTIVE(style),
+            FOR_TARGET_NODE(TARGETS_FOE_NODE, TARGET_HAS_TRIGGERED_THE_BULWARK_EFFECT_NODE),
+        ),
+    );
+    // Unit suffers a counterattack if any of the following are met:
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // Foe is armored with Range = 1
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_1_NODE),
+            // Foe can counterattack regardless of unit’s range
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // Foe’s Range is the same as the distance between unit and foe
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
+    // After-combat movement effects do not occur.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After-combat movement effects do not occur.
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
+    ));
+    // Skill effect’s Range is treated as 1.
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(style);
+    // This Style can be used only once per turn.
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
+}
+
 {
     let skillId = Weapon.YeQuKeruzhanMaoNozhuaYa;
     // 【再移動（残り＋1、最低2）】を発動可能
@@ -2929,7 +2971,7 @@
     // [Range: 2 Style]
     // Unit can use the following [Style]:
     // Range: 2 Style
-    STATUS_EFFECT_TYPE_TO_STYLE_TYPE.set(StatusEffectType.Range2Style, StyleType.RANGE_2);
+    STATUS_EFFECT_TYPE_TO_STYLE_TYPE.set(StatusEffectType.Range2Style, StyleType.RANGE_2_STATUS);
 }
 
 // Dark Beast Force (C slot)
@@ -2950,22 +2992,24 @@
 
 // Style
 {
-    let style = StyleType.RANGE_2;
+    let style = StyleType.RANGE_2_STATUS;
     let skillId = getStyleSkillId(style);
     // Unit can use the following [Style]:
     // Range: 2 Style
     CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () =>
-        AND_NODE(
-            HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Range2Style),
-            // This Style can only be used if unit has Range = 1.
-            IS_TARGET_MELEE_WEAPON_NODE,
-        ),
+        // This Style can only be used if unit has Range = 1.
+        IS_TARGET_MELEE_WEAPON_NODE,
     );
     // Unit can attack foes 2 spaces away (cannot attack adjacent foes).
     CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () => CONSTANT_NUMBER_NODE(2));
     // Cannot move through spaces within 2 spaces of foe
     // that has triggered the Bulwark effect (does not apply if unit has Pass).
-    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => IS_STYLE_ACTIVE(style));
+    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_FOE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(
+            IS_STYLE_ACTIVE(style),
+            FOR_TARGET_NODE(TARGETS_FOE_NODE, TARGET_HAS_TRIGGERED_THE_BULWARK_EFFECT_NODE),
+        ),
+    );
     // Unit suffers a counterattack if any of the following are met:
     SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
         OR_NODE(
@@ -3014,7 +3058,9 @@
 {
     let skillId = getStatusEffectSkillId(StatusEffectType.Bulwark);
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
+        EQ_NODE(TARGETS_RANGE_NODE, 2)
+    );
 }
 
 {
@@ -3160,8 +3206,11 @@
         ),
     ));
     // Cannot move through spaces within 2 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
-    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
-        IS_STYLE_ACTIVE(style)
+    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_FOE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(
+            IS_STYLE_ACTIVE(style),
+            FOR_TARGET_NODE(TARGETS_FOE_NODE, TARGET_HAS_TRIGGERED_THE_BULWARK_EFFECT_NODE),
+        ),
     );
     // Unit suffers a counterattack if any of the following conditions are met:
     SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
@@ -5009,8 +5058,11 @@
     ));
     // Cannot move through spaces within 3 spaces of foe that has triggered the [Bulwark] effect
     // (does not apply if unit has a Pass skill).
-    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
-        IS_STYLE_ACTIVE(style)
+    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_FOE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(
+            IS_STYLE_ACTIVE(style),
+            FOR_TARGET_NODE(TARGETS_FOE_NODE, TARGET_HAS_TRIGGERED_THE_BULWARK_EFFECT_NODE),
+        ),
     );
     // Unit suffers a counterattack if any of the following conditions are met:
     SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>

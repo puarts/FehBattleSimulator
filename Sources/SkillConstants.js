@@ -4222,7 +4222,9 @@ const StyleType = {
     SUBLIME_HEAVEN: 4,
     WEAPON_TRIANGLE_GREEN: 5,
     HOSHIDO_RAIJINTO: 6,
-    RANGE_2: 7,
+    RANGE_2_STATUS: 7,
+    RANGE_2: 8,
+    // CAN_ACTIVATE_STYLE_HOOKSを設定する
 }
 const STYLE_TYPE_NAMES = [
     '流星群',

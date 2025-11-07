@@ -5886,7 +5886,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatN
 }
 
 const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_SPECIAL_TRIGGERS_BEFORE_COMBAT_NODE =
-   n => new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(n);
+    n => new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(n);
 
 /**
  * inflicts Special cooldown count+1
@@ -7568,3 +7568,57 @@ class TargetsYAxisNode extends NumberNode {
 }
 
 const TARGETS_Y_AXIS_NODE = new TargetsYAxisNode();
+
+// Foe's with Range = 1 cannot move through spaces adjacent to unit, and
+class TargetsFoesCannotMoveThroughSpacesAdjacentToTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let skillOwner = env.skillOwner;
+        let result = skillOwner.canActivateObstructToAdjacentTiles(unit);
+        env.debug(`${unit.nameWithGroup}は${skillOwner.nameWithGroup}の隣接マスを通過可能か？: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_FOES_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_TARGET_NODE =
+    new TargetsFoesCannotMoveThroughSpacesAdjacentToTargetNode();
+
+// foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
+class TargetsFoesCannotMoveThroughSpacesWithin2SpacesOfTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let skillOwner = env.skillOwner;
+        let result = skillOwner.canActivateObstructToTilesWithin2Spaces(unit);
+        env.debug(`${unit.nameWithGroup}は${skillOwner.nameWithGroup}の2マス以内を通過可能か？: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_FOES_CANNOT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_TARGET_NODE =
+    new TargetsFoesCannotMoveThroughSpacesWithin2SpacesOfTargetNode();
+
+class TargetHasTriggeredTheBulwarkEffectNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.targetFoe;
+        let result =
+            unit.canActivateObstructToAdjacentTiles(foe) &&
+            unit.canActivateObstructToTilesWithin2Spaces(foe);
+        env.debug(`${unit.nameWithGroup}は【防壁】の効果を発動しているか: ${result}`);
+        return result;
+    }
+}
+
+const TARGET_HAS_TRIGGERED_THE_BULWARK_EFFECT_NODE = new TargetHasTriggeredTheBulwarkEffectNode();
