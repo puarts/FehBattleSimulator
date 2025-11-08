@@ -408,6 +408,12 @@ const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_N_NODE = n =>
         REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
     );
 
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_N_PERCENT_NODE = percentage =>
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(percentage),
+        REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(percentage),
+    );
+
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
 /**
  * 奥義カウント最大判定
@@ -1588,6 +1594,10 @@ function setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, no
 
 function setAtStartOfEnemyPhaseExceptForInPawnsOfLoki(skillId, nodeFunc) {
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc)
+}
+
+function setAtStartOfEnemyPhaseAfterHealingAndDamageSkillsExceptForInPawnsOfLoki(skillId, nodeFunc) {
+    AT_START_OF_ENEMY_PHASE_AFTER_HEALING_AND_DAMAGE_SKILLS_HOOKS.addSkill(skillId, nodeFunc);
 }
 
 function setAtStartOfPlayerPhaseOrAfterActsIfCantoAfterCanto(skillId, nodeFunc) {

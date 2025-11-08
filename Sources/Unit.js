@@ -3360,7 +3360,7 @@ class Unit extends BattleMapElement {
      */
     applyReservedHp(leavesOneHp) {
         let healHp = this.reservedHeal;
-        let reducedHeal = this.hasDeepWounds() ? healHp : 0;
+        let reducedHeal = this.hasDeepWounds(false) ? healHp : 0;
         healHp -= reducedHeal;
         healHp += this.reservedHealNeutralizesDeepWounds;
         let damageHp = this.hasStatusEffect(StatusEffectType.EnGarde) ? 0 : this.reservedDamage;
@@ -3380,11 +3380,14 @@ class Unit extends BattleMapElement {
     }
 
     calculateReducedHealAmountInCombat(healHp) {
-        let reducedHeal = this.hasDeepWounds() ? healHp : 0;
+        let reducedHeal = this.hasDeepWounds(true) ? healHp : 0;
         return this.battleContext.calculateReducedHealAmount(reducedHeal);
     }
 
-    hasDeepWounds() {
+    hasDeepWounds(isDuringCombat = false) {
+        if (isDuringCombat && this.battleContext.hasDeepWoundsDuringCombat) {
+            return true;
+        }
         return this.hasStatusEffect(StatusEffectType.DeepWounds) || this.battleContext.hasDeepWounds;
     }
 
@@ -3422,8 +3425,9 @@ class Unit extends BattleMapElement {
         this.heal(99);
     }
 
+    // TODO: 戦闘中なのか戦闘外なのか調査する
     heal(healAmount) {
-        let reducedHeal = this.hasDeepWounds() ? healAmount : 0;
+        let reducedHeal = this.hasDeepWounds(false) ? healAmount : 0;
         healAmount -= this.battleContext.calculateReducedHealAmount(reducedHeal);
 
         let damage = this.maxHpWithSkills - this.hp;
@@ -3436,7 +3440,7 @@ class Unit extends BattleMapElement {
     }
 
     healInCombat(healAmount) {
-        let reducedHeal = this.hasDeepWounds() ? healAmount : 0;
+        let reducedHeal = this.hasDeepWounds(true) ? healAmount : 0;
         healAmount -= this.battleContext.calculateReducedHealAmount(reducedHeal);
         this.restHp = MathUtil.ensureMax(this.restHp + healAmount, this.maxHpWithSkills);
         return [this.restHp, healAmount];

@@ -118,6 +118,10 @@ class BattleContext {
         this.hasDeepWounds = false;
 
         // 回復を無効化されている状態
+        this.hasDeepWoundsDuringCombat = false;
+
+        // 回復を無効化されている状態
+        // TODO: 暗闘で無効化される戦闘後回復を実装する
         this.hasDeepWoundsAfterCombatNeutralizedWhenFeud = false;
 
         // [回復不可]を無効にする割合

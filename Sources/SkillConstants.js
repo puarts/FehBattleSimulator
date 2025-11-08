@@ -4028,13 +4028,13 @@ Weapon.GlacialGreataxe = 3461; // 氷雪の大斧
 PassiveA.Shatterproof = 3462; // 金剛不壊
 PassiveB.GlacialSeal = 3463; // 真氷王の封印
 Weapon.ScrollsOfTime = 3464; // 未来と過去の忍法帖
-PassiveA.FutureAndPast = 3465; // 未来と過去
+Special.FutureAndPast = 3465; // 未来と過去
 PassiveB.ConjuringBreath = 3466; // 魔の蛇毒・呼吸
 PassiveC.ASAssaultHone = 3467; // 攻速鼓舞・強襲
 // TODO: 修正
 Weapon.RenNozhanLunPlus = 3468; // 忍の戦輪+
-PassiveB.AssuredrebirthPlus = 3469; // 我が復活は成…・神
-PassiveA.Swiftslice2 = 3470; // 連閃・承
+PassiveB.AssuredRebirthPlus = 3469; // 我が復活は成…・神
+PassiveA.SwiftSlice2 = 3470; // 連閃・承
 // TODO: 修正
 Weapon.SoulfulLance = 3471; // 強面の怖槍
 

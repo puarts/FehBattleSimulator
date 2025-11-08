@@ -1947,6 +1947,7 @@ class BattleSimulatorBase {
                 break;
         }
         for (let unit of this.enumerateUnitsOnMap()) {
+            unit.applyReservedHp(true);
             unit.applyReservedState(false);
         }
         this.map.applyReservedDivineVein();
@@ -3865,6 +3866,10 @@ class BattleSimulatorBase {
                 let func = getSkillFunc(skillId, applyHighPriorityAnotherActionSkillEffectFuncMap);
                 func?.call(this, atkUnit, defUnit, tileToAttack);
             }
+            let env = new BattleSimulatorBaseEnv(this, atkUnit);
+            env.setName('奥義以外の再行動時（他より優先）').setLogLevel(getSkillLogLevel())
+                .setUnitsDuringCombat(atkUnit, defUnit, true);
+            AFTER_COMBAT_FOR_ANOTHER_ACTION_THAT_HAS_PRIORITY_OVER_OTHER_SKILLS_HOOKS.evaluateWithUnit(atkUnit, env);
         }
 
         // 優先度が高いスキルの後かつ奥義の再行動の前

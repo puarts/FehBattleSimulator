@@ -1723,8 +1723,8 @@
 
     // At start of player phase or enemy phase, neutralizes【Panic】and penalties on unit's Atk/Def that take effect on unit at that time.
     let nodeFunc = () => new SkillEffectNode(
-        new AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesStatusEffectThatTakeEffectOnTargetAtThatTimeNode(StatusEffectType.Panic),
-        new AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTargetAtThatTimeNode(true, false, true, false),
+        new NeutralizesStatusEffectOnMapThatTakeEffectOnTargetAtThatTimeNode(StatusEffectType.Panic),
+        new NeutralizesPenaltiesOnMapThatTakeEffectOnTargetAtThatTimeNode(true, false, true, false),
     );
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);

@@ -182,6 +182,7 @@ const WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS = new SkillEffectHooks();
 
 /**
  * ボタンを押せるかどうか
+ * Hero.DuoXXXを引数に渡す事に注意
  * @type {MultiValueMap<number, BoolNode>} */
 const CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
 
@@ -282,6 +283,11 @@ const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();
  * 戦闘後の再行動評価時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘後の再行動評価時（他の同系統効果より優先）
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_COMBAT_FOR_ANOTHER_ACTION_THAT_HAS_PRIORITY_OVER_OTHER_SKILLS_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘後の再行動評価時（周囲の味方、自分の再行動効果の後）
@@ -547,9 +553,16 @@ const IS_ASSIGN_DECOY_FOR_SAME_RANGE_ACTIVE_HOOKS = new SkillEffectHooks();
  */
 const DOES_UNIT_MOVE_1_SPACE_AWAY_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
 
-const INCLUDING_AOE_HOOKS = new class {
+const DURING_COMBAT_INCLUDING_AOE_HOOKS = new class {
     addSkill(skillId, nodeFunc) {
         AT_START_OF_COMBAT_HOOKS.addSkill(skillId, nodeFunc);
+        BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, nodeFunc);
+    }
+}();
+
+const DURING_COMBAT_USING_STATS_INCLUDING_AOE_HOOKS = new class {
+    addSkill(skillId, nodeFunc) {
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, nodeFunc);
         BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, nodeFunc);
     }
 }();
