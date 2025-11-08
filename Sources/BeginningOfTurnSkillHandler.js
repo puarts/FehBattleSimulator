@@ -1014,13 +1014,6 @@ class BeginningOfTurnSkillHandler {
                     }
                 }
                 break;
-            case Weapon.ShadowBreath:
-                for (let unit of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(skillOwner, 2, true)) {
-                    unit.reserveToApplyAtkBuff(6);
-                    unit.reserveToApplyResBuff(6);
-                    unit.reserveToAddStatusEffect(StatusEffectType.EnGarde);
-                }
-                break;
             case Weapon.FieryBolganone: {
                 let found = false;
                 for (let unit of this.enumerateUnitsInDifferentGroupWithinSpecifiedSpaces(skillOwner, 4)) {

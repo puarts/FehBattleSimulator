@@ -2401,6 +2401,22 @@ class TargetAppliesSkillEffectsPerAttackNode extends SkillEffectNode {
 const TARGET_APPLIES_SKILL_EFFECTS_PER_ATTACK_NODE =
     (...nodes) => new TargetAppliesSkillEffectsPerAttackNode(...nodes);
 
+class GrantsSpecialCooldownChargePlus1ToTargetPerTargetsFoesAttackNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.increaseCooldownCountForDefense;
+        env.debug(`${unit.nameWithGroup}は敵から攻撃された時、戦闘中、自身の奥義発動カウント変動量+1: ${result}`);
+        return result;
+    }
+}
+
+const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS1_TO_TARGET_PER_TARGETS_FOES_ATTACK_NODE =
+    new GrantsSpecialCooldownChargePlus1ToTargetPerTargetsFoesAttackNode();
+
 /**
  * grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack).
  */

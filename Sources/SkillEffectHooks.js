@@ -231,12 +231,12 @@ const AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS = new SkillEffectHooks();
 /**
  * 戦闘ステータス決定後のバフ
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
-const WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
+const STATS_SKILL_USING_STATS_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘ステータス決定後のスキル効果
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
-const WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
+const NON_STATS_SKILL_USING_STATS_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘開始時奥義
@@ -546,3 +546,10 @@ const IS_ASSIGN_DECOY_FOR_SAME_RANGE_ACTIVE_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<BoolNode, NodeEnv>}
  */
 const DOES_UNIT_MOVE_1_SPACE_AWAY_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
+
+const INCLUDING_AOE_HOOKS = new class {
+    addSkill(skillId, nodeFunc) {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, nodeFunc);
+        BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, nodeFunc);
+    }
+}();

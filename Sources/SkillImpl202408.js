@@ -4037,7 +4037,7 @@ function setDiscord(skillId, statsRatios) {
         ),
     ));
 
-    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's Def > foe's Def,
         IF_NODE(UNITS_DEF_GT_FOES_DEF_DURING_COMBAT_NODE,
             new NumThatIsNode(

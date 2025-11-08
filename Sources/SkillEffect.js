@@ -1385,6 +1385,8 @@ class TargetFoeGroupNode extends NumberNode {
 
 const TARGET_FOE_GROUP_NODE = new TargetFoeGroupNode();
 
+const SKILL_OWNER_GROUP_NODE = FOR_TARGET_NODE(SKILL_OWNER_NODE, TARGET_GROUP_NODE);
+
 /**
  * ターゲットとスキル所有者が同じ場合はfalse
  */
@@ -2304,6 +2306,8 @@ const GRANTS_ATK_RES_TO_TARGET_DURING_COMBAT_NODE =
     (atk, res = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, 0, res);
 const GRANTS_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE =
     (spd, def = spd) => new GrantsStatsPlusToTargetDuringCombatNode(0, spd, def, 0);
+const GRANTS_SPD_RES_TO_TARGET_DURING_COMBAT_NODE =
+    (spd, res = spd) => new GrantsStatsPlusToTargetDuringCombatNode(0, spd, 0, res);
 const GRANTS_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
     (def, res = def) => new GrantsStatsPlusToTargetDuringCombatNode(0, 0, def, res);
 
@@ -3681,6 +3685,9 @@ const CURRENT_TURN_NODE = new class extends NumberNode {
         return g_appData.globalBattleContext?.currentTurn ?? 0;
     }
 }();
+
+const IS_ODD_TURN_NODE = IS_ODD_NODE(CURRENT_TURN_NODE);
+const IS_EVEN_TURN_NODE = IS_EVEN_NODE(CURRENT_TURN_NODE);
 
 const NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {

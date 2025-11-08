@@ -4036,7 +4036,7 @@ Weapon.RenNozhanLunPlus = 3468; // 忍の戦輪+
 PassiveB.AssuredrebirthPlus = 3469; // 我が復活は成…・神
 PassiveA.Swiftslice2 = 3470; // 連閃・承
 // TODO: 修正
-Weapon.QiangMianNobuQiang = 3471; // 強面の怖槍
+Weapon.SoulfulLance = 3471; // 強面の怖槍
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

@@ -32,6 +32,16 @@ const FOES_EVAL_SPD_NODE =
         FOES_EVAL_SPD_DURING_COMBAT_NODE,
         FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE,
     );
+const UNITS_EVAL_DEF_NODE =
+    COND_OP(IS_IN_COMBAT_PHASE_NODE,
+        UNITS_EVAL_DEF_DURING_COMBAT_NODE,
+        UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE,
+    );
+const FOES_EVAL_DEF_NODE =
+    COND_OP(IS_IN_COMBAT_PHASE_NODE,
+        FOES_EVAL_DEF_DURING_COMBAT_NODE,
+        FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE,
+    );
 const UNITS_EVAL_RES_NODE =
     COND_OP(IS_IN_COMBAT_PHASE_NODE,
         UNITS_EVAL_RES_DURING_COMBAT_NODE,
@@ -387,6 +397,12 @@ const REDUCES_DAMAGE_BY_N_NODES = n => [
 ];
 
 const REDUCES_DAMAGE_BY_N_NODE = n =>
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
+        REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
+    );
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_N_NODE = n =>
     IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
         REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
         REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
@@ -1503,7 +1519,7 @@ function setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, atSta
             atStartOfNode,
         ),
     ));
-    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode,
             afterNode,
         ),
@@ -1530,7 +1546,7 @@ function setBeforeAoeSpecialAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
         ));
     }
     if (afterNode) {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             IF_NODE(condNode, afterNode),
         ));
     }

@@ -1085,7 +1085,6 @@ const WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET = new Set([
     Weapon.FieryFang,
     Weapon.RoyalHatariFang,
     Weapon.HornOfOpening,
-    Weapon.PolishedFang,
     Weapon.SparklingFang,
     Weapon.EbonPirateClaw,
     Weapon.CrossbonesClaw,
@@ -1139,7 +1138,6 @@ const BEAST_COMMON_SKILL_MAP = new Map([
     [Weapon.FieryFang, BeastCommonSkillType.Infantry2],
     [Weapon.WildTigerFang, BeastCommonSkillType.Infantry2],
     [Weapon.RoyalHatariFang, BeastCommonSkillType.Infantry2],
-    [Weapon.PolishedFang, BeastCommonSkillType.Infantry2],
     [Weapon.HornOfOpening, BeastCommonSkillType.Infantry2],
 
     // 錬成すると次世代歩行

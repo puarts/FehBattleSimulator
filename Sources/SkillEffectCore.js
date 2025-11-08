@@ -1079,6 +1079,21 @@ class SumNode extends NumberOperationNode {
 
 const SUM_NODE = (...node) => new SumNode(...node);
 
+class IsOddNode extends BoolNode {
+    constructor(n) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let n = this._n.evaluate(env);
+        return n % 2 !== 0;
+    }
+}
+
+const IS_ODD_NODE = n => new IsOddNode(n);
+const IS_EVEN_NODE = n => NOT_NODE(IS_ODD_NODE(n));
+
 /**
  * @template {SkillEffectNode} T
  * @template R
