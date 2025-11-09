@@ -2198,7 +2198,6 @@
     CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () => CONSTANT_NUMBER_NODE(2));
     // Cannot move through spaces within 2 spaces of foe
     // that has triggered the Bulwark effect (does not apply if unit has Pass).
-    // TODO: 防壁を発動しているという条件を追加する
     CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_FOE_HOOKS.addSkill(skillId, () =>
         AND_NODE(
             IS_STYLE_ACTIVE(style),
