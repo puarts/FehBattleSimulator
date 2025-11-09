@@ -51,7 +51,6 @@ class SkillEffectRegistrar {
              * @type { { addSkill: (skillId: number, () => SkillEffectNode) => void } }
              */
             let hooks = skill[skill.length - 1];
-            console.log('hooks: %o', hooks);
             hooks.addSkill(skillId, () => IF_NODE(condNode, SKILL_EFFECT_NODE(...nodes)));
         } else if (skill instanceof SkillEffectNode) {
             AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => IF_NODE(condNode, skill));
