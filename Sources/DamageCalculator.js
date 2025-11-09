@@ -1478,6 +1478,11 @@ class DamageCalculator {
     calcFinalAtkInAttack(atkUnit, defUnit, attackResult, damageCalcEnv) {
         let finalAtk = attackResult.atk;
         let specialFinalAtk = attackResult.specialAtk;
+        for (let effective of atkUnit.battleContext.effectivesAgainst) {
+            if (DamageCalculationUtility.isEffectiveAttackEnabled(defUnit, effective)) {
+                atkUnit.battleContext.isEffectiveToOpponent |= true;
+            }
+        }
         if (atkUnit.battleContext.isEffectiveToOpponent) {
             // 特効
             finalAtk = floorNumberWithFloatError(finalAtk * 1.5);

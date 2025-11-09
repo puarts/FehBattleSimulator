@@ -32,6 +32,16 @@ const FOES_EVAL_SPD_NODE =
         FOES_EVAL_SPD_DURING_COMBAT_NODE,
         FOES_EVAL_SPD_AT_START_OF_COMBAT_NODE,
     );
+const UNITS_EVAL_DEF_NODE =
+    COND_OP(IS_IN_COMBAT_PHASE_NODE,
+        UNITS_EVAL_DEF_DURING_COMBAT_NODE,
+        UNITS_EVAL_DEF_AT_START_OF_COMBAT_NODE,
+    );
+const FOES_EVAL_DEF_NODE =
+    COND_OP(IS_IN_COMBAT_PHASE_NODE,
+        FOES_EVAL_DEF_DURING_COMBAT_NODE,
+        FOES_EVAL_DEF_AT_START_OF_COMBAT_NODE,
+    );
 const UNITS_EVAL_RES_NODE =
     COND_OP(IS_IN_COMBAT_PHASE_NODE,
         UNITS_EVAL_RES_DURING_COMBAT_NODE,
@@ -390,6 +400,18 @@ const REDUCES_DAMAGE_BY_N_NODE = n =>
     IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
         REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
         REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
+    );
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_N_NODE = n =>
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
+        REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
+    );
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_N_PERCENT_NODE = percentage =>
+    IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_NODE(percentage),
+        REDUCES_DAMAGE_FROM_AOE_SPECIALS_BY_X_PERCENT_NODE(percentage),
     );
 
 // TODO: 奥義カウント-周りをリファクタリングする(alias以外にも多数クラスが存在)
@@ -1337,8 +1359,8 @@ function setSpikedWall(skillId, debuffAmounts, statuses) {
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
     CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
-        EQ_NODE(new TargetsRangeNode(), 2),
-    )
+        EQ_NODE(TARGETS_RANGE_NODE, 2),
+    );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Inflicts ATK/DEF-4 on foe,
         new InflictsStatsMinusOnFoeDuringCombatNode(...debuffAmounts),
@@ -1391,7 +1413,9 @@ function setCannotMoveThroughSpacesSkill(skillId) {
     // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills).
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
-    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
+        EQ_NODE(TARGETS_RANGE_NODE, 2)
+    );
 }
 
 /**
@@ -1501,7 +1525,7 @@ function setAtStartOfCombatAndAfterStatsDeterminedHooks(skillId, condNode, atSta
             atStartOfNode,
         ),
     ));
-    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode,
             afterNode,
         ),
@@ -1528,7 +1552,7 @@ function setBeforeAoeSpecialAtStartOfCombatAndAfterStatsDeterminedHooks(skillId,
         ));
     }
     if (afterNode) {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             IF_NODE(condNode, afterNode),
         ));
     }
@@ -1570,6 +1594,10 @@ function setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, no
 
 function setAtStartOfEnemyPhaseExceptForInPawnsOfLoki(skillId, nodeFunc) {
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc)
+}
+
+function setAtStartOfEnemyPhaseAfterHealingAndDamageSkillsExceptForInPawnsOfLoki(skillId, nodeFunc) {
+    AT_START_OF_ENEMY_PHASE_AFTER_HEALING_AND_DAMAGE_SKILLS_HOOKS.addSkill(skillId, nodeFunc);
 }
 
 function setAtStartOfPlayerPhaseOrAfterActsIfCantoAfterCanto(skillId, nodeFunc) {
@@ -1636,4 +1664,9 @@ function setStyleRange(skillId, rangeNode) {
     CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () =>
         rangeNode,
     );
+}
+
+// Unit can use the following [Style]:
+function setUnitCanUseFollowingStyle(skillId, styleType) {
+    SKILL_ID_TO_STYLE_TYPE.set(skillId, styleType);
 }

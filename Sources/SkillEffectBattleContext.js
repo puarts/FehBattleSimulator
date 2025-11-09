@@ -2344,6 +2344,8 @@ class DealsDamageToFoeAsCombatBeginsNode extends DealsDamageToTargetAsCombatBegi
     }
 }
 
+const DEALS_DAMAGE_TO_FOE_AS_COMBAT_BEGINS_NODE = n => new DealsDamageToFoeAsCombatBeginsNode(n);
+
 class DealsDamageToTargetAsCombatBeginsThatDoesNotStackNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -2400,6 +2402,22 @@ class TargetAppliesSkillEffectsPerAttackNode extends SkillEffectNode {
 
 const TARGET_APPLIES_SKILL_EFFECTS_PER_ATTACK_NODE =
     (...nodes) => new TargetAppliesSkillEffectsPerAttackNode(...nodes);
+
+class GrantsSpecialCooldownChargePlus1ToTargetPerTargetsFoesAttackNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.increaseCooldownCountForDefense;
+        env.debug(`${unit.nameWithGroup}は敵から攻撃された時、戦闘中、自身の奥義発動カウント変動量+1: ${result}`);
+        return result;
+    }
+}
+
+const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS1_TO_TARGET_PER_TARGETS_FOES_ATTACK_NODE =
+    new GrantsSpecialCooldownChargePlus1ToTargetPerTargetsFoesAttackNode();
 
 /**
  * grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack).
@@ -2490,7 +2508,7 @@ class GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisad
 const GRANTS_TRIANGLE_ADVANTAGE_AGAINST_COLORLESS_TARGETS_FOES_AND_INFLICTS_TRIANGLE_DISADVANTAGE_ON_COLORLESS_TARGETS_FOES_DURING_COMBAT_NODE
     = new GrantsTriangleAdvantageAgainstColorlessTargetsFoesAndInflictsTriangleDisadvantageOnColorlessTargetsFoesDuringCombatNode();
 
-class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesStatusEffectThatTakeEffectOnTargetAtThatTimeNode extends FromNumberNode {
+class NeutralizesStatusEffectOnMapThatTakeEffectOnTargetAtThatTimeNode extends FromNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2503,7 +2521,10 @@ class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesStatusEffectThatTakeEffectOnTar
     }
 }
 
-class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTargetAtThatTimeNode extends FromBoolStatsNode {
+const NEUTRALIZES_STATUS_EFFECT_ON_MAP_THAT_TAKE_EFFECT_ON_TARGET_AT_THAT_TIME_NODE =
+    n => new NeutralizesStatusEffectOnMapThatTakeEffectOnTargetAtThatTimeNode(n);
+
+class NeutralizesPenaltiesOnMapThatTakeEffectOnTargetAtThatTimeNode extends FromBoolStatsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2514,6 +2535,9 @@ class AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTarget
         env.info(`${unit.nameWithGroup}は付与される弱化を無効化: [${result}]`);
     }
 }
+
+const NEUTRALIZES_PENALTIES_ON_MAP_THAT_TAKE_EFFECT_ON_TARGET_AT_THAT_TIME_NODE =
+    (...flags) => new NeutralizesPenaltiesOnMapThatTakeEffectOnTargetAtThatTimeNode(...flags);
 
 class PotentFollowXPercentageHasTriggeredAndXLte99ThenXIsNNode extends SkillEffectNode {
     static {
@@ -2668,7 +2692,7 @@ class GrantsMiracleAndHealToTargetOncePerMapNode extends SkillEffectNode {
 
 const GRANTS_MIRACLE_AND_HEAL_TO_TARGET_ONCE_PER_MAP_NODE = new GrantsMiracleAndHealToTargetOncePerMapNode();
 
-class TargetCannotRecoverHpDuringCombatNode extends SkillEffectNode {
+class TargetCannotRecoverHpNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -2676,6 +2700,20 @@ class TargetCannotRecoverHpDuringCombatNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.battleContext.hasDeepWounds = true;
+        env.info(`${unit.nameWithGroup}はHPを回復できない`);
+    }
+}
+
+const TARGET_CANNOT_RECOVER_HP_NODE = new TargetCannotRecoverHpNode();
+
+class TargetCannotRecoverHpDuringCombatNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.battleContext.hasDeepWoundsDuringCombat = true;
         env.info(`${unit.nameWithGroup}は戦闘中HPを回復できない`);
     }
 }

@@ -11,6 +11,7 @@ SOURCE_FILE_NAMES=(
     SkillEffect
     SkillEffectBattleContext
     SkillEffectHooks
+    SkillEffectRegistrar
     BattleMapElement
     Tile
     Structures

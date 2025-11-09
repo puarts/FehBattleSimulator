@@ -4423,9 +4423,6 @@ class DamageCalculatorWrapper {
                 targetUnit.addAllSpur(8);
             }
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.AsuraBlades] = (targetUnit) => {
-            targetUnit.battleContext.invalidateAllOwnDebuffs();
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.PeppyCanePlus] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 enemyUnit.addSpurs(-5, 0, 0, -5);
@@ -5495,13 +5492,6 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.isDesperationActivatable = true;
             targetUnit.battleContext.invalidateCooldownCountSkills();
         }
-
-        this._applySkillEffectForUnitFuncDict[Weapon.ShadowBreath] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
-                enemyUnit.addSpurs(-6, 0, 0, -6);
-                enemyUnit.battleContext.followupAttackPriorityDecrement--;
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.FieryBolganone] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (targetUnit.battleContext.initiatesCombat || (self.__isSolo(targetUnit) || calcPotentialDamage)) {
                 targetUnit.addSpurs(6, 0, 0, 6);
@@ -5977,12 +5967,6 @@ class DamageCalculatorWrapper {
             targetUnit.battleContext.invalidatesAbsoluteFollowupAttack = true;
             targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
         }
-        this._applySkillEffectForUnitFuncDict[Weapon.PolishedFang] = (targetUnit, enemyUnit) => {
-            if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                targetUnit.atkSpur += 6;
-                targetUnit.defSpur += 6;
-            }
-        }
         this._applySkillEffectForUnitFuncDict[Weapon.JotnarBow] = (targetUnit, enemyUnit) => {
             if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
                 enemyUnit.atkSpur -= 5;
@@ -6282,20 +6266,6 @@ class DamageCalculatorWrapper {
             if (targetUnit.battleContext.restHpPercentage >= 25) {
                 targetUnit.atkSpur += 6;
                 targetUnit.resSpur += 6;
-            }
-        }
-        this._applySkillEffectForUnitFuncDict[Weapon.AgneasArrow] = (targetUnit) => {
-            if (targetUnit.battleContext.initiatesCombat || self.__isThereAllyIn2Spaces(targetUnit)) {
-                targetUnit.atkSpur += 6;
-                targetUnit.spdSpur += 6;
-                targetUnit.battleContext.invalidatesInvalidationOfFollowupAttack = true;
-                if (this.isOddTurn) {
-                    targetUnit.battleContext.invalidatesSpdBuff = true;
-                    targetUnit.battleContext.invalidatesResBuff = true;
-                } else {
-                    targetUnit.battleContext.invalidatesOwnAtkDebuff = true;
-                    targetUnit.battleContext.invalidatesOwnSpdDebuff = true;
-                }
             }
         }
         this._applySkillEffectForUnitFuncDict[Weapon.DuskDragonstone] = (targetUnit, enemyUnit) => {
@@ -6950,11 +6920,6 @@ class DamageCalculatorWrapper {
                         targetUnit.addAllSpur(4);
                     }
                 }
-            }
-        };
-        this._applySkillEffectForUnitFuncDict[Weapon.HolyGradivus] = (targetUnit) => {
-            if (targetUnit.battleContext.restHpPercentage >= 25) {
-                targetUnit.battleContext.followupAttackPriorityIncrement++;
             }
         };
         this._applySkillEffectForUnitFuncDict[Weapon.RohyouNoKnife] = (targetUnit, enemyUnit) => {
@@ -9328,14 +9293,12 @@ class DamageCalculatorWrapper {
             this._applySkillEffectForUnitFuncDict[Weapon.PactBloomsPlus] = func;
         }
         {
-            let func = (targetUnit, enemyUnit) => {
+            this._applySkillEffectForUnitFuncDict[Weapon.SeaSearLance] = (targetUnit, enemyUnit) => {
                 if (enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) {
                     enemyUnit.atkSpur -= 6;
                     enemyUnit.defSpur -= 6;
                 }
             };
-            this._applySkillEffectForUnitFuncDict[Weapon.SeaSearLance] = func;
-            this._applySkillEffectForUnitFuncDict[Weapon.LoyalistAxe] = func;
         }
         {
             let func = (targetUnit) => {
@@ -10886,7 +10849,7 @@ class DamageCalculatorWrapper {
         env.setName('戦闘中バフ決定後バフ').setLogLevel(getSkillLogLevel()).setDamageType(damageCalcEnv.damageType)
             .setCombatPhase(this.combatPhase).setGroupLogger(damageCalcEnv.getCombatLogger());
         targetUnit.battleContext.applySpurForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
-        WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.evaluateWithUnit(targetUnit, env);
+        STATS_SKILL_USING_STATS_HOOKS.evaluateWithUnit(targetUnit, env);
         if (targetUnit.hasStatusEffect(StatusEffectType.GrandStrategy)) {
             if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
                 this.__applyDebuffReverse(targetUnit, "ステータス:神軍師の策");
@@ -11817,7 +11780,7 @@ class DamageCalculatorWrapper {
         env.setName('戦闘中バフ決定後のスキル').setLogLevel(getSkillLogLevel()).setDamageType(damageCalcEnv.damageType)
             .setCombatPhase(this.combatPhase).setGroupLogger(damageCalcEnv.getCombatLogger());
         targetUnit.battleContext.applySkillEffectForUnitForUnitAfterCombatStatusFixedNodes.forEach(node => node.evaluate(env));
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.evaluateWithUnit(targetUnit, env);
+        NON_STATS_SKILL_USING_STATS_HOOKS.evaluateWithUnit(targetUnit, env);
 
         if (targetUnit.hasStatusEffect(StatusEffectType.BonusDoubler)) {
             if (!targetUnit.hasStatusEffect(StatusEffectType.Ploy)) {
@@ -12012,11 +11975,6 @@ class DamageCalculatorWrapper {
                             let spd = targetUnit.getSpdInCombat(enemyUnit);
                             let amount = Math.trunc(spd * (Math.min(count * 10.0, 30.0) / 100.0));
                             targetUnit.battleContext.additionalDamage += amount;
-                        }
-                        break;
-                    case Weapon.AsuraBlades:
-                        if (targetUnit.getEvalSpdInCombat(enemyUnit) >= enemyUnit.getEvalSpdInCombat(targetUnit) + 1) {
-                            targetUnit.battleContext.increaseCooldownCountForBoth();
                         }
                         break;
                     case Weapon.PastelPoleaxe:
@@ -12402,14 +12360,6 @@ class DamageCalculatorWrapper {
                                     targetUnit.getEvalSpdInCombat(enemyUnit) > enemyUnit.getEvalSpdInCombat(targetUnit))) {
                                 enemyUnit.battleContext.followupAttackPriorityDecrement--;
                                 targetUnit.battleContext.reducesCooldownCount = true;
-                            }
-                        }
-                        break;
-                    case Weapon.PolishedFang:
-                        if (enemyUnit.battleContext.restHpPercentage >= 75) {
-                            // @TODO: もし頻繁に現れる効果なら__applyFlashingBladeSkillメソッドのようにメソッド化する
-                            if (targetUnit.getEvalDefInCombat(enemyUnit) > enemyUnit.getEvalDefInCombat(targetUnit)) {
-                                targetUnit.battleContext.increaseCooldownCountForDefense = true;
                             }
                         }
                         break;
@@ -15335,7 +15285,6 @@ class DamageCalculatorWrapper {
                     }
                     break;
                 case Weapon.SeaSearLance:
-                case Weapon.LoyalistAxe:
                     if ((enemyUnit.battleContext.initiatesCombat || enemyUnit.battleContext.restHpPercentage >= 75) &&
                         enemyUnit.battleContext.canFollowupAttackIncludingPotent()) {
                         targetUnit.battleContext.multDamageReductionRatioOfFirstAttack(0.75, enemyUnit);

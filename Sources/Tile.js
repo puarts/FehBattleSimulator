@@ -121,6 +121,8 @@ class Tile extends BattleMapElement {
         this._allyDangerLevel = 0;
         this._closestDistanceToEnemy = 0;
         this.tilePriority;
+        /** @type {BattleMap} */
+        this.battleMap = null
 
         this.isMovableForAlly = false;
         this.isMovableForEnemy = false;
@@ -817,43 +819,51 @@ class Tile extends BattleMapElement {
         if (!ignoresUnits) {
             if (!unit.canActivatePass()) {
                 if (this._placedUnit != null) {
-                    if (unit.groupId !== this._placedUnit.groupId) {
+                    if (!unit.isSameGroup(this.placedUnit)) {
                         // 敵ユニットだったらオブジェクトと同じ扱い
                         return CanNotReachTile;
                     }
                 }
 
                 let weight = this.__getTileMoveWeight(unit, ignoresBreakableWalls, isPathfinderEnabled);
+                if (weight === CanNotReachTile || this.isWall()) {
+                    return CanNotReachTile;
+                }
                 // 隣接マスに進軍阻止持ちがいるか確認
-                for (let tile1Space of this.neighbors) {
-                    if (tile1Space.existsEnemyUnit(unit) &&
-                        tile1Space.placedUnit.canActivateObstructToAdjacentTiles(unit)) {
-                        if (weight === CanNotReachTile || this.isWall()) {
-                            return CanNotReachTile;
-                        }
-                        return ObstructTile;
-                    }
-
-                    // 2マス以内に進軍阻止持ちがいるか確認
-                    for (let tile2Spaces of tile1Space.neighbors) {
-                        if (tile2Spaces.existsEnemyUnit(unit) &&
-                            tile2Spaces.placedUnit.canActivateObstructToTilesIn2Spaces(unit)) {
-                            if (weight === CanNotReachTile || this.isWall()) {
-                                return CanNotReachTile;
-                            }
-                            return ObstructTile;
-                        }
-
-                        // 3マス以内に進軍阻止持ちがいるか確認
-                        // TODO: リファクタリング
-                        for (let tile3Spaces of tile2Spaces.neighbors) {
-                            if (tile3Spaces.existsEnemyUnit(unit) &&
-                                tile3Spaces.placedUnit.canActivateObstructToTilesIn3Spaces(unit)) {
-                                if (weight === CanNotReachTile || this.isWall()) {
-                                    return CanNotReachTile;
+                for (let tile of this.battleMap.tiles) {
+                    if (tile.existsEnemyUnit(unit)) {
+                        let distance = this.calculateDistance(tile)
+                        let enemy = tile.placedUnit;
+                        switch (distance) {
+                            case 1:
+                                // 敵の通過不可
+                                if (enemy.canActivateObstructToAdjacentTiles(unit) ||
+                                    enemy.canActivateObstructToTilesWithin2Spaces(unit)) {
+                                    return ObstructTile;
                                 }
-                                return ObstructTile;
-                            }
+                                // 自分の通過不可
+                                if (unit.cannotMoveThroughSpacesWithin2SpacesOfUnit(enemy) ||
+                                    unit.cannotMoveThroughSpacesWithin3SpacesOfUnit(enemy)) {
+                                    return ObstructTile;
+                                }
+                                break;
+                            case 2:
+                                // 敵の通過不可
+                                if (enemy.canActivateObstructToTilesWithin2Spaces(unit)) {
+                                    return ObstructTile;
+                                }
+                                // 自分の通過不可
+                                if (unit.cannotMoveThroughSpacesWithin2SpacesOfUnit(enemy) ||
+                                    unit.cannotMoveThroughSpacesWithin3SpacesOfUnit(enemy)) {
+                                    return ObstructTile;
+                                }
+                                break;
+                            case 3:
+                                // 自分の通過不可
+                                if (unit.cannotMoveThroughSpacesWithin3SpacesOfUnit(enemy)) {
+                                    return ObstructTile;
+                                }
+                                break;
                         }
                     }
                 }

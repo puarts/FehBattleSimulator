@@ -475,6 +475,15 @@ class TargetsClosestFoesNode extends UnitsNode {
     }
 }
 
+class SkillOwnersClosestFoesNode extends TargetsClosestFoesNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const SKILL_OWNERS_CLOSEST_FOES_NODE = new SkillOwnersClosestFoesNode();
+const SKILL_OWNERS_NEAREST_FOES_NODE = new SkillOwnersClosestFoesNode();
+
 class TargetsClosestFoesWithinNSpacesNode extends UnitsNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1385,6 +1394,8 @@ class TargetFoeGroupNode extends NumberNode {
 
 const TARGET_FOE_GROUP_NODE = new TargetFoeGroupNode();
 
+const SKILL_OWNER_GROUP_NODE = FOR_TARGET_NODE(SKILL_OWNER_NODE, TARGET_GROUP_NODE);
+
 /**
  * ターゲットとスキル所有者が同じ場合はfalse
  */
@@ -1644,6 +1655,46 @@ class IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExclud
 
 const IS_THERE_SPACE_WITHIN_2_SPACES_THAT_HAS_DIVINE_VEIN_OR_COUNTS_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
     new IsThereSpaceWithinNSpacesThatHasDivineVeinOrCountsAsDifficultTerrainExcludingImpassableTerrainNode(2);
+
+class IsThereSpaceWithinNSpacesOfTargetThatSatisfiesCondNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} distance
+     * @param {boolean|BoolNode} pred
+     */
+    constructor(distance, pred) {
+        super();
+        this._distance = NumberNode.makeNumberNodeFrom(distance);
+        this._pred = BoolNode.makeBoolNodeFrom(pred);
+    }
+
+    /**
+     * @param {DamageCalculatorWrapperEnv|NodeEnv} env
+     */
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let distance = this._distance.evaluate(env);
+        let tiles =
+            env.damageCalculatorWrapper.map.enumerateTilesWithinSpecifiedDistance(unit.placedTile, distance);
+        let result = false;
+        let targetTile = null;
+        for (let tile of tiles) {
+            if (this._pred.evaluate(env.copy().setTile(tile))) {
+                result = true;
+                targetTile = tile;
+                break;
+            }
+        }
+        env.debug(`${unit.nameWithGroup}の周囲${this._distance}マス以内に条件を満たすマスが存在するか: ${result}, tile: ${targetTile?.positionToString()}`);
+        return result;
+    }
+}
+
+const IS_THERE_SPACE_WITHIN_N_SPACES_OF_TARGET_THAT_SATISFIES_COND_NODE =
+    (n, pred) => new IsThereSpaceWithinNSpacesOfTargetThatSatisfiesCondNode(n, pred);
 
 class HasDivineVeinNode extends BoolNode {
     evaluate(env) {
@@ -2304,6 +2355,8 @@ const GRANTS_ATK_RES_TO_TARGET_DURING_COMBAT_NODE =
     (atk, res = atk) => new GrantsStatsPlusToTargetDuringCombatNode(atk, 0, 0, res);
 const GRANTS_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE =
     (spd, def = spd) => new GrantsStatsPlusToTargetDuringCombatNode(0, spd, def, 0);
+const GRANTS_SPD_RES_TO_TARGET_DURING_COMBAT_NODE =
+    (spd, res = spd) => new GrantsStatsPlusToTargetDuringCombatNode(0, spd, 0, res);
 const GRANTS_DEF_RES_TO_TARGET_DURING_COMBAT_NODE =
     (def, res = def) => new GrantsStatsPlusToTargetDuringCombatNode(0, 0, def, res);
 
@@ -3682,6 +3735,9 @@ const CURRENT_TURN_NODE = new class extends NumberNode {
     }
 }();
 
+const IS_ODD_TURN_NODE = IS_ODD_NODE(CURRENT_TURN_NODE);
+const IS_EVEN_TURN_NODE = IS_EVEN_NODE(CURRENT_TURN_NODE);
+
 const NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE = new class extends PositiveNumberNode {
     evaluate(env) {
         let result = Unit.calcAttackerMoveDistance(env.unitDuringCombat, env.foeDuringCombat);
@@ -3873,7 +3929,7 @@ class IsTargetDragonTypeNode extends BoolNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = isWeaponTypeBeast(unit.weaponType);
+        let result = isWeaponTypeBreath(unit.weaponType);
         env.debug(`${unit.nameWithGroup}は竜であるか: ${result}`);
         return result;
     }
@@ -5886,7 +5942,7 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatN
 }
 
 const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_SPECIAL_TRIGGERS_BEFORE_COMBAT_NODE =
-   n => new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(n);
+    n => new GrantsSpecialCooldownCountMinusNToTargetBeforeSpecialTriggersBeforeCombatNode(n);
 
 /**
  * inflicts Special cooldown count+1
@@ -6097,6 +6153,35 @@ class GrantsAnotherActionToTargetOncePerTurnOnAssistNode extends SkillEffectNode
 
 const GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE =
     new GrantsAnotherActionToTargetOncePerTurnOnAssistNode();
+
+class GrantsAnotherActionAndAppliesSkillNode extends SkillEffectNode {
+    constructor(node) {
+        super();
+        this._node = node;
+    }
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        env.trace(`${unit.nameWithGroup}の${this.getPhase()}の再行動判定を開始`);
+        if (unit.isActionDone) {
+            env.trace(`${unit.nameWithGroup}は行動を終了している`);
+            if (!this.hasGrantedAnotherAction(unit)) {
+                env.trace(`${unit.nameWithGroup}はこのターン再行動を発動していない`);
+                this.setHasGrantedAnotherAction(unit);
+                env.trace(`${unit.nameWithGroup}の再行動を設定`);
+                unit.grantsAnotherAction();
+                env.debug(`${unit.nameWithGroup}は再行動`);
+                this._node.evaluate(env);
+            } else {
+                env.trace(`${unit.nameWithGroup}はこのターン再行動を発動している`);
+            }
+        } else {
+            env.trace(`${unit.nameWithGroup}は行動を終了していない`);
+        }
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_AND_APPLIES_SKILL_NODE =
+    node => new GrantsAnotherActionAndAppliesSkillNode(node);
 
 class GrantsAnotherActionAndInflictsIsolationNode extends SkillEffectNode {
     evaluate(env) {
@@ -6593,6 +6678,36 @@ class TargetsOncePerTurnSkillEffectForEntireMapNode extends SkillEffectNode {
 
 const TARGETS_ONCE_PER_TURN_SKILL_EFFECT_FOR_ENTIRE_MAP_NODE = (id, ...nodes) =>
     new TargetsOncePerTurnSkillEffectForEntireMapNode(id, ...nodes);
+
+class TargetsRestWeaponSkillAvailableTurnNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {number|NumberNode} n
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(n, ...nodes) {
+        super(...nodes);
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = env.target;
+        let n = this._nNode.evaluate(env);
+        if (unit.restWeaponSkillAvailableTurn === 0) {
+            env.debug(`${unit.nameWithGroup}の武器スキル効果が発動`);
+            this.evaluateChildren(env);
+            unit.restWeaponSkillAvailableTurn = n;
+        } else {
+            env.debug(`${unit.nameWithGroup}の武器スキル効果発動可能ターンまであと${unit.restWeaponSkillAvailableTurn}ターン`);
+        }
+    }
+}
+
+const TARGETS_REST_WEAPON_SKILL_AVAILABLE_TURN_NODE =
+    (n, ...nodes) => new TargetsRestWeaponSkillAvailableTurnNode(n, ...nodes);
 
 class TargetsRestSupportSkillAvailableTurnNode extends SkillEffectNode {
     static {
@@ -7568,3 +7683,66 @@ class TargetsYAxisNode extends NumberNode {
 }
 
 const TARGETS_Y_AXIS_NODE = new TargetsYAxisNode();
+
+// Foe's with Range = 1 cannot move through spaces adjacent to unit, and
+class TargetsFoesCannotMoveThroughSpacesAdjacentToTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let skillOwner = env.skillOwner;
+        let result = skillOwner.canActivateObstructToAdjacentTiles(unit);
+        env.debug(`${unit.nameWithGroup}は${skillOwner.nameWithGroup}の隣接マスを通過可能か？: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_FOES_CANNOT_MOVE_THROUGH_SPACES_ADJACENT_TO_TARGET_NODE =
+    new TargetsFoesCannotMoveThroughSpacesAdjacentToTargetNode();
+
+// foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
+class TargetsFoesCannotMoveThroughSpacesWithin2SpacesOfTargetNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let skillOwner = env.skillOwner;
+        let result = skillOwner.canActivateObstructToTilesWithin2Spaces(unit);
+        env.debug(`${unit.nameWithGroup}は${skillOwner.nameWithGroup}の2マス以内を通過可能か？: ${result}`);
+        return result;
+    }
+}
+
+const TARGETS_FOES_CANNOT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_TARGET_NODE =
+    new TargetsFoesCannotMoveThroughSpacesWithin2SpacesOfTargetNode();
+
+class TargetHasTriggeredTheBulwarkEffectNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.targetFoe;
+        let result =
+            unit.canActivateObstructToAdjacentTiles(foe) &&
+            unit.canActivateObstructToTilesWithin2Spaces(foe);
+        env.debug(`${unit.nameWithGroup}は【防壁】の効果を発動しているか: ${result}`);
+        return result;
+    }
+}
+
+const TARGET_HAS_TRIGGERED_THE_BULWARK_EFFECT_NODE = new TargetHasTriggeredTheBulwarkEffectNode();
+
+class IsWarpSpaceNode extends BoolNode {
+    evaluate(env) {
+        // TODO: 実装する
+        return false;
+    }
+}
+
+const IS_WARP_SPACE_NODE = new IsWarpSpaceNode();

@@ -182,6 +182,7 @@ const WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS = new SkillEffectHooks();
 
 /**
  * ボタンを押せるかどうか
+ * Hero.DuoXXXを引数に渡す事に注意
  * @type {MultiValueMap<number, BoolNode>} */
 const CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP = new MultiValueMap();
 
@@ -214,7 +215,7 @@ const AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS = new SkillEffectHooks();
 /**
  * 戦闘後(死んでも発動)
  * @type {SkillEffectHooks<SkillEffectNode, AfterCombatEnv>} */
-const AFTER_COMBAT_NEVERTHELESS_HOOKS = new SkillEffectHooks();
+const AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘後(攻撃していれば)
@@ -231,12 +232,12 @@ const AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS = new SkillEffectHooks();
 /**
  * 戦闘ステータス決定後のバフ
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
-const WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
+const STATS_SKILL_USING_STATS_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘ステータス決定後のスキル効果
  * @type {SkillEffectHooks<SkillEffectNode, DamageCalculatorWrapperEnv>} */
-const WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
+const NON_STATS_SKILL_USING_STATS_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘開始時奥義
@@ -282,6 +283,11 @@ const AT_COMPARING_STATS_HOOKS = new SkillEffectHooks();
  * 戦闘後の再行動評価時
  * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
 const AFTER_COMBAT_FOR_ANOTHER_ACTION_HOOKS = new SkillEffectHooks();
+
+/**
+ * 戦闘後の再行動評価時（他の同系統効果より優先）
+ * @type {SkillEffectHooks<SkillEffectNode, BattleSimulatorBaseEnv>} */
+const AFTER_COMBAT_FOR_ANOTHER_ACTION_THAT_HAS_PRIORITY_OVER_OTHER_SKILLS_HOOKS = new SkillEffectHooks();
 
 /**
  * 戦闘後の再行動評価時（周囲の味方、自分の再行動効果の後）
@@ -460,12 +466,12 @@ const CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEf
 /**
  * ユニットが通過できない（敵ではない）
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
-const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_FOE_HOOKS = new SkillEffectHooks();
 
 /**
  * ユニットが通過できない（敵ではない）
  * @type {SkillEffectHooks<BoolNode, NodeEnv>} */
-const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_UNIT_HOOKS = new SkillEffectHooks();
+const CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_FOE_HOOKS = new SkillEffectHooks();
 
 /**
  * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
@@ -546,3 +552,17 @@ const IS_ASSIGN_DECOY_FOR_SAME_RANGE_ACTIVE_HOOKS = new SkillEffectHooks();
  * @type {SkillEffectHooks<BoolNode, NodeEnv>}
  */
 const DOES_UNIT_MOVE_1_SPACE_AWAY_AFTER_COMBAT_HOOKS = new SkillEffectHooks();
+
+const DURING_COMBAT_INCLUDING_AOE_HOOKS = new class {
+    addSkill(skillId, nodeFunc) {
+        AT_START_OF_COMBAT_HOOKS.addSkill(skillId, nodeFunc);
+        BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, nodeFunc);
+    }
+}();
+
+const DURING_COMBAT_USING_STATS_INCLUDING_AOE_HOOKS = new class {
+    addSkill(skillId, nodeFunc) {
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, nodeFunc);
+        BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, nodeFunc);
+    }
+}();

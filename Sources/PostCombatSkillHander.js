@@ -1320,7 +1320,7 @@ class PostCombatSkillHander {
         }
         let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit, this.map);
         env.setName('戦闘後(死んでも発動)').setLogLevel(getSkillLogLevel());
-        AFTER_COMBAT_NEVERTHELESS_HOOKS.evaluateWithUnit(attackUnit, env);
+        AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS.evaluateWithUnit(attackUnit, env);
         for (let skillId of attackUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap);
             func?.call(this, attackUnit, attackTargetUnit, attackCount);

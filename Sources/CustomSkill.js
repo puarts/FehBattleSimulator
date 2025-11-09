@@ -616,7 +616,7 @@ CustomSkill.setFuncId(
     'inflicts-foes-stat-penalties',
     "戦闘中、敵のステータス-n",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_TO_STATS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
+        STATS_SKILL_USING_STATS_HOOKS.addSkillIfAbsent(skillId, () =>
             INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(
                 CustomSkill.Arg.getStatNBonusNode(args)(CustomSkill.Arg.getTotalStatValueNode(args)),
             ),
@@ -639,7 +639,7 @@ CustomSkill.setFuncId(
 
 CustomSkill.setFuncId('deals-damage-excluding-aoe', "ダメージ+（範囲除）",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkillIfAbsent(skillId, () =>
             DEALS_DAMAGE_X_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
         );
     },
@@ -657,7 +657,7 @@ CustomSkill.setFuncId('deals-damage-of-aoe', "ダメージ+（範囲）",
 
 CustomSkill.setFuncId('deals-damage-including-aoe', "ダメージ+（範囲含）",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkillIfAbsent(skillId, () =>
             DEALS_DAMAGE_X_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
         );
         BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
@@ -682,7 +682,7 @@ CustomSkill.setFuncId('boost-special-damage', "奥義ダメージ+（範囲除�
 
 CustomSkill.setFuncId('reduces-damage-excluding-aoe', "ダメージ-（範囲除）",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_BY_N_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
         );
     },
@@ -700,7 +700,7 @@ CustomSkill.setFuncId('reduces-damage-of-aoe', "ダメージ-（範囲）",
 
 CustomSkill.setFuncId('reduces-damage-including-aoe', "ダメージ-（範囲含）",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_BY_N_NODE(CustomSkill.Arg.getTotalNonNegativeIntegerNode(args))
         );
         BEFORE_AOE_SPECIAL_HOOKS.addSkillIfAbsent(skillId, () =>
@@ -712,7 +712,7 @@ CustomSkill.setFuncId('reduces-damage-including-aoe', "ダメージ-（範囲含
 
 CustomSkill.setFuncId('reduces-damage-from-foes-first-strikes', "最初に受けた攻撃と2回攻撃のダメージ-",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
                 CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
             ),
@@ -725,7 +725,7 @@ CustomSkill.setFuncId(
     'reduces-damage-from-foes-second-strike-of-first-attack',
     '最初に受けた2回攻撃の2回目のダメージ-',
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_FROM_TARGETS_FOES_SECOND_STRIKE_OF_FIRST_ATTACK_BY_N_DURING_COMBAT_NODE(
                 CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
             ),
@@ -736,7 +736,7 @@ CustomSkill.setFuncId(
 
 CustomSkill.setFuncId('reduces-damage-from-special-excluding-aoe', "奥義ダメージ-（範囲除）",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkillIfAbsent(skillId, () =>
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkillIfAbsent(skillId, () =>
             REDUCES_DAMAGE_WHEN_FOES_SPECIAL_EXCLUDING_AOE_SPECIAL_NODE(
                 CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
             ),
@@ -1053,7 +1053,7 @@ CustomSkill.setFuncId(
     'conditional-scowl',
     "竜眼（相手攻撃奥義+魔防比較あり）",
     (skillId, args) => {
-        WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             IF_NODE(
                 AND_NODE(
                     CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
@@ -1607,7 +1607,7 @@ const CUSTOM_SKILLS_ON_MAP_ENTRIES = [
         'after-combat-even-if-the-unit-is-defeated',
         '戦闘後（死んでも発動）',
         (skillId, nodeFunc, args) => {
-            AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => nodeFunc(args));
+            AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => nodeFunc(args));
         },
     ],
     [

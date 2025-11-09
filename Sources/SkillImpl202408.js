@@ -1723,8 +1723,8 @@
 
     // At start of player phase or enemy phase, neutralizes【Panic】and penalties on unit's Atk/Def that take effect on unit at that time.
     let nodeFunc = () => new SkillEffectNode(
-        new AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesStatusEffectThatTakeEffectOnTargetAtThatTimeNode(StatusEffectType.Panic),
-        new AtStartOfPlayerPhaseOrEnemyPhaseNeutralizesPenaltiesThatTakeEffectOnTargetAtThatTimeNode(true, false, true, false),
+        new NeutralizesStatusEffectOnMapThatTakeEffectOnTargetAtThatTimeNode(StatusEffectType.Panic),
+        new NeutralizesPenaltiesOnMapThatTakeEffectOnTargetAtThatTimeNode(true, false, true, false),
     );
     AT_START_OF_TURN_HOOKS.addSkill(skillId, nodeFunc);
     AT_START_OF_ENEMY_PHASE_HOOKS.addSkill(skillId, nodeFunc);
@@ -3471,10 +3471,10 @@ function setDiscord(skillId, statsRatios) {
     // Foes with Range = 1 cannot move through spaces adjacent to unit (does not affect foes with Pass skills). Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     CANNOT_FOE_MOVE_THROUGH_SPACES_ADJACENT_TO_UNIT_HOOKS.addSkill(skillId, () =>
         TRUE_NODE,
-    )
+    );
     CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
-        EQ_NODE(new TargetsRangeNode(), 2),
-    )
+        EQ_NODE(TARGETS_RANGE_NODE, 2),
+    );
 
     FOR_ALLIES_AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 2 spaces of unit,
@@ -4037,7 +4037,7 @@ function setDiscord(skillId, statsRatios) {
         ),
     ));
 
-    WHEN_APPLIES_EFFECTS_AFTER_COMBAT_STATS_DETERMINED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's Def > foe's Def,
         IF_NODE(UNITS_DEF_GT_FOES_DEF_DURING_COMBAT_NODE,
             new NumThatIsNode(
@@ -4065,7 +4065,7 @@ function setDiscord(skillId, statsRatios) {
     )
     // Foes with Range = 2 cannot move through spaces within 2 spaces of unit (does not affect foes with Pass skills).
     CANNOT_FOE_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_UNIT_HOOKS.addSkill(skillId, () =>
-        EQ_NODE(new TargetsRangeNode(), 2),
+        EQ_NODE(TARGETS_RANGE_NODE, 2),
     )
     FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 3 spaces of unit,
@@ -5684,7 +5684,7 @@ function setDiscord(skillId, statsRatios) {
     ));
 
     // After combat,
-    AFTER_COMBAT_NEVERTHELESS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // if unit's Special triggered,
         // grants Atk/Def/Res【Great Talent】+4 to unit and
         IF_NODE(IS_UNITS_SPECIAL_TRIGGERED,
