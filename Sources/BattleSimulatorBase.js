@@ -4105,7 +4105,9 @@ class BattleSimulatorBase {
     }
 
     __activateRefreshSpecial(atkUnit) {
-        this.writeLogLine(atkUnit.getNameWithGroup() + "が" + atkUnit.specialInfo.name + "を発動");
+        let message = `${atkUnit.getNameWithGroup()}が奥義での${atkUnit.specialInfo.name}を発動`;
+        this.writeLogLine(message);
+        this.writeSimpleLogLine(message);
         atkUnit.isOneTimeActionActivatedForSpecial = true;
         atkUnit.specialCount = atkUnit.maxSpecialCount;
         atkUnit.isActionDone = false;
