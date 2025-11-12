@@ -2021,7 +2021,7 @@ const Weapon = {
     VedfolnirsEdge: 3044, // 始まりの巨人の剣
 
     // 神階フレスベルグ
-    QuietingClaw: 2737, // 刃の葬り手の爪
+    QuietingClaw: 3051, // 刃の葬り手の爪
 
     // 忍者
     ScrollOfCurses: 3055,
