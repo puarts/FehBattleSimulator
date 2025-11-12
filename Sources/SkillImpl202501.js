@@ -3777,21 +3777,18 @@
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_ON_DIVINE_VEIN_NODE(DivineVeinType.Vert, TARGET_FOE_GROUP_NODE),
-            FOR_TARGETS_FOE_DURING_COMBAT_NODE(SKILL_EFFECT_NODE(
-                // Inflicts Atk/Spd-5 and
-                INFLICTS_STATS_MINUS_ON_TARGETS_FOE_DURING_COMBAT_NODE(ATK_SPD_NODE(5)),
-                // Special cooldown charge -1
-                // on foe per attack during combat
-                // (only highest value applied; does not stack), and also,
-                INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGETS_FOE_NODE,
-                // if foe’s attack can trigger foe’s Special,
-                IF_NODE(CAN_TARGETS_FOES_ATTACK_TRIGGER_TARGETS_FOES_SPECIAL_NODE,
-                    // inflicts Special cooldown count+1 on foe
-                    // before foe’s first attack during combat
-                    // (cannot exceed the foe’s maximum Special cooldown).
-                    INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FIRST_ATTACK_NODE(1)
-                ),
-            )),
+            // Inflicts Atk/Spd-5 and
+            INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE(ATK_SPD_NODE(5)),
+            // Special cooldown charge -1 on foe per attack during combat
+            // (only highest value applied; does not stack), and also,
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGET_NODE,
+            // if foe’s attack can trigger foe’s Special,
+            IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
+                // inflicts Special cooldown count+1 on foe
+                // before foe’s first attack during combat
+                // (cannot exceed the foe’s maximum Special cooldown).
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
+            ),
         ),
     ));
 }

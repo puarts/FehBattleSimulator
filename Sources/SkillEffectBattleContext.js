@@ -1690,6 +1690,23 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
 const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
     n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
 
+class InflictsSpecialCooldownCountPlusNToTargetBeforeTargetsFirstAttackDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountIncreaseBeforeFirstAttack += n;
+        let result = unit.battleContext.specialCountIncreaseBeforeFirstAttack;
+        env.info(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント+${n}: ${result - n} → ${result}`);
+    }
+}
+
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
+    n => new InflictsSpecialCooldownCountPlusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
+
 class GrantsSpecialCooldownCountMinusNToTargetBeforeEachOfTargetsFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
