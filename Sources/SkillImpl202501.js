@@ -4689,7 +4689,7 @@
 
 // 🅱 Atk/Spd Favor
 {
-    let setSkill = (skillId, grantsNode, inflictsNode) => {
+    let setSkill = (skillId, grantsNode, inflictsNode, totalNode) => {
         // If a Rally or movement Assist skill is used by unit or targets unit,
         setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
             FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
@@ -4728,11 +4728,14 @@
                     MAX_NODE(
                         MAX_NODE(
                             MAP_UNITS_NODE(
-                                FILTER_UNITS_NODE(
-                                    TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE,
-                                    HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Empathy)
+                                UNITE_UNITS_NODE(
+                                    TARGET_NODE,
+                                    FILTER_UNITS_NODE(
+                                        TARGETS_ALLIES_ON_MAP_NODE,
+                                        HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Empathy)
+                                    ),
                                 ),
-                                ADD_NODE(TARGET_ATK_BONUS_NODE, TARGET_SPD_BONUS_NODE),
+                                totalNode,
                             ),
                         ),
                         0,
@@ -4742,10 +4745,12 @@
         );
     };
     setSkill(PassiveB.AtkSpdFavor,
-        GRANTS_ATK_SPD_TO_TARGET_ON_MAP_NODE(6), INFLICTS_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE(4)
+        GRANTS_ATK_SPD_TO_TARGET_ON_MAP_NODE(6), INFLICTS_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE(4),
+        ADD_NODE(TARGET_ATK_BONUS_NODE, TARGET_SPD_BONUS_NODE),
     );
     setSkill(PassiveB.AtkDefFavor,
-        GRANTS_ATK_DEF_TO_TARGET_ON_MAP_NODE(6), INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE(4)
+        GRANTS_ATK_DEF_TO_TARGET_ON_MAP_NODE(6), INFLICTS_ATK_DEF_RES_ON_FOE_DURING_COMBAT_NODE(4),
+        ADD_NODE(TARGET_ATK_BONUS_NODE, TARGET_DEF_BONUS_NODE),
     );
 }
 
