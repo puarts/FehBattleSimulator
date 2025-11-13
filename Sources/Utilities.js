@@ -1421,10 +1421,17 @@ function getSkillIconDivTag(unit) {
  * @returns {string}
  */
 function getStatsEffectImgTagStr(statusEffect) {
-    return `<img 
-         src="${statusEffectTypeToIconFilePath(statusEffect)}"
-         title="${getStatusEffectName(statusEffect)}" 
-         alt="${getStatusEffectName(statusEffect)}"/>`;
+    return getStatsEffectImgTag(statusEffect).outerHTML;
+}
+
+function getStatsEffectImgTag(statusEffect) {
+    const img = document.createElement("img");
+
+    img.src = statusEffectTypeToIconFilePath(statusEffect);
+    img.title = getStatusEffectName(statusEffect);
+    img.alt = getStatusEffectName(statusEffect);
+
+    return img;
 }
 
 function getKeyByValue(dict, value) {

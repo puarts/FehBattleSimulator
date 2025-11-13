@@ -77,6 +77,8 @@ class BattleSimulatorBase {
         this.openCvLoadState = ModuleLoadState.NotLoaded;
         this.tesseractLoadState = ModuleLoadState.NotLoaded;
 
+        this.appData = g_appData;
+
         this.cropper = null;
 
         /** @type {DamageCalculatorWrapper} **/
@@ -4361,6 +4363,7 @@ class BattleSimulatorBase {
             this.__createDamageCalcSummaryHtml(
                 atkUnit,
                 result.defUnit,
+                defUnit,
                 result.preCombatDamageWithOverkill,
                 result.atkUnitDamageToEnemyAfterBeginningOfCombat,
                 result.atkUnit_normalAttackDamage, result.atkUnit_totalAttackCount,
@@ -4373,6 +4376,7 @@ class BattleSimulatorBase {
             this.__createDamageCalcSummaryHtml(
                 result.defUnit,
                 atkUnit,
+                defUnit,
                 -1,
                 result.defUnitDamageToEnemyAfterBeginningOfCombat,
                 result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
@@ -4396,6 +4400,7 @@ class BattleSimulatorBase {
     /**
      * @param  {Unit} unit
      * @param  {Unit} enemyUnit
+     * @param  {Unit} originalEnemyUnit
      * @param  {Number} preCombatDamage
      * @param damageToEnemyAfterBeginningOfCombat
      * @param  {Number} damage
@@ -4407,18 +4412,18 @@ class BattleSimulatorBase {
      * @param  {Tile} tile
      * @param  {boolean} isAlly
      */
-    __createDamageCalcSummaryHtml(unit, enemyUnit,
+    __createDamageCalcSummaryHtml(unit, enemyUnit, originalEnemyUnit,
         preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount,
         atk, spd, def, res, tile, isAlly) {
         // ダメージに関するサマリー
-        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAlly);
+        let html = this.__createDamageSummaryHtml(unit, originalEnemyUnit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAlly);
         // ステータスやバフに関するサマリー
         html += this.__createStatusSummaryHtml(unit, atk, spd, def, res);
 
         return `<div class="summary-damage-figure summary-text-shadow">${html}</div>`;
     }
 
-    __createDamageSummaryHtml(unit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAllyArea) {
+    __createDamageSummaryHtml(unit, originalEnemyUnit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAllyArea) {
         let divineHtml = '';
         // 天脈
         if (tile.hasDivineVein()) {
@@ -4428,7 +4433,15 @@ class BattleSimulatorBase {
         let restHpHtml = unit.restHp === 0 ?
             `<span style='color:#ffaaaa'>${unit.restHp}</span>` :
             unit.restHp;
-        let html = `${divineHtml}HP: ${unit.hp} → ${restHpHtml}<br/>`;
+        let html = `${divineHtml}HP: ${unit.hp} → ${restHpHtml}`
+        if (originalEnemyUnit.hasStatusEffect(StatusEffectType.ForesightSnare) &&
+            this.appData.globalBattleContext.numOfCombatOnCurrentTurn === 0) {
+            let tag = getStatsEffectImgTag(StatusEffectType.ForesightSnare);
+            tag.style.width = '0.9em';
+            tag.style.height = '0.9em';
+            html += ' ' + tag.outerHTML;
+        }
+        html += `<br/>`;
 
         // 奥義カウント、ダメージ表示
         let special = '';
