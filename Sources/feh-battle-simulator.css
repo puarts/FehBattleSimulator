@@ -999,6 +999,7 @@ td.enemy {
     justify-content: center;    /* 横方向中央 */
     align-items: center;        /* 縦方向中央 */
     line-height: 1;             /* 行間でズレないようにする */
+    -webkit-text-stroke: 0.5px black;
 }
 
 .map-divine-vein-label-ally-bg {

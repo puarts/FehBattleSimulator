@@ -3168,7 +3168,7 @@ class BattleMap {
                 wrapper.className = 'map-divine-vein-wrapper';
                 // ラベルを作成（残りターン表示）
                 const label = document.createElement('span');
-                label.classList.add('map-divine-vein-label', 'map-text-shadow');
+                label.classList.add('map-divine-vein-label');
                 const team = tile.divineVeinGroup === UnitGroupType.Ally ? 'ally' : 'enemy';
                 label.classList.add(`map-divine-vein-label-${team}-bg`);
                 label.textContent = tile.divineVeinTurns;
