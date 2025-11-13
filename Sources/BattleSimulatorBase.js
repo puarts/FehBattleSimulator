@@ -3200,10 +3200,9 @@ class BattleSimulatorBase {
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
             loadSettings();
-        } else {
-            updateAllUi();
         }
         this.__turnChanged();
+        updateAllUi();
     }
     backCurrentTurn() {
         if (g_appData.currentTurn < 1) {
@@ -3219,7 +3218,16 @@ class BattleSimulatorBase {
         this.__turnChanged();
     }
 
+    __turnStarted() {
+        for (let unit of this.map.enumerateUnitsOnMap()) {
+            unit.isSelected = false;
+        }
+    }
+
     __turnChanged() {
+        for (let unit of this.map.enumerateUnitsOnMap()) {
+            unit.isSelected = false;
+        }
     }
 
     resetUnits(heroIndex) {
@@ -4740,6 +4748,7 @@ class BattleSimulatorBase {
      * @param  {UnitGroupType} group - グループ。どちらのターン開始時かを渡す。決闘の場合は引数を指定しない。
      */
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
+        this.__turnStarted();
         if (group === UnitGroupType.Ally) {
             g_appData.globalBattleContext.initContextInCurrentTurn();
         }
@@ -11388,6 +11397,18 @@ class BattleSimulatorBase {
     }
 
     selectItem(targetId, add = false, button = 0, isDoubleClick = false) {
+        let item = g_appData.findItemById(targetId);
+        let unit = null;
+        if (item instanceof Unit) {
+            unit = item;
+        }
+        // キャラ以外のマスを右クリックした場合に天脈を透過
+        if (!unit && button === 2) {
+            g_appData.enableDivineVeinTransparency = !g_appData.enableDivineVeinTransparency;
+            updateMapUi();
+            return;
+        }
+
         this.showItemInfo(targetId);
 
         let tabIndex = this.convertItemIndexToTabIndex(this.vm.currentItemIndex);
@@ -11400,19 +11421,14 @@ class BattleSimulatorBase {
         g_appData.__showStatusToAttackerInfo();
 
         // 右クリックならスタイル切り替え
-        if (this.currentUnit && button === 2) {
-            if (this.currentUnit.canActivateStyle()) {
-                this.currentUnit.activateStyle();
+        if (unit && button === 2) {
+            if (unit.canActivateStyle()) {
+                unit.activateStyle();
                 updateAllUi();
-            } else if (this.currentUnit.canDeactivateStyle()) {
-                this.currentUnit.deactivateStyle();
+            } else if (unit.canDeactivateStyle()) {
+                unit.deactivateStyle();
                 updateAllUi();
             }
-        }
-        // キャラ以外のマスを右クリックした場合に天脈を透過
-        if (!this.currentUnit && button === 2) {
-            g_appData.enableDivineVeinTransparency = !g_appData.enableDivineVeinTransparency;
-            updateAllUi();
         }
     }
     selectItemToggle(targetId) {
@@ -11732,6 +11748,9 @@ function syncSelectedTileColor() {
     for (let item of g_appData.enumerateItems()) {
         if (item.isSelected) {
             updateCellBgColor(item.posX, item.posY, SelectedTileColor);
+            if (item instanceof Unit) {
+                drawUnitRange(item, item.posX, item.posY);
+            }
         }
     }
 }

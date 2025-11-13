@@ -968,6 +968,20 @@ td.enemy {
 }
 
 /* Map */
+.map-tile-focus-border {
+    position: relative;
+}
+
+.map-tile-focus-border::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border: 2px solid white;
+    border-radius: 4px;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
 .map-divine-vein-img {
     position: absolute;
     bottom: 0;

@@ -996,6 +996,13 @@ class Tile extends BattleMapElement {
         return this.hasBreakableDivineVein() && this.divineVeinGroup !== groupId;
     }
 
+    canBreakTile(unit) {
+        if (this.hasEnemyBreakableDivineVein(unit.groupId)) {
+            return true;
+        }
+        return this.obj && unit.canBreak(this.obj);
+    }
+
     // TODO: 削除予約にした方が良いのか検討
     removeDivineVein() {
         this.divineVein = DivineVeinType.None;

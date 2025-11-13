@@ -25,6 +25,24 @@ function updateCellBgColor(posX, posY, bgColor, borderColor = null) {
     }
 }
 
+function setCellFocusBorder(posX, posY) {
+    let cellId = getCellId(posX, posY);
+    let cell = document.getElementById(cellId);
+    const cellRoot = cell.querySelector(":scope > .cell-root");
+    if (cellRoot != null) {
+        cellRoot.classList.add('map-tile-focus-border');
+    }
+}
+
+function clearCellFocusBorder(posX, posY) {
+    let cellId = getCellId(posX, posY);
+    let cell = document.getElementById(cellId);
+    const cellRoot = cell.querySelector(":scope > .cell-root");
+    if (cellRoot != null) {
+        cellRoot.classList.remove('map-tile-focus-border');
+    }
+}
+
 class BackgroundImageInfo {
     constructor(url, postionStyle = "left top", sizeStyle = "contain", repeats = false) {
         this.url = url;

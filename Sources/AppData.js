@@ -1776,6 +1776,7 @@ class AppData extends UnitManager {
                 item.isSelected = selected;
             }
         }
+        updateMapUi();
 
         this.setAttackerAndAttackTargetInfo();
     }
