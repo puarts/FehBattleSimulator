@@ -121,6 +121,9 @@ function f_dragstart(event) {
 let dragRightClickHandled = false;
 
 function toggleShowSkillLogs(event) {
+    if (!event) {
+        return;
+    }
     // 右クリック検知 (buttons: 左=1, 右=2, 中=4 のビットマスク)
     if ((event.buttons & 2) !== 0) {
         if (!dragRightClickHandled) {
