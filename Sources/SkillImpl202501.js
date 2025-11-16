@@ -1,5 +1,146 @@
 // スキル実装
 
+    // Enraptured God
+    // Neutralizes "effective against flying" bonuses.
+    // Grants Spd+3.
+    // Unit can counterattack regardless of foe's range.
+    //
+    // Grants Atk/Spd+5 to allies within 3 spaces of unit
+    // during combat and those allies
+    // can counterattack regardless of foe's range.
+    //
+    // For allies within 3 spaces of unit,
+    // if ally's HP > 1 and foe would reduce ally's HP to 0
+    // during combat, ally survives with 1 HP,
+    // and after combat, restores 40 HP
+    // and grants Atk/Spd【Great Talent】+10 to ally
+    // (effect only triggers for player's team once per map
+    // and does not stack with non-Special effects
+    // that allow unit to survive with 1 HP
+    // if foe's attack would reduce unit's HP to 0;
+    // when any other such effect triggers
+    // on an ally granted this effect,
+    // this effect will trigger too).
+    //
+    // If unit's HP ≥ 25% at start of combat,
+    // grants bonus to unit's Atk/Spd/Def/Res =
+    // number of foes within 3 rows or 3 columns
+    // centered on unit × 3, + 5 (max 14),
+    // neutralizes foe's bonuses,
+    // unit deals +X damage
+    // (excluding area-of-effect Specials;
+    // X = 20% of unit's Spd
+    //
+    // total value of Atk and Spd【Great Talent】),
+    // reduces damage from foe's first attack
+    // by 20% of unit's Spd
+    // ("first attack" normally means only the first strike;
+    // for effects that grant "unit attacks twice,"
+    // it means the first and second strikes),
+    // and reduces the percentage of foe's
+    // non-Special "reduce damage by X%" skills
+    // by 50% during combat
+    // (excluding area-of-effect Specials).
+    //
+    // (This skill grants max of【Great Talent】+10.)
+
+    // Invincible Sister
+    // When Special triggers,
+    // if unit's HP > 1 and foe would reduce unit's HP to 0,
+    // unit survives with 1 HP, and afterward,
+    // once per turn on player phase and enemy phase,
+    // damage dealt by unit's attacks
+    // and damage from foe's attacks during that combat
+    // are reduced to 0 (Røkkr take at least 1 damage),
+    // and after combat, grants Special cooldown count-5 to unit,
+    // restores 40 HP to unit,
+    // and grants Atk/Spd【Great Talent】+10 to unit,
+    // and also, if unit initiated combat,
+    // grants another action to unit.
+    //
+    // At start of player phase or enemy phase
+    // (except for in Summoner Duels),
+    // grants Special cooldown count-5
+    // and restores 40 HP to unit.
+    //
+    // Unit's first follow-up attack deals +X damage
+    // (X = 50% of foe's Atk
+    //
+    // total value of unit's Atk and Spd【Great Talent】),
+    // reduces damage from foe's first attack by 40%
+    // ("first attack" normally means only the first strike;
+    // for effects that grant "unit attacks twice,"
+    // it means the first and second strikes),
+    // and grants Special cooldown count-2 to unit
+    // before foe's first attack during combat.
+    //
+    // (This skill grants max of【Great Talent】+20.)
+
+    // Null Uplift A/S
+    // For unit and allies within 3 rows
+    // or 3 columns centered on unit,
+    // grants Atk/Spd+5
+    // and unit and ally deal +5 damage during their combat
+    // (excluding area-of-effect Specials),
+    // and also, if their Spd > foe's Spd,
+    // neutralizes effects that guarantee foe's follow-up attacks
+    // and effects that prevent unit or ally's follow-up attacks
+    // during combat.
+
+    // Ethereal Gungnir
+    // Mt: 14
+    // Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    // After start-of-turn effects trigger on player phase
+    // or enemy phase, grants any (Bonus) effects active on foes
+    // and allies on the map, excluding stat bonuses,
+    // to unit for 1 turn.
+    // For foes within 3 rows or 3 columns centered on unit,
+    // deals X damage to foe as combat begins
+    // (effects that reduce damage "during combat" do not apply;
+    // will not reduce foe's HP below 1),
+    // inflicts Atk/Spd/Def/Res-X on foe
+    // and foe cannot make a follow-up attack during combat,
+    // and also, if foe's attack can trigger foe's Special,
+    // inflicts Special cooldown count + X ÷ 3 on foe
+    // before foe's first attack during combat
+    // (cannot exceed the foe's maximum Special cooldown).
+    // At start of combat, if unit's HP ≥ 25%,
+    // grants Atk/Spd/Def/Res+X × 2 to unit,
+    // deals damage = 20% of unit's Res
+    // (excluding area-of-effect Specials),
+    // and reduces damage from foe's attacks
+    // by 20% of unit's Res during combat
+    // (excluding area-of-effect Specials),
+    // and also, if unit's attack can trigger unit's Special,
+    // grants Special cooldown count - X ÷ 3 to unit
+    // before unit's first attack during combat.
+    // (X = turn number + number of (Bonus) effects active on unit;
+    // excluding stat bonuses; max 9).
+
+    // Def/Res Shackle
+
+    // Covetous One
+    // Enables [Canto (Rem.; Min 1)] •
+    // When Canto triggers, enables unit to use (Smite) on ally
+    // (this effect is not treated as an Assist skill;
+    // if similar effects are active, this effect does not trigger).
+    // At start of turn and after unit acts
+    // (if Canto triggers, after Canto),
+    // if any foes within 3 rows or 3 columns centered on unit
+    // have Res < unit's Res + 5,
+    // inflicts Atk/Res-7, (Exposure), and (Discord) on those foes
+    // through their next actions.
+    // If a Rally or movement Assist skill is used by unit,
+    // deals 1 damage to target ally and grants
+    // any Bonus effects active on unit to target ally for 1 turn
+    // (excluding stat bonuses; once per turn).
+    // At start of combat, if unit's HP ≥ 25%,
+    // grants Atk/Res+5 to unit,
+    // unit deals +7 damage (excluding area-of-effect Specials),
+    // and reduces damage from foe's attacks by 7 during combat
+    // (excluding area-of-effect Specials).
+
 {
     let skillId = getNormalSkillId(Weapon.HolyGradivus);
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
