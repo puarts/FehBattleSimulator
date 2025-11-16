@@ -7746,3 +7746,33 @@ class IsWarpSpaceNode extends BoolNode {
 }
 
 const IS_WARP_SPACE_NODE = new IsWarpSpaceNode();
+
+class TargetsStatusEffectsNode extends NumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.statusEffects;
+        env.debug(`${unit.nameWithGroup}に付与されている状態: [${result.map(effect => getStatusEffectName(effect)).join(", ")}]`);
+        return result;
+    }
+}
+
+const TARGETS_STATUS_EFFECTS_NODE = new TargetsStatusEffectsNode();
+
+class TargetsBonusStatusEffectsNode extends NumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getPositiveStatusEffects();
+        env.debug(`${unit.nameWithGroup}に付与されている有利な状態: [${result.map(effect => getStatusEffectName(effect)).join(", ")}]`);
+        return result;
+    }
+}
+
+const TARGETS_BONUS_STATUS_EFFECTS_NODE = new TargetsBonusStatusEffectsNode();
