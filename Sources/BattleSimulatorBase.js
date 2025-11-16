@@ -3219,15 +3219,11 @@ class BattleSimulatorBase {
     }
 
     __turnStarted() {
-        for (let unit of this.map.enumerateUnitsOnMap()) {
-            unit.isSelected = false;
-        }
+        this.deselectUnits();
     }
 
     __turnChanged() {
-        for (let unit of this.map.enumerateUnitsOnMap()) {
-            unit.isSelected = false;
-        }
+        this.deselectUnits();
     }
 
     resetUnits(heroIndex) {
@@ -8235,11 +8231,18 @@ class BattleSimulatorBase {
     }
     undoCommand() {
         this.commandQueuePerAction.undo();
+        this.deselectUnits();
         updateAllUi();
     }
     redoCommand() {
         this.commandQueuePerAction.redo();
+        this.deselectUnits();
         updateAllUi();
+    }
+    deselectUnits() {
+        for (let unit of this.map.enumerateUnitsOnMap()) {
+            unit.isSelected = false;
+        }
     }
     redoAllCommand() {
         let self = this;

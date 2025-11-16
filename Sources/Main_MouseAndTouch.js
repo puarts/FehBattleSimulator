@@ -101,6 +101,7 @@ function onItemSelected(event) {
     if (isDoubleClick) {
         for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit && !x.isActionDone)) {
             g_app.executeEndActionCommand(unit);
+            unit.isSelected = false;
         }
         updateAllUi();
     }
@@ -677,6 +678,8 @@ function dropEventImpl(objId, dropTargetId) {
         let unit = g_app.findUnitById(objId);
         if (unit != null) {
             dropToUnitImpl(unit, dropTargetId);
+            unit.isSelected = false;
+            updateAllUi();
         }
     }
 
