@@ -3812,12 +3812,6 @@
             // and reduces damage from foe’s attacks by 10 during combat
             // (excluding area-of-effect Specials).
             REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(10),
-            // And also, if foe triggers the “attacks twice” effect during combat,
-            IF_NODE(FOR_TARGETS_FOE_DURING_COMBAT_NODE(DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
-                // reduces damage by an additional 7
-                // (excluding area-of-effect Specials).
-                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(7),
-            ),
             // If unit is within 3 spaces of an ally and foe initiates combat,
             IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
                 X_NUM_NODE(
@@ -3829,6 +3823,16 @@
                     // excluding area-of-effect Specials).
                     DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE,
                 ),
+            ),
+        ),
+    ));
+    NON_STATS_SKILL_USING_STATS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+            // And also, if foe triggers the “attacks twice” effect during combat,
+            IF_NODE(FOR_TARGETS_FOE_DURING_COMBAT_NODE(DOES_TARGET_TRIGGER_ATTACKS_TWICE_NODE),
+                // reduces damage by an additional 7
+                // (excluding area-of-effect Specials).
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_EXCLUDING_AOE_SPECIALS_NODE(7),
             ),
         ),
     ));
