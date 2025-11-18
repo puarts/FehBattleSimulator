@@ -4438,8 +4438,8 @@ class BattleSimulatorBase {
         if (originalEnemyUnit.hasStatusEffect(StatusEffectType.ForesightSnare) &&
             this.appData.globalBattleContext.numOfCombatOnCurrentTurn === 0) {
             let tag = getStatsEffectImgTag(StatusEffectType.ForesightSnare);
-            tag.style.width = '0.9em';
-            tag.style.height = '0.9em';
+            tag.style.width = '1.5em';
+            tag.style.height = '1.5em';
             html += ' ' + tag.outerHTML;
         }
         html += `<br/>`;
