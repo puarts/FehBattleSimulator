@@ -6,12 +6,15 @@ class PostCombatSkillHander {
      * @param  {BattleMap} map
      * @param  {GlobalBattleContext} globalBattleContext
      * @param  {LoggerBase} logger
+     * @param  {DamageCalculator} damageCalculator
      */
-    constructor(unitManager, map, globalBattleContext, logger) {
+    constructor(unitManager, map, globalBattleContext,
+                logger, damageCalculator) {
         this._unitManager = unitManager;
         this.map = map;
         this.globalBattleContext = globalBattleContext;
         this._logger = logger;
+        this.damageCalculator = damageCalculator;
     }
 
     get unitManager() {
@@ -180,7 +183,10 @@ class PostCombatSkillHander {
             if (!unit.isDead) {
                 let [hp, damage, heal, reducedHeal] = unit.applyReservedHp(true);
                 if (damage !== 0 || heal !== 0 || reducedHeal !== 0) {
-                    this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}, reduced: ${reducedHeal}`);
+                    let message =
+                        `${unit.nameWithGroup}のHP: ${hp}, HP変動: ${heal - damage}, ダメージ: ${damage}, 回復: ${heal}（回復減少: ${reducedHeal}`;
+                    this.writeDebugLogLine(message);
+                    this.damageCalculator.writeSimpleLog(message);
                 }
                 unit.applyReservedState(false);
             }

@@ -65,7 +65,7 @@ class DamageCalculatorWrapper {
         this._damageCalc = new DamageCalculator(logger, unitManager, map);
         this.logger = logger;
         this.profiler = new PerformanceProfile();
-        this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger);
+        this._combatHander = new PostCombatSkillHander(unitManager, map, globalBattleContext, logger, this._damageCalc);
 
         this.isSummonerDualCalcEnabled = false;
 
