@@ -184,7 +184,10 @@ class PostCombatSkillHander {
                 let [hp, damage, heal, reducedHeal] = unit.applyReservedHp(true);
                 if (damage !== 0 || heal !== 0 || reducedHeal !== 0) {
                     let message =
-                        `${unit.nameWithGroup}のHP: ${hp}, HP変動: ${heal - damage}, ダメージ: ${damage}, 回復: ${heal}（回復減少: ${reducedHeal}`;
+                        `${unit.nameWithGroup}のHP: ${hp}, 
+                        HP変動: ${heal - damage}, 
+                        ダメージ: ${damage}, 
+                        回復: ${heal}（回復減少: ${reducedHeal}`;
                     this.writeDebugLogLine(message);
                     this.damageCalculator.writeSimpleLog(message);
                 }
