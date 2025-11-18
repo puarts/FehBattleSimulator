@@ -2743,8 +2743,8 @@ class GrantsMiracleAndHealToTargetOncePerMapNode extends SkillEffectNode {
         if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[unit.groupId] === 0) {
             env.debug('1マップ1回の効果をまだ発動していない');
             unit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
-            unit.battleContext.miracleAndHealAmount = +n;
-            env.info(`${unit.nameWithGroup}は祈り効果を発動。戦闘後、${n}回復`);
+            unit.battleContext.miracleAndHealAmount += n;
+            env.info(`${unit.nameWithGroup}は祈り効果を発動。戦闘後、${n}回復: → ${unit.battleContext.miracleAndHealAmount}`);
             if (this._afterCombatNode) {
                 unit.battleContext.reservedNodesAfterCombatIfServived.push(this._afterCombatNode);
             }
