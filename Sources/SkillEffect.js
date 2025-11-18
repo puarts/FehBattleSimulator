@@ -5824,7 +5824,7 @@ class GrantsStatusEffectsOnTargetOnMapNode extends FromNumbersNode {
     }
 
     evaluate(env) {
-        this.evaluateChildren(env).forEach(e => {
+        super.evaluate(env).forEach(e => {
             let unit = this.getUnit(env);
             env.info(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与予約`);
             unit.reserveToAddStatusEffect(e);
@@ -6159,6 +6159,7 @@ class GrantsAnotherActionAndAppliesSkillNode extends SkillEffectNode {
         super();
         this._node = node;
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         env.trace(`${unit.nameWithGroup}の${this.getPhase()}の再行動判定を開始`);
@@ -7776,3 +7777,11 @@ class TargetsBonusStatusEffectsNode extends NumbersNode {
 }
 
 const TARGETS_BONUS_STATUS_EFFECTS_NODE = new TargetsBonusStatusEffectsNode();
+
+class SkillOwnersBonusStatusEffectsNode extends TargetsBonusStatusEffectsNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const SKILL_OWNERS_BONUS_STATUS_EFFECTS_NODE = new SkillOwnersBonusStatusEffectsNode();

@@ -442,6 +442,7 @@ function getStatusEffectName(effect) {
             return name;
         }
     }
+    console.warn('Unknown status effect: %o', effect);
     return "";
 }
 

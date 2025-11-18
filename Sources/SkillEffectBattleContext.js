@@ -2137,7 +2137,7 @@ class TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOn
 }
 
 const TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE
-    = n => new TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOnlyHighestValueAppliedAndDoesNotStackNode(n);
+    = percentage => new TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOnlyHighestValueAppliedAndDoesNotStackNode(percentage);
 
 /**
  * restores X HP to unit as unit's combat begins
@@ -2381,7 +2381,7 @@ class DealsDamageToTargetAsCombatBeginsNode extends FromPositiveNumberNode {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         let result = unit.battleContext.damageAfterBeginningOfCombat += n;
-        env.info(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ: ${result - n} -> ${result}`);
+        env.info(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ: ${result - n} → ${result}`);
     }
 }
 
@@ -2743,7 +2743,7 @@ class GrantsMiracleAndHealToTargetOncePerMapNode extends SkillEffectNode {
         if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[unit.groupId] === 0) {
             env.debug('1マップ1回の効果をまだ発動していない');
             unit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
-            unit.battleContext.miracleAndHealAmount = n;
+            unit.battleContext.miracleAndHealAmount = +n;
             env.info(`${unit.nameWithGroup}は祈り効果を発動。戦闘後、${n}回復`);
             if (this._afterCombatNode) {
                 unit.battleContext.reservedNodesAfterCombatIfServived.push(this._afterCombatNode);

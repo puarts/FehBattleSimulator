@@ -3832,10 +3832,7 @@ class BattleSimulatorBase {
         }
 
         if (atkUnit.isStyleActive) {
-            let env = new NodeEnv().setTarget(atkUnit).setSkillOwner(atkUnit);
-            env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-            STYLE_ACTIVATED_HOOKS.evaluateWithUnit(atkUnit, env);
-            atkUnit.deactivateStyle();
+            atkUnit.deactivateStyleAfterAction();
             for (let unit of this.enumerateUnitsOnMap()) {
                 unit.applyReservedState(false);
                 unit.applyReservedHp(false);
@@ -7683,9 +7680,6 @@ class BattleSimulatorBase {
                 unit.applyEndActionSkills();
                 if (unit.isStyleActive) {
                     unit.deactivateStyleAfterAction();
-                    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-                    env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-                    STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
                 }
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
@@ -7711,9 +7705,6 @@ class BattleSimulatorBase {
                 moveStructureToTrashBox(obj);
             }
             if (unit.isStyleActive) {
-                let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-                env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-                STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
                 unit.deactivateStyleAfterAction();
             }
 
@@ -7764,9 +7755,6 @@ class BattleSimulatorBase {
                 unit.applyEndActionSkills();
                 if (unit.isStyleActive) {
                     unit.deactivateStyleAfterAction();
-                    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-                    env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-                    STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
                 }
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
@@ -7787,9 +7775,6 @@ class BattleSimulatorBase {
             targetTile.breakDivineVein();
             g_appData.map.applyReservedDivineVein();
             if (unit.isStyleActive) {
-                let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-                env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-                STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
                 unit.deactivateStyleAfterAction();
             }
 

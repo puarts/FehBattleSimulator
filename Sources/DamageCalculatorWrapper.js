@@ -10113,6 +10113,7 @@ class DamageCalculatorWrapper {
                         case Weapon.SacrificeStaff:
                             if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[targetUnit.groupId] === 0) {
                                 targetUnit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
+                                targetUnit.battleContext.miracleAndHealAmount += 99;
                             }
                             break;
                         case Weapon.RaisenNoSyo:

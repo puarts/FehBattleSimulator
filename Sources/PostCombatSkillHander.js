@@ -1314,7 +1314,9 @@ class PostCombatSkillHander {
         if (attackUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated) {
             this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
             this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
-            attackUnit.reserveHeal(attackUnit.battleContext.miracleAndHealAmount);
+            if (attackUnit.isAlive) {
+                attackUnit.reserveHeal(attackUnit.battleContext.miracleAndHealAmount);
+            }
         } else if (attackUnit.battleContext.hasNonSpecialMiracleActivated) {
             this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
         } else if (attackUnit.battleContext.hasNonSpecialOneTimePerMapMiracleAcitivated) {

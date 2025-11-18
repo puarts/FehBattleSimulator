@@ -4043,6 +4043,7 @@ PassiveC.NullUpliftAS = 3474; // 攻速十紋章・見切り
 Weapon.EtherealGungnir = 3475; // 九天グングニル
 PassiveB.DefResShackle = 3476; // 守備魔防の枷
 PassiveC.CovetousOne = 3477; // 求めるは知のみ
+PassiveB.CounterRoar3 = 2894; // 反撃の咆哮3
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

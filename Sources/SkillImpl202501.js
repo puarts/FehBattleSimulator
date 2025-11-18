@@ -1,5 +1,16 @@
 // スキル実装
 
+{
+    let skillId = PassiveB.CounterRoar3;
+    SkillEffectRegistrar.registerSelfTargetingSkills(skillId,
+        TRUE_NODE,
+        // 戦闘中、最初に受けた攻撃のダメージを30%軽減
+        REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_DURING_COMBAT_NODE(30),
+        // 最初に攻撃を受けた時、戦闘中、軽減前のダメージの30%を自身の次の攻撃のダメージに+(その戦闘中のみ。同系統効果複数時、最大値適用)
+        TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE(30),
+    );
+}
+
 // Enraptured God
 {
     let skillId = Weapon.EnrapturedGod;
@@ -79,7 +90,7 @@
     // if unit's HP > 1 and foe would reduce unit's HP to 0,
     // unit survives with 1 HP, and afterward,
     SkillEffectRegistrar.registerSelfTargetingSkills(skillId,
-        HAS_TARGET_ACTIVATED_SPECIAL_MIRACLE_NODE,
+        IS_TARGETS_SPECIAL_TRIGGERED_NODE,
         [
             // once per turn on player phase and enemy phase,
             // damage dealt by unit's attacks
@@ -110,9 +121,9 @@
         [
             // and also, if unit initiated combat,
             // grants another action to unit.
-            NODE_FUNC(
-                TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
-                    `${skillId}-再行動`,
+            TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
+                `${skillId}-再行動`,
+                IF_NODE(DOES_UNIT_INITIATE_COMBAT_NODE,
                     GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_NODE,
                 ),
             ),
@@ -221,7 +232,8 @@
     ));
     // (X = turn number + number of (Bonus) effects active on unit;
     // excluding stat bonuses; max 9).
-    let xNode = ADD_NODE(CURRENT_TURN_NODE, NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE);
+    let xNode =
+        ENSURE_MAX_NODE(ADD_NODE(CURRENT_TURN_NODE, NUM_OF_BONUSES_ACTIVE_ON_TARGET_EXCLUDING_STAT_NODE), 9);
     // For foes within 3 rows or 3 columns centered on unit,
     setForFoesSkillsDuringCombatHooks(skillId,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
@@ -280,6 +292,8 @@
 // Covetous One
 {
     let skillId = PassiveC.CovetousOne;
+    let skillId = PassiveC.DevPassiveC1;
+    CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // Enables [Canto (Rem.; Min 1)] •
     enablesCantoRemPlusMin(skillId, 0, 1);
     // When Canto triggers, enables unit to use (Smite) on ally
@@ -308,11 +322,15 @@
     ));
     // If a Rally or movement Assist skill is used by unit,
     setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, NODE_FUNC(
-        // deals 1 damage to target ally and grants
-        DEALS_DAMAGE_TO_TARGET_ON_MAP_NODE(1),
-        // any Bonus effects active on unit to target ally for 1 turn
-        // (excluding stat bonuses; once per turn).
-        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(FOR_SKILL_OWNER_NODE(TARGETS_BONUS_STATUS_EFFECTS_NODE)),
+        FOR_TARGET_NODE(ASSIST_TARGET_NODE,
+            SKILL_EFFECT_NODE(
+                // deals 1 damage to target ally and grants
+                DEALS_DAMAGE_TO_TARGET_ON_MAP_NODE(1),
+                // any Bonus effects active on unit to target ally for 1 turn
+                // (excluding stat bonuses; once per turn).
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(SKILL_OWNERS_BONUS_STATUS_EFFECTS_NODE),
+            ),
+        ),
     ));
     SkillEffectRegistrar.registerSelfTargetingSkills(skillId,
         // At start of combat, if unit's HP ≥ 25%,

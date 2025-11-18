@@ -463,11 +463,10 @@ class UniqueCollectionNode extends CollectionNode {
      * @returns {Iterable<R>}
      */
     evaluate(env) {
-        let results = this._collectionNode.evaluate(env);
-        let resultSet = new Set(results);
-        env?.trace(`[UnionNode] ${resultSet}`);
-        console.log(`[UnionNode] ${Array.from(resultSet)}`);
-        return resultSet;
+        let items = this._collectionNode.evaluate(env);
+        let results = [...new Set(items)];
+        env?.trace(`[UniqueNode] [${results}]`);
+        return results;
     }
 }
 
@@ -692,16 +691,17 @@ class FromNumberNode extends SkillEffectNode {
  */
 class FromNumbersNode extends SkillEffectNode {
     /**
-     * @param {...number|NumberNode|NumbersNode} values
+     * @param {...number|NumberNode|NumbersNode|CollectionNode} values
      */
     constructor(...values) {
         let isNumbersNode = values[0] && values[0] instanceof NumbersNode;
-        if (!isNumbersNode) {
-            super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
-        } else {
+        let isCollectionNode = values[0] && values[0] instanceof CollectionNode;
+        if (isNumbersNode || isCollectionNode) {
             super();
             /** @type {NumbersNode} */
             this._numbersNode = values[0];
+        } else {
+            super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
         }
     }
 
@@ -722,7 +722,7 @@ class FromNumbersNode extends SkillEffectNode {
      */
     evaluate(env) {
         if (this._numbersNode) {
-            return this._numbersNode.evaluateChildren(env);
+            return this._numbersNode.evaluate(env);
         }
         return super.evaluateChildren(env);
     }

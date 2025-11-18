@@ -6905,6 +6905,9 @@ class Unit extends BattleMapElement {
         this.deactivateStyle();
         this.isStyleActivatedInThisTurn = true;
         this.styleActivationsCount++;
+        let env = new NodeEnv().setTarget(this).setSkillOwner(this);
+        env.setName("行動でのスタイル発動後").setLogLevel(getSkillLogLevel());
+        STYLE_ACTIVATED_HOOKS.evaluateWithUnit(this, env);
     }
 
     isCannotMoveStyleActive() {

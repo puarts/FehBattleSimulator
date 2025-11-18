@@ -454,7 +454,7 @@ class BattleContext {
 
         // 奥義以外の祈り+HP99回復
         this.canActivateNonSpecialMiracleAndHeal = false;
-        this.miracleAndHealAmount = 99;
+        this.miracleAndHealAmount = 0;
         this.reservedNodesAfterCombatIfServived = [];
 
         // 奥義以外の祈り+HP99回復が発動したかどうか
