@@ -292,7 +292,6 @@
 // Covetous One
 {
     let skillId = PassiveC.CovetousOne;
-    let skillId = PassiveC.DevPassiveC1;
     CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
     // Enables [Canto (Rem.; Min 1)] •
     enablesCantoRemPlusMin(skillId, 0, 1);
@@ -323,7 +322,7 @@
     // If a Rally or movement Assist skill is used by unit,
     setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, NODE_FUNC(
         FOR_TARGET_NODE(ASSIST_TARGET_NODE,
-            SKILL_EFFECT_NODE(
+            SKILL_OWNERS_ONCE_PER_TURN_SKILL_EFFECT_NODE(`${skillId}_deals-damage-1-and-grants-bonus-effects`,
                 // deals 1 damage to target ally and grants
                 DEALS_DAMAGE_TO_TARGET_ON_MAP_NODE(1),
                 // any Bonus effects active on unit to target ally for 1 turn
