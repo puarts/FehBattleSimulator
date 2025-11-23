@@ -5486,19 +5486,13 @@ function setLantern(skillId) {
 // 紋章士アイク
 {
     let skillId = getEmblemHeroSkillId(EmblemHero.Ike);
-    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap.set(skillId,
-        function (atkUnit, defUnit) {
-            // 「自分または敵が奥義発動可能状態の時」、「この戦闘（戦闘前、戦闘中）で自分または敵が奥義発動済みの時」の
-            // 2条件のいずれかを満たした時、
-            if (Unit.canActivateOrActivatedSpecialEither(atkUnit, defUnit)) {
-                // かつ、敵が射程2の時、
-                if (isRangedWeaponType(atkUnit.weaponType)) {
-                    // 戦闘中、受けた攻撃のダメージを40%軽減（1戦闘1回のみ）（範囲奥義を除く）
-                    defUnit.battleContext.nTimesDamageReductionRatiosByEngageSpecial.push(0.4);
-                }
-            }
-        }
-    );
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
+            IF_NODE(FOES_RANGE_IS_2_NODE,
+                REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_BY_ENGAGE_SKILL_NODE(40),
+            ),
+        ),
+    ));
 }
 
 // 不動4

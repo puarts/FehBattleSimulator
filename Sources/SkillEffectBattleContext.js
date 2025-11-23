@@ -1689,6 +1689,24 @@ class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode extends 
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(n);
 
+class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatByEngageSkillNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.nTimesDamageReductionRatiosByEngageSpecial.push(n / 100.0);
+        let ratios = unit.battleContext.nTimesDamageReductionRatiosByEngageSpecial;
+        env.info(`${unit.nameWithGroup}は受けた攻撃のダメージを${n}%軽減(1戦闘1回のみ。紋章士効果): ratios [${ratios}]`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_BY_ENGAGE_SKILL_NODE =
+    percentage => new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatByEngageSkillNode(percentage);
+
+
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
