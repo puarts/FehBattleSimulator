@@ -5988,7 +5988,9 @@ class GrantsAnotherActionNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.grantsAnotherActionOnMap();
-        env.debug(`${unit.nameWithGroup}は再行動`);
+        let message = `${unit.nameWithGroup}は再行動`;
+        env.debug(message);
+        env.writeDamageLog(message);
     }
 }
 
@@ -6003,6 +6005,7 @@ class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
         let unit = this.getUnit(env);
         unit.grantsAnotherActionOnMap();
         env.debug(`${unit.nameWithGroup}は行動可能な状態になる`);
+        env.writeDamageLog(`${unit.nameWithGroup}は再行動（マップ上）`);
     }
 }
 
@@ -6017,6 +6020,7 @@ class GrantsAnotherActionToTargetAfterCombatNode extends SkillEffectNode {
         let unit = this.getUnit(env);
         unit.grantsAnotherActionAfterCombat();
         env.debug(`${unit.nameWithGroup}は行動可能な状態になる`);
+        env.writeDamageLog(`${unit.nameWithGroup}は再行動（戦闘後）`);
     }
 }
 
@@ -6032,6 +6036,7 @@ class GrantsAnotherActionToTargetAfterCombatExceptsTargetsSkillNode extends Skil
         let grantedAnotherAction = unit.grantsAnotherActionAfterCombatExceptOwnSkills(env.skillOwner);
         if (grantedAnotherAction) {
             env.debug(`${unit.nameWithGroup}は自分以外のスキルで行動可能な状態になる`);
+            env.writeDamageLog(`${unit.nameWithGroup}は再行動（自分以外のスキル）`);
         } else {
             env.debug(`${unit.nameWithGroup}は自分以外のスキルで行動可能な状態になる効果は発動できない`);
         }
@@ -6051,6 +6056,7 @@ class GrantsAnotherActionToTargetAfterTargetAlliesCombatNode extends SkillEffect
         let grantedAnotherAction = unit.grantsAnotherActionAfterAlliesCombat();
         if (grantedAnotherAction) {
             env.debug(`${unit.nameWithGroup}は味方の戦闘後行動可能な状態になる`);
+            env.writeDamageLog(`${unit.nameWithGroup}は再行動（味方の戦闘後）`);
         } else {
             env.debug(`${unit.nameWithGroup}は味方の戦闘後行動可能な状態になる効果は発動できない`);
         }
@@ -6067,7 +6073,9 @@ class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        env.debug(`${unit.nameWithGroup}は再移動を再発動可能になる`);
+        let message = `${unit.nameWithGroup}は再移動を再発動可能になる`;
+        env.debug(message);
+        env.writeDamageLog(message);
         unit.reEnablesCantoOnMap();
     }
 }
