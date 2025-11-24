@@ -2074,6 +2074,7 @@ CustomSkill.setFuncId(
     []
 );
 
+    'enraptured-god',
 CustomSkill.setFuncId(
     'increases-spd-diff-necessary-for-foes-follow-up-node',
     '敵の追撃の速さ条件+',

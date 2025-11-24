@@ -779,6 +779,11 @@ class Unit extends BattleMapElement {
         this.styleActivationsCount = 0;
 
         this.entwinedId = EntwinedType.None.id;
+
+        // 何度もスキルを参照するのでキャッシュする
+        this.usesCache = false;
+        this.cacheCounter = 0;
+        this.cachedSkills = null;
     }
 
     /**
@@ -2501,7 +2506,7 @@ class Unit extends BattleMapElement {
     }
 
     getStatusEffects() {
-        return [...this.#statusEffects];
+        return this.#statusEffects;
     }
 
     countStatusEffects() {
@@ -5249,30 +5254,62 @@ class Unit extends BattleMapElement {
     }
 
     /**
-     * @returns {Generator<number|string>}
+     * 全てのスキルIDを配列で返す
+     * @returns {Array<number|string>}
      */
-    * enumerateSkills() {
-        yield* this.enumerateEquippedSkills();
-        // 受けているステータス
-        yield* this.getStatusEffects().map(getStatusEffectSkillId);
-        // 装備でのスタイル
-        yield* this.getStylesOfSkill().map(getStyleSkillId);
-        // 状態でのスタイル
-        yield* this.getStylesOfStatusEffect().map(getStyleSkillId);
+    enumerateSkills() {
+        if (this.usesCache && this.cachedSkills) {
+            return this.cachedSkills;
+        }
+        /** @type {Array<number|string>} */
+        const skills = [];
+
+        // 装備スキル
+        for (const id of this.enumerateEquippedSkills()) {
+            skills.push(id);
+        }
+
+        // 受けているステータス由来のスキル
+        for (const s of this.getStatusEffects()) {
+            skills.push(getStatusEffectSkillId(s));
+        }
+
+        // 所有スキル由来のスタイル
+        for (const style of this.getStylesOfSkill()) {
+            skills.push(getStyleSkillId(style));
+        }
+
+        // 状態異常由来のスタイル
+        for (const style of this.getStylesOfStatusEffect()) {
+            skills.push(getStyleSkillId(style));
+        }
+
         // 比翼・双界スキル
-        yield getDuoOrHarmonizedSkillId(this.heroIndex);
+        const duo = getDuoOrHarmonizedSkillId(this.heroIndex);
+        if (duo != null) {
+            skills.push(duo);
+        }
+
         // 天脈
         if (this.placedTile && this.placedTile.hasDivineVein()) {
-            yield getDivineVeinSkillId(this.placedTile.divineVein);
+            skills.push(getDivineVeinSkillId(this.placedTile.divineVein));
         }
+
+        if (this.usesCache) {
+            this.cachedSkills = skills;
+        }
+        return skills;
     }
 
     * enumerateSkillsWithoutStyle() {
         yield* this.enumerateEquippedSkills();
-        // 受けているステータス
-        yield* this.getStatusEffects().map(getStatusEffectSkillId);
-        // 比翼・双界スキル
-        yield getDuoOrHarmonizedSkillId(this.heroIndex);
+        for (const s of this.getStatusEffects()) {
+            yield getStatusEffectSkillId(s);
+        }
+        const duo = getDuoOrHarmonizedSkillId(this.heroIndex);
+        if (duo != null) {
+            yield duo;
+        }
     }
 
     /**
@@ -5311,16 +5348,11 @@ class Unit extends BattleMapElement {
      * @returns {Generator<number|string>}
      */
     * enumeratePassiveSkills() {
-        let passives = [
-            this.passiveA,
-            this.passiveB,
-            this.passiveC,
-            this.passiveS,
-            this.passiveX,
-        ];
-        for (let passive of passives) {
-            yield* this.#enumerateSkills(passive);
-        }
+        yield* this.#enumerateSkills(this.passiveA);
+        yield* this.#enumerateSkills(this.passiveB);
+        yield* this.#enumerateSkills(this.passiveC);
+        yield* this.#enumerateSkills(this.passiveS);
+        yield* this.#enumerateSkills(this.passiveX);
     }
 
     /**
@@ -6864,9 +6896,14 @@ class Unit extends BattleMapElement {
      * @returns {number[]}
      */
     getStylesOfSkill() {
-        return Array.from(this.enumerateEquippedSkills())
-            .filter(skillId => SKILL_ID_TO_STYLE_TYPE.has(skillId))
-            .map(skillId => SKILL_ID_TO_STYLE_TYPE.get(skillId));
+        const result = [];
+        for (const skillId of this.enumerateEquippedSkills()) {
+            const style = SKILL_ID_TO_STYLE_TYPE.get(skillId);
+            if (style != null) {
+                result.push(style);
+            }
+        }
+        return result;
     }
 
     /**
@@ -6874,9 +6911,15 @@ class Unit extends BattleMapElement {
      * @returns {number[]}
      */
     getStylesOfStatusEffect() {
-        return this.getStatusEffects()
-            .filter(se => STATUS_EFFECT_TYPE_TO_STYLE_TYPE.has(se))
-            .map(se => STATUS_EFFECT_TYPE_TO_STYLE_TYPE.get(se));
+        const result = [];
+        const statusEffects = this.getStatusEffects();
+        for (let i = 0; i < statusEffects.length; i++) {
+            const style = STATUS_EFFECT_TYPE_TO_STYLE_TYPE.get(statusEffects[i]);
+            if (style != null) {
+                result.push(style);
+            }
+        }
+        return result;
     }
 
     hasAvailableStyle() {
@@ -6966,6 +7009,27 @@ class Unit extends BattleMapElement {
     }
 }
 
+class UnitUtil {
+    static withCache(units, fn) {
+        for (const u of units) {
+            u.cacheCounter++;
+            u.usesCache = true;
+            u.cachedSkills = null;
+        }
+
+        try {
+            return fn();
+        } finally {
+            for (const u of units) {
+                u.cacheCounter--;
+                if (u.cacheCounter === 0) {
+                    u.usesCache = false;
+                    u.cachedSkills = null; // 最後に終了
+                }
+            }
+        }
+    }
+}
 
 function calcBuffAmount(assistUnit, targetUnit) {
     let totalBuffAmount = 0;

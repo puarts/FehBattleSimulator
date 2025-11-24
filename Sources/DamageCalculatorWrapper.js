@@ -332,52 +332,53 @@ class DamageCalculatorWrapper {
         /** @type {DamageCalcEnv} */
         let damageCalcEnv = env || new DamageCalcEnv().setUnits(atkUnit, defUnit)
             .setTileToAttack(tileToAttack).setDamageType(damageType).setGameMode(gameMode).setBattleMap(this.map);
+        UnitUtil.withCache(this.map.enumerateUnitsOnMap(), () => {
+            this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
+            using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
+                self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
+                self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
+            }), () => {
+                this.logger.trace2(`[マス移動後] ${atkUnit.getLocationStr(tileToAttack)}`);
+                this.#initBattleContext(atkUnit, defUnit);
+                atkUnit.initReservedState();
+                defUnit.initReservedState();
+                if (damageType === DamageType.EstimatedDamage) {
+                    damageCalcEnv.withBeforeCombatPhaseGroup('戦闘前', () => {
+                        this.__applySkillEffectsBeforeCombat(atkUnit, defUnit, damageCalcEnv, false);
+                        this.__applySkillEffectsBeforeCombat(defUnit, atkUnit, damageCalcEnv, false);
+                    });
+                    atkUnit.applyReservedState();
+                    defUnit.applyReservedState();
+                }
 
-        this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
-        using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
-            self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
-            self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
-        }), () => {
-            this.logger.trace2(`[マス移動後] ${atkUnit.getLocationStr(tileToAttack)}`);
-            this.#initBattleContext(atkUnit, defUnit);
-            atkUnit.initReservedState();
-            defUnit.initReservedState();
-            if (damageType === DamageType.EstimatedDamage) {
-                damageCalcEnv.withBeforeCombatPhaseGroup('戦闘前', () => {
-                    this.__applySkillEffectsBeforeCombat(atkUnit, defUnit, damageCalcEnv, false);
-                    this.__applySkillEffectsBeforeCombat(defUnit, atkUnit, damageCalcEnv, false);
+                damageCalcEnv.withBeforeCombatPhaseGroup('範囲奥義前(敵)', () => {
+                    this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageCalcEnv, true);
+                    this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit, damageCalcEnv, true);
                 });
                 atkUnit.applyReservedState();
                 defUnit.applyReservedState();
-            }
 
-            damageCalcEnv.withBeforeCombatPhaseGroup('範囲奥義前(敵)', () => {
-                this.__applySkillEffectsBeforePrecombat(atkUnit, defUnit, damageCalcEnv, true);
-                this.__applySkillEffectsBeforePrecombat(defUnit, atkUnit, damageCalcEnv, true);
+                // 戦闘前奥義の計算に影響するマップ関連の設定
+                {
+                    atkUnit.battleContext.isOnDefensiveTile = atkUnit.isOnMap && atkUnit.placedTile.isDefensiveTile && !atkUnit.battleContext.invalidatesDefensiveTerrainEffect;
+                    defUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile && !defUnit.battleContext.invalidatesDefensiveTerrainEffect;
+                }
+
+                atkUnit.saveCurrentHpAndSpecialCount();
+                defUnit.saveCurrentHpAndSpecialCount();
+
+                // 戦闘前ダメージ計算
+                this.calcPreCombatResult(damageCalcEnv);
+
+                // 戦闘ダメージ計算
+                result = self.calcCombatResult(damageCalcEnv);
+
+                // ダメージプレビュー用にスナップショットに戦闘中バフ値をコピー
+                atkUnit.copySpursToSnapshot();
+                damageCalcEnv.defUnit.copySpursToSnapshot();
             });
-            atkUnit.applyReservedState();
-            defUnit.applyReservedState();
-
-            // 戦闘前奥義の計算に影響するマップ関連の設定
-            {
-                atkUnit.battleContext.isOnDefensiveTile = atkUnit.isOnMap && atkUnit.placedTile.isDefensiveTile && !atkUnit.battleContext.invalidatesDefensiveTerrainEffect;
-                defUnit.battleContext.isOnDefensiveTile = defUnit.isOnMap && defUnit.placedTile.isDefensiveTile && !defUnit.battleContext.invalidatesDefensiveTerrainEffect;
-            }
-
-            atkUnit.saveCurrentHpAndSpecialCount();
-            defUnit.saveCurrentHpAndSpecialCount();
-
-            // 戦闘前ダメージ計算
-            this.calcPreCombatResult(damageCalcEnv);
-
-            // 戦闘ダメージ計算
-            result = self.calcCombatResult(damageCalcEnv);
-
-            // ダメージプレビュー用にスナップショットに戦闘中バフ値をコピー
-            atkUnit.copySpursToSnapshot();
-            damageCalcEnv.defUnit.copySpursToSnapshot();
+            this.logger.trace2(`[行動後] ${atkUnit.getLocationStr(tileToAttack)}`);
         });
-        this.logger.trace2(`[行動後] ${atkUnit.getLocationStr(tileToAttack)}`);
         return result;
     }
 
@@ -596,6 +597,8 @@ class DamageCalculatorWrapper {
      * @returns {CombatResult}
      */
     calcCombatResult(damageCalcEnv) {
+        let sw = new Stopwatch(false);
+        sw.start();
         let atkUnit = damageCalcEnv.atkUnit;
         let defUnit = damageCalcEnv.defUnit;
         let damageType = damageCalcEnv.damageType;
@@ -607,16 +610,21 @@ class DamageCalculatorWrapper {
         // TODO: この場所である必要がない効果は移動する
         // 戦闘後効果
         // ex) 戦闘開始後、敵に7ダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)など
-        this.__applySKillEffectForUnitAtBeginningOfCombat(atkUnit, defUnit, damageCalcEnv);
-        this.__applySKillEffectForUnitAtBeginningOfCombat(defUnit, atkUnit, damageCalcEnv);
+        sw.section('戦闘開始', () => {
+            this.__applySKillEffectForUnitAtBeginningOfCombat(atkUnit, defUnit, damageCalcEnv);
+            this.__applySKillEffectForUnitAtBeginningOfCombat(defUnit, atkUnit, damageCalcEnv);
+        });
 
         // self.profile.profile("__applySkillEffect", () => {
-        this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
-        this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
+        sw.section('紋章バフアップデート', () => {
+            this.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
+            this.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
+        });
 
         self.__applySkillEffect(atkUnit, defUnit, calcPotentialDamage);
 
         damageCalcEnv.applySkill('戦闘開始時', atkUnit, defUnit, this.__applySkillEffectForUnit, this);
+        sw.lap('戦闘開始時終了');
 
         self.__applySkillEffectRelatedToEnemyStatusEffects(atkUnit, defUnit, calcPotentialDamage);
         self.__applySkillEffectRelatedToEnemyStatusEffects(defUnit, atkUnit, calcPotentialDamage);
@@ -645,6 +653,7 @@ class DamageCalculatorWrapper {
         // 主に戦闘外の効果。味方の存在などで発動するスキルも書いて良い（ただし大抵の場合他の場所で書ける）
         damageCalcEnv.applySkill('周囲の味方のスキル(暗闘外)', atkUnit, defUnit,
             this.__applySkillEffectFromAlliesExcludedFromFeud, this);
+        sw.lap('周囲からのスキル終了');
 
         // 神罰の杖
         self.__setWrathfulStaff(atkUnit, defUnit);
@@ -724,6 +733,7 @@ class DamageCalculatorWrapper {
             defUnit.battleContext.canFollowupAttackWithoutPotent =
                 self.__examinesCanFollowupAttackForDefender(atkUnit, defUnit, damageCalcEnv);
         }
+        sw.lap('判定終了');
 
         // 防御系奥義発動時のダメージ軽減率設定
         self.__applyDamageReductionRatioBySpecial(atkUnit, defUnit);
@@ -781,9 +791,12 @@ class DamageCalculatorWrapper {
 
         this.applySkillEffectAfterConditionDetermined(damageCalcEnv);
 
+        sw.lap('スキル適用終了');
         let result;
         // self.profile.profile("_damageCalc.calcCombatResult", () => {
         result = self._damageCalc.calcCombatResult(damageCalcEnv);
+        sw.lap('ダメージ計算終了');
+        sw.stop();
         // });
         return result;
     }
@@ -15812,14 +15825,6 @@ class DamageCalculatorWrapper {
                 break;
         }
     }
-    __addSelfSpurInRange2(targetUnit, skillId, calcPotentialDamage) {
-        if (!calcPotentialDamage) {
-            switch (skillId) {
-                default:
-                    break;
-            }
-        }
-    }
 
     __countBreakableDefenseStructuresWithoutEnergyOnMap() {
         return this.map.countObjs(st => st instanceof DefenceStructureBase && !(st instanceof Ornament) && st.isBreakable && !st.isRequired);
@@ -15996,8 +16001,6 @@ class DamageCalculatorWrapper {
             if (this.__isNear(unit, targetUnit, 2)) {
                 // 2マス以内で発動する戦闘中バフ
                 // this.writeDebugLogLine(unit.getNameWithGroup() + "の2マス以内で発動する戦闘中バフを" + targetUnit.getNameWithGroup() + "に適用");
-                this.__addSelfSpurInRange2(targetUnit, targetUnit.passiveA, calcPotentialDamage);
-                this.__addSelfSpurInRange2(targetUnit, targetUnit.weapon, calcPotentialDamage);
                 isAllyAvailableRange2 = true;
             }
 

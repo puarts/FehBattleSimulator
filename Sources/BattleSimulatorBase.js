@@ -4741,6 +4741,9 @@ class BattleSimulatorBase {
      * @param  {UnitGroupType} group - グループ。どちらのターン開始時かを渡す。決闘の場合は引数を指定しない。
      */
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
+        // let sw = new Stopwatch(g_appData.isDebugMode);
+        let sw = new Stopwatch(false);
+        sw.start();
         this.__turnStarted();
         if (group === UnitGroupType.Ally) {
             g_appData.globalBattleContext.initContextInCurrentTurn();
@@ -4752,24 +4755,28 @@ class BattleSimulatorBase {
             return;
         }
 
-        // 増援処理
-        if (group === UnitGroupType.Ally) {
-            let reinforcementUnit = this._callReinforcement(UnitGroupType.Ally);
-            if (reinforcementUnit?.isOnMap) {
-                targetUnits.push(reinforcementUnit);
+        sw.section('増援', () => {
+            // 増援処理
+            if (group === UnitGroupType.Ally) {
+                let reinforcementUnit = this._callReinforcement(UnitGroupType.Ally);
+                if (reinforcementUnit?.isOnMap) {
+                    targetUnits.push(reinforcementUnit);
+                }
+                let reinforcementEnemy = this._callReinforcement(UnitGroupType.Enemy);
+                if (reinforcementEnemy?.isOnMap) {
+                    enemyTurnSkillTargetUnits.push(reinforcementEnemy);
+                }
             }
-            let reinforcementEnemy = this._callReinforcement(UnitGroupType.Enemy);
-            if (reinforcementEnemy?.isOnMap) {
-                enemyTurnSkillTargetUnits.push(reinforcementEnemy);
-            }
-        }
+        });
 
         let enemyUnitsAgainstTarget = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
 
-        this.__initializeUnitsPerTurn(targetUnits);
-        this.__initializeAllUnitsOnMapPerTurn(targetUnits);
-        this.__initializeAllUnitsOnMapPerTurn(enemyTurnSkillTargetUnits);
-        this.__initializeTilesPerTurn(this.map._tiles, group);
+        sw.section('init', () => {
+            this.__initializeUnitsPerTurn(targetUnits);
+            this.__initializeAllUnitsOnMapPerTurn(targetUnits);
+            this.__initializeAllUnitsOnMapPerTurn(enemyTurnSkillTargetUnits);
+            this.__initializeTilesPerTurn(this.map._tiles, group);
+        });
 
         if (this.data.gameMode !== GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
@@ -4779,7 +4786,9 @@ class BattleSimulatorBase {
             }
         }
 
-        this.__applySkillsForBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits);
+        sw.section('ターン開始時スキル', () => {
+            this.__applySkillsForBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits);
+        });
 
         if (this.data.gameMode === GameMode.SummonerDuels) {
             this.data.globalBattleContext.initializeSummonerDuelsTurnContext(
@@ -4790,11 +4799,16 @@ class BattleSimulatorBase {
             // 英雄決闘のAIはいらない気がするけど、一応残しておく
             let allyUnits = Array.from(this.enumerateAllyUnitsOnMap());
             let enemyUnits = Array.from(this.enumerateEnemyUnitsOnMap());
-            this.__initializeAiContextPerTurn(allyUnits, enemyUnits);
-            this.__initializeAiContextPerTurn(enemyUnits, allyUnits);
+            sw.section('init summoner ai context', () => {
+                this.__initializeAiContextPerTurn(allyUnits, enemyUnits);
+                this.__initializeAiContextPerTurn(enemyUnits, allyUnits);
+            });
         } else {
-            this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
+            sw.section('init ai context', () => {
+                this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
+            });
         }
+        sw.stop();
     }
 
     /**
@@ -4943,8 +4957,11 @@ class BattleSimulatorBase {
      * @param  {Unit[]} enemyUnits
      */
     __initializeAiContextPerTurn(targetUnits, enemyUnits) {
+        // let sw = new Stopwatch(g_appData.isDebugMode);
+        let sw = new Stopwatch(false);
+        sw.start();
         // ターンワイド状態の評価と保存
-        {
+        sw.section('turn wide', () => {
             for (let unit of targetUnits) {
                 unit.clearPerTurnStatuses();
 
@@ -4957,23 +4974,33 @@ class BattleSimulatorBase {
                 this.__updateDistanceFromClosestEnemy(unit);
             }
             this.__updateMovementOrders(targetUnits);
-        }
+        });
 
         // 障害物リストの作成
-        this.map.createTileSnapshots();
+        sw.section('tile snapshots', () => {
+            this.map.createTileSnapshots();
+        })
 
         // 脅威の評価
-        this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
+        sw.section('threat', () => {
+            this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
+        });
 
-        this.__updateChaseTargetTiles(targetUnits);
+        sw.section('chase target', () => {
+            this.__updateChaseTargetTiles(targetUnits);
+        });
 
         // ターン開始時の移動値を記録
-        for (let unit of this.enumerateAllUnitsOnMap()) {
-            unit.moveCountAtBeginningOfTurn = unit.moveCount;
-        }
+        sw.section('move count', () => {
+            for (let unit of this.enumerateAllUnitsOnMap()) {
+                unit.moveCountAtBeginningOfTurn = unit.moveCount;
+            }
+        });
 
         // 安全柵の効果が発動する場合でも、敵の移動をトリガーするかどうかの判定が行われている
-        this.__prepareActionContextForAssist(targetUnits, enemyUnits, true);
+        sw.section('safeguard', () => {
+            this.__prepareActionContextForAssist(targetUnits, enemyUnits, true);
+        });
     }
 
     __getOnMapEnemyUnitList() {
@@ -6894,17 +6921,27 @@ class BattleSimulatorBase {
         }
 
         let self = this;
-        using_(new ScopedStopwatch(time => this.writeDebugLogLine("追跡対象の計算: " + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => {
+            let message = "追跡対象の計算: " + time + " ms";
+            this.writeDebugLogLine(message);
+            console.log(message);
+        }), () => {
+            let sw = new Stopwatch(false);
+            sw.start();
             for (let evalUnit of targetUnits) {
                 if (evaluatesTileFunc != null && !evaluatesTileFunc?.(evalUnit.chaseTargetTile)) {
                     continue;
                 }
                 self.__updateChaseTargetTile(evalUnit, enemyUnits, allyUnits);
+                sw.lap(`${evalUnit.nameWithGroup}`);
             }
+            sw.stop();
         });
     }
 
     __updateChaseTargetTile(evalUnit, enemyUnits, allyUnits) {
+        let sw = new Stopwatch(false);
+        sw.start();
         if (!evalUnit.isOnMap) {
             return;
         }
@@ -6952,11 +6989,14 @@ class BattleSimulatorBase {
             if (evalUnit.hasWeapon) {
                 for (let allyUnit of enemyUnits) {
                     using_(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ${time} ms`)), () => {
+                        let sw = new Stopwatch(false);
+                        sw.start();
                         let turnRange = g_appData.map.calculateTurnRange(evalUnit, allyUnit);
                         if (turnRange < 0) {
                             // 攻撃不可
                             return;
                         }
+                        sw.lap('ターンレンジ');
 
                         this.writeDebugLogLine(`■${evalUnit.getNameWithGroup()}から${allyUnit.getNameWithGroup()}への追跡優先度計算:`);
 
@@ -6968,6 +7008,7 @@ class BattleSimulatorBase {
                             this.writeDebugLogLine(this.damageCalc.log);
                             this.writeDebugLogLine("------------------------------------");
                         }
+                        sw.lap('ダメージ計算');
 
                         let potentialDamageDealt = combatResult.atkUnit_normalAttackDamage * combatResult.atkUnit_totalAttackCount;
                         let chasePriorityValue = potentialDamageDealt - 5 * turnRange;
@@ -6986,20 +7027,25 @@ class BattleSimulatorBase {
                             chaseTarget = allyUnit;
                             this.writeDebugLogLine(`追跡対象を${chaseTarget.getNameWithGroup()}に更新`);
                         }
+                        sw.stop();
                     });
                 }
             }
+            sw.lap('敵の追跡');
 
             if (chaseTarget == null) {
                 // 敵に追跡対象が見つからない場合は味方を追跡対象にする
                 chaseTarget = this.__findAllyChaseTargetUnit(evalUnit, allyUnits);
             }
+            sw.lap('味方の追跡');
 
             if (chaseTarget == null) {
                 return;
             }
 
             evalUnit.chaseTargetTile = this.__findChaseTargetTile(evalUnit, chaseTarget);
+            sw.lap('タイル');
+            sw.stop();
             this.writeLogLine(evalUnit.getNameWithGroup() + "の追跡対象は" + chaseTarget.getNameWithGroup());
         }
     }
@@ -8253,11 +8299,12 @@ class BattleSimulatorBase {
             while (queue.length > 0) {
                 queue.execute();
             }
-        }
-        else {
+        } else {
             startProgressiveProcess(queue.length,
-                function () {
-                    queue.execute();
+                () => {
+                    UnitUtil.withCache(this.map.enumerateUnitsOnMap(), () => {
+                        queue.execute();
+                    });
                 },
                 function () {
                     updateAllUi();
@@ -11404,7 +11451,11 @@ class BattleSimulatorBase {
         if (add) {
             g_appData.selectAddCurrentItem();
         } else {
-            g_appData.selectCurrentItem(button, isDoubleClick);
+            let selectedUnit = selectedUnits[0];
+            if (selectedUnits.length > 1) {
+                selectedUnit = null;
+            }
+            g_appData.selectCurrentItem(button, selectedUnit, isDoubleClick);
         }
         g_appData.__showStatusToAttackerInfo();
 

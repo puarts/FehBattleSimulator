@@ -680,9 +680,8 @@ function dropEventImpl(objId, dropTargetId) {
     {
         let unit = g_app.findUnitById(objId);
         if (unit != null) {
-            dropToUnitImpl(unit, dropTargetId);
             unit.isSelected = false;
-            updateAllUi();
+            dropToUnitImpl(unit, dropTargetId);
         }
     }
 
