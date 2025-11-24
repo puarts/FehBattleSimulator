@@ -2086,6 +2086,7 @@ class BattleMap {
     }
 
     /**
+     * ユニットがそのタイルに配置できるかは考慮しない。呼び出し元でチェックすること。
      * @param {Unit} unit
      * @returns {Iterable<Tile>}
      * @private
@@ -2501,6 +2502,9 @@ class BattleMap {
             let cannotWarpFromHere = isOnGreenTile && !unit.canActivatePass();
             if (!cannotWarpFromHere) {
                 for (let tile of this.__enumerateTeleportTiles(unit)) {
+                    if (!tile.isUnitPlacable(unit)) {
+                        continue;
+                    }
                     if (!this.__canWarp(tile, unit)) {
                         continue;
                     }
