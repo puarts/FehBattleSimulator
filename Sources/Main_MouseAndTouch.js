@@ -32,7 +32,6 @@ let g_draggingElemId = "";
 let g_isDragging = false;
 /** @type {Queue<Tile>} */
 let g_dragoverTileHistory = new Queue(10);
-let g_currentTile = null;
 let g_attackTile = null;
 let g_dragoverTargetTileForCalcSummary = null;
 
@@ -114,7 +113,6 @@ function f_dragstart(event) {
     event.dataTransfer.setData("text", event.target.id);
     g_draggingElemId = event.target.id;
     g_dragoverTileHistory.clear();
-    g_currentTile = null;
     g_attackTile = null;
 }
 
@@ -146,7 +144,7 @@ function f_dragover(event) {
     let dropTargetId = event.currentTarget.id;
     if (dropTargetId.includes('_')) {
         let pos = getPositionFromCellId(dropTargetId);
-        dragoverImpl(pos[0], pos[1], null, event);
+        dragoverImpl(pos[0], pos[1], g_draggingElemId, event);
     }
     event.preventDefault();
 }
@@ -313,7 +311,7 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
         for (let tile of g_appData.map.enumerateTiles()) {
             updateCellBgColor(tile.posX, tile.posY, null);
         }
-        let currentTile = g_currentTile;
+        let currentTile = targetTile;
         const alpha = "a0";
         if (unit.groupId === UnitGroupType.Ally) {
             let tiles = unit.attackableTiles;
@@ -426,7 +424,6 @@ function dragoverImplForTargetTile(unit, targetTile, event) {
         clearCellFocusBorder(tile.posX, tile.posY);
     }
     g_attackTile = null;
-    g_currentTile = targetTile;
     unit.precombatSpecialTiles = [];
     // 範囲奥義を非表示に
     for (let tile of g_appData.map.enumerateTiles()) {
