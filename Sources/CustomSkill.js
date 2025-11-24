@@ -2074,7 +2074,15 @@ CustomSkill.setFuncId(
     []
 );
 
+CustomSkill.setFuncId(
     'enraptured-god',
+    '陶酔の神形',
+    (skillId, args) => {
+        SET_SKILL_FUNCS.get(Weapon.EnrapturedGod)?.(skillId);
+    },
+    []
+);
+
 CustomSkill.setFuncId(
     'increases-spd-diff-necessary-for-foes-follow-up-node',
     '敵の追撃の速さ条件+',
