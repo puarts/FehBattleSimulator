@@ -982,6 +982,10 @@ td.enemy {
     box-sizing: border-box;
 }
 
+.map-tile-cannot-move::before {
+    border: 2px solid red;
+}
+
 .map-divine-vein-img {
     position: absolute;
     bottom: 0;

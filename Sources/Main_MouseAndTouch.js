@@ -383,19 +383,24 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
         for (let tile of g_appData.map.enumerateTiles()) {
             let color = null;
             color = "#00ccff" + alpha;
+            let canMove = unit.movableTiles.includes(tile);
             if (tile === g_attackTile) {
                 // 攻撃マスの色
-                if (unit.movableTiles.includes(tile)) {
+                if (canMove) {
                     updateCellBgColor(tile.posX, tile.posY, color);
                 } else {
                     updateCellBgColor(tile.posX, tile.posY, "#999900" + alpha);
                 }
-                setCellFocusBorder(tile.posX, tile.posY);
+                setCellFocusBorder(tile.posX, tile.posY, canMove);
             } else if (tile === currentTile && g_attackTile == null) {
                 // 移動マスの色
-                updateCellBgColor(tile.posX, tile.posY, color);
+                if (canMove) {
+                    updateCellBgColor(tile.posX, tile.posY, color);
+                } else {
+                    updateCellBgColor(tile.posX, tile.posY, "#999900" + alpha);
+                }
                 if (unit.placedTile !== tile) {
-                    setCellFocusBorder(tile.posX, tile.posY);
+                    setCellFocusBorder(tile.posX, tile.posY, canMove);
                 }
             }
         }

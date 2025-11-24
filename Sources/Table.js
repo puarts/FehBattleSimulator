@@ -25,12 +25,15 @@ function updateCellBgColor(posX, posY, bgColor, borderColor = null) {
     }
 }
 
-function setCellFocusBorder(posX, posY) {
+function setCellFocusBorder(posX, posY, canMove = true) {
     let cellId = getCellId(posX, posY);
     let cell = document.getElementById(cellId);
     const cellRoot = cell.querySelector(":scope > .cell-root");
     if (cellRoot != null) {
         cellRoot.classList.add('map-tile-focus-border');
+    }
+    if (!canMove) {
+        cellRoot.classList.add('map-tile-cannot-move');
     }
 }
 
