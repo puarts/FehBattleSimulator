@@ -152,6 +152,10 @@ class Queue {
     isEmpty() {
         return this.length === 0;
     }
+
+    toString() {
+        return this.#array.toString();
+    }
 }
 
 /// クッキーの保存や読み込みを管理するクラスです。

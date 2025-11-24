@@ -30,6 +30,7 @@ class DoubleClickChecker {
 const g_keyboardManager = new KeyboardManager();
 let g_draggingElemId = "";
 let g_isDragging = false;
+let g_previousDraggedTile = null;
 /** @type {Queue<Tile>} */
 let g_dragoverTileHistory = new Queue(10);
 let g_attackTile = null;
@@ -114,6 +115,12 @@ function f_dragstart(event) {
     g_draggingElemId = event.target.id;
     g_dragoverTileHistory.clear();
     g_attackTile = null;
+    g_previousDraggedTile = null;
+    // ユニットが今いる場所を移動履歴に入れる
+    let unit = g_app.findUnitById(g_draggingElemId);
+    if (unit) {
+        g_dragoverTileHistory.enqueue(unit.placedTile);
+    }
 }
 
 let dragRightClickHandled = false;
@@ -165,6 +172,7 @@ function f_drop(event) {
     let dropTargetId = event.currentTarget.id;
 
     dropEventImpl(objId, dropTargetId);
+    g_previousDraggedTile = null;
 
     //エラー回避のため、ドロップ処理の最後にdropイベントをキャンセルしておく
     event.preventDefault();
@@ -181,6 +189,7 @@ function touchStartEvent(event) {
     onItemSelected(event);
 
     g_draggingElemId = event.target.id;
+    g_previousDraggedTile = null;
 }
 
 // タッチ移動イベント
@@ -283,6 +292,7 @@ function findBestActionTile(targetTile, spaces, unit) {
 }
 
 function dragoverImpl(overTilePx, overTilePy, draggingElemId = null, event = null) {
+    let dragoverTile = g_appData.map.getTile(overTilePx, overTilePy);
     try {
         let elemId = "";
         if (draggingElemId == null) {
@@ -292,7 +302,10 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null, event = nul
             elemId = draggingElemId;
         }
         let unit = g_app.findUnitById(elemId);
-        drawUnitRange(unit, overTilePx, overTilePy, event);
+        if (g_previousDraggedTile !== dragoverTile) {
+            drawUnitRange(unit, overTilePx, overTilePy, event);
+            g_previousDraggedTile = dragoverTile;
+        }
     } catch (e) {
         console.error(e);
     }
@@ -437,7 +450,8 @@ function dragoverImplForTargetTile(unit, targetTile, event) {
 
     g_app.clearDamageCalcSummary();
 
-    if (targetTile.isUnitPlacable(unit)) {
+    if (targetTile.isUnitPlacable(unit) ||
+        targetTile === unit.placedTile) {
         if (g_dragoverTileHistory.lastValue !== targetTile) {
             g_dragoverTileHistory.enqueue(targetTile);
         }
