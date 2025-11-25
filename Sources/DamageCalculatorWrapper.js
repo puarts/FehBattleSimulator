@@ -332,12 +332,13 @@ class DamageCalculatorWrapper {
         /** @type {DamageCalcEnv} */
         let damageCalcEnv = env || new DamageCalcEnv().setUnits(atkUnit, defUnit)
             .setTileToAttack(tileToAttack).setDamageType(damageType).setGameMode(gameMode).setBattleMap(this.map);
-        UnitUtil.withCache(this.map.enumerateUnitsOnMap(), () => {
-            this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
-            using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
-                self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
-                self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
-            }), () => {
+        this.logger.trace2(`[マス移動前] ${atkUnit.getLocationStr(tileToAttack)}`);
+        using_(new ScopedTileChanger(atkUnit, tileToAttack, () => {
+            self.updateUnitSpur(atkUnit, calcPotentialDamage, defUnit, damageType);
+            self.updateUnitSpur(defUnit, calcPotentialDamage, atkUnit, damageType);
+        }), () => {
+            let units = [...this.map.enumerateUnitsOnMap()];
+            UnitUtil.withCache(units, () => {
                 this.logger.trace2(`[マス移動後] ${atkUnit.getLocationStr(tileToAttack)}`);
                 this.#initBattleContext(atkUnit, defUnit);
                 atkUnit.initReservedState();
@@ -377,8 +378,8 @@ class DamageCalculatorWrapper {
                 atkUnit.copySpursToSnapshot();
                 damageCalcEnv.defUnit.copySpursToSnapshot();
             });
-            this.logger.trace2(`[行動後] ${atkUnit.getLocationStr(tileToAttack)}`);
         });
+        this.logger.trace2(`[行動後] ${atkUnit.getLocationStr(tileToAttack)}`);
         return result;
     }
 

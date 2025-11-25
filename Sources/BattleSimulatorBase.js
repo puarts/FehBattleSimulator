@@ -3271,6 +3271,16 @@ class BattleSimulatorBase {
         this.vm.currentItemIndex = -1;
     }
 
+    /**
+     * 現状ユニットのボタンのコンポーネントを再描画するためだけに使用している
+     */
+    onBeginningOfPhase() {
+        // 再描画のためにcurrentItemIndexを選択し直す
+        let tmp = this.vm.currentItemIndex;
+        this.deselectItem();
+        this.setCurrentItemIndex(tmp);
+    }
+
     setDamageCalcSummary(attacker, attackTarget, attackerInfo, attackTargetInfo) {
         if (attacker.groupId === UnitGroupType.Ally) {
             this.__setAttackerUnit(attacker.id);
@@ -5116,6 +5126,7 @@ class BattleSimulatorBase {
     }
 
     simulateBeginningOfEnemyTurn() {
+        this.onBeginningOfPhase();
         if (g_appData.currentTurn === this.vm.maxTurn) {
             return;
         }
@@ -5158,6 +5169,7 @@ class BattleSimulatorBase {
     }
 
     simulateBeginningOfAllyTurn() {
+        this.onBeginningOfPhase();
         if (g_appData.currentTurn === this.vm.maxTurn) {
             return;
         }
@@ -6658,8 +6670,11 @@ class BattleSimulatorBase {
         switch (unit.support) {
             case Support.ReciprocalAid:
                 {
-                    if (targetUnit.hp >= unit.hp) {
-                        return { success: false, userLossHp: 0, targetHealHp: 0 };
+                    if (targetUnit.hpPercentage === 100 && unit.hpPercentage === 100) {
+                        return {success: false, userLossHp: 0, targetHealHp: 0};
+                    }
+                    if (targetUnit.hpPercentage === 100 && unit.hp > targetUnit.hp) {
+                        return {success: false, userLossHp: 0, targetHealHp: 0};
                     }
 
                     userLossHp = unit.hp - targetUnit.hp;
@@ -8302,9 +8317,7 @@ class BattleSimulatorBase {
         } else {
             startProgressiveProcess(queue.length,
                 () => {
-                    UnitUtil.withCache(this.map.enumerateUnitsOnMap(), () => {
-                        queue.execute();
-                    });
+                    queue.execute();
                 },
                 function () {
                     updateAllUi();
@@ -9683,15 +9696,15 @@ class BattleSimulatorBase {
     }
 
 
-    __findTileAfterReposition(unit, targetUnit, assistTile) {
-        let diffX = assistTile.posX - targetUnit.posX;
-        let diffY = assistTile.posY - targetUnit.posY;
+    __findTileAfterReposition(unit, targetUnit, assistTargetingTile) {
+        let diffX = assistTargetingTile.posX - targetUnit.posX;
+        let diffY = assistTargetingTile.posY - targetUnit.posY;
         if (diffX + diffY > 1) {
             return new MovementAssistResult(false, null, null);
         }
 
-        let moveX = assistTile.posX + diffX;
-        let moveY = assistTile.posY + diffY;
+        let moveX = assistTargetingTile.posX + diffX;
+        let moveY = assistTargetingTile.posY + diffY;
         let moveTile = g_appData.map.getTile(moveX, moveY);
         if (moveTile == null) {
             return new MovementAssistResult(false, null, null);
@@ -9701,7 +9714,7 @@ class BattleSimulatorBase {
             return new MovementAssistResult(false, null, null);
         }
 
-        return new MovementAssistResult(true, assistTile, moveTile);
+        return new MovementAssistResult(true, assistTargetingTile, moveTile);
     }
 
     /**
@@ -11101,12 +11114,29 @@ class BattleSimulatorBase {
         return false;
     }
 
-    __canSupportTo(supporterUnit, targetUnit, tile) {
+    /**
+     * 補助を使用するマスにユニットが移動できるかは考慮しない。
+     * @param supporterUnit
+     * @param targetUnit
+     * @param assistTargetingTile
+     * @returns {Boolean|*|boolean}
+     * @private
+     */
+    __canSupportTo(supporterUnit, targetUnit, assistTargetingTile) {
+        if (supporterUnit.isIsolated() || targetUnit.isIsolated()) {
+            return false;
+        }
         if (supporterUnit.supportInfo == null) {
             return false;
         }
 
         let assistType = determineAssistType(supporterUnit, targetUnit);
+        if (supporterUnit.isCantoActivating) {
+            assistType = supporterUnit.cantoAssistType;
+            if (supporterUnit.cantoAssistType === AssistType.None) {
+                return;
+            }
+        }
         switch (assistType) {
             case AssistType.Refresh:
                 return canRefreshTo(targetUnit);
@@ -11135,7 +11165,8 @@ class BattleSimulatorBase {
                 }
             case AssistType.Move:
                 {
-                    let result = this.__findTileAfterMovementAssist(supporterUnit, targetUnit, tile);
+                    let result =
+                        this.__findTileAfterMovementAssist(supporterUnit, targetUnit, assistTargetingTile);
                     return result.success;
                 }
             default:
@@ -11144,21 +11175,21 @@ class BattleSimulatorBase {
         }
     }
 
-    __findTileAfterMovementAssist(assistUnit, assistTargetUnit, tile) {
+    __findTileAfterMovementAssist(assistUnit, assistTargetUnit, assistTargetingTile) {
         if (!assistUnit.hasSupport) {
             return new MovementAssistResult(false, null, null);
         }
         let skillId = assistUnit.support;
         let func = getSkillFunc(skillId, findTileAfterMovementAssistFuncMap);
-        func?.call(this, assistUnit, assistTargetUnit, tile);
+        func?.call(this, assistUnit, assistTargetUnit, assistTargetingTile);
         if (SWAP_ASSIST_SKILLS.has(skillId)) {
-            return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
+            return this.__findTileAfterSwap(assistUnit, assistTargetUnit, assistTargetingTile);
         }
         if (REPOSITION_ASSIST_SKILLS.has(skillId)) {
-            return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
+            return this.__findTileAfterReposition(assistUnit, assistTargetUnit, assistTargetingTile);
         }
         if (DRAW_BACK_ASSIST_SKILLS.has(skillId)) {
-            return this.__findTileAfterDrawback(assistUnit, assistTargetUnit, tile);
+            return this.__findTileAfterDrawback(assistUnit, assistTargetUnit, assistTargetingTile);
         }
 
         switch (assistUnit.support) {
@@ -11170,20 +11201,20 @@ class BattleSimulatorBase {
             case Support.Return:
             case Support.Reposition:
             case Support.RepositionGait:
-                return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterReposition(assistUnit, assistTargetUnit, assistTargetingTile);
             case Support.Smite:
-                return this.__findTileAfterSmite(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterSmite(assistUnit, assistTargetUnit, assistTargetingTile);
             case Support.NudgePlus:
             case Support.Nudge:
             case Support.Shove:
-                return this.__findTileAfterShove(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterShove(assistUnit, assistTargetUnit, assistTargetingTile);
             case Support.FoulPlay:
             case Support.Swap:
             case Support.FutureVision:
             case Support.FutureVision2:
-                return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterSwap(assistUnit, assistTargetUnit, assistTargetingTile);
             case Support.Pivot:
-                return this.__findTileAfterPivot(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterPivot(assistUnit, assistTargetUnit, assistTargetingTile);
             default:
                 this.writeErrorLine(`unknown support ${assistUnit.supportInfo.name}`);
                 return new MovementAssistResult(false, null, null);

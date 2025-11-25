@@ -123,6 +123,10 @@ class Tile extends BattleMapElement {
         this.tilePriority;
         /** @type {BattleMap} */
         this.battleMap = null
+        /** @type {Record<number, Tile[]>} */
+        this._neighborsWithin = {};
+        /** @type {Record<number, Tile[]>} */
+        this._neighborsAt = {};
 
         this.isMovableForAlly = false;
         this.isMovableForEnemy = false;
@@ -379,6 +383,10 @@ class Tile extends BattleMapElement {
         }
     }
 
+    isUnitPlacableIncludingCurrentTile(unit) {
+        return unit.placedTile === this || this.isUnitPlacable(unit);
+    }
+
     /**
      * @param {Unit} unit
      * @returns {boolean}
@@ -569,6 +577,44 @@ class Tile extends BattleMapElement {
             }
         }
         return true;
+    }
+
+    /**
+     * 周囲 n マス以内の Tile 配列を返す（遅延計算 + キャッシュ）
+     * @param {number} n
+     * @returns {Tile[]}
+     */
+    getNeighborsWithin(n) {
+        if (this._neighborsWithin[n]) {
+            return this._neighborsWithin[n];
+        }
+        const result = [];
+        for (let tile of this.battleMap.enumerateTiles()) {
+            if (tile.calculateDistanceTo(this) <= n) {
+                result.push(tile);
+            }
+        }
+        this._neighborsWithin[n] = result;
+        return result;
+    }
+
+    /**
+     * 周囲 n マスの Tile 配列を返す（遅延計算 + キャッシュ）
+     * @param {number} n
+     * @returns {Tile[]}
+     */
+    getNeighborsAtDistanceSpaces(n) {
+        if (this._neighborsAt[n]) {
+            return this._neighborsAt[n];
+        }
+        const result = [];
+        for (let tile of this.battleMap.enumerateTiles()) {
+            if (tile.calculateDistance(this) === n) {
+                result.push(tile);
+            }
+        }
+        this._neighborsAt[n] = result;
+        return result;
     }
 
     calculateDistanceTo(posX, posY) {

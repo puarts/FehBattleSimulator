@@ -34,6 +34,7 @@ let g_previousDraggedTile = null;
 /** @type {Queue<Tile>} */
 let g_dragoverTileHistory = new Queue(10);
 let g_attackTile = null;
+let g_assistTile = null;
 let g_dragoverTargetTileForCalcSummary = null;
 
 let g_doubleClickChecker = new DoubleClickChecker();
@@ -115,6 +116,7 @@ function f_dragstart(event) {
     g_draggingElemId = event.target.id;
     g_dragoverTileHistory.clear();
     g_attackTile = null;
+    g_assistTile = null;
     g_previousDraggedTile = null;
     // ユニットが今いる場所を移動履歴に入れる
     let unit = g_app.findUnitById(g_draggingElemId);
@@ -156,10 +158,11 @@ function f_dragover(event) {
     event.preventDefault();
 }
 
+// TODO: 削除する
 function table_dragend(event) {
     let unit = g_app.findUnitById(g_draggingElemId);
     if (unit != null) {
-        resetUnitAttackableRange(unit);
+        // resetUnitAttackableRange(unit);
     }
 }
 
@@ -279,13 +282,19 @@ function findBestActionTile(targetTile, spaces, unit) {
     }
     for (let i = g_dragoverTileHistory.length - 1; i >= 0; --i) {
         let tile = g_dragoverTileHistory.data[i];
-        let distance = tile.calculateDistance(targetTile);
+        let distance = tile?.calculateDistance(targetTile);
         if (distance === spaces) {
             return tile;
         }
     }
-    if (unit.placedTile.calculateDistance(targetTile) === spaces) {
+    if (unit.placedTile?.calculateDistance(targetTile) === spaces) {
         return unit.placedTile;
+    }
+    for (let tile of unit.movableTiles) {
+        let distance = tile?.calculateDistance(targetTile);
+        if (distance === spaces && tile.isUnitPlacableIncludingCurrentTile(unit)) {
+            return tile;
+        }
     }
 
     return null;
@@ -302,6 +311,7 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null, event = nul
             elemId = draggingElemId;
         }
         let unit = g_app.findUnitById(elemId);
+        toggleShowSkillLogs(event);
         if (g_previousDraggedTile !== dragoverTile) {
             drawUnitRange(unit, overTilePx, overTilePy, event);
             g_previousDraggedTile = dragoverTile;
@@ -380,27 +390,51 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
             clearCellFocusBorder(tile.posX, tile.posY);
         }
         // 現在のタイルもしくは攻撃位置のタイルに色をつける
-        for (let tile of g_appData.map.enumerateTiles()) {
-            let color = null;
-            color = "#00ccff" + alpha;
-            let canMove = unit.movableTiles.includes(tile);
-            if (tile === g_attackTile) {
-                // 攻撃マスの色
-                if (canMove) {
-                    updateCellBgColor(tile.posX, tile.posY, color);
-                } else {
-                    updateCellBgColor(tile.posX, tile.posY, "#999900" + alpha);
-                }
-                setCellFocusBorder(tile.posX, tile.posY, canMove);
-            } else if (tile === currentTile && g_attackTile == null) {
-                // 移動マスの色
-                if (canMove) {
-                    updateCellBgColor(tile.posX, tile.posY, color);
-                } else {
-                    updateCellBgColor(tile.posX, tile.posY, "#999900" + alpha);
-                }
-                if (unit.placedTile !== tile) {
+        if (g_appData.currentTurn !== 0) {
+            for (let tile of g_appData.map.enumerateTiles()) {
+                let color = null;
+                color = "#00ccff" + alpha;
+                let canMove = unit.movableTiles.includes(tile);
+                if (tile === g_attackTile) {
+                    // 攻撃マスの色
+                    if (canMove) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    } else {
+                        updateCellBgColor(tile.posX, tile.posY, "#999900" + alpha);
+                    }
                     setCellFocusBorder(tile.posX, tile.posY, canMove);
+                } else if (tile === g_assistTile) {
+                    // 補助を行うマスの色
+                    if (canMove) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    } else {
+                        updateCellBgColor(tile.posX, tile.posY, "#999900" + alpha);
+                    }
+                    setCellFocusBorder(tile.posX, tile.posY, canMove);
+                } else if (tile === currentTile && g_attackTile == null && g_assistTile == null) {
+                    // 移動マスの色
+                    if (canMove) {
+                        updateCellBgColor(tile.posX, tile.posY, color);
+                    } else {
+                        updateCellBgColor(tile.posX, tile.posY, "#999900" + alpha);
+                    }
+                    setCellFocusBorder(tile.posX, tile.posY, canMove);
+                }
+                // 補助先のマス
+                if (unit.assistableTiles.includes(tile) &&
+                    tile.placedUnit?.isSameGroup(unit) &&
+                    tile.placedUnit !== unit
+                ) {
+                    const neighborTiles = tile.getNeighborsAtDistanceSpaces(unit.assistRange);
+                    const canSupport =
+                        neighborTiles.some(t =>
+                            unit.movableTiles.includes(t) &&
+                            t.isUnitPlacableIncludingCurrentTile(unit) &&
+                            g_app.__canSupportTo(unit, tile.placedUnit, t)
+                        );
+                    if (canSupport) {
+                        updateCellBgColor(tile.posX, tile.posY, "#00ff00" + alpha);
+                    }
                 }
             }
         }
@@ -430,7 +464,6 @@ function glowPopInfoIcon() {
 function dragoverImplForTargetTile(unit, targetTile, event) {
     // ターゲットのタイルが変化していなければ再計算しない
     if (g_dragoverTargetTileForCalcSummary === targetTile) {
-        toggleShowSkillLogs(event);
         return;
     }
     if (g_dragoverTargetTileForCalcSummary) {
@@ -442,6 +475,7 @@ function dragoverImplForTargetTile(unit, targetTile, event) {
         clearCellFocusBorder(tile.posX, tile.posY);
     }
     g_attackTile = null;
+    g_assistTile = null;
     unit.precombatSpecialTiles = [];
     // 範囲奥義を非表示に
     for (let tile of g_appData.map.enumerateTiles()) {
@@ -466,13 +500,25 @@ function dragoverImplForTargetTile(unit, targetTile, event) {
         let isThereEnemyOnTile =
             unitPlacedOnTargetTile != null &&
             unit.groupId !== unitPlacedOnTargetTile.groupId;
+        let isThereAllyOnTile =
+            unitPlacedOnTargetTile != null &&
+            unit.groupId === unitPlacedOnTargetTile.groupId;
         if (isThereEnemyOnTile) {
             let attackTile = findBestActionTile(targetTile, unit.attackRangeOnMapForAttackingUnit, unit);
             g_attackTile = attackTile;
             // 再計算のチェックのためサマリーを計算するタイルを保存しておく
             g_dragoverTargetTileForCalcSummary = targetTile;
             g_app.showDamageCalcSummary(unit, unitPlacedOnTargetTile, attackTile);
-            toggleShowSkillLogs(event);
+            // toggleShowSkillLogs(event);
+            return;
+        } else if (isThereAllyOnTile) {
+            let assistTile = findBestActionTile(targetTile, unit.assistRange, unit);
+            if (assistTile) {
+                let canSupport = g_app.__canSupportTo(unit, targetTile.placedUnit, assistTile);
+                if (canSupport) {
+                    g_assistTile = assistTile;
+                }
+            }
             return;
         }
     }
@@ -669,6 +715,9 @@ function dropToUnitImpl(unit, dropTargetId) {
         g_app.executePerActionCommand();
         if (isActioned) {
             // g_app.deselectItem();
+            if (unit.isCantoActivating) {
+                unit.isSelected = true;
+            }
         }
     } else if (dropTargetId === "trashArea") {
         moveUnitToTrashBox(unit);

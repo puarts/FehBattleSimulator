@@ -2592,6 +2592,10 @@ class Unit extends BattleMapElement {
         return this.getStatusEffects().includes(statusEffectType);
     }
 
+    isIsolated() {
+        return this.getStatusEffects().includes(StatusEffectType.Isolation);
+    }
+
     isNextTo(unit) {
         let dist = Math.abs(this.posX - unit.posX) + Math.abs(this.posY - unit.posY);
         return dist === 1;
@@ -5258,7 +5262,7 @@ class Unit extends BattleMapElement {
      * @returns {Array<number|string>}
      */
     enumerateSkills() {
-        if (this.usesCache && this.cachedSkills) {
+        if (this.usesCache && this.cachedSkills !== null) {
             return this.cachedSkills;
         }
         /** @type {Array<number|string>} */
@@ -7024,7 +7028,7 @@ class UnitUtil {
                 u.cacheCounter--;
                 if (u.cacheCounter === 0) {
                     u.usesCache = false;
-                    u.cachedSkills = null; // 最後に終了
+                    u.cachedSkills = null;
                 }
             }
         }
