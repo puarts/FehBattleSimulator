@@ -11131,8 +11131,10 @@ class BattleSimulatorBase {
         }
 
         let assistType = determineAssistType(supporterUnit, targetUnit);
+        let support = null;
         if (supporterUnit.isCantoActivating) {
             assistType = supporterUnit.cantoAssistType;
+            support = supporterUnit.cantoSupport;
             if (supporterUnit.cantoAssistType === AssistType.None) {
                 return;
             }
@@ -11166,7 +11168,7 @@ class BattleSimulatorBase {
             case AssistType.Move:
                 {
                     let result =
-                        this.__findTileAfterMovementAssist(supporterUnit, targetUnit, assistTargetingTile);
+                        this.__findTileAfterMovementAssist(supporterUnit, targetUnit, assistTargetingTile, support);
                     return result.success;
                 }
             default:
@@ -11175,7 +11177,10 @@ class BattleSimulatorBase {
         }
     }
 
-    __findTileAfterMovementAssist(assistUnit, assistTargetUnit, assistTargetingTile) {
+    __findTileAfterMovementAssist(assistUnit, assistTargetUnit, assistTargetingTile, support = null) {
+        if (assistUnit.isCantoActivating) {
+            return this.__getTargetUnitTileAfterCantoMoveAssist(assistUnit, assistTargetUnit, assistTargetingTile);
+        }
         if (!assistUnit.hasSupport) {
             return new MovementAssistResult(false, null, null);
         }
@@ -11191,7 +11196,6 @@ class BattleSimulatorBase {
         if (DRAW_BACK_ASSIST_SKILLS.has(skillId)) {
             return this.__findTileAfterDrawback(assistUnit, assistTargetUnit, assistTargetingTile);
         }
-
         switch (assistUnit.support) {
             case Support.FateUnchanged:
             case Support.ToChangeFate:
@@ -11216,7 +11220,8 @@ class BattleSimulatorBase {
             case Support.Pivot:
                 return this.__findTileAfterPivot(assistUnit, assistTargetUnit, assistTargetingTile);
             default:
-                this.writeErrorLine(`unknown support ${assistUnit.supportInfo.name}`);
+                this.writeErrorLine(`unknown support, name: ${assistUnit.supportInfo.name}, support: ${support}`);
+                console.trace();
                 return new MovementAssistResult(false, null, null);
         }
     }
