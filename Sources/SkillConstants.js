@@ -4044,6 +4044,17 @@ Weapon.EtherealGungnir = 3475; // 九天グングニル
 PassiveB.DefResShackle = 3476; // 守備魔防の枷
 PassiveC.CovetousOne = 3477; // 求めるは知のみ
 PassiveB.CounterRoar3 = 2894; // 反撃の咆哮3
+Weapon.UrvanBrilliance = 3478; // 蒼烈ウルヴァン
+Special.AethersCourse = 3479; // 真蒼炎の天空
+PassiveA.WarriorsBlow = 3480; // 濁流の一撃
+PassiveB.Patience = 3481; // 後の先
+Weapon.IntrinsicMulagir = 3482; // 疾聖ミュルグレ
+PassiveA.SacaesDecree = 3483; // 真大いなるサカの掟
+PassiveB.ExecutionBreath = 3484; // 理の蛇毒・呼吸
+Weapon.ArcaneOutburst = 3485; // 魔器・幼神の波動
+Special.DragonIce = 3486; // 竜氷
+PassiveA.UnfledgedGod = 3487; // 新生せし神
+PassiveC.ARTwinMSave = 3488; // 兜の護り手・魔・双
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -4231,7 +4242,8 @@ const StyleType = {
     HOSHIDO_RAIJINTO: 6,
     RANGE_2_STATUS: 7,
     RANGE_2: 8,
-    // CAN_ACTIVATE_STYLE_HOOKSを設定する
+    INTRINSIC_MULAGIR: 9,
+    // CAN_ACTIVATE_STYLE_HOOKSを設定する（styleのIDに設定）
 }
 const STYLE_TYPE_NAMES = [
     '流星群',
@@ -4267,9 +4279,11 @@ const CANNOT_ATTACK_STRUCTURE_STYLES= new Set();
 
 const STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN = new Set();
 
+// スタイルによる射程
 const STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1 = new Set();
 const STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2 = new Set();
 
+// ステータス状態（射程2）などによる射程
 const SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1 = new Set();
 const SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2 = new Set();
 

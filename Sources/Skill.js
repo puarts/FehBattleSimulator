@@ -1355,6 +1355,7 @@ const StatusEffectType = {
     DefShackle: 95, // 守備の枷
     Range2Style: 96, // スタイル・射程2
     AssignDecoyTwin: 97, // 囮指名・双
+    RadiantHero: 98, // 蒼炎の勇者
     // 1. STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 2. 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // 3. POSITIVE_STATUS_EFFECT_ARRAYまたはNEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1399,6 +1400,8 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.ProfsGuidance,
     // 運命を変える!
     StatusEffectType.ChangeOfFate,
+    // 蒼炎の勇者
+    StatusEffectType.RadiantHero,
 // 強化ダメージ+
     StatusEffectType.Treachery,
 // 敵弱化ダメージ+

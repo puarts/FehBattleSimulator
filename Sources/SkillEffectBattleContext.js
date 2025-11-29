@@ -572,6 +572,25 @@ const UNIT_NEUTRALIZES_EFFECTS_THAT_PREVENT_UNITS_FOLLOW_UP_ATTACKS_DURING_COMBA
 /**
  * unit can make a follow-up attack before foe's next attack.
  */
+class TargetCanMakeFollowUpAttackBeforeFoesNextAttackNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        // 攻め立て
+        env.info(`${unit.nameWithGroup}に攻め立て効果を設定`);
+        unit.battleContext.isDesperationActivatable = true;
+    }
+}
+
+const TARGET_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE =
+    new TargetCanMakeFollowUpAttackBeforeFoesNextAttackNode();
+
+/**
+ * unit can make a follow-up attack before foe's next attack.
+ */
 const UNIT_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         // 攻め立て

@@ -374,6 +374,8 @@ class TargetsAlliesOnMapNode extends UnitsNode {
     }
 }
 
+const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
+
 const TARGETS_ALLIES_WITHOUT_TARGET_ON_MAP_NODE = new TargetsAlliesOnMapNode();
 const TARGET_AND_TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode(TRUE_NODE);
 
@@ -383,6 +385,7 @@ class FoesAlliesOnMapNode extends TargetsAlliesOnMapNode {
     }
 }
 
+const FOES_ALLIES_ON_MAP_NODE = new FoesAlliesOnMapNode();
 const FOE_AND_FOES_ALLIES_ON_MAP_NODE = new FoesAlliesOnMapNode(TRUE_NODE);
 
 class TargetsFoesOnMapNode extends UnitsNode {
@@ -570,6 +573,8 @@ class MaxUnitsNode extends UnitsNode {
         return maxUnits;
     }
 }
+
+const MAX_UNITS_NODE = (unitsNode, funcNode) => new MaxUnitsNode(unitsNode, funcNode);
 
 class MinUnitsNode extends UnitsNode {
     /**
@@ -3054,9 +3059,18 @@ class TargetsStatsExcludingIncreasesFromLegendaryEffectsMythicEffectsBonusHeroes
 
 const TARGETS_STATS_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE =
     new TargetsStatsExcludingIncreasesFromLegendaryEffectsMythicEffectsBonusHeroesEtc();
+const TARGETS_STATS_AT_START_OF_BATTLE =
+    TARGETS_STATS_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE;
 
 const TARGETS_STAT_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE = index =>
     GET_STAT_AT_NODE(TARGETS_STATS_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE, index);
+
+const TARGETS_STAT_AT_START_OF_BATTLE =
+    index => GET_STAT_AT_NODE(
+        TARGETS_STATS_EXCLUDING_INCREASES_FROM_LEGENDARY_EFFECTS_MYTHIC_EFFECTS_BONUS_HEROES_ETC_NODE,
+        index
+    );
+
 
 /**
  * @abstract
@@ -3958,41 +3972,22 @@ class IsFoeBeastOrDragonTypeNode extends IsTargetBeastOrDragonTypeNode {
 
 const IS_FOE_BEAST_OR_DRAGON_TYPE_NODE = new IsFoeBeastOrDragonTypeNode();
 
-class IsTargetInfantryNode extends BoolNode {
+class IsTargetMoveTypeNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
-    evaluate(env) {
-        let unit = this.getUnit(env);
-        let result = unit.moveType === MoveType.Infantry;
-        env.debug(`${unit.nameWithGroup}は歩行か: ${result}`);
-        return result;
-    }
-}
-
-class IsFoeInfantryNode extends IsTargetInfantryNode {
-    static {
-        Object.assign(this.prototype, GetFoeDuringCombatMixin);
-    }
-}
-
-class IsTargetArmorNode extends BoolNode {
-    static {
-        Object.assign(this.prototype, GetUnitMixin);
+    constructor(moveType, name) {
+        super();
+        this._moveType = NumberNode.makeNumberNodeFrom(moveType);
+        this._name = name;
     }
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let result = unit.moveType === MoveType.Armor;
-        env.debug(`${unit.nameWithGroup}は重装か: ${result}`);
+        let result = unit.moveType === this._moveType.evaluate(env);
+        env.debug(`${unit.nameWithGroup}は${name}か: ${result}`);
         return result;
-    }
-}
-
-class IsFoeArmorNode extends IsTargetArmorNode {
-    static {
-        Object.assign(this.prototype, GetFoeDuringCombatMixin);
     }
 }
 
@@ -4829,22 +4824,35 @@ class TriggersTargetsPotentFollowXDuringCombatNode extends SkillEffectNode {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
-    constructor(percentage, spdDiff) {
+    constructor(percentage, spdDiff = null) {
         super();
         this._percentageNode = NumberNode.makeNumberNodeFrom(percentage);
-        this._spdDiffNode = NumberNode.makeNumberNodeFrom(spdDiff);
+        this._spdDiffNode = null;
+        if (spdDiff !== null) {
+            this._spdDiffNode = NumberNode.makeNumberNodeFrom(spdDiff);
+        }
     }
 
     evaluate(env) {
         let unit = this.getUnit(env);
         let foe = env.getFoeDuringCombatOf(unit);
         let percentage = this._percentageNode.evaluate(env);
-        let spdDiff = -this._spdDiffNode.evaluate(env);
-        env.info(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用`);
-        env.damageCalculatorWrapper.__applyPotent(unit, foe, percentage / 100.0, spdDiff, true);
+        if (this._spdDiffNode !== null) {
+            let spdDiff = -this._spdDiffNode.evaluate(env);
+            env.info(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用`);
+            env.damageCalculatorWrapper.__applyPotent(unit, foe, percentage / 100.0, spdDiff, true);
+        } else {
+            env.damageCalculatorWrapper.__applyPotent(unit, foe, percentage / 100.0, 0, true, true);
+        }
     }
 }
 
+/**
+ * @param percentage
+ * @param spdDiff 正の数
+ * @returns {TriggersTargetsPotentFollowXDuringCombatNode}
+ * @constructor
+ */
 const TRIGGERS_TARGETS_POTENT_FOLLOW_X_DURING_COMBAT_NODE =
     (percentage, spdDiff) => new TriggersTargetsPotentFollowXDuringCombatNode(percentage, spdDiff);
 
@@ -7793,3 +7801,50 @@ class SkillOwnersBonusStatusEffectsNode extends TargetsBonusStatusEffectsNode {
 }
 
 const SKILL_OWNERS_BONUS_STATUS_EFFECTS_NODE = new SkillOwnersBonusStatusEffectsNode();
+
+class IsTargetsConsecutiveAttacksNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = env.damageCalcContext.isConsecutiveAttack(unit);
+        env.debug(`${unit.nameWithGroup}の連続した攻撃か: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGETS_CONSECUTIVE_ATTACKS_NODE = new IsTargetsConsecutiveAttacksNode();
+const IS_TARGETS_FOES_CONSECUTIVE_ATTACKS_NODE = FOR_TARGETS_FOE_NODE(IS_TARGETS_CONSECUTIVE_ATTACKS_NODE);
+
+class AreTargetAndSkillOwnersHasSameTitleNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let skillOwner = env.skillOwner;
+        let result = unit.hasSameTitle(skillOwner);
+        env.debug(`${unit.nameWithGroup}と${skillOwner.nameWithGroup}は同じ出典を持つか: ${result}`);
+        return result;
+    }
+}
+
+const ARE_TARGET_AND_SKILL_OWNERS_HAS_SAME_TITLE_NODE = new AreTargetAndSkillOwnersHasSameTitleNode();
+
+class IsTargetActionDoneNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isActionDone;
+        env.debug(`${unit.nameWithGroup}は行動済みか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_ACTION_DONE_NODE = new IsTargetActionDoneNode();

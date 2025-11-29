@@ -2490,6 +2490,12 @@ class DamageCalculator {
         defUnit.battleContext.damageReductionRatiosBySpecialOfNextAttack = [];
     }
 
+    /**
+     * @param {Unit} atkUnit
+     * @param {Unit} defUnit
+     * @param {DamageCalcContext} context
+     * @returns {*[]}
+     */
     #getDamageReductionRatios(atkUnit, defUnit, context) {
         let damageReductionRatios = [];
         // 計算機の外側で設定されたダメージ軽減率
