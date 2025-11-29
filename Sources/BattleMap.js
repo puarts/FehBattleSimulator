@@ -3558,4 +3558,37 @@ class BattleMap {
         }
         console.log(result);
     }
+
+    /**
+     * タイル存在マップを2D表示
+     * @param {Iterable<{posX:number,posY:number}>} tiles
+     */
+    printTiles(tiles) {
+        const tileSet = new Set();
+        for (const t of tiles) {
+            tileSet.add(`${t.posX},${t.posY}`);
+        }
+
+        // 数字→全角変換
+        const toFull = (str) =>
+            str.replace(/[0-9]/g, (n) => String.fromCharCode(n.charCodeAt(0) + 0xFEE0));
+
+        // 列番号ヘッダ（全角）
+        let header = "　　　"; // 全角スペース3つ
+        for (let x = 0; x < this.width; x++) {
+            header += toFull(String(x));
+        }
+        console.log(header);
+
+        // 行ごとの表示
+        for (let y = 0; y < this.height; y++) {
+            let row = toFull(String(y)).padStart(2, "　") + "｜";
+
+            for (let x = 0; x < this.width; x++) {
+                row += tileSet.has(`${x},${y}`) ? "■" : "□";
+            }
+
+            console.log(row);
+        }
+    }
 }

@@ -78,7 +78,7 @@ function setForAlliesHooks(skillId, pred, statNodes, skillEffectNodes) {
             statNodes,
         ),
     ));
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(pred,
             skillEffectNodes,
         ),
@@ -401,10 +401,11 @@ const REDUCES_DAMAGE_BY_N_NODE = n =>
         REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
         REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
     );
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_N_NODE = REDUCES_DAMAGE_BY_N_NODE;
 
-const REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_N_NODE = n =>
+const REDUCES_DAMAGE_FROM_SPECIALS_BY_N_NODE = n =>
     IF_ELSE_NODE(IS_IN_COMBAT_PHASE_NODE,
-        REDUCES_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE(n),
+        REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_X_EXCLUDING_AOE_SPECIAL_NODE(n),
         REDUCES_DAMAGE_BEFORE_COMBAT_NODE(n),
     );
 
@@ -469,10 +470,14 @@ const FOES_RANGE_IS_2_NODE = EQ_NODE(new FoesRangeNode(), 2);
 
 const IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE = new IsTargetBeastOrDragonTypeNode();
 
-const IS_TARGET_INFANTRY_NODE = new IsTargetInfantryNode();
-const IS_TARGET_ARMOR_NODE = new IsTargetArmorNode();
-const IS_FOE_INFANTRY_NODE = new IsFoeInfantryNode();
-const IS_FOE_ARMOR_NODE = new IsFoeArmorNode();
+const IS_TARGET_INFANTRY_NODE = new IsTargetMoveTypeNode(MoveType.Infantry, '歩行');
+const IS_TARGET_FLYING_NODE = new IsTargetMoveTypeNode(MoveType.Flying, '飛行');
+const IS_TARGET_CAVALRY_NODE = new IsTargetMoveTypeNode(MoveType.Cavalry, '騎馬');
+const IS_TARGET_ARMOR_NODE = new IsTargetMoveTypeNode(MoveType.Armor, '重装');
+const IS_FOE_INFANTRY_NODE = FOR_FOE_NODE(IS_TARGET_INFANTRY_NODE);
+const IS_FOE_FLYING_NODE = FOR_FOE_NODE(IS_TARGET_FLYING_NODE);
+const IS_FOE_CAVALRY_NODE = FOR_FOE_NODE(IS_TARGET_CAVALRY_NODE);
+const IS_FOE_ARMOR_NODE = FOR_FOE_NODE(IS_TARGET_ARMOR_NODE);
 
 /**
  * 戦闘中に奥義が発動できない
@@ -557,13 +562,25 @@ function setSaveSkill(skillId, isMelee, isRanged = !isMelee, isP = false, isMagi
  * @param skillId
  * @param {boolean} isMelee
  * @param {SkillEffectNode} grantsNode
+ * @param isP
+ * @param isMagic
  */
-function setTwinSave(skillId, isMelee, grantsNode) {
+function setTwinSave(skillId, isMelee, grantsNode, isP = false, isMagic = false) {
     setSaveSkill(skillId, isMelee);
+    let predNode = FALSE_NODE;
+    if (isMelee) {
+        predNode = FOES_RANGE_IS_1_NODE;
+    } else if (!isMelee && !isP && !isMagic) {
+        predNode = FOES_RANGE_IS_2_NODE;
+    } else if (isP) {
+        predNode = FOR_TARGETS_FOE_DURING_COMBAT_NODE(IS_TARGET_P_WEAPON_NODE);
+    } else if (isMagic) {
+        predNode = FOR_TARGETS_FOE_DURING_COMBAT_NODE(IS_TARGET_MAGIC_WEAPON_NODE);
+    }
 
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         new SkillEffectNode(
-            IF_NODE(isMelee ? FOES_RANGE_IS_1_NODE : FOES_RANGE_IS_2_NODE,
+            IF_NODE(predNode,
                 // grants XXX+4 to unit during combat,
                 grantsNode,
                 // any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat (excludes boosted Special effects from engaging; only highest value applied; does not stack),
@@ -573,6 +590,22 @@ function setTwinSave(skillId, isMelee, grantsNode) {
             ),
         ),
     );
+    if (isP || isMagic) {
+        let nodeFunc = NODE_FUNC(
+            DISABLES_TARGETS_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_DURING_COMBAT_NODE
+        );
+        setCondHooks(skillId,
+            predNode,
+            [
+                AT_START_OF_COMBAT_HOOKS,
+                nodeFunc,
+            ],
+            [
+                BEFORE_AOE_SPECIAL_HOOKS,
+                nodeFunc,
+            ],
+        );
+    }
 }
 
 function setBriarSave(skillId, predNode, statsNode,
@@ -845,11 +878,6 @@ const SKILL_OWNERS_ALLIES_WITHIN_4_SPACES = SKILL_OWNERS_ALLIES_WITHIN_N_SPACES(
 const SKILL_OWNERS_FOES_HAVE_HIGHEST_VALUE_ON_MAP = func => MAX_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE, func);
 const SKILL_OWNERS_FOES_HAVE_HIGHEST_AND_THOSE_ALLIES_WITHIN_N_SPACES_ON_MAP = (n, func) =>
     new TargetsAndThoseAlliesWithinNSpacesNode(n, SKILL_OWNERS_FOES_HAVE_HIGHEST_VALUE_ON_MAP(func));
-/**
- * ターゲットは含まない
- * @type {UnitsNode}
- */
-const TARGETS_ALLIES_ON_MAP_NODE = new TargetsAlliesOnMapNode();
 const FILTER_MAP_UNITS_NODE = (predNode) => new FilterUnitsNode(UNITS_ON_MAP_NODE, predNode);
 const FILTER_TARGETS_ALLIES_NODE = (predNode) => new FilterUnitsNode(TARGETS_ALLIES_ON_MAP_NODE, predNode);
 const SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE =
@@ -930,8 +958,6 @@ const HIGHEST_STAT_ON_EACH_STAT_BETWEEN_TARGET_ALLIES_WITHIN_N_SPACES_NODE = (in
 const TARGETS_PARTNERS_ON_MAP_NODE = FILTER_TARGETS_ALLIES_NODE(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
 const SKILL_OWNERS_PARTNERS_ON_MAP_NODE =
     FILTER_UNITS_NODE(SKILL_OWNERS_ALLIES_ON_MAP_NODE, ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE,);
-
-const MAX_UNITS_NODE = (unitsNode, funcNode) => new MaxUnitsNode(unitsNode, funcNode);
 
 const HIGHEST_STAT_TARGETS_ALLIES_ON_MAP_NODE =
     index => MAX_UNITS_NODE(TARGETS_ALLIES_ON_MAP_NODE, TARGETS_STAT_ON_MAP(index));
@@ -1498,7 +1524,7 @@ function setAllEffectsForSkillOwnersAlliesDuringCombatHooks(skillId, condNode,
             grantsStatsNode,
         ),
     ));
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode,
             grantsOtherEffectNode,
         ),
@@ -1562,7 +1588,7 @@ function setForFoesSkillsDuringCombatHooks(skillId, condNode, statsNode, effectN
     FOR_FOES_INFLICTS_STATS_MINUS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode, statsNode),
     ));
-    FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(condNode, effectNode),
     ));
 }

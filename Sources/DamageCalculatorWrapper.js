@@ -641,11 +641,11 @@ class DamageCalculatorWrapper {
         // 味方ユニットからのスキル効果
         // self.profile.profile("__applySkillEffectFromAllies", () => {
         // self.__applySkillEffectForAttackerAndDefenderFromAllies(atkUnit, defUnit);
-        damageCalcEnv.applySkill('周囲の味方からのスキル', atkUnit, defUnit, this.__applySkillEffectFromAllies, this);
+        damageCalcEnv.applySkill('戦闘開始時、周囲の味方からのスキル', atkUnit, defUnit, this.__applySkillEffectFromAllies, this);
         // });
 
         // 周囲の敵からのスキル効果
-        damageCalcEnv.applySkill('周囲の敵からのスキル', atkUnit, defUnit,
+        damageCalcEnv.applySkill('戦闘開始時、周囲の敵からのスキル', atkUnit, defUnit,
             this.__applySkillEffectFromEnemyAllies, this);
 
         this.combatPhase = NodeEnv.CombatPhase.APPLYING_OTHER_UNITS_SKILL_AFTER_FEUD;
@@ -10017,7 +10017,7 @@ class DamageCalculatorWrapper {
             env.setName('周囲の味方からのスキル効果(戦闘中バフ決定後)').setLogLevel(getSkillLogLevel())
                 .setDamageType(damageCalcEnv.damageType)
                 .setCombatPhase(this.combatPhase).setGroupLogger(damageCalcEnv.getCombatLogger());
-            FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_USING_STATS_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
+            FOR_ALLIES_NON_STATS_SKILL_USING_STATS_HOOKS.evaluateWithUnit(allyUnit, env);
         }
     }
 
@@ -10069,9 +10069,9 @@ class DamageCalculatorWrapper {
                     continue
                 }
                 let env = new ForAlliesEnv(this, targetUnit, enemyUnit, allyUnit);
-                env.setName('周囲の味方からのスキル').setLogLevel(getSkillLogLevel()).setDamageType(damageCalcEnv.damageType)
+                env.setName('戦闘開始時、周囲の味方からのスキル').setLogLevel(getSkillLogLevel()).setDamageType(damageCalcEnv.damageType)
                     .setCombatPhase(this.combatPhase).setGroupLogger(damageCalcEnv.getCombatLogger());
-                FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
+                FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
                 for (let skillId of allyUnit.enumerateSkills()) {
                     let func = getSkillFunc(skillId, applySkillEffectFromAlliesFuncMap);
                     func?.call(this, targetUnit, enemyUnit, allyUnit, damageCalcEnv.calcPotentialDamage);
@@ -10091,7 +10091,7 @@ class DamageCalculatorWrapper {
                     }
                 }
                 for (let func of targetUnit.battleContext.applySkillEffectFromAlliesFuncs) {
-                    func(targetUnit, enemyUnit, allyUnit, calcPotentialDamage);
+                    func(targetUnit, enemyUnit, allyUnit, damageCalcEnv.calcPotentialDamage);
                 }
             }
 
@@ -10366,10 +10366,10 @@ class DamageCalculatorWrapper {
             }
 
             let env = new ForFoesEnv(this, targetUnit, enemyUnit, enemyAlly, damageCalcEnv.calcPotentialDamage);
-            env.setName('周囲の敵からのスキル').setLogLevel(getSkillLogLevel())
+            env.setName('戦闘開始時、周囲の敵からのスキル').setLogLevel(getSkillLogLevel())
                 .setDamageType(damageCalcEnv.damageType).setCombatPhase(this.combatPhase)
                 .setGroupLogger(damageCalcEnv.getCombatLogger());
-            FOR_FOES_INFLICTS_EFFECTS_HOOKS.evaluateWithUnit(enemyAlly, env);
+            FOR_FOES_AT_START_OF_COMBAT_HOOKS.evaluateWithUnit(enemyAlly, env);
 
             for (let skillId of enemyAlly.enumerateSkills()) {
                 let func = getSkillFunc(skillId, applySkillEffectFromEnemyAlliesFuncMap);
@@ -11658,8 +11658,11 @@ class DamageCalculatorWrapper {
         }
     }
 
-    __applyPotent(targetUnit, enemyUnit, baseRatio = 0.4, evalSpd = -25, isFixed = false) {
-        if (DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, evalSpd)) {
+    __applyPotent(targetUnit, enemyUnit, baseRatio = 0.4, evalSpd = -25,
+                  isFixed = false, canFollowUp = false) {
+        let canPotentFollowUp =
+            DamageCalculationUtility.examinesCanFollowupAttack(targetUnit, enemyUnit, evalSpd) || canFollowUp;
+        if (canPotentFollowUp) {
             let potentRatio = baseRatio;
             if (!targetUnit.battleContext.isTwiceAttackActivating() &&
                 !targetUnit.battleContext.canFollowupAttackWithoutPotent) {

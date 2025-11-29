@@ -122,7 +122,7 @@ const FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS = new SkillEffe
 /**
  * 周囲に対するスキル効果
  * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
-const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS = new SkillEffectHooks();
+const FOR_ALLIES_AT_START_OF_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲に対する紋章効果(ステータス決定後)
@@ -132,7 +132,7 @@ const FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_AFTER_STATS_DETERMINED_DURING_COMBA
 /**
  * 周囲に対する紋章効果(ステータス決定後)
  * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
-const FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_USING_STATS_DURING_COMBAT_HOOKS = new SkillEffectHooks();
+const FOR_ALLIES_NON_STATS_SKILL_USING_STATS_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲に対するスキル効果(適用後)
@@ -163,7 +163,7 @@ const FOR_FOES_INFLICTS_EFFECTS_AFTER_STATS_DETERMINED_HOOKS = new SkillEffectHo
 /**
  * 周囲の敵から受けるスキル効果
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const FOR_FOES_INFLICTS_EFFECTS_HOOKS = new SkillEffectHooks();
+const FOR_FOES_AT_START_OF_COMBAT_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲の敵から受けるスキル効果（適用後）

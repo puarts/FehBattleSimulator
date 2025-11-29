@@ -1171,7 +1171,7 @@
             new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4),
         )
     ));
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             new NeutralizesPenaltiesToTargetsStatsNode(false, false, true, true),
         )
@@ -1960,7 +1960,7 @@
             ),
         ));
 
-        FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        FOR_FOES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
             // on the map with the 【Exposure】effect active and
             IF_NODE(new HasTargetStatusEffectNode(StatusEffectType.Exposure),
                 // neutralizes bonuses to Spd/Def for those foes during combat.
@@ -2599,7 +2599,7 @@
         ),
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 3 rows or 3 columns centered on unit,
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // if ally initiates combat and
@@ -2901,14 +2901,14 @@ function setDiscord(skillId, statsRatios) {
     ));
 
     // For allies within 2 spaces of unit,
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
             // grants Atk/Res+4,
             new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4),
         ),
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
             // reduces damage from foe's attacks by 30% (excluding area-of-effect Specials),
             new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),
@@ -2920,7 +2920,7 @@ function setDiscord(skillId, statsRatios) {
 {
     let skillId = getNormalSkillId(Weapon.CaduceusStaff);
     // Calculates damage from staff like other weapons.
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Reduces damage from foes' attacks during combat to allies within 2 spaces by 30%.
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
             new ReducesDamageFromTargetsFoesAttacksByXPercentDuringCombatNode(30),
@@ -3173,6 +3173,15 @@ function setDiscord(skillId, statsRatios) {
 {
     setTwinSave(PassiveC.ARTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
     setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
+}
+
+// 護り手・X・双
+{
+    setTwinSave(
+        PassiveC.ARTwinMSave, false,
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(ATK_RES_NODE(4)),
+        false, true
+    );
 }
 
 // 護り手・X・茨
@@ -3487,7 +3496,7 @@ function setDiscord(skillId, statsRatios) {
         ),
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
             // and reduces the effect of【Deep Wounds】by 50% during combat.
             new ReducesEffectOfDeepWoundsOnTargetByXPercentDuringCombatNode(50),
@@ -3863,7 +3872,7 @@ function setDiscord(skillId, statsRatios) {
         ),
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // During turns 1 through 4,
         IF_NODE(LTE_NODE(CURRENT_TURN_NODE, 4),
             // for allies within 3 rows or 3 columns centered on unit,
@@ -4075,7 +4084,7 @@ function setDiscord(skillId, statsRatios) {
         ),
     ));
     // and also,
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 3 spaces of unit,
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // when foe's attack triggers foe's Special,
@@ -4517,7 +4526,7 @@ function setDiscord(skillId, statsRatios) {
         ),
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // For allies within 3 spaces of unit with "neutralizes 'effective against dragons' bonuses" active,
         IF_NODE(AND_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
                 new HasTargetStatusEffectNode(StatusEffectType.ShieldDragon)),
@@ -4906,7 +4915,7 @@ function setDiscord(skillId, statsRatios) {
             NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
         ),
     ));
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // Allies within 2 spaces gain:
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
             // "Neutralizes effects that
@@ -4943,7 +4952,7 @@ function setDiscord(skillId, statsRatios) {
         ),
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // neutralizes effects that grant "Special cooldown charge +X" to foe or inflict "Special cooldown charge -X" on ally during their combat.".
             NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
@@ -5934,7 +5943,7 @@ function setDiscord(skillId, statsRatios) {
             ),
         )
     );
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () =>
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () =>
         // 自身を中心とした縦3列と横3列の味方は、
         new IfNode(IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
             // 攻撃時に発動する奥義を装備している時、戦闘中、
@@ -6216,7 +6225,7 @@ function setDiscord(skillId, statsRatios) {
         )
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         IF_NODE(IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
             // neutralizes foe's bonuses (from skills like Fortify, Rally, etc.) during their combat
             NEUTRALIZES_FOES_BONUSES_TO_STATS_DURING_COMBAT_NODE,
@@ -6305,7 +6314,7 @@ function setDiscord(skillId, statsRatios) {
         ),
     ));
 
-    FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_DURING_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+    FOR_ALLIES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% (excluding area-of-effect Specials)"
         // to allies within 2 spaces of unit during their combat.".
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,

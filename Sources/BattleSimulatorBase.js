@@ -11479,6 +11479,7 @@ class BattleSimulatorBase {
             updateMapUi();
             return;
         }
+        let selectedUnits = Array.from(g_appData.enumerateUnits()).filter(u => u.isSelected);
 
         this.showItemInfo(targetId);
 

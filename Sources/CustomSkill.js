@@ -2100,7 +2100,7 @@ CustomSkill.setFuncId(
     'bolt-axe-bug',
     'ボルトアクス（バグ効果）',
     (skillId, args) => {
-        FOR_FOES_INFLICTS_EFFECTS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        FOR_FOES_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
             IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
                 // 本来スキル効果にない
                 // 「敵の絶対追撃を無効」

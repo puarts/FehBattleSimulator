@@ -84,6 +84,8 @@ const Hero = {
     DuoFreyja: 1336,
     DuoElincia: 1340,
     DuoGullveigNinja: 1348,
+    HarmonizedIke: 10000,
+    HarmonizedRyn: 10001,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -415,9 +417,10 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.DefShackle, ["DefShackle.webp", "守備の枷", "守備が減少、自分の不利な状態異常の数+4（最大8）"]],
     [StatusEffectType.ResShackle, ["ResShackle.webp", "魔防の枷", "魔防が減少、自分の不利な状態異常の数+4（最大8）"]],
     [StatusEffectType.CreationPulse, ["CreationPulse.webp", "開闢の鼓動", "攻撃前に、奥義発動カウント-敵の不利な状態異常の数"]],
-    [StatusEffectType.ChangeOfFate, ["ChangeOfFate.webp", "運命を変える!", ""]],
-    [StatusEffectType.Range2Style, ["Range2Style.webp", "スタイル・射程2", ""]],
-    [StatusEffectType.AssignDecoyTwin, ["AssignDecoyTwin.webp", "囮指名・双", ""]],
+    [StatusEffectType.ChangeOfFate, ["ChangeOfFate.webp", "運命を変える!", "再移動2、攻速守魔+5、状態の数に応じてダメージ+"]],
+    [StatusEffectType.Range2Style, ["Range2Style.webp", "スタイル・射程2", "【スタイル】：射程2 を使用可能"]],
+    [StatusEffectType.AssignDecoyTwin, ["AssignDecoyTwin.webp", "囮指名・双", "同じ射程の攻撃に「護り手」、奥義のダメージ軽減2回"]],
+    [StatusEffectType.RadiantHero, ["RadiantHero.webp", "蒼炎の勇者", "距離に関係なく反撃でき、奥義のダメージが増加する"]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
