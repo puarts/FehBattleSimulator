@@ -5824,7 +5824,7 @@ class GrantsStatusEffectsOnTargetOnMapNode extends FromNumbersNode {
     }
 
     evaluate(env) {
-        this.evaluateChildren(env).forEach(e => {
+        super.evaluate(env).forEach(e => {
             let unit = this.getUnit(env);
             env.info(`${unit.nameWithGroup}に${getStatusEffectName(e)}を付与予約`);
             unit.reserveToAddStatusEffect(e);
@@ -5988,7 +5988,9 @@ class GrantsAnotherActionNode extends SkillEffectNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         unit.grantsAnotherActionOnMap();
-        env.debug(`${unit.nameWithGroup}は再行動`);
+        let message = `${unit.nameWithGroup}は再行動`;
+        env.debug(message);
+        env.writeDamageLog(message);
     }
 }
 
@@ -6003,6 +6005,7 @@ class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
         let unit = this.getUnit(env);
         unit.grantsAnotherActionOnMap();
         env.debug(`${unit.nameWithGroup}は行動可能な状態になる`);
+        env.writeDamageLog(`${unit.nameWithGroup}は再行動（マップ上）`);
     }
 }
 
@@ -6017,6 +6020,7 @@ class GrantsAnotherActionToTargetAfterCombatNode extends SkillEffectNode {
         let unit = this.getUnit(env);
         unit.grantsAnotherActionAfterCombat();
         env.debug(`${unit.nameWithGroup}は行動可能な状態になる`);
+        env.writeDamageLog(`${unit.nameWithGroup}は再行動（戦闘後）`);
     }
 }
 
@@ -6032,6 +6036,7 @@ class GrantsAnotherActionToTargetAfterCombatExceptsTargetsSkillNode extends Skil
         let grantedAnotherAction = unit.grantsAnotherActionAfterCombatExceptOwnSkills(env.skillOwner);
         if (grantedAnotherAction) {
             env.debug(`${unit.nameWithGroup}は自分以外のスキルで行動可能な状態になる`);
+            env.writeDamageLog(`${unit.nameWithGroup}は再行動（自分以外のスキル）`);
         } else {
             env.debug(`${unit.nameWithGroup}は自分以外のスキルで行動可能な状態になる効果は発動できない`);
         }
@@ -6051,6 +6056,7 @@ class GrantsAnotherActionToTargetAfterTargetAlliesCombatNode extends SkillEffect
         let grantedAnotherAction = unit.grantsAnotherActionAfterAlliesCombat();
         if (grantedAnotherAction) {
             env.debug(`${unit.nameWithGroup}は味方の戦闘後行動可能な状態になる`);
+            env.writeDamageLog(`${unit.nameWithGroup}は再行動（味方の戦闘後）`);
         } else {
             env.debug(`${unit.nameWithGroup}は味方の戦闘後行動可能な状態になる効果は発動できない`);
         }
@@ -6067,7 +6073,9 @@ class ReEnablesCantoToTargetOnMapNode extends SkillEffectNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        env.debug(`${unit.nameWithGroup}は再移動を再発動可能になる`);
+        let message = `${unit.nameWithGroup}は再移動を再発動可能になる`;
+        env.debug(message);
+        env.writeDamageLog(message);
         unit.reEnablesCantoOnMap();
     }
 }
@@ -6159,6 +6167,7 @@ class GrantsAnotherActionAndAppliesSkillNode extends SkillEffectNode {
         super();
         this._node = node;
     }
+
     evaluate(env) {
         let unit = this.getUnit(env);
         env.trace(`${unit.nameWithGroup}の${this.getPhase()}の再行動判定を開始`);
@@ -7746,3 +7755,41 @@ class IsWarpSpaceNode extends BoolNode {
 }
 
 const IS_WARP_SPACE_NODE = new IsWarpSpaceNode();
+
+class TargetsStatusEffectsNode extends NumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.statusEffects;
+        env.debug(`${unit.nameWithGroup}に付与されている状態: [${result.map(effect => getStatusEffectName(effect)).join(", ")}]`);
+        return result;
+    }
+}
+
+const TARGETS_STATUS_EFFECTS_NODE = new TargetsStatusEffectsNode();
+
+class TargetsBonusStatusEffectsNode extends NumbersNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getPositiveStatusEffects();
+        env.debug(`${unit.nameWithGroup}に付与されている有利な状態: [${result.map(effect => getStatusEffectName(effect)).join(", ")}]`);
+        return result;
+    }
+}
+
+const TARGETS_BONUS_STATUS_EFFECTS_NODE = new TargetsBonusStatusEffectsNode();
+
+class SkillOwnersBonusStatusEffectsNode extends TargetsBonusStatusEffectsNode {
+    static {
+        Object.assign(this.prototype, GetSkillOwnerMixin);
+    }
+}
+
+const SKILL_OWNERS_BONUS_STATUS_EFFECTS_NODE = new SkillOwnersBonusStatusEffectsNode();

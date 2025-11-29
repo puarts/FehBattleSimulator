@@ -2021,7 +2021,7 @@ const Weapon = {
     VedfolnirsEdge: 3044, // 始まりの巨人の剣
 
     // 神階フレスベルグ
-    QuietingClaw: 2737, // 刃の葬り手の爪
+    QuietingClaw: 3051, // 刃の葬り手の爪
 
     // 忍者
     ScrollOfCurses: 3055,
@@ -4037,6 +4037,13 @@ PassiveB.AssuredRebirthPlus = 3469; // 我が復活は成…・神
 PassiveA.SwiftSlice2 = 3470; // 連閃・承
 // TODO: 修正
 Weapon.SoulfulLance = 3471; // 強面の怖槍
+Weapon.EnrapturedGod = 3472; // 陶酔の神形
+Special.InvincibleSister = 3473; // お姉様は絶対無敵
+PassiveC.NullUpliftAS = 3474; // 攻速十紋章・見切り
+Weapon.EtherealGungnir = 3475; // 九天グングニル
+PassiveB.DefResShackle = 3476; // 守備魔防の枷
+PassiveC.CovetousOne = 3477; // 求めるは知のみ
+PassiveB.CounterRoar3 = 2894; // 反撃の咆哮3
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

@@ -290,6 +290,33 @@ class SkillEffectHooks {
     evaluateConcatUniqueWithUnit(unit, env) {
         return IterUtil.unique(...this.evaluateWithUnit(unit, env));
     }
+
+    /**
+     * @param {Unit} unit
+     * @param {SkillEffectNode[]} nodes
+     * @param {E} env
+     * @returns {*[]}
+     */
+    evaluateNodes(unit, nodes, env) {
+        if (nodes && nodes.length === 0) return [];
+
+        // スキル評価の本体処理を明確な名前に変更
+        const evaluateAllSkills =
+            () => nodes.flatMap(node => node.evaluate(env));
+
+        // ロギングに用いる値を導入して可読性を向上
+        const logger = env?.groupLogger;
+        if (!logger) {
+            return evaluateAllSkills();
+        }
+
+        const logContent = new NodeEnv.SkillLogContent('', `${unit.nameWithGroup}の予約されたスキルを評価`);
+        return logger.withGroup(
+            LoggerBase.LogLevel.NOTICE,
+            logContent,
+            evaluateAllSkills
+        );
+    }
 }
 
 class SkillEffectNode {
@@ -387,9 +414,160 @@ class NumberNode extends SkillEffectNode {
 }
 
 /**
+ * @template {SkillEffectNode} T
+ * @template R
+ */
+class CollectionNode extends SkillEffectNode {
+    /**
+     * @param {...T} nodes
+     */
+    constructor(...nodes) {
+        super(...nodes);
+    }
+
+    /**
+     * @param env
+     * @returns {Iterable<R>}
+     */
+    evaluate(env) {
+        let result = this.evaluateChildren(env);
+        env?.trace(`[Collection Node] ${result}`);
+        return result;
+    }
+}
+
+/**
+ * @template {SkillEffectNode} T
+ * @param {...T} nodes
+ * @returns {CollectionNode<T>}
+ * @constructor
+ */
+const COLLECTION_NODE = (...nodes) => new CollectionNode(...nodes);
+
+/**
+ * @template {SkillEffectNode} T
+ * @template R
+ * @extends {CollectionNode<*, R>}
+ */
+class UniqueCollectionNode extends CollectionNode {
+    /**
+     * @param {CollectionNode<T, R>} collectionNode
+     */
+    constructor(collectionNode) {
+        super();
+        this._collectionNode = collectionNode;
+    }
+
+    /**
+     * @param env
+     * @returns {Iterable<R>}
+     */
+    evaluate(env) {
+        let items = this._collectionNode.evaluate(env);
+        let results = [...new Set(items)];
+        env?.trace(`[UniqueNode] [${results}]`);
+        return results;
+    }
+}
+
+/**
+ * @param {CollectionNode} collectionNode
+ * @returns {UniqueCollectionNode}
+ * @constructor
+ */
+const UNIQUE_COLLECTION_NODE = (collectionNode) => new UniqueCollectionNode(collectionNode);
+
+class FlattenCollectionNode extends CollectionNode {
+    /**
+     * @param {CollectionNode} collectionNode
+     */
+    constructor(collectionNode) {
+        super();
+        this._collectionNode = collectionNode;
+    }
+
+    evaluate(env) {
+        let results = this._collectionNode.evaluate(env);
+        let flattened = Array.from(IterUtil.concat(...results));
+        env?.trace(`[Flatten Collection Node] flattened: ${flattened}`);
+        return flattened;
+    }
+}
+
+const FLATTEN_COLLECTION_NODE = (collectionNode) => new FlattenCollectionNode(collectionNode);
+
+/**
+ * @template T
+ * @template R
+ */
+class MapCollectionNode extends CollectionNode {
+    /**
+     * @param {CollectionNode} collectionNode
+     * @param {T} funcNode
+     */
+    constructor(collectionNode, funcNode) {
+        super();
+        this._collectionNode = collectionNode;
+        this._funcNode = funcNode;
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @returns {R[]}
+     */
+    evaluate(env) {
+        let results = Array.from(this._collectionNode.evaluate(env));
+        let resultArray = results.map(_ => this._funcNode.evaluate(env));
+        env?.trace(`[Map Node] ${resultArray}`);
+        return resultArray;
+    }
+}
+
+/**
+ * @template T
+ * @template R
+ * @param {CollectionNode} collectionNode
+ * @param {T} funcNode
+ * @returns {CollectionNode<T, R>}
+ */
+// TODO: 動作確認
+const MAP_COLLECTION_NODE =
+    (collectionNode, funcNode) => new MapCollectionNode(collectionNode, funcNode);
+
+/**
+ * @template {SkillEffectNode} T
+ * @template R
+ */
+class FilterCollectionNode extends CollectionNode {
+    /**
+     * @param {CollectionNode<T, R>} collectionNode
+     * @param {BoolNode} predNode
+     */
+    constructor(collectionNode, predNode) {
+        super();
+        this._collectionNode = collectionNode;
+        this._predNode = predNode;
+    }
+
+    /**
+     * @param env
+     * @returns {Iterable<R>}
+     */
+    evaluate(env) {
+        let results = Array.from(this._collectionNode.evaluate(env));
+        let resultArray = results.filter(_ => this._predNode.evaluate(env));
+        env?.trace(`[Filter Node] ${resultArray}`);
+        return resultArray;
+    }
+}
+
+// TODO: 動作確認
+const FILTER_COLLECTION_NODE = (collectionNode, predNode) => new FilterCollectionNode(collectionNode, predNode);
+
+/**
  * @abstract
  */
-class NumbersNode extends SkillEffectNode {
+class NumbersNode extends CollectionNode {
     /**
      * @abstract
      * @param {NodeEnv} env
@@ -513,16 +691,17 @@ class FromNumberNode extends SkillEffectNode {
  */
 class FromNumbersNode extends SkillEffectNode {
     /**
-     * @param {...number|NumberNode|NumbersNode} values
+     * @param {...number|NumberNode|NumbersNode|CollectionNode} values
      */
     constructor(...values) {
         let isNumbersNode = values[0] && values[0] instanceof NumbersNode;
-        if (!isNumbersNode) {
-            super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
-        } else {
+        let isCollectionNode = values[0] && values[0] instanceof CollectionNode;
+        if (isNumbersNode || isCollectionNode) {
             super();
             /** @type {NumbersNode} */
             this._numbersNode = values[0];
+        } else {
+            super(...values.map(v => NumberNode.makeNumberNodeFrom(v)));
         }
     }
 
@@ -543,7 +722,7 @@ class FromNumbersNode extends SkillEffectNode {
      */
     evaluate(env) {
         if (this._numbersNode) {
-            return this._numbersNode.evaluateChildren(env);
+            return this._numbersNode.evaluate(env);
         }
         return super.evaluateChildren(env);
     }
@@ -1093,158 +1272,6 @@ class IsOddNode extends BoolNode {
 
 const IS_ODD_NODE = n => new IsOddNode(n);
 const IS_EVEN_NODE = n => NOT_NODE(IS_ODD_NODE(n));
-
-/**
- * @template {SkillEffectNode} T
- * @template R
- */
-class CollectionNode extends SkillEffectNode {
-    /**
-     * @param {...T} nodes
-     */
-    constructor(...nodes) {
-        super(...nodes);
-    }
-
-    /**
-     * @param env
-     * @returns {Iterable<R>}
-     */
-    evaluate(env) {
-        let result = this.evaluateChildren(env);
-        env?.trace(`[Collection Node] ${result}`);
-        return result;
-    }
-}
-
-/**
- * @template {SkillEffectNode} T
- * @param {...T} nodes
- * @returns {CollectionNode<T>}
- * @constructor
- */
-const COLLECTION_NODE = (...nodes) => new CollectionNode(...nodes);
-
-/**
- * @template {SkillEffectNode} T
- * @template R
- * @extends {CollectionNode<*, R>}
- */
-class UniqueCollectionNode extends CollectionNode {
-    /**
-     * @param {CollectionNode<T, R>} collectionNode
-     */
-    constructor(collectionNode) {
-        super();
-        this._collectionNode = collectionNode;
-    }
-
-    /**
-     * @param env
-     * @returns {Iterable<R>}
-     */
-    evaluate(env) {
-        let results = this._collectionNode.evaluate(env);
-        let resultSet = new Set(results);
-        env?.trace(`[UnionNode] ${resultSet}`);
-        console.log(`[UnionNode] ${Array.from(resultSet)}`);
-        return resultSet;
-    }
-}
-
-/**
- * @param {CollectionNode} collectionNode
- * @returns {UniqueCollectionNode}
- * @constructor
- */
-const UNIQUE_COLLECTION_NODE = (collectionNode) => new UniqueCollectionNode(collectionNode);
-
-class FlattenCollectionNode extends CollectionNode {
-    /**
-     * @param {CollectionNode} collectionNode
-     */
-    constructor(collectionNode) {
-        super();
-        this._collectionNode = collectionNode;
-    }
-
-    evaluate(env) {
-        let results = this._collectionNode.evaluate(env);
-        let flattened = Array.from(IterUtil.concat(...results));
-        env?.trace(`[Flatten Collection Node] flattened: ${flattened}`);
-        return flattened;
-    }
-}
-
-const FLATTEN_COLLECTION_NODE = (collectionNode) => new FlattenCollectionNode(collectionNode);
-
-/**
- * @template T
- * @template R
- */
-class MapCollectionNode extends CollectionNode {
-    /**
-     * @param {CollectionNode} collectionNode
-     * @param {T} funcNode
-     */
-    constructor(collectionNode, funcNode) {
-        super();
-        this._collectionNode = collectionNode;
-        this._funcNode = funcNode;
-    }
-
-    /**
-     * @param {NodeEnv} env
-     * @returns {R[]}
-     */
-    evaluate(env) {
-        let results = Array.from(this._collectionNode.evaluate(env));
-        let resultArray = results.map(_ => this._funcNode.evaluate(env));
-        env?.trace(`[Map Node] ${resultArray}`);
-        return resultArray;
-    }
-}
-
-/**
- * @template T
- * @template R
- * @param {CollectionNode} collectionNode
- * @param {T} funcNode
- * @returns {CollectionNode<T, R>}
- */
-// TODO: 動作確認
-const MAP_COLLECTION_NODE =
-    (collectionNode, funcNode) => new MapCollectionNode(collectionNode, funcNode);
-
-/**
- * @template {SkillEffectNode} T
- * @template R
- */
-class FilterCollectionNode extends CollectionNode {
-    /**
-     * @param {CollectionNode<T, R>} collectionNode
-     * @param {BoolNode} predNode
-     */
-    constructor(collectionNode, predNode) {
-        super();
-        this._collectionNode = collectionNode;
-        this._predNode = predNode;
-    }
-
-    /**
-     * @param env
-     * @returns {Iterable<R>}
-     */
-    evaluate(env) {
-        let results = Array.from(this._collectionNode.evaluate(env));
-        let resultArray = results.filter(_ => this._predNode.evaluate(env));
-        env?.trace(`[Filter Node] ${resultArray}`);
-        return resultArray;
-    }
-}
-
-// TODO: 動作確認
-const FILTER_COLLECTION_NODE = (collectionNode, predNode) => new FilterCollectionNode(collectionNode, predNode);
 
 class SomeNode extends BoolNode {
     /**

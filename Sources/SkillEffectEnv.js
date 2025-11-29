@@ -117,6 +117,8 @@ class NodeEnv {
     /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
     groupLogger = new GroupLogger();
 
+    writeDamageLog = () => {};
+
     /** @type {function(string): void} */
     #logFunc = (_message) => {
         // console.log(_message);
@@ -744,6 +746,7 @@ class BattleSimulatorBaseEnv extends NodeEnv {
      */
     constructor(battleSimulatorBase, targetUnit) {
         super();
+        this.writeDamageLog = message => battleSimulatorBase.writeSimpleLogLine(message);
         this.setBattleSimulatorBase(battleSimulatorBase);
         this.setSkillOwner(targetUnit);
         this.setTarget(targetUnit);

@@ -77,6 +77,8 @@ class BattleSimulatorBase {
         this.openCvLoadState = ModuleLoadState.NotLoaded;
         this.tesseractLoadState = ModuleLoadState.NotLoaded;
 
+        this.appData = g_appData;
+
         this.cropper = null;
 
         /** @type {DamageCalculatorWrapper} **/
@@ -3198,10 +3200,9 @@ class BattleSimulatorBase {
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Ally] = 0;
             g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[UnitGroupType.Enemy] = 0;
             loadSettings();
-        } else {
-            updateAllUi();
         }
         this.__turnChanged();
+        updateAllUi();
     }
     backCurrentTurn() {
         if (g_appData.currentTurn < 1) {
@@ -3217,7 +3218,12 @@ class BattleSimulatorBase {
         this.__turnChanged();
     }
 
+    __turnStarted() {
+        this.deselectUnits();
+    }
+
     __turnChanged() {
+        this.deselectUnits();
     }
 
     resetUnits(heroIndex) {
@@ -3263,6 +3269,16 @@ class BattleSimulatorBase {
     }
     deselectItem() {
         this.vm.currentItemIndex = -1;
+    }
+
+    /**
+     * 現状ユニットのボタンのコンポーネントを再描画するためだけに使用している
+     */
+    onBeginningOfPhase() {
+        // 再描画のためにcurrentItemIndexを選択し直す
+        let tmp = this.vm.currentItemIndex;
+        this.deselectItem();
+        this.setCurrentItemIndex(tmp);
     }
 
     setDamageCalcSummary(attacker, attackTarget, attackerInfo, attackTargetInfo) {
@@ -3826,10 +3842,7 @@ class BattleSimulatorBase {
         }
 
         if (atkUnit.isStyleActive) {
-            let env = new NodeEnv().setTarget(atkUnit).setSkillOwner(atkUnit);
-            env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-            STYLE_ACTIVATED_HOOKS.evaluateWithUnit(atkUnit, env);
-            atkUnit.deactivateStyle();
+            atkUnit.deactivateStyleAfterAction();
             for (let unit of this.enumerateUnitsOnMap()) {
                 unit.applyReservedState(false);
                 unit.applyReservedHp(false);
@@ -4105,7 +4118,9 @@ class BattleSimulatorBase {
     }
 
     __activateRefreshSpecial(atkUnit) {
-        this.writeLogLine(atkUnit.getNameWithGroup() + "が" + atkUnit.specialInfo.name + "を発動");
+        let message = `${atkUnit.getNameWithGroup()}が奥義での${atkUnit.specialInfo.name}を発動`;
+        this.writeLogLine(message);
+        this.writeSimpleLogLine(message);
         atkUnit.isOneTimeActionActivatedForSpecial = true;
         atkUnit.specialCount = atkUnit.maxSpecialCount;
         atkUnit.isActionDone = false;
@@ -4359,6 +4374,7 @@ class BattleSimulatorBase {
             this.__createDamageCalcSummaryHtml(
                 atkUnit,
                 result.defUnit,
+                defUnit,
                 result.preCombatDamageWithOverkill,
                 result.atkUnitDamageToEnemyAfterBeginningOfCombat,
                 result.atkUnit_normalAttackDamage, result.atkUnit_totalAttackCount,
@@ -4371,6 +4387,7 @@ class BattleSimulatorBase {
             this.__createDamageCalcSummaryHtml(
                 result.defUnit,
                 atkUnit,
+                defUnit,
                 -1,
                 result.defUnitDamageToEnemyAfterBeginningOfCombat,
                 result.defUnit_normalAttackDamage, result.defUnit_totalAttackCount,
@@ -4394,6 +4411,7 @@ class BattleSimulatorBase {
     /**
      * @param  {Unit} unit
      * @param  {Unit} enemyUnit
+     * @param  {Unit} originalEnemyUnit
      * @param  {Number} preCombatDamage
      * @param damageToEnemyAfterBeginningOfCombat
      * @param  {Number} damage
@@ -4405,18 +4423,18 @@ class BattleSimulatorBase {
      * @param  {Tile} tile
      * @param  {boolean} isAlly
      */
-    __createDamageCalcSummaryHtml(unit, enemyUnit,
+    __createDamageCalcSummaryHtml(unit, enemyUnit, originalEnemyUnit,
         preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount,
         atk, spd, def, res, tile, isAlly) {
         // ダメージに関するサマリー
-        let html = this.__createDamageSummaryHtml(unit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAlly);
+        let html = this.__createDamageSummaryHtml(unit, originalEnemyUnit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAlly);
         // ステータスやバフに関するサマリー
         html += this.__createStatusSummaryHtml(unit, atk, spd, def, res);
 
         return `<div class="summary-damage-figure summary-text-shadow">${html}</div>`;
     }
 
-    __createDamageSummaryHtml(unit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAllyArea) {
+    __createDamageSummaryHtml(unit, originalEnemyUnit, preCombatDamage, damageToEnemyAfterBeginningOfCombat, damage, attackCount, tile, isAllyArea) {
         let divineHtml = '';
         // 天脈
         if (tile.hasDivineVein()) {
@@ -4426,7 +4444,15 @@ class BattleSimulatorBase {
         let restHpHtml = unit.restHp === 0 ?
             `<span style='color:#ffaaaa'>${unit.restHp}</span>` :
             unit.restHp;
-        let html = `${divineHtml}HP: ${unit.hp} → ${restHpHtml}<br/>`;
+        let html = `${divineHtml}HP: ${unit.hp} → ${restHpHtml}`
+        if (originalEnemyUnit.hasStatusEffect(StatusEffectType.ForesightSnare) &&
+            this.appData.globalBattleContext.numOfCombatOnCurrentTurn === 0) {
+            let tag = getStatsEffectImgTag(StatusEffectType.ForesightSnare);
+            tag.style.width = '1.5em';
+            tag.style.height = '1.5em';
+            html += ' ' + tag.outerHTML;
+        }
+        html += `<br/>`;
 
         // 奥義カウント、ダメージ表示
         let special = '';
@@ -4725,6 +4751,10 @@ class BattleSimulatorBase {
      * @param  {UnitGroupType} group - グループ。どちらのターン開始時かを渡す。決闘の場合は引数を指定しない。
      */
     __simulateBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits, group = null) {
+        // let sw = new Stopwatch(g_appData.isDebugMode);
+        let sw = new Stopwatch(false);
+        sw.start();
+        this.__turnStarted();
         if (group === UnitGroupType.Ally) {
             g_appData.globalBattleContext.initContextInCurrentTurn();
         }
@@ -4735,24 +4765,28 @@ class BattleSimulatorBase {
             return;
         }
 
-        // 増援処理
-        if (group === UnitGroupType.Ally) {
-            let reinforcementUnit = this._callReinforcement(UnitGroupType.Ally);
-            if (reinforcementUnit?.isOnMap) {
-                targetUnits.push(reinforcementUnit);
+        sw.section('増援', () => {
+            // 増援処理
+            if (group === UnitGroupType.Ally) {
+                let reinforcementUnit = this._callReinforcement(UnitGroupType.Ally);
+                if (reinforcementUnit?.isOnMap) {
+                    targetUnits.push(reinforcementUnit);
+                }
+                let reinforcementEnemy = this._callReinforcement(UnitGroupType.Enemy);
+                if (reinforcementEnemy?.isOnMap) {
+                    enemyTurnSkillTargetUnits.push(reinforcementEnemy);
+                }
             }
-            let reinforcementEnemy = this._callReinforcement(UnitGroupType.Enemy);
-            if (reinforcementEnemy?.isOnMap) {
-                enemyTurnSkillTargetUnits.push(reinforcementEnemy);
-            }
-        }
+        });
 
         let enemyUnitsAgainstTarget = Array.from(this.enumerateUnitsInDifferentGroupOnMap(targetUnits[0]));
 
-        this.__initializeUnitsPerTurn(targetUnits);
-        this.__initializeAllUnitsOnMapPerTurn(targetUnits);
-        this.__initializeAllUnitsOnMapPerTurn(enemyTurnSkillTargetUnits);
-        this.__initializeTilesPerTurn(this.map._tiles, group);
+        sw.section('init', () => {
+            this.__initializeUnitsPerTurn(targetUnits);
+            this.__initializeAllUnitsOnMapPerTurn(targetUnits);
+            this.__initializeAllUnitsOnMapPerTurn(enemyTurnSkillTargetUnits);
+            this.__initializeTilesPerTurn(this.map._tiles, group);
+        });
 
         if (this.data.gameMode !== GameMode.SummonerDuels) {
             for (let unit of enemyUnitsAgainstTarget) {
@@ -4762,7 +4796,9 @@ class BattleSimulatorBase {
             }
         }
 
-        this.__applySkillsForBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits);
+        sw.section('ターン開始時スキル', () => {
+            this.__applySkillsForBeginningOfTurn(targetUnits, enemyTurnSkillTargetUnits);
+        });
 
         if (this.data.gameMode === GameMode.SummonerDuels) {
             this.data.globalBattleContext.initializeSummonerDuelsTurnContext(
@@ -4773,11 +4809,16 @@ class BattleSimulatorBase {
             // 英雄決闘のAIはいらない気がするけど、一応残しておく
             let allyUnits = Array.from(this.enumerateAllyUnitsOnMap());
             let enemyUnits = Array.from(this.enumerateEnemyUnitsOnMap());
-            this.__initializeAiContextPerTurn(allyUnits, enemyUnits);
-            this.__initializeAiContextPerTurn(enemyUnits, allyUnits);
+            sw.section('init summoner ai context', () => {
+                this.__initializeAiContextPerTurn(allyUnits, enemyUnits);
+                this.__initializeAiContextPerTurn(enemyUnits, allyUnits);
+            });
         } else {
-            this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
+            sw.section('init ai context', () => {
+                this.__initializeAiContextPerTurn(targetUnits, enemyUnitsAgainstTarget);
+            });
         }
+        sw.stop();
     }
 
     /**
@@ -4926,8 +4967,11 @@ class BattleSimulatorBase {
      * @param  {Unit[]} enemyUnits
      */
     __initializeAiContextPerTurn(targetUnits, enemyUnits) {
+        // let sw = new Stopwatch(g_appData.isDebugMode);
+        let sw = new Stopwatch(false);
+        sw.start();
         // ターンワイド状態の評価と保存
-        {
+        sw.section('turn wide', () => {
             for (let unit of targetUnits) {
                 unit.clearPerTurnStatuses();
 
@@ -4940,23 +4984,33 @@ class BattleSimulatorBase {
                 this.__updateDistanceFromClosestEnemy(unit);
             }
             this.__updateMovementOrders(targetUnits);
-        }
+        });
 
         // 障害物リストの作成
-        this.map.createTileSnapshots();
+        sw.section('tile snapshots', () => {
+            this.map.createTileSnapshots();
+        })
 
         // 脅威の評価
-        this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
+        sw.section('threat', () => {
+            this.__updateEnemyThreatStatusesForAll(targetUnits, enemyUnits);
+        });
 
-        this.__updateChaseTargetTiles(targetUnits);
+        sw.section('chase target', () => {
+            this.__updateChaseTargetTiles(targetUnits);
+        });
 
         // ターン開始時の移動値を記録
-        for (let unit of this.enumerateAllUnitsOnMap()) {
-            unit.moveCountAtBeginningOfTurn = unit.moveCount;
-        }
+        sw.section('move count', () => {
+            for (let unit of this.enumerateAllUnitsOnMap()) {
+                unit.moveCountAtBeginningOfTurn = unit.moveCount;
+            }
+        });
 
         // 安全柵の効果が発動する場合でも、敵の移動をトリガーするかどうかの判定が行われている
-        this.__prepareActionContextForAssist(targetUnits, enemyUnits, true);
+        sw.section('safeguard', () => {
+            this.__prepareActionContextForAssist(targetUnits, enemyUnits, true);
+        });
     }
 
     __getOnMapEnemyUnitList() {
@@ -5072,6 +5126,7 @@ class BattleSimulatorBase {
     }
 
     simulateBeginningOfEnemyTurn() {
+        this.onBeginningOfPhase();
         if (g_appData.currentTurn === this.vm.maxTurn) {
             return;
         }
@@ -5114,6 +5169,7 @@ class BattleSimulatorBase {
     }
 
     simulateBeginningOfAllyTurn() {
+        this.onBeginningOfPhase();
         if (g_appData.currentTurn === this.vm.maxTurn) {
             return;
         }
@@ -6614,8 +6670,11 @@ class BattleSimulatorBase {
         switch (unit.support) {
             case Support.ReciprocalAid:
                 {
-                    if (targetUnit.hp >= unit.hp) {
-                        return { success: false, userLossHp: 0, targetHealHp: 0 };
+                    if (targetUnit.hpPercentage === 100 && unit.hpPercentage === 100) {
+                        return {success: false, userLossHp: 0, targetHealHp: 0};
+                    }
+                    if (targetUnit.hpPercentage === 100 && unit.hp > targetUnit.hp) {
+                        return {success: false, userLossHp: 0, targetHealHp: 0};
                     }
 
                     userLossHp = unit.hp - targetUnit.hp;
@@ -6877,17 +6936,27 @@ class BattleSimulatorBase {
         }
 
         let self = this;
-        using_(new ScopedStopwatch(time => this.writeDebugLogLine("追跡対象の計算: " + time + " ms")), () => {
+        using_(new ScopedStopwatch(time => {
+            let message = "追跡対象の計算: " + time + " ms";
+            this.writeDebugLogLine(message);
+            console.log(message);
+        }), () => {
+            let sw = new Stopwatch(false);
+            sw.start();
             for (let evalUnit of targetUnits) {
                 if (evaluatesTileFunc != null && !evaluatesTileFunc?.(evalUnit.chaseTargetTile)) {
                     continue;
                 }
                 self.__updateChaseTargetTile(evalUnit, enemyUnits, allyUnits);
+                sw.lap(`${evalUnit.nameWithGroup}`);
             }
+            sw.stop();
         });
     }
 
     __updateChaseTargetTile(evalUnit, enemyUnits, allyUnits) {
+        let sw = new Stopwatch(false);
+        sw.start();
         if (!evalUnit.isOnMap) {
             return;
         }
@@ -6935,11 +7004,14 @@ class BattleSimulatorBase {
             if (evalUnit.hasWeapon) {
                 for (let allyUnit of enemyUnits) {
                     using_(new ScopedStopwatch(time => this.writeDebugLogLine(`${allyUnit.getNameWithGroup()}への追跡優先度の計算: ${time} ms`)), () => {
+                        let sw = new Stopwatch(false);
+                        sw.start();
                         let turnRange = g_appData.map.calculateTurnRange(evalUnit, allyUnit);
                         if (turnRange < 0) {
                             // 攻撃不可
                             return;
                         }
+                        sw.lap('ターンレンジ');
 
                         this.writeDebugLogLine(`■${evalUnit.getNameWithGroup()}から${allyUnit.getNameWithGroup()}への追跡優先度計算:`);
 
@@ -6951,6 +7023,7 @@ class BattleSimulatorBase {
                             this.writeDebugLogLine(this.damageCalc.log);
                             this.writeDebugLogLine("------------------------------------");
                         }
+                        sw.lap('ダメージ計算');
 
                         let potentialDamageDealt = combatResult.atkUnit_normalAttackDamage * combatResult.atkUnit_totalAttackCount;
                         let chasePriorityValue = potentialDamageDealt - 5 * turnRange;
@@ -6969,20 +7042,25 @@ class BattleSimulatorBase {
                             chaseTarget = allyUnit;
                             this.writeDebugLogLine(`追跡対象を${chaseTarget.getNameWithGroup()}に更新`);
                         }
+                        sw.stop();
                     });
                 }
             }
+            sw.lap('敵の追跡');
 
             if (chaseTarget == null) {
                 // 敵に追跡対象が見つからない場合は味方を追跡対象にする
                 chaseTarget = this.__findAllyChaseTargetUnit(evalUnit, allyUnits);
             }
+            sw.lap('味方の追跡');
 
             if (chaseTarget == null) {
                 return;
             }
 
             evalUnit.chaseTargetTile = this.__findChaseTargetTile(evalUnit, chaseTarget);
+            sw.lap('タイル');
+            sw.stop();
             this.writeLogLine(evalUnit.getNameWithGroup() + "の追跡対象は" + chaseTarget.getNameWithGroup());
         }
     }
@@ -7663,9 +7741,6 @@ class BattleSimulatorBase {
                 unit.applyEndActionSkills();
                 if (unit.isStyleActive) {
                     unit.deactivateStyleAfterAction();
-                    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-                    env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-                    STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
                 }
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
@@ -7691,9 +7766,6 @@ class BattleSimulatorBase {
                 moveStructureToTrashBox(obj);
             }
             if (unit.isStyleActive) {
-                let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-                env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-                STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
                 unit.deactivateStyleAfterAction();
             }
 
@@ -7744,9 +7816,6 @@ class BattleSimulatorBase {
                 unit.applyEndActionSkills();
                 if (unit.isStyleActive) {
                     unit.deactivateStyleAfterAction();
-                    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-                    env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-                    STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
                 }
                 // 同時タイミングに付与された天脈を消滅させる
                 g_appData.map.applyReservedDivineVein();
@@ -7767,9 +7836,6 @@ class BattleSimulatorBase {
             targetTile.breakDivineVein();
             g_appData.map.applyReservedDivineVein();
             if (unit.isStyleActive) {
-                let env = new NodeEnv().setTarget(unit).setSkillOwner(unit);
-                env.setName("スタイル発動後").setLogLevel(getSkillLogLevel());
-                STYLE_ACTIVATED_HOOKS.evaluateWithUnit(unit, env);
                 unit.deactivateStyleAfterAction();
             }
 
@@ -8211,11 +8277,18 @@ class BattleSimulatorBase {
     }
     undoCommand() {
         this.commandQueuePerAction.undo();
+        this.deselectUnits();
         updateAllUi();
     }
     redoCommand() {
         this.commandQueuePerAction.redo();
+        this.deselectUnits();
         updateAllUi();
+    }
+    deselectUnits() {
+        for (let unit of this.map.enumerateUnitsOnMap()) {
+            unit.isSelected = false;
+        }
     }
     redoAllCommand() {
         let self = this;
@@ -8241,10 +8314,9 @@ class BattleSimulatorBase {
             while (queue.length > 0) {
                 queue.execute();
             }
-        }
-        else {
+        } else {
             startProgressiveProcess(queue.length,
-                function () {
+                () => {
                     queue.execute();
                 },
                 function () {
@@ -9624,15 +9696,15 @@ class BattleSimulatorBase {
     }
 
 
-    __findTileAfterReposition(unit, targetUnit, assistTile) {
-        let diffX = assistTile.posX - targetUnit.posX;
-        let diffY = assistTile.posY - targetUnit.posY;
+    __findTileAfterReposition(unit, targetUnit, assistTargetingTile) {
+        let diffX = assistTargetingTile.posX - targetUnit.posX;
+        let diffY = assistTargetingTile.posY - targetUnit.posY;
         if (diffX + diffY > 1) {
             return new MovementAssistResult(false, null, null);
         }
 
-        let moveX = assistTile.posX + diffX;
-        let moveY = assistTile.posY + diffY;
+        let moveX = assistTargetingTile.posX + diffX;
+        let moveY = assistTargetingTile.posY + diffY;
         let moveTile = g_appData.map.getTile(moveX, moveY);
         if (moveTile == null) {
             return new MovementAssistResult(false, null, null);
@@ -9642,7 +9714,7 @@ class BattleSimulatorBase {
             return new MovementAssistResult(false, null, null);
         }
 
-        return new MovementAssistResult(true, assistTile, moveTile);
+        return new MovementAssistResult(true, assistTargetingTile, moveTile);
     }
 
     /**
@@ -11042,12 +11114,31 @@ class BattleSimulatorBase {
         return false;
     }
 
-    __canSupportTo(supporterUnit, targetUnit, tile) {
+    /**
+     * 補助を使用するマスにユニットが移動できるかは考慮しない。
+     * @param supporterUnit
+     * @param targetUnit
+     * @param assistTargetingTile
+     * @returns {Boolean|*|boolean}
+     * @private
+     */
+    __canSupportTo(supporterUnit, targetUnit, assistTargetingTile) {
+        if (supporterUnit.isIsolated() || targetUnit.isIsolated()) {
+            return false;
+        }
         if (supporterUnit.supportInfo == null) {
             return false;
         }
 
         let assistType = determineAssistType(supporterUnit, targetUnit);
+        let support = null;
+        if (supporterUnit.isCantoActivating) {
+            assistType = supporterUnit.cantoAssistType;
+            support = supporterUnit.cantoSupport;
+            if (supporterUnit.cantoAssistType === AssistType.None) {
+                return;
+            }
+        }
         switch (assistType) {
             case AssistType.Refresh:
                 return canRefreshTo(targetUnit);
@@ -11076,7 +11167,8 @@ class BattleSimulatorBase {
                 }
             case AssistType.Move:
                 {
-                    let result = this.__findTileAfterMovementAssist(supporterUnit, targetUnit, tile);
+                    let result =
+                        this.__findTileAfterMovementAssist(supporterUnit, targetUnit, assistTargetingTile, support);
                     return result.success;
                 }
             default:
@@ -11085,23 +11177,25 @@ class BattleSimulatorBase {
         }
     }
 
-    __findTileAfterMovementAssist(assistUnit, assistTargetUnit, tile) {
+    __findTileAfterMovementAssist(assistUnit, assistTargetUnit, assistTargetingTile, support = null) {
+        if (assistUnit.isCantoActivating) {
+            return this.__getTargetUnitTileAfterCantoMoveAssist(assistUnit, assistTargetUnit, assistTargetingTile);
+        }
         if (!assistUnit.hasSupport) {
             return new MovementAssistResult(false, null, null);
         }
         let skillId = assistUnit.support;
         let func = getSkillFunc(skillId, findTileAfterMovementAssistFuncMap);
-        func?.call(this, assistUnit, assistTargetUnit, tile);
+        func?.call(this, assistUnit, assistTargetUnit, assistTargetingTile);
         if (SWAP_ASSIST_SKILLS.has(skillId)) {
-            return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
+            return this.__findTileAfterSwap(assistUnit, assistTargetUnit, assistTargetingTile);
         }
         if (REPOSITION_ASSIST_SKILLS.has(skillId)) {
-            return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
+            return this.__findTileAfterReposition(assistUnit, assistTargetUnit, assistTargetingTile);
         }
         if (DRAW_BACK_ASSIST_SKILLS.has(skillId)) {
-            return this.__findTileAfterDrawback(assistUnit, assistTargetUnit, tile);
+            return this.__findTileAfterDrawback(assistUnit, assistTargetUnit, assistTargetingTile);
         }
-
         switch (assistUnit.support) {
             case Support.FateUnchanged:
             case Support.ToChangeFate:
@@ -11111,22 +11205,23 @@ class BattleSimulatorBase {
             case Support.Return:
             case Support.Reposition:
             case Support.RepositionGait:
-                return this.__findTileAfterReposition(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterReposition(assistUnit, assistTargetUnit, assistTargetingTile);
             case Support.Smite:
-                return this.__findTileAfterSmite(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterSmite(assistUnit, assistTargetUnit, assistTargetingTile);
             case Support.NudgePlus:
             case Support.Nudge:
             case Support.Shove:
-                return this.__findTileAfterShove(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterShove(assistUnit, assistTargetUnit, assistTargetingTile);
             case Support.FoulPlay:
             case Support.Swap:
             case Support.FutureVision:
             case Support.FutureVision2:
-                return this.__findTileAfterSwap(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterSwap(assistUnit, assistTargetUnit, assistTargetingTile);
             case Support.Pivot:
-                return this.__findTileAfterPivot(assistUnit, assistTargetUnit, tile);
+                return this.__findTileAfterPivot(assistUnit, assistTargetUnit, assistTargetingTile);
             default:
-                this.writeErrorLine(`unknown support ${assistUnit.supportInfo.name}`);
+                this.writeErrorLine(`unknown support, name: ${assistUnit.supportInfo.name}, support: ${support}`);
+                console.trace();
                 return new MovementAssistResult(false, null, null);
         }
     }
@@ -11373,6 +11468,18 @@ class BattleSimulatorBase {
     }
 
     selectItem(targetId, add = false, button = 0, isDoubleClick = false) {
+        let item = g_appData.findItemById(targetId);
+        let unit = null;
+        if (item instanceof Unit) {
+            unit = item;
+        }
+        // キャラ以外のマスを右クリックした場合に天脈を透過
+        if (!unit && button === 2) {
+            g_appData.enableDivineVeinTransparency = !g_appData.enableDivineVeinTransparency;
+            updateMapUi();
+            return;
+        }
+
         this.showItemInfo(targetId);
 
         let tabIndex = this.convertItemIndexToTabIndex(this.vm.currentItemIndex);
@@ -11380,24 +11487,23 @@ class BattleSimulatorBase {
         if (add) {
             g_appData.selectAddCurrentItem();
         } else {
-            g_appData.selectCurrentItem(button, isDoubleClick);
+            let selectedUnit = selectedUnits[0];
+            if (selectedUnits.length > 1) {
+                selectedUnit = null;
+            }
+            g_appData.selectCurrentItem(button, selectedUnit, isDoubleClick);
         }
         g_appData.__showStatusToAttackerInfo();
 
         // 右クリックならスタイル切り替え
-        if (this.currentUnit && button === 2) {
-            if (this.currentUnit.canActivateStyle()) {
-                this.currentUnit.activateStyle();
+        if (unit && button === 2) {
+            if (unit.canActivateStyle()) {
+                unit.activateStyle();
                 updateAllUi();
-            } else if (this.currentUnit.canDeactivateStyle()) {
-                this.currentUnit.deactivateStyle();
+            } else if (unit.canDeactivateStyle()) {
+                unit.deactivateStyle();
                 updateAllUi();
             }
-        }
-        // キャラ以外のマスを右クリックした場合に天脈を透過
-        if (!this.currentUnit && button === 2) {
-            g_appData.enableDivineVeinTransparency = !g_appData.enableDivineVeinTransparency;
-            updateAllUi();
         }
     }
     selectItemToggle(targetId) {
@@ -11717,6 +11823,9 @@ function syncSelectedTileColor() {
     for (let item of g_appData.enumerateItems()) {
         if (item.isSelected) {
             updateCellBgColor(item.posX, item.posY, SelectedTileColor);
+            if (item instanceof Unit) {
+                drawUnitRange(item, item.posX, item.posY);
+            }
         }
     }
 }

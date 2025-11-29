@@ -123,6 +123,10 @@ class Tile extends BattleMapElement {
         this.tilePriority;
         /** @type {BattleMap} */
         this.battleMap = null
+        /** @type {Record<number, Tile[]>} */
+        this._neighborsWithin = {};
+        /** @type {Record<number, Tile[]>} */
+        this._neighborsAt = {};
 
         this.isMovableForAlly = false;
         this.isMovableForEnemy = false;
@@ -379,6 +383,10 @@ class Tile extends BattleMapElement {
         }
     }
 
+    isUnitPlacableIncludingCurrentTile(unit) {
+        return unit.placedTile === this || this.isUnitPlacable(unit);
+    }
+
     /**
      * @param {Unit} unit
      * @returns {boolean}
@@ -571,6 +579,44 @@ class Tile extends BattleMapElement {
         return true;
     }
 
+    /**
+     * 周囲 n マス以内の Tile 配列を返す（遅延計算 + キャッシュ）
+     * @param {number} n
+     * @returns {Tile[]}
+     */
+    getNeighborsWithin(n) {
+        if (this._neighborsWithin[n]) {
+            return this._neighborsWithin[n];
+        }
+        const result = [];
+        for (let tile of this.battleMap.enumerateTiles()) {
+            if (tile.calculateDistanceTo(this) <= n) {
+                result.push(tile);
+            }
+        }
+        this._neighborsWithin[n] = result;
+        return result;
+    }
+
+    /**
+     * 周囲 n マスの Tile 配列を返す（遅延計算 + キャッシュ）
+     * @param {number} n
+     * @returns {Tile[]}
+     */
+    getNeighborsAtDistanceSpaces(n) {
+        if (this._neighborsAt[n]) {
+            return this._neighborsAt[n];
+        }
+        const result = [];
+        for (let tile of this.battleMap.enumerateTiles()) {
+            if (tile.calculateDistance(this) === n) {
+                result.push(tile);
+            }
+        }
+        this._neighborsAt[n] = result;
+        return result;
+    }
+
     calculateDistanceTo(posX, posY) {
         return Math.abs(this.posX - posX) + Math.abs(this.posY - posY);
     }
@@ -587,12 +633,11 @@ class Tile extends BattleMapElement {
     }
 
     calculateDistanceToClosestEnemyTile(moveUnit) {
-        let alreadyTraced = new Set([this]);
         let maxDepth = this.__getMaxDepth();
         // 氷は無視されるので気にしなくて良い
         let ignoresBreakableWalls = moveUnit.hasWeapon;
         return this._calculateDistanceToClosestTile(
-            alreadyTraced, this.placedUnit, maxDepth,
+            this.placedUnit, maxDepth,
             tile => {
                 return tile._placedUnit != null
                     && tile._placedUnit.groupId !== this.placedUnit.groupId;
@@ -622,7 +667,6 @@ class Tile extends BattleMapElement {
 
         // 武器がない時には氷に対して処理を行わなければいけないかもしれない
         let ignoresBreakableWalls = moveUnit.hasWeapon;
-        let alreadyTraced = new Set([fromTile]);
 
         let maxDepth = inputMaxDepth;
         if (maxDepth < 0) {
@@ -630,7 +674,7 @@ class Tile extends BattleMapElement {
         }
         maxDepth = Math.min(this.__getMaxDepth(), maxDepth);
         return fromTile?._calculateDistanceToClosestTile(
-            alreadyTraced, moveUnit, maxDepth,
+            moveUnit, maxDepth,
             tile => {
                 return tile === this;
             },
@@ -653,8 +697,20 @@ class Tile extends BattleMapElement {
         return ((8 - 1) + (6 - 1)) + 4;
     }
 
+    /**
+     * 最も近いターゲットタイルまでの距離を、Dijkstra風に計算する。
+     *
+     * @param {Object} moveUnit
+     * @param {number} maxDepth                // 距離の上限
+     * @param {(tile: Tile) => boolean} isTargetTileFunc
+     * @param {(neighbors: Tile[]) => void} sortNeighborsFunc
+     * @param {boolean} [ignoresUnits=true]
+     * @param {boolean} [ignoresBreakableWalls=true]
+     * @param {((unit: any) => boolean)|null} [isUnitIgnoredFunc=null]
+     * @param {boolean} [isPathfinderEnabled=true]
+     * @returns {number}                       // 最短距離 or CanNotReachTile
+     */
     _calculateDistanceToClosestTile(
-        alreadyTraced,
         moveUnit,
         maxDepth,
         isTargetTileFunc,
@@ -662,65 +718,148 @@ class Tile extends BattleMapElement {
         ignoresUnits = true,
         ignoresBreakableWalls = true,
         isUnitIgnoredFunc = null,
-        isPathfinderEnabled = true,
-        currentDepth = 0,
-        currentDistance = 0,
-        closestDistance = CanNotReachTile
+        isPathfinderEnabled = true
     ) {
-        let neighbors = this._neighbors;
-        sortNeighborsFunc(neighbors);
-        for (let neighborTile of neighbors) {
-            if (alreadyTraced.has(neighborTile)) {
-                continue;
+        // --------------------
+        // 小さな優先度付きキュー
+        // --------------------
+        class MinHeap {
+            constructor() {
+                /** @type {{tile: Tile, dist: number}[]} */
+                this._buf = [];
             }
-            alreadyTraced.add(neighborTile);
-
-            let weight = neighborTile.getMoveWeight(
-                moveUnit, ignoresUnits, ignoresBreakableWalls, isUnitIgnoredFunc, isPathfinderEnabled);
-            if (weight >= CanNotReachTile) {
-                // 通行不可
-                continue;
-            }
-
-            let isObstructTile = weight === ObstructTile;
-            if (isObstructTile) {
-                // 進軍阻止
-                weight = 1;
-            }
-
-            let nextDistance = currentDistance + weight;
-            if (nextDistance >= closestDistance || nextDistance > maxDepth) {
-                // これ以上評価の必要なし
-                continue;
-            }
-
-            if (isTargetTileFunc(neighborTile)) {
-                // 目的のタイルが見つかった
-                if (nextDistance < closestDistance) {
-                    closestDistance = nextDistance;
+            push(node) {
+                const buf = this._buf;
+                buf.push(node);
+                let i = buf.length - 1;
+                while (i > 0) {
+                    const p = (i - 1) >> 1;
+                    if (buf[p].dist <= buf[i].dist) break;
+                    [buf[p], buf[i]] = [buf[i], buf[p]];
+                    i = p;
                 }
+            }
+            pop() {
+                const buf = this._buf;
+                if (buf.length === 0) return null;
+                const top = buf[0];
+                const last = buf.pop();
+                if (buf.length > 0 && last) {
+                    buf[0] = last;
+                    let i = 0;
+                    const n = buf.length;
+                    // eslint-disable-next-line no-constant-condition
+                    while (true) {
+                        let l = i * 2 + 1;
+                        let r = l + 1;
+                        let smallest = i;
+                        if (l < n && buf[l].dist < buf[smallest].dist) smallest = l;
+                        if (r < n && buf[r].dist < buf[smallest].dist) smallest = r;
+                        if (smallest === i) break;
+                        [buf[i], buf[smallest]] = [buf[smallest], buf[i]];
+                        i = smallest;
+                    }
+                }
+                return top;
+            }
+            get size() {
+                return this._buf.length;
+            }
+        }
+
+        // ----------------------------------------
+        // Dijkstra 風に「距離の短いノードから」順に探索
+        // ----------------------------------------
+
+        const heap = new MinHeap();
+
+        /** @type {Map<Tile, number>} 各タイルへ到達した最短距離 */
+        const bestDistance = new Map();
+
+        let closestDistance = CanNotReachTile;
+
+        // 開始タイル（this）から探索開始
+        bestDistance.set(this, 0);
+        heap.push({ tile: this, dist: 0 });
+
+        // 開始タイル自体がターゲットなら 0 で返す
+        if (isTargetTileFunc(this)) {
+            return 0;
+        }
+
+        while (heap.size > 0) {
+            const node = heap.pop();
+            if (!node) break;
+
+            const currentTile = node.tile;
+            const currentDist = node.dist;
+
+            // すでにもっと短い距離で到達しているならスキップ
+            const knownBest = bestDistance.get(currentTile);
+            if (knownBest !== undefined && currentDist > knownBest) {
                 continue;
             }
 
-            if (isObstructTile) {
+            // すでに見つかった最短距離以上 or maxDepth 超過なら、それ以降は不要
+            if (currentDist >= closestDistance || currentDist > maxDepth) {
                 continue;
             }
 
-            let nextAlreadyTraced = new Set(alreadyTraced);
-            let distance = neighborTile._calculateDistanceToClosestTile(
-                nextAlreadyTraced,
-                moveUnit,
-                maxDepth,
-                isTargetTileFunc,
-                sortNeighborsFunc,
-                ignoresUnits,
-                ignoresBreakableWalls,
-                isUnitIgnoredFunc,
-                isPathfinderEnabled,
-                currentDepth + 1, nextDistance, closestDistance);
+            // 隣接タイル
+            const neighbors = currentTile._neighbors;
+            sortNeighborsFunc(neighbors); // 4マス程度ならソートコストは軽い
 
-            if (distance < closestDistance) {
-                closestDistance = distance;
+            for (const neighborTile of neighbors) {
+                // 移動コストの計算
+                let weight = neighborTile.getMoveWeight(
+                    moveUnit,
+                    ignoresUnits,
+                    ignoresBreakableWalls,
+                    isUnitIgnoredFunc,
+                    isPathfinderEnabled
+                );
+
+                if (weight >= CanNotReachTile) {
+                    // 通行不可
+                    continue;
+                }
+
+                const isObstructTile = (weight === ObstructTile);
+                if (isObstructTile) {
+                    // 進軍阻止マス: 到達はできるが先には進まない
+                    weight = 1;
+                }
+
+                const nextDist = currentDist + weight;
+
+                // すでに見つかっている最短距離 / 深さを超えるならスキップ
+                if (nextDist >= closestDistance || nextDist > maxDepth) {
+                    continue;
+                }
+
+                // 目的タイルなら候補として距離を更新
+                if (isTargetTileFunc(neighborTile)) {
+                    if (nextDist < closestDistance) {
+                        closestDistance = nextDist;
+                    }
+                    // Obstruct の先へは行かない仕様そのまま
+                    continue;
+                }
+
+                // 進軍阻止マスは「そこに行けるだけ」で終わり（元実装と同じ）
+                if (isObstructTile) {
+                    continue;
+                }
+
+                // ここまで来たら、さらに先へ進む候補
+                const prevBest = bestDistance.get(neighborTile);
+                if (prevBest !== undefined && nextDist >= prevBest) {
+                    // 以前の方が短い or 同じ距離で到達している
+                    continue;
+                }
+
+                bestDistance.set(neighborTile, nextDist);
+                heap.push({ tile: neighborTile, dist: nextDist });
             }
         }
 
@@ -994,6 +1133,13 @@ class Tile extends BattleMapElement {
      */
     hasEnemyBreakableDivineVein(groupId) {
         return this.hasBreakableDivineVein() && this.divineVeinGroup !== groupId;
+    }
+
+    canBreakTile(unit) {
+        if (this.hasEnemyBreakableDivineVein(unit.groupId)) {
+            return true;
+        }
+        return this.obj && unit.canBreak(this.obj);
     }
 
     // TODO: 削除予約にした方が良いのか検討

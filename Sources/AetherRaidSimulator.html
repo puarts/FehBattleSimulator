@@ -368,14 +368,23 @@
                         <tr>
                             <td colspan="2">
                                 <div class="buttonUi">
-                                    <control-buttons :get-app="getApp" :get-attacker="getAttacker"
-                                        :get-current-unit="getCurrentUnit" :map="map" :update-map="updateMap"
-                                        :end-turn="endTurn" :save-settings="saveSettings"
-                                        :global-battle-context="globalBattleContext"
-                                        :show-setting-dialog="showSettingDialog" :show-import-dialog="showImportDialog"
-                                        :show-export-dialog="showExportDialog" :audio-manager="audioManager"
-                                        :bgm-enabled-changed="bgmEnabledChanged" :load-lazy-images="loadLazyImages"
-                                        :show-flash="showFlash">
+                                    <control-buttons
+                                            :get-app="getApp"
+                                            :get-attacker="getAttacker"
+                                            :get-current-unit="getCurrentUnit"
+                                            :map="map"
+                                            :update-map="updateMap"
+                                            :end-turn="endTurn"
+                                            :save-settings="saveSettings"
+                                            :global-battle-context="globalBattleContext"
+                                            :show-setting-dialog="showSettingDialog"
+                                            :show-import-dialog="showImportDialog"
+                                            :show-export-dialog="showExportDialog"
+                                            :audio-manager="audioManager"
+                                            :bgm-enabled-changed="bgmEnabledChanged"
+                                            :load-lazy-images="loadLazyImages"
+                                            :show-flash="showFlash"
+                                    >
                                     </control-buttons>
                                     <!-- <label for='currentTurnSlider'>現在のターン:</label> -->
                                     <!-- <input type='number' id='currentTurn' v-model='globalBattleContext.currentTurn' min='0' max='7' step='1'

@@ -290,6 +290,9 @@ class BattleContext {
         // 最初の攻撃の追加ダメージ
         this.additionalDamageOfFirstAttack = 0;
 
+        // 最初の追撃の追加ダメージ
+        this.additionalDamageOfFirstFollowUpAttack = 0;
+
         // 奥義発動時の追加ダメージ
         this.additionalDamageOfSpecial = 0;
 
@@ -451,6 +454,8 @@ class BattleContext {
 
         // 奥義以外の祈り+HP99回復
         this.canActivateNonSpecialMiracleAndHeal = false;
+        this.miracleAndHealAmount = 0;
+        this.reservedNodesAfterCombatIfServived = [];
 
         // 奥義以外の祈り+HP99回復が発動したかどうか
         this.hasNonSpecialMiracleAndHealAcitivated = false;

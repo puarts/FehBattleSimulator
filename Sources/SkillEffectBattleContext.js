@@ -1034,6 +1034,22 @@ class TargetDealsDamageExcludingAoeSpecialsNode extends ApplyingNumberNode {
 
 const TARGET_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_NODE = n => new TargetDealsDamageExcludingAoeSpecialsNode(n);
 
+class TargetsFirstFollowUpAttackDealsXDamageNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let beforeValue = unit.battleContext.additionalDamageOfFirstFollowUpAttack;
+        let result = unit.battleContext.additionalDamageOfFirstFollowUpAttack += n;
+        env.info(`${unit.nameWithGroup}は戦闘中、最初の追撃のダメージ+${n}: ${beforeValue} → ${result}`);
+    }
+}
+
+const TARGETS_FIRST_FOLLOW_UP_ATTACK_DEALS_X_DAMAGE_NODE = n => new TargetsFirstFollowUpAttackDealsXDamageNode(n);
+
 class TargetDealsDamageExcludingAoeSpecialsPerAttackNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1673,6 +1689,24 @@ class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode extends 
 const REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE =
     n => new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatNode(n);
 
+class ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatByEngageSkillNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.nTimesDamageReductionRatiosByEngageSpecial.push(n / 100.0);
+        let ratios = unit.battleContext.nTimesDamageReductionRatiosByEngageSpecial;
+        env.info(`${unit.nameWithGroup}は受けた攻撃のダメージを${n}%軽減(1戦闘1回のみ。紋章士効果): ratios [${ratios}]`);
+    }
+}
+
+const REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_BY_ENGAGE_SKILL_NODE =
+    percentage => new ReducesDamageFromTargetsFoesNextAttackByNPercentOncePerCombatByEngageSkillNode(percentage);
+
+
 class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -1689,6 +1723,23 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
 
 const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
     n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
+
+class InflictsSpecialCooldownCountPlusNToTargetBeforeTargetsFirstAttackDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitDuringCombatMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountIncreaseBeforeFirstAttack += n;
+        let result = unit.battleContext.specialCountIncreaseBeforeFirstAttack;
+        env.info(`${unit.nameWithGroup}は自分の最初の攻撃前に自身の奥義発動カウント+${n}: ${result - n} → ${result}`);
+    }
+}
+
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
+    n => new InflictsSpecialCooldownCountPlusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
 
 class GrantsSpecialCooldownCountMinusNToTargetBeforeEachOfTargetsFollowUpAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
@@ -1797,6 +1848,22 @@ class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackN
 
 const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE =
     n => new InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesFirstAttackNode(n);
+
+class InflictsSpecialCooldownCountPlusNOnTargetBeforeTargetFirstAttackNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        let result = unit.battleContext.specialCountIncreaseBeforeFirstAttack += n;
+        env.info(`${unit.nameWithGroup}は自分の最初の攻撃前に自分の奥義発動カウント+${n}: ${result - n} → ${result}`);
+    }
+}
+
+const INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGET_BEFORE_TARGET_FIRST_ATTACK_NODE =
+    n => new InflictsSpecialCooldownCountPlusNOnTargetBeforeTargetFirstAttackNode(n);
 
 class InflictsSpecialCooldownCountPlusNOnTargetsFoeBeforeTargetsFoesSecondStrikeNode extends FromPositiveNumberNode {
     static {
@@ -2088,7 +2155,7 @@ class TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOn
 }
 
 const TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE
-    = n => new TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOnlyHighestValueAppliedAndDoesNotStackNode(n);
+    = percentage => new TargetsNextAttackDealsDamageXPercentOfTargetsForesAttackPriorToReductionOnlyHighestValueAppliedAndDoesNotStackNode(percentage);
 
 /**
  * restores X HP to unit as unit's combat begins
@@ -2332,7 +2399,7 @@ class DealsDamageToTargetAsCombatBeginsNode extends FromPositiveNumberNode {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
         let result = unit.battleContext.damageAfterBeginningOfCombat += n;
-        env.info(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ: ${result - n} -> ${result}`);
+        env.info(`${unit.nameWithGroup}は戦闘開始後${n}ダメージ: ${result - n} → ${result}`);
     }
 }
 
@@ -2682,15 +2749,33 @@ class GrantsMiracleAndHealToTargetOncePerMapNode extends SkillEffectNode {
         Object.assign(this.prototype, GetUnitMixin);
     }
 
+    constructor(n = 99, afterCombatNode = null) {
+        super();
+        this._nNode = NumberNode.makeNumberNodeFrom(n);
+        this._afterCombatNode = afterCombatNode;
+    }
+
     evaluate(env) {
         let unit = this.getUnit(env);
+        let n = this._nNode.evaluate(env);
         if (g_appData.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[unit.groupId] === 0) {
+            env.debug('1マップ1回の効果をまだ発動していない');
             unit.battleContext.canActivateNonSpecialMiracleAndHeal = true;
+            unit.battleContext.miracleAndHealAmount += n;
+            env.info(`${unit.nameWithGroup}は祈り効果を発動。戦闘後、${n}回復: → ${unit.battleContext.miracleAndHealAmount}`);
+            if (this._afterCombatNode) {
+                unit.battleContext.reservedNodesAfterCombatIfServived.push(this._afterCombatNode);
+            }
+        } else {
+            env.debug('1マップ1回の効果を発動済み');
         }
     }
 }
 
-const GRANTS_MIRACLE_AND_HEAL_TO_TARGET_ONCE_PER_MAP_NODE = new GrantsMiracleAndHealToTargetOncePerMapNode();
+const GRANTS_MIRACLE_AND_HEAL_TO_TARGET_ONCE_PER_MAP_NODE = new GrantsMiracleAndHealToTargetOncePerMapNode(99);
+const GRANTS_MIRACLE_AND_HEAL_N_TO_TARGET_ONCE_PER_MAP_NODE = n => new GrantsMiracleAndHealToTargetOncePerMapNode(n);
+const GRANTS_MIRACLE_AND_HEAL_N_AND_ADDITIONAL_EFFECT_TO_TARGET_ONCE_PER_MAP_NODE =
+        (n, node) => new GrantsMiracleAndHealToTargetOncePerMapNode(n, node);
 
 class TargetCannotRecoverHpNode extends SkillEffectNode {
     static {

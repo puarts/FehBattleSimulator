@@ -968,6 +968,24 @@ td.enemy {
 }
 
 /* Map */
+.map-tile-focus-border {
+    position: relative;
+}
+
+.map-tile-focus-border::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border: 2px solid white;
+    border-radius: 4px;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.map-tile-cannot-move::before {
+    border: 2px solid red;
+}
+
 .map-divine-vein-img {
     position: absolute;
     bottom: 0;
@@ -999,6 +1017,7 @@ td.enemy {
     justify-content: center;    /* 横方向中央 */
     align-items: center;        /* 縦方向中央 */
     line-height: 1;             /* 行間でズレないようにする */
+    -webkit-text-stroke: 0.5px black;
 }
 
 .map-divine-vein-label-ally-bg {

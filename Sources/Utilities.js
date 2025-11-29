@@ -152,6 +152,10 @@ class Queue {
     isEmpty() {
         return this.length === 0;
     }
+
+    toString() {
+        return this.#array.toString();
+    }
 }
 
 /// クッキーの保存や読み込みを管理するクラスです。
@@ -458,6 +462,124 @@ class ScopedPerformanceTimer {
         const endTime = performance.now();
         let diff = endTime - this._startTime;
         this._logFunc(diff);
+    }
+}
+
+/**
+ * 高精度ストップウォッチ。
+ * debug=false の場合は測定しない軽量モードになる。
+ */
+class Stopwatch {
+    /**
+     * @param {boolean} debug デバッグモードなら true（計測する）、falseなら何もしない
+     *
+     * @example
+     * const sw = new Stopwatch(true); // デバッグON
+     * sw.start();
+     * sw.section("init", () => heavyInit());
+     * sw.stop();
+     *
+     * const sw2 = new Stopwatch(false); // デバッグOFF（超軽量）
+     * sw2.start();   // 何もしない
+     * sw2.lap();     // 何もしない
+     * sw2.stop();    // 何も返さない
+     */
+    constructor(debug = true) {
+        /** @private @type {boolean} */
+        this._debug = debug;
+
+        /** @private @type {number} */
+        this._startTime = 0;
+
+        /** @private @type {number} */
+        this._lastLapTime = 0;
+
+        /** @private @type {{label: string, time: number, delta: number}[]} */
+        this._laps = [];
+
+        /** @private @type {boolean} */
+        this._running = false;
+    }
+
+    /** 計測開始 */
+    start() {
+        if (!this._debug) return;
+        if (this._running) return;
+
+        const now = performance.now();
+        this._startTime = now;
+        this._lastLapTime = now;
+        this._laps = [];
+        this._running = true;
+    }
+
+    /**
+     * ラップ記録（累積時間 + 区間時間）
+     * @param {string} [label=""]
+     * @returns {{label: string, time: number, delta: number} | undefined}
+     */
+    lap(label = "") {
+        if (!this._debug || !this._running) return;
+
+        const now = performance.now();
+        const totalElapsed = now - this._startTime;
+        const delta = now - this._lastLapTime;
+
+        this._lastLapTime = now;
+
+        const record = { label, time: totalElapsed, delta };
+        this._laps.push(record);
+
+        console.log(
+            label
+                ? `${label}: total=${totalElapsed.toFixed(3)} ms, delta=${delta.toFixed(3)} ms`
+                : `Lap: total=${totalElapsed.toFixed(3)} ms, delta=${delta.toFixed(3)} ms`
+        );
+
+        return record;
+    }
+
+    /**
+     * 計測終了
+     * @returns {number | undefined}
+     */
+    stop() {
+        if (!this._debug || !this._running) return;
+
+        const now = performance.now();
+        const total = now - this._startTime;
+
+        this._running = false;
+
+        console.log(`Total: ${total.toFixed(3)} ms`);
+        return total;
+    }
+
+    /** ラップ一覧取得 */
+    getLaps() {
+        return this._debug ? [...this._laps] : [];
+    }
+
+    /**
+     * 指定ブロックの前後で自動ラップ記録
+     *
+     * @param {string} label
+     * @param {() => any} fn
+     * @returns {any}
+     *
+     * @example
+     * sw.section("init", () => {
+     *     heavyInit();
+     * });
+     */
+    section(label, fn) {
+        if (!this._debug) return fn();
+
+        this.lap(`${label}-start`);
+        const result = fn();
+        this.lap(`${label}-end`);
+
+        return result;
     }
 }
 
@@ -1421,10 +1543,17 @@ function getSkillIconDivTag(unit) {
  * @returns {string}
  */
 function getStatsEffectImgTagStr(statusEffect) {
-    return `<img 
-         src="${statusEffectTypeToIconFilePath(statusEffect)}"
-         title="${getStatusEffectName(statusEffect)}" 
-         alt="${getStatusEffectName(statusEffect)}"/>`;
+    return getStatsEffectImgTag(statusEffect).outerHTML;
+}
+
+function getStatsEffectImgTag(statusEffect) {
+    const img = document.createElement("img");
+
+    img.src = statusEffectTypeToIconFilePath(statusEffect);
+    img.title = getStatusEffectName(statusEffect);
+    img.alt = getStatusEffectName(statusEffect);
+
+    return img;
 }
 
 function getKeyByValue(dict, value) {

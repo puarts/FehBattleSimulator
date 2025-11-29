@@ -576,9 +576,8 @@ class DamageCalcContext {
     }
 
     isFirstFollowupAttack(atkUnit) {
-        let isFollowupAttacked =
-            this.damageHistory.some(log => log.atkUnit === atkUnit && log.isFollowupAttack);
-        return this.isFollowupAttack && !isFollowupAttacked;
+        let hasOneAttack = this.attackHistory.filter(log => log.atkUnit === atkUnit).length === 1;
+        return hasOneAttack && this.isFollowupOrPotentFollowupAttack();
     }
 
     getAttackTypeString() {
@@ -1574,6 +1573,9 @@ class DamageCalculator {
         // TODO: 戦闘開始のタイミングに移動させる
         if (context.isFirstStrike(atkUnit)) {
             fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstAttack;
+        }
+        if (context.isFirstFollowupAttack(atkUnit)) {
+            fixedAddDamage += atkUnit.battleContext.additionalDamageOfFirstFollowUpAttack;
         }
         for (let skillId of atkUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, addSpecialDamageAfterDefenderSpecialActivatedFuncMap);

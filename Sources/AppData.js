@@ -1766,7 +1766,7 @@ class AppData extends UnitManager {
         this.setAttackerAndAttackTargetInfo();
     }
 
-    selectCurrentItem(button, isDoubleClick) {
+    selectCurrentItem(button, selectedUnit, isDoubleClick) {
         let currentItem = this.currentItem;
         for (let item of this.enumerateItems()) {
             let selected = item === currentItem;
@@ -1776,6 +1776,7 @@ class AppData extends UnitManager {
                 item.isSelected = selected;
             }
         }
+        updateMapUi();
 
         this.setAttackerAndAttackTargetInfo();
     }

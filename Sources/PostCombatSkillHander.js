@@ -6,12 +6,15 @@ class PostCombatSkillHander {
      * @param  {BattleMap} map
      * @param  {GlobalBattleContext} globalBattleContext
      * @param  {LoggerBase} logger
+     * @param  {DamageCalculator} damageCalculator
      */
-    constructor(unitManager, map, globalBattleContext, logger) {
+    constructor(unitManager, map, globalBattleContext,
+                logger, damageCalculator) {
         this._unitManager = unitManager;
         this.map = map;
         this.globalBattleContext = globalBattleContext;
         this._logger = logger;
+        this.damageCalculator = damageCalculator;
     }
 
     get unitManager() {
@@ -180,7 +183,13 @@ class PostCombatSkillHander {
             if (!unit.isDead) {
                 let [hp, damage, heal, reducedHeal] = unit.applyReservedHp(true);
                 if (damage !== 0 || heal !== 0 || reducedHeal !== 0) {
-                    this.writeDebugLogLine(`${unit.nameWithGroup}の戦闘後HP hp: ${hp}, damage: ${damage}, heal: ${heal}, reduced: ${reducedHeal}`);
+                    let message =
+                        `${unit.nameWithGroup}のHP: ${hp}, 
+                        HP変動: ${heal - damage}, 
+                        ダメージ: ${damage}, 
+                        回復: ${heal}（回復減少: ${reducedHeal}`;
+                    this.writeDebugLogLine(message);
+                    this.damageCalculator.writeSimpleLog(message);
                 }
                 unit.applyReservedState(false);
             }
@@ -392,6 +401,8 @@ class PostCombatSkillHander {
         let env = new AfterCombatEnv(this, targetUnit, enemyUnit, this.map);
         env.setName('戦闘後').setLogLevel(getSkillLogLevel()).setDamageCalcEnv(damageCalcEnv);
         AFTER_COMBAT_HOOKS.evaluateWithUnit(targetUnit, env);
+        env.setName('戦闘後（戦闘中に予約）');
+        AFTER_COMBAT_HOOKS.evaluateNodes(targetUnit, targetUnit.battleContext.reservedNodesAfterCombatIfServived, env);
         for (let skillId of targetUnit.enumerateSkills()) {
             getSkillFunc(skillId, applySkillEffectAfterCombatForUnitFuncMap)?.call(this, targetUnit, enemyUnit);
             switch (skillId) {
@@ -1312,7 +1323,9 @@ class PostCombatSkillHander {
         if (attackUnit.battleContext.hasNonSpecialMiracleAndHealAcitivated) {
             this.globalBattleContext.miracleAndHealWithoutSpecialActivationCount[attackUnit.groupId]++;
             this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
-            attackUnit.reserveHeal(99);
+            if (attackUnit.isAlive) {
+                attackUnit.reserveHeal(attackUnit.battleContext.miracleAndHealAmount);
+            }
         } else if (attackUnit.battleContext.hasNonSpecialMiracleActivated) {
             this.globalBattleContext.miracleWithoutSpecialActivationCountInCurrentTurn[attackUnit.groupId]++;
         } else if (attackUnit.battleContext.hasNonSpecialOneTimePerMapMiracleAcitivated) {

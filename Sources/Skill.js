@@ -863,7 +863,7 @@ function canRallyForcibly(skill, unit) {
     }
     let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTargeting(unit)
         .setName('強制的に応援可能判定').setLogLevel(getSkillLogLevel());
-    if (CAN_RALLY_FORCIBLY_HOOKS.evaluate(unit, env)) {
+    if (CAN_RALLY_FORCIBLY_HOOKS.evaluateSomeWithUnit(unit, env)) {
         return true;
     }
     switch (skill) {
@@ -901,7 +901,7 @@ function canRalliedForcibly(skillId, unit) {
     }
     let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTarget(unit)
         .setName('強制的に被応援可能判定').setLogLevel(getSkillLogLevel());
-    if (CAN_RALLIED_FORCIBLY_HOOKS.evaluate(unit, env)) {
+    if (CAN_RALLIED_FORCIBLY_HOOKS.evaluateSomeWithUnit(unit, env)) {
         return true;
     }
     switch (skillId) {

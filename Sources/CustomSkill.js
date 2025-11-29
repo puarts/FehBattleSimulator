@@ -678,6 +678,17 @@ CustomSkill.setFuncId('boost-special-damage', "奥義ダメージ+（範囲除�
     NON_NEGATIVE_INTEGER_ARGS,
 );
 
+CustomSkill.setFuncId('first-follow-up-damage', "最初の追撃のダメージ+",
+    (skillId, args) => {
+        AT_START_OF_ATTACK_HOOKS.addSkill(skillId, () =>
+            TARGETS_FIRST_FOLLOW_UP_ATTACK_DEALS_X_DAMAGE_NODE(
+                CustomSkill.Arg.getTotalNonNegativeIntegerNode(args)
+            ),
+        );
+    },
+    NON_NEGATIVE_INTEGER_ARGS,
+);
+
 /// ダメージ-
 
 CustomSkill.setFuncId('reduces-damage-excluding-aoe', "ダメージ-（範囲除）",
@@ -2059,6 +2070,15 @@ CustomSkill.setFuncId(
     '復讐の神形',
     (skillId, args) => {
         SET_SKILL_FUNCS.get(Weapon.VengefulGod)?.(skillId);
+    },
+    []
+);
+
+CustomSkill.setFuncId(
+    'enraptured-god',
+    '陶酔の神形',
+    (skillId, args) => {
+        SET_SKILL_FUNCS.get(Weapon.EnrapturedGod)?.(skillId);
     },
     []
 );
