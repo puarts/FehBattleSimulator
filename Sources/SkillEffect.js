@@ -7848,3 +7848,18 @@ class IsTargetActionDoneNode extends BoolNode {
 }
 
 const IS_TARGET_ACTION_DONE_NODE = new IsTargetActionDoneNode();
+
+class IsTargetMythicNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.isMythicHero;
+        env.debug(`${unit.nameWithGroup}は神階英雄であるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_MYTHIC_NODE = new IsTargetMythicNode();
