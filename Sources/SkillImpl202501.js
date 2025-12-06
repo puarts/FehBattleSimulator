@@ -308,7 +308,7 @@
                 // “at start of battle” excludes increases to Spd granted after ally is deployed,
                 // such as Legendary Effects, Mythic Effects, Bonus Heroes, Great Talent, etc.).
                 X_NUM_NODE(
-                    TRIGGERS_TARGETS_POTENT_FOLLOW_X_DURING_COMBAT_NODE(READ_NUM_NODE),
+                    TRIGGERS_TARGETS_POTENT_FOLLOW_X_DURING_COMBAT_NODE(READ_NUM_NODE, null),
                     IF_ELSE_NODE(
                         AND_NODE(
                             NOT_NODE(CAN_TARGET_MAKE_FOLLOW_UP_BEFORE_POTENT_NODE),
@@ -11488,7 +11488,7 @@
 
     // Calculates damage using the lower of foe's Def or Res.
     setCalculatesDamageUsingTheLowerOfFoesDefOrResSkill(skillId);
-    AOE_SPECIAL_SPACES_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Deals damage = 20% of unit's Def during combat
         // (including area-of-effect Specials).
         DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_DEF_NODE)),
@@ -12988,7 +12988,7 @@
                 FILTER_UNITS_NODE(SKILL_OWNERS_FOES_ON_MAP_NODE,
                     AND_NODE(
                         LT_NODE(TARGETS_EVAL_RES_ON_MAP, SKILL_OWNERS_EVAL_RES_ON_MAP),
-                        TARGETS_FOES_THAT_ARE_WITHIN_N_SPACES_OF_ANOTHER_TARGETS_FOE_NODE(2),
+                        IS_TARGET_WITHIN_N_SPACES_OF_TARGETS_ALLY_NODE(2),
                     ),
                 ),
                 // inflicts Atk/Res–7, (Exposure), and (Guard)
@@ -15627,10 +15627,10 @@
             // grants bonus to
             // unit's Atk/Spd/Def/Res = 25% of foe's Atk at start of combat - 4 (max 14; min 5),
             GRANTS_ALL_STATS_PLUS_N_TO_TARGET_DURING_COMBAT_NODE(
-                ENSURE_MAX_NODE(
+                ENSURE_MAX_MIN_NODE(
                     SUB_NODE(PERCENTAGE_NODE(25, FOES_ATK_AT_START_OF_COMBAT_NODE), 4),
+                    14,
                     5,
-                    14
                 ),
             ),
             // deals damage = 15% of unit's Atk (including area-of-effect Specials),
@@ -19002,19 +19002,22 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If target ally is within 3 rows or 3 columns centered on unit,
         // unit attacks twice during combat.
-        COND_OP(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
+        IF_ELSE_NODE(IS_THERE_SKILL_OWNERS_PARTNER_ON_MAP_NODE,
             IF_NODE(
                 IS_THERE_TARGETS_ALLY_ON_MAP_NODE(
                     AND_NODE(
                         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
-                        ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE)),
+                        ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE
+                    )
+                ),
                 TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
             ),
             IF_NODE(
                 IS_THERE_TARGETS_ALLY_ON_MAP_NODE(
                     AND_NODE(
                         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
-                        EQ_NODE(TARGETS_MAX_HP_NODE, HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES)),
+                        EQ_NODE(TARGETS_MAX_HP_NODE, HIGHEST_HP_AMONG_SKILL_OWNERS_ALLIES)
+                    ),
                 ),
                 TARGET_ATTACKS_TWICE_EVEN_IF_TARGETS_FOE_INITIATES_COMBAT_NODE,
             ),
