@@ -1,5 +1,181 @@
 // スキル実装
 
+    // Suttungr’s Mys.
+    // Mt: 14 Rng: 2 Arcane
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // At start of turn,
+    // and after unit acts (if Canto triggers,
+    // after Canto),
+    // inflicts Spd/Res-7, [Panic],
+    // and [Discord] on closest foes
+    // and foes within 2 spaces of those foes
+    // through their next actions.
+    //
+    // Grants Atk/Spd/Def/Res+15 to unit,
+    // unit deals +25 damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 15 (excluding area-of-effect Specials),
+    // and reduces the percentage of foe’s non-Special
+    // “reduce damage by X%” skills by 50% during combat
+    // (excluding area-of-effect Specials).
+
+    // Logic
+    // (Special, cooldown count 5)
+    //
+    // Boosts damage by X% of unit’s Atk when Special triggers
+    // (if [Penalty] effects are active on foe, X = 80; otherwise, X = 70).
+    //
+    // If unit initiates combat,
+    // reduces damage from foe’s attacks by 40% during combat
+    // (excluding area-of-effect Specials),
+    // and also,
+    // if foe has any [Penalty] effects active,
+    // grants Special cooldown count-1 to unit
+    // before unit’s first attack during combat.
+
+    // True Genius
+    //
+    // At start of turn,
+    // deals 1 damage to unit.
+    //
+    // At start of player phase or enemy phase,
+    // grants Atk/Spd+6, [Preempt Pulse],
+    // and “if unit initiates combat,
+    // reduces damage from foe’s first attack during combat by 40%”
+    // to unit and allies within 2 spaces of unit
+    // for 1 turn.
+    //
+    // Grants Atk/Spd/Def/Res+9 to unit,
+    // unit deals +X × 80% damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s first attack by X × 40%
+    // (X = A + B;
+    // A = highest total bonuses among unit and allies within 3 spaces of unit;
+    // B = highest total penalties among foe and foes within 3 spaces of that foe;
+    // “first attack” normally means only the first strike;
+    // for effects that grant “unit attacks twice,”
+    // it means the first and second strikes),
+    // and neutralizes effects that guarantee foe’s follow-up attacks
+    // and effects that prevent unit’s follow-up attacks during combat.
+    // If decreasing the Spd difference necessary to make a follow-up attack by 10
+    // would allow unit to trigger a follow-up attack
+    // (excluding guaranteed or prevented follow-ups),
+    // triggers [Potent Follow 100%] during combat.
+
+    // Watchful Bow
+    //
+    // Mt: 14 Rng: 2 Eff: 🪶 (effective vs fliers)
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // For foes within 3 rows or 3 columns centered on unit,
+    // inflicts Atk/Spd/Def/Res-5,
+    // foe suffers +10 damage during combat
+    // (excluding area-of-effect Specials),
+    // and reduces the percentage of foe’s non-Special
+    // “reduce damage by X%” skills by 50%
+    // (excluding area-of-effect Specials).
+    //
+    // Grants Atk/Spd/Def/Res+10 to unit,
+    // unit deals +25 damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 15
+    // (excluding area-of-effect Specials),
+    // and grants Special cooldown count-1 to unit
+    // before unit’s first attack during combat.
+
+    // Spd/Def Havoc (B)
+    //
+    // At start of player phase or enemy phase,
+    // inflicts Spd/Def-7, [Sabotage], and [Schism]
+    // on foes with Res < unit’s Res
+    // and that are within 2 spaces of another foe
+    // through their next actions.
+    //
+    // After start-of-turn skills trigger on unit’s player phase,
+    // if the number of foes with the [Sabotage] effect active on the map ≥ 2,
+    // grants [Canto (1)] to unit for 1 turn.
+    //
+    // Inflicts Spd/Def-4 on foe
+    // and deals damage = 20% of unit’s Res during combat
+    // (excluding area-of-effect Specials).
+
+    // Blársparrow+
+    //
+    // Mt: 12 Rng: 2
+    //
+    // If unit initiates combat,
+    // or is within 2 spaces of an ally,
+    // grants Atk/Spd/Def/Res+5 to unit,
+    // and deals damage = 10% of unit’s Atk during combat
+    // (excluding area-of-effect Specials),
+    // and also, when unit’s Special triggers,
+    // neutralizes foe’s “reduces damage by X%” effects
+    // from foe’s non-Special skills
+    // (excluding area-of-effect Specials).
+
+    // Chosen Sword
+    //
+    // Mt: 16 Rng: 1
+    // Accelerates Special trigger (cooldown count-1).
+    //
+    // At start of player phase or enemy phase,
+    // grants Atk/Def+6, [Bulwark],
+    // and “Special cooldown charge +1 per attack during combat
+    // (only highest value applied; does not stack)”
+    // to unit and allies within 2 spaces of unit
+    // for 1 turn.
+    //
+    // Grants Atk/Def/Res+16 to unit,
+    // unit deals +25 damage (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 15
+    // (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+    // reduces damage from foe’s Specials by an additional 15
+    // (including from area-of-effect Specials; excluding Røkkr area-of-effect Specials),
+    // and reduces the percentage of foe’s non-Special
+    // “reduce damage by X%” skills by 50% during combat
+    // (excluding area-of-effect Specials).
+    // If unit’s Def > foe’s Def,
+    // or the number of allies within 3 columns or 3 rows centered on unit ≥ 2,
+    // unit attacks twice during combat.
+
+    // Ascendant King (Special, CD 4)
+    //
+    // Boosts damage by 80% of unit’s Def + Def [Great Talent]
+    // when Special triggers.
+    //
+    // Reduces damage from foe’s attacks by 40% during combat
+    // (excluding area-of-effect Specials).
+    //
+    // Enables [Canto (Dist. +1; Max 4)].
+    // Unit can counterattack regardless of foe’s range.
+    //
+    // At the start of turn, grants [Gallop] to unit,
+    // and grants Atk/Def/Res [Great Talent] +2
+    // to unit and allies within 3 rows or 3 columns centered on unit.
+    //
+    // At the start of enemy phase,
+    // applies [Divine Vein (Stone)] to unit’s space
+    // and spaces within 2 spaces of unit for 1 turn.
+    //
+    // After combat, if unit’s Special triggered,
+    // grants Atk/Def/Res [Great Talent] +4
+    // to unit and allies within 3 rows or 3 columns centered on unit.
+    //
+    // (This skill grants max of [Great Talent] +20 for unit
+    // and [Great Talent] +10 for allies.)
+
+    // Rejuvenate (B)
+    //
+    // If unit initiates combat,
+    // or is within 3 spaces of an ally,
+    // inflicts Atk/Def/Res-4 on foe,
+    // inflicts Special cooldown charge -1 on foe per attack
+    // (only highest value applied; does not stack),
+    // deals damage = 20% of unit’s Def
+    // (excluding area-of-effect Specials),
+    // reduces damage from foe’s attacks by 20% of unit’s Def
+    // (excluding area-of-effect Specials),
+    // neutralizes effects that prevent unit’s counterattacks during combat,
+    // and restores 7 HP to unit after combat.
+
 // 🗡️ Urvan Brilliance
 {
     let skillId = Weapon.UrvanBrilliance;

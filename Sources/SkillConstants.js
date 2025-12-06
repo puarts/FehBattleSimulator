@@ -4055,6 +4055,15 @@ Weapon.ArcaneOutburst = 3485; // 魔器・幼神の波動
 Special.DragonIce = 3486; // 竜氷
 PassiveA.UnfledgedGod = 3487; // 新生せし神
 PassiveC.ARTwinMSave = 3488; // 兜の護り手・魔・双
+Weapon.SuttungrsMys = 3489; // ストゥングの神秘
+Special.Logic = 3490; // 理路
+PassiveA.TrueGenius = 3491; // 真天才
+Weapon.WatchfulBow = 3492; // 精緻なる観察眼の弓
+PassiveB.SpdDefHavoc = 3493; // 速さ守備の大混乱
+Weapon.BlarsparrowPlus = 3494; // ブラースパロー+
+Weapon.ChosenSword = 3495; // 開かれし救世の剣
+Special.AscendantKing = 3496; // 真王器
+PassiveB.Rejuvenate = 3497; // 刷新
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
