@@ -3261,6 +3261,12 @@ class BattleSimulatorBase {
 
     setCurrentItem(id) {
         let index = g_appData.findIndexOfItem(id);
+        if (index < 0) {
+            const wall = this.map.findWallOrBreakableWallById(id);
+            if (wall) {
+                index = g_appData.findIndexOfItem(wall.placedTile.id);
+            }
+        }
         this.setCurrentItemIndex(index);
     }
 
@@ -11467,7 +11473,7 @@ class BattleSimulatorBase {
         }
     }
 
-    selectItem(targetId, add = false, button = 0, isDoubleClick = false) {
+    selectItem(targetId, add = false, button = 0) {
         let item = g_appData.findItemById(targetId);
         let unit = null;
         if (item instanceof Unit) {
@@ -11492,7 +11498,8 @@ class BattleSimulatorBase {
             if (selectedUnits.length > 1) {
                 selectedUnit = null;
             }
-            g_appData.selectCurrentItem(button, selectedUnit, isDoubleClick);
+            console.log(`selectedUnit.nameWithGroup: ${selectedUnit?.nameWithGroup}`);
+            g_appData.selectCurrentItem(button, selectedUnit);
         }
         g_appData.__showStatusToAttackerInfo();
 

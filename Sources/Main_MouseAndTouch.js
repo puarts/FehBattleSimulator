@@ -35,17 +35,17 @@ let g_previousDraggedTile = null;
 let g_dragoverTileHistory = new Queue(10);
 let g_attackTile = null;
 let g_assistTile = null;
+let g_moveTile = null;
 let g_dragoverTargetTileForCalcSummary = null;
 
 let g_doubleClickChecker = new DoubleClickChecker();
 
-function selectItemById(id, add = false, toggle = false, button = 0, isDoubleClick = false) {
+function selectItemById(id, add = false, toggle = false, button = 0) {
     __clearSelectedTileColor();
     if (toggle) {
         g_app.selectItemToggle(id);
-    }
-    else {
-        g_app.selectItem(id, add, button, isDoubleClick);
+    } else {
+        g_app.selectItem(id, add, button);
     }
     // 選択アイテムのタイルを更新
     for (let item of g_appData.enumerateItems()) {
@@ -63,49 +63,71 @@ function findParentTdElement(elem) {
     return currentNode;
 }
 
-function __selectItemById(id, button = 0,
-                          isShiftKey = false, isControlKey = false,
-                          isDoubleClick = false) {
-    console.log(`selected id: ${id}`);
-    if (isShiftKey) {
-        selectItemById(id, true, false);
-    } else if (isControlKey) {
-        selectItemById(id, false, true);
-    } else {
-        selectItemById(id, false, false, button, isDoubleClick);
+function __selectItemById(id, event) {
+    console.log('selected id: %o', id);
+
+    if (event.shiftKey) {
+        return selectItemById(id, true, false);
     }
+
+    if (event.ctrlKey) {
+        return selectItemById(id, false, true);
+    }
+
+    return selectItemById(
+        id,
+        false,
+        false,
+        event.button,
+    );
 }
 
 function onItemSelected(event) {
-    let button = event.button;
+    const button = event.button;
     console.log(`onItemSelected(${button})`);
-    // 左クリックならダブルクリック判定をする
-    let isLeftClick = button === 0;
+
+    if (detectDoubleClick(button)) {
+        handleDoubleClick();
+        return;
+    }
+
+    const id = resolveClickedId(event.target);
+    if (!id) return;
+
+    console.log('clicked id: %o', id);
+    __selectItemById(id, event);
+}
+
+function detectDoubleClick(button) {
+    const isLeftClick = button === 0;
+
     if (isLeftClick) {
         g_doubleClickChecker.notifyClick();
+        return g_doubleClickChecker.isDoubleClicked();
     } else {
         g_doubleClickChecker.reset();
+        return false;
     }
-    let isDoubleClick = isLeftClick && g_doubleClickChecker.isDoubleClicked();
+}
 
-    let targetElem = event.target;
-    if (targetElem.id === undefined || targetElem.id === "") {
-        let tdElem = findParentTdElement(targetElem);
-        if (tdElem != null) {
-            // タイルが選択された
-            __selectItemById(tdElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
-        }
-    } else {
-        __selectItemById(targetElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
-    }
-
-    if (isDoubleClick) {
-        for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit && !x.isActionDone)) {
+function handleDoubleClick() {
+    g_appData.enumerateSelectedItems()
+        .filter(item => item instanceof Unit)
+        .filter(unit => !unit.isActionDone)
+        .forEach(unit => {
             g_app.executeEndActionCommand(unit);
             unit.isSelected = false;
-        }
-        updateAllUi();
-    }
+        });
+    updateAllUi();
+}
+
+function resolveClickedId(elem) {
+    // 直接 id がある
+    if (elem.id) return elem.id;
+
+    // 親 td を探す
+    const td = findParentTdElement(elem);
+    return td?.id ?? null;
 }
 
 /***** ドラッグ開始時の処理 *****/
@@ -117,6 +139,7 @@ function f_dragstart(event) {
     g_dragoverTileHistory.clear();
     g_attackTile = null;
     g_assistTile = null;
+    g_moveTile = null;
     g_previousDraggedTile = null;
     // ユニットが今いる場所を移動履歴に入れる
     let unit = g_app.findUnitById(g_draggingElemId);

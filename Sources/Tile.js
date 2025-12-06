@@ -540,6 +540,9 @@ class Tile extends BattleMapElement {
         if (this._obj != null) {
             this._obj.placedTile = this;
         }
+        if (value instanceof Wall) {
+            this.type = TileType.Wall;
+        }
     }
 
     get objType() {

@@ -1284,29 +1284,15 @@ class BattleMap {
     }
 
     findWallOrBreakableWallById(id) {
-        let wall = this.findBreakbleWallById(id);
-        if (wall != null) {
-            return wall;
-        }
-        return this.findWallById(id);
+        return this.findWallById(id) || this.findBreakableWallById(id);
     }
 
     findWallById(objId) {
-        for (let i = 0; i < this._walls.length; ++i) {
-            if (this._walls[i].id == objId) {
-                return this._walls[i];
-            }
-        }
-        return null;
+        return this._walls.find(wall => wall.id === objId);
     }
 
-    findBreakbleWallById(objId) {
-        for (let i = 0; i < this._breakableWalls.length; ++i) {
-            if (this._breakableWalls[i].id == objId) {
-                return this._breakableWalls[i];
-            }
-        }
-        return null;
+    findBreakableWallById(objId) {
+        return this._breakableWalls.find(wall => wall.id === objId);
     }
 
     switchClosestDistanceToEnemy() {
