@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/puarts/FehBattleSimulator#readme",
   "devDependencies": {
+    "@types/lz-string": "^1.5.0",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0"
