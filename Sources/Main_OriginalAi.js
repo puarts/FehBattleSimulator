@@ -115,7 +115,7 @@ class OriginalAi {
                 for (let unitAndTile of targetUnit.enumerateActuallyAssistableUnitAndTiles()) {
                     let unit = unitAndTile[0];
                     let tile = unitAndTile[1];
-                    if (self.__canSupportTo(targetUnit, unit, tile)) {
+                    if (self.canUseAssistOn(targetUnit, unit, tile)) {
                         let commands = self.__createSupportCommands(targetUnit, tile, unit);
                         candidates.push(commands);
                     }

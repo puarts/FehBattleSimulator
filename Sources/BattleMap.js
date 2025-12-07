@@ -1388,7 +1388,7 @@ class BattleMap {
         for (let y = offsetY; y < height; ++y) {
             for (let x = offsetX; x < width; ++x) {
                 let tile = this.getTile(x, y);
-                if (tile.isObjPlacable() && (ignoresUnit || tile.placedUnit == null)) {
+                if (tile.isObjPlaceable() && (ignoresUnit || tile.placedUnit == null)) {
                     return tile;
                 }
             }
@@ -1401,13 +1401,13 @@ class BattleMap {
             return null;
         }
 
-        if (targetTile.isObjPlacable()) {
+        if (targetTile.isObjPlaceable()) {
             return targetTile;
         }
 
         for (let i = 0; i < targetTile.neighbors.length; ++i) {
             let tile = targetTile.neighbors[i];
-            if (tile.isObjPlacable()) {
+            if (tile.isObjPlaceable()) {
                 return tile;
             }
         }
@@ -1419,20 +1419,20 @@ class BattleMap {
         if (targetTile == null) {
             return null;
         }
-        if (targetTile.isUnitPlacable(unit)) {
+        if (targetTile.isUnitPlaceable(unit)) {
             return targetTile;
         }
 
         for (let i = 0; i < targetTile.neighbors.length; ++i) {
             let tile = targetTile.neighbors[i];
-            if (tile.isUnitPlacable(unit)) {
+            if (tile.isUnitPlaceable(unit)) {
                 return tile;
             }
         }
 
         for (let neighbor of targetTile.neighbors) {
             for (let neighborNeighbor of neighbor.neighbors) {
-                if (neighborNeighbor.isUnitPlacable(unit)) {
+                if (neighborNeighbor.isUnitPlaceable(unit)) {
                     return neighborNeighbor;
                 }
             }
@@ -1442,7 +1442,7 @@ class BattleMap {
         for (let neighbor of targetTile.neighbors) {
             for (let neighborNeighbor of neighbor.neighbors) {
                 for (let neighborNeighborNeighbor of neighborNeighbor.neighbors) {
-                    if (neighborNeighborNeighbor.isUnitPlacable(unit)) {
+                    if (neighborNeighborNeighbor.isUnitPlaceable(unit)) {
                         return neighborNeighborNeighbor;
                     }
                 }
@@ -1655,7 +1655,7 @@ class BattleMap {
 
     *enumerateAttackableTiles(attackerUnit, targetUnitTile) {
         let tiles = this.enumerateTilesInSpecifiedDistanceFrom(targetUnitTile,
-            attackerUnit.attackRangeOnMapForAttackingUnit);
+            attackerUnit.attackRangeOnMap);
         for (let tile of tiles) {
             if (tile.isMovableTileForUnit(attackerUnit)) {
                 yield tile;
@@ -1932,7 +1932,7 @@ class BattleMap {
 
     *enumeratePlaceableSafeTilesNextToThreatenedTiles(unit) {
         for (let tile of this.enumerateSafeTilesNextToThreatenedTiles(unit.groupId)) {
-            if (!tile.isUnitPlacableForUnit(unit) || tile.placedUnit != null) {
+            if (!tile.isUnitPlaceableForUnit(unit) || tile.placedUnit != null) {
                 continue;
             }
 
@@ -2142,7 +2142,7 @@ class BattleMap {
                     case PassiveC.HeartOfCrimea:
                     case Weapon.NewHeightBow:
                     case PassiveC.OpeningRetainer:
-                        yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
+                        yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
                         break;
                     case Weapon.HinokaNoKounagitou:
                         if (ally.isWeaponSpecialRefined) {
@@ -2154,10 +2154,10 @@ class BattleMap {
                     case Weapon.IzunNoKajitsu:
                         if (!ally.isWeaponSpecialRefined) {
                             if (ally.hpPercentage >= 50) {
-                                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
+                                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
                             }
                         } else {
-                            yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
+                            yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
                         }
                         break;
                     case PassiveC.SorakaranoSendo3:
@@ -2215,7 +2215,7 @@ class BattleMap {
             case Weapon.SilentPower:
                 for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
                     if (unit.partnerHeroIndex === ally.heroIndex) {
-                        yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
+                        yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
                     }
                 }
                 break;
@@ -2265,13 +2265,13 @@ class BattleMap {
                 for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
                     for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, 3)) {
                         if (ally.hpPercentage <= 99) {
-                            for (let tile of this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1)) {
+                            for (let tile of this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1)) {
                                 yield tile;
                             }
                         }
                     }
                     if (ally.hpPercentage <= 60) {
-                        yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
+                        yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 2);
                     }
                 }
                 break;
@@ -2371,7 +2371,7 @@ class BattleMap {
             }
             // そのマスが移動可能ならばワープ先に追加する
             for (let tile of nearestTiles) {
-                if (tile.isUnitPlacableForUnit(unit)) {
+                if (tile.isUnitPlaceableForUnit(unit)) {
                     yield tile;
                 }
             }
@@ -2392,7 +2392,7 @@ class BattleMap {
         allyCondFunc = _ => true) {
         for (let ally of this.enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(unit, allyDistance)) {
             if (allyCondFunc(ally)) {
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, placeableDistance);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, placeableDistance);
             }
         }
     }
@@ -2404,9 +2404,9 @@ class BattleMap {
      * @param  {Number} distance
      * @returns {Generator<Tile>}
      */
-    *__enumeratePlacableTilesWithinSpecifiedSpaces(fromTile, unit, distance) {
+    *__enumeratePlaceableTilesWithinSpecifiedSpaces(fromTile, unit, distance) {
         for (let tile of this.enumerateTilesWithinSpecifiedDistance(fromTile, distance)) {
-            if (tile.isUnitPlacableForUnit(unit)) {
+            if (tile.isUnitPlaceableForUnit(unit)) {
                 yield tile;
             }
         }
@@ -2488,7 +2488,7 @@ class BattleMap {
             let cannotWarpFromHere = isOnGreenTile && !unit.canActivatePass();
             if (!cannotWarpFromHere) {
                 for (let tile of this.__enumerateTeleportTiles(unit)) {
-                    if (!tile.isUnitPlacable(unit)) {
+                    if (!tile.isUnitPlaceable(unit)) {
                         continue;
                     }
                     if (!this.__canWarp(tile, unit)) {
@@ -2548,7 +2548,7 @@ class BattleMap {
                     }
                     break;
                 case Weapon.LoftyLeaflet:
-                    for (let tile of this.enumerateTiles(tile => tile.isUnitPlacableForUnit(unit))) {
+                    for (let tile of this.enumerateTiles(tile => tile.isUnitPlaceableForUnit(unit))) {
                         // 現在位置のタイルは含まれないのでunit.pos<X, Y>, tile.pos<X, Y>が共に等しい場合の判定は不要
                         if (Math.abs(unit.posX - tile.posX) <= 1 &&
                             Math.abs(unit.posY - tile.posY) <= 1) {
@@ -2578,7 +2578,7 @@ class BattleMap {
             enumerated[tile.positionToString()] = tile;
             if (!includesUnitPlacedTile
                 && tile.placedUnit !== unit
-                && !tile.isUnitPlacable(unit)) {
+                && !tile.isUnitPlaceable(unit)) {
                 continue;
             }
             if (tile.hasEnemyBreakableDivineVein(unit.groupId)) {
@@ -2618,7 +2618,7 @@ class BattleMap {
             if (ignoreTileFunc != null && ignoreTileFunc(neighborTile)) {
                 continue;
             }
-            for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, attackerUnit.attackRangeOnMapForAttackingUnit)) {
+            for (let tile of this.enumerateTilesInSpecifiedDistanceFrom(neighborTile, attackerUnit.attackRangeOnMap)) {
                 if (doneTiles.includes(tile)) {
                     continue;
                 }
@@ -2640,7 +2640,7 @@ class BattleMap {
 
         let doneTiles = [];
         for (let neighborTile of this.enumerateMovableTilesForEnemyThreat(unit, true, true, true)) {
-            let attackRanges = [unit.attackRangeOnMapForAttackingUnit];
+            let attackRanges = [unit.attackRangeOnMap];
             // かぜの剣スタイルは2距離で脅威度を計算
             if (unit.canActivateStyle() && !unit.hasCannotMoveStyle()) {
                 let env = new NodeEnv().setTarget(unit).setSkillOwner(unit)
@@ -2728,7 +2728,7 @@ class BattleMap {
                     } else if (unit.isStyleActive) {
                         this.setAttackableTilesInStyle(unit, tile);
                     } else {
-                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRangeOnMapForAttackingUnit)) {
+                        for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRangeOnMap)) {
                             if (!unit.attackableTiles.includes(attackableTile)) {
                                 unit.attackableTiles.push(attackableTile);
                             }
@@ -2738,7 +2738,7 @@ class BattleMap {
                     // 敵サイド
                     // 通常・スタイル両方のタイルを更新
                     // 通常時
-                    for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRangeOnMapForAttackingUnit)) {
+                    for (let attackableTile of this.enumerateTilesInSpecifiedDistanceFrom(tile, unit.attackRangeOnMap)) {
                         if (!unit.attackableTiles.includes(attackableTile)) {
                             unit.attackableTiles.push(attackableTile);
                         }
@@ -3483,49 +3483,49 @@ class BattleMap {
         let minCostMap = MapUtil.minCost(costMap, this.width, this.height, callingCircle.posX, callingCircle.posY);
         this.printMap(minCostMap, "minCostMap");
 
-        let placableMap = Array(this.width * this.height);
+        let placeableMap = Array(this.width * this.height);
         for (let [index, tile] of this._tiles.entries()) {
-            placableMap[index] = tile.isUnitPlacableForUnit(unit) ? 0 : Infinity;
+            placeableMap[index] = tile.isUnitPlaceableForUnit(unit) ? 0 : Infinity;
             if (isAlly) {
                 if ((tile.obj instanceof TrapBase && !tile.obj.isDisabled) ||
                     tile.obj instanceof DefCallingCircle) {
-                    placableMap[index] = Infinity;
+                    placeableMap[index] = Infinity;
                 }
             } else {
                 if (tile.obj instanceof OfCallingCircle) {
-                    placableMap[index] = Infinity;
+                    placeableMap[index] = Infinity;
                 }
             }
         }
-        this.printMap(placableMap, "placableMap");
-        let placableMinCostMap = ArrayUtil.add(minCostMap, placableMap);
-        this.printMap(placableMinCostMap, "placableMinCostMap");
-        let minCostIndexes = MapUtil.getMinCostIndexes(placableMinCostMap);
+        this.printMap(placeableMap, "placeableMap");
+        let placeableMinCostMap = ArrayUtil.add(minCostMap, placeableMap);
+        this.printMap(placeableMinCostMap, "placeableMinCostMap");
+        let minCostIndexes = MapUtil.getMinCostIndexes(placeableMinCostMap);
         console.log(`minCostIndexes: ${minCostIndexes.map(i => this._tiles[i].positionToString())}`);
         let sortedIndexes = MapUtil.sortIndexesByPriorityOfCallingCircleTile(minCostIndexes, this.width)
         console.log(`sortedIndexes: ${sortedIndexes.map(i => this._tiles[i].positionToString())}`);
 
         if (sortedIndexes.length === 0 ||
-            placableMinCostMap[sortedIndexes[0]] === Infinity) {
+            placeableMinCostMap[sortedIndexes[0]] === Infinity) {
             console.log(`sortedIndexes: ${sortedIndexes.map(i => this._tiles[i].positionToString())}`);
-            return this._findTileForCallingCircleWhenSurrounded(unit, callingCircle, placableMap);
+            return this._findTileForCallingCircleWhenSurrounded(unit, callingCircle, placeableMap);
         }
         console.log(`sortedIndexes[0]: ${sortedIndexes[0]}`);
         return this._tiles[sortedIndexes[0]];
     }
 
-    _findTileForCallingCircleWhenSurrounded(unit, callingCircle, placableMap) {
+    _findTileForCallingCircleWhenSurrounded(unit, callingCircle, placeableMap) {
         let distanceMap = MapUtil.calculateDistanceMap(this.width, this.height, callingCircle.posX, callingCircle.posY);
         this.printMap(distanceMap, "distanceMap");
-        let placableMinCostMap = ArrayUtil.add(distanceMap, placableMap);
-        this.printMap(placableMinCostMap, "placableMinCostMap");
-        let minCostIndexes = MapUtil.getMinCostIndexes(placableMinCostMap);
+        let placeableMinCostMap = ArrayUtil.add(distanceMap, placeableMap);
+        this.printMap(placeableMinCostMap, "placeableMinCostMap");
+        let minCostIndexes = MapUtil.getMinCostIndexes(placeableMinCostMap);
         console.log(`minCostIndexes: ${minCostIndexes.map(i => this._tiles[i].positionToString())}`);
         let sortedIndexes = MapUtil.sortIndexesByPriorityOfCallingCircleTile(minCostIndexes, this.width)
         console.log(`sortedIndexes: ${sortedIndexes.map(i => this._tiles[i].positionToString())}`);
 
         if (sortedIndexes.length === 0 ||
-            placableMinCostMap[sortedIndexes[0]] === Infinity) {
+            placeableMinCostMap[sortedIndexes[0]] === Infinity) {
             return null;
         }
         return this._tiles[sortedIndexes[0]];

@@ -5297,7 +5297,7 @@ class BattleSimulatorBase {
 
         let tiles = [];
         if (this.vm.limitsExamineRangeToThreatenedRange) {
-            for (let tile of map.enumerateTiles(x => x.allyDangerLevel > 0 && x.isUnitPlacableForUnit(currentUnit))) {
+            for (let tile of map.enumerateTiles(x => x.allyDangerLevel > 0 && x.isUnitPlaceableForUnit(currentUnit))) {
                 if (!this.vm.limitsExamineRangeToMovableRange || movableTiles.includes(tile)) {
                     tiles.push(tile);
                 }
@@ -5762,7 +5762,7 @@ class BattleSimulatorBase {
 
         let tiles = [];
         if (this.vm.limitsExamineRangeToThreatenedRange) {
-            for (let tile of map.enumerateTiles(x => x.allyDangerLevel > 0 && x.isUnitPlacableForUnit(currentUnit))) {
+            for (let tile of map.enumerateTiles(x => x.allyDangerLevel > 0 && x.isUnitPlaceableForUnit(currentUnit))) {
                 if (!this.vm.limitsExamineRangeToMovableRange || movableTiles.includes(tile)) {
                     tiles.push(tile);
                 }
@@ -6972,7 +6972,7 @@ class BattleSimulatorBase {
                 // 双界の盗賊の追跡対象計算
                 let minDist = CanNotReachTile;
                 let minTargetTile = null;
-                for (let tile of g_appData.map.enumerateTiles(tile => tile.posY === 0 && tile.isUnitPlacableForUnit(evalUnit))) {
+                for (let tile of g_appData.map.enumerateTiles(tile => tile.posY === 0 && tile.isUnitPlaceableForUnit(evalUnit))) {
                     // todo: 下には移動できない制限があるっぽい？
                     let dist = tile.calculateUnitMovementCountToThisTile(evalUnit, null, -1, false);
                     if (dist === CanNotReachTile) {
@@ -9220,7 +9220,7 @@ class BattleSimulatorBase {
     }
 
     __setAttackableUnitInfoForMoving(unit, targetableUnits, acceptTileFunc,
-        attackRange = unit.attackRangeOnMapForAttackingUnit,
+        attackRange = unit.attackRangeOnMap,
         usesStyle = false) {
         for (let tile of g_appData.map.enumerateMovableTiles(unit, false, false)) {
             if (acceptTileFunc != null && !acceptTileFunc?.(tile)) {
@@ -9243,7 +9243,7 @@ class BattleSimulatorBase {
                     unit.actionContext.attackableUnitInfos.push(info);
                 }
 
-                if (tile === unit.placedTile || tile.isUnitPlacable(unit)) {
+                if (tile === unit.placedTile || tile.isUnitPlaceable(unit)) {
                     info.tiles.push(tile);
                     info.usesStyle = usesStyle;
                 }
@@ -9658,7 +9658,7 @@ class BattleSimulatorBase {
                 continue;
             }
 
-            if (moveTile !== unit.placedTile && !tile.isUnitPlacableForUnit(targetUnit)) {
+            if (moveTile !== unit.placedTile && !tile.isUnitPlaceableForUnit(targetUnit)) {
                 continue;
             }
 
@@ -9695,7 +9695,7 @@ class BattleSimulatorBase {
         if (moveTile == null) {
             return new MovementAssistResult(false, null, null);
         }
-        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable(unit)) {
+        if (moveTile !== unit.placedTile && !moveTile.isUnitPlaceable(unit)) {
             return new MovementAssistResult(false, null, null);
         }
         return new MovementAssistResult(true, moveTile, targetUnit.placedTile);
@@ -9716,7 +9716,7 @@ class BattleSimulatorBase {
             return new MovementAssistResult(false, null, null);
         }
 
-        if (moveTile !== unit.placedTile && !moveTile.isUnitPlacable(unit)) {
+        if (moveTile !== unit.placedTile && !moveTile.isUnitPlaceable(unit)) {
             return new MovementAssistResult(false, null, null);
         }
 
@@ -9758,9 +9758,9 @@ class BattleSimulatorBase {
         }
 
         // 一旦ユニットを取り除いて配置可能かどうかをチェックする
-        let canMove = result.assistUnitTileAfterAssist.isUnitPlacableForUnit(unit);
+        let canMove = result.assistUnitTileAfterAssist.isUnitPlaceableForUnit(unit);
         if (movesTargetUnit) {
-            canMove &= result.targetUnitTileAfterAssist.isUnitPlacableForUnit(targetUnit);
+            canMove &= result.targetUnitTileAfterAssist.isUnitPlaceableForUnit(targetUnit);
         }
         moveUnit(unit, origUnitTile, false, executesTrap);
         moveUnit(targetUnit, origTargetUnitTile, false, executesTrap);
@@ -11128,7 +11128,7 @@ class BattleSimulatorBase {
      * @returns {Boolean|*|boolean}
      * @private
      */
-    __canSupportTo(supporterUnit, targetUnit, assistTargetingTile) {
+    canUseAssistOn(supporterUnit, targetUnit, assistTargetingTile) {
         if (supporterUnit.isIsolated() || targetUnit.isIsolated()) {
             return false;
         }
@@ -11475,17 +11475,26 @@ class BattleSimulatorBase {
 
     selectItem(targetId, add = false, button = 0) {
         let item = g_appData.findItemById(targetId);
-        let unit = null;
+        let targetUnit = null;
         if (item instanceof Unit) {
-            unit = item;
+            targetUnit = item;
         }
         // キャラ以外のマスを右クリックした場合に天脈を透過
-        if (!unit && button === 2) {
+        if (!targetUnit && button === 2) {
             g_appData.enableDivineVeinTransparency = !g_appData.enableDivineVeinTransparency;
             updateMapUi();
             return;
         }
-        let selectedUnits = Array.from(g_appData.enumerateUnits()).filter(u => u.isSelected);
+        let selectingUnits = Array.from(g_appData.enumerateUnits()).filter(u => u.isSelected);
+        let selectingUnit = selectingUnits.length > 0 ? selectingUnits[0] : null;
+        if (selectingUnit) {
+            // 右クリックならスタイル切り替え
+            if (selectingUnit === targetUnit && button === 2) {
+                if (selectingUnit.toggleStyleIfPossible()) {
+                    updateAllUi();
+                }
+                return;
+            }
 
         this.showItemInfo(targetId);
 
@@ -11494,25 +11503,9 @@ class BattleSimulatorBase {
         if (add) {
             g_appData.selectAddCurrentItem();
         } else {
-            let selectedUnit = selectedUnits[0];
-            if (selectedUnits.length > 1) {
-                selectedUnit = null;
-            }
-            console.log(`selectedUnit.nameWithGroup: ${selectedUnit?.nameWithGroup}`);
-            g_appData.selectCurrentItem(button, selectedUnit);
+            g_appData.selectCurrentItem();
         }
         g_appData.__showStatusToAttackerInfo();
-
-        // 右クリックならスタイル切り替え
-        if (unit && button === 2) {
-            if (unit.canActivateStyle()) {
-                unit.activateStyle();
-                updateAllUi();
-            } else if (unit.canDeactivateStyle()) {
-                unit.deactivateStyle();
-                updateAllUi();
-            }
-        }
     }
     selectItemToggle(targetId) {
         let item = g_appData.findItemById(targetId);
@@ -11775,7 +11768,7 @@ function moveToDefault(target) {
         if (target.isRequired) {
             for (let x = 0; x < 6; ++x) {
                 let tile = g_appData.map.getTile(x, 7);
-                if (tile.isObjPlacable()) {
+                if (tile.isObjPlaceable()) {
                     moveStructureToMap(target, x, 7);
                     break;
                 }
@@ -11788,7 +11781,7 @@ function moveToDefault(target) {
         if (target.isRequired) {
             for (let x = 0; x < 6; ++x) {
                 let tile = g_appData.map.getTile(x, 0);
-                if (tile.isObjPlacable()) {
+                if (tile.isObjPlaceable()) {
                     moveStructureToMap(target, x, 0);
                     break;
                 }

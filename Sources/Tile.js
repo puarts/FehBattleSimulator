@@ -237,7 +237,7 @@ class Tile extends BattleMapElement {
         return `${this.posX}_${this.posY}`;
     }
 
-    get isStructurePlacable() {
+    get isStructurePlaceable() {
         // 画像認識で使用。氷には影響ない
         return !(this.type != TileType.Normal || this.obj instanceof BreakableWall || this.isWall());
     }
@@ -354,10 +354,10 @@ class Tile extends BattleMapElement {
 
 
     isEmpty() {
-        return this.isObjPlacable() && this.isUnitPlacable();
+        return this.isObjPlaceable() && this.isUnitPlaceable();
     }
 
-    isObjPlacable() {
+    isObjPlaceable() {
         return this._type == TileType.Normal && this._obj == null;
     }
 
@@ -369,7 +369,7 @@ class Tile extends BattleMapElement {
      * @param {Unit} unit
      * @returns {boolean}
      */
-    isUnitPlacable(unit) {
+    isUnitPlaceable(unit) {
         if (unit) {
             return this.isMovableTile()
                 && this._placedUnit == null
@@ -383,15 +383,15 @@ class Tile extends BattleMapElement {
         }
     }
 
-    isUnitPlacableIncludingCurrentTile(unit) {
-        return unit.placedTile === this || this.isUnitPlacable(unit);
+    isUnitPlaceableIncludingCurrentTile(unit) {
+        return unit.placedTile === this || this.isUnitPlaceable(unit);
     }
 
     /**
      * @param {Unit} unit
      * @returns {boolean}
      */
-    isUnitPlacableForUnit(unit) {
+    isUnitPlaceableForUnit(unit) {
         return this.isMovableTileForUnit(unit)
             && this._placedUnit == null
             && !this.hasEnemyBreakableDivineVein(unit.groupId)
@@ -1138,7 +1138,7 @@ class Tile extends BattleMapElement {
         return this.hasBreakableDivineVein() && this.divineVeinGroup !== groupId;
     }
 
-    canBreakTile(unit) {
+    canUnitBreakStructure(unit) {
         if (this.hasEnemyBreakableDivineVein(unit.groupId)) {
             return true;
         }

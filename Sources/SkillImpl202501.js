@@ -10557,7 +10557,7 @@
                     IS_TARGET_BEAST_OR_DRAGON_TYPE_NODE,
                 ),
             ),
-            TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(2, SKILL_OWNERS_PLACED_SPACE_NODE),
+            TARGETS_PLACEABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(2, SKILL_OWNERS_PLACED_SPACE_NODE),
         ),
     );
     WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
@@ -10569,7 +10569,7 @@
                 IS_TARGET_WITHIN_N_SPACES_OF_SKILL_OWNER_NODE(6),
             ),
             // ally can move to a space within 2 spaces of unit,
-            TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(2, SKILL_OWNERS_PLACED_SPACE_NODE),
+            TARGETS_PLACEABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(2, SKILL_OWNERS_PLACED_SPACE_NODE),
             // even if that movement exceeds the Canto distance limit.
         ),
     );
@@ -13766,7 +13766,7 @@
     // target ally is the ally with the highest Atk on player team, excluding unit.)
     // Unit can move to a space within 2 spaces of target ally.
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
-        TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE(2,
+        TARGETS_PLACEABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE(2,
             SKILL_OWNERS_PARTNERS_OTHERWISE_HIGHEST_STAT_ALLIES_NODE(StatusIndex.ATK))
     );
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
@@ -19927,7 +19927,7 @@
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
         // Unit can move to a space adjacent to any ally within 5 spaces.
         new ForEachAllyForSpacesNode(IS_TARGET_WITHIN_5_SPACES_OF_SKILL_OWNER_NODE,
-            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(1, TARGETS_PLACED_SPACE_NODE),
+            new SkillOwnerPlaceableSpacesWithinNSpacesFromSpaceNode(1, TARGETS_PLACED_SPACE_NODE),
         ),
     );
     // If a Rally or movement Assist skill is used by unit,
@@ -20370,7 +20370,7 @@
                 HAS_SKILL_OWNER_ENTERED_COMBAT_DURING_CURRENT_TURN_NODE,
                 HAS_SKILL_OWNER_USED_ASSIST_DURING_CURRENT_TURN_NODE
             ),
-            new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(2, SKILL_OWNERS_PLACED_SPACE_NODE),
+            new TargetsPlaceableSpacesWithinNSpacesFromSpaceNode(2, SKILL_OWNERS_PLACED_SPACE_NODE),
         ),
     );
 

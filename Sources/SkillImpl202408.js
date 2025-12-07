@@ -5091,11 +5091,11 @@ function setDiscord(skillId, statsRatios) {
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => UNITE_SPACES_NODE(
         // Unit can move to a space within 2 spaces of any ally that has entered combat during the current turn.
         new ForEachAllyForSpacesNode(new HasTargetEnteredCombatDuringTheCurrentTurnNode,
-            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
+            new SkillOwnerPlaceableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
         ),
         // Unit can move to a space within 2 spaces of any ally within 2 spaces.
         new ForEachAllyForSpacesNode(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
-            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
+            new SkillOwnerPlaceableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 

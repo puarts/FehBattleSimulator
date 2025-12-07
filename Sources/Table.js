@@ -37,7 +37,7 @@ function setCellFocusBorder(posX, posY, canMove = true) {
     }
 }
 
-function clearCellFocusBorder(posX, posY) {
+function clearCellFocusStyle(posX, posY) {
     let cellId = getCellId(posX, posY);
     let cell = document.getElementById(cellId);
     const cellRoot = cell.querySelector(":scope > .cell-root");
@@ -47,9 +47,9 @@ function clearCellFocusBorder(posX, posY) {
 }
 
 class BackgroundImageInfo {
-    constructor(url, postionStyle = "left top", sizeStyle = "contain", repeats = false) {
+    constructor(url, positionStyle = "left top", sizeStyle = "contain", repeats = false) {
         this.url = url;
-        this.positionStyle = postionStyle;
+        this.positionStyle = positionStyle;
         this.sizeStyle = sizeStyle;
         this.repeats = repeats;
     }

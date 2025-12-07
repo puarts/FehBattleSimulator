@@ -251,7 +251,7 @@ class ImageProcessor {
                     let mapPosX = Math.floor((x + halfUnitWidth) / unitWidth);
                     let mapPosY = Math.floor((y + halfUnitHeight) / unitHeight);
                     let tile = g_appData.map.getTile(mapPosX, mapPosY);
-                    if (tile == null || !tile.isStructurePlacable) {
+                    if (tile == null || !tile.isStructurePlaceable) {
                         continue;
                     }
                     if (self.vm.ignoresUnitTileForAutoMapReplace && tile.placedUnit != null) {

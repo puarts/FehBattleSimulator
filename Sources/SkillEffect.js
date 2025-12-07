@@ -1199,7 +1199,7 @@ class CanPlaceTargetOnSpaceNode extends BoolNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let tile = this.getTile(env);
-        let result = tile.isUnitPlacableForUnit(unit);
+        let result = tile.isUnitPlaceableForUnit(unit);
         env.debug(`${unit.nameWithGroup}は${tile}に配置可能か: ${result}`);
         return result;
     }
@@ -5563,7 +5563,7 @@ class ForEachAllyForSpacesNode extends ForEachTargetForSpacesNode {
 const FOR_EACH_ALLY_FOR_SPACES_NODE =
     (predNode, ...children) => new ForEachAllyForSpacesNode(predNode, ...children);
 
-class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
+class TargetsPlaceableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -5587,7 +5587,7 @@ class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
         let n = this._nNode.evaluate(env);
         let resultSet = new Set();
         for (let tile of this._spacesNode.evaluate(env)) {
-            let tileSet = new Set(env.battleMap.__enumeratePlacableTilesWithinSpecifiedSpaces(tile, unit, n));
+            let tileSet = new Set(env.battleMap.__enumeratePlaceableTilesWithinSpecifiedSpaces(tile, unit, n));
             env.debug(`${unit.nameWithGroup}が移動可能な${tile.toPlacedUnitString()}の周囲${n}以内のマス: ${SetUtil.toString(tileSet)}`);
             resultSet = SetUtil.union(resultSet, tileSet);
         }
@@ -5595,10 +5595,10 @@ class TargetsPlacableSpacesWithinNSpacesFromSpaceNode extends SpacesNode {
     }
 }
 
-const TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
-    (n, spacesNode) => new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
+const TARGETS_PLACEABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
+    (n, spacesNode) => new TargetsPlaceableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
-class TargetsPlacableSpacesWithinNSpacesFromUnitsNode extends SpacesNode {
+class TargetsPlaceableSpacesWithinNSpacesFromUnitsNode extends SpacesNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -5619,7 +5619,7 @@ class TargetsPlacableSpacesWithinNSpacesFromUnitsNode extends SpacesNode {
         let units = this._unitsNode.evaluate(env);
         let resultSet = new Set();
         for (let u of units) {
-            let tileSet = new Set(env.battleMap.__enumeratePlacableTilesWithinSpecifiedSpaces(u, unit, n));
+            let tileSet = new Set(env.battleMap.__enumeratePlaceableTilesWithinSpecifiedSpaces(u, unit, n));
             env.debug(`${unit.nameWithGroup}が移動可能な${u.nameWithGroup}の周囲${n}以内のマス: ${SetUtil.toString(tileSet)}`);
             resultSet = SetUtil.union(resultSet, tileSet);
         }
@@ -5627,10 +5627,10 @@ class TargetsPlacableSpacesWithinNSpacesFromUnitsNode extends SpacesNode {
     }
 }
 
-const TARGETS_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE =
-    (n, units) => new TargetsPlacableSpacesWithinNSpacesFromUnitsNode(n, units);
+const TARGETS_PLACEABLE_SPACES_WITHIN_N_SPACES_FROM_UNITS_NODE =
+    (n, units) => new TargetsPlaceableSpacesWithinNSpacesFromUnitsNode(n, units);
 
-class SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode extends TargetsPlacableSpacesWithinNSpacesFromSpaceNode {
+class SkillOwnerPlaceableSpacesWithinNSpacesFromSpaceNode extends TargetsPlaceableSpacesWithinNSpacesFromSpaceNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
     }
@@ -5639,11 +5639,11 @@ class SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode extends TargetsPlacable
 /**
  * @param n
  * @param spacesNode
- * @returns {SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode}
+ * @returns {SkillOwnerPlaceableSpacesWithinNSpacesFromSpaceNode}
  * @constructor
  */
-const SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
-    (n, spacesNode) => new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
+const SKILL_OWNER_PLACEABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE =
+    (n, spacesNode) => new SkillOwnerPlaceableSpacesWithinNSpacesFromSpaceNode(n, spacesNode);
 
 class CrossSpacesNode extends SpacesNode {
     evaluate(env) {

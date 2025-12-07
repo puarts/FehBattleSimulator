@@ -669,7 +669,7 @@
             function* (targetUnit, allyUnit) {
                 // 周囲2マス以内の味方歩行、重装は、自身の周囲2マス以内に移動可能
                 if (targetUnit.distance(allyUnit) <= distance && pred(targetUnit)) {
-                    yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                    yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
                 }
             }
         );
@@ -2182,7 +2182,7 @@
     enumerateTeleportTilesForAllyFuncMap.set(skillId,
         function* (targetUnit, allyUnit) {
             if (targetUnit.distance(allyUnit) <= 2) {
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );
@@ -2938,7 +2938,7 @@
             // 現在のターン中に自分が戦闘を行っている時、
             // 周囲5マス以内の味方は、自身の周囲2マス以内に移動可能
             if (allyUnit.isCombatDone && allyUnit.distance(targetUnit) <= 5) {
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );
@@ -4288,7 +4288,7 @@
             for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
                 // HPが50%以下の味方の隣接マスへ移動可能
                 if (ally.hpPercentage <= 50) {
-                    yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1);
+                    yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1);
                 }
             }
         }
@@ -4840,7 +4840,7 @@ function setLantern(skillId) {
         function* (targetUnit, allyUnit) {
             if (allyUnit.hpPercentage <= 60 ||
                 allyUnit.isCombatDone || allyUnit.isSupportDone) {
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );
@@ -7188,7 +7188,7 @@ function setLantern(skillId) {
                 targetUnit.moveType === MoveType.Flying;
             if (targetUnit.distance(allyUnit) <= 2 && isTargetMoveType) {
                 // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );

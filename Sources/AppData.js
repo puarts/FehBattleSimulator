@@ -1747,13 +1747,10 @@ class AppData extends UnitManager {
         this.setAttackerAndAttackTargetInfo();
     }
 
-    selectCurrentItem(button, selectedUnit) {
-        let currentItem = this.currentItem;
-        console.log('currentItem: %o', currentItem);
-        console.log(`currentItem?.posX: ${currentItem?.posX}`);
+    selectCurrentItem() {
         for (let item of this.enumerateItems()) {
-            let selected = item === currentItem;
-            if (item.isSelected && selected && button !== 2) {
+            let selected = item === this.currentItem;
+            if (item.isSelected && selected) {
                 item.isSelected = false;
             } else {
                 item.isSelected = selected;

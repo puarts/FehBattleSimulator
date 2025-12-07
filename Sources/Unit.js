@@ -3797,7 +3797,7 @@ class Unit extends BattleMapElement {
         return getAttackRangeOfWeaponType(this.weaponType);
     }
 
-    get attackRangeOnMapForAttackingUnit() {
+    get attackRangeOnMap() {
         if (this.isStyleActive) {
             let env = new NodeEnv().setTarget(this).setSkillOwner(this)
                 .setName('スタイル時の射程').setLogLevel(LoggerBase.LogLevel.OFF);
@@ -6981,6 +6981,17 @@ class Unit extends BattleMapElement {
             return false;
         }
         return this.hasAvailableStyle() && this.isStyleActive;
+    }
+
+    toggleStyleIfPossible() {
+        if (this.canActivateStyle()) {
+            this.activateStyle();
+            return true;
+        } else if (this.canDeactivateStyle()) {
+            this.deactivateStyle();
+            return true;
+        }
+        return false;
     }
 
     hasAvailableStyleButCannotActivate() {

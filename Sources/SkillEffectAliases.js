@@ -751,7 +751,7 @@ const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = (...nodes) =>
 // spaces within m spaces of allies within n spaces
 let SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE =
     (n, m) => new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
-        new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(m, SKILL_OWNERS_PLACED_SPACE_NODE),
+        new TargetsPlaceableSpacesWithinNSpacesFromSpaceNode(m, SKILL_OWNERS_PLACED_SPACE_NODE),
     );
 
 /**
@@ -760,7 +760,7 @@ let SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE =
 function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, n, m) {
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => UNITE_SPACES_NODE(
         FOR_EACH_ALLY_FOR_SPACES_NODE(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
-            SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(n, TARGETS_PLACED_SPACE_NODE),
+            SKILL_OWNER_PLACEABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(n, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 }
