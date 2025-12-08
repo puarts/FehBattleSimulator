@@ -2,7 +2,13 @@
 /// @brief Vueのcomponentの定義です。
 
 function initVueComponents() {
-    const DelayTimeForUnitAndStructureComponent = 0;
+    Vue.component('battle-map', {
+        template: '<div id="mapArea"></div>',
+        mounted() {
+            // 初回マウント時に既存のロジックをそのまま呼ぶだけ
+            updateMapUi();
+        }
+    });
     Vue.component('unit-detail', {
         props: ['value'],
         template: `
