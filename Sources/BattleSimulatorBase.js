@@ -3832,6 +3832,7 @@ class BattleSimulatorBase {
             atkUnit.isStyleActivatedInThisTurn = true;
             atkUnit.styleActivationsCount++;
         }
+        atkUnit.precombatSpecialTiles = [];
 
         // this.clearSimpleLog();
         this.writeSimpleLogLine(this.damageCalc.simpleLog);
