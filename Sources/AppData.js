@@ -1751,9 +1751,7 @@ class AppData extends UnitManager {
         for (let item of this.enumerateItems()) {
             let selected = item === this.currentItem;
             if (item.isSelected && selected) {
-                if (item instanceof Unit && item.isCantoActivating) {
-                    item.isSelected = true;
-                } else {
+                if (!(item instanceof Unit && item.isCantoActivating)) {
                     item.isSelected = false;
                 }
             } else {

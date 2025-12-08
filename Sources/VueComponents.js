@@ -324,8 +324,8 @@ function initVueComponents() {
                       <status-label v-bind:statusType="StatusType.Spd" v-bind:unit="value"></status-label>
                     </th>
                     <td class='param'>
-                    <!-- <input class='numeric' v-model="value.spdWithSkills"
-                          type="number" min="1" max="99" step="1" readonly="readonly"> -->
+                      <!-- <input class='numeric' v-model="value.spdWithSkills"
+                            type="number" min="1" max="99" step="1" readonly="readonly"> -->
                       {{ value.spdWithSkills - value.spdAdd }} + {{ value.getGreatTalent(StatusIndex.SPD) }}
                     </td>
                     <td class='param'>
@@ -694,56 +694,6 @@ function initVueComponents() {
         </span>
         `,
     });
-
-    Vue.component('select2_unwatch', {
-        template: '<select></select>',
-        props: {
-            options: Array,
-            value: Number,
-        },
-
-        mounted: function () {
-            $(this.$el)
-                // init select2
-                .select2({data: this.options})
-                .val(this.value)
-                .on('change', (event) =>
-                    this.$emit('input', parseInt(event.target.value, 10))
-                )
-                .trigger('change')
-        },
-        watch: {
-            value: function (value) {
-                // update value
-                $(this.$el)
-                    .val(value)
-                // .trigger('change')
-            },
-            options: function (options) {
-                // update options
-                $(this.$el).select2({data: options})
-                // .trigger('change')
-            }
-        },
-        destroyed: function () {
-            $(this.$el).off().select2('destroy')
-        }
-    });
-
-
-    function extractUnitAndSkillType(elemName) {
-        let unit = null;
-        let skillType = null;
-        if (elemName != null || elemName !== "") {
-            let split = elemName.split("-");
-            if (split.length === 2) {
-                let unitId = split[0];
-                skillType = split[1];
-                unit = g_appData.findItemById(unitId);
-            }
-        }
-        return [unit, skillType];
-    }
 
     // select2 を使うためのVueコンポーネント
     Vue.component('select2', {
