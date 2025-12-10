@@ -1403,20 +1403,29 @@ function initVueComponents() {
         name: 'MapButton',
         props: {
             testMethod: {type: Function, required: false},
-            getApp: {type: Function, required: true},
-            getAttacker: {type: Function, required: true},
-            getCurrentUnit: {type: Function, required: true},
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator'])
         },
         methods: {
+            getAttacker: function () {
+                return this.battleSimulator.vm.getAttacker();
+            },
+            getCurrentUnit: function () {
+                return this.battleSimulator.vm.getCurrentUnit();
+            },
             canDisplayDuoButton: function () {
                 let attacker = this.getAttacker();
+                if (!attacker) {
+                    console.log('no attacker');
+                }
                 if (!attacker) return false;
-                return attacker.isDuoAllyHero && this.getApp()?.canDisplayDuoOrHarmonizedButton(attacker);
+                return attacker.isDuoAllyHero && this.battleSimulator.canDisplayDuoOrHarmonizedButton(attacker);
             },
             canDisplayHarmonicButton: function () {
                 let attacker = this.getAttacker();
                 if (!attacker) return false;
-                return attacker.isHarmonicAllyHero && this.getApp()?.canDisplayDuoOrHarmonizedButton(attacker);
+                return attacker.isHarmonicAllyHero && this.battleSimulator.canDisplayDuoOrHarmonizedButton(attacker);
             },
             canDisplayStyleButton: function () {
                 let currentUnit = this.getCurrentUnit();
@@ -1434,11 +1443,11 @@ function initVueComponents() {
             },
             onDuoOrHarmonizedSkillClick() {
                 if (this.canActivateDuoSkillOrHarmonizedSkill()) {
-                    this.getApp().activateDuoOrHarmonizedSkill(this.getAttacker());
+                    this.battleSimulator.activateDuoOrHarmonizedSkill(this.getAttacker());
                 }
             },
             canActivateDuoSkillOrHarmonizedSkill: function () {
-                return this.getApp().canActivateDuoSkillOrHarmonizedSkill(this.getAttacker());
+                return this.battleSimulator.canActivateDuoSkillOrHarmonizedSkill(this.getAttacker());
             },
             canActivateStyle: function () {
                 let currentUnit = this.getCurrentUnit();
@@ -1480,8 +1489,8 @@ function initVueComponents() {
                         ? 'map-activate-style-button'
                         : 'map-deactivate-style-button'"
                       @click="canActivateStyle()
-                        ? getApp().activateStyleSkill(getCurrentUnit())
-                        : getApp().deactivateStyleSkill(getCurrentUnit())"
+                        ? battleSimulator.activateStyleSkill(getCurrentUnit())
+                        : battleSimulator.deactivateStyleSkill(getCurrentUnit())"
                   />
                   <span v-if="getCurrentUnit()?.hasAvailableStyleButCannotActivate()">
                       <input type="button"
@@ -1497,12 +1506,6 @@ function initVueComponents() {
     Vue.component('ControlButtons', {
         name: 'ControlButtons',
         props: {
-            getApp: {type: Function, required: true},
-            getAttacker: {type: Function, required: true},
-            getCurrentUnit: {type: Function, required: true},
-            map: {type: Map, required: true},
-            updateMap: {type: Function, required: true},
-            endTurn: {type: Function, required: true},
             saveSettings: {type: Function, required: true},
             globalBattleContext: {type: GlobalBattleContext, required: true},
             showSettingDialog: {type: Function, required: true},
@@ -1520,12 +1523,6 @@ function initVueComponents() {
         template: `
             <div class="control-panel">
                 <upper-buttons
-                        :get-app="getApp"
-                        :get-attacker="getAttacker"
-                        :get-current-unit="getCurrentUnit"
-                        :map="map"
-                        :update-map="updateMap"
-                        :end-turn="endTurn"
                         :save-settings="saveSettings"
                         :global-battle-context="globalBattleContext"
                         :show-setting-dialog="showSettingDialog"
@@ -1538,11 +1535,6 @@ function initVueComponents() {
                 >
                 </upper-buttons>
                 <lower-buttons
-                        :get-app="getApp"
-                        :get-attacker="getAttacker"
-                        :get-current-unit="getCurrentUnit"
-                        :map="map"
-                        :update-map="updateMap"
                         :save-settings="saveSettings"
                         :global-battle-context="globalBattleContext"
                         :show-setting-dialog="showSettingDialog"
@@ -1560,40 +1552,38 @@ function initVueComponents() {
     Vue.component('UpperButtons', {
         name: 'UpperButtons',
         props: {
-            getApp: {type: Function, required: true},
-            getAttacker: {type: Function, required: true},
-            getCurrentUnit: {type: Function, required: true},
-            map: {type: Map, required: true},
-            endTurn: {type: Function, required: true},
             globalBattleContext: {type: GlobalBattleContext, required: true},
             loadLazyImages: {type: Function, required: true},
             showFlash: {type: Function, required: true},
         },
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData'])
+        },
         methods: {
+            updateMap() {
+                this.$store.dispatch('updateMap');
+            },
+            endTurn() {
+                this.battleSimulator.vm.endTurn();
+            },
             onSaveSettings() {
-                let app = this.getApp();
-                if (app) {
-                    app.clearSimpleLog();
-                    saveSettings();
-                    let toCookie = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
-                    if (toCookie) {
-                        this.showFlash('設定を保存しました', 'warning', true);
-                    } else {
-                        this.showFlash('設定を保存しました', 'success', true);
-                    }
+                this.battleSimulator.clearSimpleLog();
+                saveSettings();
+                let toCookie = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+                if (toCookie) {
+                    this.showFlash('設定を保存しました', 'warning', true);
+                } else {
+                    this.showFlash('設定を保存しました', 'success', true);
                 }
             },
             onLoadSettings() {
-                let app = this.getApp();
-                if (app) {
-                    app.clearSimpleLog();
-                    loadSettings();
-                    let fromCookies = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
-                    if (fromCookies) {
-                        this.showFlash('設定を読み込みました', 'warning', true);
-                    } else {
-                        this.showFlash('設定を読み込みました', 'success', true);
-                    }
+                this.battleSimulator.clearSimpleLog();
+                loadSettings();
+                let fromCookies = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
+                if (fromCookies) {
+                    this.showFlash('設定を読み込みました', 'warning', true);
+                } else {
+                    this.showFlash('設定を読み込みました', 'success', true);
                 }
             },
         },
@@ -1602,17 +1592,17 @@ function initVueComponents() {
         },
         template: `
             <div class="control-row">
-                <span v-if="map.showEnemyAttackRange == true">
+                <span v-if="appData.map.showEnemyAttackRange === true">
                     <input type="button"
                         style="background-image: url(/AetherRaidTacticsBoard/images/DangerAreaEnabled.png) "
                         class="fehButton imageButton"
-                        @click="map.switchEnemyAttackRange();updateMap();">
+                        @click="appData.map.switchEnemyAttackRange();updateMap();">
                 </span>
-                <span v-if="map.showEnemyAttackRange == false">
+                <span v-if="appData.map.showEnemyAttackRange === false">
                     <input type="button"
                         style="background-image: url(/AetherRaidTacticsBoard/images/DangerAreaDisabled.png) "
                         class="fehButton imageButton"
-                        @click="map.switchEnemyAttackRange();updateMap();">
+                        @click="appData.map.switchEnemyAttackRange();updateMap();">
                 </span>
 
                 <input type="button" style="background-image: url(/images/dummy.png) "
@@ -1625,15 +1615,15 @@ function initVueComponents() {
                     @click="onLoadSettings">
 
                 <span
-                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
+                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType === UnitGroupType.Ally">
                     <input type="button"
                         style="background-image: url(/AetherRaidTacticsBoard/images/AutoPlay.png) "
                         class="fehButton imageButton"
-                        @click="getApp?.().clearLog(); getApp?.().simulateAllyAction();">
+                        @click="battleSimulator.clearLog(); battleSimulator.simulateAllyAction();">
                 </span>
                 <span
                     class="control-row-5"
-                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Ally">
+                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType === UnitGroupType.Ally">
                     <input type="button"
                         style="background-image: url(/AetherRaidTacticsBoard/images/EndTurn.png)"
                         class="fehButton imageButton" @click="endTurn">
@@ -1641,11 +1631,11 @@ function initVueComponents() {
 
                 <span
                     class="control-row-5"
-                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType == UnitGroupType.Enemy">
+                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType === UnitGroupType.Enemy">
                     <input type="button"
                         style="background-image: url(/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
                         class="fehButton imageButton"
-                        @click="getApp?.().clearLog(); getApp?.().simulateEnemyAction();">
+                        @click="battleSimulator.clearLog(); battleSimulator.simulateEnemyAction();">
                 </span>
             </div>
         `,
@@ -1654,9 +1644,6 @@ function initVueComponents() {
     Vue.component('LowerButtons', {
         name: 'LowerButtons',
         props: {
-            getApp: {type: Function, required: true},
-            getAttacker: {type: Function, required: true},
-            getCurrentUnit: {type: Function, required: true},
             showSettingDialog: {type: Function, required: true},
             showImportDialog: {type: Function, required: true},
             showExportDialog: {type: Function, required: true},
@@ -1687,11 +1674,7 @@ function initVueComponents() {
                 <label for="enableSound" class="fehButton"
                     style="background-image: url('/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
 
-                <map-button
-                        :get-app="getApp"
-                        :get-attacker="getAttacker"
-                        :get-current-unit="getCurrentUnit"
-                >
+                <map-button>
                 </map-button>
             </div>
         `
@@ -1899,7 +1882,6 @@ function initVueComponents() {
 
     Vue.component('SimulationControls', {
         props: {
-            getApp: {type: Function, required: true},
             isEnemyActionTriggered: Boolean,
             simulatesEnemyActionOneByOne: Boolean,
             isIconOverlayDisabled: Boolean,
@@ -1999,11 +1981,13 @@ function initVueComponents() {
 
     Vue.component('debug-buttons', {
         props: {
-            getApp: {type: Function, required: true},
             resetUnitRandom: {type: Function, required: true},
             activateAllUnit: {type: Function, required: true},
             resetUnitForTesting: {type: Function, required: true},
             openAutoClearDialog: {type: Function, required: true},
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator']),
         },
         template: `
             <div>
@@ -2011,7 +1995,7 @@ function initVueComponents() {
                 type="button"
                 value="敵の動きを1ターンシミュレート"
                 class="buttonUi debug-button"
-                @click="getApp?.().simulateEnemiesForCurrentTurn();"
+                @click="battleSimulator.simulateEnemiesForCurrentTurn();"
               />
               <input
                 type="button"
@@ -2041,7 +2025,7 @@ function initVueComponents() {
                 type="button"
                 value="全アイテム情報出力"
                 class="buttonUi debug-button"
-                @click="getApp?.().logAllItemInfos();"
+                @click="battleSimulator.logAllItemInfos();"
               />
             </div>
           `
@@ -2049,7 +2033,6 @@ function initVueComponents() {
 
     Vue.component('log-panel', {
         props: {
-            getApp: {type: Function, required: true},
             simulatorLogLevel: {type: Number, required: true},
             simulatorLogLevelOption: {type: Array, required: true},
             saveSimulatorLogLevel: {type: Function, required: true},
@@ -2058,12 +2041,10 @@ function initVueComponents() {
             saveSkillLogLevel: {type: Function, required: true},
             copyDebugLogToClipboard: {type: Function, required: true},
         },
+        computed: {
+            ...Vuex.mapState(['battleSimulator'])
+        },
         methods: {
-            clearLog() {
-                if (this.getApp) {
-                    this.getApp().clearLog();
-                }
-            },
             onSimulatorLogLevelChange(e) {
                 const value = Number(e.target.value);
                 this.$emit('update:simulatorLogLevel', value);
@@ -2085,7 +2066,7 @@ function initVueComponents() {
                   {{ option.text }}
                 </option>
               </select>
-              <input type="button" @click="clearLog" value="クリア" style="font-size: 8px;" />
+              <input type="button" @click="battleSimulator.clearLog" value="クリア" style="font-size: 8px;" />
               <input type="button" @click="copyDebugLogToClipboard" value="コピー" style="font-size: 8px;" />
 
               <label for="skillLogLevel" style="font-size:12px"><b>スキル効果ログレベル</b></label>
@@ -2602,10 +2583,12 @@ function initVueComponents() {
 
     Vue.component('log-action-buttons', {
         props: {
-            getApp: {type: Function, required: true},
             onCopy: {type: Function, required: true},
             onInfo: {type: Function, required: false},
             showFlash: {type: Function, required: true},
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData'])
         },
         methods: {
             defaultInfoHandler() {
@@ -2614,20 +2597,13 @@ function initVueComponents() {
                 if (pop?.togglePopover) pop.togglePopover();
             },
             enablesDivineVeinTransparency() {
-                let appData = this.getApp()?.vm;
-                if (!appData) {
-                    return false;
-                }
-                return appData.enableDivineVeinTransparency;
+                return this.appData.enableDivineVeinTransparency;
             },
             onClickDivineVeinTransparency() {
                 console.log(`onClickDivineVeinTransparency`);
-                let appData = this.getApp()?.vm;
-                if (appData) {
-                    appData.enableDivineVeinTransparency = !appData.enableDivineVeinTransparency;
-                    console.log(`enableDivineVeinTransparency: ${appData.enableDivineVeinTransparency}`);
-                    updateAllUi();
-                }
+                this.appData.enableDivineVeinTransparency = !this.appData.enableDivineVeinTransparency;
+                console.log(`enableDivineVeinTransparency: ${this.appData.enableDivineVeinTransparency}`);
+                updateAllUi();
             },
         },
         template: `
@@ -2636,7 +2612,7 @@ function initVueComponents() {
             <i 
               class="fa-solid fa-eraser clear-icon button-row-item button-row-icon"
               title="クリア"
-              @click="getApp().clearSimpleLog();"
+              @click="this.battleSiumlator.clearSimpleLog();"
             ></i>
 
             <!-- コピー（クリップボード） -->
