@@ -369,12 +369,6 @@
                             <td colspan="2">
                                 <div class="buttonUi">
                                     <control-buttons
-                                            :get-app="getApp"
-                                            :get-attacker="getAttacker"
-                                            :get-current-unit="getCurrentUnit"
-                                            :map="map"
-                                            :update-map="updateMap"
-                                            :end-turn="endTurn"
                                             :save-settings="saveSettings"
                                             :global-battle-context="globalBattleContext"
                                             :show-setting-dialog="showSettingDialog"
@@ -1420,6 +1414,9 @@
 
     <!-- vue.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+
+    <!-- vuex.js -->
+    <script src="https://unpkg.com/vuex@3.6.2/dist/vuex.min.js"></script>
 
     <!-- sortable.js -->
     <script async src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>

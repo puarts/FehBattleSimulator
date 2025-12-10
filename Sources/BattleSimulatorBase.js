@@ -1004,8 +1004,26 @@ class BattleSimulatorBase {
             }
         }
 
+        // Vuex を Vue に登録
+        Vue.use(Vuex);
+
+        // ストア作成
+        const store = new Vuex.Store({
+            state: {
+                appData: appData,
+                battleSimulator: this,
+            },
+            mutations: {
+            },
+            actions: {
+                updateMap({ state }, payload) {
+                    return updateMap();
+                }
+            }
+        });
         return new Vue({
             el: "#app",
+            store,
             data: appData,
             methods: this.methods,
         });
