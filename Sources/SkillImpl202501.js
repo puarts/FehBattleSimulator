@@ -237,7 +237,7 @@
 // 🌙 Aether’s Course
 {
     let skillId = Special.AethersCourse;
-    setSpecialCountAndType(skillId, 5, true, false, false);
+    setSpecialCountAndType(skillId, 5, false, true, false, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // When Special triggers, boosts damage
         // by the greater of unit’s or foe’s Def,
@@ -332,8 +332,10 @@
             MAX_UNITS_NODE(
                 FILTER_UNITS_NODE(
                     SKILL_OWNERS_ALLIES_ON_MAP_NODE,
-                    ARE_TARGET_AND_SKILL_OWNERS_HAS_SAME_TITLE_NODE,
-                    IS_TARGET_ACTION_DONE_NODE,
+                    AND_NODE(
+                        ARE_TARGET_AND_SKILL_OWNERS_HAS_SAME_TITLE_NODE,
+                        IS_TARGET_ACTION_DONE_NODE,
+                    ),
                 ),
                 TARGETS_HP_ON_MAP_NODE,
             ),
@@ -460,9 +462,11 @@
             AND_NODE(
                 IS_STYLE_ACTIVE(style),
                 // (excluding when foe triggers [Savior]).
-                NOT_NODE(DOES_TARGET_TRIGGER_SAVIOR_NODE),
+                NOT_NODE(FOR_TARGETS_FOE_NODE(DOES_TARGET_TRIGGER_SAVIOR_NODE)),
                 // armored and cavalry foes during combat
-                OR_NODE(IS_FOE_ARMOR_NODE, IS_FOE_CAVALRY_NODE),
+                FOR_TARGETS_FOE_NODE(
+                    OR_NODE(IS_TARGET_ARMOR_NODE, IS_TARGET_CAVALRY_NODE),
+                ),
             ),
             // Grants weapon-triangle advantage against and inflicts disadvantage on
             TARGETS_TRIANGLE_ADVANTAGE_NODE,
@@ -500,14 +504,16 @@
 
 // 💫 Harmonized Skill
 {
-    let skillId = getDuoOrHarmonizedSkillId(Hero.HarmonizedIke);
+    let skillId = getDuoOrHarmonizedSkillId(Hero.HarmonizedRyn);
     let alliesNode =
         CACHE_NODE(`${skillId}_同じ出典の最もHPが高い行動済みの味方`,
             MAX_UNITS_NODE(
                 FILTER_UNITS_NODE(
                     SKILL_OWNERS_ALLIES_ON_MAP_NODE,
-                    ARE_TARGET_AND_SKILL_OWNERS_HAS_SAME_TITLE_NODE,
-                    IS_TARGET_ACTION_DONE_NODE,
+                    AND_NODE(
+                        ARE_TARGET_AND_SKILL_OWNERS_HAS_SAME_TITLE_NODE,
+                        IS_TARGET_ACTION_DONE_NODE,
+                    ),
                 ),
                 TARGETS_HP_ON_MAP_NODE,
             ),
@@ -588,7 +594,7 @@
 {
     let skillId = Special.DragonIce;
     // CD: 4
-    setSpecialCountAndType(skillId, 4, true, false, false);
+    setSpecialCountAndType(skillId, 4, true, true, false, false);
     WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
         // Boosts damage by 80% of unit’s Res
         BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(PERCENTAGE_NODE(80, UNITS_RES_NODE)),

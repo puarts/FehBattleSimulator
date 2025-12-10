@@ -1784,9 +1784,9 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDu
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.specialCountReductionBeforeFirstFollowupAttack += n;
-        let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
-        env.info(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} → ${reduction}`);
+        const origin = unit.battleContext.specialCountReductionBeforeFirstFollowupAttack;
+        const result = unit.battleContext.specialCountReductionBeforeFirstFollowupAttack += n;
+        env.info(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${origin} → ${result}`);
     }
 }
 

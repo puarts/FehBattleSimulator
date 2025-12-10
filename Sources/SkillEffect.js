@@ -3986,7 +3986,7 @@ class IsTargetMoveTypeNode extends BoolNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let result = unit.moveType === this._moveType.evaluate(env);
-        env.debug(`${unit.nameWithGroup}は${name}か: ${result}`);
+        env.debug(`${unit.nameWithGroup}は${this._name}か: ${result}`);
         return result;
     }
 }

@@ -84,8 +84,8 @@ const Hero = {
     DuoFreyja: 1336,
     DuoElincia: 1340,
     DuoGullveigNinja: 1348,
-    HarmonizedIke: 10000,
-    HarmonizedRyn: 10001,
+    HarmonizedIke: 1353,
+    HarmonizedRyn: 1354,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
