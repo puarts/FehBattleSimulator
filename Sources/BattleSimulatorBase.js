@@ -834,9 +834,6 @@ class BattleSimulatorBase {
                 self.__executeAllCommands(self.commandQueuePerAction, 0);
                 updateAllUi();
             },
-            iconOverlayDisabledChanged: function (event) {
-                updateAllUi();
-            },
             exportSettingChanged: function () {
                 if (g_app == null) {
                     return;
@@ -1012,13 +1009,32 @@ class BattleSimulatorBase {
             state: {
                 appData: appData,
                 battleSimulator: this,
+                imageRootPath: g_imageRootPath,
             },
             mutations: {
             },
             actions: {
-                updateMap({ state }, payload) {
+                updateMap({state}, payload) {
                     return updateMap();
-                }
+                },
+                saveSettings({state}, payload) {
+                    return saveSettings();
+                },
+                showSettingDialog({state}, payload) {
+                    return showSettingDialog();
+                },
+                showImportDialog({state}, payload) {
+                    return showImportDialog();
+                },
+                showExportDialog({state}, payload) {
+                    return showExportDialog();
+                },
+                loadLazyImages({state}, payload) {
+                    return loadLazyImages();
+                },
+                resetPlacement({state}, payload) {
+                    return resetPlacement();
+                },
             }
         });
         return new Vue({

@@ -315,17 +315,7 @@
                         <tr>
                             <td colspan="2">
                                 <div class="buttonUi">
-                                    <control-buttons
-                                            :save-settings="saveSettings"
-                                            :global-battle-context="globalBattleContext"
-                                            :show-setting-dialog="showSettingDialog"
-                                            :show-import-dialog="showImportDialog"
-                                            :show-export-dialog="showExportDialog"
-                                            :audio-manager="audioManager"
-                                            :bgm-enabled-changed="bgmEnabledChanged"
-                                            :load-lazy-images="loadLazyImages"
-                                            :show-flash="showFlash"
-                                    >
+                                    <control-buttons>
                                     </control-buttons>
                                     <!-- <label for='currentTurnSlider'>現在のターン:</label> -->
                                     <!-- <input type='number' id='currentTurn' v-model='globalBattleContext.currentTurn' min='0' max='7' step='1'
@@ -342,30 +332,13 @@
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <simulation-controls
-                                        :get-app="getApp"
-                                        :is-enemy-action-triggered.sync="isEnemyActionTriggered"
-                                        :simulates-enemy-action-one-by-one.sync="simulatesEnemyActionOneByOne"
-                                        :is-icon-overlay-disabled.sync="map.isIconOverlayDisabled"
-                                        :is-trap-icon-overlay-disabled.sync="map.isTrapIconOverlayDisabled"
-                                        :is-aether-raid="gameMode == GameMode.AetherRaid"
-                                        :is-resonant="GameMode == GameMode.ResonantBattles"
-                                        @icon-overlay-disabled-changed="iconOverlayDisabledChanged"
-                                        @heal-hp-full="healHpFullForAllUnits"
-                                        @reset-placement="resetPlacement"
-                                        @open-team-formation-dialog="$('#teamFormationDialog').dialog('open')"
-                                        @open-aether-raid-dialog="$('#aetherRaidDefensePresetDialog').dialog('open')"
-                                        @open-item-dialog="$('#itemDialog').dialog('open')"
-                                        @open-durability-test="$('#durabilityTestDialog').dialog('open')"
-                                        @open-edit-map="$('#editMapDialog').dialog('open')"
-                                >
+                                <simulation-controls>
                                 </simulation-controls>
                             </td>
                         </tr>
                         <tr v-bind:style="debugMenuStyle">
                             <td colspan="2">
                                 <debug-buttons
-                                        :get-app="getApp"
                                         :reset-unit-random="resetUnitRandom"
                                         :activate-all-unit="activateAllUnit"
                                         :reset-unit-for-testing="resetUnitForTesting"
@@ -1124,15 +1097,6 @@
             </damage-calc-result>
         </div>
     </div>
-    <style>
-        .select2-results__options {
-            font-size: 12px;
-        }
-
-        .select2-selection__rendered {
-            font-size: 12px;
-        }
-    </style>
     <script>
         function showMjolnirsStrikeSettingDialog() {
             $('#mjolnirsStrikeSettingDialog').dialog('open');

@@ -11,6 +11,9 @@ function initVueComponents() {
     });
     Vue.component('unit-detail', {
         props: ['value'],
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData', 'imageRootPath'])
+        },
         template: `
           <table border='0' style='border-width: 0px;border-style:none;'>
             <tr>
@@ -18,10 +21,10 @@ function initVueComponents() {
                 <div style="float:right">
                   <input type="button" class="buttonUi" style="width:95px" @click="showSaveUnitDialog()"
                          value="保存・読み込み">
-                  <input type="button" class="buttonUi" style="width:80px" @click="g_appData.copyCurrentUnit()"
+                  <input type="button" class="buttonUi" style="width:80px" @click="appData.copyCurrentUnit()"
                          value="コピー">
                   <input type="button" class="buttonUi" style="width:80px"
-                         @click="g_appData.pasteToCurrentUnit();" value="ペースト">
+                         @click="appData.pasteToCurrentUnit();" value="ペースト">
                 </div>
               </td>
             </tr>
@@ -30,51 +33,53 @@ function initVueComponents() {
                 <table border='0' style='border-width: 0px;border-style:none;'>
                   <tr>
                     <td>
-                      <select2 :options="g_app.vm.heroOptions" v-model="value.heroIndex" class="hero"
-                               @input="g_app.vm.heroIndexChanged">
+                      <select2 :options="battleSimulator.vm.heroOptions" v-model="value.heroIndex" class="hero"
+                               @input="battleSimulator.vm.heroIndexChanged">
                       </select2>
                       <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
-                        <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'"/></a>
-                      <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle">(index: {{ value.heroIndex }}, id:
+                        <img class="urlJumpIcon" v-bind:src="imageRootPath + 'UrlJump.png'"/></a>
+                      <span class="debugInfo" v-bind:style="battleSimulator.vm.debugMenuStyle">(index:
+                        {{ value.heroIndex }}, id:
                         {{ value.heroInfo.id }})</span>
                       <br/>
                       ★
-                      <select v-model="value.rarity" @change="g_app.vm.ivChanged">
+                      <select v-model="value.rarity" @change="battleSimulator.vm.ivChanged">
                         <option v-for="item in UnitRarity" v-bind:value="item">
                           {{ item }}
                         </option>
                       </select>
                       <label class="normal" for="merge">LV.</label>
                       <input name="level" type="number" v-model="value.level"
-                             min="1" max="99" class="numeric" @input="g_app.vm.mergeChanged"/>
+                             min="1" max="99" class="numeric" @input="battleSimulator.vm.mergeChanged"/>
                       +<input name="merge" type="number" v-model="value.merge"
-                              min="0" max="10" class="numeric" @input="g_app.vm.mergeChanged"/>
+                              min="0" max="10" class="numeric" @input="battleSimulator.vm.mergeChanged"/>
                       <label class="normal" for="dragonflower">花+</label>
                       <input name="dragonflower" type="number"
                              v-model="value.dragonflower" min="0" v-bind:max="value.maxDragonflower"
-                             class="numeric" @input="g_app.vm.dragonflowerChanged"/>
+                             class="numeric" @input="battleSimulator.vm.dragonflowerChanged"/>
                       <label class="normal" for="emblemHeroMerge">紋+</label>
                       <input name="emblemHeroMerge" type="number"
                              v-model="value.emblemHeroMerge" min="0" v-bind:max="10"
-                             class="numeric" @input="g_app.vm.emblemHeroMergeChanged"/>
+                             class="numeric" @input="battleSimulator.vm.emblemHeroMergeChanged"/>
                       <label class="normal" for="reinforcementMerge">増+</label>
                       <input name="reinforcementMerge" type="number"
                              v-model="value.reinforcementMerge" min="0" v-bind:max="10"
                              class="numeric" disabled/>
                     </td>
                   </tr>
-                  <tr v-bind:style="g_app.vm.debugMenuStyle">
+                  <tr v-bind:style="battleSimulator.vm.debugMenuStyle">
                     <td>
                       id={{ value.id }}
                       <label class="normal" for="slotOrder">スロット番号: </label>
                       <input name="slotOrder" type="number" min="0" max="5" readonly="readonly"
                              v-model="value.slotOrder" class="statusInput"
-                             @input="g_app.vm.slotOrderChanged"/>
+                             @input="battleSimulator.vm.slotOrderChanged"/>
                       <span class="debugInfo">
                                     <label class="normal" for="moveCount">移動値: </label>
                                     <input name="moveCount" type="number" readonly="readonly"
                                            v-model="value.moveCount" class="statusInput"
-                                           @input="g_app.vm.moveCountChanged"/>({{ value.moveCountAtBeginningOfTurn }})
+                                           @input="battleSimulator.vm.moveCountChanged"/>(
+                        {{ value.moveCountAtBeginningOfTurn }})
                                 </span>
                       <label class="debugInfo" class="normal"
                              for="moveCountAtBeginningOfTurn">ターン開始時の移動値: </label>
@@ -91,27 +96,27 @@ function initVueComponents() {
                   </tr>
                   <tr>
                     <td>
-                      <span v-if="value.groupId === UnitGroupType.Ally || g_appData.isDebugMenuEnabled">
+                      <span v-if="value.groupId === UnitGroupType.Ally || appData.isDebugMenuEnabled">
                         <label class="normal">召喚士との絆: </label>
-                        <select v-model="value.summonerLevel" @change="g_app.vm.summonerLevelChanged">
-                            <option v-for="option in g_appData.summonerLevelOptions"
+                        <select v-model="value.summonerLevel" @change="battleSimulator.vm.summonerLevelChanged">
+                            <option v-for="option in appData.summonerLevelOptions"
                                     v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
                         </select>
                       </span>
-                      <span v-if="value.groupId === UnitGroupType.Ally || g_appData.isDebugMenuEnabled">
+                      <span v-if="value.groupId === UnitGroupType.Ally || appData.isDebugMenuEnabled">
                         <label class="normal">つながり: </label>
-                        <select v-model="value.entwinedId" @change="g_app.vm.entwinedIdChanged">
-                            <option v-for="option in g_appData.entwinedOptions" v-bind:value="option.id">
+                        <select v-model="value.entwinedId" @change="battleSimulator.vm.entwinedIdChanged">
+                            <option v-for="option in appData.entwinedOptions" v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
                         </select>
                       </span>
                       <span v-if="value.providableBlessingSeason == SeasonType.None">
                         <label class="normal" for="grantedBlessing">祝福: </label>
-                        <select v-model="value.grantedBlessing" @change="g_app.vm.grantedBlessingChanged">
-                            <option v-for="option in g_appData.seasonOptions" v-bind:value="option.id">
+                        <select v-model="value.grantedBlessing" @change="battleSimulator.vm.grantedBlessingChanged">
+                            <option v-for="option in appData.seasonOptions" v-bind:value="option.id">
                                 {{ option.text }}
                             </option>
                         </select>
@@ -121,50 +126,51 @@ function initVueComponents() {
                   <tr>
                     <td>
                       <label class="normal" for="ivHigh">得意: </label>
-                      <select v-model="value.ivHighStat" @change="g_app.vm.ivChanged">
+                      <select v-model="value.ivHighStat" @change="battleSimulator.vm.ivChanged">
                         <option v-for="option in IvStateOptions" v-bind:value="option.id">
                           {{ option.text }}
                         </option>
                       </select>
                       <label class="normal" for="ivLow">苦手: </label>
-                      <select v-model="value.ivLowStat" @change="g_app.vm.ivChanged">
+                      <select v-model="value.ivLowStat" @change="battleSimulator.vm.ivChanged">
                         <option v-for="option in IvStateOptions" v-bind:value="option.id">
                           {{ option.text }}
                         </option>
                       </select>
                       <label class="normal"><img
-                          :src="g_imageRootPath + 'AscendedFloret.png'" width="20"
+                          :src="imageRootPath + 'AscendedFloret.png'" width="20"
                           height="20"></label>
-                      <select v-model="value.ascendedAsset" @change="g_app.vm.ivChanged">
+                      <select v-model="value.ascendedAsset" @change="battleSimulator.vm.ivChanged">
                         <option v-for="option in IvStateOptions" v-bind:value="option.id">
                           {{ option.text }}
                         </option>
                       </select>
                       <input v-bind:id='"isBonusChar"+value.id' type="checkbox" v-model="value.isBonusChar"
-                             @change="g_app.vm.isBonusCharChanged"/>
+                             @change="battleSimulator.vm.isBonusCharChanged"/>
                       <label class="normal" v-bind:for='"isBonusChar"+value.id'>ボナ補正</label>
                       <input v-bind:id='"isAidesEssenceUsed"+value.id' type="checkbox"
-                             v-model="value.isAidesEssenceUsed" @change="g_app.vm.isAidesEssenceUsedChanged"/>
+                             v-model="value.isAidesEssenceUsed" @change="battleSimulator.vm.isAidesEssenceUsedChanged"/>
                       <label class="normal" v-bind:for='"isAidesEssenceUsed"+value.id'>お供</label>
                       <span v-if="value.heroInfo!=null && value.heroInfo.isResplendent">
                                 <input v-bind:id='"isResplendent"+value.id' type="checkbox"
-                                       v-model="value.isResplendent" @change="g_app.vm.isBonusCharChanged"/>
+                                       v-model="value.isResplendent" @change="battleSimulator.vm.isBonusCharChanged"/>
                                 <label class="normal" v-bind:for='"isResplendent"+value.id'>神装</label>
                                 </span>
                       <br/>
                       <span v-if="value.groupId == UnitGroupType.Ally">
                                     <label class="normal">支援: </label>
-                                    <select2 :options="g_app.vm.heroOptions" v-model="value.partnerHeroIndex"
+                                    <select2 :options="battleSimulator.vm.heroOptions" v-model="value.partnerHeroIndex"
                                              class="hero"
-                                             @input="g_app.updateAllUnitSpur();g_app.updatePartner(value)">
+                                             @input="battleSimulator.updateAllUnitSpur();battleSimulator.updatePartner(value)">
                                     </select2>
                                     <span class="debugInfo"
-                                          v-bind:style="g_app.vm.debugMenuStyle">({{ value.partnerHeroIndex }})</span>
+                                          v-bind:style="battleSimulator.vm.debugMenuStyle">({{ value.partnerHeroIndex }}
+                                      )</span>
 
                                     <label class="normal">レベル</label>
                                     <select v-model="value.partnerLevel"
-                                            @change="g_app.updateAllUnitSpur();g_app.updatePartner(value)">
-                                        <option v-for="option in g_appData.partnerLevelOptions"
+                                            @change="battleSimulator.updateAllUnitSpur();battleSimulator.updatePartner(value)">
+                                        <option v-for="option in appData.partnerLevelOptions"
                                                 v-bind:value="option.id">
                                             {{ option.text }}
                                         </option>
@@ -173,20 +179,21 @@ function initVueComponents() {
                                 </span>
 
                       <label class="normal">紋章士: </label>
-                      <select2 :options="g_app.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
+                      <select2 :options="battleSimulator.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
                                class="hero"
-                               @input="value.resetMaxSpecialCount();g_app.updateAllUnitSpur();g_app.vm.emblemHeroMergeChanged(true)">
+                               @input="value.resetMaxSpecialCount();battleSimulator.updateAllUnitSpur();battleSimulator.vm.emblemHeroMergeChanged(true)">
                       </select2>
-                      <span class="debugInfo" v-bind:style="g_app.vm.debugMenuStyle">({{ value.emblemHeroIndex }}
+                      <span class="debugInfo" v-bind:style="battleSimulator.vm.debugMenuStyle">(
+                        {{ value.emblemHeroIndex }}
                         )</span>
 
                       <label class="normal">＋: </label>
                       <input name="emblemHeroMerge" type="number"
                              v-model="value.emblemHeroMerge" min="0" v-bind:max="10"
-                             class="numeric" @input="g_app.vm.emblemHeroMergeChanged"/>
+                             class="numeric" @input="battleSimulator.vm.emblemHeroMergeChanged"/>
                     </td>
                   </tr>
-                  <tr v-bind:style="g_app.vm.debugMenuStyle">
+                  <tr v-bind:style="battleSimulator.vm.debugMenuStyle">
                     <td>
                     </td>
                   </tr>
@@ -199,7 +206,7 @@ function initVueComponents() {
                   <tr>
                     <td colspan="7">
                       <label class="normal" for="currentUnitHp">HP: </label>
-                      <input name="currentUnitHp" type="number" min="0" @input="g_app.vm.hpChanged"
+                      <input name="currentUnitHp" type="number" min="0" @input="battleSimulator.vm.hpChanged"
                              v-bind:max="value.maxHpWithSkills"
                              v-model="value.hp" class="numeric"/>/
                       <!-- <input type="number" v-model="value.maxHpWithSkills"
@@ -209,11 +216,11 @@ function initVueComponents() {
                           style="font-size:11px">({{ value.hpPercentage }}%)</span>
 
                       <input type="button" value='全回復' class="buttonUi"
-                             @click="g_app.vm.healHpFull" v-bind:style="g_app.vm.debugMenuStyle">
+                             @click="battleSimulator.vm.healHpFull" v-bind:style="battleSimulator.vm.debugMenuStyle">
                       <input type="button" value='ステータス初期化' class="buttonUi"
-                             @click="g_app.__updateStatusBySkillsAndMerges(value);"
-                             v-bind:style="g_app.vm.debugMenuStyle">
-                      <input v-if="g_appData.gameMode == GameMode.ResonantBattles" type="button"
+                             @click="battleSimulator.__updateStatusBySkillsAndMerges(value);"
+                             v-bind:style="battleSimulator.vm.debugMenuStyle">
+                      <input v-if="appData.gameMode === GameMode.ResonantBattles" type="button"
                              value="双界の敵ステータス設定..." style="width:140px" class="buttonUi"
                              @click="$('#setupResonantBattleEnemyDialog').dialog('open');">
                     </td>
@@ -234,7 +241,7 @@ function initVueComponents() {
                       戦闘中
                     </th>
                     <th class='param'
-                        v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
+                        v-if="appData.gameMode === GameMode.ResonantBattles || appData.gameMode === GameMode.TempestTrials">
                       乗算
                     </th>
                     <th class='param'>
@@ -243,7 +250,7 @@ function initVueComponents() {
                     <th class='param'>
                       合計
                     </th>
-                    <th class='param' v-bind:style="g_app.vm.debugMenuStyle">成長率</th>
+                    <th class='param' v-bind:style="battleSimulator.vm.debugMenuStyle">成長率</th>
                   </tr>
                   <tr>
                     <th class='param'>
@@ -261,7 +268,7 @@ function initVueComponents() {
                     <td class='param'>
                     </td>
                     <td class='param'
-                        v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
+                        v-if="appData.gameMode === GameMode.ResonantBattles || appData.gameMode === GameMode.TempestTrials">
                       <input class='numericFloat' v-model="value.hpMult" type="number" min="0" max="2" step="0.01">
                     </td>
                     <td class='param'><input class='numeric'
@@ -271,9 +278,10 @@ function initVueComponents() {
                     <td class='param'>
                       {{ value.maxHpWithSkills }}
                     </td>
-                    <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                    <td class='param' v-bind:style="battleSimulator.vm.debugMenuStyle">
                       <input class='numericFloat' v-model="value.hpGrowthRate"
-                             @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2"
+                             @change="battleSimulator.__updateStatusBySkillsAndMerges(value, false)" type="number"
+                             min="0" max="2"
                              step="0.05">
                     </td>
                   </tr>
@@ -287,12 +295,12 @@ function initVueComponents() {
                       {{ value.atkWithSkills - value.atkAdd }} + {{ value.getGreatTalent(StatusIndex.ATK) }}
                     </td>
                     <td class='param'>
-                      <input class='numeric' v-model=" value.atkBuff" @change="g_app.vm.buffChanged"
+                      <input class='numeric' v-model=" value.atkBuff" @change="battleSimulator.vm.buffChanged"
                              type="number" min="-99" max="99" step="1">
                     </td>
                     <td class='param'><input class='numeric'
                                              v-model="value.atkDebuff" type="number" min="-99"
-                                             @change="g_app.vm.buffChanged"
+                                             @change="battleSimulator.vm.buffChanged"
                                              max="99" step="1">
                     </td>
                     <td class='param'>
@@ -301,21 +309,23 @@ function initVueComponents() {
                       {{ value.atkSpur }}
                     </td>
                     <td class='param'
-                        v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
-                      <input class='numericFloat' v-model="value.atkMult" @change="g_app.vm.addChanged" type="number"
+                        v-if="appData.gameMode === GameMode.ResonantBattles || appData.gameMode === GameMode.TempestTrials">
+                      <input class='numericFloat' v-model="value.atkMult" @change="battleSimulator.vm.addChanged"
+                             type="number"
                              min="0" max="2" step="0.01">
                     </td>
                     <td class='param'><input class='numeric'
                                              v-model="value.atkAdd" type="number" min="-99"
-                                             @change="g_app.vm.addChanged"
+                                             @change="battleSimulator.vm.addChanged"
                                              max="99" step="1">
                     </td>
                     <td class='param'>
                       {{ value.getAtkInCombat() }}({{ value.getAtkInPrecombat() }})
                     </td>
-                    <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                    <td class='param' v-bind:style="battleSimulator.vm.debugMenuStyle">
                       <input class='numericFloat' v-model="value.atkGrowthRate"
-                             @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2"
+                             @change="battleSimulator.__updateStatusBySkillsAndMerges(value, false)" type="number"
+                             min="0" max="2"
                              step="0.05">
                     </td>
                   </tr>
@@ -329,10 +339,10 @@ function initVueComponents() {
                       {{ value.spdWithSkills - value.spdAdd }} + {{ value.getGreatTalent(StatusIndex.SPD) }}
                     </td>
                     <td class='param'>
-                      <input class='numeric' v-model="value.spdBuff" @change="g_app.vm.buffChanged"
+                      <input class='numeric' v-model="value.spdBuff" @change="battleSimulator.vm.buffChanged"
                              type="number" min="-99" max="99" step="1">
                     </td>
-                    <td class='param'><input class='numeric' @change="g_app.vm.buffChanged"
+                    <td class='param'><input class='numeric' @change="battleSimulator.vm.buffChanged"
                                              v-model="value.spdDebuff" type="number" min="-99"
                                              max="99" step="1">
                     </td>
@@ -342,21 +352,23 @@ function initVueComponents() {
                       {{ value.spdSpur }}
                     </td>
                     <td class='param'
-                        v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
-                      <input class='numericFloat' v-model="value.spdMult" @change="g_app.vm.addChanged" type="number"
+                        v-if="appData.gameMode === GameMode.ResonantBattles||appData.gameMode == GameMode.TempestTrials">
+                      <input class='numericFloat' v-model="value.spdMult" @change="battleSimulator.vm.addChanged"
+                             type="number"
                              min="0" max="2" step="0.01">
                     </td>
                     <td class='param'><input class='numeric'
                                              v-model="value.spdAdd" type="number" min="-99"
-                                             @change="g_app.vm.addChanged"
+                                             @change="battleSimulator.vm.addChanged"
                                              max="99" step="1">
                     </td>
                     <td class='param'>
                       {{ value.getSpdInCombat() }}({{ value.getSpdInPrecombat() }})
                     </td>
-                    <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                    <td class='param' v-bind:style="battleSimulator.vm.debugMenuStyle">
                       <input class='numericFloat' v-model="value.spdGrowthRate"
-                             @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2"
+                             @change="battleSimulator.__updateStatusBySkillsAndMerges(value, false)" type="number"
+                             min="0" max="2"
                              step="0.05">
                     </td>
                   </tr>
@@ -370,10 +382,10 @@ function initVueComponents() {
                       {{ value.defWithSkills - value.defAdd }} + {{ value.getGreatTalent(StatusIndex.DEF) }}
                     </td>
                     <td class='param'>
-                      <input class='numeric' v-model="value.defBuff" @change="g_app.vm.buffChanged"
+                      <input class='numeric' v-model="value.defBuff" @change="battleSimulator.vm.buffChanged"
                              type="number" min="-99" max="99" step="1">
                     </td>
-                    <td class='param'><input class='numeric' @change="g_app.vm.buffChanged"
+                    <td class='param'><input class='numeric' @change="battleSimulator.vm.buffChanged"
                                              v-model="value.defDebuff" type="number" min="-99"
                                              max="99" step="1">
                     </td>
@@ -383,21 +395,23 @@ function initVueComponents() {
                       {{ value.defSpur }}
                     </td>
                     <td class='param'
-                        v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
-                      <input class='numericFloat' v-model="value.defMult" @change="g_app.vm.addChanged" type="number"
+                        v-if="appData.gameMode === GameMode.ResonantBattles||appData.gameMode === GameMode.TempestTrials">
+                      <input class='numericFloat' v-model="value.defMult" @change="battleSimulator.vm.addChanged"
+                             type="number"
                              min="0" max="2" step="0.01">
                     </td>
                     <td class='param'><input class='numeric'
                                              v-model="value.defAdd" type="number" min="-99"
-                                             @change="g_app.vm.addChanged"
+                                             @change="battleSimulator.vm.addChanged"
                                              max="99" step="1">
                     </td>
                     <td class='param'>
                       {{ value.getDefInCombat() }}({{ value.getDefInPrecombat() }})
                     </td>
-                    <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                    <td class='param' v-bind:style="battleSimulator.vm.debugMenuStyle">
                       <input class='numericFloat' v-model="value.defGrowthRate"
-                             @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2"
+                             @change="battleSimulator.__updateStatusBySkillsAndMerges(value, false)" type="number"
+                             min="0" max="2"
                              step="0.05">
                     </td>
 
@@ -412,10 +426,10 @@ function initVueComponents() {
                       {{ value.resWithSkills - value.resAdd }} + {{ value.getGreatTalent(StatusIndex.RES) }}
                     </td>
                     <td class='param'>
-                      <input class='numeric' v-model="value.resBuff" @change="g_app.vm.buffChanged"
+                      <input class='numeric' v-model="value.resBuff" @change="battleSimulator.vm.buffChanged"
                              type="number" min="-99" max="99" step="1">
                     </td>
-                    <td class='param'><input class='numeric' @change="g_app.vm.buffChanged"
+                    <td class='param'><input class='numeric' @change="battleSimulator.vm.buffChanged"
                                              v-model="value.resDebuff" type="number" min="-99"
                                              max="99" step="1">
                     </td>
@@ -425,21 +439,23 @@ function initVueComponents() {
                       {{ value.resSpur }}
                     </td>
                     <td class='param'
-                        v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
-                      <input class='numericFloat' v-model="value.resMult" @change="g_app.vm.addChanged" type="number"
+                        v-if="appData.gameMode === GameMode.ResonantBattles||appData.gameMode === GameMode.TempestTrials">
+                      <input class='numericFloat' v-model="value.resMult" @change="battleSimulator.vm.addChanged"
+                             type="number"
                              min="0" max="2" step="0.01">
                     </td>
                     <td class='param'><input class='numeric'
                                              v-model="value.resAdd" type="number" min="-99"
-                                             @change="g_app.vm.addChanged"
+                                             @change="battleSimulator.vm.addChanged"
                                              max="99" step="1">
                     </td>
                     <td class='param'>
                       {{ value.getResInCombat() }}({{ value.getResInPrecombat() }})
                     </td>
-                    <td class='param' v-bind:style="g_app.vm.debugMenuStyle">
+                    <td class='param' v-bind:style="battleSimulator.vm.debugMenuStyle">
                       <input class='numericFloat' v-model="value.resGrowthRate"
-                             @change="g_app.__updateStatusBySkillsAndMerges(value, false)" type="number" min="0" max="2"
+                             @change="battleSimulator.__updateStatusBySkillsAndMerges(value, false)" type="number"
+                             min="0" max="2"
                              step="0.05">
                     </td>
                   </tr>
@@ -456,18 +472,18 @@ function initVueComponents() {
                     </td>
                     <td colspan="3">
                     </td>
-                    <td v-if="g_appData.gameMode == GameMode.ResonantBattles||g_appData.gameMode == GameMode.TempestTrials">
+                    <td v-if="appData.gameMode === GameMode.ResonantBattles||appData.gameMode === GameMode.TempestTrials">
                       <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
-                             @click="value.resetStatusMult();g_appData.__updateStatusBySkillsAndMergeForAllHeroes();">
+                             @click="value.resetStatusMult();appData.__updateStatusBySkillsAndMergeForAllHeroes();">
                     </td>
                     <td>
                       <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
-                             @click="value.resetStatusAdd();g_appData.__updateStatusBySkillsAndMergeForAllHeroes();">
+                             @click="value.resetStatusAdd();appData.__updateStatusBySkillsAndMergeForAllHeroes();">
                     </td>
                     <td></td>
-                    <td v-bind:style="g_app.vm.debugMenuStyle">
+                    <td v-bind:style="battleSimulator.vm.debugMenuStyle">
                       <input type="button" value='リセット' class="buttonUi" style="font-size:10px"
-                             @click="value.updatePureGrowthRate();if(g_app.vm.gameMode == GameMode.ResonantBattles && isThief(value)){value.defGrowthRate=0.4;}g_app.__updateStatusBySkillsAndMergeForAllHeroes();">
+                             @click="value.updatePureGrowthRate();if(battleSimulator.vm.gameMode === GameMode.ResonantBattles && isThief(value)){value.defGrowthRate=0.4;}battleSimulator.__updateStatusBySkillsAndMergeForAllHeroes();">
                     </td>
                   </tr>
                   <tr>
@@ -490,20 +506,20 @@ function initVueComponents() {
                                     </span>
                         </div>
                         <input type="button" class="buttonUi" value="全て付与"
-                               @click="g_app.vm.addAllPositiveStatusEffects();g_app.vm.addAllNegativeStatusEffects()">
+                               @click="battleSimulator.vm.addAllPositiveStatusEffects();battleSimulator.vm.addAllNegativeStatusEffects()">
                         <input type="button" class="buttonUi" value="全て解除"
-                               @click="g_app.vm.clearAllPositiveStatusEffects();g_app.vm.clearAllNegativeStatusEffects()">
+                               @click="battleSimulator.vm.clearAllPositiveStatusEffects();battleSimulator.vm.clearAllNegativeStatusEffects()">
                         <div class="normal">
                           <details>
                             <summary>有利なステータス詳細</summary>
                             <input type="button" class="buttonUi" value="全て付与"
-                                   @click="g_app.vm.addAllPositiveStatusEffects()">
+                                   @click="battleSimulator.vm.addAllPositiveStatusEffects()">
                             <input type="button" class="buttonUi" value="全て解除"
-                                   @click="g_app.vm.clearAllPositiveStatusEffects()">
+                                   @click="battleSimulator.vm.clearAllPositiveStatusEffects()">
                             <div v-for="statusEffect in getPositiveStatusEffectTypesInOrder()">
                               <input v-bind:id='"statusEffect"+statusEffect' type="checkbox"
                                      :checked="value.hasStatusEffect(statusEffect)"
-                                     @change="g_app.vm.statusEffectChanged(statusEffect)"
+                                     @change="battleSimulator.vm.statusEffectChanged(statusEffect)"
                               />
                               <label class="normal status-effect-description-label"
                                      :title="'【' + getStatusEffectName(statusEffect) + '】' + getStatusDescription(statusEffect)"
@@ -516,13 +532,13 @@ function initVueComponents() {
                           <details>
                             <summary>不利なステータス詳細</summary>
                             <input type="button" class="buttonUi" value="全て付与"
-                                   @click="g_app.vm.addAllNegativeStatusEffects()">
+                                   @click="battleSimulator.vm.addAllNegativeStatusEffects()">
                             <input type="button" class="buttonUi" value="全て解除"
-                                   @click="g_app.vm.clearAllNegativeStatusEffects()">
+                                   @click="battleSimulator.vm.clearAllNegativeStatusEffects()">
                             <div v-for="statusEffect in getNegativeStatusEffectTypesInOrder()">
                               <input v-bind:id='"statusEffect"+statusEffect' type="checkbox"
                                      :checked="value.hasStatusEffect(statusEffect)"
-                                     @change="g_app.vm.statusEffectChanged(statusEffect)"
+                                     @change="battleSimulator.vm.statusEffectChanged(statusEffect)"
                               />
                               <label class="normal status-effect-description-label"
                                      :title="'【' + getStatusEffectName(statusEffect) + '】' + getStatusDescription(statusEffect)"
@@ -539,7 +555,7 @@ function initVueComponents() {
                   <tr>
                     <td colspan="7">
                       <input v-bind:id='"isActionDone"+value.id' type="checkbox" v-model="value.isActionDone"
-                             @change="g_app.vm.actionDoneChanged"/>
+                             @change="battleSimulator.vm.actionDoneChanged"/>
                       <label class="normal" v-bind:for='"isActionDone"+value.id'>行動済み</label>
 
                       <input v-bind:id='"isOneTimeActionActivatedForSpecial"+value.id' type="checkbox"
@@ -553,7 +569,7 @@ function initVueComponents() {
                              v-bind:for='"isCantoActivatedInCurrentTurn"+value.id'>再移動発動済み</label>
                     </td>
                   </tr>
-                  <tr v-bind:style="g_app.vm.debugMenuStyle">
+                  <tr v-bind:style="battleSimulator.vm.debugMenuStyle">
                     <td colspan="7">
                       <input v-bind:id='"isEnemyActionTriggered"+value.id' type="checkbox"
                              v-model="value.isEnemyActionTriggered"/>
@@ -562,7 +578,7 @@ function initVueComponents() {
 
                       <span v-if="isWeaponTypeBeast(value.weaponType)">
                                         <input v-bind:id='"isTransformed"+value.id' type="checkbox"
-                                               v-model="value.isTransformed" @change="g_app.vm.mergeChanged"/>
+                                               v-model="value.isTransformed" @change="battleSimulator.vm.mergeChanged"/>
                                         <label class="normal" v-bind:for='"isTransformed"+value.id'>化身状態</label>
                                     </span>
                       <label class="normal" v-bind:for='"isCantoActivated"+value.id'>再移動</label>
@@ -578,25 +594,18 @@ function initVueComponents() {
               <td>
                 <skill-form
                     v-model="value"
-                    :g_app-data="g_appData"
-                    :g_image-root-path="g_imageRootPath"
-                    :vm="g_app.vm"
                 >
                 </skill-form>
                 <skill-action-area
                     v-model="value"
-                    :g_app="g_app"
-                    :g_app-data="g_appData"
                 >
                 </skill-action-area>
                 <arena-score
                     v-model="value"
-                    :g_app-data="g_appData"
                 >
                 </arena-score>
                 <unit-debug
                     v-model="value"
-                    :g_app-data="g_appData"
                 >
                 </unit-debug>
               </td>
@@ -607,11 +616,14 @@ function initVueComponents() {
 
     Vue.component('tile-detail', {
         props: ['value'],
+        computed: {
+            ...Vuex.mapState(['battleSimulator'])
+        },
         template: `
           <div>
             座標: ({{ value.posX }}, {{ value.posY }})
             <br/>
-            種類: <select v-model="value._type" @change="g_app.tileTypeChanged()">
+            種類: <select v-model="value._type" @change="battleSimulator.tileTypeChanged()">
             <option v-for="option in TileTypeOptions" v-bind:value="option.id">
               {{ option.text }}
             </option>
@@ -642,14 +654,17 @@ function initVueComponents() {
 
     Vue.component('structure-detail', {
         props: ['value'],
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData'])
+        },
         template: `
           <div style="height:500px;vertical-align:middle;display: table-cell;padding:10px">
             <div style="margin:5px">
-              {{ value.name }}<span v-bind:style="g_app.vm.debugMenuStyle">({{ value.id }})</span>
+              {{ value.name }}<span v-bind:style="battleSimulator.vm.debugMenuStyle">({{ value.id }})</span>
             </div>
             <div v-if="value instanceof Ornament" style="margin:5px">
-              <select v-model="value.ornamentTypeIndex" @change="g_app.vm.ornamentIconChanged" style="width:150px">
-                <option v-for="option in g_appData.ornamentTypeOptions" v-bind:value="option.id">
+              <select v-model="value.ornamentTypeIndex" @change="battleSimulator.vm.ornamentIconChanged" style="width:150px">
+                <option v-for="option in appData.ornamentTypeOptions" v-bind:value="option.id">
                   {{ option.text }}
                 </option>
               </select>
@@ -657,14 +672,14 @@ function initVueComponents() {
             <div v-if="value.hasLevel" style="margin:5px">
               <label class="normal" for="level">LV.</label>
               <input name="level" type="number" max="15" min="1"
-                     v-model="value.level" class="statusInput" @input="g_app.vm.structureLevelChanged"/>
+                     v-model="value.level" class="statusInput" @input="battleSimulator.vm.structureLevelChanged"/>
             </div>
             <div>
               <span class="normal">{{ value.description }}</span>
             </div>
             <div v-if="value.isExecutable" style="margin:5px">
-              <input v-bind:style="g_app.vm.debugMenuStyle" type="button" value="効果を発動" class="buttonUi"
-                     @click="g_app.executeCurrentStructure()" style="width:150px;">
+              <input v-bind:style="battleSimulator.vm.debugMenuStyle" type="button" value="効果を発動" class="buttonUi"
+                     @click="battleSimulator.executeCurrentStructure()" style="width:150px;">
             </div>
             <label>
               <input v-model="value.isDisabled" type="checkbox" @change="updateAllUi"/>
@@ -1043,10 +1058,9 @@ function initVueComponents() {
         },
         props: {
             unit: {type: Unit, required: true},
-            vm: {required: true},
-            g_imageRootPath: {type: String, required: true},
-            g_appData: {required: true},
-            isSummonerDuels: {type: Boolean, default: false},
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData', 'imageRootPath']),
         },
         template: `
           <div class="skill-grid">
@@ -1058,13 +1072,13 @@ function initVueComponents() {
 
               <div class="skill-content">
                 <select2
-                    :options="vm.enableAllSkillOptions ?
-                                vm.weaponOptions : (unit.heroInfo && unit.heroInfo.weaponOptions)"
+                    :options="battleSimulator.vm.enableAllSkillOptions ?
+                                battleSimulator.vm.weaponOptions : (unit.heroInfo && unit.heroInfo.weaponOptions)"
                     :name="unit.id + '-weapon'"
                     :value="unit.weapon"
-                    :is-debug-mode="vm.isDebugMenuEnabled"
-                    @input="v => vm.weaponChanged(unit, v)"
-                    @options-changed="vm.initSkills"
+                    :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
+                    @input="v => battleSimulator.vm.weaponChanged(unit, v)"
+                    @options-changed="battleSimulator.vm.initSkills"
                     class="skill">
                 </select2>
               </div>
@@ -1072,18 +1086,18 @@ function initVueComponents() {
               <div>
                 <a v-bind:href="unit.weaponInfo.detailPageUrl" target="_blank"
                    v-if="unit.weaponInfo != null">
-                  <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'"/>
+                  <img class="urlJumpIcon" v-bind:src="imageRootPath + 'UrlJump.png'"/>
                 </a>
               </div>
 
               <div>
                 <select v-model="unit.weaponRefinement"
-                        @change="vm.weaponOptionChanged"
-                        v-if="(vm.enableAllSkillOptions ? 
-                                g_appData.weaponRefinementOptions : 
+                        @change="battleSimulator.vm.weaponOptionChanged"
+                        v-if="(battleSimulator.vm.enableAllSkillOptions ? 
+                                appData.weaponRefinementOptions : 
                                 (unit.weaponInfo?.weaponRefinementOptions || [])).length > 1">
                   <option
-                      v-for="op in (vm.enableAllSkillOptions ? g_appData.weaponRefinementOptions : (unit.weaponInfo?.weaponRefinementOptions || []))"
+                      v-for="op in (battleSimulator.vm.enableAllSkillOptions ? appData.weaponRefinementOptions : (unit.weaponInfo?.weaponRefinementOptions || []))"
                       :key="op.id"
                       :value="op.id">
                     {{ op.text }}
@@ -1092,11 +1106,11 @@ function initVueComponents() {
               </div>
 
               <div>
-                        <span class="debugInfo" v-bind:style="vm.debugMenuStyle">
-                            ({{ unit.weapon }}) {{ unit.heroInfo != null ? unit.heroInfo.weaponOptions.length : 0 }},
-                          {{ g_appData.weaponImplCount }}/{{ g_appData.weaponCount }}
-                          ({{ Math.floor(100 * g_appData.weaponImplCount / g_appData.weaponCount, 2) }}%)
-                        </span>
+                <span class="debugInfo" v-bind:style="battleSimulator.vm.debugMenuStyle">
+                    ({{ unit.weapon }}) {{ unit.heroInfo != null ? unit.heroInfo.weaponOptions.length : 0 }},
+                  {{ appData.weaponImplCount }}/{{ appData.weaponCount }}
+                  ({{ Math.floor(100 * appData.weaponImplCount / appData.weaponCount, 2) }}%)
+                </span>
               </div>
             </div>
 
@@ -1109,13 +1123,13 @@ function initVueComponents() {
                 <select2
                     class="skill"
                     :value="unit.support"
-                    :is-debug-mode="vm.isDebugMenuEnabled"
-                    @input="v => vm.supportChanged(unit, v)"
-                    @options-changed="vm.initSkills"
-                    :options="vm.enableAllSkillOptions
-                              ? vm.supportOptions
+                    :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
+                    @input="v => battleSimulator.vm.supportChanged(unit, v)"
+                    @options-changed="battleSimulator.vm.initSkills"
+                    :options="battleSimulator.vm.enableAllSkillOptions
+                              ? battleSimulator.vm.supportOptions
                               : (unit.heroInfo ? unit.heroInfo.supportOptions : [])"
-                    :name="!vm.enableAllSkillOptions && unit.heroInfo
+                    :name="!battleSimulator.vm.enableAllSkillOptions && unit.heroInfo
                               ? unit.id + '-support'
                               : null"
                 />
@@ -1123,16 +1137,16 @@ function initVueComponents() {
 
               <div>
                 <a v-bind:href="unit.supportInfo.detailPageUrl" target="_blank" v-if="unit.supportInfo != null">
-                  <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'"/>
+                  <img class="urlJumpIcon" v-bind:src="imageRootPath + 'UrlJump.png'"/>
                 </a>
               </div>
 
               <div>
-                        <span class="debugInfo" v-bind:style="vm.debugMenuStyle">
-                          ({{ unit.support }}) {{ unit.heroInfo != null ? unit.heroInfo.supportOptions.length : 0 }},
-                          {{ g_appData.supportImplCount }}/{{ g_appData.supportCount }}(
-                          {{ Math.floor(100 * g_appData.supportImplCount / g_appData.supportCount, 2) }}%)
-                        </span>
+                <span class="debugInfo" v-bind:style="battleSimulator.vm.debugMenuStyle">
+                  ({{ unit.support }}) {{ unit.heroInfo != null ? unit.heroInfo.supportOptions.length : 0 }},
+                  {{ appData.supportImplCount }}/{{ appData.supportCount }}(
+                  {{ Math.floor(100 * appData.supportImplCount / appData.supportCount, 2) }}%)
+                </span>
               </div>
             </div>
 
@@ -1146,13 +1160,13 @@ function initVueComponents() {
                 <select2
                     class="skill"
                     :value="unit.special"
-                    :is-debug-mode="vm.isDebugMenuEnabled"
-                    @input="v => vm.specialChanged(unit, v)"
-                    @options-changed="vm.initSkills"
-                    :options="vm.enableAllSkillOptions
-                                ? vm.specialOptions
+                    :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
+                    @input="v => battleSimulator.vm.specialChanged(unit, v)"
+                    @options-changed="battleSimulator.vm.initSkills"
+                    :options="battleSimulator.vm.enableAllSkillOptions
+                                ? battleSimulator.vm.specialOptions
                                 : (unit.heroInfo ? unit.heroInfo.specialOptions : [])"
-                    :name="!vm.enableAllSkillOptions && unit.heroInfo
+                    :name="!battleSimulator.vm.enableAllSkillOptions && unit.heroInfo
                                 ? unit.id + '-special'
                                 : null"
                 />
@@ -1160,34 +1174,34 @@ function initVueComponents() {
 
               <div>
                 <a :href="unit['specialInfo'].detailPageUrl" target="_blank" v-if="unit['specialInfo'] != null">
-                  <img class="urlJumpIcon" :src="g_imageRootPath + 'UrlJump.png'"/>
+                  <img class="urlJumpIcon" :src="imageRootPath + 'UrlJump.png'"/>
                 </a>
               </div>
 
               <div>
-                        <span v-if="unit['special'] >= 0">
-                            <input
-                                name="currentUnitSpecial"
-                                type="number"
-                                min="0"
-                                :max="unit['maxSpecialCount']"
-                                v-model="unit['specialCount']"
-                                class="numeric"
-                                @input="e => vm.specialCountChanged(unit, Number(e.target.value))"
-                            /> 
-                            <span>
-                                / {{ unit['maxSpecialCount'] }}
-                            </span>
-                        </span>
+                <span v-if="unit['special'] >= 0">
+                    <input
+                        name="currentUnitSpecial"
+                        type="number"
+                        min="0"
+                        :max="unit['maxSpecialCount']"
+                        v-model="unit['specialCount']"
+                        class="numeric"
+                        @input="e => battleSimulator.vm.specialCountChanged(unit, Number(e.target.value))"
+                    /> 
+                    <span>
+                        / {{ unit['maxSpecialCount'] }}
+                    </span>
+                </span>
               </div>
 
               <div>
-                        <span class="debugInfo" :style="vm.debugMenuStyle">
-                            ({{ unit['special'] }})
-                          {{ unit.heroInfo != null ? unit.heroInfo['specialOptions'].length : 0 }},
-                          {{ g_appData['specialImplCount'] }}/{{ g_appData['specialCount'] }}
-                          ({{ Math.floor(100 * g_appData['specialImplCount'] / g_appData['specialCount']) }}%)
-                        </span>
+                <span class="debugInfo" :style="battleSimulator.vm.debugMenuStyle">
+                    ({{ unit['special'] }})
+                  {{ unit.heroInfo != null ? unit.heroInfo['specialOptions'].length : 0 }},
+                  {{ appData['specialImplCount'] }}/{{ appData['specialCount'] }}
+                  ({{ Math.floor(100 * appData['specialImplCount'] / appData['specialCount']) }}%)
+                </span>
               </div>
             </div>
 
@@ -1203,24 +1217,24 @@ function initVueComponents() {
             >
               <div class="skill-icon">
                 <img v-if="unit['passive' + slot + 'Info'] != null" :src="unit['passive' + slot + 'Info'].iconPath"/>
-                <img v-else :src="g_imageRootPath + 'None.png'"/>
-                <img :src="g_imageRootPath + slot + (slot === 'X' ? '.webp' : '.png')"
+                <img v-else :src="imageRootPath + 'None.png'"/>
+                <img :src="imageRootPath + slot + (slot === 'X' ? '.webp' : '.png')"
                      class="skillTypeText"
                 />
               </div>
 
               <div class="skill-content">
                 <select2
-                    :options="vm.enableAllSkillOptions
-                                ? vm['passive' + slot + 'Options']
+                    :options="battleSimulator.vm.enableAllSkillOptions
+                                ? battleSimulator.vm['passive' + slot + 'Options']
                                 : (unit.heroInfo ? unit.heroInfo['passive' + slot + 'Options'] : [])"
-                    :name="!vm.enableAllSkillOptions && unit.heroInfo
+                    :name="!battleSimulator.vm.enableAllSkillOptions && unit.heroInfo
                                 ? unit.id + '-passive' + slot
                                 : null"
                     :value="unit['passive' + slot]"
-                    :is-debug-mode="vm.isDebugMenuEnabled"
-                    @input="v => vm.passiveSlotChanged(unit, v, slot)"
-                    @options-changed="vm.initSkills"
+                    :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
+                    @input="v => battleSimulator.vm.passiveSlotChanged(unit, v, slot)"
+                    @options-changed="battleSimulator.vm.initSkills"
                     class="skill"
                 />
               </div>
@@ -1228,41 +1242,41 @@ function initVueComponents() {
               <div>
                 <a :href="unit['passive' + slot + 'Info'].detailPageUrl" target="_blank"
                    v-if="unit['passive' + slot + 'Info'] != null">
-                  <img class="urlJumpIcon" :src="g_imageRootPath + 'UrlJump.png'"/>
+                  <img class="urlJumpIcon" :src="imageRootPath + 'UrlJump.png'"/>
                 </a>
               </div>
 
               <div>
-                        <span class="debugInfo" :style="vm.debugMenuStyle">
-                            ({{ unit['passive' + slot] }})
-                          {{ unit.heroInfo != null ? unit.heroInfo['passive' + slot + 'Options'].length : 0 }},
-                          {{ g_appData['passive' + slot + 'ImplCount'] }}/{{ g_appData['passive' + slot + 'Count'] }}
-                          (
-                          {{ Math.floor(100 * g_appData['passive' + slot + 'ImplCount'] / g_appData['passive' + slot + 'Count']) }}
-                          %)
-                        </span>
+                <span class="debugInfo" :style="battleSimulator.vm.debugMenuStyle">
+                    ({{ unit['passive' + slot] }})
+                  {{ unit.heroInfo != null ? unit.heroInfo['passive' + slot + 'Options'].length : 0 }},
+                  {{ appData['passive' + slot + 'ImplCount'] }}/{{ appData['passive' + slot + 'Count'] }}
+                  (
+                  {{ Math.floor(100 * appData['passive' + slot + 'ImplCount'] / appData['passive' + slot + 'Count']) }}
+                  %)
+                </span>
               </div>
             </div>
 
             <!-- 隊長 -->
-            <div v-if="isSummonerDuels" class="skill-row passive-skill-row">
+            <div v-if="appData.gameMode === GameMode.SummonerDuels" class="skill-row passive-skill-row">
               <div class="skill-icon">
                 <img v-if="unit.captainInfo != null" v-bind:src="unit.captainInfo.iconPath"/>
-                <img v-else v-bind:src="g_imageRootPath + 'UnknownCaptainSkill.webp'"/>
+                <img v-else v-bind:src="imageRootPath + 'UnknownCaptainSkill.webp'"/>
                 <span class="skillTypeText" style="font-size:10px">隊長</span>
               </div>
               <div class="skill-content">
-                <select2 :options="vm.captainOptions" 
+                <select2 :options="battleSimulator.vm.captainOptions" 
                          v-model="unit.captain"
-                         :is-debug-mode="vm.isDebugMenuEnabled"
-                         @input="vm.captainChanged"
+                         :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
+                         @input="battleSimulator.vm.captainChanged"
                          class="skill">
                 </select2>
               </div>
               <div>
                 <a v-bind:href="unit.captainInfo.detailPageUrl" target="_blank" v-if="unit.captainInfo != null">
-                  <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'"/></a>
-                <span class="debugInfo" v-bind:style="vm.debugMenuStyle">
+                  <img class="urlJumpIcon" v-bind:src="imageRootPath + 'UrlJump.png'"/></a>
+                <span class="debugInfo" v-bind:style="battleSimulator.vm.debugMenuStyle">
                             ({{ unit.captain }})
                         </span>
               </div>
@@ -1276,7 +1290,7 @@ function initVueComponents() {
               <div class="skill-icon">
                 <skill-toggle
                     v-model="unit"
-                    :vm="vm"
+                    :vm="battleSimulator.vm"
                     :skills="unit.additionalPassives"
                     :index="index"
                     :skill-type="'additional'"
@@ -1285,10 +1299,10 @@ function initVueComponents() {
               </div>
 
               <div class="skill-content">
-                <select2 :options="vm.additionalPassiveOptions"
+                <select2 :options="battleSimulator.vm.additionalPassiveOptions"
                          v-model="unit.additionalPassives[index][0]"
-                         :is-debug-mode="vm.isDebugMenuEnabled"
-                         @input="vm.additionalSkillChanged" class="skill">
+                         :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
+                         @input="battleSimulator.vm.additionalSkillChanged" class="skill">
                 </select2>
               </div>
 
@@ -1296,14 +1310,14 @@ function initVueComponents() {
                 <a v-bind:href="unit.additionalPassiveInfos[index].detailPageUrl"
                    target="_blank"
                    v-if="unit.additionalPassiveInfos[index] != null">
-                  <img class="urlJumpIcon" v-bind:src="g_imageRootPath + 'UrlJump.png'"/>
+                  <img class="urlJumpIcon" v-bind:src="imageRootPath + 'UrlJump.png'"/>
                 </a>
               </div>
 
               <div class="skill-actions">
                 <skill-actions
                     v-model="unit"
-                    :vm="vm"
+                    :vm="battleSimulator.vm"
                     :skills="unit.additionalPassives"
                     :index="index"
                     :init-value="Unit.getInitAdditionalPassives()[0]"
@@ -1312,7 +1326,7 @@ function initVueComponents() {
               </div>
 
               <div>
-                        <span class="debugInfo" v-bind:style="vm.debugMenuStyle">
+                        <span class="debugInfo" v-bind:style="battleSimulator.vm.debugMenuStyle">
                             ({{ unit.additionalPassives[index][0] }})
                         </span>
               </div>
@@ -1326,7 +1340,7 @@ function initVueComponents() {
               <div class="skill-icon">
                 <skill-toggle
                     v-model="unit"
-                    :vm="vm"
+                    :vm="battleSimulator.vm"
                     :skills="unit.customSkills"
                     :index="index"
                     :skill-type="'custom'"
@@ -1337,7 +1351,7 @@ function initVueComponents() {
               <div class="skill-content custom-skill-name">
                 <custom-skill-form
                     v-model="unit"
-                    :vm="vm"
+                    :vm="battleSimulator.vm"
                     :skills="unit.customSkills"
                     :func-id="funcId"
                     :index="index"
@@ -1349,7 +1363,7 @@ function initVueComponents() {
               <div class="skill-actions">
                 <skill-actions
                     v-model="unit"
-                    :vm="vm"
+                    :vm="battleSimulator.vm"
                     :skills="unit.customSkills"
                     :index="index"
                     :init-value="Unit.getInitCustomSkills()[0]"
@@ -1368,30 +1382,31 @@ function initVueComponents() {
         },
         props: {
             unit: {type: Unit, required: true},
-            g_app: {required: true},
-            g_appData: {required: true},
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData']),
         },
         template: `
           <div>
             <span style="font-size:12px">×がついているスキルは未実装
-            (未実装数 {{ g_appData.totalSkillCount - g_appData.totalImplementedSkillCount }})
+            (未実装数 {{ appData.totalSkillCount - appData.totalImplementedSkillCount }})
             </span>
             <br/>
             <input type="button" value="初期スキル装備"
                    @click="unit.clearReservedSkills();unit.initializeSkillsToDefault();">
             <input type="button" value="全て外す" @click="unit.clearReservedSkills();unit.clearSkills();">
-            <input v-if="g_appData.isDebugMenuEnabled" type="button" value="未実装スキルをログ表示"
-                   @click="g_app.outputSkillsNotImplemented();">
+            <input v-if="appData.isDebugMenuEnabled" type="button" value="未実装スキルをログ表示"
+                   @click="battleSimulator.outputSkillsNotImplemented();">
 
             <button
                 type="button"
-                @click="unit.initAdditionalPassives();g_app.vm.passiveChanged()"
+                @click="unit.initAdditionalPassives();battleSimulator.vm.passiveChanged()"
             >
               追加スキルを初期化
             </button>
             <button
                 type="button"
-                @click="unit.initCustomSkills();g_app.vm.passiveChanged()"
+                @click="unit.initCustomSkills();battleSimulator.vm.passiveChanged()"
             >
               カスタムスキルを初期化
             </button>
@@ -1505,45 +1520,15 @@ function initVueComponents() {
 
     Vue.component('ControlButtons', {
         name: 'ControlButtons',
-        props: {
-            saveSettings: {type: Function, required: true},
-            globalBattleContext: {type: GlobalBattleContext, required: true},
-            showSettingDialog: {type: Function, required: true},
-            showImportDialog: {type: Function, required: true},
-            showExportDialog: {type: Function, required: true},
-            audioManager: {type: AudioManager, required: true},
-            bgmEnabledChanged: {type: Function, required: true},
-            loadLazyImages: {type: Function, required: true},
-            showFlash: {type: Function, required: true},
-        },
         methods: {},
         mounted() {
-            this.loadLazyImages();
+            this.$store.dispatch('loadLazyImages');
         },
         template: `
             <div class="control-panel">
-                <upper-buttons
-                        :save-settings="saveSettings"
-                        :global-battle-context="globalBattleContext"
-                        :show-setting-dialog="showSettingDialog"
-                        :show-import-dialog="showImportDialog"
-                        :show-export-dialog="showExportDialog"
-                        :audio-manager="audioManager"
-                        :bgm-enabled-changed="bgmEnabledChanged"
-                        :load-lazy-images="loadLazyImages"
-                        :show-flash="showFlash"
-                >
+                <upper-buttons>
                 </upper-buttons>
-                <lower-buttons
-                        :save-settings="saveSettings"
-                        :global-battle-context="globalBattleContext"
-                        :show-setting-dialog="showSettingDialog"
-                        :show-import-dialog="showImportDialog"
-                        :show-export-dialog="showExportDialog"
-                        :audio-manager="audioManager"
-                        :bgm-enabled-changed="bgmEnabledChanged"
-                        :load-lazy-images="loadLazyImages"
-                >
+                <lower-buttons>
                 </lower-buttons>
             </div>
         `,
@@ -1551,11 +1536,6 @@ function initVueComponents() {
 
     Vue.component('UpperButtons', {
         name: 'UpperButtons',
-        props: {
-            globalBattleContext: {type: GlobalBattleContext, required: true},
-            loadLazyImages: {type: Function, required: true},
-            showFlash: {type: Function, required: true},
-        },
         computed: {
             ...Vuex.mapState(['battleSimulator', 'appData'])
         },
@@ -1568,12 +1548,12 @@ function initVueComponents() {
             },
             onSaveSettings() {
                 this.battleSimulator.clearSimpleLog();
-                saveSettings();
+                this.$store.dispatch('saveSettings');
                 let toCookie = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
                 if (toCookie) {
-                    this.showFlash('設定を保存しました', 'warning', true);
+                    this.battleSimulator.vm.showFlash('設定を保存しました', 'warning', true);
                 } else {
-                    this.showFlash('設定を保存しました', 'success', true);
+                    this.battleSimulator.vm.showFlash('設定を保存しました', 'success', true);
                 }
             },
             onLoadSettings() {
@@ -1581,14 +1561,14 @@ function initVueComponents() {
                 loadSettings();
                 let fromCookies = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
                 if (fromCookies) {
-                    this.showFlash('設定を読み込みました', 'warning', true);
+                    this.battleSimulator.vm.showFlash('設定を読み込みました', 'warning', true);
                 } else {
-                    this.showFlash('設定を読み込みました', 'success', true);
+                    this.battleSimulator.vm.showFlash('設定を読み込みました', 'success', true);
                 }
             },
         },
         mounted() {
-            this.loadLazyImages();
+            this.$store.dispatch('loadLazyImages');
         },
         template: `
             <div class="control-row">
@@ -1615,7 +1595,7 @@ function initVueComponents() {
                     @click="onLoadSettings">
 
                 <span
-                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType === UnitGroupType.Ally">
+                    v-if="appData.globalBattleContext.currentTurn > 0 && appData.globalBattleContext.currentPhaseType === UnitGroupType.Ally">
                     <input type="button"
                         style="background-image: url(/AetherRaidTacticsBoard/images/AutoPlay.png) "
                         class="fehButton imageButton"
@@ -1623,7 +1603,7 @@ function initVueComponents() {
                 </span>
                 <span
                     class="control-row-5"
-                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType === UnitGroupType.Ally">
+                    v-if="appData.globalBattleContext.currentTurn > 0 && appData.globalBattleContext.currentPhaseType === UnitGroupType.Ally">
                     <input type="button"
                         style="background-image: url(/AetherRaidTacticsBoard/images/EndTurn.png)"
                         class="fehButton imageButton" @click="endTurn">
@@ -1631,7 +1611,7 @@ function initVueComponents() {
 
                 <span
                     class="control-row-5"
-                    v-if="globalBattleContext.currentTurn > 0 && globalBattleContext.currentPhaseType === UnitGroupType.Enemy">
+                    v-if="appData.globalBattleContext.currentTurn > 0 && appData.globalBattleContext.currentPhaseType === UnitGroupType.Enemy">
                     <input type="button"
                         style="background-image: url(/AetherRaidTacticsBoard/images/SimulateEnemyAction.png)"
                         class="fehButton imageButton"
@@ -1643,34 +1623,29 @@ function initVueComponents() {
 
     Vue.component('LowerButtons', {
         name: 'LowerButtons',
-        props: {
-            showSettingDialog: {type: Function, required: true},
-            showImportDialog: {type: Function, required: true},
-            showExportDialog: {type: Function, required: true},
-            audioManager: {type: AudioManager, required: true},
-            bgmEnabledChanged: {type: Function, required: true},
-            loadLazyImages: {type: Function, required: true},
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData'])
         },
         methods: {},
         mounted() {
-            this.loadLazyImages();
+            this.$store.dispatch('loadLazyImages');
         },
         template: `
             <div class="control-row">
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/Settings.png"
-                    @click="showSettingDialog();">
+                    @click="$store.dispatch('showSettingDialog');">
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/ImportSettings.png"
-                    @click="showImportDialog();">
+                    @click="$store.dispatch('showImportDialog');">
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/ExportSettings.png"
-                    @click="showExportDialog();">
+                    @click="$store.dispatch('showExportDialog');">
                 <input type="checkbox" id="enableSound" class="fehButton"
-                    v-model="audioManager.isBgmEnabled" @change="bgmEnabledChanged">
+                    v-model="appData.audioManager.isBgmEnabled" @change="battleSimulator.vm.bgmEnabledChanged">
                 <label for="enableSound" class="fehButton"
                     style="background-image: url('/AetherRaidTacticsBoard/images/EnableSound.png')"></label>
 
@@ -1687,11 +1662,13 @@ function initVueComponents() {
         },
         props: {
             unit: {type: Unit, required: true},
-            g_app: {required: true},
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator'])
         },
         methods: {
             getSkillButtonStyle(unit) {
-                const canActivate = this.g_app.canActivateDuoSkillOrHarmonizedSkill(unit);
+                const canActivate = this.battleSimulator.canActivateDuoSkillOrHarmonizedSkill(unit);
                 const base = unit.isDuoAllyHero ? 'DuoSkill' : 'HarmonizedSkill';
                 const suffix = canActivate ? '' : '_Disabled';
                 return {
@@ -1704,22 +1681,22 @@ function initVueComponents() {
             <span v-if="unit.isDuoAllyHero || unit.isHarmonicAllyHero">
               <input
                 type="button"
-                :disabled="!g_app.canActivateDuoSkillOrHarmonizedSkill(unit)"
+                :disabled="!battleSimulator.canActivateDuoSkillOrHarmonizedSkill(unit)"
                 :style="getSkillButtonStyle(unit)"
-                :class="g_app.canActivateDuoSkillOrHarmonizedSkill(unit) ? 'fehButton' : 'fehButtonDisabled'"
-                @click="g_app.canActivateDuoSkillOrHarmonizedSkill(unit) && g_app.activateDuoOrHarmonizedSkill(unit)"
+                :class="battleSimulator.canActivateDuoSkillOrHarmonizedSkill(unit) ? 'fehButton' : 'fehButtonDisabled'"
+                @click="battleSimulator.canActivateDuoSkillOrHarmonizedSkill(unit) && battleSimulator.activateDuoOrHarmonizedSkill(unit)"
               />
             </span>
 
             <span v-if="unit.canActivateStyle()">
                 <input type="button"
                        class="fehButton map-control-button map-activate-style-button"
-                       @click="g_app.activateStyleSkill(unit);">
+                       @click="battleSimulator.activateStyleSkill(unit);">
             </span>
             <span v-if="unit.canDeactivateStyle()">
                 <input type="button"
                        class="fehButton map-control-button map-deactivate-style-button"
-                       @click="g_app.deactivateStyleSkill(unit);">
+                       @click="battleSimulator.deactivateStyleSkill(unit);">
             </span>
             <span v-if="unit.hasAvailableStyleButCannotActivate()">
                 <input type="button"
@@ -1738,10 +1715,12 @@ function initVueComponents() {
         },
         props: {
             unit: {type: Unit, required: true},
-            g_appData: {required: true},
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData']),
         },
         template: `
-          <fieldset v-if="g_appData.gameMode == GameMode.Arena"  style="font-size:12px;">
+          <fieldset v-if="appData.gameMode === GameMode.Arena"  style="font-size:12px;">
             <legend>闘技場スコア</legend>
 
             <span>スコア: {{unit.arenaScore*2}}({{unit.arenaScore}})</span><br/>
@@ -1749,7 +1728,7 @@ function initVueComponents() {
                         計算式: (150 + {{unit.rarityScore}} + {{unit.levelScore}} + ({{unit.rating}} / 5) + ({{unit.totalSp}} / 100) + ({{unit.merge}} * 2)) * 2<br/>
                         総合値: {{unit.rating}}<br/>
                         合計SP: {{unit.totalSp}}({{unit.weaponSp}}+{{unit.supportSp}}+{{unit.specialSp}}+{{unit.passiveASp}}+{{unit.passiveBSp}}+{{unit.passiveCSp}}+{{unit.passiveSSp}})</span><br/>
-            <input type="button" @click="g_app.setUnitToMaxArenaScore(unit)" value="最大スコアに設定"></input>
+            <input type="button" @click="battleSimulator.setUnitToMaxArenaScore(unit)" value="最大スコアに設定"></input>
           </fieldset>
         `
     });
@@ -1761,10 +1740,12 @@ function initVueComponents() {
         },
         props: {
             unit: {type: Unit, required: true},
-            g_appData: {required: true},
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData'])
         },
         template: `
-          <span v-bind:style="g_app.vm.debugMenuStyle">
+          <span v-bind:style="battleSimulator.vm.debugMenuStyle">
             pos=({{ unit.posX }}, {{ unit.posY }})
             <br/>
             skills={{ unit.weapon }},{{ unit.support }},{{ unit.special }},
@@ -1881,70 +1862,60 @@ function initVueComponents() {
     });
 
     Vue.component('SimulationControls', {
-        props: {
-            isEnemyActionTriggered: Boolean,
-            simulatesEnemyActionOneByOne: Boolean,
-            isIconOverlayDisabled: Boolean,
-            isTrapIconOverlayDisabled: Boolean,
-            isAetherRaid: Boolean,
-            isResonant: Boolean,
-            showFlash: Function,
+        computed: {
+            ...Vuex.mapState(['battleSimulator', 'appData'])
         },
         methods: {
-            onIconOverlayChange() {
-                this.$emit('icon-overlay-disabled-changed');
-            },
             onHealHp() {
-                this.$emit('heal-hp-full');
+                this.battleSimulator.vm.healHpFullForAllUnits();
             },
             onResetPlacement() {
-                this.$emit('reset-placement');
+                this.$store.dispatch('resetPlacement');
             },
             openTeamFormationDialog() {
-                this.$emit('open-team-formation-dialog');
+                $('#teamFormationDialog').dialog('open');
             },
             openAetherRaidDialog() {
-                this.$emit('open-aether-raid-dialog');
+                $('#aetherRaidDefensePresetDialog').dialog('open');
             },
             openItemDialog() {
-                this.$emit('open-item-dialog');
+                $('#itemDialog').dialog('open');
             },
             openDurabilityTestDialog() {
-                this.$emit('open-durability-test');
+                $('#durabilityTestDialog').dialog('open');
             },
             openEditMapDialog() {
-                this.$emit('open-edit-map');
+                $('#editMapDialog').dialog('open');
             },
             onCookieSettingChange(event) {
                 const isChecked = event.target.checked;
                 LocalStorageUtil.setBoolean('uses-cookie-for-storing-settings', isChecked);
                 if (isChecked) {
-                    this.showFlash('状態の保存先をCookie（旧設定）に変更しました。カスタムスキルを設定していると状態が保存されない場合があります。', 'warning', false);
+                    this.battleSimulator.vm.showFlash(
+                        '状態の保存先をCookie（旧設定）に変更しました。カスタムスキルを設定していると状態が保存されない場合があります。',
+                        'warning', false);
                 } else {
-                    this.showFlash('状態の保存先をローカルストレージ（新設定）に変更しました', 'info', true);
+                    this.battleSimulator.vm.showFlash(
+                        '状態の保存先をローカルストレージ（新設定）に変更しました', 'info', true);
                 }
             },
         },
         template: `
             <div>
               <input type="checkbox" id="isEnemyActionTriggered"
-                     :checked="isEnemyActionTriggered"
-                     @change="$emit('update:isEnemyActionTriggered', $event.target.checked)">
+                     v-model="appData.isEnemyActionTriggered">
               <label for="isEnemyActionTriggered" class="normal">敵の行動制限解除</label>
 
               <input type="checkbox" id="simulatesEnemyActionOneByOne"
-                     :checked="simulatesEnemyActionOneByOne"
-                     @change="$emit('update:simulatesEnemyActionOneByOne', $event.target.checked)">
+                     v-model="appData.simulatesEnemyActionOneByOne">
               <label for="simulatesEnemyActionOneByOne" class="normal">敵の行動再現を1行動ずつ行う</label>
 
               <input type="checkbox" id="isIconOverlayDisabled"
-                     :checked="isIconOverlayDisabled"
-                     @change="$emit('update:isIconOverlayDisabled', $event.target.checked); onIconOverlayChange()">
+                     v-model="appData.map.isIconOverlayDisabled">
               <label for="isIconOverlayDisabled" class="normal">アイコン上の状態表示無効</label>
 
               <input type="checkbox" id="isTrapIconOverlayDisabled"
-                     :checked="isTrapIconOverlayDisabled"
-                     @change="$emit('update:isTrapIconOverlayDisabled', $event.target.checked); onIconOverlayChange()">
+                     v-model="appData.map.isTrapIconOverlayDisabled">
               <label for="isTrapIconOverlayDisabled" class="normal">罠のLV表示無効</label>
 
               <div>
@@ -1952,17 +1923,17 @@ function initVueComponents() {
                        @click="onHealHp">
                 <input type="button" value="配置リセット" style="width:140px" class="buttonUi"
                        @click="onResetPlacement">
-                <input v-if="isAetherRaid" type="button" value="模擬戦..." style="width:140px"
+                <input v-if="appData.gameMode === GameMode.AetherRaid" type="button" value="模擬戦..." style="width:140px"
                        class="buttonUi" @click="openAetherRaidDialog">
-                <input v-if="isResonant" type="button" value="アイテム..."
+                <input v-if="appData.gameMode === GameMode.ResonantBattles" type="button" value="アイテム..."
                        style="width:140px" class="buttonUi" @click="openItemDialog">
-                <input v-if="isAetherRaid" type="button" value="耐久/殲滅力テスト..."
+                <input v-if="appData.gameMode === GameMode.AetherRaid" type="button" value="耐久/殲滅力テスト..."
                        style="width:140px" class="buttonUi" @click="openDurabilityTestDialog">
                 <input type="button" value="マップ編集..." style="width:140px" class="buttonUi"
                        @click="openEditMapDialog">
                 <input type="button" value="保存状態リセット" style="width:140px" class="buttonUi"
                        @click="LocalStorageUtil.removeKey('settings');
-                               showFlash('保存されている状態をリセットしました', 'success', true);"
+                               battleSimulator.vm.showFlash('保存されている状態をリセットしました', 'success', true);"
                 >
                 <br/>
                 <span style="width: 140px">
@@ -2302,7 +2273,6 @@ function initVueComponents() {
             getAppData: {type: Function, required: true},
             weaponTypeIconPath: {type: Function, required: true},
             moveTypeIconPath: {type: Function, required: true},
-            showFlash: {type: Function, required: true},
         },
         data() {
             return {
@@ -2311,6 +2281,9 @@ function initVueComponents() {
                 storageKey: 'savedUnitList',
                 saveUnitInputId: 'saveUnitInputId',
             };
+        },
+        computed: {
+            ...Vuex.mapState(['battleSimulator'])
         },
         methods: {
             setUnitName(name) {
@@ -2330,7 +2303,7 @@ function initVueComponents() {
                 });
                 LocalStorageUtil.setJson(this.storageKey, this.rows);
                 this.$emit('update:rows', this.rows);
-                this.showFlash(`${name}を保存しました`, 'success', true);
+                this.battleSimulator.vm.showFlash(`${name}を保存しました`, 'success', true);
             },
             saveUnitAt(originalIndex) {
                 const currentUnit = this.getAppData().currentUnit;
@@ -2354,13 +2327,13 @@ function initVueComponents() {
             },
             restoreUnit() {
                 this.getAppData().restoreUnit();
-                this.showFlash('ユニットを復元しました', 'success', true);
+                this.battleSimulator.vm.showFlash('ユニットを復元しました', 'success', true);
             },
             showDeleteMessage(deleted = true) {
                 if (deleted) {
-                    this.showFlash('ユニットの設定を削除しました', 'success', true);
+                    this.battleSimulator.vm.showFlash('ユニットの設定を削除しました', 'success', true);
                 } else {
-                    this.showFlash('削除をキャンセルしました', 'success', true);
+                    this.battleSimulator.vm.showFlash('削除をキャンセルしました', 'success', true);
                 }
             },
         },
@@ -2424,7 +2397,7 @@ function initVueComponents() {
                 <td class="col-load">
                   <button 
                     class="icon-button load-button" 
-                    @click="getAppData().loadUnit(item); showFlash('設定を読み込みました', 'success', true)"
+                    @click="getAppData().loadUnit(item); battleSimulator.vm.showFlash('設定を読み込みました', 'success', true)"
                   >
                     <i class="fa-solid fa-book-open" title="読み込む"></i>
                   </button>
@@ -2432,8 +2405,8 @@ function initVueComponents() {
                 <td class="col-save">
                   <button class="icon-button save-button"
                           @click="saveUnitAt(originalIndex)
-                                  ? showFlash('上書き保存しました', 'success', true)
-                                  : showFlash('キャンセルしました', 'success', true)">
+                                  ? battleSimulator.vm.showFlash('上書き保存しました', 'success', true)
+                                  : battleSimulator.vm.showFlash('キャンセルしました', 'success', true)">
                     <i class="fa-solid fa-save" title="上書き保存"></i>
                   </button>
                 </td>
@@ -2585,7 +2558,6 @@ function initVueComponents() {
         props: {
             onCopy: {type: Function, required: true},
             onInfo: {type: Function, required: false},
-            showFlash: {type: Function, required: true},
         },
         computed: {
             ...Vuex.mapState(['battleSimulator', 'appData'])
@@ -2619,7 +2591,7 @@ function initVueComponents() {
             <i 
               class="fa-solid fa-copy copy-icon button-row-item button-row-icon"
               title="コピー"
-              @click="onCopy();showFlash('ログをクリップボードにコピーしました', 'success')"
+              @click="onCopy();battleSimulator.vm.showFlash('ログをクリップボードにコピーしました', 'success')"
             ></i>
 
             <!-- 天脈透過 -->

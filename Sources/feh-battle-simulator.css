@@ -1504,6 +1504,14 @@ td.enemy {
     line-height: 28px;
 }
 
+.select2-results__options {
+    font-size: 12px;
+}
+
+.select2-selection__rendered {
+    font-size: 12px;
+}
+
 /*.select2-container--default .select2-selection--single .select2-selection__rendered {*/
 /*    color: #444;*/
 /*    line-height: 28px;*/
