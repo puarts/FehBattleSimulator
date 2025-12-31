@@ -30,6 +30,11 @@ const WHEN_CANTO_UNIT_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 const WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS = new SkillEffectHooks();
 
 /**
+ * ワープでの再移動
+ * @type {SkillEffectHooks<CollectionNode<*, Tile>, BattleMapEnv>} */
+const UNIT_CAN_MOVE_TO_A_SPACE_WITHOUT_OBSTRUCTION_HOOKS = new SkillEffectHooks();
+
+/**
  * 再移動発動開始時
  * @type {SkillEffectHooks<SkillEffectNode, CantoEnv>} */
 const WHEN_CANTO_TRIGGERS_HOOKS = new SkillEffectHooks();

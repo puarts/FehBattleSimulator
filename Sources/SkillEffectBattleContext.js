@@ -1743,6 +1743,23 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringComb
 const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE =
     n => new GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstAttackDuringCombatNode(n);
 
+class GrantsSpecialCooldownCountMinusNBeforeTargetAttacksDuringCombatNode extends FromPositiveNumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this.evaluateChildren(env);
+        unit.battleContext.specialCountReductionBeforeAttack += n;
+        let result = unit.battleContext.specialCountReductionBeforeAttack;
+        env.info(`${unit.nameWithGroup}は自分の攻撃前に自身の奥義発動カウント-${n}: ${result - n} → ${result}`);
+    }
+}
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_BEFORE_TARGET_ATTACKS_DURING_COMBAT_NODE =
+    n => new GrantsSpecialCooldownCountMinusNBeforeTargetAttacksDuringCombatNode(n);
+
 class InflictsSpecialCooldownCountPlusNToTargetBeforeTargetsFirstAttackDuringCombatNode extends FromPositiveNumberNode {
     static {
         Object.assign(this.prototype, GetUnitDuringCombatMixin);
@@ -1784,9 +1801,9 @@ class GrantsSpecialCooldownCountMinusNToTargetBeforeTargetsFirstFollowUpAttackDu
     evaluate(env) {
         let unit = this.getUnit(env);
         let n = this.evaluateChildren(env);
-        unit.battleContext.specialCountReductionBeforeFirstFollowupAttack += n;
-        let reduction = unit.battleContext.specialCountReductionBeforeFollowupAttack;
-        env.info(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${reduction - n} → ${reduction}`);
+        const origin = unit.battleContext.specialCountReductionBeforeFirstFollowupAttack;
+        const result = unit.battleContext.specialCountReductionBeforeFirstFollowupAttack += n;
+        env.info(`${unit.nameWithGroup}は自分の最初の追撃前に自身の奥義発動カウント-${n}: ${origin} → ${result}`);
     }
 }
 
@@ -1977,7 +1994,7 @@ class TargetCanActivateNonSpecialMiracleNode extends BoolNode {
  * @returns {TargetCanActivateNonSpecialMiracleNode}
  * @constructor
  */
-const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = thresholdPercentage => new TargetCanActivateNonSpecialMiracleNode(thresholdPercentage);
+const TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE = (thresholdPercentage = 0) => new TargetCanActivateNonSpecialMiracleNode(thresholdPercentage);
 
 // TODO: if foe's first attack triggers the "attacks twice" effect, grants Special cooldown count-1 to unit before foe's second strike as well
 

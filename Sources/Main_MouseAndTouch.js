@@ -31,21 +31,24 @@ const g_keyboardManager = new KeyboardManager();
 let g_draggingElemId = "";
 let g_isDragging = false;
 let g_previousDraggedTile = null;
+let g_wasRightPressing = false;
 /** @type {Queue<Tile>} */
-let g_dragoverTileHistory = new Queue(10);
+let g_dragOverTileHistory = new Queue(10);
+/** ドラッグ中の攻撃マス */
 let g_attackTile = null;
 let g_assistTile = null;
+let g_moveTile = null;
+let g_originalTile = null;
 let g_dragoverTargetTileForCalcSummary = null;
 
 let g_doubleClickChecker = new DoubleClickChecker();
 
-function selectItemById(id, add = false, toggle = false, button = 0, isDoubleClick = false) {
+function selectItemById(id, add = false, toggle = false, button = 0) {
     __clearSelectedTileColor();
     if (toggle) {
         g_app.selectItemToggle(id);
-    }
-    else {
-        g_app.selectItem(id, add, button, isDoubleClick);
+    } else {
+        g_app.selectItem(id, add, button);
     }
     // 選択アイテムのタイルを更新
     for (let item of g_appData.enumerateItems()) {
@@ -63,49 +66,71 @@ function findParentTdElement(elem) {
     return currentNode;
 }
 
-function __selectItemById(id, button = 0,
-                          isShiftKey = false, isControlKey = false,
-                          isDoubleClick = false) {
-    console.log(`selected id: ${id}`);
-    if (isShiftKey) {
-        selectItemById(id, true, false);
-    } else if (isControlKey) {
-        selectItemById(id, false, true);
-    } else {
-        selectItemById(id, false, false, button, isDoubleClick);
+function __selectItemById(id, event) {
+    console.log('selected id: %o', id);
+
+    if (event.shiftKey) {
+        return selectItemById(id, true, false);
     }
+
+    if (event.ctrlKey) {
+        return selectItemById(id, false, true);
+    }
+
+    return selectItemById(
+        id,
+        false,
+        false,
+        event.button,
+    );
 }
 
 function onItemSelected(event) {
-    let button = event.button;
+    const button = event.button;
     console.log(`onItemSelected(${button})`);
-    // 左クリックならダブルクリック判定をする
-    let isLeftClick = button === 0;
+
+    if (detectDoubleClick(button)) {
+        handleDoubleClick();
+        return;
+    }
+
+    const id = resolveClickedId(event.target);
+    if (!id) return;
+
+    console.log('clicked id: %o', id);
+    __selectItemById(id, event);
+}
+
+function detectDoubleClick(button) {
+    const isLeftClick = button === 0;
+
     if (isLeftClick) {
         g_doubleClickChecker.notifyClick();
+        return g_doubleClickChecker.isDoubleClicked();
     } else {
         g_doubleClickChecker.reset();
+        return false;
     }
-    let isDoubleClick = isLeftClick && g_doubleClickChecker.isDoubleClicked();
+}
 
-    let targetElem = event.target;
-    if (targetElem.id === undefined || targetElem.id === "") {
-        let tdElem = findParentTdElement(targetElem);
-        if (tdElem != null) {
-            // タイルが選択された
-            __selectItemById(tdElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
-        }
-    } else {
-        __selectItemById(targetElem.id, button, event.shiftKey, event.ctrlKey, isDoubleClick);
-    }
-
-    if (isDoubleClick) {
-        for (let unit of g_appData.enumerateSelectedItems(x => x instanceof Unit && !x.isActionDone)) {
+function handleDoubleClick() {
+    g_appData.enumerateSelectedItems()
+        .filter(item => item instanceof Unit)
+        .filter(unit => !unit.isActionDone)
+        .forEach(unit => {
             g_app.executeEndActionCommand(unit);
             unit.isSelected = false;
-        }
-        updateAllUi();
-    }
+        });
+    updateAllUi();
+}
+
+function resolveClickedId(elem) {
+    // 直接 id がある
+    if (elem.id) return elem.id;
+
+    // 親 td を探す
+    const td = findParentTdElement(elem);
+    return td?.id ?? null;
 }
 
 /***** ドラッグ開始時の処理 *****/
@@ -114,14 +139,16 @@ function f_dragstart(event) {
     //ドラッグするデータのid名をDataTransferオブジェクトにセット
     event.dataTransfer.setData("text", event.target.id);
     g_draggingElemId = event.target.id;
-    g_dragoverTileHistory.clear();
+    g_dragOverTileHistory.clear();
     g_attackTile = null;
     g_assistTile = null;
+    g_moveTile = null;
     g_previousDraggedTile = null;
+    g_wasRightPressing = false;
     // ユニットが今いる場所を移動履歴に入れる
     let unit = g_app.findUnitById(g_draggingElemId);
     if (unit) {
-        g_dragoverTileHistory.enqueue(unit.placedTile);
+        g_dragOverTileHistory.enqueue(unit.placedTile);
     }
 }
 
@@ -149,13 +176,25 @@ function toggleShowSkillLogs(event) {
 
 /***** ドラッグ要素がドロップ要素に重なっている間の処理 *****/
 function f_dragover(event) {
-    //dragoverイベントをキャンセルして、ドロップ先の要素がドロップを受け付けるようにする
-    let dropTargetId = event.currentTarget.id;
+    event.preventDefault();
+
+    const isRightPressingNow = (event.buttons & 2) !== 0;
+
+    if (g_appData.currentUnit) {
+        if (isRightPressingNow && !g_wasRightPressing) {
+            // 押された瞬間だけ
+            if (g_appData.currentUnit.toggleStyleIfPossible()) {
+                updateAllUi();
+            }
+        }
+        g_wasRightPressing = isRightPressingNow;
+    }
+
+    const dropTargetId = event.currentTarget.id;
     if (dropTargetId.includes('_')) {
-        let pos = getPositionFromCellId(dropTargetId);
+        const pos = getPositionFromCellId(dropTargetId);
         dragoverImpl(pos[0], pos[1], g_draggingElemId, event);
     }
-    event.preventDefault();
 }
 
 // TODO: 削除する
@@ -276,26 +315,30 @@ function touchEndEvent(event) {
     }
 }
 
-function findBestActionTile(targetTile, spaces, unit) {
+function findBestActionTile(targetTile, spaces, unit, useHistory = true) {
     if (unit.isCannotMoveStyleActive()) {
         return unit.placedTile;
     }
-    for (let i = g_dragoverTileHistory.length - 1; i >= 0; --i) {
-        let tile = g_dragoverTileHistory.data[i];
-        let distance = tile?.calculateDistance(targetTile);
-        if (distance === spaces) {
-            return tile;
-        }
+
+    const isSameDistance = tile => tile?.calculateDistance(targetTile) === spaces;
+
+    // 1. 履歴から（新しいもの優先）
+    if (useHistory) {
+        const tileFromHistory = g_dragOverTileHistory.data?.findLast(isSameDistance);
+        if (tileFromHistory) return tileFromHistory;
     }
-    if (unit.placedTile?.calculateDistance(targetTile) === spaces) {
+
+    // 2. 現在位置
+    if (isSameDistance(unit.placedTile)) {
         return unit.placedTile;
     }
-    for (let tile of unit.movableTiles) {
-        let distance = tile?.calculateDistance(targetTile);
-        if (distance === spaces && tile.isUnitPlacableIncludingCurrentTile(unit)) {
-            return tile;
-        }
-    }
+
+    // 3. 移動可能マスから、距離＋配置可能条件付きで探す
+    const movableTile = unit.movableTiles?.find(tile =>
+        isSameDistance(tile) &&
+        tile.isUnitPlaceableIncludingCurrentTile(unit)
+    );
+    if (movableTile) return movableTile;
 
     return null;
 }
@@ -313,6 +356,10 @@ function dragoverImpl(overTilePx, overTilePy, draggingElemId = null, event = nul
         let unit = g_app.findUnitById(elemId);
         toggleShowSkillLogs(event);
         if (g_previousDraggedTile !== dragoverTile) {
+            let targetTile = g_appData.map.getTile(overTilePx, overTilePy);
+            if (targetTile != null) {
+                dragoverImplForTargetTile(unit, targetTile);
+            }
             drawUnitRange(unit, overTilePx, overTilePy, event);
             g_previousDraggedTile = dragoverTile;
         }
@@ -326,9 +373,6 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
         return;
     }
     let targetTile = g_appData.map.getTile(overTilePx, overTilePy);
-    if (targetTile != null) {
-        dragoverImplForTargetTile(unit, targetTile, event);
-    }
     if (g_appData.showMovableRangeWhenMovingUnit) {
         // 全てのタイルの背景色を消す
         for (let tile of g_appData.map.enumerateTiles()) {
@@ -369,7 +413,7 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
                 } else {
                     let cellId = getCellId(tile.posX, tile.posY);
                     let cell = document.getElementById(cellId);
-                    if (tile.isUnitPlacable(unit)) {
+                    if (tile.isUnitPlaceable(unit)) {
                         Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
                                 node.classList.remove('map-hidden');
                             }
@@ -387,7 +431,7 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
             updateCellBgColor(tile.posX, tile.posY, color);
         }
         for (let tile of g_appData.map.enumerateTiles()) {
-            clearCellFocusBorder(tile.posX, tile.posY);
+            clearCellFocusStyle(tile.posX, tile.posY);
         }
         // 現在のタイルもしくは攻撃位置のタイルに色をつける
         if (g_appData.currentTurn !== 0) {
@@ -429,8 +473,8 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
                     const canSupport =
                         neighborTiles.some(t =>
                             unit.movableTiles.includes(t) &&
-                            t.isUnitPlacableIncludingCurrentTile(unit) &&
-                            g_app.__canSupportTo(unit, tile.placedUnit, t)
+                            t.isUnitPlaceableIncludingCurrentTile(unit) &&
+                            g_app.canUseAssistOn(unit, tile.placedUnit, t)
                         );
                     if (canSupport) {
                         updateCellBgColor(tile.posX, tile.posY, "#00ff00" + alpha);
@@ -439,11 +483,16 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
             }
         }
         // 範囲奥義表示
-        for (let tile of unit.precombatSpecialTiles) {
+        const precombatTiles = new Set(unit.precombatSpecialTiles);
+        for (let tile of g_appData.map.enumerateTiles()) {
             let cellId = getCellId(tile.posX, tile.posY);
             let cell = document.getElementById(cellId);
-            Array.from(cell.querySelectorAll('.map-aoe-special-icon')).forEach(node => {
-                    node.classList.remove('map-hidden');
+            cell.querySelectorAll('.map-aoe-special-icon').forEach(node => {
+                    if (precombatTiles.has(tile)) {
+                        node.classList.remove('map-hidden');
+                    } else {
+                        node.classList.add('map-hidden');
+                    }
                 }
             );
         }
@@ -461,71 +510,65 @@ function glowPopInfoIcon() {
     }
 }
 
-function dragoverImplForTargetTile(unit, targetTile, event) {
+function dragoverImplForTargetTile(unit, targetTile) {
     // ターゲットのタイルが変化していなければ再計算しない
     if (g_dragoverTargetTileForCalcSummary === targetTile) {
         return;
     }
+
+    // タイルが変わったので、既存のダメージ予測がある場合は「変更あり」の演出
     if (g_dragoverTargetTileForCalcSummary) {
-        // 現在ダメージ予測が存在するがtargetTileは変わっている => ダメージ予測が変化
         glowPopInfoIcon();
     }
+
+    // 以前の攻撃フォーカスを解除
     if (g_attackTile) {
-        let tile = g_attackTile;
-        clearCellFocusBorder(tile.posX, tile.posY);
+        clearCellFocusStyle(g_attackTile.posX, g_attackTile.posY);
     }
     g_attackTile = null;
     g_assistTile = null;
     unit.precombatSpecialTiles = [];
-    // 範囲奥義を非表示に
-    for (let tile of g_appData.map.enumerateTiles()) {
-        let cellId = getCellId(tile.posX, tile.posY);
-        let cell = document.getElementById(cellId);
-        Array.from(cell.querySelectorAll('.map-aoe-special-icon')).forEach(node => {
-                node.classList.add('map-hidden');
-            }
-        );
-    }
 
     g_app.clearDamageCalcSummary();
+    g_dragoverTargetTileForCalcSummary = null;
 
-    if (targetTile.isUnitPlacable(unit) ||
-        targetTile === unit.placedTile) {
-        if (g_dragoverTileHistory.lastValue !== targetTile) {
-            g_dragoverTileHistory.enqueue(targetTile);
+    const isTargetTileMovable = targetTile.isUnitPlaceable(unit) || targetTile === unit.placedTile;
+    if (isTargetTileMovable) {
+        if (g_dragOverTileHistory.lastValue !== targetTile) {
+            g_dragOverTileHistory.enqueue(targetTile);
         }
-    } else {
-        // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
-        let unitPlacedOnTargetTile = targetTile.placedUnit;
-        let isThereEnemyOnTile =
-            unitPlacedOnTargetTile != null &&
-            unit.groupId !== unitPlacedOnTargetTile.groupId;
-        let isThereAllyOnTile =
-            unitPlacedOnTargetTile != null &&
-            unit.groupId === unitPlacedOnTargetTile.groupId;
-        if (isThereEnemyOnTile) {
-            let attackTile = findBestActionTile(targetTile, unit.attackRangeOnMapForAttackingUnit, unit);
+        return;
+    }
+
+    const targetUnit = targetTile.placedUnit;
+    const hasTargetUnit = targetUnit != null;
+    if (hasTargetUnit) {
+        const isEnemy = unit.groupId !== targetUnit.groupId;
+        const isAlly = !isEnemy;
+
+        // 敵がいる場合: ダメージ予測を表示
+        if (isEnemy) {
+            const attackTile = findBestActionTile(targetTile, unit.attackRangeOnMap, unit);
             g_attackTile = attackTile;
-            // 再計算のチェックのためサマリーを計算するタイルを保存しておく
             g_dragoverTargetTileForCalcSummary = targetTile;
-            g_app.showDamageCalcSummary(unit, unitPlacedOnTargetTile, attackTile);
-            // toggleShowSkillLogs(event);
+            g_app.showDamageCalcSummary(unit, targetUnit, attackTile);
             return;
-        } else if (isThereAllyOnTile) {
-            let assistTile = findBestActionTile(targetTile, unit.assistRange, unit);
-            if (assistTile) {
-                let canSupport = g_app.__canSupportTo(unit, targetTile.placedUnit, assistTile);
-                if (canSupport) {
-                    g_assistTile = assistTile;
-                }
+        }
+
+        // 味方がいる場合: 補助可能なら補助タイルを記録
+        if (isAlly) {
+            const assistTile = findBestActionTile(targetTile, unit.assistRange, unit);
+            if (assistTile && g_app.canUseAssistOn(unit, targetUnit, assistTile)) {
+                g_assistTile = assistTile;
             }
             return;
         }
     }
-    if (targetTile.canBreakTile(unit)) {
-        g_attackTile = findBestActionTile(targetTile, unit.attackRangeOnMapForAttackingUnit, unit);
+
+    // ユニットはいないが、タイル上のものを破壊できる場合
+    if (targetTile.canUnitBreakStructure(unit)) {
+        g_attackTile = findBestActionTile(targetTile, unit.attackRangeOnMap, unit);
     }
-    g_dragoverTargetTileForCalcSummary = null;
 }
 
 function getBestActionTile(unit, targetTile, spaces) {
@@ -618,7 +661,7 @@ function dropToUnitImpl(unit, dropTargetId) {
         let isSupportEnabled = !g_appData.isSupportActivationDisabled;
         if (isSupportEnabled && isDifferentGroup) {
             // ドロップ先に敵ユニットがいる場合はダメージ計算を行う
-            let bestTile = getBestActionTile(unit, targetTile, unit.attackRangeOnMapForAttackingUnit);
+            let bestTile = getBestActionTile(unit, targetTile, unit.attackRangeOnMap);
             if (bestTile != null && !unit.isCantoActivating) {
                 g_app.__enqueueAttackCommand(unit, unitPlacedOnTargetTile, bestTile);
                 g_appData.isEnemyActionTriggered = true;
@@ -684,7 +727,7 @@ function dropToUnitImpl(unit, dropTargetId) {
                 let obj = targetTile.obj;
                 if (examinesCanBreak(unit, obj, targetTile)) {
                     // 壊せる壁や施設を破壊
-                    let tile = getBestActionTile(unit, targetTile, unit.attackRangeOnMapForAttackingUnit);
+                    let tile = getBestActionTile(unit, targetTile, unit.attackRangeOnMap);
                     if (tile != null && !unit.isCantoActivating) {
                         // 破壊対象が施設か天脈かでコマンドを分ける
                         if (targetTile.hasEnemyBreakableDivineVein(unit.groupId)) {
@@ -747,6 +790,7 @@ function dropEventImpl(objId, dropTargetId) {
         if (unit != null) {
             unit.isSelected = false;
             dropToUnitImpl(unit, dropTargetId);
+            updateAllUi();
         }
     }
 

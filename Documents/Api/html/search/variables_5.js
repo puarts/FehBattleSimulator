@@ -7,7 +7,7 @@ var searchData=
   ['g_5fdeffencestructurecontainer_2651',['g_deffenceStructureContainer',['../_app_data_8js.html#a1299662922c58e36f20827daba5863ef',1,'AppData.js']]],
   ['g_5fdisableupdateui_2652',['g_disableUpdateUi',['../_main_8js.html#a254649a16c0c5f38b981b5969acc21ec',1,'Main.js']]],
   ['g_5fdraggingelemid_2653',['g_draggingElemId',['../_main_8js.html#ae4b4c8e09c6fc5482ebec0fcb1c9105d',1,'Main.js']]],
-  ['g_5fdragovertilehistory_2654',['g_dragoverTileHistory',['../_main_8js.html#ae160551283565ac29eff96b7c1199e52',1,'Main.js']]],
+  ['g_5fdragovertilehistory_2654',['g_dragOverTileHistory',['../_main_8js.html#ae160551283565ac29eff96b7c1199e52',1,'Main.js']]],
   ['g_5fidgenerator_2655',['g_idGenerator',['../_app_data_8js.html#acb31a8c3ce120221b9c96a75c8b3332d',1,'AppData.js']]],
   ['g_5fimagerootpath_2656',['g_imageRootPath',['../_global_definitions_8js.html#aa6fe2383ac4a9def56db39d693281db1',1,'GlobalDefinitions.js']]],
   ['g_5fkeyboardmanager_2657',['g_keyboardManager',['../_main_8js.html#a44cf722778a7b1266520f2b62ef0791a',1,'Main.js']]],

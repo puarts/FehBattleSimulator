@@ -255,6 +255,9 @@ class BattleContext {
         // 各追撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeEachFollowupAttack = 0;
 
+        // 各攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
+        this.specialCountReductionBeforeAttack = 0;
+
         // 攻撃ごとに変化する可能性がある最初の攻撃前の奥義発動カウント減少値(減少値を正の値で保持する)
         this.specialCountReductionBeforeFirstAttackPerAttack = 0;
 
@@ -608,6 +611,7 @@ class BattleContext {
         this.preventedDefenderSpecialPerAttack = false;
         this.invalidatesDamageReductionExceptSpecialOnSpecialActivationPerAttack = false;
         this.maxHpRatioToHealBySpecialPerAttack = 0;
+        this.specialCountReductionBeforeAttack = 0;
         this.specialCountReductionBeforeFirstAttackPerAttack = 0;
         this.damageReductionValuePerAttack = 0;
         this.damageReductionValueOfSpecialAttackPerAttack = 0;
@@ -809,38 +813,10 @@ class BattleContext {
         return this.#specialAddDamagePerAttack;
     }
 
-    getSpecialCountChangeAmountBeforeFirstAttack() {
-        let increase = this.specialCountIncreaseBeforeFirstAttack;
-        let reduction =
-            this.specialCountReductionBeforeFirstAttack +
-            this.specialCountReductionBeforeFirstAttackPerAttack;
-        return increase - reduction;
-    }
-
-    getSpecialCountChangeAmountAbsBeforeFirstAttack() {
-        let increase = this.specialCountIncreaseBeforeFirstAttack;
-        let reduction =
-            this.specialCountReductionBeforeFirstAttack +
-            this.specialCountReductionBeforeFirstAttackPerAttack;
-        return increase + reduction;
-    }
-
     getSpecialCountChangeAmountBeforeSecondStrikeAttack() {
         let increase = this.specialCountIncreaseBeforeSecondStrike;
         let reduction = this.specialCountReductionBeforeSecondStrikeByEnemy;
         return increase - reduction;
-    }
-
-    getSpecialCountChangeAmountBeforeFirstAttackByEnemy() {
-        let increase = this.specialCountIncreaseBeforeFirstAttackByEnemy;
-        let reduction = this.specialCountReductionBeforeFirstAttackByEnemy;
-        return increase - reduction;
-    }
-
-    getSpecialCountChangeAmountAbsBeforeFirstAttackByEnemy() {
-        let increase = this.specialCountIncreaseBeforeFirstAttackByEnemy;
-        let reduction = this.specialCountReductionBeforeFirstAttackByEnemy;
-        return increase + reduction;
     }
 
     getSpecialCountReductionBeforeFirstFollowUpAttackByEnemy() {

@@ -84,8 +84,10 @@ const Hero = {
     DuoFreyja: 1336,
     DuoElincia: 1340,
     DuoGullveigNinja: 1348,
-    HarmonizedIke: 10000,
-    HarmonizedRyn: 10001,
+    HarmonizedIke: 1353,
+    HarmonizedRyn: 1354,
+    HarmonizedIvy: 1365,
+    DuoBaldr: 1371,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
@@ -421,6 +423,9 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.Range2Style, ["Range2Style.webp", "スタイル・射程2", "【スタイル】：射程2 を使用可能"]],
     [StatusEffectType.AssignDecoyTwin, ["AssignDecoyTwin.webp", "囮指名・双", "同じ射程の攻撃に「護り手」、奥義のダメージ軽減2回"]],
     [StatusEffectType.RadiantHero, ["RadiantHero.webp", "蒼炎の勇者", "距離に関係なく反撃でき、奥義のダメージが増加する"]],
+    [StatusEffectType.TrueCharge, ["TrueCharge.webp", "真突撃", "十字3マスに移動可能（移動妨害を受けずに通過可能）"]],
+    [StatusEffectType.AtkLiberate, ["AtkLiberate.webp", "攻撃の解放", ""]],
+    [StatusEffectType.ResLiberate, ["ResLiberate.webp", "魔防の解放", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

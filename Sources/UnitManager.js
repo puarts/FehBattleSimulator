@@ -4,6 +4,7 @@ const MaxAllyUnitCount = 20;
 
 class UnitManager {
     constructor() {
+        /** @type {Unit[]} */
         this.units = [];
         for (let i = 0; i < MaxEnemyUnitCount; ++i) {
             this.units.push(this.__createDefaultUnit("e" + i, UnitGroupType.Enemy));
@@ -32,7 +33,7 @@ class UnitManager {
 
     /**
      * @param  {number} groupId
-     * @returns {Generator<Unit>}
+     * @returns {Iterable<Unit>}
      */
     enumerateUnitsInSpecifiedGroup(groupId) {
         return this.enumerateUnitsWithPredicator(x => x.groupId === groupId);

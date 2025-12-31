@@ -15,7 +15,7 @@ function __registerPassiveSOptions(options, infos) {
 }
 function __findSkillInfo(skillInfos, id) {
     for (let info of skillInfos) {
-        if (info.id == id) {
+        if (info.id === id) {
             return info;
         }
     }
@@ -1027,7 +1027,7 @@ class AppData extends UnitManager {
         }
 
         let canApplyPairUpBoost = unit.hasPairUpUnit
-            && (this.gameMode != GameMode.SummonerDuels || this.examinesIsCurrentSeason(unit.providableBlessingSeason));
+            && (this.gameMode !== GameMode.SummonerDuels || this.examinesIsCurrentSeason(unit.providableBlessingSeason));
         unit.updateStatusBySkillsAndMerges(updatesPureGrowthRate, updateBlessingEffects,
             this.isPairUpBoostsEnabled && canApplyPairUpBoost);
 
@@ -1037,7 +1037,7 @@ class AppData extends UnitManager {
             let defenceFortlessLevel = Number(this.findDefenseFortress().level);
             let fortressLevelDiff = offenceFortlessLevel - defenceFortlessLevel;
             if (fortressLevelDiff < 0) {
-                if (unit.groupId == UnitGroupType.Enemy) {
+                if (unit.groupId === UnitGroupType.Enemy) {
                     let diff = Math.abs(fortressLevelDiff);
                     unit.atkWithSkills += 4 * diff;
                     unit.spdWithSkills += 4 * diff;
@@ -1046,7 +1046,7 @@ class AppData extends UnitManager {
                 }
             }
             else if (fortressLevelDiff > 0) {
-                if (unit.groupId == UnitGroupType.Ally) {
+                if (unit.groupId === UnitGroupType.Ally) {
                     let diff = Math.abs(fortressLevelDiff);
                     unit.atkWithSkills += 4 * diff;
                     unit.spdWithSkills += 4 * diff;
@@ -1088,7 +1088,7 @@ class AppData extends UnitManager {
 
         this.registerSkillInfos(heroInfo);
 
-        if (heroInfo == unit.heroInfo) {
+        if (heroInfo === unit.heroInfo) {
             // ユニットのコピーペースト時に再初期化でリセットされてしまうのを防ぐために
             // 同じ情報だったらスキップするようにしたが、もし何か他の処理で都合が悪ければ、
             // 強制更新フラグを引数で渡せるようにする
@@ -1097,8 +1097,8 @@ class AppData extends UnitManager {
 
         unit.initByHeroInfo(heroInfo);
 
-        if (this.gameMode != GameMode.ResonantBattles
-            || unit.groupId == UnitGroupType.Ally) {
+        if (this.gameMode !== GameMode.ResonantBattles
+            || unit.groupId === UnitGroupType.Ally) {
             // 双界の敵以外は成長率を操作することはないのでリセット
             unit.updatePureGrowthRate();
             unit.resetStatusMult();
@@ -1159,12 +1159,7 @@ class AppData extends UnitManager {
     }
 
     hasItem(itemType) {
-        for (let item of this.resonantBattleItems) {
-            if (item == itemType) {
-                return true;
-            }
-        }
-        return false;
+        return this.resonantBattleItems.includes(itemType);
     }
 
     clearItems() {
@@ -1180,7 +1175,7 @@ class AppData extends UnitManager {
 
     __findIndexOfBattleItem(item) {
         for (let i = 0; i < this.resonantBattleItems.length; ++i) {
-            if (this.resonantBattleItems[i] == item) {
+            if (this.resonantBattleItems[i] === item) {
                 return i;
             }
         }
@@ -1256,12 +1251,12 @@ class AppData extends UnitManager {
                 }
             case GameMode.Arena:
                 {
-                    if (targetUnit.grantedBlessing == SeasonType.None
-                        && targetUnit.providableBlessingSeason == SeasonType.None) {
+                    if (targetUnit.grantedBlessing === SeasonType.None
+                        && targetUnit.providableBlessingSeason === SeasonType.None) {
                         // 祝福付与なし、かつ神階英雄でもない
                         return false;
                     }
-                    if (providerUnit.providableBlessingSeason == SeasonType.None
+                    if (providerUnit.providableBlessingSeason === SeasonType.None
                         || isMythicSeasonType(providerUnit.providableBlessingSeason)
                     ) {
                         return false;
@@ -1277,7 +1272,7 @@ class AppData extends UnitManager {
                         return false;
                     }
 
-                    if (targetUnit.grantedBlessing == providerUnit.providableBlessingSeason) {
+                    if (targetUnit.grantedBlessing === providerUnit.providableBlessingSeason) {
                         // 祝福が一致した
                         return true;
                     }
@@ -1291,12 +1286,12 @@ class AppData extends UnitManager {
                 }
             case GameMode.ResonantBattles:
                 {
-                    if (targetUnit.grantedBlessing == SeasonType.None
-                        && targetUnit.providableBlessingSeason == SeasonType.None) {
+                    if (targetUnit.grantedBlessing === SeasonType.None
+                        && targetUnit.providableBlessingSeason === SeasonType.None) {
                         // 祝福付与なし、かつ神階英雄でもない
                         return false;
                     }
-                    if (providerUnit.providableBlessingSeason == SeasonType.None
+                    if (providerUnit.providableBlessingSeason === SeasonType.None
                         || isMythicSeasonType(providerUnit.providableBlessingSeason)
                     ) {
                         return false;
@@ -1312,7 +1307,7 @@ class AppData extends UnitManager {
                         return false;
                     }
 
-                    if (targetUnit.grantedBlessing == providerUnit.providableBlessingSeason) {
+                    if (targetUnit.grantedBlessing === providerUnit.providableBlessingSeason) {
                         // 祝福が一致した
                         return true;
                     }
@@ -1321,7 +1316,7 @@ class AppData extends UnitManager {
                 }
             case GameMode.SummonerDuels:
                 {
-                    if (providerUnit.providableBlessingSeason == SeasonType.None
+                    if (providerUnit.providableBlessingSeason === SeasonType.None
                         || isMythicSeasonType(providerUnit.providableBlessingSeason)
                     ) {
                         // 適用元が伝承効果を持たない
@@ -1368,7 +1363,7 @@ class AppData extends UnitManager {
         for (let unit of units) {
             score += unit.arenaScore;
             for (let ally of units) {
-                if (ally == unit) {
+                if (ally === unit) {
                     continue;
                 }
                 if (this.isBlessingEffectEnabled(unit, ally)) {
@@ -1418,7 +1413,7 @@ class AppData extends UnitManager {
         let liftLoss = -100;
         let defenseProviders = Array.from(this.enumerateCurrentSeasonDefenseMythicUnits(UnitGroupType.Enemy));
         let providerCount = defenseProviders.length;
-        if (providerCount == 0) {
+        if (providerCount === 0) {
             return liftLoss;
         }
 
@@ -1488,28 +1483,15 @@ class AppData extends UnitManager {
         this.updateEnemyAndAllyUnitCount(enemyCount, allyCount);
     }
     updateSlotOrders() {
-        for (let i = 0; i < this.enemyUnits.length; ++i) {
-            let unit = this.enemyUnits[i];
-            unit.slotOrder = i;
-        }
-        for (let i = 0; i < this.allyUnits.length; ++i) {
-            let unit = this.allyUnits[i];
-            unit.slotOrder = i;
+        for (const units of [this.enemyUnits, this.allyUnits]) {
+            units.forEach((unit, i) => unit.slotOrder = i);
         }
     }
     updateEnemyAndAllyUnitCount(enemyCount, allyCount) {
-        this.enemyUnits = [];
-        for (let i = 0; i < enemyCount; ++i) {
-            let unit = this.units[i];
-            this.enemyUnits.push(unit);
-        }
+        this.enemyUnits = this.units.slice(0, enemyCount);
+
         let allyOffset = MaxEnemyUnitCount;
-        let allyEnd = allyOffset + allyCount;
-        this.allyUnits = [];
-        for (let i = allyOffset; i < allyEnd; ++i) {
-            let unit = this.units[i];
-            this.allyUnits.push(unit);
-        }
+        this.allyUnits = this.units.slice(allyOffset, allyOffset + allyCount);
 
         this.updateSlotOrders();
     }
@@ -1655,14 +1637,13 @@ class AppData extends UnitManager {
         return items;
     }
 
-    *enumerateSelectedItems(predicatorFunc = null) {
-        for (let item of this.enumerateItems()) {
-            if (predicatorFunc != null && predicatorFunc(item)) {
-                if (item.isSelected) {
-                    yield item;
-                }
-            }
-        }
+    /**
+     * @param predicatorFunc
+     */
+    enumerateSelectedItems(predicatorFunc = null) {
+        return this.enumerateItems()
+            .filter(item => (!predicatorFunc || predicatorFunc(item)))
+            .filter(item => item.isSelected);
     }
 
     get isSupportActivationDisabled() {
@@ -1699,12 +1680,12 @@ class AppData extends UnitManager {
 
     getLabelOfMap(mapType) {
         for (let option of this.mapKindOptions) {
-            if (option.value == mapType) {
+            if (option.value === mapType) {
                 return option.label;
             }
         }
         for (let option of ArenaMapKindOptions) {
-            if (option.value == mapType) {
+            if (option.value === mapType) {
                 return option.label;
             }
         }
@@ -1758,7 +1739,7 @@ class AppData extends UnitManager {
     selectAddCurrentItem() {
         let currentItem = this.currentItem;
         for (let item of this.enumerateItems()) {
-            if (item == currentItem) {
+            if (item === currentItem) {
                 item.isSelected = true;
                 break;
             }
@@ -1766,12 +1747,13 @@ class AppData extends UnitManager {
         this.setAttackerAndAttackTargetInfo();
     }
 
-    selectCurrentItem(button, selectedUnit, isDoubleClick) {
-        let currentItem = this.currentItem;
+    selectCurrentItem() {
         for (let item of this.enumerateItems()) {
-            let selected = item === currentItem;
-            if (item.isSelected && selected && button !== 2 && !isDoubleClick) {
-                item.isSelected = false;
+            let selected = item === this.currentItem;
+            if (item.isSelected && selected) {
+                if (!(item instanceof Unit && item.isCantoActivating)) {
+                    item.isSelected = false;
+                }
             } else {
                 item.isSelected = selected;
             }
@@ -1812,7 +1794,7 @@ class AppData extends UnitManager {
     }
 
     battileItemsToString() {
-        if (this.resonantBattleItems.length == 0) {
+        if (this.resonantBattleItems.length === 0) {
             return String(ItemType.None);
         }
         let result = "";
@@ -2040,7 +2022,7 @@ class AppData extends UnitManager {
     }
 
     setGameMode(gameMode) {
-        if (this.gameMode == gameMode) {
+        if (this.gameMode === gameMode) {
             return;
         }
 
@@ -2281,29 +2263,29 @@ class AppData extends UnitManager {
     findItem(itemIndex) {
         let index = 0;
         for (let i = 0; i < this.enemyUnits.length; ++i, ++index) {
-            if (index == itemIndex) {
+            if (index === itemIndex) {
                 return this.enemyUnits[i];
             }
         }
         index = MaxEnemyUnitCount;
         for (let i = 0; i < this.allyUnits.length; ++i, ++index) {
-            if (index == itemIndex) {
+            if (index === itemIndex) {
                 return this.allyUnits[i];
             }
         }
         index = MaxEnemyUnitCount + MaxAllyUnitCount;
         for (let i = 0; i < this.offenceStructureStorage.length; ++i, ++index) {
-            if (index == itemIndex) {
+            if (index === itemIndex) {
                 return this.offenceStructureStorage.objs[i];
             }
         }
         for (let i = 0; i < this.defenseStructureStorage.length; ++i, ++index) {
-            if (index == itemIndex) {
+            if (index === itemIndex) {
                 return this.defenseStructureStorage.objs[i];
             }
         }
         for (let i = 0; i < this.map._tiles.length; ++i, ++index) {
-            if (index == itemIndex) {
+            if (index === itemIndex) {
                 return this.map._tiles[i];
             }
         }
@@ -2311,76 +2293,67 @@ class AppData extends UnitManager {
     }
 
     findUnitById(id) {
-        for (let unit of this.enumerateUnits()) {
-            if (unit.id === id) {
-                return unit;
-            }
-        }
-        return null;
+        return this.enumerateUnits().find(unit => unit.id === id);
     }
 
+    /**
+     * ユニット、施設、タイル
+     * @param {string} id
+     */
     findItemById(id) {
-        for (let item of this.enumerateItems()) {
-            if (item.id == id) {
-                return item;
-            }
-        }
-        return null;
+        return this.enumerateItems().find(item => item.id === id);
     }
 
     /**
      * @returns {Generator<Unit>}
      */
     * enumerateUnits() {
-        for (let unit of this.enumerateEnemyUnits()) {
-            yield unit;
-        }
-        for (let unit of this.enumerateAllyUnits()) {
-            yield unit;
-        }
+        yield* this.enumerateEnemyUnits();
+        yield* this.enumerateAllyUnits();
     }
 
     /**
-     * @returns {Generator<Unit>}
+     * @returns {Iterable<Unit>}
      */
     enumerateAllEnemyUnits() {
-        return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, 1000);
+        return this.units.filter(u => u.groupId === UnitGroupType.Enemy);
     }
     /**
-     * @returns {Generator<Unit>}
+     * @returns {Iterable<Unit>}
      */
     enumerateAllAllyUnits() {
-        return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Ally, 1000);
+        return this.units.filter(u => u.groupId === UnitGroupType.Ally);
     }
     /**
-     * @returns {Generator<Unit>}
+     * @returns {Iterable<Unit>}
      */
     enumerateAllyUnits() {
-        return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Ally, this.allyUnits.length);
+        return this.allyUnits;
     }
 
     /**
-     * @returns {Generator<Unit>}
+     * @returns {Iterable<Unit>}
      */
     enumerateEnemyUnits() {
-        return this.__enumerateUnitsForSpecifiedGroup(UnitGroupType.Enemy, this.enemyUnits.length);
+        return this.enemyUnits;
     }
 
+    /**
+     * @param {Array<Unit>} units
+     * @returns {Array<Unit>}
+     */
     getDuplicateEmblemHeroUnits(units) {
-        const unitsWithEmblemHero = units.filter(u => u.hasEmblemHero());
-        const seen = new Set();
-        const duplicates = new Set();
+        const candidates = units.filter(u => u.hasEmblemHero());
 
-        // 重複している ID を Set に格納
-        for (const u of unitsWithEmblemHero) {
-            if (seen.has(u.emblemHeroIndex)) {
-                duplicates.add(u.emblemHeroIndex);
-            }
-            seen.add(u.emblemHeroIndex);
+        // 出現回数集計
+        const countMap = new Map();
+        for (const unit of candidates) {
+            const id = unit.emblemHeroIndex;
+            countMap.set(id, (countMap.get(id) || 0) + 1);
         }
 
-        // 重複 ID を持つユニットだけ返す
-        return unitsWithEmblemHero.filter(u => duplicates.has(u.emblemHeroIndex));
+        // 重複持ちだけ返す
+        return candidates.filter(u => countMap.get(u.emblemHeroIndex) >= 2);
     }
 
     /**
@@ -2388,7 +2361,7 @@ class AppData extends UnitManager {
      * @returns {Unit[]} 重複した Emblem Hero を持つユニットの配列
      */
     getDuplicateAllyEmblemHeroUnits() {
-        return this.getDuplicateEmblemHeroUnits(Array.from(this.enumerateAllyUnits()));
+        return this.getDuplicateEmblemHeroUnits(this.allyUnits);
     }
 
     /**
@@ -2396,7 +2369,7 @@ class AppData extends UnitManager {
      * @returns {Unit[]} 重複した Emblem Hero を持つユニットの配列
      */
     getDuplicateEnemyEmblemHeroUnits() {
-        return this.getDuplicateEmblemHeroUnits(Array.from(this.enumerateEnemyUnits()));
+        return this.getDuplicateEmblemHeroUnits(this.enemyUnits);
     }
 
     hasDuplicateEmblemHero(units) {
@@ -2408,54 +2381,28 @@ class AppData extends UnitManager {
     }
 
     hasDuplicateEmblemHeroInAllyTeam() {
-        return this.hasDuplicateEmblemHero(Array.from(this.enumerateAllyUnits()));
+        return this.hasDuplicateEmblemHero(this.allyUnits);
     }
 
     hasDuplicateEmblemHeroInEnemyTeam() {
-        return this.hasDuplicateEmblemHero(Array.from(this.enumerateEnemyUnits()));
+        return this.hasDuplicateEmblemHero(this.enemyUnits);
     }
 
     /**
-     * @returns {Generator<Unit>}
+     * @returns {Iterable<Unit>}
      */
-    * enumerateUnitsInSpecifiedGroup(groupId) {
-        switch (groupId) {
-            case UnitGroupType.Enemy:
-                for (let unit of this.enumerateEnemyUnits()) {
-                    yield unit;
-                }
-                break;
-            case UnitGroupType.Ally:
-                for (let unit of this.enumerateAllyUnits()) {
-                    yield unit;
-                }
-                break;
+    enumerateUnitsInSpecifiedGroup(groupId) {
+        if (groupId === UnitGroupType.Ally) {
+            return this.allyUnits;
         }
+        if (groupId === UnitGroupType.Enemy) {
+            return this.enemyUnits;
+        }
+        return [];
     }
 
     findEnemyUnitBySlotOrder(slotOrder) {
-        for (let unit of this.enumerateEnemyUnits()) {
-            if (unit.slotOrder == slotOrder) {
-                return unit;
-            }
-        }
-        return null;
-    }
-
-    *__enumerateUnitsForSpecifiedGroup(groupId, groupUnitMaxCount) {
-        let maxCount = groupUnitMaxCount;
-        let count = 0;
-        for (let unit of this.units) {
-            if (unit.groupId != groupId) {
-                continue;
-            }
-
-            yield unit;
-            ++count;
-            if (count == maxCount) {
-                return;
-            }
-        }
+        this.enemyUnits.find(unit => unit.slotOrder === slotOrder);
     }
 
     get totalComboBonus() {
@@ -2487,43 +2434,32 @@ class AppData extends UnitManager {
         }
     }
 
-    *enumerateItems() {
-        for (let unit of this.enumerateUnits()) {
-            yield unit;
-        }
-        for (let st of this.offenceStructureStorage.objs) {
-            yield st;
-        }
-        for (let st of this.defenseStructureStorage.objs) {
-            yield st;
-        }
-        for (let tile of this.map.enumerateTiles()) {
-            yield tile;
-        }
+    /**
+     * @returns {Generator<Tile|any|*|Unit, void, *>}
+     */
+    * enumerateItems() {
+        yield* this.enumerateUnits();
+        yield* this.offenceStructureStorage.objs;
+        yield* this.defenseStructureStorage.objs;
+        yield* this.map.enumerateTiles();
     }
 
     findIndexOfAllyUnit(id) {
-        for (let i = 0; i < this.allyUnits.length; ++i) {
-            let unit = this.allyUnits[i];
-            if (unit.id == id) {
-                return i;
-            }
-        }
-        return -1;
+        return this.allyUnits.findIndex(u => u.id === id);
     }
 
     findIndexOfItem(id) {
         let index = 0;
         for (let i = 0; i < this.enemyUnits.length; ++i, ++index) {
             let unit = this.enemyUnits[i];
-            if (unit.id == id) {
+            if (unit.id === id) {
                 return index;
             }
         }
         index = MaxEnemyUnitCount;
         for (let i = 0; i < this.allyUnits.length; ++i, ++index) {
             let unit = this.allyUnits[i];
-            if (unit.id == id) {
+            if (unit.id === id) {
                 return index;
             }
         }
@@ -2531,19 +2467,19 @@ class AppData extends UnitManager {
         index = MaxEnemyUnitCount + MaxAllyUnitCount;
         for (let i = 0; i < this.offenceStructureStorage.length; ++i, ++index) {
             let st = this.offenceStructureStorage.objs[i];
-            if (st.id == id) {
+            if (st.id === id) {
                 return index;
             }
         }
         for (let i = 0; i < this.defenseStructureStorage.length; ++i, ++index) {
             let st = this.defenseStructureStorage.objs[i];
-            if (st.id == id) {
+            if (st.id === id) {
                 return index;
             }
         }
         for (let i = 0; i < this.map._tiles.length; ++i, ++index) {
             let tile = this.map._tiles[i];
-            if (tile.id == id) {
+            if (tile.id === id) {
                 return index;
             }
         }

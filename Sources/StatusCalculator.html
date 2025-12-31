@@ -68,6 +68,12 @@
                                             {{ i }}
                                         </option>
                                     </select>
+                                    救+
+                                    <select v-model="value.chosenHeroMerge" @change="updateStatus();">
+                                        <option v-for="(value, i) in (10+1)" v-bind:value="i">
+                                            {{ i }}
+                                        </option>
+                                    </select>
                                 </td>
                             </tr>
                         </table>

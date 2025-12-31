@@ -83,7 +83,7 @@ class StructureBase extends BattleMapElement {
     }
 
     get id() {
-        return this._id;
+        return `${this._id}`;
     }
 
     get name() {

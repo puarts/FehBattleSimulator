@@ -669,7 +669,7 @@
             function* (targetUnit, allyUnit) {
                 // 周囲2マス以内の味方歩行、重装は、自身の周囲2マス以内に移動可能
                 if (targetUnit.distance(allyUnit) <= distance && pred(targetUnit)) {
-                    yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                    yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
                 }
             }
         );
@@ -2182,7 +2182,7 @@
     enumerateTeleportTilesForAllyFuncMap.set(skillId,
         function* (targetUnit, allyUnit) {
             if (targetUnit.distance(allyUnit) <= 2) {
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );
@@ -2938,7 +2938,7 @@
             // 現在のターン中に自分が戦闘を行っている時、
             // 周囲5マス以内の味方は、自身の周囲2マス以内に移動可能
             if (allyUnit.isCombatDone && allyUnit.distance(targetUnit) <= 5) {
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );
@@ -4288,7 +4288,7 @@
             for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
                 // HPが50%以下の味方の隣接マスへ移動可能
                 if (ally.hpPercentage <= 50) {
-                    yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1);
+                    yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(ally.placedTile, unit, 1);
                 }
             }
         }
@@ -4840,7 +4840,7 @@ function setLantern(skillId) {
         function* (targetUnit, allyUnit) {
             if (allyUnit.hpPercentage <= 60 ||
                 allyUnit.isCombatDone || allyUnit.isSupportDone) {
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );
@@ -6278,51 +6278,38 @@ function setLantern(skillId) {
 // 光輝く翼・神
 {
     let skillId = PassiveC.WingsOfLightPlus;
-    updateUnitSpurFromAlliesFuncMap.set(skillId,
-        function (targetUnit, allyUnit, enemyUnit, calcPotentialDamage) {
-            if (targetUnit.isMythicHero) {
-                let count = this.__countUnit(targetUnit.groupId, x => x.isOnMap && x.isMythicHero);
-                if (count <= 3) {
-                    let amount = MathUtil.ensureMax(this.currentTurn + 3, 8);
-                    targetUnit.addAllSpur(amount);
-                    targetUnit.battleContext.applySkillEffectFromAlliesFuncs.push(
-                        (targetUnit, enemyUnit, allyUnit, calcPotentialDamage) => {
-                            targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
-                                return 0.3;
-                            });
-                        }
-                    );
-                }
-            }
-            if (targetUnit.isInCrossWithOffset(allyUnit, 1)) {
-                targetUnit.addAllSpur(4);
-                targetUnit.battleContext.increaseCooldownCountForBoth();
-            }
-        }
+    SkillEffectRegistrar.registerForAllyTargetingSkills(skillId,
+        AND_NODE(
+            // 自軍の神階英雄(自分を含む)が3体以下の時、
+            LTE_NODE(COUNT_IF_UNITS_NODE(SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_ON_MAP_NODE, IS_TARGET_MYTHIC_NODE), 3),
+            // 自分を除く神階英雄の味方は、
+            IS_TARGET_MYTHIC_NODE,
+        ),
+        // 戦闘中、攻撃、速さ、守備、魔防がターン数+3だけ増加(最大8)、かつ
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(ADD_MAX_NODE(CURRENT_TURN_NODE, 3, 8)),
+        // 攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)
+        REDUCES_DAMAGE_BY_X_PERCENT_NODE(30),
     );
-    applySkillEffectForUnitFuncMap.set(skillId,
-        function (targetUnit, enemyUnit, calcPotentialDamage) {
-            /** @type {Generator<Unit>} */
-            let units = this.enumerateUnitsInTheSameGroupOnMap(targetUnit);
-            let found = false;
-            for (let unit of units) {
-                if (unit.isMythicHero) {
-                    found = true;
-                    break;
-                }
-                if (unit.isInCrossWithOffset(targetUnit, 1)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
-                targetUnit.addAllSpur(5);
-                targetUnit.battleContext.getDamageReductionRatioFuncs.push((atkUnit, defUnit) => {
-                    return 0.3;
-                });
-                targetUnit.battleContext.increaseCooldownCountForBoth();
-            }
-        }
+    // 自身を中心とした縦3列と横3列の味方は、
+    SkillEffectRegistrar.registerForAllyTargetingSkills(skillId,
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        // 戦闘中、攻撃、速さ、守備、魔防+4、
+        GRANTS_ALL_STATS_PLUS_4_TO_TARGET_DURING_COMBAT_NODE,
+        // 奥義発動カウント変動量+1(同系統効果複数時、最大値適用)
+        GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+    );
+    SkillEffectRegistrar.registerSelfTargetingSkills(skillId,
+        // 自分を除く神階英雄の味方がいる時、または、自身を中心とした縦3列と横3列に味方がいる時、
+        OR_NODE(
+            EXISTS_UNITS(SKILL_OWNERS_ALLIES_ON_MAP_NODE, IS_TARGET_MYTHIC_NODE),
+            IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE
+        ),
+        // 戦闘中、自身の攻撃、速さ、守備、魔防+5、
+        GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+        // 攻撃を受けた時のダメージを30%軽減(範囲奥義を除く)、
+        REDUCES_DAMAGE_BY_X_PERCENT_NODE(30),
+        // 自身の奥義発動カウント変動量+1(同系統効果複数時、最大値適用)
+        GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
     );
 }
 
@@ -7201,7 +7188,7 @@ function setLantern(skillId) {
                 targetUnit.moveType === MoveType.Flying;
             if (targetUnit.distance(allyUnit) <= 2 && isTargetMoveType) {
                 // 周囲2マス以内の味方は自身の周囲2マス以内に移動可能
-                yield* this.__enumeratePlacableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
+                yield* this.__enumeratePlaceableTilesWithinSpecifiedSpaces(allyUnit.placedTile, targetUnit, 2);
             }
         }
     );

@@ -566,7 +566,8 @@ function setSaveSkill(skillId, isMelee, isRanged = !isMelee, isP = false, isMagi
  * @param isMagic
  */
 function setTwinSave(skillId, isMelee, grantsNode, isP = false, isMagic = false) {
-    setSaveSkill(skillId, isMelee);
+    let isRanged = !isMelee && !isP && !isMagic;
+    setSaveSkill(skillId, isMelee, isRanged, isP, isMagic);
     let predNode = FALSE_NODE;
     if (isMelee) {
         predNode = FOES_RANGE_IS_1_NODE;
@@ -673,6 +674,16 @@ function enablesCantoDist(skillId, n, max) {
 }
 
 /**
+ * Enables【Canto (Dist. +1; Max ４; Min 1)】.
+ */
+function enablesCantoDistMin(skillId, n, max, min) {
+    CAN_TRIGGER_CANTO_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    CALCULATES_DISTANCE_OF_CANTO_HOOKS.addSkill(skillId, () =>
+        ENSURE_MIN_NODE(CANTO_DIST_PLUS_NODE(n, max), NumberNode.makeNumberNodeFrom(min))
+    );
+}
+
+/**
  * @param skillId
  * @param {number} n
  */
@@ -751,7 +762,7 @@ const IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE = (...nodes) =>
 // spaces within m spaces of allies within n spaces
 let SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE =
     (n, m) => new UniteSpacesIfNode(new IsTargetWithinNSpacesOfSkillOwnerNode(n, TRUE_NODE),
-        new TargetsPlacableSpacesWithinNSpacesFromSpaceNode(m, SKILL_OWNERS_PLACED_SPACE_NODE),
+        new TargetsPlaceableSpacesWithinNSpacesFromSpaceNode(m, SKILL_OWNERS_PLACED_SPACE_NODE),
     );
 
 /**
@@ -760,7 +771,7 @@ let SPACES_WITHIN_M_SPACES_OF_SKILL_OWNER_WITHIN_N_SPACES_NODE =
 function setSkillThatUnitCanMoveToAnySpaceWithinNSpacesOfAnAllyWithinMSpacesOfUnit(skillId, n, m) {
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => UNITE_SPACES_NODE(
         FOR_EACH_ALLY_FOR_SPACES_NODE(new IsTargetWithinNSpacesOfSkillOwnerNode(m, TRUE_NODE),
-            SKILL_OWNER_PLACABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(n, TARGETS_PLACED_SPACE_NODE),
+            SKILL_OWNER_PLACEABLE_SPACES_WITHIN_N_SPACES_FROM_SPACE_NODE(n, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 }
@@ -898,6 +909,11 @@ const TOTAL_BONUSES_LIST_OF_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = n =>
         TARGETS_AND_THOSE_ALLIES_WITHIN_N_SPACES_NODE(n, TARGET_NODE),
         TARGETS_TOTAL_BONUSES_NODE);
 
+const TOTAL_PENALTIES_LIST_OF_TARGET_FOE_AND_THOSE_ALLIES_WITHIN_N_SPACES_NODE = n =>
+    MAP_UNITS_TO_NUM_NODE(
+        TARGETS_AND_THOSE_ALLIES_WITHIN_N_SPACES_NODE(n, TARGETS_FOE_NODE),
+        TARGETS_TOTAL_PENALTIES_NODE);
+
 const TOTAL_BONUSES_LIST_OF_TARGETS_ALLIES_ON_MAP_NODE =
     MAP_UNITS_TO_NUM_NODE(
         TARGETS_ALLIES_ON_MAP_NODE,
@@ -905,6 +921,9 @@ const TOTAL_BONUSES_LIST_OF_TARGETS_ALLIES_ON_MAP_NODE =
 
 const HIGHEST_TOTAL_BONUSES_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n) =>
     MAX_NODE(TOTAL_BONUSES_LIST_OF_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(n));
+
+const HIGHEST_TOTAL_PENALTIES_AMONG_TARGET_FOE_AND_THOSE_ALLIES_WITHIN_N_SPACES_NODE = (n) =>
+    MAX_NODE(TOTAL_PENALTIES_LIST_OF_TARGET_FOE_AND_THOSE_ALLIES_WITHIN_N_SPACES_NODE (n));
 
 const HIGHEST_TOTAL_BONUSES_TO_TARGET_STATS_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE = (n, valueNode) =>
     MAX_NODE(MAP_UNITS_TO_NUM_NODE(

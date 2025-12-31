@@ -339,6 +339,9 @@ class ObjectStorage {
         this._objs = [];
     }
 
+    /**
+     * @returns {[]}
+     */
     get objs() {
         return this._objs;
     }
@@ -358,7 +361,7 @@ class ObjectStorage {
     findById(id) {
         for (let i = 0; i < this._objs.length; ++i) {
             let obj = this._objs[i];
-            if (obj.id == id) {
+            if (obj.id === id) {
                 return obj;
             }
         }
@@ -369,15 +372,6 @@ class ObjectStorage {
         for (let i = 0; i < this._objs.length; ++i) {
             let obj = this._objs[i];
             yield obj;
-        }
-    }
-
-    * enumerateRequiredObjs() {
-        for (let i = 0; i < this._objs.length; ++i) {
-            let obj = this._objs[i];
-            if (obj.isRequired) {
-                yield obj;
-            }
         }
     }
 }
@@ -1759,21 +1753,46 @@ class GeneratorUtil {
     }
 
     /**
-     * @param {...Generator} generators
-     * @returns {Generator<Array>}
+     * Zips multiple generators together and yields arrays of their values
+     * at each step. The resulting generator stops as soon as any of the
+     * provided generators finishes.
+     *
+     * @template T
+     * @param {...Generator<T>} gens
+     *     The generator instances to zip together.
+     *
+     * @returns {Generator<T[]>}
+     *     A generator that yields an array containing the next value from
+     *     each input generator. The length of the yielded array equals the
+     *     number of input generators.
+     *
+     * @example
+     * // --- Example 1: Basic usage ---
+     * function* genA() { yield 1; yield 2; yield 3; }
+     * function* genB() { yield 'a'; yield 'b'; yield 'c'; }
+     *
+     * for (const [n, ch] of GeneratorUtil.zip(genA(), genB())) {
+     *     console.log(n, ch);
+     * }
+     * // Output:
+     * // 1 'a'
+     * // 2 'b'
+     * // 3 'c'
+     *
+     * @example
+     * // --- Example 2: Stops at the shortest generator ---
+     * function* genShort() { yield 10; yield 20; }
+     * function* genLong() { yield 'x'; yield 'y'; yield 'z'; yield 'w'; }
+     *
+     * [...GeneratorUtil.zip(genShort(), genLong())]
+     * // → [[10, 'x'], [20, 'y']]
+     * // (The result stops after genShort finishes)
      */
-    static* zip(...generators) {
+    static* zip(...gens) {
         while (true) {
-            // noinspection JSMismatchedCollectionQueryUpdate
-            let values = [];
-            for (let generator of generators) {
-                let result = generator.next();
-                if (result.done) {
-                    break;
-                }
-                values.push(result.value);
-            }
-            yield values;
+            const results = gens.map(g => g.next());
+            if (results.some(r => r.done)) return undefined;
+            yield results.map(r => r.value);
         }
     }
 
@@ -2276,6 +2295,14 @@ class Base62Util {
 
     static decodeSet(str) {
         return new Set(JSON.parse(Base62.decode(str)));
+    }
+
+    static encodeMap(map) {
+        return Base62.encode(JSON.stringify(Array.from(map)));
+    }
+
+    static decodeMap(str) {
+        return new Map(JSON.parse(Base62.decode(str)));
     }
 }
 

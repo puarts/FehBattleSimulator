@@ -3173,6 +3173,7 @@ function setDiscord(skillId, statsRatios) {
 {
     setTwinSave(PassiveC.ARTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 0, 4));
     setTwinSave(PassiveC.ADTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(4, 0, 4, 0));
+    setTwinSave(PassiveC.DRTwinFSave, false, new GrantsStatsPlusToTargetDuringCombatNode(0, 0, 4, 4));
 }
 
 // 護り手・X・双
@@ -3181,6 +3182,11 @@ function setDiscord(skillId, statsRatios) {
         PassiveC.ARTwinMSave, false,
         GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(ATK_RES_NODE(4)),
         false, true
+    );
+    setTwinSave(
+        PassiveC.SDTwinPSave, false,
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(SPD_DEF_NODE(4)),
+        true, false
     );
 }
 
@@ -5091,11 +5097,11 @@ function setDiscord(skillId, statsRatios) {
     UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () => UNITE_SPACES_NODE(
         // Unit can move to a space within 2 spaces of any ally that has entered combat during the current turn.
         new ForEachAllyForSpacesNode(new HasTargetEnteredCombatDuringTheCurrentTurnNode,
-            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
+            new SkillOwnerPlaceableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
         ),
         // Unit can move to a space within 2 spaces of any ally within 2 spaces.
         new ForEachAllyForSpacesNode(IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
-            new SkillOwnerPlacableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
+            new SkillOwnerPlaceableSpacesWithinNSpacesFromSpaceNode(2, TARGETS_PLACED_SPACE_NODE),
         ),
     ));
 
