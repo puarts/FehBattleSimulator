@@ -566,7 +566,8 @@ function setSaveSkill(skillId, isMelee, isRanged = !isMelee, isP = false, isMagi
  * @param isMagic
  */
 function setTwinSave(skillId, isMelee, grantsNode, isP = false, isMagic = false) {
-    setSaveSkill(skillId, isMelee);
+    let isRanged = !isMelee && !isP && !isMagic;
+    setSaveSkill(skillId, isMelee, isRanged, isP, isMagic);
     let predNode = FALSE_NODE;
     if (isMelee) {
         predNode = FOES_RANGE_IS_1_NODE;

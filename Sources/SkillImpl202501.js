@@ -824,9 +824,7 @@
         )
     ));
     // After Canto
-    // (including cases where action is ended
-    // due to Canto Control),
-    //
+    // (including cases where action is ended due to Canto Control),
     // if unit has used an Assist skill
     // on the current turn,
     // grants another action to unit,
@@ -834,7 +832,21 @@
     // (once per turn;
     // does not trigger when affected by effects of traps
     // in Aether Raids during Canto).
-    grantsAnotherActionAfterCanto(skillId);
+    AFTER_CANTO_HOOKS.addSkill(skillId, NODE_FUNC(
+        // if unit entered combat on the current turn,
+        IF_NODE(HAS_TARGET_USED_ASSIST_DURING_CURRENT_TURN_NODE,
+            // grants another action to unit,
+            TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE(
+                `${skillId}-再移動後再起動`,
+                // and re-enables Canto (once per turn; does not trigger when affected by effects of traps in Aether Raids during Canto).
+                // TODO: 移動中に行動終了した = 罠を踏んだの前提が崩れた時に修正する
+                IF_NODE(NOT_NODE(IS_TARGET_ACTION_DONE_DURING_MOVE_COMMAND_NODE),
+                    GRANTS_ANOTHER_ACTION_TO_TARGET_ON_MAP_NODE,
+                    RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE,
+                ),
+            ),
+        ),
+    ));
 
     SkillEffectRegistrar.registerSelfTargetingSkills(skillId,
         TRUE_NODE,
@@ -953,7 +965,7 @@
             // deals damage = 20% of unit’s Res
             // (including area-of-effect Specials),
             DEALS_DAMAGE_X_NODE(PERCENTAGE_NODE(20, UNITS_RES_NODE)),
-            DURING_COMBAT_INCLUDING_AOE_HOOKS,
+            DURING_COMBAT_USING_STATS_INCLUDING_AOE_HOOKS,
         ],
         // reduces damage from foe’s attacks by 7
         // (excluding area-of-effect Specials),
@@ -1022,16 +1034,18 @@
         // (excluding area-of-effect Specials),
         REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_X_EXCLUDING_AOE_SPECIAL_NODE(15),
         [
-            // and grants Special cooldown count-Y to unit before foe’s first attack during combat
-            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE(
-                READ_NUM_NODE,
-            ),
-            // (Y = number of allies within 3 rows or 3 columns centered on unit;
-            // max 3; if unit’s Def > foe’s Def, Y is treated as 3).
-            IF_ELSE_NODE(
-                GT_NODE(UNITS_EVAL_DEF_NODE, FOES_EVAL_DEF_NODE),
-                3,
-                ENSURE_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3),
+            X_NUM_NODE(
+                // and grants Special cooldown count-Y to unit before foe’s first attack during combat
+                GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FOES_FIRST_ATTACK_DURING_COMBAT_NODE(
+                    READ_NUM_NODE,
+                ),
+                // (Y = number of allies within 3 rows or 3 columns centered on unit;
+                // max 3; if unit’s Def > foe’s Def, Y is treated as 3).
+                IF_ELSE_NODE(
+                    GT_NODE(UNITS_EVAL_DEF_NODE, FOES_EVAL_DEF_NODE),
+                    3,
+                    ENSURE_MAX_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3),
+                ),
             ),
             NON_STATS_SKILL_USING_STATS_HOOKS,
         ],
@@ -1199,7 +1213,7 @@
             TARGET_DEALS_DAMAGE_EXCLUDING_AOE_SPECIALS_PER_ATTACK_NODE(
                 // = number of times unit has attacked
                 // in the current combat × 5
-                MULT_NODE(NUMBER_OF_TIMES_TARGET_HAS_ATTACKED_NODE, 5),
+                MULT_NODE(ADD_NODE(NUMBER_OF_TIMES_TARGET_HAS_ATTACKED_NODE, 1), 5),
                 // (excluding area-of-effect Specials;
                 // including current attack).
             ),
@@ -1711,7 +1725,7 @@
         NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
         [
             // and reduces damage from foe’s attacks by 40%,
-            REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(
+            REDUCES_DAMAGE_FROM_ATTACKS_DURING_COMBAT_BY_X_PERCENT_AS_SPECIAL_SKILL_EFFECT_PER_ATTACK_NODE(
                 // but if unit receives consecutive attacks,
                 // reduces damage from foe’s second attack onward
                 // by 70% during combat (excluding area-of-effect Specials).

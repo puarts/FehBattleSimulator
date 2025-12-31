@@ -255,7 +255,7 @@ class CombatResult extends DamageCalcResult {
     }
 
     getAttackCount(atkUnit) {
-        return this.attackHistory.filter(log => log.atkUnit === atkUnit).length;
+        return this.damageHistory.filter(log => log.atkUnit === atkUnit).length;
     }
 }
 
