@@ -656,7 +656,11 @@ class ImageProcessor {
                             if (isDebugModeEnabled) {
                                 templateIndex = self.vm.debugTemplateIndex + iter;
                             }
-                            processor.__templateMatch(templateIndex, croppedCanvas, matchedPoints);
+                            try {
+                                processor.__templateMatch(templateIndex, croppedCanvas, matchedPoints);
+                            } catch (e) {
+                                console.log(e);
+                            }
                         }
                     },
                     (iter, iterMax) => {

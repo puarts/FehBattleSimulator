@@ -2588,7 +2588,7 @@ function initVueComponents() {
             <i 
               class="fa-solid fa-eraser clear-icon button-row-item button-row-icon"
               title="クリア"
-              @click="this.battleSiumlator.clearSimpleLog();"
+              @click="battleSimulator.clearSimpleLog();"
             ></i>
 
             <!-- コピー（クリップボード） -->
