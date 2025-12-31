@@ -65,6 +65,10 @@ function initVueComponents() {
                       <input name="reinforcementMerge" type="number"
                              v-model="value.reinforcementMerge" min="0" v-bind:max="10"
                              class="numeric" disabled/>
+                      <label class="normal" for="chosenHeroMerge">救+</label>
+                      <input name="chosenHeroMerge" type="number"
+                             v-model="value.chosenHeroMerge" min="0" v-bind:max="10"
+                             class="numeric" @input="battleSimulator.vm.chosenHeroMergeChanged"/>
                     </td>
                   </tr>
                   <tr v-bind:style="battleSimulator.vm.debugMenuStyle">
