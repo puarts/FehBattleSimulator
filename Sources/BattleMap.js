@@ -2083,14 +2083,7 @@ class BattleMap {
         }
 
         if (unit.hasStatusEffect(StatusEffectType.Charge)) {
-            for (let tile of unit.placedTile.getMovableNeighborTiles(unit, 3, false, true)) {
-                let diffX = Math.abs(tile.posX - unit.posX);
-                let diffY = Math.abs(tile.posY - unit.posY);
-                if ((tile.posX === unit.posX && 2 <= diffY && diffY <= 3) ||
-                    (tile.posY === unit.posY && 2 <= diffX && diffX <= 3)) {
-                    yield tile;
-                }
-            }
+            yield* this.enumerateChargeTiles(unit, 3);
         }
 
         // 味方を自身の周囲にワープさせるスキル
@@ -2175,6 +2168,17 @@ class BattleMap {
                         }
                         break;
                 }
+            }
+        }
+    }
+
+    * enumerateChargeTiles(unit, n = 3) {
+        for (let tile of unit.placedTile.getMovableNeighborTiles(unit, n, false, true)) {
+            let diffX = Math.abs(tile.posX - unit.posX);
+            let diffY = Math.abs(tile.posY - unit.posY);
+            if ((tile.posX === unit.posX && 1 <= diffY && diffY <= n) ||
+                (tile.posY === unit.posY && 1 <= diffX && diffX <= n)) {
+                yield tile;
             }
         }
     }
@@ -2481,6 +2485,16 @@ class BattleMap {
         }
 
         if (!ignoresTeleportTile) {
+            {
+                let env = new BattleMapEnv(this, unit).setSkillOwner(unit);
+                env.setName('すり抜けワープ').setLogLevel(LoggerBase.LogLevel.OFF);
+                let tiles = UNIT_CAN_MOVE_TO_A_SPACE_WITHOUT_OBSTRUCTION_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
+                for (let tile of tiles) {
+                    if (tile.isUnitPlaceable(unit)) {
+                        yield tile;
+                    }
+                }
+            }
             // 移動前がGreen
             let isOnGreenTile =
                 startTile.hasGreenTypeDivineVein() &&
@@ -3575,6 +3589,58 @@ class BattleMap {
             }
 
             console.log(row);
+        }
+    }
+
+    /**
+     * 攻撃による効果範囲（DivineVein）のタイルを列挙するジェネレータ
+     * @param {Unit} targetUnit 攻撃者
+     * @param {Unit} enemyUnit 攻撃対象
+     * @param {number} width 横幅（奇数を推奨。デフォルト: 5）
+     * @param {number} depth 奥行き（デフォルト: 2）
+     */
+    *enumerateBlackEffectTiles(targetUnit, enemyUnit, width = 5, depth = 2) {
+        let tx = targetUnit.posX;
+        let ty = targetUnit.posY;
+        // 敵の座標（ロスト対策済み）
+        let ex = enemyUnit.placedTile ? enemyUnit.placedTile.posX : enemyUnit.posX;
+        let ey = enemyUnit.placedTile ? enemyUnit.placedTile.posY : enemyUnit.posY;
+
+        // 1. ベクトル計算
+        let dx = Math.sign(ex - tx);
+        let dy = Math.sign(ey - ty);
+
+        // 垂直ベクトル（横幅の方向）
+        let px = -dy;
+        let py = dx;
+
+        // 重複防止用
+        let visitedKeys = new Set();
+
+        // 横幅の中心からの距離を計算 (例: width=5 なら 2。 width=3 なら 1)
+        // ※ 中心(0) を含むため、(width - 1) / 2 となります
+        let halfWidth = Math.floor(width / 2);
+
+        // 2. 範囲生成ループ
+        // Depth: 0(敵の位置) から depth-1 まで奥へ進む
+        for (let d = 0; d < depth; d++) {
+            let bx = ex + (dx * d);
+            let by = ey + (dy * d);
+
+            // Width: -halfWidth(左) から +halfWidth(右) まで
+            for (let w = -halfWidth; w <= halfWidth; w++) {
+                let targetX = bx + (px * w);
+                let targetY = by + (py * w);
+
+                let tile = this.getTile(targetX, targetY);
+                if (tile) {
+                    let key = `${targetX},${targetY}`;
+                    if (!visitedKeys.has(key)) {
+                        visitedKeys.add(key);
+                        yield tile;
+                    }
+                }
+            }
         }
     }
 }

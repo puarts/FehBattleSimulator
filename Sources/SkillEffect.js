@@ -1053,6 +1053,7 @@ class CountSpacesNode extends PositiveNumberNode {
 }
 
 const COUNT_SPACES_NODE = spacesNode => new CountSpacesNode(spacesNode);
+const EXISTS_SPACES_NODE = spacesNode => GT_NODE(COUNT_SPACES_NODE(spacesNode), 0);
 
 const IS_THERE_SPACES = (spaces, pred) =>
     GT_NODE(
@@ -1994,6 +1995,7 @@ class CantoDistNode extends CalcMoveCountForCantoNode {
     }
 }
 
+const CANTO_DIST_PLUS_NODE = (n, max) => new CantoDistNode(n, max);
 const CANTO_DIST_PLUS_1_MAX_4_NODE = new CantoDistNode(1, 4);
 const CANTO_DIST_PLUS_2_MAX_5_NODE = new CantoDistNode(2, 5);
 const CANTO_DIST_MAX_3_NODE = new CantoDistNode(0, 3);
@@ -2463,6 +2465,7 @@ const GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsP
 const GRANTS_ALL_STATS_PLUS_6_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(6);
 const GRANTS_ALL_STATS_PLUS_8_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(8);
 const GRANTS_ALL_STATS_PLUS_9_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(9);
+const GRANTS_ALL_STATS_PLUS_10_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(10);
 const GRANTS_ALL_STATS_PLUS_15_TO_TARGET_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToTargetDuringCombatNode(15);
 
 const GRANTS_ALL_STATS_PLUS_4_TO_UNIT_DURING_COMBAT_NODE = new GrantsAllStatsPlusNToUnitDuringCombatNode(4);
@@ -6004,6 +6007,22 @@ class GrantsAnotherActionNode extends SkillEffectNode {
 
 const GRANTS_ANOTHER_ACTION_NODE = new GrantsAnotherActionNode();
 
+class GrantsAnotherActionWithEmblemSkillNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin, GetSkillOwnerMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        unit.grantsAnotherActionWithEmblemSkill();
+        let message = `${unit.nameWithGroup}は紋章効果による再行動`;
+        env.debug(message);
+        env.writeDamageLog(message);
+    }
+}
+
+const GRANTS_ANOTHER_ACTION_WITH_EMBLEM_SKILL_NODE = new GrantsAnotherActionWithEmblemSkillNode();
+
 class GrantsAnotherActionToTargetOnMapNode extends SkillEffectNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -6660,6 +6679,41 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
 
 const TARGETS_ONCE_PER_TURN_SKILL_EFFECT_NODE = (id, ...nodes) =>
     new TargetsOncePerTurnSkillEffectNode(id, ...nodes);
+
+class TargetsLimitedSkillEffectPerTurnNode extends SkillEffectNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    /**
+     * @param {string} id
+     * @param {number|NumberNode} limit
+     * @param {...SkillEffectNode} nodes
+     */
+    constructor(id, limit, ...nodes) {
+        super(...nodes);
+        this._id = id;
+        this._limitNode = NumberNode.makeNumberNodeFrom(limit);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        // 保存する可能性がある値なのでエンコードする
+        let encodedId = Base62.encode(this._id);
+        let limit = this._limitNode.evaluate(env);
+        let count = unit.activatedSkillEffectCountsThisTurn.get(encodedId) || 0;
+        if (count >= limit) {
+            env.debug(`${unit.nameWithGroup}はスキル効果（${this._id}）の上限${limit}回を発動済み`);
+        } else {
+            env.debug(`${unit.nameWithGroup}はスキル効果（${this._id}）を発動（${count + 1}/${limit}回）`);
+            unit.activatedSkillEffectCountsThisTurn.set(encodedId, count + 1);
+            return this.evaluateChildren(env);
+        }
+    }
+}
+
+const TARGETS_LIMITED_SKILL_EFFECT_PER_TURN_NODE = (id, limit, ...nodes) =>
+    new TargetsLimitedSkillEffectPerTurnNode(id, limit, ...nodes);
 
 class SkillOwnersOncePerTurnSkillEffectNode extends TargetsOncePerTurnSkillEffectNode {
     static {
@@ -7863,3 +7917,89 @@ class IsTargetMythicNode extends BoolNode {
 }
 
 const IS_TARGET_MYTHIC_NODE = new IsTargetMythicNode();
+
+class CanTargetsFoeDestroyTileNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        if (env.tile) {
+            let tile = env.tile;
+            if (tile.hasBreakableStructure(unit.enemyGroupId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+const CAN_TARGETS_FOE_DESTROY_TILE_NODE = new CanTargetsFoeDestroyTileNode();
+
+class NumberOfTimesTargetHasAttackedNode extends NumberNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = env.damageCalcEnv.combatResult.getAttackCount(unit);
+        env.debug(`${unit.nameWithGroup}の攻撃回数: ${result}`);
+        return result;
+    }
+}
+
+const NUMBER_OF_TIMES_TARGET_HAS_ATTACKED_NODE = new NumberOfTimesTargetHasAttackedNode();
+
+class IsTargetSupportRankSPlusNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.partnerLevel === PartnerLevel.SPlus;
+        env.debug(`${unit.nameWithGroup}の支援ランクがS+であるか: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_SUPPORT_RANK_S_PLUS_NODE = new IsTargetSupportRankSPlusNode();
+
+class NSpacesInALineCenteredOnTargetsFoesSpaceAndBehindThoseSpacesNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let map = env.battleMap;
+        return map.enumerateBlackEffectTiles(unit, foe);
+    }
+}
+
+const N_SPACES_IN_A_LINE_CENTERED_ON_TARGETS_FOES_SPACE_AND_BEHIND_THOSE_SPACES_NODE =
+    new NSpacesInALineCenteredOnTargetsFoesSpaceAndBehindThoseSpacesNode();
+
+class NSpacesInAnyTargetsCardinalDirectionNode extends SpacesNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    constructor(n) {
+        super();
+        this._n = NumberNode.makeNumberNodeFrom(n);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let n = this._n.evaluate(env);
+        let map = env.battleMap;
+        return map.enumerateChargeTiles(unit, n);
+    }
+}
+
+const N_SPACES_IN_ANY_TARGETS_CARDINAL_DIRECTION_NODE =
+    n => new NSpacesInAnyTargetsCardinalDirectionNode(n);

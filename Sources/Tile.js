@@ -1118,6 +1118,17 @@ class Tile extends BattleMapElement {
         return this.divineVein !== DivineVeinType.None
     }
 
+    hasBreakableStructure(groupId) {
+        switch (groupId) {
+            case UnitGroupType.Ally:
+                return this.obj instanceof DefenceStructureBase && this.obj.isBreakable;
+            case UnitGroupType.Enemy:
+                return this.obj instanceof OffenceStructureBase && this.obj.isBreakable;
+            default:
+                return this.obj?.isBreakable;
+        }
+    }
+
     hasBreakableDivineVein() {
         return DIVINE_VEIN_ICE_TYPES.has(this.divineVein);
     }

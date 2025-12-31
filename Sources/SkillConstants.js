@@ -4064,6 +4064,32 @@ Weapon.BlarsparrowPlus = 3494; // ブラースパロー+
 Weapon.ChosenSword = 3495; // 開かれし救世の剣
 Special.AscendantKing = 3496; // 真王器
 PassiveB.Rejuvenate = 3497; // 刷新
+Weapon.OliphantCalling = 3500; // 聖夜告げる角笛
+PassiveA.DefResAria = 3501; // 守備魔防の詠唱
+PassiveB.FestiveReport = 3502; // お疲れ様です！
+PassiveC.DRTwinFSave = 3503; // 盾の護り手・遠・双
+Weapon.WinterStar = 3504; // 冬夜に輝く希望の星
+PassiveB.AtkResFavor = 3505; // 攻撃魔防の共感
+PassiveC.FutureGuided = 3506; // 共に未来を導いて
+Weapon.SnowFitLance = 3507; // 雪原走る鍛錬の槍
+PassiveA.SelfMastery = 3508; // 真自己研鑽
+PassiveC.SDTwinPSave = 3509; // 靴の護り手・理・双
+Weapon.CozyCandles = 3510; // 艶なる姉二人の燭台
+PassiveA.TunnelVision = 3511; // 真執着
+PassiveC.SRCruxPloy = 3512; // 速魔十牽制・謀策
+Weapon.BlackEagleAxe = 3513; // 黒鷲の斧
+Special.UnitedStorm = 3514; // 連花月風閃・狂嵐
+PassiveA.StratFlame4 = 3515; // 計略・猛火計4
+PassiveC.StratAssault4 = 3516; // 計略・一斉突撃4
+Weapon.NewYearsFan = 3520; // 一年の計の扇子
+PassiveC.AtkResLiberate = 3521; // 攻擊魔防の解放
+Weapon.SisterHagoita = 3522; // 愛しき姉の羽子板
+PassiveC.UpliftImbueAS = 3523; // 攻速十紋章・治癒
+Weapon.HorseBowPlus = 3524; // 午年の弓+
+Weapon.GodlyDevices = 3525; // 天の女神姉妹の祭器
+PassiveA.HeavensSteadN = 3526; // 天に代わりて・近
+PassiveB.HeavenlySoar = 3527; // 天舞い立つ
+Weapon.DongJiNoshiRiPlus = 3528; // 冬祭の飾り+
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -4164,6 +4190,7 @@ const EmblemHero = {
     Eirika: 1255,
     Micaiah: 1290,
     Corrin: 1331,
+    Edelgard: 1367,
     Debug: 100000,
 };
 
@@ -4179,8 +4206,9 @@ EngagedSpecialIcon[EmblemHero.Celica] = `${g_engagedSpecialIconRoot}Celica_Of_Ec
 EngagedSpecialIcon[EmblemHero.Sigurd] = `${g_engagedSpecialIconRoot}Sigurd_Of_Holy_War_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Lyn] = `${g_engagedSpecialIconRoot}Lyn_Of_Blazing_ES.webp`;
 EngagedSpecialIcon[EmblemHero.Eirika] = `${g_engagedSpecialIconRoot}Eirika_Of_The_Sacred_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Micaiah] = `${g_debugEngagedSpecialIconRoot}Micaiah_Of_Dawn_ES.webp`;
-EngagedSpecialIcon[EmblemHero.Corrin] = `${g_debugEngagedSpecialIconRoot}Corrin_Of_Fates_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Micaiah] = `${g_engagedSpecialIconRoot}Micaiah_Of_Dawn_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Corrin] = `${g_engagedSpecialIconRoot}Corrin_Of_Fates_ES.webp`;
+EngagedSpecialIcon[EmblemHero.Edelgard] = `${g_debugEngagedSpecialIconRoot}Edelgard_Of_Rivals_ES.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_imageRootPath}Special.png`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_debugEngagedSpecialIconRoot}XXX.webp`;
 // EngagedSpecialIcon[EmblemHero.XXX] = `${g_engagedSpecialIconRoot}XXX.webp`;
@@ -4252,6 +4280,7 @@ const StyleType = {
     RANGE_2_STATUS: 7,
     RANGE_2: 8,
     INTRINSIC_MULAGIR: 9,
+    WEAPON_TRIANGLE_RED: 10,
     // CAN_ACTIVATE_STYLE_HOOKSを設定する（styleのIDに設定）
 }
 const STYLE_TYPE_NAMES = [

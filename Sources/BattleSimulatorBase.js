@@ -517,6 +517,22 @@ class BattleSimulatorBase {
                 updateAllUi();
                 appData.__showStatusToAttackerInfo();
             },
+            chosenHeroMergeChanged: function (resetsMerge = false) {
+                if (g_app == null) {
+                    return;
+                }
+                let unit = g_app.__getEditingTargetUnit();
+                if (unit == null) {
+                    return;
+                }
+                let currentUnit = self.__getCurrentUnit();
+                if (resetsMerge === true) {
+                    currentUnit.chosenHeroMerge = 0;
+                }
+                appData.__updateStatusBySkillsAndMerges(currentUnit);
+                updateAllUi();
+                appData.__showStatusToAttackerInfo();
+            },
             summonerLevelChanged: function () {
                 if (g_app == null) {
                     return;
@@ -11522,6 +11538,18 @@ class BattleSimulatorBase {
         }
         let selectingUnits = Array.from(g_appData.enumerateUnits()).filter(u => u.isSelected);
         let selectingUnit = selectingUnits.length > 0 ? selectingUnits[0] : null;
+        // if (selectingUnits && selectingUnits.length > 0) {
+        //     let selectedUnit = selectingUnits[0];
+        //     console.log(`selectedUnit.nameWithGroup: ${selectedUnit.nameWithGroup}`);
+        //     console.log(`selectedUnit.movableTiles: ${selectedUnit.movableTiles}`);
+        //     console.log(`selectedUnit.attackableTiles: ${selectedUnit.attackableTiles}`);
+        //     console.log('移動');
+        //     g_appData.map.printTiles(selectedUnit.movableTiles);
+        //     console.log('攻撃');
+        //     g_appData.map.printTiles(selectedUnit.attackableTiles);
+        //     console.log('スタイル攻撃');
+        //     g_appData.map.printTiles(selectedUnit.attackableTilesInStyle);
+        // }
         if (selectingUnit) {
             // 右クリックならスタイル切り替え
             if (selectingUnit === targetUnit && button === 2) {
@@ -11530,6 +11558,24 @@ class BattleSimulatorBase {
                 }
                 return;
             }
+            if (targetUnit && selectingUnit.isDifferentGroup(targetUnit)) {
+                let attackTile = findBestActionTile(targetUnit.placedTile,
+                    selectingUnit.attackRangeOnMap, selectingUnit, false);
+                console.log(`[選択中] selectingUnit.nameWithGroup: ${selectingUnit.nameWithGroup}`);
+                console.log(`[選択] unit.nameWithGroup: ${targetUnit.nameWithGroup}`);
+                console.log(`[攻撃マス] attackTile: ${attackTile}`);
+                if (attackTile) {
+                    updateMapUi();
+                    g_originalTile = selectingUnit.placedTile;
+                    g_attackTile = attackTile;
+                    g_attackTile.setUnit(selectingUnit);
+                    // selectingUnit.placedTile = g_attackTile;
+                    g_app.showDamageCalcSummary(selectingUnit, targetUnit, attackTile);
+                    g_originalTile.setUnit(selectingUnit);
+                    return;
+                }
+            }
+        }
 
         this.showItemInfo(targetId);
 

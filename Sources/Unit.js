@@ -419,6 +419,7 @@ class Unit extends BattleMapElement {
         this.dragonflower = 0; // 神竜の花
         this.emblemHeroMerge = 0; // 紋章士の限界突破
         this.reinforcementMerge = 0; // 増援ユニットに対する増援神階の凸数の最大値
+        this.chosenHeroMerge = 0; // 救世英雄の限界突破数
         this.blessingEffects = [];
         this.blessing1 = BlessingType.None;
         this.blessing2 = BlessingType.None;
@@ -658,6 +659,7 @@ class Unit extends BattleMapElement {
          * @type {Set<string>}
          */
         this.activatedOncePerTurnSkillEffectIdsThisTurn = new Set();
+        this.activatedSkillEffectCountsThisTurn = new Map();
 
         // 戦闘後、自分を行動可能な状態にし、再移動を発動済みなら発動可能にする
         //（同じタイミングで自分を行動可能な状態にする他の効果が発動した場合、この効果も発動したものとする）
@@ -1411,6 +1413,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + Base62.encode(JSON.stringify(this.additionalPassives))
             + ValueDelimiter + Base62.encode(JSON.stringify(this.customSkills))
             + ValueDelimiter + this.entwinedId
+            + ValueDelimiter + this.chosenHeroMerge
             + ValueDelimiter + compressedPairUpUnitSetting
             ;
     }
@@ -1483,6 +1486,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + this.actionCount
             + ValueDelimiter + this.styleActivationsCount
             + ValueDelimiter + Base62Util.encodeSet(this.activatedOncePerTurnSkillEffectIdsThisTurn)
+            + ValueDelimiter + Base62Util.encodeMap(this.activatedSkillEffectCountsThisTurn)
             ;
     }
 
@@ -1549,6 +1553,7 @@ class Unit extends BattleMapElement {
         if (values[i]) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
         if (values[i]) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i; }
         if (Number.isInteger(Number(values[i]))) { this.entwinedId = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.chosenHeroMerge = Number(values[i]); ++i; }
         if (i < elemCount) {
             this.__setPairUpUnitFromCompressedUri(values[i]); ++i;
         }
@@ -1638,6 +1643,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.actionCount = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.styleActivationsCount = Number(values[i]); ++i; }
         if (values[i] !== undefined) { this.activatedOncePerTurnSkillEffectIdsThisTurn = Base62Util.decodeSet(values[i]); ++i; }
+        if (values[i] !== undefined) { this.activatedSkillEffectCountsThisTurn = Base62Util.decodeMap(values[i]); ++i; }
     }
 
 
@@ -1704,6 +1710,7 @@ class Unit extends BattleMapElement {
             + ValueDelimiter + Base62.encode(JSON.stringify(this.additionalPassives))
             + ValueDelimiter + Base62.encode(JSON.stringify(this.customSkills))
             + ValueDelimiter + this.entwinedId
+            + ValueDelimiter + this.emblemHeroMerge
             ;
     }
 
@@ -1776,6 +1783,7 @@ class Unit extends BattleMapElement {
         if (values[i] !== undefined) { this.additionalPassives = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
         if (values[i] !== undefined) { this.customSkills = JsonUtil.tryParse(Base62.tryDecode(values[i], Unit.getInitCustomSkillsStr())); ++i;}
         if (Number.isInteger(Number(values[i]))) { this.entwinedId = Number(values[i]); ++i; }
+        if (Number.isInteger(Number(values[i]))) { this.chosenHeroMerge = Number(values[i]); ++i; }
     }
 
     // 応援を強制的に実行可能かどうか
@@ -2891,6 +2899,7 @@ class Unit extends BattleMapElement {
         this.isAnotherActionInPostCombatActivated = false;
         this.isOneTimeActionActivatedForCantoRefresh = false;
         this.activatedOncePerTurnSkillEffectIdsThisTurn = new Set();
+        this.activatedSkillEffectCountsThisTurn = new Map();
         this.deactivateStyle();
     }
 
@@ -4987,6 +4996,7 @@ class Unit extends BattleMapElement {
             this.ivHighStat, this.ivLowStat, this.ascendedAsset,
             this.merge, this.dragonflower, this.emblemHeroMerge,
             this.reinforcementMerge,
+            this.chosenHeroMerge,
             this.heroInfo.hpLv1,
             this.heroInfo.atkLv1,
             this.heroInfo.spdLv1,
@@ -5026,6 +5036,7 @@ class Unit extends BattleMapElement {
      * @param  {number} dragonflower
      * @param  {number} emblemHeroMerge
      * @param  {number} reinforcementMerge
+     * @param  {number} chosenHeroMerge
      * @param  {number} hpLv1
      * @param  {number} atkLv1
      * @param  {number} spdLv1
@@ -5036,6 +5047,7 @@ class Unit extends BattleMapElement {
         ivHighStat, ivLowStat, ascendedAsset,
         merge, dragonflower, emblemHeroMerge,
         reinforcementMerge,
+        chosenHeroMerge,
         hpLv1,
         atkLv1,
         spdLv1,
@@ -5100,7 +5112,7 @@ class Unit extends BattleMapElement {
         const addValues = [0, 0, 0, 0, 0];
 
         // 限界突破によるステータス上昇
-        if (merge > 0 || dragonflower > 0 || emblemHeroMerge > 0 || reinforcementMerge > 0) {
+        if (merge > 0 || dragonflower > 0 || emblemHeroMerge > 0 || reinforcementMerge > 0 || chosenHeroMerge > 0) {
             const statusList = [
                 { type: StatusType.Hp, value: hpLv1 + hpLv1IvChange },
                 { type: StatusType.Atk, value: atkLv1 + atkLv1IvChange },
@@ -5165,6 +5177,11 @@ class Unit extends BattleMapElement {
 
             // 増援のステータス上昇
             for (let i = 0; i < reinforcementMerge * 2; ++i) {
+                Unit.updateStatus(statusList, addValues, i);
+            }
+
+            // 救世英雄の限界突破数
+            for (let i = 0; i < chosenHeroMerge; ++i) {
                 Unit.updateStatus(statusList, addValues, i);
             }
         }
@@ -6687,6 +6704,7 @@ class Unit extends BattleMapElement {
         this.passiveX = PassiveX.None;
         this.emblemHeroIndex = EmblemHero.None;
         this.emblemHeroMerge = 0;
+        this.chosenHeroMerge = 0;
         this.isBonusChar = false;
         this.initAdditionalPassives();
         this.initCustomSkills();
@@ -6702,6 +6720,10 @@ class Unit extends BattleMapElement {
     }
 
     grantsAnotherActionOnMap() {
+        this.isActionDone = false;
+    }
+
+    grantsAnotherActionWithEmblemSkill() {
         this.isActionDone = false;
     }
 

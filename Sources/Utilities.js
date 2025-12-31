@@ -2296,6 +2296,14 @@ class Base62Util {
     static decodeSet(str) {
         return new Set(JSON.parse(Base62.decode(str)));
     }
+
+    static encodeMap(map) {
+        return Base62.encode(JSON.stringify(Array.from(map)));
+    }
+
+    static decodeMap(str) {
+        return new Map(JSON.parse(Base62.decode(str)));
+    }
 }
 
 class JsonUtil {
