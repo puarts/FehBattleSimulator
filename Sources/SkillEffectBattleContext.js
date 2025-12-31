@@ -582,6 +582,7 @@ class TargetCanMakeFollowUpAttackBeforeFoesNextAttackNode extends SkillEffectNod
         // 攻め立て
         env.info(`${unit.nameWithGroup}に攻め立て効果を設定`);
         unit.battleContext.isDesperationActivatable = true;
+        unit.battleContext.isDefDesperationActivatable = true;
     }
 }
 
