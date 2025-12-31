@@ -2624,6 +2624,7 @@ class DamageCalculator {
         let env = new DamageCalculatorEnv(this, targetUnit, enemyUnit, canActivateAttackerSpecial, context);
 
         env.setName('攻撃開始時').setLogLevel(getSkillLogLevel()).setDamageType(context.damageType)
+            .setDamageCalcEnv(context.damageCalcEnv)
             .setGroupLogger(context.damageCalcEnv.getCurrentStrikeLogger());
         targetUnit.battleContext.applySkillEffectPerAttackNodes.map(node => node.evaluate(env));
         AT_START_OF_ATTACK_HOOKS.evaluateWithUnit(targetUnit, env);
