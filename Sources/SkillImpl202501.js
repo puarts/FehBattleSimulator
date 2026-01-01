@@ -921,9 +921,9 @@
                 // if unit’s Res ≥ foe’s Res+X
                 IF_NODE(
                     AND_NODE(
-                        GTE_NODE(UNITS_EVAL_RES_NODE, ADD_NODE(FOES_EVAL_RES_NODE, READ_NUM_NODE)),
+                        GTE_NODE(SKILL_OWNERS_EVAL_RES_ON_MAP, ADD_NODE(TARGETS_EVAL_RES_NODE, READ_NUM_NODE)),
                         // and [Time’s Grip] is not active on foe,
-                        NOT_NODE(IS_STATUS_EFFECT_ACTIVE_ON_UNIT_NODE(StatusEffectType.TimesGrip)),
+                        NOT_NODE(IS_STATUS_EFFECT_ACTIVE_ON_TARGET_NODE(StatusEffectType.TimesGrip)),
                     ),
                     // that foe’s action ends immediately,
                     ENDS_TARGET_IMMEDIATELY_BY_SKILL_NODE,
@@ -937,8 +937,8 @@
                         DISTANCE_BETWEEN_UNITS_NODE(SKILL_OWNER_NODE, TARGET_NODE),
                         3,
                     ),
-                    -5
-                )
+                    5,
+                ),
             ),
         ),
     ));
