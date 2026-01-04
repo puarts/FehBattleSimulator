@@ -2,7 +2,7 @@
 
 set battle_simulator_skill_effect_filenames=SkillEffectCore,SkillEffectEnv,SkillEffect,SkillEffectBattleContext,SkillEffectHooks,SkillEffectRegistrar
 set battle_simulator_skill_impl_filenames=SkillEffectAliases,CustomSkill,SkillImpl,SkillImpl202408,SkillImpl202501
-set battle_simulator_filenames=GlobalDefinitions,Utilities,Logger,SkillConstants,Skill,%battle_simulator_skill_effect_filenames%,BattleMapElement,Tile,BattleMap,BattleMapSettings,Structures,Cell,Table,HeroInfoConstants,HeroInfo,UnitConstants,BattleContext,Unit,UnitManager,GlobalBattleContext,DamageCalculationUtility,DamageCalculator,PostCombatSkillHander,DamageCalculatorWrapper,BeginningOfTurnSkillHandler,SkillDatabase,HeroDatabase,TurnSetting,AudioManager,AetherRaidDefensePresets,SettingManager,AppData,Main_ImageProcessing,Main_OriginalAi,Main_MouseAndTouch,BattleSimulatorBase,VueComponents,%battle_simulator_skill_impl_filenames%
+set battle_simulator_filenames=GlobalDefinitions,Utilities,Logger,SkillConstants,Skill,%battle_simulator_skill_effect_filenames%,BattleMapElement,Tile,BattleMap,BattleMapSettings,Structures,Cell,Table,HeroInfoConstants,HeroInfo,UnitConstants,BattleContext,Unit,UnitManager,GlobalBattleContext,DamageCalculationUtility,DamageCalculator,PostCombatSkillHander,DamageCalculatorWrapper,BeginningOfTurnSkillHandler,SkillDatabase,HeroDatabase,TurnSetting,AudioManager,AetherRaidDefensePresets,SettingManager,AppData,Main_ImageProcessing,Main_OriginalAi,Main_MouseAndTouch,BattleSimulatorBase,VueComponents,%battle_simulator_skill_impl_filenames%,SampleHeroInfos,SampleSkillInfos
 
 
 rem 飛空城シミュレーター
@@ -25,15 +25,6 @@ call %~dp0MergeSourcesAndCompress.bat FehDamageCalculator GlobalDefinitions,Util
 
 rem 英雄アイコンリスト
 call %~dp0MergeSourcesAndCompress.bat FehHeroIconLister GlobalDefinitions,Utilities,Logger,SkillConstants,Skill,%battle_simulator_skill_effect_filenames%,HeroInfoConstants,HeroInfo,HeroDatabase,HeroIconListerMain,SampleHeroInfos,%battle_simulator_skill_impl_filenames%
-
-rem その他ツールで使うファイル
-echo other files
-set copyfiles=%battle_simulator_filenames% StatusCalcMain SampleSkillInfos SampleHeroInfos KeyRepeatHandler DamageCalculatorMain HeroStatusClustererMain
-
-rem 多分今はコピー不要なので、一旦コピーしないでおく
-REM for %%n in (%copyfiles%) do (
-    REM copy %~dp0Sources\%%n.js %destination%\%%n.js
-REM )
 
 echo css files
 set css_filenames=feh-battle-simulator

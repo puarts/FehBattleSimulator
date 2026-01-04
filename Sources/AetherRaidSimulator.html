@@ -1427,14 +1427,12 @@
             headElement.appendChild(element);
         }
 
-        function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
+        function loadScripts(jsRootPath, scriptFileNames, allScriptLoaded, index = 0) {
             if (index == scriptFileNames.length) {
                 allScriptLoaded();
                 return;
             }
 
-            let jsRootPath = "./";
-            // jsRootPath = "/AetherRaidTacticsBoard/Release2/";
             let reloadSuffix = "20200513";
             let scriptFileName = scriptFileNames[index];
             let src = jsRootPath + scriptFileName + "?" + reloadSuffix;
@@ -1442,7 +1440,7 @@
             createScriptElement(src, x => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load ${src}`);
-                loadScripts(scriptFileNames, allScriptLoaded, ++index);
+                loadScripts(jsRootPath, scriptFileNames, allScriptLoaded, ++index);
             });
         }
 
@@ -1451,8 +1449,11 @@
             // let diffTime = endTime - g_startTime;
             // g_app.writeDebugLogLine(`ページの初期化: ${diffTime} ms`);
 
-            const isLocal = typeof weaponInfos == 'undefined';
+            const isLocal = location.hostname === "localhost";
             console.log(`isLocal=${isLocal}`);
+
+            let jsRootPath = "./";
+
             let additionalScripts = [];
             if (isLocal) {
                 additionalScripts = [
@@ -1499,16 +1500,12 @@
                     ...SKILL_IMPL_FILES,
                 ];
             } else {
-                // linkタグを作成
-                let link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = './AetherRaidTacticsBoard/Release2/feh-battle-simulator.css'; // 読み込むCSSファイルのパス
-
-                // headに追加してCSSを適用する
-                document.head.appendChild(link);
+                // 本番環境の設定
+                jsRootPath = "/AetherRaidTacticsBoard/Release2/";
+                additionalScripts = ["FehBattleSimulator.js"];
             }
             const startTime = Date.now();
-            loadScripts(additionalScripts, () => {
+            loadScripts(jsRootPath, additionalScripts, () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);
                 console.log("initializing application");
