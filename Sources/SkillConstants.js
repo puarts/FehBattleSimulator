@@ -4090,6 +4090,27 @@ Weapon.GodlyDevices = 3525; // 天の女神姉妹の祭器
 PassiveA.HeavensSteadN = 3526; // 天に代わりて・近
 PassiveB.HeavenlySoar = 3527; // 天舞い立つ
 Weapon.DongJiNoshiRiPlus = 3528; // 冬祭の飾り+
+Weapon.ArcaneLatona = 3529; // 魔器・聖杖ラトナ
+PassiveA.PeerlessBeauty = 3530; // 麗しの絶世美王女
+PassiveB.PreemptAmplify = 3531; // 激励・初撃の鼓動
+Weapon.PurgingBreath = 3532; // 封魔のブレス
+PassiveC.ARHoldGuide = 3533; // 攻魔大牽制・導き手
+Weapon.MeleeLancePlus = 3534; // 混戦の槍+
+Weapon.UnequaledTome = 3535; // 稀代の天才の書
+PassiveA.SuperiorTalent = 3536; // 私、優秀ですから
+PassiveB.ARLullFinish = 3537; // 秘奥・攻魔凪
+Weapon.IlianLongsword = 3538; // イリアの長剣
+PassiveA.BlueSkyGust = 3539; // 蒼穹・鬼没
+Weapon.IlianGreatlance = 3540; // イリアの長槍
+Support.SongfulEssence = 3541; // うたうせいひつ
+PassiveC.SDCruxPloy = 3542; // 速守十牽制・謀策
+Weapon.IlianBattleaxe = 3543; // イリアの戦斧
+PassiveA.DragoonPillar = 3544; // 真・赤い竜騎士の盾
+Weapon.SkyboundBow = 3545; // 武門の妹二人の剛引
+Special.WaningShot = 3546; // ウィークショット
+PassiveA.AtkSpdAirspace = 3547; // 攻撃速さの領空
+Weapon.GeWenWangNofu = 3548; // 格聞王の斧
+Weapon.YouShikizheNofu = 3549; // 優しき者の斧
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
