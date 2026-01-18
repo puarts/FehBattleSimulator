@@ -170,12 +170,12 @@
                 IS_UNITS_HP_GTE_100_PERCENT_AT_START_OF_TURN_NODE,
             ),
             // grants【True Charge】to unit and allies within 2 spaces of unit for 1 turn,
-            // and grants "unit can move 1 extra space" to unit
-            // (that turn only; does not stack).
             GRANTS_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
                 StatusEffectType.TrueCharge,
-                StatusEffectType.MobilityIncreased,
-            )
+            ),
+            // and grants "unit can move 1 extra space" to unit
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.MobilityIncreased),
+            // (that turn only; does not stack).
         ),
     ));
     SkillEffectRegistrar.registerFoeTargetingBasicSkills(skillId,
