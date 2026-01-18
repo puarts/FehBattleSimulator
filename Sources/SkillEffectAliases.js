@@ -868,8 +868,9 @@ function setSpecialCountAndType(skillId, n, isInheritable, isNormalAttack, isDef
     }
 }
 
-function setRefresh(skillId) {
+function setRefresh(skillId, range = 1) {
     REFRESH_SUPPORT_SKILL_SET.add(skillId);
+    ASSIST_RANGE_MAP.set(skillId, range);
 }
 
 function setPathfinder(skillId) {
