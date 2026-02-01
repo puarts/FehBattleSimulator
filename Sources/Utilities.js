@@ -15,6 +15,50 @@ class ObjectUtil {
     static getKeyName(object, value) {
         return Object.keys(object).find(key => object[key] === value);
     }
+
+    /**
+     * 指定したプロパティの「名前（文字列）」を取得します。
+     * 文字列リテラルを使わずにプロパティ名を指定できるため、リファクタリング（名前変更）に強く、
+     * IDEの入力補完を活用できます。
+     *
+     * @template T
+     * @param {(obj: T) => any} selector プロパティを選択する関数
+     * @returns {string} プロパティ名
+     *
+     * @example
+     * // 1. 基本的な使用法
+     * const unit = { hp: 100, atk: 50 };
+     * * // "hp" という文字列を取得
+     * const key = ObjectUtil.nameOf(u => unit.hp);
+     * console.log(key); // => "hp"
+     *
+     * @example
+     * // 2. JSDoc型定義と組み合わせた使用法（推奨）
+     * // 型を指定することで、IDE上で ".atk" などの補完が効きます
+     * * /** @type {Unit} *\/
+     * const dummy = null;
+     * * // リファクタリングで Unit.atk が変更された場合、ここも自動的に追従します
+     * const propName = ObjectUtil.nameOf(/** @param {Unit} u *\/ u => u.atk);
+     */
+    static nameOf(selector) {
+        let key = "";
+        const proxy = new Proxy({}, {
+            get: (_, prop) => {
+                key = String(prop);
+                return new Proxy({}, {
+                    get: () => {
+                    }
+                });
+            }
+        });
+
+        try {
+            selector(proxy);
+        } catch (e) {
+            // ignore error
+        }
+        return key;
+    }
 }
 
 /**
@@ -521,7 +565,7 @@ class Stopwatch {
 
         this._lastLapTime = now;
 
-        const record = { label, time: totalElapsed, delta };
+        const record = {label, time: totalElapsed, delta};
         this._laps.push(record);
 
         console.log(
@@ -2107,7 +2151,7 @@ class MapUtil {
         }
 
         enqueue(cost, index) {
-            this.queue.push({ cost, index });
+            this.queue.push({cost, index});
             this.queue.sort((a, b) => a.cost - b.cost); // コストの昇順ソート
         }
 
@@ -2134,7 +2178,7 @@ class MapUtil {
         const directions = [-width, width, -1, 1];
 
         while (!pq.isEmpty()) {
-            const { cost: currentCost, index } = pq.dequeue();
+            const {cost: currentCost, index} = pq.dequeue();
             if (currentCost > minCostMap[index]) continue;
 
             for (const d of directions) {
@@ -2314,4 +2358,318 @@ class JsonUtil {
             return null;
         }
     }
+}
+
+/**
+ * 全てのクエリクラスの基底となる汎用イテレータ操作クラス
+ * @template T
+ * @implements {Iterable<T>}
+ */
+class Query {
+    /**
+     * @param {Iterable<T>} iterable
+     */
+    constructor(iterable) {
+        /** @protected */
+        this._it = Iterator.from(iterable);
+    }
+
+    /** * for...of ループをサポート
+     * @returns {Iterator<T>}
+     */
+    [Symbol.iterator]() {
+        return this._it;
+    }
+
+    /**
+     * 現在のクラス型を維持してラップする内部メソッド
+     * @param {Iterable<any>} it
+     * @returns {this}
+     * @protected
+     */
+    _wrap(it) {
+        return new this.constructor(it);
+    }
+
+    // --- [ 1. 型を維持するメソッド群 ] ---
+
+    /**
+     * @param {function(T, number): boolean} predicate
+     * @returns {this}
+     */
+    filter(predicate) {
+        return this._wrap(this._it.filter(predicate));
+    }
+
+    /**
+     * @param {number} n
+     * @returns {this}
+     */
+    take(n) {
+        return this._wrap(this._it.take(n));
+    }
+
+    /**
+     * @param {number} n
+     * @returns {this}
+     */
+    drop(n) {
+        return this._wrap(this._it.drop(n));
+    }
+
+    /**
+     * 各要素に対して副作用を実行し、要素をそのまま次へ流す
+     * @param {function(T, number): void} callback
+     * @returns {this}
+     */
+    peek(callback) {
+        // ジェネレータを使って、副作用を実行しつつ yield する
+        const it = this._it;
+        return this._wrap((function* () {
+            let i = 0;
+            for (const item of it) {
+                callback(item, i++); // ここで副作用（ダメージ、バフ付与など）
+                yield item;          // 次のメソッド（filter等）にそのまま渡す
+            }
+        })());
+    }
+
+    // --- [ 2. 型が変化するメソッド ] ---
+
+    /**
+     * mapは要素の型が変わる可能性があるため、基底の Query クラスへ降格させる
+     * @template U
+     * @param {function(T, number): U} callback
+     * @returns {Query<U>}
+     */
+    map(callback) {
+        return new Query(this._it.map(callback));
+    }
+
+    // --- [ 3. 型の再変換（キャスト）メソッド ] ---
+
+    /** @returns {UnitQuery} */
+    asUnits() {
+        return new UnitQuery(this._it);
+    }
+
+    /** @returns {TileQuery} */
+    asTiles() {
+        return new TileQuery(this._it);
+    }
+
+    // --- [ 4. 終端演算子（値を返してチェーンを終了） ] ---
+
+    /** @returns {T[]} */
+    toArray() {
+        return this._it.toArray();
+    }
+
+    /** @returns {T|undefined} */
+    first() {
+        return this._it.next().value;
+    }
+
+    /** @returns {number} */
+    count() {
+        let n = 0;
+        for (const _ of this._it) n++;
+        return n;
+    }
+
+    /**
+     * 各要素に対して処理を実行する
+     * @param {function(T, number): void} callback
+     */
+    forEach(callback) {
+        this._it.forEach(callback);
+    }
+
+    /**
+     * 条件を満たす要素が1つでもあるか（標準の some）
+     * @param {function(T): boolean} predicate
+     * @returns {boolean}
+     */
+    some(predicate) {
+        return this._it.some(predicate);
+    }
+
+    /**
+     * 条件を満たす要素が存在するか（some のエイリアス）
+     * DSLとして「存在する」という意図を明確にするために使用
+     * @param {function(T): boolean} predicate
+     * @returns {boolean}
+     */
+    exists(predicate) {
+        return this.some(predicate);
+    }
+
+    /**
+     * 全ての要素が条件を満たしているか（標準の every）
+     * @param {function(T): boolean} predicate
+     * @returns {boolean}
+     */
+    every(predicate) {
+        return this._it.every(predicate);
+    }
+
+    /**
+     * 全ての要素が条件を満たしているか（every のエイリアス）
+     * @param {function(T): boolean} predicate
+     * @returns {boolean}
+     */
+    all(predicate) {
+        return this.every(predicate);
+    }
+
+    /**
+     * 要素が1つも存在しないか
+     * @returns {boolean}
+     */
+    isEmpty() {
+        // next() を1回呼び出して確認する
+        const {done} = this._it.next();
+        return done;
+    }
+
+    /**
+     * 現在のクエリを【即時評価】して、中身を配列としてコンソールに出力する。
+     * 出力後、その配列から新しいクエリを生成して返すため、メソッドチェーンを継続できる。
+     * @param {string} [label] - ログのラベル
+     * @param {function(T): any} [mapper] - ログ出力用にデータを加工する関数（省略時はそのまま表示）
+     * @returns {this}
+     */
+    dump(label = '[Query Dump]', mapper = null) {
+        // 1. イテレータを回しきって配列にする（ここで評価が確定する）
+        const list = this.toArray();
+
+        // 2. コンソールに出力（mapperがあれば変換して見やすくする）
+        if (mapper) {
+            console.log(label, list.map(mapper));
+        } else {
+            console.log(label, list);
+        }
+
+        // 3. 配列を使って新しいクエリを作り直して返す
+        // （これをしないと、元のイテレータは消費済みで空っぽになっている）
+        return this._wrap(list);
+    }
+
+    /**
+     * 内部で保持している生のイテレータを返します。
+     * @returns {Iterator<T>}
+     */
+    toIterator() {
+        return this._it;
+    }
+}
+
+/**
+ * ユニット操作専用のクエリクラス
+ * @extends {Query<Unit>}
+ * @template {Unit} T
+ * @implements {Iterable<Unit>}
+ */
+class UnitQuery extends Query {
+    /**
+     * @param {Iterable<Unit>} iterable
+     */
+    constructor(iterable) {
+        // 親クラスの期待する Iterable<any> 等に一時的に見せかける
+        super(/** @type {Iterable<any>} */ iterable);
+    }
+
+    /**
+     * 特定のユニットからの距離で絞り込む
+     * @param {Unit} center
+     * @param {number} spaces
+     * @returns {this}
+     */
+    within(center, spaces) {
+        return this.filter(u => center.distance(u) <= spaces);
+    }
+
+    /**
+     * @return {this}
+     */
+    onMap() {
+        return this.filter(u => u.isOnMap);
+    }
+
+    /**
+     * 味方ユニットのみを絞り込む
+     * @param {Unit} unit
+     * @return {this}
+     */
+    sameGroup(unit) {
+        return this.filter(u => u.isSameGroup(unit) && u !== unit);
+    }
+
+    /**
+     * 味方ユニットのみを絞り込む（自分含む）
+     * @param {Unit} unit
+     * @return {this}
+     */
+    andSameGroup(unit) {
+        return this.filter(u => u.isSameGroup(unit));
+    }
+
+    /**
+     * 敵ユニットのみを絞り込む
+     * @param {Unit} unit
+     * @return {this}
+     */
+    differentGroup(unit) {
+        return this.filter(u => u.isDifferentGroup(unit));
+    }
+
+    /**
+     * @param {Unit} unit
+     * @param {number} spaces
+     * @param {boolean} includingUnit
+     * @return {this}
+     */
+    withinSpacesOf(unit, spaces, includingUnit = false) {
+        if (includingUnit) {
+            return this.filter(u => u.distance(unit) <= spaces);
+        } else {
+            return this.filter(u => u.distance(unit) <= spaces && u !== unit);
+        }
+    }
+
+    /**
+     * 指定した比較関数でソートする（※即時評価されるため注意）
+     * @param {function(Unit, Unit): number} compareFn
+     * @returns {this}
+     */
+    sortBy(compareFn) {
+        return this._wrap([...this._it].sort(compareFn));
+    }
+
+    /**
+     * @param {Unit} unit
+     * @return {UnitQuery}
+     * @template {Unit} T
+     */
+    closestFrom(unit) {
+        return this._wrap(IterUtil.minElements(this.toArray(), u => u.distance(unit)));
+    }
+
+    /**
+     * 現在のクエリに含まれるユニット情報をコンソールに出力する
+     * @param {string} label - ログの先頭に付けるラベル（識別用）
+     * @returns {this}
+     */
+    printNames(label = '[UnitQuery]') {
+        return this.peek((unit, index) => {
+            console.log(`${label} index:${index}`, unit.getNameWithGroupAndPos());
+        });
+    }
+}
+
+/**
+ * タイル（地形）操作専用のクエリクラス
+ * @extends {Query<Tile>}
+ */
+class TileQuery extends Query {
 }

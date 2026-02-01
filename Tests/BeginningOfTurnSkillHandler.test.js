@@ -26,7 +26,12 @@ test('BeginningOfTurnSkillHandler_Simple', () => test_executeTest(() => {
         unit.weaponRefinement = WeaponRefinementType.Special;
         for (let atkUnitInfo of g_testHeroDatabase.enumerateHeroInfos()) {
             g_testHeroDatabase.initUnit(unit, atkUnitInfo.name);
-            handler.applySkillsForBeginningOfTurn(unit);
+            try {
+                handler.applySkillsForBeginningOfTurn(unit);
+            } catch (e) {
+                console.error(`${unit.nameWithGroup}のターン開始時スキルでエラー`);
+                throw e;
+            }
         }
     });
 

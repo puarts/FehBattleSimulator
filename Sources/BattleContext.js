@@ -1,5 +1,21 @@
 /// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
+    /**
+     * BattleContextのプロパティ名を安全に取得するショートカットです。
+     * 引数の型が固定されているため、コールバック内で自動的に入力補完が効きます。
+     *
+     * @param {(ctx: BattleContext) => any} selector プロパティを選択する関数
+     * @returns {string} プロパティ名 ("additionalDamage" など)
+     *
+     * @example
+     * // 文字列 "additionalDamage" を取得します
+     * // (IDE上で ctx. と入力すると、自動的に BattleContext のプロパティ候補が表示されます)
+     * const key = BattleContext.nameOf(ctx => ctx.additionalDamage);
+     */
+    static nameOf(selector) {
+        return ObjectUtil.nameOf(selector);
+    }
+
     // 戦闘開始後にNダメージ(戦闘中にダメージを減らす効果の対象外、ダメージ後のHPは最低1)
     // 他の「戦闘開始後、敵にNダメージ」の効果とは重複せず最大値適用
     // 自分が受けるダメージ

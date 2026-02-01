@@ -7,34 +7,32 @@ class NodeEnv {
         AFTER_COMBAT: 'AFTER_COMBAT',
     });
 
-    // 戦闘中のフェーズ
-    static CombatPhase = {
-        NULL_PHASE: null,
-        AT_START_OF_COMBAT: null,
-        APPLYING_OTHER_UNITS_SKILL: null,
-        APPLYING_OTHER_UNITS_SKILL_AFTER_FEUD: null,
-        APPLYING_EFFECTIVE: null,
-        APPLYING_COUNTER_ALL_DISTANCE: null,
-        APPLYING_STATUS_SKILL_AFTER_STATUS_FIXED: null,
-        APPLYING_SKILL_AFTER_STATUS_FIXED: null,
-        APPLYING_ATTACK_COUNT: null,
-        AFTER_APPLYING_ATTACK_COUNT: null,
-        APPLYING_CAN_COUNTER: null,
-        APPLYING_CAN_FOLLOW_UP: null,
-        APPLYING_POTENT: null,
-        AFTER_FOLLOWUP_CONFIGURED: null,
-        APPLYING_NEUTRALIZATION_SKILL: null,
-        APPLYING_SPECIAL: null,
-        APPLYING_REF_MIT: null,
-        AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED: null,
+    /**
+     * 戦闘中のフェーズ
+     * @readonly
+     * @enum {symbol}
+     */
+    static CombatPhase = Object.freeze({
+        NULL_PHASE: null, // 初期値用ならここだけnullでもOKですが、文字列推奨
+        AT_START_OF_COMBAT: 'AT_START_OF_COMBAT',
+        APPLYING_OTHER_UNITS_SKILL: 'APPLYING_OTHER_UNITS_SKILL',
+        APPLYING_OTHER_UNITS_SKILL_AFTER_FEUD: 'APPLYING_OTHER_UNITS_SKILL_AFTER_FEUD',
+        APPLYING_EFFECTIVE: 'APPLYING_EFFECTIVE',
+        APPLYING_COUNTER_ALL_DISTANCE: 'APPLYING_COUNTER_ALL_DISTANCE',
+        APPLYING_STATUS_SKILL_AFTER_STATUS_FIXED: 'APPLYING_STATUS_SKILL_AFTER_STATUS_FIXED',
+        APPLYING_SKILL_AFTER_STATUS_FIXED: 'APPLYING_SKILL_AFTER_STATUS_FIXED',
+        APPLYING_ATTACK_COUNT: 'APPLYING_ATTACK_COUNT',
+        AFTER_APPLYING_ATTACK_COUNT: 'AFTER_APPLYING_ATTACK_COUNT',
+        APPLYING_CAN_COUNTER: 'APPLYING_CAN_COUNTER',
+        APPLYING_CAN_FOLLOW_UP: 'APPLYING_CAN_FOLLOW_UP',
+        APPLYING_POTENT: 'APPLYING_POTENT',
+        AFTER_FOLLOWUP_CONFIGURED: 'AFTER_FOLLOWUP_CONFIGURED',
+        APPLYING_NEUTRALIZATION_SKILL: 'APPLYING_NEUTRALIZATION_SKILL',
+        APPLYING_SPECIAL: 'APPLYING_SPECIAL',
+        APPLYING_REF_MIT: 'APPLYING_REF_MIT',
+        AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED: 'AFTER_DAMAGE_AS_COMBAT_BEGINS_FIXED',
         // TODO: result = self._damageCalc.calcCombatResult(atkUnit, defUnit, damageType);の後のフェーズも設定する
-    };
-
-    static {
-        Object.keys(this.CombatPhase).forEach((key, index) => {
-            this.CombatPhase[key] = index; // 定義順に番号をセット
-        });
-    }
+    });
 
     static SkillLogContent = class {
         constructor(name, message, tag = null) {
@@ -48,9 +46,10 @@ class NodeEnv {
         }
     }
 
+    isComparingStats = false;
     /** @type {string} */
     phase = NodeEnv.PHASE.NULL_PHASE;
-    /** @type {number} */
+    /** @type {CombatPhase} */
     _combatPhase = NodeEnv.CombatPhase.NULL_PHASE;
     /** @type {Unit} */
     #skillOwner = null;
@@ -121,7 +120,7 @@ class NodeEnv {
 
     /** @type {function(string): void} */
     #logFunc = (_message) => {
-        // console.log(_message);
+        // console.log(_messageFunc);
     };
 
     setName(name) {
@@ -331,6 +330,21 @@ class NodeEnv {
         return this;
     }
 
+    setTextUnit(unit) {
+        this.textUnit = unit;
+        return this;
+    }
+
+    setTextFoe(foe) {
+        this.textFoe = foe;
+        return this;
+    }
+
+    setTextAlly(ally) {
+        this.textAlly = ally;
+        return this;
+    }
+
     updateTargetInfo() {
         if (this.target && this.#skillOwner) {
             if (this.target.isSameGroup(this.#skillOwner)) {
@@ -528,6 +542,18 @@ class NodeEnv {
     }
 
     /**
+     * @return {UnitQuery}
+     */
+    getUnitQuery() {
+        if (this.unitManager) {
+            return this.unitManager.getUnitQuery();
+        } else if (this.battleMap) {
+            return this.battleMap.getUnitQuery();
+        }
+        throw new Error('Unit query is not available in the current environment.');
+    }
+
+    /**
      * @param {function(string): void} log
      * @returns {NodeEnv}
      */
@@ -714,9 +740,9 @@ class DamageCalculatorWrapperEnv extends NodeEnv {
      */
     constructor(damageCalculator, targetUnit, enemyUnit, calcPotentialDamage) {
         super();
-        this.setDamageCalculatorWrapper(damageCalculator);
-        this.setBattleMap(damageCalculator.map);
-        this.setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit);
+        this.setDamageCalculatorWrapper(damageCalculator).setBattleMap(damageCalculator.map)
+            .setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit)
+            .setTextUnit(targetUnit).setTextFoe(enemyUnit);
         this.calcPotentialDamage = calcPotentialDamage;
     }
 }
@@ -731,10 +757,9 @@ class DamageCalculatorEnv extends NodeEnv {
      */
     constructor(damageCalculator, targetUnit, enemyUnit, canActivateAttackerSpecial, damageCalcContext) {
         super();
-        this.setDamageCalculator(damageCalculator);
-        this.setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit);
-        this.setDamageCalcContext(damageCalcContext);
-        this.setCanActivateAttackerSpecial(canActivateAttackerSpecial);
+        this.setDamageCalculator(damageCalculator).setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit)
+            .setDamageCalcContext(damageCalcContext).setCanActivateAttackerSpecial(canActivateAttackerSpecial)
+            .setTextUnit(targetUnit).setTextFoe(enemyUnit);
     }
 }
 
@@ -747,9 +772,9 @@ class BattleSimulatorBaseEnv extends NodeEnv {
     constructor(battleSimulatorBase, targetUnit) {
         super();
         this.writeDamageLog = message => battleSimulatorBase.writeSimpleLogLine(message);
-        this.setBattleSimulatorBase(battleSimulatorBase);
-        this.setSkillOwner(targetUnit);
-        this.setTarget(targetUnit);
+        this.setBattleSimulatorBase(battleSimulatorBase)
+            .setSkillOwner(targetUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
     }
 }
 
@@ -761,8 +786,8 @@ class EnumerationEnv extends NodeEnv {
     constructor(unitManager, targetUnit) {
         super();
         this.unitManager = unitManager;
-        this.setSkillOwner(targetUnit);
-        this.setTarget(targetUnit);
+        this.setSkillOwner(targetUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
     }
 }
 
@@ -779,9 +804,11 @@ class ForFoesEnv extends NodeEnv {
                 targetUnit, enemyUnit, enemyAllyUnit,
                 calcPotentialDamage) {
         super();
+        // TODO: enemyUnit(targetUnitと戦闘しているスキル所有者の味方), enemyAllyUnit(スキル所有者)がスキルテキストでどうなっているのか確認
         this.setDamageCalculatorWrapper(damageCalculator)
             .setSkillOwner(enemyAllyUnit).setTarget(targetUnit).setTargetFoe(enemyUnit)
-            .setUnitsDuringCombat(enemyUnit, targetUnit);
+            .setUnitsDuringCombat(enemyUnit, targetUnit)
+            .setTextFoe(targetUnit);
         this.calcPotentialDamage = calcPotentialDamage;
     }
 }
@@ -790,15 +817,16 @@ class ForFoesEnv extends NodeEnv {
 class ForAlliesEnv extends NodeEnv {
     /**
      * @param {DamageCalculatorWrapper} damageCalculator
-     * @param {Unit} targetUnit
-     * @param {Unit} enemyUnit
-     * @param {Unit} allyUnit
+     * @param {Unit} targetUnit 戦闘中のスキル所有者の味方
+     * @param {Unit} enemyUnit 戦闘中のスキル所有者の敵
+     * @param {Unit} allyUnit スキル所有者
      */
     constructor(damageCalculator, targetUnit, enemyUnit, allyUnit) {
         super();
         this.setDamageCalculatorWrapper(damageCalculator)
             .setSkillOwner(allyUnit).setTarget(targetUnit).setTargetFoe(enemyUnit)
-            .setUnitsDuringCombat(targetUnit, enemyUnit);
+            .setUnitsDuringCombat(targetUnit, enemyUnit)
+            .setTextUnit(allyUnit).setTextAlly(targetUnit).setTextFoe(enemyUnit);
     }
 }
 
@@ -810,8 +838,8 @@ class PreventingStatusEffectEnv extends NodeEnv {
      */
     constructor(skillOwnerUnit, targetUnit, statusEffect) {
         super();
-        this.setSkillOwner(skillOwnerUnit);
-        this.setTarget(targetUnit);
+        this.setSkillOwner(skillOwnerUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
         this.statusEffect = statusEffect;
     }
 }
@@ -823,7 +851,7 @@ class NeutralizingEndActionEnv extends NodeEnv {
      */
     constructor(skillOwnerUnit, targetUnit) {
         super();
-        this.setSkillOwner(skillOwnerUnit)
-        this.setTarget(targetUnit);
+        this.setSkillOwner(skillOwnerUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
     }
 }

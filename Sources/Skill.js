@@ -862,7 +862,8 @@ function canRallyForcibly(skill, unit) {
         return true;
     }
     let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTargeting(unit)
-        .setName('強制的に応援可能判定').setLogLevel(getSkillLogLevel());
+        // .setName('強制的に応援可能判定').setLogLevel(getSkillLogLevel());
+        .setName('強制的に応援可能判定').setLogLevel(LoggerBase.LogLevel.OFF);
     if (CAN_RALLY_FORCIBLY_HOOKS.evaluateSomeWithUnit(unit, env)) {
         return true;
     }
@@ -1255,6 +1256,9 @@ const CAN_SAVE_FROM_MAGIC_SKILL_SET = new Set();
 
 const CAN_SAVE_FROM_P_SKILL_SET = new Set();
 
+/**
+ * @enum {number}
+ */
 const StatusEffectType = {
     None: -1,
     Panic: 0, // 強化反転
@@ -1798,6 +1802,28 @@ const StatusIndex = Object.freeze({
     SPD: 1,
     DEF: 2,
     RES: 3,
+});
+
+/**
+ * @enum {[boolean, boolean, boolean, boolean]}
+ */
+const StatFlags = Object.freeze({
+    NONE: [false, false, false, false],
+    ATK: [true, false, false, false],
+    SPD: [false, true, false, false],
+    DEF: [false, false, true, false],
+    RES: [false, false, false, true],
+    ATK_SPD: [true, true, false, false],
+    ATK_DEF: [true, false, true, false],
+    ATK_RES: [true, false, false, true],
+    SPD_DEF: [false, true, true, false],
+    SPD_RES: [false, true, false, true],
+    DEF_RES: [false, false, true, true],
+    ATK_SPD_DEF: [true, true, true, false],
+    ATK_SPD_RES: [true, true, false, true],
+    ATK_DEF_RES: [true, false, true, true],
+    SPD_DEF_RES: [false, true, true, true],
+    ALL: [true, true, true, true],
 });
 
 function getStatusName(index) {

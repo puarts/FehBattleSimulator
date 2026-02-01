@@ -1,3 +1,130 @@
+const MOD_BATTLE_CONTEXT_FIELD = (n, op) => new ModSkillEffectFieldNode(n, op).battleContext();
+
+/**
+ * @template T
+ */
+class CallBattleContextFuncNode extends SingleEffectNode {
+    /**
+     * @param {function(BattleContext, ...T): void} actionFunc
+     * @param {function(Unit, ...T): string} messageBuilder
+     * @param {...T} args
+     */
+    constructor(actionFunc, messageBuilder, ...args) {
+        super();
+        this._actionFunc = actionFunc;
+        this._messageBuilder = messageBuilder;
+        this._args = args;
+    }
+
+    evaluate(env) {
+        let units = this._targetNode.evaluate(env);
+        for (const unit of units) {
+            env.info(this._messageBuilder(unit, ...this._args));
+            this._actionFunc(unit.battleContext, ...this._args);
+        }
+    }
+}
+
+/*
+ * 実装
+ */
+
+/**
+ * @param {BoolResolvable} n
+ * @return {SkillEffectFieldNode}
+ */
+const NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS = n => MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+    .setKey(BattleContext.nameOf(ctx => ctx.invalidatesAbsoluteFollowupAttack))
+    .setLogMessageFunc(n => '敵の絶対追撃を無効');
+
+/**
+ * @param {BoolResolvable} n
+ * @return {SkillEffectFieldNode}
+ */
+const NEUTRALIZES_EFFECTS_THAT_PREVENT_UNITS_FOLLOW_UP_ATTACKS = n => MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+    .setKey(BattleContext.nameOf(ctx => ctx.invalidatesInvalidationOfFollowupAttack))
+    .setLogMessageFunc(n => '自身の追撃不可を無効');
+
+/**
+ * @param {NumberResolvable} n
+ * @return {SkillEffectFieldNode}
+ */
+const DEALS_DAMAGE_DURING_COMBAT = n => MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+    .setKey(BattleContext.nameOf(ctx => ctx.additionalDamage))
+    .setLogMessage('戦闘中、ダメージ+');
+
+/**
+ * @param {NumberResolvable} n
+ * @return {SkillEffectFieldNode}
+ */
+const DEALS_DAMAGE_IN_PRECOMBAT = n => MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+    .setKey(BattleContext.nameOf(ctx => ctx.additionalDamageInPrecombat))
+    .setLogMessage('戦闘前、ダメージ+');
+
+/**
+ * @param {NumberResolvable} n
+ * @return {EffectNode}
+ */
+const DEALS_DAMAGE = n =>
+    IF_ELSE_EFFECT(IS_IN_COMBAT_PHASE_NODE, DEALS_DAMAGE_DURING_COMBAT(n), DEALS_DAMAGE_IN_PRECOMBAT(n));
+
+/**
+ * @param {NumberResolvable} n
+ * @return {SkillEffectFieldNode}
+ */
+const REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY_DURING_COMBAT = n => MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+    .setKey(BattleContext.nameOf(ctx => ctx.damageReductionValue))
+    .setLogMessage('戦闘中、ダメージ-');
+
+/**
+ * @param {NumberResolvable} n
+ * @return {SkillEffectFieldNode}
+ */
+const REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY_IN_PRECOMBAT = n => MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+    .setKey(BattleContext.nameOf(ctx => ctx.damageReductionForPrecombat))
+    .setLogMessage('戦闘前、ダメージ-');
+
+/**
+ * @param {NumberResolvable} n
+ * @return {EffectNode}
+ */
+const REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY = n =>
+    IF_ELSE_EFFECT(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY_DURING_COMBAT(n),
+        REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY_IN_PRECOMBAT(n)
+    );
+
+const REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_DURING_COMBAT = n => MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+    .setKey(BattleContext.nameOf(ctx => ctx.damageReductionValueOfSpecialAttack))
+    .setLogMessage('戦闘中、奥義によるダメージ-');
+
+const REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_IN_PRECOMBAT = n => MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+    .setKey(BattleContext.nameOf(ctx => ctx.damageReductionForPrecombat))
+    .setLogMessage('戦闘前、奥義によるダメージ-');
+
+const REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY = n =>
+    IF_ELSE_EFFECT(IS_IN_COMBAT_PHASE_NODE,
+        REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_DURING_COMBAT(n),
+        REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY_IN_PRECOMBAT(n),
+    );
+
+const REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_N_PERCENT = percentage =>
+    MOD_BATTLE_CONTEXT_FIELD(NumberNode.makeNumberNodeFrom(percentage).toRatio(), SkillEffectField.Op.ARRAY_PUSH)
+        .setKey(BattleContext.nameOf(ctx => ctx.reductionRatiosOfDamageReductionRatioExceptSpecial))
+        .setLogMessageFunc(n => `敵のダメージ軽減を${n * 100}%無効`);
+
+const TRIGGERS_POTENT_FOLLOW_N_PERCENT = percentage =>
+    MOD_BATTLE_CONTEXT_FIELD(NumberNode.makeNumberNodeFrom(percentage).toRatio(), SkillEffectField.Op.ARRAY_PUSH)
+        .setKey(BattleContext.nameOf(ctx => ctx.potentRatios))
+        .setLogMessageFunc(n => `【神速追撃：ダメージ${n * 100}%】を発動`);
+
+const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_N = n => new CallBattleContextFuncNode(
+    (ctx, _n) => ctx.increaseCooldownCountForBoth(),
+    (u, _n) => `${u.nameWithGroup}は戦闘中、自身の奥義発動カウント変動量+1`
+);
+
+///
+
 const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
     evaluate(env) {
         let unit = env.unitDuringCombat;

@@ -1962,7 +1962,10 @@ class BattleMap {
      * @returns {Generator<Tile>}
      */
     * enumerateRangedSpecialTiles(targetTile, atkUnit, damageCalcEnv) {
-        let env = new BattleMapEnv(this, atkUnit).setTile(targetTile).setTargetFoe(targetTile.placedUnit);
+        let env = new BattleMapEnv(this, atkUnit)
+            .setTile(targetTile)
+            .setTargetFoe(targetTile.placedUnit)
+            .setTextFoe(targetTile.placedUnit);
         env.setName('範囲奥義の範囲取得時').setLogLevel(getSkillLogLevel())
             .setGroupLogger(damageCalcEnv.getBeforeCombatLogger());
         yield* AOE_SPECIAL_SPACES_HOOKS.evaluateConcatUniqueWithUnit(atkUnit, env);
@@ -2118,7 +2121,8 @@ class BattleMap {
 
         // unitがallyのスキルによりワープ
         for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-            let env = new BattleMapEnv(this, unit).setSkillOwner(ally);
+            let env = new BattleMapEnv(this, unit).setSkillOwner(ally)
+                .setTextUnit(ally).setTextAlly(unit);
             // env.setName('ワープ(周囲)').setLogLevel(getSkillLogLevel());
             env.setName('ワープ(周囲)').setLogLevel(LoggerBase.LogLevel.OFF);
             yield* ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(ally, env);
@@ -2429,7 +2433,10 @@ class BattleMap {
             if (tile.existsEnemyUnit(warpUnit)) {
                 let enemyUnit = tile.placedUnit;
 
-                let env = new BattleMapEnv(this, warpUnit).setSkillOwner(enemyUnit).setTile(targetTile);
+                let env = new BattleMapEnv(this, warpUnit)
+                    .setSkillOwner(enemyUnit)
+                    .setTile(targetTile)
+                    .setTextUnit(enemyUnit).setTextFoe(warpUnit);
                 env.setName('ワープ不可').setLogLevel(LoggerBase.LogLevel.WARN);
                 if (UNIT_CANNOT_WARP_INTO_SPACES_HOOKS.evaluateSomeWithUnit(enemyUnit, env)) {
                     return false;
@@ -2486,7 +2493,8 @@ class BattleMap {
 
         if (!ignoresTeleportTile) {
             {
-                let env = new BattleMapEnv(this, unit).setSkillOwner(unit);
+                let env = new BattleMapEnv(this, unit).setSkillOwner(unit)
+                    .setTextUnit(unit);
                 env.setName('すり抜けワープ').setLogLevel(LoggerBase.LogLevel.OFF);
                 let tiles = UNIT_CAN_MOVE_TO_A_SPACE_WITHOUT_OBSTRUCTION_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
                 for (let tile of tiles) {
@@ -2521,7 +2529,8 @@ class BattleMap {
                 if (unit.isCantoActivated()) {
                     yield* this.enumerateWarpCantoTiles(unit);
                     for (let ally of this.enumerateUnitsInTheSameGroup(unit)) {
-                        let env = new BattleMapEnv(this, unit).setSkillOwner(ally);
+                        let env = new BattleMapEnv(this, unit).setSkillOwner(ally)
+                            .setTextUnit(ally).setTextAlly(unit);
                         env.setName('味方によるワープ（再移動）').setLogLevel(LoggerBase.LogLevel.OFF);
                         // env.setName('味方によるワープ（再移動）').setLogLevel(LoggerBase.LogLevel.ALL);
                         yield* WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(ally, env);
@@ -3194,12 +3203,15 @@ class BattleMap {
         }
     }
 
-    * enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces) {
+    * enumerateUnitsInTheSameGroupWithinSpecifiedSpaces(targetUnit, spaces, withUnit = false) {
         for (let unit of this.enumerateUnitsInTheSameGroup(targetUnit)) {
             let dist = Math.abs(unit.posX - targetUnit.posX) + Math.abs(unit.posY - targetUnit.posY);
             if (dist <= spaces) {
                 yield unit;
             }
+        }
+        if (withUnit) {
+          yield targetUnit;
         }
     }
 
@@ -3233,6 +3245,13 @@ class BattleMap {
                 yield unit;
             }
         }
+    }
+
+    /**
+     * @return {UnitQuery}
+     */
+    getUnitQuery() {
+        return new UnitQuery(this._units);
     }
 
     /**

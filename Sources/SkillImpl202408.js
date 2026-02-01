@@ -3073,7 +3073,7 @@ function setDiscord(skillId, statsRatios) {
                 // 【Resonance: Shields】,
                 // "neutralizes 'effective against dragons' bonuses," and
                 // 【Warp Bubble】for 1 turn,
-                new GrantsStatusEffectsNode(
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
                     StatusEffectType.ResonantShield,
                     StatusEffectType.ShieldDragon,
                     StatusEffectType.WarpBubble,
@@ -3180,12 +3180,12 @@ function setDiscord(skillId, statsRatios) {
 {
     setTwinSave(
         PassiveC.ARTwinMSave, false,
-        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(ATK_RES_NODE(4)),
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(ATK_RES(4)),
         false, true
     );
     setTwinSave(
         PassiveC.SDTwinPSave, false,
-        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(SPD_DEF_NODE(4)),
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(SPD_DEF(4)),
         true, false
     );
 }
@@ -3193,18 +3193,18 @@ function setDiscord(skillId, statsRatios) {
 // 護り手・X・茨
 {
     // 近
-    setBriarSave(PassiveC.ARBriarNSave, FOES_RANGE_IS_1_NODE, ATK_RES_NODE(4),
+    setBriarSave(PassiveC.ARBriarNSave, FOES_RANGE_IS_1_NODE, ATK_RES(4),
         true, false, false, false);
-    setBriarSave(PassiveC.ADBriarNSave, FOES_RANGE_IS_1_NODE, ATK_DEF_NODE(4),
+    setBriarSave(PassiveC.ADBriarNSave, FOES_RANGE_IS_1_NODE, ATK_DEF(4),
         true, false, false, false);
     // 遠
-    setBriarSave(PassiveC.ADBriarFSave, FOES_RANGE_IS_2_NODE, ATK_DEF_NODE(4),
+    setBriarSave(PassiveC.ADBriarFSave, FOES_RANGE_IS_2_NODE, ATK_DEF(4),
         false, true, false, false);
     // 理
-    setBriarSave(PassiveC.ADBriarPSave, FOR_TARGETS_FOE_DURING_COMBAT_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF_NODE(4),
+    setBriarSave(PassiveC.ADBriarPSave, FOR_TARGETS_FOE_DURING_COMBAT_NODE(IS_TARGET_P_WEAPON_NODE), ATK_DEF(4),
         false, false, true, false);
     // 魔
-    setBriarSave(PassiveC.SRBriarMSave, FOR_TARGETS_FOE_DURING_COMBAT_NODE(IS_TARGET_MAGIC_WEAPON_NODE), SPD_RES_NODE(4),
+    setBriarSave(PassiveC.SRBriarMSave, FOR_TARGETS_FOE_DURING_COMBAT_NODE(IS_TARGET_MAGIC_WEAPON_NODE), SPD_RES(4),
         false, false, false, true);
 }
 
@@ -5499,7 +5499,7 @@ function setDiscord(skillId, statsRatios) {
 {
     let skillId = PassiveB.LoneWolf;
     // If a skill compares unit's Spd to a foe's or ally's Spd, treats unit's Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 7, 0, 0));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS(0, 7, 0, 0));
 
     // If unit has not used or been the target of an Assist skill during the current turn,
     // grants another action to unit and
@@ -5859,7 +5859,7 @@ function setDiscord(skillId, statsRatios) {
         new SkillEffectNode(
             new ForEachUnitFromSameTitlesNode(
                 new GrantsStatsNode(6, 6, 0, 0),
-                new GrantsStatusEffectsNode(
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(
                     StatusEffectType.ResonantBlades,
                     StatusEffectType.MobilityIncreased,
                 ),
@@ -5893,8 +5893,8 @@ function setDiscord(skillId, statsRatios) {
             )
         );
     };
-    setSkill(PassiveA.AtkSpdMastery, ATK_SPD_NODE(7), ATK_SPD_NODE(4));
-    setSkill(PassiveA.AtkResMastery, ATK_RES_NODE(7), ATK_RES_NODE(4));
+    setSkill(PassiveA.AtkSpdMastery, ATK_SPD(7), ATK_SPD(4));
+    setSkill(PassiveA.AtkResMastery, ATK_RES(7), ATK_RES(4));
 }
 
 // 人見知りの縁の祭器

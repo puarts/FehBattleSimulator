@@ -59,8 +59,16 @@ function determineAssistType(assistUnit, targetUnit) {
             if (canAddStatusEffectByRallyFuncMap.get(skillId).call(this, assistUnit, targetUnit)) {
                 return AssistType.Rally;
             }
+            if (assistUnit.canBuffTo(targetUnit)) {
+                return AssistType.Rally;
+            }
+            if (assistUnit.canRallyForcibly() || targetUnit.canRalliedForcibly()) {
+                return AssistType.Rally;
+            }
+            return AssistType.Heal;
+        } else {
+            return AssistType.Rally;
         }
-        return AssistType.Heal;
     }
     return assistUnit.supportInfo.assistType;
 }

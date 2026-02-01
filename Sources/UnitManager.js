@@ -15,11 +15,29 @@ class UnitManager {
     }
 
     /**
+     * @return {UnitQuery}
+     */
+    getUnitQuery() {
+        return new UnitQuery(this.units);
+    }
+
+    /**
      * @returns {Generator<Unit>}
      */
     *enumerateUnits() {
         for (let unit of this.units) {
             yield unit;
+        }
+    }
+
+    /**
+     * @returns {Generator<Unit>}
+     */
+    * enumerateUnitsOnMap() {
+        for (let unit of this.enumerateUnits()) {
+            if (unit.isOnMap) {
+                yield unit;
+            }
         }
     }
 

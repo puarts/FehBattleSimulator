@@ -319,8 +319,17 @@ class SkillEffectHooks {
     }
 }
 
+const SkillRequirement = Object.freeze({
+    // 戦闘中バフ決定後
+    STAT: 0,
+    // 戦闘中バフ決定後の戦闘中バフ決定後
+    STAT_AFTER_STAT: 1,
+    // 神速に必要な条件
+    FOLLOW_UP_COND_BEFORE_POTENT: 2,
+});
+
 class SkillEffectNode {
-    /** @type {SkillEffectNode} */
+    /** @type {SkillEffectNode|null} */
     _parent = null;
     /** @type {SkillEffectNode[]} */
     _children = []
@@ -377,6 +386,65 @@ class SkillEffectNode {
         return this._children;
     }
 
+    /**
+     * @override
+     * @returns {boolean}
+     */
+    isStatsCompNode() {
+        return false;
+    }
+
+    /**
+     * @override
+     * @returns {null|SkillRequirement}
+     */
+    getRequirement() {
+        return this._requirement;
+    }
+
+    setRequirement(requirement) {
+        this._requirement = requirement;
+        return this;
+    }
+
+    /**
+     * @returns {Set<SkillRequirement>}
+     */
+    getRequirements(existingSet = new Set()) {
+        // 1. 自身の要件を追加
+        const requirement = this.getRequirement();
+        if (requirement) {
+            existingSet.add(requirement);
+        }
+
+        // 2. 子孫の探索
+        const values = Object.values(this);
+        for (const val of values) {
+            // null や undefined はスキップ
+            if (!val) continue;
+
+            // 【重要】親ノードへの参照は探索しない（無限ループ防止）
+            if (val === this._parent) continue;
+
+            // ケースA: 値が配列だった場合（children: [...] など）
+            if (Array.isArray(val)) {
+                for (const item of val) {
+                    // 配列の中身がメソッドを持っているかチェックして再帰
+                    if (typeof item?.getRequirements === 'function') {
+                        // noinspection JSUnresolvedFunction
+                        item.getRequirements(existingSet);
+                    }
+                }
+            }
+            // ケースB: 値が単体のノードだった場合
+            else if (typeof val.getRequirements === 'function') {
+                val.getRequirements(existingSet);
+            }
+        }
+
+        return existingSet;
+    }
+
     toString() {
         return `SkillEffectNode(${this._children.length})`;
     }
@@ -393,14 +461,23 @@ const NODE_FUNC = (...nodes) => () => SKILL_EFFECT_NODE(...nodes);
 
 /**
  * @abstract
+ * @typedef {number|NumberNode} NumberResolvable
  */
 class NumberNode extends SkillEffectNode {
     /**
-     * @param {number|NumberNode} numberOrNode
+     * @param {NumberResolvable} numberOrNode
      * @returns {ConstantNumberNode|NumberNode}
      */
     static makeNumberNodeFrom(numberOrNode) {
         return typeof numberOrNode === 'number' ? new ConstantNumberNode(numberOrNode) : numberOrNode;
+    }
+
+    /**
+     * @param {NumberResolvable} numberOrNode
+     * @returns {ConstantNumberNode|NumberNode}
+     */
+    static toNumberNode(numberOrNode) {
+        return this.makeNumberNodeFrom(numberOrNode);
     }
 
     /**
@@ -410,6 +487,10 @@ class NumberNode extends SkillEffectNode {
      */
     evaluate(env) {
         return super.evaluate(env);
+    }
+
+    toRatio() {
+        return MULT_NODE(this, 0.01);
     }
 }
 
@@ -568,6 +649,15 @@ const FILTER_COLLECTION_NODE = (collectionNode, predNode) => new FilterCollectio
  * @abstract
  */
 class NumbersNode extends CollectionNode {
+    static makeNumbersNodeFrom(...numbers) {
+        if (numbers instanceof CollectionNode) {
+            return numbers;
+        }
+        if (numbers instanceof NumberNode) {
+            return new CollectionNode(numbers);
+        }
+        return new NumbersNode(numbers);
+    }
     /**
      * @abstract
      * @param {NodeEnv} env
@@ -839,6 +929,7 @@ const SET_SIZE_NODE = setNode => new SetSizeNode(setNode);
 
 /**
  * @abstract
+ * @typedef {boolean|BoolNode} BoolResolvable
  */
 class BoolNode extends SkillEffectNode {
     /**
@@ -979,7 +1070,7 @@ class NumberOperationNode extends NumberNode {
 }
 
 class EnsureMinNode extends NumberOperationNode {
-    #minNode;
+    _minNode;
 
     /**
      * @param {number|NumberNode} child
@@ -987,7 +1078,7 @@ class EnsureMinNode extends NumberOperationNode {
      */
     constructor(child, min) {
         super(child);
-        this.#minNode = NumberNode.makeNumberNodeFrom(min);
+        this._minNode = NumberNode.makeNumberNodeFrom(min);
     }
 
     evaluateChildren(env) {
@@ -996,7 +1087,7 @@ class EnsureMinNode extends NumberOperationNode {
 
     evaluate(env) {
         let value = this.evaluateChildren(env);
-        let min = this.#minNode.evaluate(env);
+        let min = this._minNode.evaluate(env);
         let result = MathUtil.ensureMin(value, min);
         env?.trace(`[EnsureMinNode] (value: ${value}, min: ${min}) => ${result}`);
         return result;
@@ -1006,7 +1097,7 @@ class EnsureMinNode extends NumberOperationNode {
 const ENSURE_MIN_NODE = (child, min) => new EnsureMinNode(child, min);
 
 class EnsureMaxNode extends NumberOperationNode {
-    #maxNode;
+    _maxNode;
 
     /**
      * @param {number|NumberNode} child
@@ -1014,7 +1105,7 @@ class EnsureMaxNode extends NumberOperationNode {
      */
     constructor(child, max) {
         super(child);
-        this.#maxNode = NumberNode.makeNumberNodeFrom(max);
+        this._maxNode = NumberNode.makeNumberNodeFrom(max);
     }
 
     evaluateChildren(env) {
@@ -1023,7 +1114,7 @@ class EnsureMaxNode extends NumberOperationNode {
 
     evaluate(env) {
         let value = this.evaluateChildren(env);
-        let max = this.#maxNode.evaluate(env);
+        let max = this._maxNode.evaluate(env);
         let result = MathUtil.ensureMax(value, max);
         env?.trace(`[EnsureMaxNode] (value: ${value}, max: ${max}) => ${result}`);
         return result;
@@ -1039,8 +1130,8 @@ class EnsureMaxNode extends NumberOperationNode {
 const ENSURE_MAX_NODE = (child, max) => new EnsureMaxNode(child, max);
 
 class EnsureMinMaxNode extends NumberOperationNode {
-    #min = CONSTANT_NUMBER_NODE(Number.MIN_SAFE_INTEGER);
-    #max = CONSTANT_NUMBER_NODE(Number.MAX_SAFE_INTEGER);
+    _min = CONSTANT_NUMBER_NODE(Number.MIN_SAFE_INTEGER);
+    _max = CONSTANT_NUMBER_NODE(Number.MAX_SAFE_INTEGER);
 
     /**
      * @param {number|NumberNode} child
@@ -1049,8 +1140,8 @@ class EnsureMinMaxNode extends NumberOperationNode {
      */
     constructor(child, min, max) {
         super(child);
-        this.#min = NumberNode.makeNumberNodeFrom(min);
-        this.#max = NumberNode.makeNumberNodeFrom(max);
+        this._min = NumberNode.makeNumberNodeFrom(min);
+        this._max = NumberNode.makeNumberNodeFrom(max);
     }
 
     evaluateChildren(env) {
@@ -1059,8 +1150,8 @@ class EnsureMinMaxNode extends NumberOperationNode {
 
     evaluate(env) {
         let value = this.evaluateChildren(env);
-        let min = this.#min.evaluate(env);
-        let max = this.#max.evaluate(env);
+        let min = this._min.evaluate(env);
+        let max = this._max.evaluate(env);
         let result = MathUtil.ensureMinMax(value, min, max);
         env?.trace(`[EnsureMinMaxNode] (min: ${min}, value: ${value}, max: ${max}) => ${result}`);
         return result;
@@ -1302,14 +1393,17 @@ class CompareNode extends BoolNode {
     /**
      * @param {number|NumberNode} left
      * @param {number|NumberNode} right
+     * @param {boolean} isComparingStats
      */
-    constructor(left, right) {
+    constructor(left, right, isComparingStats = false) {
         super(NumberNode.makeNumberNodeFrom(left), NumberNode.makeNumberNodeFrom(right));
+        this.isComparingStats = isComparingStats;
     }
 }
 
 class GtNode extends CompareNode {
     evaluate(env) {
+        env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
         let result = left > right;
         env?.trace(`[GtNode] ${left} > ${right}: ${result}`);
@@ -1317,10 +1411,11 @@ class GtNode extends CompareNode {
     }
 }
 
-const GT_NODE = (a, b) => new GtNode(a, b);
+const GT_NODE = (a, b, isComparingStats = false) => new GtNode(a, b, isComparingStats);
 
 class GteNode extends CompareNode {
     evaluate(env) {
+        env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
         let result = left >= right;
         env?.trace(`[GteNode] ${left} >= ${right}: ${result}`);
@@ -1328,30 +1423,33 @@ class GteNode extends CompareNode {
     }
 }
 
-const GTE_NODE = (a, b) => new GteNode(a, b);
+const GTE_NODE = (a, b, isComparingStats = false) => new GteNode(a, b, isComparingStats);
 
 // noinspection JSUnusedGlobalSymbols
 class LtNode extends CompareNode {
     evaluate(env) {
+        env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
         return left < right;
     }
 }
 
-const LT_NODE = (a, b) => new LtNode(a, b);
+const LT_NODE = (a, b, isComparingStats = false) => new LtNode(a, b, isComparingStats);
 
 class LteNode extends CompareNode {
     evaluate(env) {
+        env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
         return left <= right;
     }
 }
 
-const LTE_NODE = (...node) => new LteNode(...node);
+const LTE_NODE = (a, b, isComparingStats = false) => new LteNode(a, b, isComparingStats);
 
 // noinspection JSUnusedGlobalSymbols
 class EqNode extends CompareNode {
     evaluate(env) {
+        env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
         let result = left === right;
         env.trace(`[EqNode] ${left} === ${right}: ${result}`);
@@ -1359,11 +1457,11 @@ class EqNode extends CompareNode {
     }
 }
 
-const EQ_NODE = (...node) => new EqNode(...node);
+const EQ_NODE = (a, b, isComparingStats = false) => new EqNode(a, b, isComparingStats);
 
 class IfNode extends SkillEffectNode {
     /** @type {BoolNode} */
-    #condNode;
+    _condNode;
 
     /**
      * @param {BoolNode} condNode
@@ -1371,12 +1469,12 @@ class IfNode extends SkillEffectNode {
      */
     constructor(condNode, ...stmtNodes) {
         super(...stmtNodes);
-        this.#condNode = condNode;
+        this._condNode = condNode;
     }
 
     evaluate(env) {
         env?.trace("[IfNode] 条件を評価");
-        if (this.#condNode.evaluate(env)) {
+        if (this._condNode.evaluate(env)) {
             env?.trace("[IfNode] 条件は真");
             return super.evaluate(env);
         }
@@ -1391,12 +1489,13 @@ class IfNode extends SkillEffectNode {
  * @constructor
  */
 const IF_NODE = (condNode, ...stmtNodes) => new IfNode(condNode, ...stmtNodes);
+const IF = (condNode, ...stmtNodes) => new IfNode(condNode, ...stmtNodes);
 
 const UNLESS_NODE = (condNode, ...stmtNodes) => IF_NODE(NOT_NODE(condNode), ...stmtNodes);
 
 class IfElseNode extends SkillEffectNode {
     /** @type {BoolNode} */
-    #condNode;
+    _condNode;
 
     /**
      * @param {BoolNode} condNode
@@ -1405,7 +1504,7 @@ class IfElseNode extends SkillEffectNode {
      */
     constructor(condNode, trueNode, falseNode) {
         super(NumberNode.makeNumberNodeFrom(trueNode), NumberNode.makeNumberNodeFrom(falseNode));
-        this.#condNode = condNode;
+        this._condNode = condNode;
     }
 
     getChildren() {
@@ -1413,7 +1512,7 @@ class IfElseNode extends SkillEffectNode {
     }
 
     evaluate(env) {
-        let condResult = this.#condNode.evaluate(env);
+        let condResult = this._condNode.evaluate(env);
         let index = condResult ? 0 : 1;
         env?.trace(`[IfThenElseNode] 条件を評価: ${condResult}`)
         let evalNode = condResult ? 'IF' : 'ELSE';
@@ -1456,7 +1555,7 @@ const IF_EXPRESSION_NODE = (condNode, trueNode, falseNode) =>
 
 class TernaryConditionalNumberNode extends NumberNode {
     /** @type {BoolNode} */
-    #condNode;
+    _condNode;
 
     /**
      * @param {BoolNode} condNode
@@ -1465,7 +1564,7 @@ class TernaryConditionalNumberNode extends NumberNode {
      */
     constructor(condNode, trueNode, falseNode) {
         super(NumberNode.makeNumberNodeFrom(trueNode), NumberNode.makeNumberNodeFrom(falseNode));
-        this.#condNode = condNode;
+        this._condNode = condNode;
     }
 
     /**
@@ -1476,7 +1575,7 @@ class TernaryConditionalNumberNode extends NumberNode {
     }
 
     evaluate(env) {
-        let condResult = this.#condNode.evaluate(env);
+        let condResult = this._condNode.evaluate(env);
         let index = condResult ? 0 : 1;
         env?.trace(`[TernaryConditionalNumberNode] 条件を評価: ${condResult}`)
         let result = this.getChildren()[index].evaluate(env);
@@ -1525,6 +1624,10 @@ class ReadNumNode extends NumberNode {
 
 const READ_NUM_NODE = new ReadNumNode();
 const READ_NUM_AT_NODE = n => new ReadNumNode(n);
+/**
+ * @type {any}
+ */
+const X = new ReadNumNode();
 
 class NumThatIsNode extends SkillEffectNode {
     /**

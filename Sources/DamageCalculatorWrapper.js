@@ -9989,7 +9989,7 @@ class DamageCalculatorWrapper {
             env.setName('周囲の味方からのバフ(戦闘中バフ決定後)').setLogLevel(getSkillLogLevel())
                 .setDamageType(damageCalcEnv.damageType)
                 .setCombatPhase(this.combatPhase).setGroupLogger(damageCalcEnv.getCombatLogger());
-            FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_AFTER_STATS_DETERMINED_DURING_COMBAT_HOOKS.evaluateWithUnit(allyUnit, env);
+            FOR_ALLIES_STATS_SKILLS_USING_STATS_HOOKS.evaluateWithUnit(allyUnit, env);
         }
     }
 

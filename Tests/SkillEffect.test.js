@@ -245,6 +245,72 @@ describe('Bonuses or penalties', () => {
         // 必要なら: env.dispose(); heroDatabase.reset(); 等
     });
 
+    test('when grants bonus during combat', () => {
+        env.setCombatPhase(NodeEnv.CombatPhase.AT_START_OF_COMBAT);
+        env.setTarget(unit);
+        GRANTS_BONUS(STATS(1, 2, 3, 4)).to(TARGET_NODE).evaluate(env);
+        expect(unit.getSpurs()).toEqual(ArrayUtil.add(SPURS, [1, 2, 3, 4]));
+        expect(foe.getSpurs()).toEqual(SPURS);
+    });
+
+    test('when grants bonus on map', () => {
+        env.setCombatPhase(NodeEnv.CombatPhase.NULL_PHASE);
+        env.setTarget(unit);
+        GRANTS_BONUS(STATS(1, 2, 3, 4)).to(TARGET_NODE).evaluate(env);
+        expect(unit.getReservedBuffs()).toEqual([1, 2, 3, 4]);
+        expect(foe.getReservedBuffs()).toEqual([0, 0, 0, 0]);
+    });
+
+    test('when inflicts penalty during combat', () => {
+        env.setCombatPhase(NodeEnv.CombatPhase.AT_START_OF_COMBAT);
+        env.setTarget(unit);
+        INFLICTS_PENALTY(STATS(1, 2, 3, 4)).to(TARGET_NODE).evaluate(env);
+        expect(unit.getSpurs()).toEqual(ArrayUtil.sub(SPURS, [1, 2, 3, 4]));
+        expect(foe.getSpurs()).toEqual(SPURS);
+    });
+
+    test('when inflicts penalty on map', () => {
+        env.setCombatPhase(NodeEnv.CombatPhase.NULL_PHASE);
+        env.setTarget(unit);
+        INFLICTS_PENALTY(STATS(1, 2, 3, 4)).to(TARGET_NODE).evaluate(env);
+        expect(unit.getReservedDebuffs()).toEqual([1, 2, 3, 4].map(v => -v));
+        expect(foe.getReservedDebuffs()).toEqual([0, 0, 0, 0]);
+    });
+
+    test('when grants status effects', () => {
+        env.setCombatPhase(NodeEnv.CombatPhase.NULL_PHASE);
+        env.setTarget(unit);
+        let status = [StatusEffectType.FringeBonus, StatusEffectType.Imbue];
+        GRANTS_STATUS_EFFECTS(...status).to(TARGET_NODE).evaluate(env);
+        expect(unit.getStatusEffects().length === 0);
+        unit.applyReservedStatusEffects();
+        expect(unit.getStatusEffects()).toEqual(status);
+    });
+
+    test('when inflicts status effects', () => {
+        env.setCombatPhase(NodeEnv.CombatPhase.NULL_PHASE);
+        env.setTarget(unit);
+        let status = [StatusEffectType.Frozen, StatusEffectType.Exposure];
+        INFLICTS_STATUS_EFFECTS(...status).to(TARGET_NODE).evaluate(env);
+        expect(unit.getStatusEffects().length === 0);
+        unit.applyReservedStatusEffects();
+        expect(unit.getStatusEffects()).toEqual(status);
+    });
+
+    test('neutralizes stat penalties', () => {
+        env.setTarget(unit);
+        let flag = StatFlags.ATK_DEF;
+        NEUTRALIZES_STAT_PENALTIES(flag).to(TARGET_NODE).evaluate(env);
+        expect(unit.reservedDebuffFlagsToNeutralize).toEqual(flag);
+    });
+
+    test('neutralizes targets n penalty effects', () => {
+        env.setTarget(unit);
+        let n = 3;
+        NEUTRALIZES_N_PENALTY_EFFECTS(n).to(TARGET_NODE).evaluate(env);
+        expect(unit.reservedNegativeStatusEffectCountInOrder).toEqual(n);
+    });
+
     test('when grants 5', () => {
         GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE.evaluate(env);
         expect(unit.getSpurs()).toEqual(ArrayUtil.add(SPURS, [5, 5, 5, 5]));
@@ -260,7 +326,7 @@ describe('Bonuses or penalties', () => {
 
     test('when grants stats', () => {
         let spurs = [1, 2, 3, 4];
-        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(STATS_NODE(...spurs)).evaluate(env);
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(STATS(...spurs)).evaluate(env);
         expect(unit.getSpurs()).toEqual(ArrayUtil.add(SPURS, spurs));
         expect(foe.getSpurs()).toEqual(SPURS);
     });
@@ -287,7 +353,7 @@ describe('Bonuses or penalties', () => {
 
     test('when inflicts stats', () => {
         let spurs = [1, 2, 3, 4];
-        INFLICTS_ATK_SPD_DEF_RES_ON_TARGET_DURING_COMBAT_NODE(STATS_NODE(...spurs)).evaluate(env);
+        INFLICTS_ATK_SPD_DEF_RES_ON_TARGET_DURING_COMBAT_NODE(STATS(...spurs)).evaluate(env);
         expect(unit.getSpurs()).toEqual(ArrayUtil.sub(SPURS, spurs));
         expect(foe.getSpurs()).toEqual(SPURS);
     });
@@ -321,7 +387,7 @@ describe('Skills during combat', () => {
 
     test('when Frozen added with def diff', () => {
         let skillId = 'phantom-def';
-        AT_COMPARING_STATS_HOOKS.addSkillIfAbsent(skillId, () => DEF_NODE(7));
+        AT_COMPARING_STATS_HOOKS.addSkillIfAbsent(skillId, () => DEF(7));
         defUnit.passiveS = skillId;
         atkUnit.addStatusEffect(StatusEffectType.Frozen);
         atkUnit.defWithSkills = 40;
@@ -362,6 +428,221 @@ describe('Skills during combat', () => {
         expect(result.atkUnit_normalAttackDamage).toBe(
             MathUtil.ensureMin(result.atkUnit_atk - result.defUnit_def, 0) + additionalDamage
         );
+    });
+});
+
+describe('Effect Node', () => {
+    /** @type {Unit} */
+    let atkUnit;
+    /** @type {Unit} */
+    let defUnit;
+    let calculator;
+
+    beforeEach(() => {
+        atkUnit = heroDatabase.createUnit('アルフォンス');
+        defUnit = heroDatabase.createUnit('アルフォンス');
+        calculator = new test_DamageCalculator();
+        calculator.unitManager.units = [atkUnit, defUnit];
+        calculator.isLogEnabled = true;
+        g_appData = calculator.unitManager;
+        // g_appData.skillLogLevel = LoggerBase.LogLevel.ALL;
+    });
+
+    test('for unit', () => {
+        let bonusStatuses = [StatusEffectType.FringeBonus, StatusEffectType.Imbue];
+        let penaltyStatuses = [StatusEffectType.Frozen, StatusEffectType.Exposure];
+        FOR_UNIT(UNITS_NODE(atkUnit, defUnit)).withEffects(
+            GRANTS_STATUS_EFFECTS(...bonusStatuses),
+            INFLICTS_STATUS_EFFECTS(...penaltyStatuses),
+        ).evaluate(new NodeEnv());
+        expect(atkUnit.reservedStatusEffects).toEqual(bonusStatuses.concat(penaltyStatuses));
+        expect(defUnit.reservedStatusEffects).toEqual(bonusStatuses.concat(penaltyStatuses));
+    });
+
+    test('effects to unit', () => {
+        let bonusStatuses = [StatusEffectType.FringeBonus, StatusEffectType.Imbue];
+        let penaltyStatuses = [StatusEffectType.Frozen, StatusEffectType.Exposure];
+        EFFECTS(
+            GRANTS_STATUS_EFFECTS(...bonusStatuses),
+            INFLICTS_STATUS_EFFECTS(...penaltyStatuses),
+        ).to(UNITS_NODE(atkUnit, defUnit)).evaluate(new NodeEnv());
+        expect(atkUnit.reservedStatusEffects).toEqual(bonusStatuses.concat(penaltyStatuses));
+        expect(defUnit.reservedStatusEffects).toEqual(bonusStatuses.concat(penaltyStatuses));
+    });
+
+    test('do', () => {
+        let bonusStatuses = [StatusEffectType.FringeBonus, StatusEffectType.Imbue];
+        UNITS_NODE(atkUnit, defUnit).do(GRANTS_STATUS_EFFECTS(...bonusStatuses)).evaluate(new NodeEnv());
+        expect(atkUnit.reservedStatusEffects).toEqual(bonusStatuses);
+        expect(defUnit.reservedStatusEffects).toEqual(bonusStatuses);
+    });
+
+    test('deals aoe damage', () => {
+        const damage = 10;
+        UNITS_NODE(atkUnit).do(DEALS_DAMAGE(damage)).evaluate(new NodeEnv());
+        expect(atkUnit.battleContext.additionalDamageInPrecombat).toEqual(damage);
+    });
+
+    test('deals damage during combat', () => {
+        const damage = 10;
+        const env = new NodeEnv().setCombatPhase(NodeEnv.CombatPhase.AT_START_OF_COMBAT);
+        UNITS_NODE(atkUnit).do(DEALS_DAMAGE(damage)).evaluate(env);
+        expect(atkUnit.battleContext.additionalDamage).toEqual(damage);
+    });
+
+    test('deals X damage', () => {
+        const damage = 10;
+        UNITS_NODE(atkUnit).do(DEALS_DAMAGE(X).x(damage)).evaluate(new NodeEnv());
+        expect(atkUnit.battleContext.additionalDamageInPrecombat).toEqual(damage);
+    });
+
+    test('deals X damage (X = 10 * 3)', () => {
+        const damage = 10;
+        UNITS_NODE(atkUnit).do(DEALS_DAMAGE(X).x(MULT_NODE(damage, 3))).evaluate(new NodeEnv());
+        expect(atkUnit.battleContext.additionalDamageInPrecombat).toEqual(damage * 3);
+    });
+
+    test('deals X * 3 damage', () => {
+        const damage = 10;
+        UNITS_NODE(atkUnit).do(DEALS_DAMAGE(MULT_NODE(X, 3)).x(damage)).evaluate(new NodeEnv());
+        expect(atkUnit.battleContext.additionalDamageInPrecombat).toEqual(damage * 3);
+    });
+
+    test('deals with max', () => {
+        const damage = 20;
+        const max = 10;
+        UNITS_NODE(atkUnit).do(DEALS_DAMAGE(damage).max(max)).evaluate(new NodeEnv());
+        expect(atkUnit.battleContext.additionalDamageInPrecombat).toEqual(max);
+    });
+});
+
+
+describe('Test map', () => {
+    beforeEach(() => {
+        heroDatabase = g_testHeroDatabase;
+        battleMap = new BattleMap('');
+        battleMap.setMapSize(6, 8);
+
+        allies = [
+            heroDatabase.createUnit("アルフォンス"),
+            heroDatabase.createUnit("アルフォンス"),
+            heroDatabase.createUnit("アルフォンス"),
+            heroDatabase.createUnit("アルフォンス"),
+            heroDatabase.createUnit("アルフォンス"),
+            heroDatabase.createUnit("アルフォンス"),
+        ];
+        for (let i = 0; i < allies.length; i++) {
+            battleMap.placeUnit(allies[i], i, 6);
+        }
+
+        enemies = [
+            heroDatabase.createUnit("シャロン", UnitGroupType.Enemy),
+            heroDatabase.createUnit("シャロン", UnitGroupType.Enemy),
+            heroDatabase.createUnit("シャロン", UnitGroupType.Enemy),
+            heroDatabase.createUnit("シャロン", UnitGroupType.Enemy),
+            heroDatabase.createUnit("シャロン", UnitGroupType.Enemy),
+            heroDatabase.createUnit("シャロン", UnitGroupType.Enemy),
+        ];
+        for (let i = 0; i < enemies.length; i++) {
+            battleMap.placeUnit(enemies[i], i, 1);
+        }
+
+        calclator = new test_DamageCalculator();
+        calclator.isLogEnabled = false;
+        calclator.unitManager.units = [...allies, ...enemies];
+    });
+
+    test('unit and closest foes', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(UNIT.and(CLOSEST_FOES).evaluate(env));
+        expect(new Set([allies[2], enemies[2]])).toEqual(units);
+    });
+
+    test('unit and allies within 1 spaces and closest foes', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(UNIT.and(ALLIES_WITHIN.spaces(1).of(UNIT)).and(CLOSEST_FOES).evaluate(env));
+        expect(new Set([allies[1], allies[2], allies[3], enemies[2]])).toEqual(units);
+    });
+
+    test('allies within 1 spaces of unit', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.spaces(1).of(UNIT).evaluate(env));
+        expect(new Set([allies[1], allies[3]])).toEqual(units);
+    });
+
+    test('allies within 2 spaces of unit', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.spaces(2).of(UNIT).evaluate(env));
+        expect(new Set([allies[0], allies[1], allies[3], allies[4]])).toEqual(units);
+    });
+
+    test('allies within 1 spaces of (allies within 1 spaces of unit)', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.spaces(1).of(ALLIES_WITHIN.spaces(1).of(UNIT)).evaluate(env));
+        expect(new Set([allies[0], allies[2], allies[4]])).toEqual(units);
+    });
+
+    test('foes within 2 spaces of closest foes', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(FOES_WITHIN.spaces(2).of(CLOSEST_FOES).evaluate(env));
+        expect(new Set([enemies[0], enemies[1], enemies[3], enemies[4]])).toEqual(units);
+    });
+
+    test('allies within 2 spaces of closest foes', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.spaces(2).of(CLOSEST_FOES).evaluate(env));
+        expect(new Set()).toEqual(units);
+    });
+
+    test('closest foes', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(CLOSEST_FOES.evaluate(env));
+        expect(new Set([enemies[2]])).toEqual(units);
+    });
+
+    test('closest foes and unit', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(CLOSEST_FOES.and(UNIT).evaluate(env));
+        expect(new Set([allies[2], enemies[2]])).toEqual(units);
+    });
+
+    test('unit and allies within 1 spaces', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(UNIT.and(ALLIES_WITHIN.spaces(1).of(UNIT)).evaluate(env));
+        expect(new Set([allies[1], allies[2], allies[3]])).toEqual(units);
+    });
+
+    test('unit and allies within 2 spaces', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(UNIT.and(ALLIES_WITHIN.spaces(2).of(UNIT)).evaluate(env));
+        expect(new Set([allies[0], allies[1], allies[2], allies[3], allies[4]])).toEqual(units);
+    });
+
+    test('closest foes', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(CLOSEST_FOES.evaluate(env));
+        expect(new Set([enemies[2]])).toEqual(units);
+    });
+
+    test('closest foes', () => {
+        battleMap.placeUnit(enemies[2], 2, 0);
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(CLOSEST_FOES.evaluate(env));
+        expect(new Set([enemies[1], enemies[2], enemies[3]])).toEqual(units);
+    });
+
+    test('closest foes and foes within 1 spaces of those foes', () => {
+        battleMap.placeUnit(enemies[2], 2, 0);
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(CLOSEST_FOES.and(FOES_WITHIN.spaces(1).of(CLOSEST_FOES)).evaluate(env));
+        expect(new Set([enemies[0], enemies[1], enemies[2], enemies[3], enemies[4]])).toEqual(units);
+    });
+
+    test('closest foes and foes within 2 spaces of those foes', () => {
+        battleMap.placeUnit(enemies[2], 2, 0);
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(CLOSEST_FOES.and(FOES_WITHIN.spaces(2).of(CLOSEST_FOES)).evaluate(env));
+        expect(new Set([enemies[0], enemies[1], enemies[2], enemies[3], enemies[4], enemies[5]])).toEqual(units);
     });
 });
 

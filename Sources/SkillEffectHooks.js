@@ -132,7 +132,7 @@ const FOR_ALLIES_AT_START_OF_COMBAT_HOOKS = new SkillEffectHooks();
 /**
  * 周囲に対する紋章効果(ステータス決定後)
  * @type {SkillEffectHooks<SkillEffectNode, ForAlliesEnv>} */
-const FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_AFTER_STATS_DETERMINED_DURING_COMBAT_HOOKS = new SkillEffectHooks();
+const FOR_ALLIES_STATS_SKILLS_USING_STATS_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲に対する紋章効果(ステータス決定後)

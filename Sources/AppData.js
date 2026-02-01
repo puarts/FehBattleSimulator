@@ -1134,11 +1134,11 @@ class AppData extends UnitManager {
             this.initializeByHeroInfo(unit.pairUpUnit, unit.pairUpUnit.heroIndex, initEditableAttrs, false);
         }
 
-        if (!unit.additionalPassives || !(unit.additionalPassives instanceof Array)) {
+        if (!unit.additionalPassives || !(Array.isArray(unit.additionalPassives))) {
             unit.initAdditionalPassives();
         }
 
-        if (!unit.customSkills || !(unit.customSkills instanceof Array)) {
+        if (!unit.customSkills || !(Array.isArray(unit.customSkills))) {
             unit.initCustomSkills();
         }
 

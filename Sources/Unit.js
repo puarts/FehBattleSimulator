@@ -372,6 +372,22 @@ class PrecombatContext {
 
 /// ユニットのインスタンス
 class Unit extends BattleMapElement {
+    /**
+     * Unitのプロパティ名を安全に取得するショートカットです。
+     * 引数の型が固定されているため、コールバック内で自動的に入力補完が効きます。
+     *
+     * @param {(ctx: Unit) => any} selector プロパティを選択する関数
+     * @returns {string} プロパティ名 ("additionalDamage" など)
+     *
+     * @example
+     * // 文字列 "additionalDamage" を取得します
+     * // (IDE上で ctx. と入力すると、自動的に Unit のプロパティ候補が表示されます)
+     * const key = Unit.nameOf(ctx => ctx.additionalDamage);
+     */
+    static nameOf(selector) {
+        return ObjectUtil.nameOf(selector);
+    }
+
     #hpAddAfterEnteringBattle = 0;
     #statusesAddAfterEnteringBattle = [0, 0, 0, 0];
     #statusEffects = [];
@@ -860,6 +876,10 @@ class Unit extends BattleMapElement {
     __updateNameWithGroup() {
         this.nameWithGroup = this.name + "(" + groupIdToString(this.groupId) + ")";
         this.groupName = groupIdToString(this.groupId);
+    }
+
+    getNameWithGroupAndPos() {
+        return `${this.nameWithGroup} (${this.posX}, ${this.posY})`;
     }
 
     get groupChar() {
@@ -2203,6 +2223,17 @@ class Unit extends BattleMapElement {
         return [this.atkSpur, this.spdSpur, this.defSpur, this.resSpur];
     }
 
+    get spurs() {
+        return [this.atkSpur, this.spdSpur, this.defSpur, this.resSpur];
+    }
+
+    set spurs(values) {
+        this.atkSpur = values[0];
+        this.spdSpur = values[1];
+        this.defSpur = values[2];
+        this.resSpur = values[3];
+    }
+
     get isHarmonicAllyHero() {
         let isInHero = Object.values(Hero).includes(this.heroIndex);
         let isDuo = DUO_HERO_SET.has(this.heroIndex);
@@ -2864,6 +2895,10 @@ class Unit extends BattleMapElement {
         this.neutralizeDebuffs(true, true, true, true);
     }
 
+    setReservedDebuffFlagsToNeutralize(flags) {
+        this.reservedDebuffFlagsToNeutralize = ArrayUtil.or(this.reservedDebuffFlagsToNeutralize, flags);
+    }
+
     neutralizeReservedDebuffsToNeutralize() {
         this.neutralizeDebuffs(...this.reservedDebuffFlagsToNeutralize);
         // clear
@@ -3006,7 +3041,8 @@ class Unit extends BattleMapElement {
         }
 
         let env = new NodeEnv().setTarget(this).setSkillOwner(this).setUnitManager(g_appData)
-            .setBattleMap(g_appData.map).setIsCantoEndAction(isCantoEndAction);
+            .setBattleMap(g_appData.map).setIsCantoEndAction(isCantoEndAction)
+            .setTextUnit(this);
         env.setName('行動後or再移動後').setLogLevel(getSkillLogLevel());
         AFTER_UNIT_ACTS_IF_CANTO_TRIGGERS_AFTER_CANTO_HOOKS.evaluateWithUnit(this, env);
         if (isCantoEndAction) {
@@ -6093,6 +6129,9 @@ class Unit extends BattleMapElement {
     canRallyTo(targetUnit, buffAmountThreshold) {
         let assistUnit = this;
         let skillId = assistUnit.support;
+        if (this.canBuffTo(targetUnit, buffAmountThreshold)) {
+            return true;
+        }
         if (canAddStatusEffectByRallyFuncMap.has(skillId)) {
             // TODO: 以下を検証する
             // ステータスを付与できないのであればバフをかけられようとも応援しない。
@@ -6107,21 +6146,26 @@ class Unit extends BattleMapElement {
             case Support.HarshCommand:
                 return this.__canExecuteHarshCommand(targetUnit);
             default:
-                if ((getAtkBuffAmount(skillId) - targetUnit.atkBuff) >= buffAmountThreshold) {
-                    return true;
-                }
-                if ((getSpdBuffAmount(skillId) - targetUnit.spdBuff) >= buffAmountThreshold) {
-                    return true;
-                }
-                if ((getDefBuffAmount(skillId) - targetUnit.defBuff) >= buffAmountThreshold) {
-                    return true;
-                }
-                // noinspection RedundantIfStatementJS
-                if ((getResBuffAmount(skillId) - targetUnit.resBuff) >= buffAmountThreshold) {
-                    return true;
-                }
                 return false;
         }
+    }
+
+    canBuffTo(targetUnit, buffAmountThreshold = 1) {
+        const skillId = this.support;
+        if ((getAtkBuffAmount(skillId) - targetUnit.atkBuff) >= buffAmountThreshold) {
+            return true;
+        }
+        if ((getSpdBuffAmount(skillId) - targetUnit.spdBuff) >= buffAmountThreshold) {
+            return true;
+        }
+        if ((getDefBuffAmount(skillId) - targetUnit.defBuff) >= buffAmountThreshold) {
+            return true;
+        }
+        // noinspection RedundantIfStatementJS
+        if ((getResBuffAmount(skillId) - targetUnit.resBuff) >= buffAmountThreshold) {
+            return true;
+        }
+        return false;
     }
 
     /**

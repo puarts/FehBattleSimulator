@@ -1,5 +1,4 @@
 // スキル実装
-
 // Winter Trinket+
 {
     let skillId = Weapon.DongJiNoshiRiPlus;
@@ -408,7 +407,7 @@
             GRANTS_MIRACLE_AND_HEAL_N_AND_ADDITIONAL_EFFECT_TO_TARGET_ONCE_PER_MAP_NODE(
                 40,
                 // and grants Atk/Spd【Great Talent】+10 to ally
-                GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_SPD_NODE(10), STATS_NODE(10, 10, 10, 10)),
+                GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_SPD(10), STATS(10, 10, 10, 10)),
             ),
             // (effect only triggers for player's team once per map
             // and does not stack with non-Special effects
@@ -818,7 +817,7 @@
         // and foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            ATK_RES_NODE(7),
+            ATK_RES(7),
             StatusEffectType.Exposure,
             StatusEffectType.Panic,
         )
@@ -1063,10 +1062,10 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(
         FOR_EACH_TARGETS_ALLY_WITHIN_N_SPACES_NODE(2,
             // grants Atk/Spd/Def [Great Talent] +3
-            GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_SPD_DEF_NODE(3), ATK_SPD_DEF_NODE(9)),
+            GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_SPD_DEF(3), ATK_SPD_DEF(9)),
             // to unit and allies within 2 spaces of unit.
         ),
-        GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_SPD_DEF_NODE(3), ATK_SPD_DEF_NODE(18)),
+        GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_SPD_DEF(3), ATK_SPD_DEF(18)),
     ));
     // For unit and allies on the map,
     SkillEffectRegistrar.registerSelfTargetingSkills(skillId,
@@ -1279,7 +1278,7 @@
             FOE_SUFFERS_GUARANTEED_FOLLOW_UP_ATTACKS_DURING_COMBAT,
         );
     };
-    setSkill(PassiveC.SRCruxPloy, SPD_RES_NODE(4));
+    setSkill(PassiveC.SRCruxPloy, SPD_RES(4));
 }
 
 // Harmonized Skill
@@ -1319,7 +1318,7 @@
         // and foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_RES_NODE(7),
+            SPD_RES(7),
             StatusEffectType.Panic,
             StatusEffectType.Discord,
         ),
@@ -1385,7 +1384,7 @@
         // reduces damage from foe’s first attack during combat by 40%”
         // to unit and allies within 2 spaces of unit for 1 turn.
         GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-            ATK_SPD_NODE(6),
+            ATK_SPD(6),
             StatusEffectType.PreemptPulse,
             StatusEffectType.ReducesDamageFromFirstAttackBy40Percent,
         )
@@ -1499,7 +1498,7 @@
         // (only highest value applied; does not stack)”
         // to unit and allies within 2 spaces of unit for 1 turn.
         GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-            ATK_DEF_NODE(6),
+            ATK_DEF(6),
             StatusEffectType.Bulwark,
             StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
         ),
@@ -1573,8 +1572,8 @@
                 ),
             ),
             GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
-                ATK_DEF_RES_NODE(2),
-                ATK_SPD_NODE(10),
+                ATK_DEF_RES(2),
+                ATK_SPD(10),
             ),
         ),
     ));
@@ -1593,8 +1592,8 @@
             // grants Atk/Def/Res [Great Talent] +4
             // to unit and allies within 3 rows or 3 columns centered on unit.
             GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
-                ATK_DEF_RES_NODE(4),
-                ATK_SPD_NODE(20),
+                ATK_DEF_RES(4),
+                ATK_SPD(20),
             ),
             FOR_EACH_UNIT_NODE(
                 FILTER_UNITS_NODE(
@@ -1602,8 +1601,8 @@
                     IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
                 ),
                 GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
-                    ATK_DEF_RES_NODE(4),
-                    ATK_SPD_NODE(10),
+                    ATK_DEF_RES(4),
+                    ATK_SPD(10),
                 ),
             ),
         ),
@@ -2165,7 +2164,7 @@
             GRANTS_MIRACLE_AND_HEAL_N_AND_ADDITIONAL_EFFECT_TO_TARGET_ONCE_PER_MAP_NODE(
                 40,
                 // and grants Atk/Spd【Great Talent】+10 to ally
-                GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_SPD_NODE(10), STATS_NODE(10, 10, 10, 10)),
+                GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_SPD(10), STATS(10, 10, 10, 10)),
             ),
             // (effect only triggers for player's team once per map
             // and does not stack with non-Special effects
@@ -2245,8 +2244,8 @@
                 RESTORE_TARGETS_HP_ON_MAP_NODE(40),
                 // and grants Atk/Spd【Great Talent】+10 to unit,
                 GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
-                    ATK_SPD_NODE(10),
-                    ATK_SPD_NODE(20),
+                    ATK_SPD(10),
+                    ATK_SPD(20),
                 ),
             ),
             AFTER_COMBAT_HOOKS,
@@ -2541,7 +2540,7 @@
             // and "neutralizes penalties on unit during combat"
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(6),
+                ATK_DEF(6),
                 StatusEffectType.Treachery,
                 StatusEffectType.NeutralizesPenalties,
             )
@@ -2630,7 +2629,7 @@
         // on closest foes and foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_RES_NODE(7),
+            SPD_RES(7),
             StatusEffectType.Sabotage,
             StatusEffectType.Discord,
         )
@@ -2728,7 +2727,7 @@
     AT_START_OF_TURN_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // ターン開始時、自分と周囲2マス以内の味方の攻撃、魔防+6、かつ【戦闘外ダメージ無効】を付与(1ターン)
         GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-            ATK_RES_NODE(6),
+            ATK_RES(6),
             StatusEffectType.EnGarde,
         ),
     ));
@@ -2748,7 +2747,7 @@
         // and [Bulwark] to unit and allies within 2 spaces of unit
         // for 1 turn.
         GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-            ATK_RES_NODE(6),
+            ATK_RES(6),
             StatusEffectType.EnGarde,
             StatusEffectType.FringeBonus,
             StatusEffectType.Bulwark,
@@ -3112,7 +3111,7 @@
         // on closest foes and any foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_DEF_NODE(7),
+            SPD_DEF(7),
             StatusEffectType.Sabotage,
             StatusEffectType.Exposure,
         ),
@@ -3421,7 +3420,7 @@
             // on closest foes and foes within 2 spaces of those foes
             // through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(7),
+                ATK_DEF(7),
                 StatusEffectType.Frozen,
                 StatusEffectType.DefShackle,
             )
@@ -3645,8 +3644,8 @@
             GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
         );
     };
-    setSkill(PassiveB.ConjuringBreath, SPD_RES_NODE(4), MAX_NODE(FOES_SPD_NODE, FOES_RES_NODE));
-    setSkill(PassiveB.ExecutionBreath, SPD_DEF_NODE(4), MAX_NODE(FOES_SPD_NODE, FOES_DEF_NODE));
+    setSkill(PassiveB.ConjuringBreath, SPD_RES(4), MAX_NODE(FOES_SPD_NODE, FOES_RES_NODE));
+    setSkill(PassiveB.ExecutionBreath, SPD_DEF(4), MAX_NODE(FOES_SPD_NODE, FOES_DEF_NODE));
 }
 
 // 🟨 A/S Assault Hone
@@ -3687,7 +3686,7 @@
             ),
         );
     }
-    setSkill(PassiveC.ASAssaultHone, ATK_SPD_NODE(6), GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE);
+    setSkill(PassiveC.ASAssaultHone, ATK_SPD(6), GRANTS_ATK_SPD_TO_TARGET_DURING_COMBAT_NODE);
 }
 
 // 🟩 Duo Skill
@@ -3734,7 +3733,7 @@
         // and foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            ATK_DEF_RES_NODE(7),
+            ATK_DEF_RES(7),
             StatusEffectType.Frozen,
             StatusEffectType.Sabotage,
         ),
@@ -3934,7 +3933,7 @@
         // and “neutralizes penalties on unit during combat”
         // to unit and allies within 2 spaces of unit for 1 turn.
         GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-            ATK_RES_NODE(6),
+            ATK_RES(6),
             StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
             StatusEffectType.NeutralizesPenalties,
         )
@@ -3975,7 +3974,7 @@
             // and “foe cannot make a follow-up attack”
             // to unit and allies within 2 spaces of unit,
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                SPD_DEF_NODE(6),
+                SPD_DEF(6),
                 StatusEffectType.FringeBonus,
                 StatusEffectType.FollowUpAttackMinus,
             ),
@@ -4202,7 +4201,7 @@
     // If a skill compares unit’s Spd
     // to a foe or ally’s Spd,
     // treats unit’s Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD_NODE(7));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD(7));
 
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, NODE_FUNC(
         // Reduces damage from area-of-effect Specials by 80% (excluding Røkkr area-of-effect Specials).
@@ -4255,7 +4254,7 @@
             // grants Atk/Spd+6, [Empathy], and [Dodge]
             // to unit and allies within 3 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_3_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.Empathy,
                 StatusEffectType.Dodge,
             ),
@@ -4997,7 +4996,7 @@
             // (only highest value applied; does not stack)"
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
             )
         ),
@@ -5126,7 +5125,7 @@
                     IS_TARGET_IN_CARDINAL_DIRECTIONS_OF_UNIT_NODE(ASSIST_TARGET_NODE),
                 ),
             ),
-            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(DEF_RES_NODE(7)),
+            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(DEF_RES(7)),
             INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Exposure),
         ),
     ));
@@ -5169,7 +5168,7 @@
             // (only highest value applied; does not stack)"
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(6),
+                ATK_DEF(6),
                 StatusEffectType.Imbue,
                 StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
             ),
@@ -5238,7 +5237,7 @@
             // on closest foes and foes within 2 spaces of those foes
             // through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_RES_NODE(7),
+                SPD_RES(7),
                 StatusEffectType.Sabotage,
                 StatusEffectType.NeutralizeUnitSurvivesWith1HP,
             ),
@@ -5476,7 +5475,7 @@
                 ASSIST_TARGETING_AND_TARGET_NODE,
                 TARGETS_CLOSEST_FOES_WITHIN_4_SPACES_NODE,
             ),
-            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(DEF_RES_NODE(6)),
+            INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(DEF_RES(6)),
         ),
     ));
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
@@ -5510,7 +5509,7 @@
         // and any foe within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            DEF_RES_NODE(7),
+            DEF_RES(7),
             StatusEffectType.Exposure,
             StatusEffectType.Panic,
         ),
@@ -5989,7 +5988,7 @@
         // on closest foes and any foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_RES_NODE(7),
+            SPD_RES(7),
             StatusEffectType.Frozen,
             StatusEffectType.Exposure,
         ),
@@ -6045,7 +6044,7 @@
             // (only highest value applied; does not stack)"
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.Desperation,
                 StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
             )
@@ -6258,7 +6257,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_ON_DIVINE_VEIN_NODE(DivineVeinType.Vert, TARGET_FOE_GROUP_NODE),
             // Inflicts Atk/Spd-5 and
-            INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE(ATK_SPD_NODE(5)),
+            INFLICTS_STATS_MINUS_ON_TARGET_DURING_COMBAT_NODE(ATK_SPD(5)),
             // Special cooldown charge -1 on foe per attack during combat
             // (only highest value applied; does not stack), and also,
             INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_1_ON_TARGET_NODE,
@@ -6617,7 +6616,7 @@
             // and “neutralizes penalties on unit during combat”
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                DEF_RES_NODE(6),
+                DEF_RES(6),
                 StatusEffectType.Dodge,
                 StatusEffectType.NeutralizesPenalties,
             ),
@@ -6671,8 +6670,8 @@
             ),
         ));
     };
-    setSkill(PassiveA.DuelistsBlow, ATK_SPD_NODE(9));
-    setSkill(PassiveA.WarriorsBlow, ATK_DEF_NODE(9));
+    setSkill(PassiveA.DuelistsBlow, ATK_SPD(9));
+    setSkill(PassiveA.WarriorsBlow, ATK_DEF(9));
 }
 
 // Bushido Tenet
@@ -6680,7 +6679,7 @@
     let skillId = PassiveB.BushidoTenet;
     // If a skill compares unit’s Spd to a foe’s or ally’s Spd,
     // treats unit’s Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD_NODE(7));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD(7));
     // At start of player phase or enemy phase,
     setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
         // grants [Fringe Bonus] and [Null Follow-Up]
@@ -6868,7 +6867,7 @@
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
             // grants Atk/Spd+6, [Treachery], and [Incited] to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.Treachery,
                 StatusEffectType.Incited,
             ),
@@ -7105,7 +7104,7 @@
         // on closest foes to both unit and target ally or unit and targeting ally after movement and foes within 2 spaces of those foes through their next actions.
         FOR_EACH_UNIT_NODE(ASSIST_TARGETING_AND_TARGET_NODE,
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_DEF_NODE(7),
+                SPD_DEF(7),
                 StatusEffectType.Sabotage,
                 StatusEffectType.Panic,
             )
@@ -7257,7 +7256,7 @@
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
                 // inflicts Atk/Def-7, [Exposure], [Discord],
                 // and a penalty that neutralizes non-Special “if foe would reduce unit’s HP to 0, unit survives with 1 HP” effects
-                ATK_DEF_NODE(7),
+                ATK_DEF(7),
                 StatusEffectType.Exposure,
                 StatusEffectType.Discord,
                 StatusEffectType.NeutralizeUnitSurvivesWith1HP,
@@ -7386,7 +7385,7 @@
             // inflicts Spd/Def-7, [Spd Shackle], and [Def Shackle]
             // on closest foes and foes within 2 spaces of those foes through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_DEF_NODE(7),
+                SPD_DEF(7),
                 StatusEffectType.SpdShackle,
                 StatusEffectType.DefShackle,
             )
@@ -7425,7 +7424,7 @@
         // inflicts Spd/Def-7, [Discord], [Spd Shackle], and [Def Shackle]
         // on closest foes and foes within 2 spaces of those foes through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_DEF_NODE(7),
+            SPD_DEF(7),
             StatusEffectType.Discord,
             StatusEffectType.SpdShackle,
             StatusEffectType.DefShackle,
@@ -7820,7 +7819,7 @@
             // grants Atk/Spd+6, [Preempt Pulse], and [Resonance: Blades]
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.PreemptPulse,
                 StatusEffectType.ResonantBlades,
             )
@@ -8076,7 +8075,7 @@
             // on closest foes and foes within 2 spaces of those foes
             // through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_RES_NODE(7),
+                SPD_RES(7),
                 StatusEffectType.Sabotage,
                 StatusEffectType.Frozen,
             ),
@@ -8353,7 +8352,7 @@
             // inflicts Atk/Res-7, [Exposure], and [Discord]
             // on closest foes and foes within 2 spaces of those foes through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                ATK_RES_NODE(7),
+                ATK_RES(7),
                 StatusEffectType.Exposure,
                 StatusEffectType.Discord,
             )
@@ -8407,7 +8406,7 @@
         IF_NODE(IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE,
             // 自分と周囲2マス以内の味方の攻撃、速さ+6、【赤の呪い】、「戦闘中、絶対追撃」を付与(1ターン)
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.Anathema,
                 StatusEffectType.UnitMakesAGuaranteedFollowUpAttackDuringCombat,
             ),
@@ -8548,7 +8547,7 @@
     let skillId = PassiveB.NullCAvoid;
     // If a skill compares unit’s Spd to a foe’s or ally’s Spd,
     // treats unit’s Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD_NODE(7));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD(7));
 
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, NODE_FUNC(
         // Reduces damage from area-of-effect Specials by 80% (excluding Røkkr area-of-effect Specials).
@@ -8818,7 +8817,7 @@
             // “neutralizes foe’s bonuses during combat,”
             // and [Null Panic] to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(6),
+                ATK_DEF(6),
                 StatusEffectType.FringeBonus,
                 StatusEffectType.NeutralizesFoesBonusesDuringCombat,
                 StatusEffectType.NullPanic,
@@ -9085,9 +9084,9 @@
             ],
         );
     };
-    setSkill(PassiveA.AtkSpdAria, ATK_SPD_NODE(7), ATK_SPD_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE));
-    setSkill(PassiveA.AtkResAria, ATK_RES_NODE(7), ATK_RES_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE));
-    setSkill(PassiveA.DefResAria, DEF_RES_NODE(7), DEF_RES_NODE(TARGETS_MAX_SPECIAL_COUNT_NODE));
+    setSkill(PassiveA.AtkSpdAria, ATK_SPD(7), ATK_SPD(TARGETS_MAX_SPECIAL_COUNT_NODE));
+    setSkill(PassiveA.AtkResAria, ATK_RES(7), ATK_RES(TARGETS_MAX_SPECIAL_COUNT_NODE));
+    setSkill(PassiveA.DefResAria, DEF_RES(7), DEF_RES(TARGETS_MAX_SPECIAL_COUNT_NODE));
 }
 
 // An Open Book
@@ -9146,7 +9145,7 @@
             // (excluding area-of-effect Specials)"
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_RES_NODE(6),
+                ATK_RES(6),
                 StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
             ),
         ),
@@ -9195,9 +9194,9 @@
         ));
     };
     setSkill(PassiveB.SpdResShackle,
-        [StatusEffectType.SpdShackle, StatusEffectType.ResShackle], SPD_RES_NODE(4));
+        [StatusEffectType.SpdShackle, StatusEffectType.ResShackle], SPD_RES(4));
     setSkill(PassiveB.DefResShackle,
-        [StatusEffectType.DefShackle, StatusEffectType.ResShackle], DEF_RES_NODE(4));
+        [StatusEffectType.DefShackle, StatusEffectType.ResShackle], DEF_RES(4));
 }
 
 // [Spd Shackle]
@@ -9214,10 +9213,10 @@
             ),
         ));
     };
-    // setSkill(getStatusEffectSkillId(StatusEffectType.AtkShackle), ATK_NODE);
-    setSkill(getStatusEffectSkillId(StatusEffectType.SpdShackle), SPD_NODE);
-    setSkill(getStatusEffectSkillId(StatusEffectType.DefShackle), DEF_NODE);
-    setSkill(getStatusEffectSkillId(StatusEffectType.ResShackle), RES_NODE);
+    // setSkill(getStatusEffectSkillId(StatusEffectType.AtkShackle), ATK);
+    setSkill(getStatusEffectSkillId(StatusEffectType.SpdShackle), SPD);
+    setSkill(getStatusEffectSkillId(StatusEffectType.DefShackle), DEF);
+    setSkill(getStatusEffectSkillId(StatusEffectType.ResShackle), RES);
 }
 
 // Just like Mother
@@ -9423,7 +9422,7 @@
             // on closest foes and foes within 2 spaces of those foes
             // through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_RES_NODE(7),
+                SPD_RES(7),
                 StatusEffectType.Panic,
                 StatusEffectType.ShareSpoilsPlus,
             ),
@@ -9458,7 +9457,7 @@
             // on closest foes and foes within 2 spaces of those foes
             // through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_DEF_NODE(7),
+                SPD_DEF(7),
                 StatusEffectType.Discord,
                 StatusEffectType.NeutralizeUnitSurvivesWith1HP,
             ),
@@ -9577,7 +9576,7 @@
             // grants Atk/Def+6, [Rally Spectrum], and [Hexblade]
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(6),
+                ATK_DEF(6),
                 StatusEffectType.RallySpectrum,
                 StatusEffectType.Hexblade,
             )
@@ -9672,7 +9671,7 @@
             // [Anathema], and [Null Follow-Up]
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.Anathema,
                 StatusEffectType.NullFollowUp,
             ),
@@ -9766,7 +9765,7 @@
         // on closest foes and foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE(2,
-            SPD_RES_NODE(7),
+            SPD_RES(7),
             StatusEffectType.Feud,
             StatusEffectType.Discord,
         ),
@@ -9809,7 +9808,7 @@
         // and foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_N_SPACES_NODE(2,
-            SPD_DEF_NODE(7),
+            SPD_DEF(7),
             StatusEffectType.Sabotage,
             StatusEffectType.Discord,
         ),
@@ -9853,7 +9852,7 @@
     let skillId = PassiveB.TrueLoneWolf;
     // If a skill compares unit’s Spd to a foe’s or ally’s Spd,
     // treats unit’s Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD_NODE(7));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD(7));
     // If unit has not used or been the target of an Assist skill during the current turn,
     // grants another action to unit
     // and inflicts [Isolation] on unit and Pair Up cohort through their next action
@@ -10044,6 +10043,7 @@
             RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,
         ),
     ));
+    CAN_RALLY_FORCIBLY_HOOKS.addSkill(skillId, () => TRUE_NODE);
 }
 
 // Lady Knight
@@ -10130,7 +10130,7 @@
             // and “neutralizes foe’s bonuses during combat”
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.NeutralizesFoesBonusesDuringCombat,
             ),
         ),
@@ -10445,7 +10445,7 @@
             // 【強化増幅】、
             // 「戦闘中、敵の奥義以外のスキルによる「ダメージを○○%軽減」を半分無効(無効にする数値は端数切捨て)(範囲奥義を除く)」を付与(1ターン)
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                RES_NODE(6),
+                RES(6),
                 StatusEffectType.BonusDoubler,
                 StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
             ),
@@ -10527,8 +10527,8 @@
                         RESTORE_TARGETS_HP_ON_MAP_NODE(40),
                         // 自分の攻撃、速さの【大器】＋10、
                         GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
-                            ATK_SPD_NODE(10),
-                            ATK_SPD_NODE(20),
+                            ATK_SPD(10),
+                            ATK_SPD(20),
                         ),
                     ),
                 )
@@ -10666,7 +10666,7 @@
     ));
     // If a skill compares unit’s Spd to a foe’s or ally’s Spd,
     // treats unit’s Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD_NODE(7));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD(7));
     // At start of turn,
     // and at start of enemy phase (except for in Summoner Duels),
     setAtStartOfPlayerPhaseOrEnemyPhaseExceptForInSummonerDuels(skillId, () => SKILL_EFFECT_NODE(
@@ -10885,7 +10885,7 @@
             // “neutralizes foe’s bonuses during combat,”
             // and [Incited] to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(6),
+                ATK_DEF(6),
                 StatusEffectType.NeutralizesFoesBonusesDuringCombat,
                 StatusEffectType.Incited,
             ),
@@ -11253,7 +11253,7 @@
         // "neutralizes penalties on unit during combat"
         // to unit and allies within 2 spaces of unit for 1 turn, and
         GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-            ATK_SPD_NODE(6),
+            ATK_SPD(6),
             StatusEffectType.NeutralizesPenalties,
         ),
         // for unit and any support-partner, magic, or staff allies within 2 spaces of unit,
@@ -11380,7 +11380,7 @@
             // on closest foes and foes within 2 spaces of those foes
             // through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_DEF_NODE(7),
+                SPD_DEF(7),
                 StatusEffectType.Discord,
                 StatusEffectType.Schism,
             ),
@@ -11481,7 +11481,7 @@
             // on closest foes and foes within 2 spaces of those foes
             // through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_DEF_NODE(7),
+                SPD_DEF(7),
                 StatusEffectType.Panic,
                 StatusEffectType.Undefended,
             ),
@@ -11619,7 +11619,7 @@
         // on closest foes and foes within 2 spaces of those foes
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_DEF_NODE(7),
+            SPD_DEF(7),
             StatusEffectType.Sabotage,
             StatusEffectType.Panic,
         ),
@@ -11672,7 +11672,7 @@
         // 速さ、守備一7、
         // 【弱点露呈】を付与（敵の次回行動終了まで）
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_DEF_NODE(7),
+            SPD_DEF(7),
             StatusEffectType.Exposure,
         )
     ));
@@ -11913,7 +11913,7 @@
         IF_NODE(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE,
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
                 // grants Atk/Def+6,
-                ATK_DEF_NODE(6),
+                ATK_DEF(6),
                 // “neutralizes foe’s bonuses during combat,”
                 StatusEffectType.NeutralizesFoesBonusesDuringCombat,
                 // and “unit makes a guaranteed follow-up attack during combat”
@@ -12062,7 +12062,7 @@
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
                 // grants Atk/Spd+6, [Treachery],
                 // and “neutralizes foe’s bonuses during combat”
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.Treachery,
                 StatusEffectType.NeutralizesFoesBonusesDuringCombat,
                 // to unit and allies within 2 spaces of unit for 1 turn,
@@ -12131,7 +12131,7 @@
             // and on foes within 2 spaces of those foes through their next actions.
             FOR_EACH_UNIT_NODE(
                 CLOSEST_FOES_WITHIN_5_SPACES_OF_BOTH_ASSIST_TARGETING_AND_ASSIST_TARGET_AND_FOES_WITHIN_2_SPACES_OF_THOSE_FOES_NODE,
-                INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(STATS_NODE(6, 6, 6, 6)),
+                INFLICTS_STATS_MINUS_ON_TARGET_ON_MAP_NODE(STATS(6, 6, 6, 6)),
                 INFLICTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.Exposure),
             ),
         ),
@@ -12140,7 +12140,7 @@
     setForFoesSkillsDuringCombatHooks(skillId,
         HAS_TARGET_STATUS_EFFECT_NODE(StatusEffectType.Exposure),
         // Inflicts Atk/Spd/Def/Res-5 on foes on the map with the 【Exposure】 effect active,
-        STATS_NODE(5, 5, 5, 5),
+        STATS(5, 5, 5, 5),
         // and those foes suffer guaranteed follow-up attacks during combat.
         FOE_SUFFERS_GUARANTEED_FOLLOW_UP_ATTACKS_DURING_COMBAT,
     );
@@ -12402,7 +12402,7 @@
             // “neutralizes penalties on unit during combat,”
             // and [Hexblade] to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.NeutralizesPenalties,
                 StatusEffectType.Hexblade,
             ),
@@ -12508,7 +12508,7 @@
             ),
             // and inflicts Spd/Res-7 and 【Exposure】 on foes within 2 spaces of those foes through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_RES_NODE(7),
+                SPD_RES(7),
                 StatusEffectType.Exposure,
             ),
         ),
@@ -12711,7 +12711,7 @@
         // inflicts Spd/Res-7, 【Sabotage】, and 【Discord】 on closest foes
         // and foes within 2 spaces of those foes through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-            SPD_RES_NODE(7),
+            SPD_RES(7),
             StatusEffectType.Sabotage,
             StatusEffectType.Discord,
         )
@@ -12821,7 +12821,7 @@
             // "unit can move to a space adjacent to any ally within 2 spaces"
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_RES_NODE(6),
+                ATK_RES(6),
                 StatusEffectType.SpecialCooldownChargePlusOnePerAttack,
                 StatusEffectType.AirOrders,
             ),
@@ -12986,7 +12986,7 @@
             // "neutralizes penalties on unit during combat"
             // to unit and allies within 2 spaces of unit for 1 turn, and also,
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(6),
+                ATK_DEF(6),
                 StatusEffectType.NeutralizesPenalties,
             ),
             // grants "unit can move 1 extra space"
@@ -13102,7 +13102,7 @@
             // inflicts Atk/Def-7, (Panic), and [Exposure]
             // on closest foes and any foe within 2 spaces of those foes through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(7),
+                ATK_DEF(7),
                 StatusEffectType.Panic,
                 StatusEffectType.Exposure,
             ),
@@ -13625,7 +13625,7 @@
             // grants Atk/Def+6, [Imbue], and [Reflex]
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_DEF_NODE(6),
+                ATK_DEF(6),
                 StatusEffectType.Imbue,
                 StatusEffectType.Reflex,
             ),
@@ -13923,7 +13923,7 @@
             // grants Atk/Spd+6, [Null Follow-Up], and [Incited]
             // to unit and allies within 2 spaces of unit for 1 turn,
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.NullFollowUp,
                 StatusEffectType.Incited,
             ),
@@ -13977,7 +13977,7 @@
             // on closest foes and any foes within 2 spaces of those foes
             // through their next actions.
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                SPD_DEF_NODE(-7),
+                SPD_DEF(-7),
                 StatusEffectType.Exposure,
                 StatusEffectType.Discord,
             )
@@ -14159,7 +14159,7 @@
         // through their next actions.
         INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_FOES_WITH_PRED_AND_THAT_ARE_WITHIN_2_SPACES_OF_ANOTHER_FOR_NODE(
             LT_NODE(TARGETS_EVAL_RES_ON_MAP, SKILL_OWNERS_EVAL_RES_ON_MAP),
-            ATK_RES_NODE(-7),
+            ATK_RES(-7),
             StatusEffectType.Sabotage,
             StatusEffectType.Schism,
         ),
@@ -14293,7 +14293,7 @@
             // through their next actions.
             // on closest foes and foes within 2 spaces of those foes
             INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                ATK_RES_NODE(7),
+                ATK_RES(7),
                 StatusEffectType.CounterattacksDisrupted,
             ),
         ),
@@ -15066,7 +15066,7 @@
                     StatusEffectType.FellSpirit,
                 ),
                 INFLICTS_STATS_PENALTIES_AND_STATUS_EFFECT_ON_MAP_ON_TARGETS_CLOSEST_FOE_AND_FOES_WITHIN_2_SPACES_NODE(
-                    ATK_SPD_NODE(7),
+                    ATK_SPD(7),
                     StatusEffectType.Schism,
                 ),
             ),
@@ -15566,8 +15566,8 @@
             ),
         ));
     };
-    setSkill(PassiveC.ASHoldGuide, ATK_SPD_NODE(4));
-    setSkill(PassiveC.SDHoldGuide, SPD_DEF_NODE(4));
+    setSkill(PassiveC.ASHoldGuide, ATK_SPD(4));
+    setSkill(PassiveC.SDHoldGuide, SPD_DEF(4));
 }
 
 // Duo Skill
@@ -15849,9 +15849,9 @@
             DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_RES_DURING_COMBAT_NODE),
         ));
     };
-    setSkill(PassiveB.AtkResHavoc, ATK_RES_NODE(7), ATK_RES_NODE(4));
-    setSkill(PassiveB.SpdDefHavoc, SPD_DEF_NODE(7), SPD_DEF_NODE(4));
-    setSkill(PassiveB.SpdResHavoc, SPD_RES_NODE(7), SPD_RES_NODE(4));
+    setSkill(PassiveB.AtkResHavoc, ATK_RES(7), ATK_RES(4));
+    setSkill(PassiveB.SpdDefHavoc, SPD_DEF(7), SPD_DEF(4));
+    setSkill(PassiveB.SpdResHavoc, SPD_RES(7), SPD_RES(4));
 }
 
 // Ancient Betrayal
@@ -16445,7 +16445,7 @@
             // "reduces the percentage of foe's non-Special 'reduce damage by X%' skills by 50% during combat (excluding area-of-effect Specials)"
             // to unit and allies within 2 spaces of unit for 1 turn.
             GRANTS_STATS_BONUS_AND_STATUS_EFFECTS_ON_MAP_TO_TARGET_AND_TARGET_ALLIES_WITHIN_2_SPACES_NODE(
-                ATK_SPD_NODE(6),
+                ATK_SPD(6),
                 StatusEffectType.ReducesPercentageOfFoesNonSpecialReduceDamageSkillsBy50Percent,
             ),
         ),
@@ -16644,7 +16644,7 @@
     ));
     // If a skill compares unit's Res to a foe's or ally's Res,
     // treats unit's Res as if granted +5.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 0, 0, 5));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS(0, 0, 0, 5));
 
     let reduceNode = SKILL_EFFECT_NODE(
         // If unit's Res > foe's Res,
@@ -17455,8 +17455,8 @@
         ));
         setResonance(skillId);
     };
-    setSkill(PassiveB.ARFarResound, ATK_RES_NODE(4));
-    setSkill(PassiveB.SRFarResound, SPD_RES_NODE(4));
+    setSkill(PassiveB.ARFarResound, ATK_RES(4));
+    setSkill(PassiveB.SRFarResound, SPD_RES(4));
 }
 
 // Fell Majesty
@@ -19922,7 +19922,7 @@
     // Pure Dragon Wall
     // If a skill compares unit's Res to a foe's or ally's Res,
     // treats unit's Res as if granted +5.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 0, 0, 5));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS(0, 0, 0, 5));
 
     BEFORE_AOE_SPECIAL_HOOKS.addSkill(skillId, () => new SkillEffectNode(
         // If unit's Res > foe's Res,
@@ -20367,7 +20367,7 @@
     let skillId = Weapon.JehannaLancePlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 7, 0, 0));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS(0, 7, 0, 0));
 
     // At start of player phase or enemy phase,
     let nodeFunc = () => new SkillEffectNode(
@@ -20527,7 +20527,7 @@
     let skillId = Weapon.JehannaDaggerPlus;
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 7, 0, 0));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS(0, 7, 0, 0));
 
     // At start of player phase or enemy phase,
     let nodeFunc = () => new SkillEffectNode(
@@ -20570,7 +20570,7 @@
 
     // If a skill compares unit's Spd to a foe's or ally's Spd,
     // treats unit's Spd as if granted +7.
-    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS_NODE(0, 7, 0, 0));
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => STATS(0, 7, 0, 0));
 
     // At start of player phase or enemy phase,
     let nodeFunc = () => new SkillEffectNode(
@@ -21789,7 +21789,7 @@
                 MULT_NODE(TOTAL_NUMBER_OF_BONUSES_AND_PENALTIES_ACTIVE_ON_FOE_AND_ANY_FOE_WITHIN_N_SPACES_OF_FOE(2), 3),
             ),
 
-            // reduces damage from foe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
+            // reduces damage from textFoe's first attack by 7 ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes),
             REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(7),
             // and grants Special cooldown count-1 to unit before unit's first attack during combat.
             GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(1),
@@ -21813,7 +21813,7 @@
         // if unit's HP ≥ 25%,
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE(
             X_NUM_NODE(
-                // inflicts penalty to foe's Atk/Spd/Def = 5 + number of spaces from start position to end position of whoever initiated combat × 3 (max 14),
+                // inflicts penalty to textFoe's Atk/Spd/Def = 5 + number of spaces from start position to end position of whoever initiated combat × 3 (max 14),
                 INFLICTS_STATS_MINUS_ON_FOE_DURING_COMBAT_NODE(READ_NUM_NODE, READ_NUM_NODE, READ_NUM_NODE, 0),
                 ENSURE_MAX_NODE(
                     ADD_NODE(
@@ -21822,7 +21822,7 @@
                     14,
                 )
             ),
-            // neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks,
+            // neutralizes effects that guarantee textFoe's follow-up attacks and effects that prevent unit's follow-up attacks,
             NULL_UNIT_FOLLOW_UP_NODE,
             // grants Special cooldown charge +1 to unit per attack (only highest value applied; does not stack),
             GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
@@ -21865,7 +21865,7 @@
             ),
             // deals damage = 20% of unit's Spd (excluding area-of-effect Specials),
             DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS(20, UNITS_SPD_DURING_COMBAT_NODE),
-            // and reduces damage from foe's first attack by 20% of unit's Spd during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+            // and reduces damage from textFoe's first attack by 20% of unit's Spd during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
             REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_PERCENTAGE_OF_TARGETS_STAT_DURING_COMBAT_INCLUDING_TWICE_NODE(
                 20, UNITS_SPD_DURING_COMBAT_NODE),
         ),

@@ -95,21 +95,6 @@ const ForUnitMixin = {
     }
 };
 
-class DebugNodeNode extends SkillEffectNode {
-    constructor(node) {
-        super();
-        this._node = node;
-    }
-
-    evaluate(env) {
-        const result = this._node.evaluate(env);
-        env.info(`Debug node: ${result}`);
-        return result;
-    }
-}
-
-const DEBUG_NODE_NODE = node => new DebugNodeNode(node);
-
 class DebugEnvNode extends SkillEffectNode {
     evaluate(env) {
         console.log('env: %o', env);
@@ -121,11 +106,11 @@ const DEBUG_ENV_NODE = new DebugEnvNode();
 class PrintDebugNode extends SkillEffectNode {
     constructor(message) {
         super();
-        this._message = message;
+        this._messageFunc = message;
     }
 
     evaluate(env) {
-        console.log(`debug message: ${this._message}`);
+        console.log(`debug message: ${this._messageFunc}`);
     }
 }
 
@@ -140,6 +125,93 @@ class UnitNode extends SkillEffectNode {
      * @returns {Unit}
      */
     evaluate(env) {
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @returns {Unit}
+     */
+    getUnit(env) {
+        throw new Error('not implemented');
+    }
+
+    /**
+     * @template {SingleEffectNode|EffectsNode|EffectNode} T
+     * @param {T} effect
+     * @returns {T}
+     */
+    do(effect) {
+        return effect.to(this);
+    }
+
+    doEffects(...effects) {
+        return new EffectsNode(...effects).to(this);
+    }
+
+    /**
+     * @param {TargetUnitNode} unit
+     * @return {UnitsNode}
+     */
+    and(unit) {
+        return UNITE_UNITS_NODE(this, unit);
+    }
+
+    /**
+     * @return {UnitsNode}
+     */
+    sameGroup() {
+        let self = this;
+        return new class extends UnitsNode {
+            /**
+             * @override
+             */
+            evaluate(env) {
+                let unit = self.getUnit(env);
+                return env.getUnitQuery().onMap().sameGroup(unit);
+            }
+        };
+    }
+
+    /**
+     * @return {UnitsNode}
+     */
+    differentGroup() {
+        let self = this;
+        return new class extends UnitsNode {
+            /**
+             * @override
+             */
+            evaluate(env) {
+                let unit = self.getUnit(env);
+                return env.getUnitQuery().onMap().differentGroup(unit);
+            }
+        };
+    }
+
+    /**
+     * @return {UnitsNode}
+     */
+    closestFoes() {
+        let self = this;
+        return new class extends UnitsNode {
+            /**
+             * @override
+             */
+            evaluate(env) {
+                let unit = self.getUnit(env);
+                return env.getUnitQuery().onMap().differentGroup(UNIT.evaluate(env)).closestFrom(unit);
+            }
+        };
+    }
+
+    afterMovement() {
+        this._afterMovement = true;
+        return this;
+    }
+
+    of(unit) {
+        this._ofUnit = unit;
+        return this;
     }
 }
 
@@ -266,12 +338,13 @@ const FOR_TARGETS_FOE_NODE = node => FOR_TARGET_NODE(TARGETS_FOE_NODE, node);
 const FOR_SKILL_OWNER_NODE = node => FOR_TARGET_NODE(SKILL_OWNER_NODE, node);
 
 /**
+ * @typedef {UnitNode|UnitsNode} TargetUnitNode
  * @extends {CollectionNode<*, Unit>}
  * @abstract
  */
 class UnitsNode extends CollectionNode {
     /**
-     * @param {UnitNode|UnitsNode} unitNode
+     * @param {TargetUnitNode} unitNode
      * @returns {UnitsNode}
      */
     static makeFromUnit(unitNode) {
@@ -284,6 +357,14 @@ class UnitsNode extends CollectionNode {
         } else {
             return unitNode;
         }
+    }
+
+    /**
+     * @param {TargetUnitNode} unit
+     * @returns {UnitsNode}
+     */
+    static toUnitsNode(unit) {
+        return this.makeFromUnit(unit);
     }
 
     static EMPTY_UNITS_NODE = new class extends UnitsNode {
@@ -307,7 +388,49 @@ class UnitsNode extends CollectionNode {
      * @returns {Iterable<Unit>}
      */
     evaluate(env) {
-        return super.evaluate(env);
+        return this.evaluateChildren(env);
+    }
+
+    /**
+     * @param {EffectNode} effectNode
+     * @returns {EffectNode}
+     */
+    do(effectNode) {
+        return effectNode.to(this);
+    }
+
+    /**
+     * @param {TargetUnitNode} unitNode
+     */
+    and(unitNode) {
+        return UNITE_UNITS_NODE(this, UnitsNode.makeFromUnit(unitNode));
+    }
+
+    /**
+     * @param {TargetUnitNode} targetUnit
+     * @return {UnitsNode}
+     */
+    excluding(targetUnit) {
+        return new RemoveUnitsNode(this, UnitsNode.makeFromUnit(targetUnit));
+    }
+
+    /**
+     * @param {BoolNode} predNode
+     * @return {UnitsNode}
+     */
+    with(predNode) {
+        return new FilterUnitsNode(this, predNode);
+    }
+
+    afterMovement() {
+        this._afterMovement = true;
+        return this;
+    }
+}
+
+const UNITS_NODE = (...units) => new class extends UnitsNode {
+    evaluate(env) {
+        return units;
     }
 }
 
@@ -473,8 +596,18 @@ class TargetsClosestFoesNode extends UnitsNode {
 
     evaluate(env) {
         let unit = this.getUnit(env);
-        let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
-        return IterUtil.minElements(enemies, u => u.distance(unit));
+        if (env.unitManager) {
+            let enemies = env.unitManager.enumerateUnitsInDifferentGroupOnMap(unit);
+            return IterUtil.minElements(enemies, u => u.distance(unit));
+        }
+        if (env.battleMap) {
+            let enemies = IterUtil.filter(
+                env.battleMap.enumerateUnitsOnMap(),
+                u => u.groupId !== unit.groupId
+            );
+            return IterUtil.minElements(enemies, u => u.distance(unit));
+        }
+        throw new Error('No unit manager or battle map');
     }
 }
 
@@ -819,6 +952,7 @@ const COUNT_IF_UNITS_NODE = (unitsNode, predNode) => new CountIfUnitsNode(unitsN
  * @constructor
  */
 const NUM_OF_UNITS_WITH = (unitsNode, predNode) => new CountIfUnitsNode(unitsNode, predNode);
+const NUM_OF_UNITS = unitsNode => new CountUnitsNode(unitsNode);
 
 /**
  * @param {UnitsNode} units
@@ -1871,8 +2005,8 @@ class CantoEnv extends NodeEnv {
      */
     constructor(targetUnit) {
         super();
-        this.setSkillOwner(targetUnit);
-        this.setTarget(targetUnit);
+        this.setSkillOwner(targetUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
     }
 }
 
@@ -1883,8 +2017,8 @@ class CantoControlEnv extends NodeEnv {
      */
     constructor(targetUnit, unitThatControlCanto) {
         super();
-        this.setSkillOwner(unitThatControlCanto);
-        this.setTarget(targetUnit);
+        this.setSkillOwner(unitThatControlCanto).setTarget(targetUnit)
+            .setTextFoe(targetUnit);
     }
 }
 
@@ -1895,7 +2029,9 @@ class BattleMapEnv extends NodeEnv {
      */
     constructor(battleMap, targetUnit) {
         super();
-        this.setBattleMap(battleMap).setSkillOwner(targetUnit).setTarget(targetUnit);
+        this.setBattleMap(battleMap)
+            .setSkillOwner(targetUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
     }
 }
 
@@ -1907,10 +2043,9 @@ class AtStartOfTurnEnv extends NodeEnv {
     constructor(handler, targetUnit) {
         super();
         this.phase = NodeEnv.PHASE.AT_START_OF_TURN;
-        this.setBeginningOfTurnSkillHandler(handler);
-        this.setBattleMap(handler.map);
-        this.setSkillOwner(targetUnit);
-        this.setTarget(targetUnit);
+        this.setBeginningOfTurnSkillHandler(handler).setBattleMap(handler.map)
+            .setSkillOwner(targetUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
     }
 }
 
@@ -1924,9 +2059,10 @@ class AfterCombatEnv extends NodeEnv {
     constructor(handler, targetUnit, enemyUnit, battleMap) {
         super();
         this.phase = NodeEnv.PHASE.AFTER_COMBAT;
-        this.setPostCombatHandler(handler);
-        this.setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit);
-        this.setBattleMap(battleMap);
+        this.setPostCombatHandler(handler)
+            .setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit)
+            .setBattleMap(battleMap)
+            .setTextUnit(targetUnit).setTextFoe(enemyUnit);
     }
 }
 
@@ -2292,6 +2428,328 @@ class FromPositiveStatsNode extends FromPositiveNumbersNode {
     }
 }
 
+/**
+ *  @abstract
+ */
+class EffectNode extends SkillEffectNode {
+    /**
+     * @param {TargetUnitNode} target
+     * @returns {EffectNode}
+     * @abstract
+     */
+    to(target) {
+    }
+
+    /**
+     * @param {TargetUnitNode} target
+     * @returns {EffectNode}
+     * @abstract
+     */
+    on(target) {
+    }
+
+    /**
+     * @param {NumberResolvable} n
+     * @returns {EffectNode}
+     * @abstract
+     */
+    forNTurn(n) {
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    throughTheirNextActions() {
+    }
+
+    /**
+     * @param {StatsNode} statsNode
+     * @returns {EffectNode}
+     * @abstract
+     */
+    stats(statsNode) {
+    }
+
+    /**
+     * @param {StatFlags} statFlags
+     * @returns {EffectNode}
+     * @abstract
+     */
+    statFlags(statFlags) {
+    }
+
+    /**
+     * @param {StatusEffectType} statusEffect
+     * @returns {EffectNode}
+     * @abstract
+     */
+    status(statusEffect) {
+    }
+
+    /**
+     * @param {StatusEffectType[]} statusEffects
+     * @returns {EffectNode}
+     * @abstract
+     */
+    statuses(...statusEffects) {
+    }
+
+    /**
+     * @param {number|NumberNode} count
+     * @returns {EffectNode}
+     * @abstract
+     */
+    count(count) {
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    duringCombat() {
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    excludingAoe() {
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    includingAoe() {
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    firstApplicable() {
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    afterMovement() {
+    }
+
+    /**
+     * @params value
+     * @returns {EffectNode}
+     * @abstract
+     */
+    max(value) {
+        this._maxNode = this._toNode(value);
+        return this;
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    onlyHighestNotStack() {
+        this._onlyHighestNotStack = true;
+        return this;
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    perAttack() {
+        this._perAttack = true;
+        return this;
+    }
+
+    /**
+     * @params value
+     * @returns {EffectNode}
+     */
+    x(value) {
+        this._xNode = this._toNode(value);
+        return this;
+    }
+
+    _toNode(value) {
+        if (value instanceof SkillEffectNode) {
+            return value;
+        } else {
+            if (typeof value === 'number') {
+                return NumberNode.makeNumberNodeFrom(value);
+            } else if (typeof value === 'boolean') {
+                return BoolNode.makeBoolNodeFrom(value);
+            } else {
+                throw new Error(`Invalid x value type: ${typeof value}`);
+            }
+        }
+    }
+
+    /**
+     * @param {NodeEnv} env
+     * @param result
+     * @return {*|number}
+     * @private
+     */
+    _transEvaluation(env, result) {
+        if (typeof result === 'number') {
+            if (this._maxNode) {
+                let max = this._maxNode.evaluate(env);
+                env.trace(`Translating evaluation(${result}) with max: ${max}`);
+                return MathUtil.ensureMax(result, max);
+            }
+        }
+        return result;
+    }
+}
+
+class SingleEffectNode extends EffectNode {
+    /**
+     * @param {TargetUnitNode} target
+     */
+    constructor(target = null) {
+        super();
+        if (target) this._targetNode = UnitsNode.makeFromUnit(target);
+    }
+
+    /**
+     * @override
+     */
+    to(target) {
+        this._targetNode = UnitsNode.makeFromUnit(target);
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    on(target) {
+        return this.to(target);
+    }
+
+    /**
+     * @override
+     */
+    forNTurn(n) {
+        this._forNTurnNode = NumberNode.makeNumberNodeFrom(n);
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    throughTheirNextActions() {
+        this._throughTheirNextActions = true;
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    stats(statsNode) {
+        this._statsNode = statsNode;
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    statFlags(statFlags) {
+        this._statFlags = statFlags;
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    status(statusEffect) {
+        this._statusEffects = [statusEffect];
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    statuses(...statusEffects) {
+        this._statusEffects = statusEffects;
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    count(count) {
+        this._countNode = NumberNode.makeNumberNodeFrom(count);
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    duringCombat() {
+        this._duringCombat = true;
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    excludingAoe() {
+        this._excludingAoe = true;
+        return this;
+    }
+
+    /**
+     * @returns {SingleEffectNode}
+     */
+    includingAoe() {
+        this._includingAoe = true;
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    firstApplicable() {
+        this._firstApplicable = true;
+        return this;
+    }
+
+    afterMovement() {
+        this._afterMovement = true;
+        return this;
+    }
+
+    evaluate(env) {
+        if (this._xNode) {
+            let value = this._xNode.evaluate(env);
+            env.storeValue(value);
+            env.trace(`store x value: ${value}`);
+            const result = super.evaluate(env);
+            env.popValue();
+            env.trace(`pop x value: ${value}`);
+            return this._transEvaluation(env, result);
+        }
+        return this._transEvaluation(env, super.evaluate(env));
+    }
+
+    max(value) {
+        return super.max(value);
+    }
+
+    onlyHighestNotStack() {
+        return super.onlyHighestNotStack();
+    }
+
+    perAttack() {
+        return super.perAttack();
+    }
+}
+
 // Grants Plus
 
 class GrantsStatPlusToTargetDuringCombatNode extends SkillEffectNode {
@@ -2564,8 +3022,8 @@ class StatsNode extends NumbersNode {
     }
 }
 
-const STATS_NODE = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
-const ZERO_STATS_NODE = STATS_NODE(0, 0, 0, 0);
+const STATS = (atk, spd, def, res) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
+const ZERO_STATS_NODE = STATS(0, 0, 0, 0);
 
 class AddNToStatsNode extends StatsNode {
     /**
@@ -2637,24 +3095,24 @@ class MaxStatsNode extends StatsNode {
 
 const MAX_STATS_NODE = statsNodes => new MaxStatsNode(statsNodes);
 
-const ATK_NODE = n => StatsNode.makeStatsNodeFrom(n, 0, 0, 0);
-const SPD_NODE = n => StatsNode.makeStatsNodeFrom(0, n, 0, 0);
-const DEF_NODE = n => StatsNode.makeStatsNodeFrom(0, 0, n, 0);
-const RES_NODE = n => StatsNode.makeStatsNodeFrom(0, 0, 0, n);
+const ATK = n => StatsNode.makeStatsNodeFrom(n, 0, 0, 0);
+const SPD = n => StatsNode.makeStatsNodeFrom(0, n, 0, 0);
+const DEF = n => StatsNode.makeStatsNodeFrom(0, 0, n, 0);
+const RES = n => StatsNode.makeStatsNodeFrom(0, 0, 0, n);
 
-const ATK_SPD_NODE = (atk, spd = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, 0);
-const ATK_DEF_NODE = (atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, 0);
-const ATK_RES_NODE = (atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, 0, res);
-const SPD_DEF_NODE = (spd, def = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, 0);
-const SPD_RES_NODE = (spd, res = spd) => StatsNode.makeStatsNodeFrom(0, spd, 0, res);
-const DEF_RES_NODE = (def, res = def) => StatsNode.makeStatsNodeFrom(0, 0, def, res);
+const ATK_SPD = (atk, spd = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, 0);
+const ATK_DEF = (atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, 0);
+const ATK_RES = (atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, 0, res);
+const SPD_DEF = (spd, def = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, 0);
+const SPD_RES = (spd, res = spd) => StatsNode.makeStatsNodeFrom(0, spd, 0, res);
+const DEF_RES = (def, res = def) => StatsNode.makeStatsNodeFrom(0, 0, def, res);
 
-const ATK_SPD_DEF_NODE = (atk, spd = atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, spd, def, 0);
-const ATK_SPD_RES_NODE = (atk, spd = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, res);
-const ATK_DEF_RES_NODE = (atk, def = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, res);
-const SPD_DEF_RES_NODE = (spd, def = spd, res = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, res);
+const ATK_SPD_DEF = (atk, spd = atk, def = atk) => StatsNode.makeStatsNodeFrom(atk, spd, def, 0);
+const ATK_SPD_RES = (atk, spd = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, spd, 0, res);
+const ATK_DEF_RES = (atk, def = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, 0, def, res);
+const SPD_DEF_RES = (spd, def = spd, res = spd) => StatsNode.makeStatsNodeFrom(0, spd, def, res);
 
-const ATK_SPD_DEF_RES_NODE = (atk, spd = atk, def = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
+const ATK_SPD_DEF_RES = (atk, spd = atk, def = atk, res = atk) => StatsNode.makeStatsNodeFrom(atk, spd, def, res);
 
 class MultStatsNode extends StatsNode {
     constructor(...statsNodes) {
@@ -3165,7 +3623,12 @@ class UnitsStatAtStartOfCombatNode extends GetStatNode {
     statsDescription = "戦闘開始時";
 
     getStats(env) {
-        return this.getUnit(env).getStatusesInPrecombat();
+        if (env.isComparingStats) {
+            this.statsDescription = this.statsDescription + '（比較）';
+            return this.getUnit(env).getEvalStatusesInPrecombat();
+        } else {
+            return this.getUnit(env).getStatusesInPrecombat();
+        }
     }
 }
 
@@ -3260,6 +3723,14 @@ class TargetsStatsDuringCombat extends PositiveNumberNode {
         env.debug(`${this.getUnit(env).nameWithGroup}の${this._statName}: ${stat} ([${stats}][${index}])`);
         return stat;
     }
+
+    /**
+     * @override
+     * @returns {SkillRequirement}
+     */
+    getRequirement() {
+        return SkillRequirement.STAT;
+    }
 }
 
 class UnitsStatsDuringCombat extends TargetsStatsDuringCombat {
@@ -3271,7 +3742,12 @@ class UnitsStatsDuringCombat extends TargetsStatsDuringCombat {
 
     getStats(env) {
         let unit = this.getUnit(env);
-        return unit.getStatusesInCombat(env.getFoeDuringCombatOf(unit));
+        if (env.isComparingStats) {
+            this._statName = this._statName + '（比較）';
+            return unit.getEvalStatusesInCombat(env.getFoeDuringCombatOf(unit));
+        } else {
+            return unit.getStatusesInCombat(env.getFoeDuringCombatOf(unit));
+        }
     }
 }
 
@@ -4221,7 +4697,7 @@ class GrantsStatsNode extends FromNumbersNode {
     }
 }
 
-class GrantsStatusEffectsNode extends FromNumbersNode {
+class GrantsStatusEffectsBaseNode extends FromNumbersNode {
     /**
      * @param {...number} values
      */
@@ -4238,13 +4714,13 @@ class GrantsStatusEffectsNode extends FromNumbersNode {
     }
 }
 
-class GrantsStatusEffectToSkillOwnerNode extends GrantsStatusEffectsNode {
+class GrantsStatusEffectToSkillOwnerNode extends GrantsStatusEffectsBaseNode {
     static {
         Object.assign(this.prototype, GetSkillOwnerMixin);
     }
 }
 
-class InflictStatusEffects extends GrantsStatusEffectsNode {
+class InflictStatusEffects extends GrantsStatusEffectsBaseNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
     }
@@ -4375,6 +4851,32 @@ class ForEachUnitNode extends ForEachNode {
  * @constructor
  */
 const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNode, TRUE_NODE, ...nodes);
+
+class ForUnitNode extends ForEachNode {
+    /**
+     * @param {TargetUnitNode} target
+     * @returns {ForUnitNode}
+     */
+    to(target) {
+        this._targetNode = UnitsNode.makeFromUnit(target);
+        return this;
+    }
+
+    /**
+     * @param {...EffectNode} effectNodes
+     */
+    withEffects(...effectNodes) {
+        this._effectNodes = effectNodes;
+        return this;
+    }
+
+    evaluate(env) {
+        return this._effectNodes.map(n => n.to(this._targetNode).evaluate(env));
+    }
+}
+
+const FOR_UNIT = units => new ForUnitNode().to(units);
+
 /**
  * @param {UnitNode} unit
  * @param {...SkillEffectNode} nodes
@@ -4382,6 +4884,195 @@ const FOR_EACH_UNIT_NODE = (unitsNode, ...nodes) => new ForEachUnitNode(unitsNod
  * @constructor
  */
 const FOR_UNIT_NODE = (unit, ...nodes) => FOR_EACH_UNIT_NODE(UnitsNode.makeFromUnit(unit), ...nodes);
+
+class EffectsNode extends EffectNode {
+    constructor(...effectNodes) {
+        super();
+        this._effectNodes = effectNodes;
+    }
+
+    /**
+     * @override
+     */
+    to(target) {
+        this._effectNodes.forEach(t => t.to(target));
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    on(target) {
+        return this.to(target);
+    }
+
+    /**
+     * @override
+     */
+    forNTurn(number) {
+        this._forNTurnNode = NumberNode.makeNumberNodeFrom(number);
+        this._effectNodes.forEach(n => n.forNTurn(number));
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    throughTheirNextActions() {
+        this._throughTheirNextActions = true;
+        this._effectNodes.forEach(n => n.throughTheirNextActions());
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    count(count) {
+        this._effectNodes.forEach(n => n.count(count));
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    duringCombat() {
+        this._duringCombat = true;
+        this._effectNodes.forEach(n => n.duringCombat());
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    excludingAoe() {
+        this._excludingAoe = true;
+        this._effectNodes.forEach(n => n.excludingAoe());
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    includingAoe() {
+        this._excludingAoe = false;
+        this._effectNodes.forEach(n => n.includingAoe());
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    firstApplicable() {
+        this._firstApplicable = true;
+        this._effectNodes.forEach(n => n.firstApplicable());
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    statFlags(statFlags) {
+        this._effectNodes.forEach(n => n.statFlags(statFlags));
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    stats(statsNode) {
+        this._effectNodes.forEach(n => n.stats(statsNode));
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    status(statusEffect) {
+        this._effectNodes.forEach(n => n.status(statusEffect));
+        return this;
+    }
+
+    /**
+     * @override
+     */
+    statuses(...statusEffects) {
+        this._effectNodes.forEach(n => n.statuses(...statusEffects));
+        return this;
+    }
+
+    afterMovement() {
+        this._afterMovement = true;
+        this._effectNodes.forEach(n => n.afterMovement());
+        return this;
+    }
+
+    max(value) {
+        super.max(value);
+        this._effectNodes.forEach(n => n.max(value));
+        return this;
+    }
+
+    onlyHighestNotStack() {
+        super.onlyHighestNotStack();
+        this._effectNodes.forEach(n => n.onlyHighestNotStack());
+        return this;
+    }
+
+    perAttack() {
+        super.perAttack();
+        this._effectNodes.forEach(n => n.perAttack());
+        return this;
+    }
+
+    evaluate(env) {
+        if (this._xNode) {
+            let value = this._xNode.evaluate(env);
+            env.storeValue(value);
+            env.trace(`store x value: ${value}`);
+            const result = this._effectNodes.map(n => n.evaluate(env));
+            env.popValue();
+            env.trace(`pop x value: ${value}`);
+            return this._transEvaluation(env, result);
+        }
+        return this._transEvaluation(env, this._effectNodes.map(n => n.evaluate(env)));
+    }
+}
+
+/**
+ * @param {...EffectNode} effects
+ */
+const EFFECTS = (...effects) => new EffectsNode(...effects);
+
+class IfElseEffectNode extends EffectsNode {
+    constructor(predNode, trueEffectNode, falseEffectNode) {
+        super();
+        this._predNode = predNode;
+        this._effectNodes = [trueEffectNode, falseEffectNode];
+    }
+
+    evaluate(env) {
+        if (this._xNode) {
+            let value = this._xNode.evaluate(env);
+            env.storeValue(value);
+            env.trace(`store x value: ${value}`);
+            const result = this._effectNodes[this._predNode.evaluate(env) ? 0 : 1].evaluate(env);
+            env.popValue();
+            env.trace(`pop x value: ${value}`);
+            return result;
+        }
+        return this._effectNodes[this._predNode.evaluate(env) ? 0 : 1].evaluate(env);
+    }
+}
+
+/**
+ * @param {BoolNode} predNode
+ * @param {EffectNode} trueEffectNode
+ * @param {EffectNode} falseEffectNode
+ * @returns {EffectNode}
+ */
+const IF_ELSE_EFFECT =
+    (predNode, trueEffectNode, falseEffectNode) =>
+        new IfElseEffectNode(predNode, trueEffectNode, falseEffectNode);
 
 class TargetsFoesNode extends UnitsNode {
     static {
@@ -4848,6 +5539,13 @@ class TriggersTargetsPotentFollowXDuringCombatNode extends SkillEffectNode {
             env.damageCalculatorWrapper.__applyPotent(unit, foe, percentage / 100.0, 0, true, true);
         }
     }
+
+    /**
+     * @returns {SkillRequirement}
+     */
+    getRequirement() {
+        return SkillRequirement.FOLLOW_UP_COND_BEFORE_POTENT;
+    }
 }
 
 /**
@@ -4882,6 +5580,13 @@ class AppliesPotentEffectNode extends FromNumbersNode {
         env.info(`${unit.nameWithGroup}に神速スキル(${percentage}%, 速さ条件${spdDiff})を適用, 固定割合: ${isFixed}`);
         env.damageCalculatorWrapper.__applyPotent(unit, env.foeDuringCombat, percentage / 100.0, spdDiff, isFixed);
     }
+
+    /**
+     * @returns {SkillRequirement}
+     */
+    getRequirement() {
+        return SkillRequirement.FOLLOW_UP_COND_BEFORE_POTENT;
+    }
 }
 
 /**
@@ -4911,6 +5616,13 @@ class TriggersTargetsPotentFollowXNode extends FromPositiveNumberNode {
         let percentage = this.evaluateChildren(env);
         unit.battleContext.potentRatios.push(percentage);
         env.info(`${unit.nameWithGroup}は神速スキル(${percentage})%を発動`);
+    }
+
+    /**
+     * @returns {SkillRequirement}
+     */
+    getRequirement() {
+        return SkillRequirement.FOLLOW_UP_COND_BEFORE_POTENT;
     }
 }
 
@@ -8003,3 +8715,39 @@ class NSpacesInAnyTargetsCardinalDirectionNode extends SpacesNode {
 
 const N_SPACES_IN_ANY_TARGETS_CARDINAL_DIRECTION_NODE =
     n => new NSpacesInAnyTargetsCardinalDirectionNode(n);
+
+class CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode extends BoolNode {
+    /**
+     * @param {NumberResolvable} spd
+     */
+    constructor(spd) {
+        super();
+        this._spd = NumberNode.makeNumberNodeFrom(spd);
+        this._requirement = SkillRequirement.FOLLOW_UP_COND_BEFORE_POTENT;
+    }
+
+    evaluate(env) {
+        if (!this._targetUnitNode) {
+            throw new Error('targetUnitNode is not set');
+        }
+        let unit = this._targetUnitNode.evaluate(env);
+        let foe = env.getFoeDuringCombatOf(unit);
+        let spd = this._spd.evaluate(env);
+        let result = DamageCalculationUtility.examinesCanFollowupAttack(unit, foe, spd);
+        env.debug(`${unit.nameWithGroup}は速さを変化させて(${spd})追撃可能か: ${result}`);
+        return result;
+    }
+
+    // TODO: mixinにする
+    /**
+     * @param {UnitNode} unitNode
+     * @return {CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode}
+     */
+    to(unitNode) {
+        this._targetUnitNode = unitNode;
+        return this;
+    }
+}
+
+const CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS =
+    spd => new CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode(spd);

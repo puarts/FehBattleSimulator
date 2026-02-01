@@ -4111,6 +4111,12 @@ Special.WaningShot = 3546; // ウィークショット
 PassiveA.AtkSpdAirspace = 3547; // 攻撃速さの領空
 Weapon.GeWenWangNofu = 3548; // 格聞王の斧
 Weapon.YouShikizheNofu = 3549; // 優しき者の斧
+Weapon.BuddingStaff = 3550; // 可憐なる夜の杖
+Special.WindfireCharm = 3551; // 業火疾風の招福
+PassiveC.BuddingFlower = 3552; // 可憐な花
+Weapon.InstructorsOpus = 3553; // 導き手の書
+Special.GoddessDance = 3554; // 計略・女神の舞
+PassiveC.Instruct4 = 3555; // 指導4
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

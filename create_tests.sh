@@ -6,12 +6,6 @@ SOURCE_FILE_NAMES=(
     Logger
     SkillConstants
     Skill
-    SkillEffectCore
-    SkillEffectEnv
-    SkillEffect
-    SkillEffectBattleContext
-    SkillEffectHooks
-    SkillEffectRegistrar
     BattleMapElement
     Tile
     Structures
@@ -34,11 +28,20 @@ SOURCE_FILE_NAMES=(
     HeroDatabase
     SampleSkillInfos
     SampleHeroInfos
+    SkillEffectCore
+    SkillEffectEnv
+    SkillEffect
+    SkillEffectField
+    SkillEffectUnit
+    SkillEffectBattleContext
+    SkillEffectHooks
+    SkillEffectRegistrar
     SkillEffectAliases
     CustomSkill
     SkillImpl
     SkillImpl202408
     SkillImpl202501
+    SkillImpl202601
     TestUtilities
     )
 TEST_UTIL_FILE_NAMES=(
