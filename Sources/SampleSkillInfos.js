@@ -1694,7 +1694,7 @@ const weaponInfos = [
   new SkillInfo(3412, '結ぶ者の角', 14, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.ColorlessBeast, 400, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
   new SkillInfo(3415, '魔刃の槍+', 14, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 14, false, false, AssistType.None, false, 3, WeaponType.Lance, 300, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, true, '', SkillType.Weapon),
   new SkillInfo(3416, '未来を選びし者の剣', 16, 0, 0, 0, 0, 0, 0, [], [], -1, 1, 1, true, false, 16, false, false, AssistType.None, false, 0, WeaponType.Sword, 400, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
-  new SkillInfo(3421, '光と闇の疾風', 14, 0, 0, 0, 0, 0, 0, [EffectiveType.Flying,], [], -1, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.ColorlessBow, 400, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
+  new SkillInfo(3421, '光と闇の疾風', 14, 0, 0, 0, 0, 0, 0, [EffectiveType.Flying,], [], -1, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.ColorlessBeast, 400, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
   new SkillInfo(3424, '地の女神の祝祭', 14, 0, 0, 0, 3, 0, 0, [], [], 0, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.ColorlessBeast, 400, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
   new SkillInfo(3427, '妖精の悪戯の明かり', 14, 0, 0, 0, 3, 0, 0, [], [], 0, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.BlueTome, 400, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
   new SkillInfo(3431, '肉食らう獅子の爪牙', 14, 0, 0, 0, 0, 0, 0, [], [], -1, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.ColorlessBeast, 400, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
@@ -1743,7 +1743,9 @@ const weaponInfos = [
   new SkillInfo(3543, 'イリアの戦斧', 16, 0, 0, 0, 0, 0, 0, [], [], -1, 1, 1, false, false, 16, false, false, AssistType.None, false, 0, WeaponType.Axe, 0, false, [], [], false, false, '', SkillType.Weapon),
   new SkillInfo(3545, '武門の妹二人の剛弓', 14, 0, 0, 0, 0, 0, 0, [EffectiveType.Flying,], [], -1, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.ColorlessBow, 0, false, [], [], false, false, '', SkillType.Weapon),
   new SkillInfo(3548, '格聞王の斧', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 3, WeaponType.None, 0, false, [], [], true, true, '', SkillType.Weapon),
-  new SkillInfo(3549, '優しき者の斧', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 3, WeaponType.None, 0, false, [], [], true, true, '', SkillType.Weapon)
+  new SkillInfo(3549, '優しき者の斧', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 3, WeaponType.None, 0, false, [], [], true, true, '', SkillType.Weapon),
+  new SkillInfo(3550, '可憐なる夜の杖', 14, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.Staff, 0, false, [], [], false, false, '', SkillType.Weapon),
+  new SkillInfo(3553, '導き手の書', 14, 0, 0, 0, 0, 0, 0, [], [], -1, 1, 1, false, false, 14, false, false, AssistType.None, false, 0, WeaponType.BlueTome, 0, false, [], [], false, false, '', SkillType.Weapon)
 ];
 
 const supportInfos = [
@@ -2023,7 +2025,9 @@ const specialInfos = [
   new SkillInfo(3490, '理路', 0, 5, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 500, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Special),
   new SkillInfo(3496, '真王器', 0, 4, 0, 0, 0, 0, 0, [], [], 0, 1, 1, true, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 500, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Special),
   new SkillInfo(3514, '連花月風閃・狂嵐', 0, 5, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 500, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Special),
-  new SkillInfo(3546, 'ウィークショット', 0, 4, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.Special)
+  new SkillInfo(3546, 'ウィークショット', 0, 4, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.Special),
+  new SkillInfo(3551, '業火疾風の招福', 0, 5, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.Special),
+  new SkillInfo(3554, '計略・女神の舞', 0, 4, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.Special)
 ];
 
 const passiveAInfos = [
@@ -3389,7 +3393,9 @@ const passiveCInfos = [
   new SkillInfo(3521, '攻擊魔防の解放', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 300, true, [WeaponType.All], [MoveType.Cavalry], false, false, '', SkillType.PassiveC),
   new SkillInfo(3523, '攻速十紋章・治癒', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 300, true, [WeaponType.All], [MoveType.Flying], false, false, '', SkillType.PassiveC),
   new SkillInfo(3533, '攻魔大牽制・導き手', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.PassiveC),
-  new SkillInfo(3542, '速守十牽制・謀策', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.PassiveC)
+  new SkillInfo(3542, '速守十牽制・謀策', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.PassiveC),
+  new SkillInfo(3552, '可憐な花', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.PassiveC),
+  new SkillInfo(3555, '指導4', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, false, [], [], false, false, '', SkillType.PassiveC)
 ];
 
 const passiveXInfos = [
