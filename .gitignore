@@ -4,3 +4,5 @@ x64
 .vcxproj.user
 .vscode
 Outputs
+
+All.test.js
