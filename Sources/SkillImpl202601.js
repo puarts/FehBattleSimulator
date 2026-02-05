@@ -209,8 +209,8 @@
         // grants Def/Res+6,【Fringe Bonus】, and 【Warp Bubble】
         EFFECTS(
             GRANTS_BONUS(DEF_RES(6)),
-            INFLICTS_STATUS_EFFECTS(StatusEffectType.FringeBonus),
-            INFLICTS_STATUS_EFFECTS(StatusEffectType.WarpBubble),
+            GRANTS_STATUS_EFFECTS(StatusEffectType.FringeBonus),
+            GRANTS_STATUS_EFFECTS(StatusEffectType.WarpBubble),
             // to unit and allies within 2 spaces of unit for 1 turn.
         ).to(UNIT.and(ALLIES_WITHIN.spaces(2).of(UNIT))).forNTurn(1),
     ));

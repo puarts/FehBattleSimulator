@@ -158,12 +158,12 @@ const FOR_FOES_INFLICTS_STATS_MINUS_HOOKS = new SkillEffectHooks();
 /**
  * 周囲の敵から受ける紋章効果。targetがデバフを受けるユニット
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const FOR_FOES_INFLICTS_STATS_MINUS_AFTER_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
+const FOR_FOE_STATS_SKILLS_USING_STATS_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲の敵から受けるスキル効果。targetがデバフを受けるユニット
  * @type {SkillEffectHooks<SkillEffectNode, ForFoesEnv>} */
-const FOR_FOES_INFLICTS_EFFECTS_AFTER_STATS_DETERMINED_HOOKS = new SkillEffectHooks();
+const FOR_FOE_NON_STATS_SKILL_USING_STATS_HOOKS = new SkillEffectHooks();
 
 /**
  * 周囲の敵から受けるスキル効果

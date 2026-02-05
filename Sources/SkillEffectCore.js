@@ -329,6 +329,22 @@ const SkillRequirement = Object.freeze({
 });
 
 class SkillEffectNode {
+    /**
+     * @return {SkillEffectNode}
+     */
+    static toNode(value) {
+        if (value instanceof SkillEffectNode) {
+            return value;
+        }
+        if (typeof value === 'number') {
+            return NumberNode.toNumberNode(value);
+        }
+        if (typeof value === 'boolean') {
+            return BoolNode.toBoolNode(value);
+        }
+        throw new Error(`Invalid value: ${value}, type: ${typeof value}`);
+    }
+
     /** @type {SkillEffectNode|null} */
     _parent = null;
     /** @type {SkillEffectNode[]} */
@@ -445,6 +461,41 @@ class SkillEffectNode {
         return existingSet;
     }
 
+    /**
+     * このインスタンスとその子孫ノードの完全な複製を作成して返します。
+     * 1. **再帰的クローン**: 配列内の要素だけでなく、フィールドに直接保持されたノードもクローンします。
+     * 2. **親子関係の再構築**: クローンされた子ノードの `_parent` を、新しいクローン（親）へ正しく設定し直します。
+     * 3. **無限ループ防止**: `_parent` フィールド自体はクローン対象から除外します。
+     */
+    clone() {
+        // 1. プロパティのコピー（この時点ではシャロー）
+        const copy = Object.create(Object.getPrototypeOf(this));
+        Object.assign(copy, this);
+
+        // 2. 子要素・関連ノードの再帰的クローン
+        // 配列だけでなく、SkillEffectNode 型のフィールドはすべて clone する必要がある
+        Object.keys(this).forEach(key => {
+            const value = this[key];
+
+            if (Array.isArray(value)) {
+                copy[key] = value.map(item => this._cloneIfNode(item, copy));
+            } else if (value instanceof SkillEffectNode && key !== '_parent') {
+                copy[key] = this._cloneIfNode(value, copy);
+            }
+        });
+
+        return copy;
+    }
+
+    _cloneIfNode(item, newParent) {
+        if (item && typeof item.clone === 'function') {
+            const clonedChild = item.clone();
+            clonedChild.addParent(newParent); // 親子関係の再構築
+            return clonedChild;
+        }
+        return item;
+    }
+
     toString() {
         return `SkillEffectNode(${this._children.length})`;
     }
@@ -481,16 +532,64 @@ class NumberNode extends SkillEffectNode {
     }
 
     /**
+     * @return {NumbersNode}
+     */
+    toNumbers() {
+        let self = this;
+        return new class extends NumbersNode {
+            evaluate(env) {
+                return [self.evaluate(env)];
+            }
+        }
+    }
+
+    /**
+     * @param {NumberResolvable} value
+     * @return {BoolNode}
+     */
+    eq(value) {
+        return EQ_NODE(this, value);
+    }
+
+    /**
+     * @param {NumberResolvable} value
+     * @return {BoolNode}
+     */
+    neq(value) {
+        return NOT_NODE(this.eq(value));
+    }
+
+    toRatio() {
+        return MULT_NODE(this, 0.01);
+    }
+
+    percentage(percentage) {
+        return PERCENTAGE_NODE(this, percentage);
+    }
+
+    /**
+     * @param {NumberResolvable} a
+     * @return {NumberNode}
+     */
+    mult(a) {
+        return MULT_NODE(this, a);
+    }
+
+    /**
+     * @param {NumberResolvable} max
+     * @return {NumberNode}
+     */
+    max(max) {
+        return ENSURE_MAX_NODE(this, max);
+    }
+
+    /**
      * @abstract
      * @param {NodeEnv} env
      * @returns {number}
      */
     evaluate(env) {
         return super.evaluate(env);
-    }
-
-    toRatio() {
-        return MULT_NODE(this, 0.01);
     }
 }
 
@@ -504,6 +603,29 @@ class CollectionNode extends SkillEffectNode {
      */
     constructor(...nodes) {
         super(...nodes);
+    }
+
+    /**
+     * @param {this} collection
+     * @return {this}
+     */
+    or(collection) {
+        return UNITE_SPACES_NODE(this, collection);
+    }
+
+    /**
+     * @return {NumberNode}
+     */
+    count() {
+        return COUNT_COLLECTION(this);
+    }
+
+    /**
+     * @param {...BoolNode} predNodes
+     * @return {this}
+     */
+    meetAnyConditions(...predNodes) {
+        return FILTER_COLLECTION_NODE(this, OR_NODE(...predNodes));
     }
 
     /**
@@ -645,19 +767,37 @@ class FilterCollectionNode extends CollectionNode {
 // TODO: 動作確認
 const FILTER_COLLECTION_NODE = (collectionNode, predNode) => new FilterCollectionNode(collectionNode, predNode);
 
+class CountCollectionNode extends NumberNode {
+    constructor(collectionNode) {
+        super();
+        this._collectionNode = collectionNode;
+    }
+
+    evaluate(env) {
+        let length = Array.from(this._collectionNode.evaluate(env)).length;
+        env.trace(`[Count Collection Node] ${length}`);
+        return length;
+    }
+}
+
+const COUNT_COLLECTION = collectionNode => new CountCollectionNode(collectionNode);
+const NUM_OF = collectionNode => new CountCollectionNode(collectionNode);
+
+const EXISTS = collectionNode => collectionNode.count().neq(ZERO_NUMBER_NODE);
+const THERE_IS = collectionNode => collectionNode.count().neq(ZERO_NUMBER_NODE);
+const THERE_ARE = collectionNode => collectionNode.count().neq(ZERO_NUMBER_NODE);
+
 /**
  * @abstract
  */
 class NumbersNode extends CollectionNode {
-    static makeNumbersNodeFrom(...numbers) {
-        if (numbers instanceof CollectionNode) {
-            return numbers;
-        }
-        if (numbers instanceof NumberNode) {
-            return new CollectionNode(numbers);
-        }
-        return new NumbersNode(numbers);
+    /**
+     * @return {NumberNode}
+     */
+    sum() {
+        return SUM_NUMBERS_NODE(this);
     }
+
     /**
      * @abstract
      * @param {NodeEnv} env
@@ -695,11 +835,15 @@ const TOP_N_NODE = (n, numbersNode) => new TopNNode(n, numbersNode);
 
 class SumNumbersNode extends NumberNode {
     /**
-     * @param {NumbersNode} numbersNode
+     * @param {NumberResolvable|NumbersNode} number
      */
-    constructor(numbersNode) {
+    constructor(number) {
         super();
-        this._numbersNode = numbersNode;
+        if (number instanceof NumbersNode) {
+            this._numbersNode = number;
+        } else {
+            this._numbersNode = NumberNode.makeNumberNodeFrom(number);
+        }
     }
 
     evaluate(env) {
@@ -851,21 +995,21 @@ class FromPositiveNumbersNode extends FromNumbersNode {
 
 class ConstantNumberNode extends NumberNode {
     /** @type {number} */
-    #value;
+    _value;
 
     /**
      * @param {number} value
      */
     constructor(value) {
         super();
-        this.#value = value;
+        this._value = value;
     }
 
     /**
      * @returns {number}
      */
     evaluate(env) {
-        return this.#value;
+        return this._value;
     }
 }
 
@@ -933,7 +1077,7 @@ const SET_SIZE_NODE = setNode => new SetSizeNode(setNode);
  */
 class BoolNode extends SkillEffectNode {
     /**
-     * @param {boolean|BoolNode} boolOrNode
+     * @param {BoolResolvable} boolOrNode
      * @returns {BoolNode}
      */
     static makeBoolNodeFrom(boolOrNode) {
@@ -942,6 +1086,37 @@ class BoolNode extends SkillEffectNode {
         } else {
             return boolOrNode;
         }
+    }
+
+    /**
+     * @param {BoolResolvable} boolOrNode
+     * @returns {BoolNode}
+     */
+    static toBoolNode(boolOrNode) {
+        return this.makeBoolNodeFrom(boolOrNode);
+    }
+
+    /**
+     * @param {...BoolResolvable} nodes
+     * @return {BoolNode}
+     */
+    and(...nodes) {
+        return AND_NODE(this, ...nodes);
+    }
+
+    /**
+     * @param {...BoolResolvable} nodes
+     * @return {BoolNode}
+     */
+    or(...nodes) {
+        return OR_NODE(this, ...nodes);
+    }
+
+    /**
+     * @return {BoolNode}
+     */
+    not() {
+        return NOT_NODE(this);
     }
 
     /**
@@ -961,11 +1136,9 @@ class AndNode extends BoolNode {
     }
 }
 
-// noinspection JSUnusedGlobalSymbols
 /**
  * @param {BoolNode} nodes
  * @returns {AndNode}
- * @constructor
  */
 const AND_NODE = (...nodes) => new AndNode(...nodes);
 
@@ -977,7 +1150,6 @@ class OrNode extends BoolNode {
     }
 }
 
-// noinspection JSUnusedGlobalSymbols
 /**
  * @param {BoolNode} nodes
  * @returns {OrNode}
@@ -1015,6 +1187,22 @@ const FALSE_NODE = new class extends BoolNode {
         return false;
     }
 }();
+
+class CannotAnyNode extends BoolNode {
+    /**
+     * @param {...BoolResolvable} nodes
+     */
+    constructor(...nodes) {
+        super();
+        this._nodes = nodes.map(node => BoolNode.makeBoolNodeFrom(node));
+    }
+
+    evaluate(env) {
+        return this._nodes.every(node => !node.evaluate(env));
+    }
+}
+
+const CANNOT_ANY = (...nodes) => new CannotAnyNode(...nodes);
 
 class TraceBoolNode extends BoolNode {
     /**
@@ -1522,6 +1710,7 @@ class IfElseNode extends SkillEffectNode {
 }
 
 const IF_ELSE_NODE = (condNode, trueNode, falseNode) => new IfElseNode(condNode, trueNode, falseNode);
+const IF_ELSE = (condNode, trueNode, falseNode) => new IfElseNode(condNode, trueNode, falseNode);
 
 class IfExpressionNode extends SkillEffectNode {
     /**
@@ -1624,10 +1813,6 @@ class ReadNumNode extends NumberNode {
 
 const READ_NUM_NODE = new ReadNumNode();
 const READ_NUM_AT_NODE = n => new ReadNumNode(n);
-/**
- * @type {any}
- */
-const X = new ReadNumNode();
 
 class NumThatIsNode extends SkillEffectNode {
     /**
@@ -1746,3 +1931,7 @@ class ReadCacheNode extends NumberNode {
 const READ_CACHE_NODE = (key) => new ReadCacheNode(key);
 
 const SET_SKILL_FUNCS = new Map();
+
+function makeArray(...node) {
+    return node;
+}

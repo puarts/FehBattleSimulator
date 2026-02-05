@@ -10327,7 +10327,7 @@ class DamageCalculatorWrapper {
             '周囲の敵からのデバフ(戦闘中のステータス決定後)');
         this.__applySkillsFromEnemyAllies(
             targetUnit, enemyUnit, damageCalcEnv,
-            FOR_FOES_INFLICTS_STATS_MINUS_AFTER_STATS_DETERMINED_HOOKS, env
+            FOR_FOE_STATS_SKILLS_USING_STATS_HOOKS, env
         );
     }
 
@@ -10336,7 +10336,7 @@ class DamageCalculatorWrapper {
             '周囲の敵からのスキル効果(戦闘中のステータス決定後)');
         this.__applySkillsFromEnemyAllies(
             targetUnit, enemyUnit, damageCalcEnv,
-            FOR_FOES_INFLICTS_EFFECTS_AFTER_STATS_DETERMINED_HOOKS, env
+            FOR_FOE_NON_STATS_SKILL_USING_STATS_HOOKS, env
         );
     }
 

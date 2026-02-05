@@ -422,7 +422,7 @@ class CustomSkill {
                 [
                     'spaces-within-n-spaces-of-closest-foes',
                     [
-                        n => SPACES_WITHIN_N_SPACES_OF_SPACES_NODE(n, PLACED_SPACES_NODE(TARGETS_CLOSEST_FOES_NODE)),
+                        n => SPACES_WITHIN_N_SPACES_OF_SPACES_NODE(n, PLACED_SPACES(TARGETS_CLOSEST_FOES_NODE)),
                         '最も近い敵の周囲nマス'
                     ]
                 ],

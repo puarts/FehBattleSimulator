@@ -1,4 +1,15 @@
 describe('Test skill effect', () => {
+    describe(`Test ${NumberNode.name}`, () => {
+        test('mult function', () => {
+            expect(CONSTANT_NUMBER_NODE(2).mult(4).evaluate(new NodeEnv())).toBe(8);
+        });
+
+        test('max function', () => {
+            const max = 5;
+            expect(CONSTANT_NUMBER_NODE(max).mult(4).max(max).evaluate(new NodeEnv())).toBe(max);
+        });
+    });
+
     describe(`Test ${MultiValueMap.name}`, () => {
         beforeEach(() => {
             map = new MultiValueMap();
@@ -111,6 +122,16 @@ describe('Test skill effect', () => {
         });
     });
 
+    describe(`Test ${CannotAnyNode.name}`, () => {
+        test('Test evaluate()', () => {
+            expect(new CannotAnyNode().evaluate()).toEqual(true);
+            expect(new CannotAnyNode(TRUE_NODE).evaluate()).toEqual(false);
+            expect(new CannotAnyNode(FALSE_NODE).evaluate()).toEqual(true);
+            expect(new CannotAnyNode(FALSE_NODE, FALSE_NODE).evaluate()).toEqual(true);
+            expect(new CannotAnyNode(FALSE_NODE, FALSE_NODE, TRUE_NODE, FALSE_NODE).evaluate()).toEqual(false);
+        })
+    })
+
     describe(`Test ${IfNode.name}`, () => {
         test('Test evaluate()', () => {
             expect(
@@ -144,6 +165,28 @@ describe('Test skill effect', () => {
         test('Test evaluate()', () => {
             expect(new MultTruncNode(new ConstantNumberNode(61), 0.15, 2).evaluate(null)).toBe(18);
             expect(() => new MultTruncNode().evaluate(null)).toThrowError();
+        });
+    });
+
+    describe(`Test ${CollectionNode.name}`, () => {
+        test('collection count', () => {
+            let collectionNode = COLLECTION_NODE(TRUE_NODE, TRUE_NODE, TRUE_NODE);
+            expect(COUNT_COLLECTION(collectionNode).evaluate(new NodeEnv())).toBe(3);
+        });
+
+        test('collection.count()', () => {
+            let collectionNode = COLLECTION_NODE(TRUE_NODE, TRUE_NODE, TRUE_NODE);
+            expect(collectionNode.count().evaluate(new NodeEnv())).toBe(3);
+        });
+
+        test('exists', () => {
+            let collectionNode = COLLECTION_NODE(TRUE_NODE, TRUE_NODE, TRUE_NODE);
+            expect(EXISTS(collectionNode).evaluate(new NodeEnv())).toBe(true);
+        });
+
+        test('not exists', () => {
+            let collectionNode = COLLECTION_NODE();
+            expect(EXISTS(collectionNode).evaluate(new NodeEnv())).toBe(false);
         });
     });
 });
@@ -229,6 +272,7 @@ describe('Bonuses or penalties', () => {
     const SPURS = [10, 8, 6, 4];
 
     beforeEach(() => {
+        heroDatabase = g_testHeroDatabase;
         unit = heroDatabase.createUnit('アルフォンス');
         foe = heroDatabase.createUnit('シャロン');
         env = new NodeEnv();
@@ -247,8 +291,8 @@ describe('Bonuses or penalties', () => {
 
     test('when grants bonus during combat', () => {
         env.setCombatPhase(NodeEnv.CombatPhase.AT_START_OF_COMBAT);
-        env.setTarget(unit);
-        GRANTS_BONUS(STATS(1, 2, 3, 4)).to(TARGET_NODE).evaluate(env);
+        env.setTarget(unit).setTextUnit(unit);
+        GRANTS_BONUS(STATS(1, 2, 3, 4)).to(UNIT).evaluate(env);
         expect(unit.getSpurs()).toEqual(ArrayUtil.add(SPURS, [1, 2, 3, 4]));
         expect(foe.getSpurs()).toEqual(SPURS);
     });
@@ -367,6 +411,7 @@ describe('Skills during combat', () => {
     let calculator;
 
     beforeEach(() => {
+        heroDatabase = g_testHeroDatabase;
         atkUnit = heroDatabase.createUnit('アルフォンス');
         defUnit = heroDatabase.createUnit('アルフォンス');
         calculator = new test_DamageCalculator();
@@ -439,6 +484,10 @@ describe('Effect Node', () => {
     let calculator;
 
     beforeEach(() => {
+        heroDatabase = g_testHeroDatabase;
+        battleMap = new BattleMap('');
+        battleMap.setMapSize(6, 8);
+
         atkUnit = heroDatabase.createUnit('アルフォンス');
         defUnit = heroDatabase.createUnit('アルフォンス');
         calculator = new test_DamageCalculator();
@@ -475,6 +524,103 @@ describe('Effect Node', () => {
         UNITS_NODE(atkUnit, defUnit).do(GRANTS_STATUS_EFFECTS(...bonusStatuses)).evaluate(new NodeEnv());
         expect(atkUnit.reservedStatusEffects).toEqual(bonusStatuses);
         expect(defUnit.reservedStatusEffects).toEqual(bonusStatuses);
+    });
+
+    test('unit do effect and effect', () => {
+        let env = new NodeEnv().setTextUnit(atkUnit);
+        UNIT.do(GRANTS_STATUS_EFFECTS(StatusEffectType.FringeBonus))
+            .and(GRANTS_STATUS_EFFECTS(StatusEffectType.Imbue))
+            .evaluate(env);
+        expect(new Set(atkUnit.reservedStatusEffects)).toEqual(new Set([
+            StatusEffectType.FringeBonus,
+            StatusEffectType.Imbue
+        ]));
+    });
+
+    test('units do effect and effect', () => {
+        let env = new NodeEnv().setTextUnit(atkUnit);
+        UNITS_NODE(atkUnit, defUnit)
+            .do(GRANTS_STATUS_EFFECTS(StatusEffectType.FringeBonus))
+            .and(GRANTS_STATUS_EFFECTS(StatusEffectType.Imbue))
+            .evaluate(env);
+        expect(new Set(atkUnit.reservedStatusEffects)).toEqual(new Set([
+            StatusEffectType.FringeBonus,
+            StatusEffectType.Imbue
+        ]));
+        expect(new Set(defUnit.reservedStatusEffects)).toEqual(new Set([
+            StatusEffectType.FringeBonus,
+            StatusEffectType.Imbue
+        ]));
+    });
+
+    test('unit do effects and effect', () => {
+        let env = new NodeEnv().setTextUnit(atkUnit);
+        UNIT.doEffects(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.FringeBonus),
+            GRANTS_STATUS_EFFECTS(StatusEffectType.Imbue),
+        ).and(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.MobilityIncreased),
+        ).evaluate(env);
+        expect(new Set(atkUnit.reservedStatusEffects))
+            .toEqual(new Set([
+                StatusEffectType.FringeBonus,
+                StatusEffectType.Imbue,
+                StatusEffectType.MobilityIncreased
+            ]));
+    });
+
+    test('unit do effect and effects', () => {
+        let env = new NodeEnv().setTextUnit(atkUnit);
+        UNIT.do(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.FringeBonus),
+        ).andEffects(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.Imbue),
+            GRANTS_STATUS_EFFECTS(StatusEffectType.MobilityIncreased),
+        ).evaluate(env);
+        expect(new Set(atkUnit.reservedStatusEffects))
+            .toEqual(new Set([
+                StatusEffectType.FringeBonus,
+                StatusEffectType.Imbue,
+                StatusEffectType.MobilityIncreased
+            ]));
+    });
+
+    test('unit do effects and effects', () => {
+        let env = new NodeEnv().setTextUnit(atkUnit);
+        UNIT.doEffects(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.FringeBonus),
+            GRANTS_STATUS_EFFECTS(StatusEffectType.Imbue),
+        ).andEffects(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.MobilityIncreased),
+            GRANTS_STATUS_EFFECTS(StatusEffectType.Reflex),
+        ).evaluate(env);
+        expect(new Set(atkUnit.reservedStatusEffects))
+            .toEqual(new Set([
+                StatusEffectType.FringeBonus,
+                StatusEffectType.Imbue,
+                StatusEffectType.MobilityIncreased,
+                StatusEffectType.Reflex
+            ]));
+    });
+
+    test('unit do and chain', () => {
+        let env = new NodeEnv().setTextUnit(atkUnit);
+        UNIT.do(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.FringeBonus),
+        ).and(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.Imbue),
+        ).and(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.MobilityIncreased),
+        ).and(
+            GRANTS_STATUS_EFFECTS(StatusEffectType.Reflex),
+        ).evaluate(env);
+        expect(new Set(atkUnit.reservedStatusEffects))
+            .toEqual(new Set([
+                StatusEffectType.FringeBonus,
+                StatusEffectType.Imbue,
+                StatusEffectType.MobilityIncreased,
+                StatusEffectType.Reflex
+            ]));
     });
 
     test('deals aoe damage', () => {
@@ -582,6 +728,15 @@ describe('Test map', () => {
         expect(new Set([allies[0], allies[2], allies[4]])).toEqual(units);
     });
 
+    test('foes within 1 spaces of (foes within 1 spaces of foe)', () => {
+        const env = new NodeEnv().setBattleMap(battleMap)
+            .setSkillOwner(allies[2])
+            .setTextUnit(allies[2])
+            .setTextFoe(enemies[2]);
+        const units = new Set(FOES_WITHIN.spaces(1).of(FOES_WITHIN.spaces(1).of(FOE)).evaluate(env));
+        expect(new Set([enemies[0], enemies[2], enemies[4]])).toEqual(units);
+    });
+
     test('foes within 2 spaces of closest foes', () => {
         const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
         const units = new Set(FOES_WITHIN.spaces(2).of(CLOSEST_FOES).evaluate(env));
@@ -618,6 +773,36 @@ describe('Test map', () => {
         expect(new Set([allies[0], allies[1], allies[2], allies[3], allies[4]])).toEqual(units);
     });
 
+    test('allies within 3 rows', () => {
+        battleMap.placeUnit(allies[0], 0, 7);
+        battleMap.placeUnit(allies[5], 5, 4);
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.rows(3).centeredOn(UNIT).evaluate(env));
+        expect(new Set([allies[0], allies[1], allies[3], allies[4]])).toEqual(units);
+    });
+
+    test('allies within 3 columns', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.columns(3).centeredOn(UNIT).evaluate(env));
+        expect(new Set([allies[1], allies[3]])).toEqual(units);
+    });
+
+    test('allies within 3 rows and 3 columns', () => {
+        battleMap.placeUnit(allies[0], 2, 4);
+        battleMap.placeUnit(allies[5], 5, 4);
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.rows(3).columns(3).centeredOn(UNIT).evaluate(env));
+        expect(new Set([allies[1], allies[3]])).toEqual(units);
+    });
+
+    test('allies within 3 rows or 3 columns', () => {
+        battleMap.placeUnit(allies[0], 2, 4);
+        battleMap.placeUnit(allies[5], 5, 4);
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.rowsOrColumns(3, 3).centeredOn(UNIT).evaluate(env));
+        expect(new Set([allies[0], allies[1], allies[3], allies[4]])).toEqual(units);
+    });
+
     test('closest foes', () => {
         const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
         const units = new Set(CLOSEST_FOES.evaluate(env));
@@ -643,6 +828,69 @@ describe('Test map', () => {
         const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
         const units = new Set(CLOSEST_FOES.and(FOES_WITHIN.spaces(2).of(CLOSEST_FOES)).evaluate(env));
         expect(new Set([enemies[0], enemies[1], enemies[2], enemies[3], enemies[4], enemies[5]])).toEqual(units);
+    });
+
+    test('spaces within 1 spaces of unit', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(new Set(ANY_SPACE.withinSpaces(1).ofUnit(UNIT).evaluate(env)).size).toEqual(5);
+    });
+
+    test('spaces within 2 spaces of unit', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(new Set(ANY_SPACE.withinSpaces(2).ofUnit(UNIT).evaluate(env)).size).toEqual(13 - 1); // 1マス画面外
+    });
+
+    test('spaces within 3 spaces of unit', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(new Set(ANY_SPACE.withinSpaces(3).ofUnit(UNIT).evaluate(env)).size).toEqual(20); // 画面外を考慮
+    });
+
+    test('spaces within 1 spaces of space', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(new Set(ANY_SPACE.withinSpaces(1).ofSpace(PLACED_SPACES(UNIT)).evaluate(env)).size).toEqual(5);
+    });
+
+    test('placed spaces', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const tile = allies[2].placedTile;
+        expect(new Set(PLACED_SPACES(UNIT).evaluate(env)).size).toEqual(1);
+        expect(new Set(PLACED_SPACES(UNIT).evaluate(env))).toEqual(new Set([tile]));
+    });
+
+    test('placed spaces and spaces within 1 spaces', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(new Set(PLACED_SPACES(UNIT).orWithinSpacesOfThatSpaces(1).evaluate(env)).size).toEqual(5);
+    });
+
+    test('placed spaces and spaces within 2 spaces', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(new Set(PLACED_SPACES(UNIT).orWithinSpacesOfThatSpaces(2).evaluate(env)).size).toEqual(13 - 1);
+    });
+
+    test('placed spaces and spaces within 3 spaces', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(new Set(PLACED_SPACES(UNIT).orWithinSpacesOfThatSpaces(3).evaluate(env)).size).toEqual(20);
+    });
+
+    test('spaces that meet any condition', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const result = new Set(PLACED_SPACES(UNIT).meetAnyConditions(TRUE_NODE).evaluate(env));
+        expect(result.size).toEqual(1);
+    });
+
+    test('spaces that meet any condition', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const result = new Set(PLACED_SPACES(UNIT).meetAnyConditions(FALSE_NODE).evaluate(env));
+        expect(result.size).toEqual(0);
+    });
+
+    test('highest', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        allies[0].atkWithSkills = 80;
+        allies[2].atkWithSkills = 70;
+        let value =
+            HIGHEST(TARGETS_ATK_ON_MAP).among(UNIT.and(ALLIES_WITHIN.spaces(2).of(UNIT))).evaluate(env);
+        expect(value).toEqual(80);
     });
 });
 

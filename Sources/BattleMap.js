@@ -1419,20 +1419,20 @@ class BattleMap {
         if (targetTile == null) {
             return null;
         }
-        if (targetTile.isUnitPlaceable(unit)) {
+        if (targetTile.isVacantFor(unit)) {
             return targetTile;
         }
 
         for (let i = 0; i < targetTile.neighbors.length; ++i) {
             let tile = targetTile.neighbors[i];
-            if (tile.isUnitPlaceable(unit)) {
+            if (tile.isVacantFor(unit)) {
                 return tile;
             }
         }
 
         for (let neighbor of targetTile.neighbors) {
             for (let neighborNeighbor of neighbor.neighbors) {
-                if (neighborNeighbor.isUnitPlaceable(unit)) {
+                if (neighborNeighbor.isVacantFor(unit)) {
                     return neighborNeighbor;
                 }
             }
@@ -1442,7 +1442,7 @@ class BattleMap {
         for (let neighbor of targetTile.neighbors) {
             for (let neighborNeighbor of neighbor.neighbors) {
                 for (let neighborNeighborNeighbor of neighborNeighbor.neighbors) {
-                    if (neighborNeighborNeighbor.isUnitPlaceable(unit)) {
+                    if (neighborNeighborNeighbor.isVacantFor(unit)) {
                         return neighborNeighborNeighbor;
                     }
                 }
@@ -1932,7 +1932,7 @@ class BattleMap {
 
     *enumeratePlaceableSafeTilesNextToThreatenedTiles(unit) {
         for (let tile of this.enumerateSafeTilesNextToThreatenedTiles(unit.groupId)) {
-            if (!tile.isUnitPlaceableForUnit(unit) || tile.placedUnit != null) {
+            if (!tile.isUnitPlaceable(unit) || tile.placedUnit != null) {
                 continue;
             }
 
@@ -2112,7 +2112,9 @@ class BattleMap {
         let env = new BattleMapEnv(this, unit);
         // env.setName('ワープ').setLogLevel(getSkillLogLevel());
         env.setName('ワープ').setLogLevel(LoggerBase.LogLevel.OFF);
-        yield* UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
+        let tiles = new TileQuery(UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.evaluateConcatUniqueWithUnit(unit, env))
+            .canMoveTo(unit).toIterator();
+        yield* tiles;
 
         for (let skillId of unit.enumerateSkills()) {
             yield* getSkillFunc(skillId, enumerateTeleportTilesForUnitFuncMap)?.call(this, unit) ?? [];
@@ -2379,7 +2381,7 @@ class BattleMap {
             }
             // そのマスが移動可能ならばワープ先に追加する
             for (let tile of nearestTiles) {
-                if (tile.isUnitPlaceableForUnit(unit)) {
+                if (tile.isUnitPlaceable(unit)) {
                     yield tile;
                 }
             }
@@ -2414,7 +2416,7 @@ class BattleMap {
      */
     *__enumeratePlaceableTilesWithinSpecifiedSpaces(fromTile, unit, distance) {
         for (let tile of this.enumerateTilesWithinSpecifiedDistance(fromTile, distance)) {
-            if (tile.isUnitPlaceableForUnit(unit)) {
+            if (tile.isUnitPlaceable(unit)) {
                 yield tile;
             }
         }
@@ -2496,12 +2498,10 @@ class BattleMap {
                 let env = new BattleMapEnv(this, unit).setSkillOwner(unit)
                     .setTextUnit(unit);
                 env.setName('すり抜けワープ').setLogLevel(LoggerBase.LogLevel.OFF);
-                let tiles = UNIT_CAN_MOVE_TO_A_SPACE_WITHOUT_OBSTRUCTION_HOOKS.evaluateConcatUniqueWithUnit(unit, env);
-                for (let tile of tiles) {
-                    if (tile.isUnitPlaceable(unit)) {
-                        yield tile;
-                    }
-                }
+                let tiles = new TileQuery(
+                    UNIT_CAN_MOVE_TO_A_SPACE_WITHOUT_OBSTRUCTION_HOOKS.evaluateConcatUniqueWithUnit(unit, env)
+                );
+                yield* tiles.canMoveTo(unit).inCantoRangeIfCanto(unit).toIterator();
             }
             // 移動前がGreen
             let isOnGreenTile =
@@ -2510,7 +2510,7 @@ class BattleMap {
             let cannotWarpFromHere = isOnGreenTile && !unit.canActivatePass();
             if (!cannotWarpFromHere) {
                 for (let tile of this.__enumerateTeleportTiles(unit)) {
-                    if (!tile.isUnitPlaceable(unit)) {
+                    if (!tile.isVacantFor(unit)) {
                         continue;
                     }
                     if (!this.__canWarp(tile, unit)) {
@@ -2571,7 +2571,7 @@ class BattleMap {
                     }
                     break;
                 case Weapon.LoftyLeaflet:
-                    for (let tile of this.enumerateTiles(tile => tile.isUnitPlaceableForUnit(unit))) {
+                    for (let tile of this.enumerateTiles(tile => tile.isUnitPlaceable(unit))) {
                         // 現在位置のタイルは含まれないのでunit.pos<X, Y>, tile.pos<X, Y>が共に等しい場合の判定は不要
                         if (Math.abs(unit.posX - tile.posX) <= 1 &&
                             Math.abs(unit.posY - tile.posY) <= 1) {
@@ -2601,7 +2601,7 @@ class BattleMap {
             enumerated[tile.positionToString()] = tile;
             if (!includesUnitPlacedTile
                 && tile.placedUnit !== unit
-                && !tile.isUnitPlaceable(unit)) {
+                && !tile.isVacantFor(unit)) {
                 continue;
             }
             if (tile.hasEnemyBreakableDivineVein(unit.groupId)) {
@@ -3518,7 +3518,7 @@ class BattleMap {
 
         let placeableMap = Array(this.width * this.height);
         for (let [index, tile] of this._tiles.entries()) {
-            placeableMap[index] = tile.isUnitPlaceableForUnit(unit) ? 0 : Infinity;
+            placeableMap[index] = tile.isUnitPlaceable(unit) ? 0 : Infinity;
             if (isAlly) {
                 if ((tile.obj instanceof TrapBase && !tile.obj.isDisabled) ||
                     tile.obj instanceof DefCallingCircle) {

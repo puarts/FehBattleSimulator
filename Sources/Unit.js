@@ -5834,6 +5834,9 @@ class Unit extends BattleMapElement {
             this.__createPairUpUnitInstance();
         }
 
+        if (heroInfo.specialType.split('|').includes('お供')) {
+            this.isAidesEssenceUsed = true;
+        }
         // this.updatePureGrowthRate();
     }
 

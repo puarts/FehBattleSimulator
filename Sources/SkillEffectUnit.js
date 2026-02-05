@@ -51,6 +51,7 @@ class TextFoeNode extends UnitNode {
 }
 
 const FOE = new TextFoeNode();
+const TARGET_FOE = new TextFoeNode();
 
 class TextAllyNode extends UnitNode {
     /**
@@ -95,117 +96,164 @@ const FOES = UNIT.differentGroup();
 class UnitsWithinNode extends UnitsNode {
     constructor() {
         super();
-        this._centerUnitNode = null;
-        this._isWithinSpaces = false;
-        this._spacesNode = null;
-        this._isWithinRowOrColumn = false;
-        this._rowNode = null;
-        this._columnNode = null;
+        /** @type {UnitsNode} */
+        this._centerNode = null;
+        /** @type {Array<(query: UnitQuery, centerUnit: Unit, env: NodeEnv) => UnitQuery>} */
+        this._filters = [];
     }
 
     /**
      * @param {NumberResolvable} spaces
-     * @return {UnitsWithinNode}
+     * @return {this}
      */
     spaces(spaces) {
-        const clone = this.clone();
-        clone._isWithinSpaces = true;
-        clone._spacesNode = NumberNode.toNumberNode(spaces);
+        let clone = this.clone();
+        const spacesNode = NumberNode.toNumberNode(spaces);
+        clone._filters.push(
+            (unitQuery, centerUnit, env) =>
+                unitQuery.withinSpacesOf(centerUnit, spacesNode.evaluate(env), false)
+        );
+        return clone;
+    }
+
+    /**
+     * @param {NumberResolvable} rows
+     * @return {this}
+     */
+    rows(rows) {
+        let clone = this.clone();
+        const rowsNode = NumberNode.toNumberNode(rows);
+        clone._filters.push(
+            (unitQuery, centerUnit, env) =>
+                unitQuery.withinRowsOf(centerUnit, rowsNode.evaluate(env), false)
+        );
+        return clone;
+    }
+
+    /**
+     * @param {NumberResolvable} columns
+     * @return {this}
+     */
+    columns(columns) {
+        let clone = this.clone();
+        const rowsNode = NumberNode.toNumberNode(columns);
+        clone._filters.push(
+            (unitQuery, centerUnit, env) =>
+                unitQuery.withinColumnsOf(centerUnit, rowsNode.evaluate(env), false)
+        );
+        return clone;
+    }
+
+    /**
+     * @param {NumberResolvable} rows
+     * @param {NumberResolvable} columns
+     * @return {this}
+     */
+    rowsOrColumns(rows, columns = rows) {
+        let clone = this.clone();
+        const rowsNode = NumberNode.toNumberNode(rows);
+        const columnsNode = NumberNode.toNumberNode(columns);
+        clone._filters.push(
+            (unitQuery, centerUnit, env) =>
+                unitQuery.withinRowsOrColumnsOf(
+                    centerUnit, rowsNode.evaluate(env), columnsNode.evaluate(env), false
+                )
+        );
+        return clone;
+    }
+
+    /**
+     * @return {this}
+     */
+    allies() {
+        let clone = this.clone();
+        clone._filters.push(
+            (unitQuery, centerUnit, env) => unitQuery.sameGroup(UNIT.evaluate(env))
+        );
+        return clone;
+    }
+
+    /**
+     * @return {this}
+     */
+    unitAndAllies() {
+        let clone = this.clone();
+        clone._filters.push(
+            (unitQuery, centerUnit, env) => unitQuery.andSameGroup(UNIT.evaluate(env))
+        );
+        return clone;
+    }
+
+    /**
+     * @return {this}
+     */
+    foes() {
+        let clone = this.clone();
+        clone._filters.push(
+            (unitQuery, centerUnit, env) => unitQuery.differentGroup(UNIT.evaluate(env))
+        );
         return clone;
     }
 
     /**
      * @param {TargetUnitNode} units
-     * @return {UnitsWithinNode}
+     * @return {this}
      */
     of(units) {
         const clone = this.clone();
-        clone._centerUnitNode = UnitsNode.toUnitsNode(units);
+        clone._centerNode = UnitsNode.toUnitsNode(units);
         return clone;
     }
 
     /**
-     * 自分自身のコピーを作成する
-     * @returns {this}
+     * @param {TargetUnitNode} units
+     * @return {this}
      */
-    clone() {
-        const copy = new this.constructor();
-        Object.assign(copy, this);
-        return copy;
+    centeredOn(units) {
+        return this.of(units);
     }
 
     evaluate(env) {
-        if (!this._centerUnitNode) {
-            throw new Error('center unit node is not set in AlliesWithinNode');
-        }
-        const centerUnits = Array.from(this._centerUnitNode.evaluate(env));
-        env.debug(`center units: ${centerUnits.map(u => u.getNameWithGroupAndPos()).join(", ")}`);
         /** @type {Set<Unit>} */
-        const result = new Set();
-        let spaces = this._getSpaces(env);
-
-        for (const centerUnit of centerUnits) {
-            env.trace(`center unit: ${centerUnit.getNameWithGroupAndPos()}`);
-            if (!(centerUnit instanceof Unit)) {
-                throw new Error(`[AlliesWithinNode] Invalid centerUnit: ${centerUnit}. Must be an instance of Unit.`);
+        let unitSet = new Set();
+        for (const centerUnit of this._centerNode.evaluate(env)) {
+            let unitQuery = env.getUnitQuery().onMap();
+            for (const filter of this._filters) {
+                unitQuery = filter(unitQuery, centerUnit, env);
             }
-            for (const ally of this._getUnits(env, centerUnit, spaces)) {
-                result.add(ally);
-            }
+            unitSet = SetUtil.union(unitSet, unitQuery.toSet());
         }
-        env.debug(`allies within: ${Array.from(result).map(u => u.getNameWithGroupAndPos()).join(', ')}`);
-        return result;
-    }
-
-    _getSpaces(env) {
-        if (this._isWithinSpaces) {
-            if (!this._spacesNode) {
-                throw new Error('spaces node is not set in AlliesWithinNode');
-            }
-            return this._spacesNode.evaluate(env);
-        } else {
-            throw new Error('range is not set in AlliesWithinNode');
-        }
-    }
-
-    _targetUnits(env) {
-        return env.getUnitQuery().onMap();
-    }
-
-    _getUnits(env, centerUnit, spaces) {
-        return this._targetUnits(env).toIterator();
+        return unitSet;
     }
 }
 
-class AlliesWithinNode extends UnitsWithinNode {
-    /**
-     * @override
-     */
-    _getUnits(env, centerUnit, spaces) {
-        return this._targetUnits(env)
-            .andSameGroup(UNIT.evaluate(env))
-            .withinSpacesOf(centerUnit, spaces);
-    }
-}
+// ※ andAlliesの理由: 範囲内にいるユニットは自分(UNIT)も含む可能性があるので最初のフィルタリングの段階でUNITを入れなければならない
+// (例) ALLIES_WITHIN.spaces(1).of(ALLIES_WITHIN.spaces(1).of(UNIT))
+const ALLIES_WITHIN = new UnitsWithinNode().unitAndAllies();
 
-const ALLIES_WITHIN = new AlliesWithinNode();
-
-class FoesWithinNode extends UnitsWithinNode {
-    /**
-     * @override
-     */
-    _getUnits(env, centerUnit, spaces) {
-        return this._targetUnits(env)
-            .differentGroup(UNIT.evaluate(env))
-            .withinSpacesOf(centerUnit, spaces);
-    }
-}
-
-const FOES_WITHIN = new FoesWithinNode();
+const FOES_WITHIN = new UnitsWithinNode().foes();
 
 const CLOSEST_FOES = UNIT.closestFoes();
 
-const MOD_UNIT_FIELD = (n, op) => new ModSkillEffectFieldNode(n, op);
+/**
+ * @param {string} key
+ * @param {SkillEffectField.Op} op
+ * @param {string} message
+ * @param {(unitName: string, operand: any) => string} messageFunc
+ * @return {[GetSkillEffectFieldNode, (arg: SkillEffectFieldType) => SkillEffectFieldNode]}
+ */
+function makeUnitFieldOperators(key, op, message, messageFunc = null) {
+    // 共通の設定処理を行う関数
+    const setup = (node) =>
+        node.setKey(key)
+            .setLogMessage(message)
+            .setLogMessageFunc(messageFunc);
+
+    return [
+        setup(new GetSkillEffectFieldNode()),
+        operand => setup(new ModSkillEffectFieldNode(operand, op)),
+    ];
+}
 
 /**
  * @template T
@@ -221,6 +269,9 @@ class CallUnitFuncNode extends SingleEffectNode {
         this._actionFunc = actionFunc;
         this._messageBuilder = messageBuilder;
         this._args = args;
+        args.forEach(arg => {
+            if (arg instanceof SkillEffectNode) arg.addParent(this);
+        });
     }
 
     evaluate(env) {
@@ -228,14 +279,17 @@ class CallUnitFuncNode extends SingleEffectNode {
             throw new Error('target node is not set in CallUnitFuncNode');
         }
         const units = this._targetNode.evaluate(env);
-        const args = this.#getArgs(this._args, env);
+        const args = this._getArgs(this._args, env);
         for (const unit of units) {
+            if (!unit) {
+                throw new Error('unit is not set in CallUnitFuncNode');
+            }
             env.info(this._messageBuilder(unit, ...args));
             this._actionFunc(unit, ...args);
         }
     }
 
-    #getArgs(args, env) {
+    _getArgs(args, env) {
         if (args.length === 1 && args[0] instanceof SkillEffectNode) {
             return args[0].evaluate(env);
         }
@@ -247,14 +301,18 @@ class CallUnitFuncNode extends SingleEffectNode {
  * 実装
  */
 
-const GRANTS_BONUS_DURING_COMBAT = n => MOD_UNIT_FIELD(n, SkillEffectField.Op.ARRAY_ADD)
-    .setKey(Unit.nameOf(unit => unit.spurs))
-    .setLogMessage(`攻撃/速さ/守備/魔防+`);
+const [
+    BONUS_DURING_COMBAT,
+    GRANTS_BONUS_DURING_COMBAT,
+] = makeUnitFieldOperators(
+    Unit.nameOf(unit => unit.spurs),
+    SkillEffectField.Op.ARRAY_ADD,
+    `攻撃/速さ/守備/魔防+`
+);
 
 const GRANTS_BONUS_ON_MAP = statsNode => CALL_UNIT_FUNC(
     (unit, ...stats) => unit.reserveToApplyBuffs(...stats),
-    (unit, ...stats) =>
-        `${unit.nameWithGroup}にバフ予約: [${stats}]`,
+    (unit, ...stats) => `${unit.nameWithGroup}にバフ予約: [${stats}]`,
     statsNode
 );
 
@@ -269,14 +327,18 @@ const GRANTS_BONUS = statsNode =>
         GRANTS_BONUS_ON_MAP(statsNode)
     );
 
-const INFLICTS_PENALTY_DURING_COMBAT = n => MOD_UNIT_FIELD(n, SkillEffectField.Op.ARRAY_SUB)
-    .setKey(Unit.nameOf(unit => unit.spurs))
-    .setLogMessage(`攻撃/速さ/守備/魔防-`);
+const [
+    PENALTY_DURING_COMBAT,
+    INFLICTS_PENALTY_DURING_COMBAT,
+] = makeUnitFieldOperators(
+    Unit.nameOf(unit => unit.spurs),
+    SkillEffectField.Op.ARRAY_SUB,
+    `攻撃/速さ/守備/魔防-`
+);
 
 const INFLICTS_PENALTY_ON_MAP = statsNode => CALL_UNIT_FUNC(
     (unit, ...stats) => unit.reserveToApplyDebuffs(...stats.map(n => -n)),
-    (unit, ...stats) =>
-        `${unit.nameWithGroup}にデバフ予約: [${stats}]`,
+    (unit, ...stats) => `${unit.nameWithGroup}にデバフ予約: [${stats}]`,
     statsNode
 );
 
@@ -294,14 +356,15 @@ const INFLICTS_PENALTY = statsNode =>
 const CALL_UNIT_FUNC = (actionFunc, messageBuilder, ...args) =>
     new CallUnitFuncNode(actionFunc, messageBuilder, ...args);
 
-/**
- * @param {NumberResolvable} n
- * @returns {SkillEffectFieldNode}
- * @constructor
- */
-const NEUTRALIZES_N_PENALTY_EFFECTS = n => MOD_UNIT_FIELD(n, SkillEffectField.Op.ADD)
-    .setKey(Unit.nameOf(unit => unit.reservedNegativeStatusEffectCountInOrder))
-    .setLogMessageFunc(n => `戦闘中、不利な状態を上位${n}個解除`);
+const [
+    ,
+    NEUTRALIZES_N_PENALTY_EFFECTS,
+] = makeUnitFieldOperators(
+    (Unit.nameOf(unit => unit.reservedNegativeStatusEffectCountInOrder)),
+    SkillEffectField.Op.ADD,
+    '',
+    (name, n) => `${name}は戦闘中、不利な状態を上位${n}個解除`,
+);
 
 /**
  * @template {StatusEffectType} T

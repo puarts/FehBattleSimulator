@@ -84,7 +84,7 @@ class SkillEffectRegistrar {
     /**
      * @param {number|string} skillId
      * @param {BoolNode} condNode
-     * @param {...any} skills
+     * @param {...SkillEffectNode} skills
      */
     static registerSkillsDuringCombat(skillId, condNode, ...skills) {
         this._registerToHooks(skillId, condNode, skills, [
@@ -106,6 +106,20 @@ class SkillEffectRegistrar {
             FOR_ALLIES_WHEN_APPLIES_POTENT_EFFECTS_HOOKS,
             FOR_ALLIES_NON_STATS_SKILL_USING_STATS_HOOKS,
             FOR_ALLIES_STATS_SKILLS_USING_STATS_HOOKS
+        ]);
+    }
+
+    /**
+     * @param {number|string} skillId
+     * @param {BoolNode} condNode
+     * @param {...any} skills
+     */
+    static registerSkillsForFoesDuringCombat(skillId, condNode, ...skills) {
+        this._registerToHooks(skillId, condNode, skills, [
+            FOR_FOES_AT_START_OF_COMBAT_HOOKS,
+            NULL_OBJECT, // 現時点で周囲の敵に神速追撃を敢えて付与するスキルはない
+            FOR_FOE_NON_STATS_SKILL_USING_STATS_HOOKS,
+            FOR_FOE_STATS_SKILLS_USING_STATS_HOOKS,
         ]);
     }
 

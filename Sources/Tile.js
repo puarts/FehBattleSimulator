@@ -354,7 +354,7 @@ class Tile extends BattleMapElement {
 
 
     isEmpty() {
-        return this.isObjPlaceable() && this.isUnitPlaceable();
+        return this.isObjPlaceable() && this.isVacantFor();
     }
 
     isObjPlaceable() {
@@ -366,10 +366,18 @@ class Tile extends BattleMapElement {
     }
 
     /**
-     * @param {Unit} unit
-     * @returns {boolean}
+     * 指定されたユニットがこのタイルに配置可能か（汎用判定）をチェックします。
+     * * - タイルが汎用的に進入可能か (`isMovableTile`)
+     * - 既に他のユニットが置かれていないか (`_placedUnit == null`)
+     * - 破壊可能な妨害地形（天脈）がないか
+     * * を判定します。
+     * ※ ユニットの移動タイプ（飛行・騎馬など）による地形コストは考慮されません。
+     * ワープ移動先や増援出現位置の判定などに使用します。
+     *
+     * @param {?Unit} unit - 判定対象のユニット（敵対関係の地形チェックに使用）。省略時は全妨害地形をチェック。
+     * @returns {boolean} 配置可能であれば true
      */
-    isUnitPlaceable(unit) {
+    isVacantFor(unit) {
         if (unit) {
             return this.isMovableTile()
                 && this._placedUnit == null
@@ -383,15 +391,28 @@ class Tile extends BattleMapElement {
         }
     }
 
-    isUnitPlaceableIncludingCurrentTile(unit) {
-        return unit.placedTile === this || this.isUnitPlaceable(unit);
+    /**
+     * ユニットの現在地を「空きマス」とみなして、配置可能かをチェックします。
+     * * 通常の `isVacantFor` は自分自身がいるマスも「ユニットあり」として false を返しますが、
+     * このメソッドは「待機」や「移動範囲計算の開始点」として自身のマスを許容します。
+     *
+     * @param {Unit} unit - 判定対象のユニット
+     * @returns {boolean} 配置可能（または現在地）であれば true
+     */
+    isVacantOrSelf(unit) {
+        return unit.placedTile === this || this.isVacantFor(unit);
     }
 
     /**
-     * @param {Unit} unit
-     * @returns {boolean}
+     * ユニットの移動タイプ（歩行・飛行など）を考慮して、配置可能かを厳密にチェックします。
+     * * `isVacantFor` と異なり、`isMovableTileForUnit` を使用するため、
+     * ユニット固有の地形走破能力（例：飛行なら山に入れるなど）が反映されます。
+     * 通常の移動ルート計算や進入可否判定に使用します。
+     *
+     * @param {Unit} unit - 判定対象のユニット
+     * @returns {boolean} そのユニットが進入・配置可能であれば true
      */
-    isUnitPlaceableForUnit(unit) {
+    isUnitPlaceable(unit) {
         return this.isMovableTileForUnit(unit)
             && this._placedUnit == null
             && !this.hasEnemyBreakableDivineVein(unit.groupId)

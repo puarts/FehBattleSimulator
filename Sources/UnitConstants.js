@@ -426,6 +426,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.TrueCharge, ["TrueCharge.webp", "真突撃", "十字3マスに移動可能（移動妨害を受けずに通過可能）"]],
     [StatusEffectType.AtkLiberate, ["AtkLiberate.webp", "攻撃の解放", ""]],
     [StatusEffectType.ResLiberate, ["ResLiberate.webp", "魔防の解放", ""]],
+    [StatusEffectType.TrulyIncited, ["TrulyIncited.webp", "真奮激", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {

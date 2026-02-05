@@ -67,6 +67,7 @@ class SkillEffectField {
 }
 
 /**
+ * @typedef {BoolResolvable|NumberResolvable|StatsNode|StatusEffectType} SkillEffectFieldType
  * @abstract
  */
 class SkillEffectFieldNode extends SingleEffectNode {
@@ -75,8 +76,9 @@ class SkillEffectFieldNode extends SingleEffectNode {
      * @returns {SkillEffectFieldNode}
      */
     setKey(key) {
-        this._key = key;
-        return this;
+        const copy = this.clone();
+        copy._key = key;
+        return copy;
     }
 
     /**
@@ -96,63 +98,85 @@ class SkillEffectFieldNode extends SingleEffectNode {
         this._logMessageFunc = logMessageFunc;
         return this;
     }
-}
-
-class ModSkillEffectFieldNode extends SkillEffectFieldNode {
-    /**
-     * @param {NumberResolvable|BoolResolvable} n
-     * @param {SkillEffectField.Op} op
-     */
-    constructor(n, op) {
-        super();
-        this._nNode = null;
-        if (!(n instanceof SkillEffectNode)) {
-            if (typeof n === 'boolean') {
-                this._nNode = BoolNode.makeBoolNodeFrom(n);
-            } else if (typeof n === 'number') {
-                this._nNode = NumberNode.makeNumberNodeFrom(n);
-            }
-        } else {
-            this._nNode = n;
-        }
-        this._op = op;
-        this._isBattleContext = false;
-    }
 
     battleContext() {
         this._isBattleContext = true;
         return this;
     }
 
+    _toLog(value) {
+        if (Array.isArray(value)) {
+            return `[${value.join(', ')}]`;
+        }
+        return value;
+    }
+}
+
+class GetSkillEffectFieldNode extends SkillEffectFieldNode {
     evaluate(env) {
-        const n = this._transEvaluation(env, this._nNode.evaluate(env));
+        let results = [];
+        for (const unit of this._targetNode.evaluate(env)) {
+            const targetObj = this._isBattleContext ? unit.battleContext : unit;
+
+            // 文字列キーを使ってアクセス
+            const result = targetObj[this._key];
+            results.push(result);
+            if (this._logMessageFunc) {
+                env.info(`${this._logMessageFunc(unit.nameWithGroup, result)}`);
+            } else {
+                env.info(`${unit.nameWithGroup}の${this._logMessage} : ${this._toLog(result)}`);
+            }
+        }
+        return results;
+    }
+}
+
+class ModSkillEffectFieldNode extends SkillEffectFieldNode {
+    /**
+     * @param {NumberResolvable|BoolResolvable} operand
+     * @param {SkillEffectField.Op} op
+     */
+    constructor(operand, op) {
+        super();
+        this._operandNode = null;
+        if (!(operand instanceof SkillEffectNode)) {
+            if (typeof operand === 'boolean') {
+                this._operandNode = BoolNode.makeBoolNodeFrom(operand);
+            } else if (typeof operand === 'number') {
+                this._operandNode = NumberNode.makeNumberNodeFrom(operand);
+            } else {
+                throw new Error(`Invalid operand: ${operand}, type: ${typeof operand}`);
+            }
+        } else {
+            this._operandNode = operand;
+        }
+        this._operandNode?.addParent(this);
+        this._op = op;
+        this._isBattleContext = false;
+    }
+
+    evaluate(env) {
+        const operand = this._transEvaluation(env, this._operandNode.evaluate(env));
         for (const unit of this._targetNode.evaluate(env)) {
             const targetObj = this._isBattleContext ? unit.battleContext : unit;
 
             // 文字列キーを使ってアクセス
             const beforeValue = targetObj[this._key];
-            const originalValue = this.#copy(beforeValue);
-            const result = targetObj[this._key] = SkillEffectField.calc(beforeValue, n, this._op);
+            const originalValue = this._copy(beforeValue);
+            const result = targetObj[this._key] = SkillEffectField.calc(beforeValue, operand, this._op);
             if (this._logMessageFunc) {
-                env.info(`${unit.nameWithGroup}は${this._logMessageFunc(n)}
-                : ${this.#toLog(originalValue)} → ${this.#toLog(result)}`);
+                env.info(`${this._logMessageFunc(unit.nameWithGroup, operand)}
+                : ${this._toLog(originalValue)} → ${this._toLog(result)}`);
             } else {
-                env.info(`${unit.nameWithGroup}は${this._logMessage}${n}
-                : ${this.#toLog(originalValue)} → ${this.#toLog(result)}`);
+                env.info(`${unit.nameWithGroup}は${this._logMessage}${operand}
+                : ${this._toLog(originalValue)} → ${this._toLog(result)}`);
             }
         }
     }
 
-    #copy(value) {
+    _copy(value) {
         if (Array.isArray(value)) {
             return [...value];
-        }
-        return value;
-    }
-
-    #toLog(value) {
-        if (Array.isArray(value)) {
-            return `[${value.join(', ')}]`;
         }
         return value;
     }

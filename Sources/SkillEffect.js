@@ -141,11 +141,47 @@ class UnitNode extends SkillEffectNode {
      * @returns {T}
      */
     do(effect) {
-        return effect.to(this);
+        return effect.clone().to(this);
     }
 
+    /**
+     * @param {...EffectNode} effects
+     * @return {EffectNode}
+     */
     doEffects(...effects) {
-        return new EffectsNode(...effects).to(this);
+        // 1. 各 effect を clone() して「分身」を作る
+        const clonedEffects = effects.map(e => e.clone());
+
+        // 2. 分身たちをまとめた新しい EffectsNode を作り、ターゲットを指定する
+        return new EffectsNode(...clonedEffects).to(this);
+    }
+
+    /**
+     * @param {EffectNode} effect
+     * @returns {BoolNode}
+     */
+    check(effect) {
+        return SOME_NODE(effect.to(this));
+    }
+
+    /**
+     * @param {...EffectNode} effects
+     * @return {BoolNode}
+     */
+    cannotAny(...effects) {
+        return CANNOT_ANY(...effects.map(effect => effect.to(this)));
+    }
+
+    /**
+     * @param {...(StatsNode|StatusEffectType)} effects
+     * @return {EffectNode}
+     */
+    grantEffects(...effects) {
+        return EFFECTS(...effects.map(effect =>
+            effect instanceof StatsNode
+                ? GRANTS_BONUS(effect)
+                : GRANTS_STATUS_EFFECTS(effect)
+        ));
     }
 
     /**
@@ -205,13 +241,15 @@ class UnitNode extends SkillEffectNode {
     }
 
     afterMovement() {
-        this._afterMovement = true;
-        return this;
+        const copy = this.clone();
+        copy._afterMovement = true;
+        return copy;
     }
 
     of(unit) {
-        this._ofUnit = unit;
-        return this;
+        const copy = this.clone();
+        copy._ofUnit = unit;
+        return copy;
     }
 }
 
@@ -406,6 +444,10 @@ class UnitsNode extends CollectionNode {
         return UNITE_UNITS_NODE(this, UnitsNode.makeFromUnit(unitNode));
     }
 
+    include(unitNode) {
+        return this.and(unitNode);
+    }
+
     /**
      * @param {TargetUnitNode} targetUnit
      * @return {UnitsNode}
@@ -426,8 +468,21 @@ class UnitsNode extends CollectionNode {
         this._afterMovement = true;
         return this;
     }
+
+    /**
+     * @template T
+     * @param {T} funcNode
+     * @returns {CollectionNode<T, *>}
+     */
+    map(funcNode) {
+        return MAP_UNITS_NODE(this, funcNode);
+    }
 }
 
+/**
+ * @param {...Unit} units
+ * @return {UnitsNode}
+ */
 const UNITS_NODE = (...units) => new class extends UnitsNode {
     evaluate(env) {
         return units;
@@ -804,6 +859,12 @@ class MapUnitsToNumNode extends NumbersNode {
     }
 }
 
+/**
+ * @param unitsNode
+ * @param funcNode
+ * @return {NumbersNode}
+ * @constructor
+ */
 const MAP_UNITS_TO_NUM_NODE = (unitsNode, funcNode) => new MapUnitsToNumNode(unitsNode, funcNode);
 
 /**
@@ -962,6 +1023,28 @@ const NUM_OF_UNITS = unitsNode => new CountUnitsNode(unitsNode);
  */
 const EXISTS_UNITS = (units, pred) => GT_NODE(COUNT_UNITS_NODE(FILTER_UNITS_NODE(units, pred)), 0);
 
+class UnitAggregationNode extends SkillEffectNode {
+    constructor(mapNode, aggregationFunc) {
+        super();
+        /** @type {UnitsNode} */
+        this._unitsNode = null;
+        /** @type {(NumbersNode) => NumberNode} */
+        this._aggregationFunc = aggregationFunc;
+        /** @type {MapUnitsNode} */
+        this._mapNode = mapNode;
+    }
+
+    /**
+     * @param {TargetUnitNode} unit
+     * @returns {NumberNode}
+     */
+    among(unit) {
+        return this._aggregationFunc(MAP_UNITS_TO_NUM_NODE(UnitsNode.toUnitsNode(unit), this._mapNode));
+    }
+}
+
+const HIGHEST = mapNode => new UnitAggregationNode(mapNode, MAX_NODE);
+
 /**
  * ターゲットを補助ユニット、補助を受けるユニットにそれぞれ設定して引数のUnitsNodeを評価する
  */
@@ -993,6 +1076,21 @@ class UnitsOfBothAssistTargetingAndAssistTargetNode extends UnitsNode {
  */
 class SpacesNode extends CollectionNode {
     /**
+     * @param {NumberResolvable} spaces
+     * @return {this}
+     */
+    orWithinSpacesOfThatSpaces(spaces) {
+        return this.or(ANY_SPACE.withinSpaces(spaces).ofSpace(this));
+    }
+
+    /**
+     * @override
+     */
+    meetAnyConditions(...predNodes) {
+        return FILTER_SPACES_NODE(this, OR_NODE(...predNodes));
+    }
+
+    /**
      * @abstract
      * @param {NodeEnv} env
      * @returns {Iterable<Tile>}
@@ -1009,6 +1107,67 @@ class NoSpacesNode extends SpacesNode {
 
 const NO_SPACES_NODE = new NoSpacesNode();
 const EMPTY_SPACES_NODE = NO_SPACES_NODE;
+
+class SpacesWithinNode extends SpacesNode {
+    constructor() {
+        super();
+        /** @type {SpacesNode} */
+        this._centerNode = null;
+        /** @type {NumberNode} */
+        this._spacesNode = null;
+    }
+
+    /**
+     * @param {NumberResolvable} spaces
+     * @returns {this}
+     */
+    withinSpaces(spaces) {
+        let clone = this.clone();
+        clone._spacesNode = NumberNode.toNumberNode(spaces);
+        return clone;
+    }
+
+    /**
+     * @param {SpacesNode} centerNode
+     * @return {SpacesNode}
+     */
+    ofSpace(centerNode) {
+        let clone = this.clone();
+        clone._centerNode = centerNode;
+        return clone;
+    }
+
+    /**
+     * @param {TargetUnitNode} centerUnitsNode
+     * @return {SpacesNode}
+     */
+    ofUnit(centerUnitsNode) {
+        let clone = this.clone();
+        clone._centerNode = new PlacedSpacesNode(UnitsNode.toUnitsNode(centerUnitsNode));
+        return clone;
+    }
+
+    evaluate(env) {
+        if (!this._spacesNode) {
+            throw new Error('SpacesWithinNode: spacesNode is not set.');
+        }
+        let spaces = this._spacesNode.evaluate(env);
+        if (!this._centerNode) {
+            throw new Error('SpacesWithinNode: centerNode is not set.');
+        }
+        let targetTiles = this._centerNode.evaluate(env);
+        /** type {Set<Tile>} */
+        let result = new Set();
+        for (const targetTile of targetTiles) {
+            for (const tile of env.battleMap.enumerateTilesWithinSpecifiedDistance(targetTile, spaces)) {
+                result.add(tile);
+            }
+        }
+        return result;
+    }
+}
+
+const ANY_SPACE = new SpacesWithinNode();
 
 class SpacesIfNode extends SpacesNode {
     /**
@@ -1136,6 +1295,7 @@ class FilterSpacesNode extends SpacesNode {
 }
 
 const FILTER_SPACES_NODE = (n, predNode) => new FilterSpacesNode(n, predNode);
+const SPACES_THAT_MEET_FOLLOWING_CONDITIONS = (n, predNode) => FILTER_SPACES_NODE(n, predNode);
 
 /**
  * @template T
@@ -1311,11 +1471,11 @@ const TARGETS_PLACED_SPACE_NODE = new TargetsPlacedSpaceNode();
 
 class PlacedSpacesNode extends SpacesNode {
     /**
-     * @param {UnitsNode} unitsNode
+     * @param {TargetUnitNode} unitsNode
      */
     constructor(unitsNode) {
         super();
-        this._unitsNode = unitsNode;
+        this._unitsNode = UnitsNode.toUnitsNode(unitsNode);
     }
 
     evaluate(env) {
@@ -1324,7 +1484,7 @@ class PlacedSpacesNode extends SpacesNode {
     }
 }
 
-const PLACED_SPACES_NODE = unitsNode => new PlacedSpacesNode(unitsNode);
+const PLACED_SPACES = unitsNode => new PlacedSpacesNode(unitsNode);
 
 class CanPlaceTargetOnSpaceNode extends BoolNode {
     static {
@@ -1334,7 +1494,7 @@ class CanPlaceTargetOnSpaceNode extends BoolNode {
     evaluate(env) {
         let unit = this.getUnit(env);
         let tile = this.getTile(env);
-        let result = tile.isUnitPlaceableForUnit(unit);
+        let result = tile.isUnitPlaceable(unit);
         env.debug(`${unit.nameWithGroup}は${tile}に配置可能か: ${result}`);
         return result;
     }
@@ -1411,6 +1571,7 @@ class IsThereSkillOwnersAllyOnTargetSpaceNode extends IsThereTargetsAllyOnTarget
 
 const IS_THERE_SKILL_OWNERS_ALLY_ON_TARGET_SPACE_NODE =
     new IsThereSkillOwnersAllyOnTargetSpaceNode();
+const IS_THERE_ALLY = new IsThereSkillOwnersAllyOnTargetSpaceNode();
 
 class IsThereDivineVeinEffectAppliedOnTargetSpacesNode extends BoolNode {
     static {
@@ -1426,6 +1587,7 @@ class IsThereDivineVeinEffectAppliedOnTargetSpacesNode extends BoolNode {
 }
 
 const IS_THERE_DIVINE_VEIN_EFFECT_APPLIED_ON_TARGET_SPACES_NODE = new IsThereDivineVeinEffectAppliedOnTargetSpacesNode();
+const IS_THERE_DIVINE_VEIN_EFFECT_APPLIED = IS_THERE_DIVINE_VEIN_EFFECT_APPLIED_ON_TARGET_SPACES_NODE;
 
 class IsTargetSpaceDefensiveTerrainNode extends BoolNode {
     static {
@@ -1441,6 +1603,7 @@ class IsTargetSpaceDefensiveTerrainNode extends BoolNode {
 }
 
 const IS_TARGET_SPACE_DEFENSIVE_TERRAIN_NODE = new IsTargetSpaceDefensiveTerrainNode();
+const IS_IT_DEFENSIVE_TERRAIN = IS_TARGET_SPACE_DEFENSIVE_TERRAIN_NODE;
 
 class DoesTargetSpaceCountAsDifficultTerrainExcludingImpassableTerrainNode extends BoolNode {
     static {
@@ -1457,6 +1620,8 @@ class DoesTargetSpaceCountAsDifficultTerrainExcludingImpassableTerrainNode exten
 
 const DOES_TARGET_SPACE_COUNT_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE =
     new DoesTargetSpaceCountAsDifficultTerrainExcludingImpassableTerrainNode();
+const DOES_IT_COUNT_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN
+    = DOES_TARGET_SPACE_COUNT_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN_NODE;
 
 class HasTargetSpaceTrapNode extends BoolNode {
     static {
@@ -2449,6 +2614,22 @@ class EffectNode extends SkillEffectNode {
     }
 
     /**
+     * @param {EffectNode} effectNode
+     * @returns {EffectNode}
+     * @abstract
+     */
+    and(effectNode) {
+    }
+
+    /**
+     * @param {...EffectNode} effectNodes
+     * @returns {EffectNode}
+     * @abstract
+     */
+    andEffects(...effectNodes) {
+    }
+
+    /**
      * @param {NumberResolvable} n
      * @returns {EffectNode}
      * @abstract
@@ -2544,8 +2725,6 @@ class EffectNode extends SkillEffectNode {
      * @abstract
      */
     max(value) {
-        this._maxNode = this._toNode(value);
-        return this;
     }
 
     /**
@@ -2553,8 +2732,6 @@ class EffectNode extends SkillEffectNode {
      * @abstract
      */
     onlyHighestNotStack() {
-        this._onlyHighestNotStack = true;
-        return this;
     }
 
     /**
@@ -2562,17 +2739,21 @@ class EffectNode extends SkillEffectNode {
      * @abstract
      */
     perAttack() {
-        this._perAttack = true;
-        return this;
     }
 
     /**
-     * @params value
      * @returns {EffectNode}
+     * @abstract
+     */
+    includingSecondStrike() {
+    }
+
+    /**
+     * @params {NumberResolvable} value
+     * @returns {EffectNode}
+     * @abstract
      */
     x(value) {
-        this._xNode = this._toNode(value);
-        return this;
     }
 
     _toNode(value) {
@@ -2607,21 +2788,41 @@ class EffectNode extends SkillEffectNode {
     }
 }
 
+class XNumberNode extends NumberNode {
+    evaluate(env) {
+        let parent = this._parent;
+        while (parent) {
+            if (parent instanceof EffectNode && parent._xNode) {
+                return parent._xNode.evaluate(env);
+            }
+            parent = parent._parent;
+        }
+        throw new Error('Cannot find x node');
+    }
+}
+
+const X = new XNumberNode();
+
 class SingleEffectNode extends EffectNode {
     /**
      * @param {TargetUnitNode} target
      */
     constructor(target = null) {
         super();
-        if (target) this._targetNode = UnitsNode.makeFromUnit(target);
+        if (target) {
+            this._targetNode = UnitsNode.toUnitsNode(target);
+            this._targetNode.addParent(this);
+        }
     }
 
     /**
      * @override
      */
     to(target) {
-        this._targetNode = UnitsNode.makeFromUnit(target);
-        return this;
+        const copy = this.clone();
+        copy._targetNode = UnitsNode.toUnitsNode(target);
+        copy._targetNode.addParent(copy);
+        return copy;
     }
 
     /**
@@ -2634,24 +2835,46 @@ class SingleEffectNode extends EffectNode {
     /**
      * @override
      */
+    and(effectNode) {
+        const target = this._targetNode;
+        // 自分をクローンし、相手もターゲットを適用（＝クローン）して結合する
+        return EFFECTS(this.clone(), effectNode.to(target)).to(target);
+    }
+
+    /**
+     * @override
+     */
+    andEffects(...effectNodes) {
+        const target = this._targetNode;
+        // 全ての子要素を安全にクローンして新しい EffectsNode を作る
+        const clonedOthers = effectNodes.map(e => e.to(target));
+        return EFFECTS(this.clone(), ...clonedOthers).to(target);
+    }
+
+    /**
+     * @override
+     */
     forNTurn(n) {
-        this._forNTurnNode = NumberNode.makeNumberNodeFrom(n);
-        return this;
+        const copy = this.clone();
+        copy._forNTurnNode = NumberNode.makeNumberNodeFrom(n);
+        return copy;
     }
 
     /**
      * @override
      */
     throughTheirNextActions() {
-        this._throughTheirNextActions = true;
-        return this;
+        const copy = this.clone();
+        copy._throughTheirNextActions = true;
+        return copy;
     }
 
     /**
      * @override
      */
     stats(statsNode) {
-        this._statsNode = statsNode;
+        const copy = this.clone();
+        copy._statsNode = statsNode;
         return this;
     }
 
@@ -2659,96 +2882,116 @@ class SingleEffectNode extends EffectNode {
      * @override
      */
     statFlags(statFlags) {
-        this._statFlags = statFlags;
-        return this;
+        const copy = this.clone();
+        copy._statFlags = statFlags;
+        return copy;
     }
 
     /**
      * @override
      */
     status(statusEffect) {
-        this._statusEffects = [statusEffect];
-        return this;
+        const copy = this.clone();
+        copy._statusEffects = [statusEffect];
+        return copy;
     }
 
     /**
      * @override
      */
     statuses(...statusEffects) {
-        this._statusEffects = statusEffects;
-        return this;
+        const copy = this.clone();
+        copy._statusEffects = statusEffects;
+        return copy;
     }
 
     /**
      * @override
      */
     count(count) {
-        this._countNode = NumberNode.makeNumberNodeFrom(count);
-        return this;
+        const copy = this.clone();
+        copy._countNode = NumberNode.toNumberNode(count);
+        return copy;
     }
 
     /**
      * @override
      */
     duringCombat() {
-        this._duringCombat = true;
-        return this;
+        const copy = this.clone();
+        copy._duringCombat = true;
+        return copy;
     }
 
     /**
      * @override
      */
     excludingAoe() {
-        this._excludingAoe = true;
-        return this;
+        const copy = this.clone();
+        copy._excludingAoe = true;
+        return copy;
     }
 
     /**
      * @returns {SingleEffectNode}
      */
     includingAoe() {
-        this._includingAoe = true;
-        return this;
+        const copy = this.clone();
+        copy._includingAoe = true;
+        return copy;
     }
 
     /**
      * @override
      */
     firstApplicable() {
-        this._firstApplicable = true;
-        return this;
+        const copy = this.clone();
+        copy._firstApplicable = true;
+        return copy;
     }
 
     afterMovement() {
-        this._afterMovement = true;
-        return this;
+        const copy = this.clone();
+        copy._afterMovement = true;
+        return copy;
     }
 
     evaluate(env) {
-        if (this._xNode) {
-            let value = this._xNode.evaluate(env);
-            env.storeValue(value);
-            env.trace(`store x value: ${value}`);
-            const result = super.evaluate(env);
-            env.popValue();
-            env.trace(`pop x value: ${value}`);
-            return this._transEvaluation(env, result);
-        }
         return this._transEvaluation(env, super.evaluate(env));
     }
 
     max(value) {
-        return super.max(value);
+        const copy = this.clone();
+        copy._maxNode = this._toNode(value);
+        return copy;
     }
 
     onlyHighestNotStack() {
-        return super.onlyHighestNotStack();
+        const copy = this.clone();
+        copy._onlyHighestNotStack = true;
+        return copy;
     }
 
     perAttack() {
-        return super.perAttack();
+        const copy = this.clone();
+        copy._perAttack = true;
+        return copy;
+    }
+
+    includingSecondStrike() {
+        const copy = this.clone();
+        copy._includingSecondStrike = true;
+        return copy;
+    }
+
+    x(value) {
+        const copy = this.clone();
+        copy._xNode = this._toNode(value);
+        return copy;
     }
 }
+
+const EMPTY_EFFECT_NODE = new class extends SingleEffectNode {};
 
 // Grants Plus
 
@@ -4620,6 +4863,7 @@ class TargetsTotalPenaltiesNode extends PositiveNumberNode {
 }
 
 const TARGETS_TOTAL_PENALTIES_NODE = new TargetsTotalPenaltiesNode();
+const TARGETS_TOTAL_PENALTIES = new TargetsTotalPenaltiesNode();
 
 const FOES_TOTAL_PENALTIES_NODE = new class extends TargetsTotalPenaltiesNode {
     static {
@@ -4886,17 +5130,24 @@ const FOR_UNIT = units => new ForUnitNode().to(units);
 const FOR_UNIT_NODE = (unit, ...nodes) => FOR_EACH_UNIT_NODE(UnitsNode.makeFromUnit(unit), ...nodes);
 
 class EffectsNode extends EffectNode {
+    /**
+     * @param {...EffectNode} effectNodes
+     */
     constructor(...effectNodes) {
         super();
         this._effectNodes = effectNodes;
+        this._effectNodes.forEach(n => n.addParent(this));
     }
 
     /**
      * @override
      */
     to(target) {
-        this._effectNodes.forEach(t => t.to(target));
-        return this;
+        const copy = this.clone();
+        copy._targetNode = UnitsNode.toUnitsNode(target);
+        // 子要素すべてにターゲットを適用したクローンを作成
+        copy._effectNodes = this._effectNodes.map(n => n.to(target));
+        return copy;
     }
 
     /**
@@ -4909,62 +5160,88 @@ class EffectsNode extends EffectNode {
     /**
      * @override
      */
+    and(effectNode) {
+        const target = this._targetNode;
+        // this.clone() を呼ぶことで、保持している _effectNodes も丸ごとコピーされる
+        return EFFECTS(this.clone(), effectNode.to(target)).to(target);
+    }
+
+    /**
+     * @override
+     */
+    andEffects(...effectNodes) {
+        const target = this._targetNode;
+        const clonedOthers = effectNodes.map(e => e.to(target));
+        return EFFECTS(this.clone(), ...clonedOthers).to(target);
+    }
+
+    /**
+     * @override
+     */
     forNTurn(number) {
-        this._forNTurnNode = NumberNode.makeNumberNodeFrom(number);
-        this._effectNodes.forEach(n => n.forNTurn(number));
-        return this;
+        const copy = this.clone();
+        copy._forNTurnNode = NumberNode.makeNumberNodeFrom(number);
+        copy._effectNodes = copy._effectNodes.map(n => n.forNTurn(number));
+        return copy;
     }
 
     /**
      * @override
      */
     throughTheirNextActions() {
-        this._throughTheirNextActions = true;
-        this._effectNodes.forEach(n => n.throughTheirNextActions());
-        return this;
+        const copy = this.clone();
+        copy._throughTheirNextActions = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.throughTheirNextActions());
+        return copy;
     }
 
     /**
      * @override
      */
     count(count) {
-        this._effectNodes.forEach(n => n.count(count));
-        return this;
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.count(count));
+        return copy;
     }
 
     /**
      * @override
      */
     duringCombat() {
-        this._duringCombat = true;
-        this._effectNodes.forEach(n => n.duringCombat());
-        return this;
+        const copy = this.clone();
+        copy._duringCombat = true;
+        // 重要：子要素もすべて duringCombat 状態にした「新しいリスト」に差し替える
+        copy._effectNodes = copy._effectNodes.map(n => n.duringCombat());
+        return copy;
     }
 
     /**
      * @override
      */
     excludingAoe() {
-        this._excludingAoe = true;
-        this._effectNodes.forEach(n => n.excludingAoe());
-        return this;
+        const copy = this.clone();
+        copy._excludingAoe = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.excludingAoe());
+        return copy;
     }
 
     /**
      * @override
      */
     includingAoe() {
-        this._excludingAoe = false;
-        this._effectNodes.forEach(n => n.includingAoe());
-        return this;
+        const copy = this.clone();
+        copy._excludingAoe = false;
+        copy._effectNodes = copy._effectNodes.map(n => n.includingAoe());
+        return copy;
     }
 
     /**
      * @override
      */
     firstApplicable() {
-        this._firstApplicable = true;
-        this._effectNodes.forEach(n => n.firstApplicable());
+        const copy = this.clone();
+        copy._firstApplicable = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.firstApplicable());
         return this;
     }
 
@@ -4972,69 +5249,83 @@ class EffectsNode extends EffectNode {
      * @override
      */
     statFlags(statFlags) {
-        this._effectNodes.forEach(n => n.statFlags(statFlags));
-        return this;
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.statFlags(statFlags));
+        return copy;
     }
 
     /**
      * @override
      */
     stats(statsNode) {
-        this._effectNodes.forEach(n => n.stats(statsNode));
-        return this;
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.stats(statsNode));
+        return copy;
     }
 
     /**
      * @override
      */
     status(statusEffect) {
-        this._effectNodes.forEach(n => n.status(statusEffect));
-        return this;
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.status(statusEffect));
+        return copy;
     }
 
     /**
      * @override
      */
     statuses(...statusEffects) {
-        this._effectNodes.forEach(n => n.statuses(...statusEffects));
-        return this;
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.statuses(...statusEffects));
+        return copy;
     }
 
     afterMovement() {
-        this._afterMovement = true;
-        this._effectNodes.forEach(n => n.afterMovement());
-        return this;
+        const copy = this.clone();
+        copy._afterMovement = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.afterMovement());
+        return copy;
     }
 
     max(value) {
-        super.max(value);
-        this._effectNodes.forEach(n => n.max(value));
-        return this;
+        const copy = this.clone();
+        copy._max = this._toNode(value);
+        copy._effectNodes = copy._effectNodes.map(n => n.max(value));
+        return copy;
     }
 
     onlyHighestNotStack() {
-        super.onlyHighestNotStack();
-        this._effectNodes.forEach(n => n.onlyHighestNotStack());
-        return this;
+        const copy = this.clone();
+        copy._onlyHighestNotStack = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.onlyHighestNotStack());
+        return copy;
     }
 
     perAttack() {
-        super.perAttack();
-        this._effectNodes.forEach(n => n.perAttack());
-        return this;
+        const copy = this.clone();
+        copy._perAttack = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.perAttack());
+        return copy;
+    }
+
+    includingSecondStrike() {
+        const copy = this.clone();
+        copy._includingSecondStrike = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.includingSecondStrike());
+        return copy;
     }
 
     evaluate(env) {
-        if (this._xNode) {
-            let value = this._xNode.evaluate(env);
-            env.storeValue(value);
-            env.trace(`store x value: ${value}`);
-            const result = this._effectNodes.map(n => n.evaluate(env));
-            env.popValue();
-            env.trace(`pop x value: ${value}`);
-            return this._transEvaluation(env, result);
-        }
         return this._transEvaluation(env, this._effectNodes.map(n => n.evaluate(env)));
+    }
+
+    x(value) {
+        const copy = this.clone();
+        copy._xNode = this._toNode(value);
+        // Xの値は親から子へ伝播させる必要があるため、子もクローン
+        copy._effectNodes = this._effectNodes.map(n => n.x(value));
+        return copy;
     }
 }
 
@@ -5042,6 +5333,17 @@ class EffectsNode extends EffectNode {
  * @param {...EffectNode} effects
  */
 const EFFECTS = (...effects) => new EffectsNode(...effects);
+
+/**
+ * @param {...(StatsNode|StatusEffectType)} effects
+ * @return {EffectNode}
+ */
+const GRANTS_EFFECTS = (...effects) =>
+    EFFECTS(...effects.map(effect =>
+        effect instanceof StatsNode
+            ? GRANTS_BONUS(effect)
+            : GRANTS_STATUS_EFFECTS(effect)
+    ));
 
 class IfElseEffectNode extends EffectsNode {
     constructor(predNode, trueEffectNode, falseEffectNode) {
@@ -5051,15 +5353,6 @@ class IfElseEffectNode extends EffectsNode {
     }
 
     evaluate(env) {
-        if (this._xNode) {
-            let value = this._xNode.evaluate(env);
-            env.storeValue(value);
-            env.trace(`store x value: ${value}`);
-            const result = this._effectNodes[this._predNode.evaluate(env) ? 0 : 1].evaluate(env);
-            env.popValue();
-            env.trace(`pop x value: ${value}`);
-            return result;
-        }
         return this._effectNodes[this._predNode.evaluate(env) ? 0 : 1].evaluate(env);
     }
 }
@@ -5073,6 +5366,15 @@ class IfElseEffectNode extends EffectsNode {
 const IF_ELSE_EFFECT =
     (predNode, trueEffectNode, falseEffectNode) =>
         new IfElseEffectNode(predNode, trueEffectNode, falseEffectNode);
+
+/**
+ * @param {BoolNode} predNode
+ * @param {EffectNode} effectNode
+ * @returns {EffectNode}
+ */
+const IF_EFFECT =
+    (predNode, effectNode) =>
+        new IfElseEffectNode(predNode, effectNode, EMPTY_EFFECT_NODE);
 
 class TargetsFoesNode extends UnitsNode {
     static {
@@ -7221,6 +7523,7 @@ class TargetsTotalBonusesNode extends NumberNode {
 }
 
 const TARGETS_TOTAL_BONUSES_NODE = new TargetsTotalBonusesNode();
+const TARGETS_TOTAL_BONUSES = new TargetsTotalBonusesNode();
 
 class TargetsBonusNode extends NumberNode {
     static {
@@ -8733,8 +9036,8 @@ class CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode
         let unit = this._targetUnitNode.evaluate(env);
         let foe = env.getFoeDuringCombatOf(unit);
         let spd = this._spd.evaluate(env);
-        let result = DamageCalculationUtility.examinesCanFollowupAttack(unit, foe, spd);
-        env.debug(`${unit.nameWithGroup}は速さを変化させて(${spd})追撃可能か: ${result}`);
+        let result = DamageCalculationUtility.examinesCanFollowupAttack(unit, foe, -spd);
+        env.debug(`${unit.nameWithGroup}は追撃の速さ条件を(${-spd})した状態で追撃の速さ条件を満たしているか: ${result}`);
         return result;
     }
 

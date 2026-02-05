@@ -27,6 +27,7 @@ class HeroInfo {
         passiveBs,
         passiveCs,
         passiveXs = [],
+        specialType = '',
     ) {
         this.id = id;
         this.seasonType = seasonType;
@@ -112,6 +113,7 @@ class HeroInfo {
         // noinspection JSUnusedGlobalSymbols
         this.releaseDate = releaseDate;
         this.releaseDateAsNumber = Number(releaseDate.replace(/-/g, ""));
+        this.specialType = specialType;
 
         // 偶像スキルシミュレーター用
         // noinspection JSUnusedGlobalSymbols

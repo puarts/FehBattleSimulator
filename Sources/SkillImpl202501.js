@@ -5315,7 +5315,7 @@
             REDUCES_PERCENTAGE_OF_TARGETS_NON_SPECIAL_DAMAGE_REDUCTION_BY_50_PERCENT_DURING_COMBAT_NODE,
         ),
     );
-    FOR_FOES_INFLICTS_STATS_MINUS_AFTER_STATS_DETERMINED_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+    FOR_FOE_STATS_SKILLS_USING_STATS_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
             // if foe has bonuses,
             IF_NODE(HAS_TARGET_BONUSES_NODE,
@@ -12465,6 +12465,7 @@
             WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_PER_ATTACK_TO_TARGET_NODE(7),
         ));
     };
+    setSkill(PassiveB.ARLullFinish, INFLICTS_ATK_RES_ON_FOE_DURING_COMBAT_NODE, [true, false, false, true]);
     setSkill(PassiveB.SDLullFinish, INFLICTS_SPD_DEF_ON_FOE_DURING_COMBAT_NODE, [false, true, true, false]);
     setSkill(PassiveB.SRLullFinish, INFLICTS_SPD_RES_ON_FOE_DURING_COMBAT_NODE, [false, true, false, true]);
 }
@@ -15567,6 +15568,7 @@
         ));
     };
     setSkill(PassiveC.ASHoldGuide, ATK_SPD(4));
+    setSkill(PassiveC.ARHoldGuide, ATK_RES(4));
     setSkill(PassiveC.SDHoldGuide, SPD_DEF(4));
 }
 
@@ -16456,7 +16458,7 @@
         IF_UNITS_HP_GTE_25_PERCENT_AT_START_OF_TURN_NODE(
             // applies (Divine Vein (Haze)] on closest foes' spaces and on each space within 2 spaces of those spaces for 1 turn.
             FOR_EACH_SPACES_NODE(
-                SPACES_WITHIN_N_SPACES_OF_SPACES_NODE(2, PLACED_SPACES_NODE(TARGETS_CLOSEST_FOES_NODE)),
+                SPACES_WITHIN_N_SPACES_OF_SPACES_NODE(2, PLACED_SPACES(TARGETS_CLOSEST_FOES_NODE)),
                 APPLY_DIVINE_VEIN_NODE(DivineVeinType.Haze, TARGET_GROUP_NODE, 1),
             ),
         ),
@@ -17815,9 +17817,9 @@
 
 {
     let skillId = PassiveB.FaithfulLoyalty2;
-    const X = HIGHEST_TOTAL_BONUSES_TO_TARGET_STATS_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(2, TARGETS_TOTAL_BONUSES_NODE);
+    const _X = HIGHEST_TOTAL_BONUSES_TO_TARGET_STATS_AMONG_UNIT_AND_ALLIES_WITHIN_N_SPACES_NODE(2, TARGETS_TOTAL_BONUSES_NODE);
     let [reduceDamageBeforeCombat, reduceDamageDuringCombat] =
-        REDUCES_DAMAGE_BY_N_NODES(X);
+        REDUCES_DAMAGE_BY_N_NODES(_X);
     const IS_FOE_ARMOR_OR_CAVALRY_NODE =
         OR_NODE(
             EQ_NODE(FOE_MOVE_NODE, MoveType.Armor),
@@ -17840,7 +17842,7 @@
             // 敵が重装、騎馬でない時、戦闘中、最初に受けた攻撃と2回攻撃のダメージー〇の40%
             // （〇は、自分と周囲2マス以内にいる味方のうち強化の合計値が最も高い値）
             REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_DURING_COMBAT_INCLUDING_TWICE_NODE(
-                PERCENTAGE_NODE(40, X)),
+                PERCENTAGE_NODE(40, _X)),
         ),
         // 戦闘後、7回復、
         RESTORES_7_HP_TO_UNIT_AFTER_COMBAT_NODE,

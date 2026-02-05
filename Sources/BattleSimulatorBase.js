@@ -5356,7 +5356,7 @@ class BattleSimulatorBase {
 
         let tiles = [];
         if (this.vm.limitsExamineRangeToThreatenedRange) {
-            for (let tile of map.enumerateTiles(x => x.allyDangerLevel > 0 && x.isUnitPlaceableForUnit(currentUnit))) {
+            for (let tile of map.enumerateTiles(x => x.allyDangerLevel > 0 && x.isUnitPlaceable(currentUnit))) {
                 if (!this.vm.limitsExamineRangeToMovableRange || movableTiles.includes(tile)) {
                     tiles.push(tile);
                 }
@@ -5821,7 +5821,7 @@ class BattleSimulatorBase {
 
         let tiles = [];
         if (this.vm.limitsExamineRangeToThreatenedRange) {
-            for (let tile of map.enumerateTiles(x => x.allyDangerLevel > 0 && x.isUnitPlaceableForUnit(currentUnit))) {
+            for (let tile of map.enumerateTiles(x => x.allyDangerLevel > 0 && x.isUnitPlaceable(currentUnit))) {
                 if (!this.vm.limitsExamineRangeToMovableRange || movableTiles.includes(tile)) {
                     tiles.push(tile);
                 }
@@ -7031,7 +7031,7 @@ class BattleSimulatorBase {
                 // 双界の盗賊の追跡対象計算
                 let minDist = CanNotReachTile;
                 let minTargetTile = null;
-                for (let tile of g_appData.map.enumerateTiles(tile => tile.posY === 0 && tile.isUnitPlaceableForUnit(evalUnit))) {
+                for (let tile of g_appData.map.enumerateTiles(tile => tile.posY === 0 && tile.isUnitPlaceable(evalUnit))) {
                     // todo: 下には移動できない制限があるっぽい？
                     let dist = tile.calculateUnitMovementCountToThisTile(evalUnit, null, -1, false);
                     if (dist === CanNotReachTile) {
@@ -9302,7 +9302,7 @@ class BattleSimulatorBase {
                     unit.actionContext.attackableUnitInfos.push(info);
                 }
 
-                if (tile === unit.placedTile || tile.isUnitPlaceable(unit)) {
+                if (tile === unit.placedTile || tile.isVacantFor(unit)) {
                     info.tiles.push(tile);
                     info.usesStyle = usesStyle;
                 }
@@ -9717,7 +9717,7 @@ class BattleSimulatorBase {
                 continue;
             }
 
-            if (moveTile !== unit.placedTile && !tile.isUnitPlaceableForUnit(targetUnit)) {
+            if (moveTile !== unit.placedTile && !tile.isUnitPlaceable(targetUnit)) {
                 continue;
             }
 
@@ -9754,7 +9754,7 @@ class BattleSimulatorBase {
         if (moveTile == null) {
             return new MovementAssistResult(false, null, null);
         }
-        if (moveTile !== unit.placedTile && !moveTile.isUnitPlaceable(unit)) {
+        if (moveTile !== unit.placedTile && !moveTile.isVacantFor(unit)) {
             return new MovementAssistResult(false, null, null);
         }
         return new MovementAssistResult(true, moveTile, targetUnit.placedTile);
@@ -9775,7 +9775,7 @@ class BattleSimulatorBase {
             return new MovementAssistResult(false, null, null);
         }
 
-        if (moveTile !== unit.placedTile && !moveTile.isUnitPlaceable(unit)) {
+        if (moveTile !== unit.placedTile && !moveTile.isVacantFor(unit)) {
             return new MovementAssistResult(false, null, null);
         }
 
@@ -9817,9 +9817,9 @@ class BattleSimulatorBase {
         }
 
         // 一旦ユニットを取り除いて配置可能かどうかをチェックする
-        let canMove = result.assistUnitTileAfterAssist.isUnitPlaceableForUnit(unit);
+        let canMove = result.assistUnitTileAfterAssist.isUnitPlaceable(unit);
         if (movesTargetUnit) {
-            canMove &= result.targetUnitTileAfterAssist.isUnitPlaceableForUnit(targetUnit);
+            canMove &= result.targetUnitTileAfterAssist.isUnitPlaceable(targetUnit);
         }
         moveUnit(unit, origUnitTile, false, executesTrap);
         moveUnit(targetUnit, origTargetUnitTile, false, executesTrap);

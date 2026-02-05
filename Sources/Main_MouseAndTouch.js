@@ -336,7 +336,7 @@ function findBestActionTile(targetTile, spaces, unit, useHistory = true) {
     // 3. 移動可能マスから、距離＋配置可能条件付きで探す
     const movableTile = unit.movableTiles?.find(tile =>
         isSameDistance(tile) &&
-        tile.isUnitPlaceableIncludingCurrentTile(unit)
+        tile.isVacantOrSelf(unit)
     );
     if (movableTile) return movableTile;
 
@@ -413,7 +413,7 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
                 } else {
                     let cellId = getCellId(tile.posX, tile.posY);
                     let cell = document.getElementById(cellId);
-                    if (tile.isUnitPlaceable(unit)) {
+                    if (tile.isVacantFor(unit)) {
                         Array.from(cell.querySelectorAll('.map-warp-bubble-icon')).forEach(node => {
                                 node.classList.remove('map-hidden');
                             }
@@ -473,7 +473,7 @@ function drawUnitRange(unit, overTilePx, overTilePy, event) {
                     const canSupport =
                         neighborTiles.some(t =>
                             unit.movableTiles.includes(t) &&
-                            t.isUnitPlaceableIncludingCurrentTile(unit) &&
+                            t.isVacantOrSelf(unit) &&
                             g_app.canUseAssistOn(unit, tile.placedUnit, t)
                         );
                     if (canSupport) {
@@ -532,7 +532,7 @@ function dragoverImplForTargetTile(unit, targetTile) {
     g_app.clearDamageCalcSummary();
     g_dragoverTargetTileForCalcSummary = null;
 
-    const isTargetTileMovable = targetTile.isUnitPlaceable(unit) || targetTile === unit.placedTile;
+    const isTargetTileMovable = targetTile.isVacantFor(unit) || targetTile === unit.placedTile;
     if (isTargetTileMovable) {
         if (g_dragOverTileHistory.lastValue !== targetTile) {
             g_dragOverTileHistory.enqueue(targetTile);

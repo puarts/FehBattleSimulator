@@ -1,6 +1,28 @@
 /// @file
 /// @brief ユーティリティークラス、関数等の定義です。
 /**
+ * 何をしてもエラーにならず、連鎖呼び出しも可能な「虚無オブジェクト」
+ */
+const NULL_OBJECT = new Proxy(function () {
+}, {
+    // プロパティアクセス (obj.prop) へのトラップ
+    get: function (target, prop) {
+        // コンソールログなどで見やすくするために文字列変換だけ定義しておく
+        if (prop === Symbol.toPrimitive) return () => '[NullObject]';
+        if (prop === 'toString') return () => '[NullObject]';
+
+        // それ以外は常に自分自身を返す（これで .a.b.c のようなチェーンが可能）
+        return NULL_OBJECT;
+    },
+
+    // 関数呼び出し (obj()) へのトラップ
+    apply: function () {
+        // 関数として呼ばれても自分自身を返す（これで obj().func() が可能）
+        return NULL_OBJECT;
+    }
+});
+
+/**
  * ObjectUtil
  */
 class ObjectUtil {
@@ -2465,6 +2487,11 @@ class Query {
         return this._it.toArray();
     }
 
+    /** @returns {Set<T>} */
+    toSet() {
+        return new Set(this.toArray());
+    }
+
     /** @returns {T|undefined} */
     first() {
         return this._it.next().value;
@@ -2638,6 +2665,73 @@ class UnitQuery extends Query {
     }
 
     /**
+     * 指定したユニットを中心として、指定した行数（幅）の範囲内にいるユニットを絞り込む
+     * 例: rows=3 の場合、中心±1行（合計3行）が対象
+     * @param {Unit} unit 中心となるユニット
+     * @param {number} totalRows 行数の幅（通常は奇数: 1, 3, 5...）
+     * @param {boolean} [includingUnit=false] 中心ユニット自身を含めるか
+     * @return {this}
+     */
+    withinRowsOf(unit, totalRows, includingUnit = false) {
+        // "3列"なら中心からの距離は1、"5列"なら2になる
+        const distance = Math.floor((totalRows - 1) / 2);
+
+        if (includingUnit) {
+            return this.filter(u => Math.abs(u.posY - unit.posY) <= distance);
+        } else {
+            return this.filter(u => Math.abs(u.posY - unit.posY) <= distance && u !== unit);
+        }
+    }
+
+    /**
+     * 指定したユニットを中心として、指定した列数（幅）の範囲内にいるユニットを絞り込む
+     * 例: cols=3 の場合、中心±1列（合計3列）が対象
+     * @param {Unit} unit
+     * @param {number} totalCols 列数の幅
+     * @param {boolean} [includingUnit=false]
+     * @return {this}
+     */
+    withinColumnsOf(unit, totalCols, includingUnit = false) {
+        // "3列"なら中心からの距離は1
+        const distance = Math.floor((totalCols - 1) / 2);
+
+        if (includingUnit) {
+            return this.filter(u => Math.abs(u.posX - unit.posX) <= distance);
+        } else {
+            return this.filter(u => Math.abs(u.posX - unit.posX) <= distance && u !== unit);
+        }
+    }
+
+    /**
+     * 指定したユニットを中心として、縦または横の指定範囲内（十字範囲）にいるユニットを絞り込む
+     * @param {Unit} unit 中心となるユニット
+     * @param {number} rowRange 縦方向（行）の幅（例: 3なら上下±1マス）
+     * @param {number} colRange 横方向（列）の幅（例: 5なら左右±2マス）
+     * @param {boolean} [includingUnit=false] 中心ユニット自身を含めるか
+     * @return {this}
+     */
+    withinRowsOrColumnsOf(unit, rowRange, colRange, includingUnit = false) {
+        // それぞれの方向の「中心からの距離」を計算
+        const rowDistance = Math.floor((rowRange - 1) / 2);
+        const colDistance = Math.floor((colRange - 1) / 2);
+
+        return this.filter(u => {
+            // 1. まず自分自身を除外するかどうかの判定
+            if (!includingUnit && u === unit) {
+                return false;
+            }
+
+            // 2. 縦方向の判定（Y座標の差が rowDistance 以内）
+            // もしくは、横方向の判定（X座標の差が colDistance 以内）
+            const isWithinRow = Math.abs(u.posY - unit.posY) <= rowDistance;
+            const isWithinCol = Math.abs(u.posX - unit.posX) <= colDistance;
+
+            // 十字範囲なので「または(OR)」で結合
+            return isWithinRow || isWithinCol;
+        });
+    }
+
+    /**
      * 指定した比較関数でソートする（※即時評価されるため注意）
      * @param {function(Unit, Unit): number} compareFn
      * @returns {this}
@@ -2672,4 +2766,22 @@ class UnitQuery extends Query {
  * @extends {Query<Tile>}
  */
 class TileQuery extends Query {
+    /**
+     * @param {Unit} unit
+     * @return {TileQuery}
+     */
+    canMoveTo(unit) {
+        return this.filter(tile => tile.isUnitPlaceable(unit));
+    }
+
+    /**
+     * @param {Unit} unit
+     * @return {TileQuery}
+     */
+    inCantoRangeIfCanto(unit) {
+        if (!unit.isCantoActivating) {
+            return this;
+        }
+        return this.filter(tile => tile.calculateDistanceToUnit(unit) <= unit.moveCountForCanto);
+    }
 }
