@@ -122,9 +122,9 @@ class GetSkillEffectFieldNode extends SkillEffectFieldNode {
             const result = targetObj[this._key];
             results.push(result);
             if (this._logMessageFunc) {
-                env.info(`${this._logMessageFunc(unit.nameWithGroup, result)}`);
+                env.debug(`${this._logMessageFunc(unit.nameWithGroup, result)}`);
             } else {
-                env.info(`${unit.nameWithGroup}の${this._logMessage} : ${this._toLog(result)}`);
+                env.debug(`${unit.nameWithGroup}の${this._logMessage} : ${this._toLog(result)}`);
             }
         }
         return results;

@@ -167,6 +167,14 @@ const TRIGGERS_POTENT_FOLLOW_N_PERCENT = percentage =>
         .setKey(BattleContext.nameOf(ctx => ctx.potentRatios))
         .setLogMessageFunc((name, n) => `${name}は【神速追撃：ダメージ${n * 100}%】を発動`);
 
+/**
+ * @TODO: ON_FOEを指定できるようにする
+ */
+const INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_N_ON_FOE = _n =>
+    MOD_BATTLE_CONTEXT_FIELD(_n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.reducesCooldownCount))
+        .setLogMessageFunc(name => `${name}は敵の奥義発動カウント変動量-1`);
+
 const GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_N = _n =>
     new CallBattleContextFuncNode(
         (ctx, _n) => ctx.increaseCooldownCountForBoth(),
@@ -198,6 +206,40 @@ const CAN_ATTACK_TWICE =
         ctx => ctx.isTriggeringAttackTwice(),
         (u, r) => `${u.nameWithGroup}は2回攻撃を発動しているか: ${r}`
     );
+
+const [
+    ,
+    _NEUTRALIZES_FOES_NON_SPECIAL_SURVIVING_WITH_1_HP
+] = makeBattleContextFieldOperators(
+    BattleContext.nameOf(ctx => ctx.neutralizesNonSpecialMiracle),
+    SkillEffectField.Op.SET_TRUE,
+    '',
+    name => `${name}は相手の奥義以外の祈りを無効`
+);
+const NEUTRALIZES_FOES_NON_SPECIAL_SURVIVING_WITH_1_HP = _NEUTRALIZES_FOES_NON_SPECIAL_SURVIVING_WITH_1_HP(true);
+
+class MakeFollowUpAttackBeforeFoesNextAttackNode extends SingleEffectNode {
+    evaluate(env) {
+        for (const unit of this._targetNode.evaluate(env)) {
+            env.info(`${unit.nameWithGroup}は戦闘中、追撃可能なら自分の攻撃の直後に追撃を行う（攻め立て）`);
+            unit.battleContext.isDesperationActivatable = true;
+            unit.battleContext.isDefDesperationActivatable = true;
+        }
+    }
+}
+
+const MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK =
+    new MakeFollowUpAttackBeforeFoesNextAttackNode();
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_BEFORE_UNITS_FIRST_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionBeforeFirstAttack))
+        .setLogMessage('自分の最初の攻撃前に自身の奥義発動カウント-');
+
+const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionBeforeFirstFollowupAttack))
+        .setLogMessage('自分の最初の追撃前に自身の奥義発動カウント-');
 
 ///
 
@@ -783,7 +825,7 @@ class TargetCanMakeFollowUpAttackBeforeFoesNextAttackNode extends SkillEffectNod
     evaluate(env) {
         let unit = this.getUnit(env);
         // 攻め立て
-        env.info(`${unit.nameWithGroup}に攻め立て効果を設定`);
+        env.info(`${unit.nameWithGroup}は戦闘中、追撃可能なら自分の攻撃の直後に追撃を行う（攻め立て）`);
         unit.battleContext.isDesperationActivatable = true;
         unit.battleContext.isDefDesperationActivatable = true;
     }

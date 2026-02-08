@@ -488,7 +488,7 @@ const CALC_HEAL_AMOUNT_HOOKS = new SkillEffectHooks();
 
 /**
  * 移動が不可能になるスタイルの攻撃範囲を求めるときに呼び出される。
- * @type {SkillEffectHooks<SpacesNode, NodeEnv>} */
+ * @type {SkillEffectHooks<CollectionNode<*, Tile>, NodeEnv>} */
 const CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS = new SkillEffectHooks();
 
 /**

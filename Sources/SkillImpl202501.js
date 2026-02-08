@@ -1278,6 +1278,7 @@
             FOE_SUFFERS_GUARANTEED_FOLLOW_UP_ATTACKS_DURING_COMBAT,
         );
     };
+    setSkill(PassiveC.SDCruxPloy, SPD_DEF(4));
     setSkill(PassiveC.SRCruxPloy, SPD_RES(4));
 }
 

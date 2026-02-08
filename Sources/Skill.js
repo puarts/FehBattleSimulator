@@ -1364,6 +1364,7 @@ const StatusEffectType = {
     AtkLiberate: 100, // 攻撃の解放
     ResLiberate: 101, // 魔防の解放
     TrulyIncited: 102, // 真奮激
+    SpdLiberate: 103, // 速さの解放
     // 1. STATUS_EFFECT_INFO_MAPに画像パスと名前、表記を登録する
     // 2. 不利なステータス異常の場合はNEGATIVE_STATUS_EFFECT_SETに登録すること
     // 3. POSITIVE_STATUS_EFFECT_ARRAYまたはNEGATIVE_STATUS_EFFECT_ARRAYに登録すること
@@ -1376,6 +1377,7 @@ const POSITIVE_STATUS_EFFECT_ARRAY = [
     StatusEffectType.ResonantShield,
     // TODO: 正しい順序に修正する
     StatusEffectType.AtkLiberate,
+    StatusEffectType.SpdLiberate,
     StatusEffectType.ResLiberate,
 // 七色の叫び
     StatusEffectType.RallySpectrum,

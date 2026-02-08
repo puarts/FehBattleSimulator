@@ -808,6 +808,7 @@ class ForFoesEnv extends NodeEnv {
         this.setDamageCalculatorWrapper(damageCalculator)
             .setSkillOwner(enemyAllyUnit).setTarget(targetUnit).setTargetFoe(enemyUnit)
             .setUnitsDuringCombat(enemyUnit, targetUnit)
+            .setTextUnit(enemyUnit)
             .setTextFoe(targetUnit);
         this.calcPotentialDamage = calcPotentialDamage;
     }

@@ -4117,6 +4117,17 @@ PassiveC.BuddingFlower = 3552; // 可憐な花
 Weapon.InstructorsOpus = 3553; // 導き手の書
 Special.GoddessDance = 3554; // 計略・女神の舞
 PassiveC.Instruct4 = 3555; // 指導4
+Weapon.GiftOfLove = 3556; // 幸福な愛の贈り物
+PassiveB.SRDetectAerial = 3557; // 速魔の看破・俯瞰
+PassiveC.TrulyInspired = 3558; // 真奮激・謀策
+Weapon.SweetStaff = 3559; // 愛らしいケーキの杖
+Support.GuardianPlus = 3560; // ガーディアン+
+Special.DelugeCharm = 3561; // 疾風静水の招福
+PassiveC.HugePersonality = 3562; // 真煌めく理力
+Weapon.BowOfLovePlus = 3563; // 麗愛の弓+
+Weapon.DraconicBond = 3564; // 竜姉妹の愛のブーケ
+PassiveB.ARDetectAerial = 3565; // 攻魔の看破・俯瞰
+PassiveC.FellRefuge = 3566; // 真邪竜の救済
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
@@ -4308,6 +4319,7 @@ const StyleType = {
     RANGE_2: 8,
     INTRINSIC_MULAGIR: 9,
     WEAPON_TRIANGLE_RED: 10,
+    FREEZE: 11,
     // CAN_ACTIVATE_STYLE_HOOKSを設定する（styleのIDに設定）
 }
 const STYLE_TYPE_NAMES = [

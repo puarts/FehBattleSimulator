@@ -510,6 +510,21 @@ const SKILL_EFFECT_NODE = (...nodes) => new SkillEffectNode(...nodes);
  */
 const NODE_FUNC = (...nodes) => () => SKILL_EFFECT_NODE(...nodes);
 
+class FirstValueNode extends SkillEffectNode {
+    /**
+     * @param {SkillEffectNode} node
+     */
+    constructor(node) {
+        super();
+        this._node = node;
+    }
+
+    evaluate(env) {
+        const [firstResult] = this._node.evaluate(env);
+        return firstResult;
+    }
+}
+
 /**
  * @abstract
  * @typedef {number|NumberNode} NumberResolvable
@@ -618,6 +633,13 @@ class CollectionNode extends SkillEffectNode {
      */
     count() {
         return COUNT_COLLECTION(this);
+    }
+
+    /**
+     * @return {BoolNode}
+     */
+    exists() {
+        return EXISTS(this);
     }
 
     /**
@@ -783,12 +805,25 @@ class CountCollectionNode extends NumberNode {
 const COUNT_COLLECTION = collectionNode => new CountCollectionNode(collectionNode);
 const NUM_OF = collectionNode => new CountCollectionNode(collectionNode);
 
+class IntersectCollectionNode extends CollectionNode {
+    constructor(...collectionNodes) {
+        super();
+        this._collectionNodes = collectionNodes;
+    }
+
+    evaluate(env) {
+        let results = this._collectionNodes.map(n => new Set(n.evaluate(env)));
+        return SetUtil.intersection(...results);
+    }
+}
+
 const EXISTS = collectionNode => collectionNode.count().neq(ZERO_NUMBER_NODE);
 const THERE_IS = collectionNode => collectionNode.count().neq(ZERO_NUMBER_NODE);
 const THERE_ARE = collectionNode => collectionNode.count().neq(ZERO_NUMBER_NODE);
 
 /**
  * @abstract
+ * @extends {CollectionNode<NumberNode>}
  */
 class NumbersNode extends CollectionNode {
     /**
@@ -1127,6 +1162,48 @@ class BoolNode extends SkillEffectNode {
         super.evaluate(env);
     }
 }
+
+/**
+ * BoolNode ではないノードをラップして、BoolNode として振る舞わせるアダプター
+ */
+class WrapBoolNode extends BoolNode {
+    constructor(sourceNode) {
+        super();
+        if (!sourceNode || !(sourceNode instanceof SkillEffectNode)) {
+            const className = sourceNode?.constructor?.name ?? typeof sourceNode;
+
+            // 開発者がブラウザのコンソールで即座に中身を inspect できるようにする
+            console.group('WrapBoolNode: Construction Error');
+            console.error('Expected: SkillEffectNode');
+            console.error('Actual: %o', sourceNode);
+            console.groupEnd();
+
+            throw new Error(`sourceNode must be SkillEffectNode: got ${className}`);
+        }
+        this._sourceNode = sourceNode;
+    }
+
+    evaluate(env) {
+        const result = this._sourceNode.evaluate(env);
+
+        if (typeof result !== 'boolean') {
+            env.warn(
+                `[WrapBoolNode Warning] Expected boolean but got ${typeof result} (${result}). ` +
+                `Source: ${this._sourceNode.constructor.name}`
+            );
+        }
+
+        // DSLの他の部分（and/orなど）が壊れないよう、
+        // 最終的には確実に boolean として返す
+        return !!result;
+    }
+}
+
+/**
+ * 任意のノードを BoolNode インターフェースに適合させる
+ * @param {SkillEffectNode} node
+ */
+const TO_BOOL = node => (node instanceof BoolNode ? node : new WrapBoolNode(node));
 
 class AndNode extends BoolNode {
     evaluate(env) {
@@ -1563,7 +1640,7 @@ class SomeNode extends BoolNode {
 
     evaluate(env) {
         let results = this._collectionNode.evaluate(env);
-        return IterUtil.has(results, true);
+        return IterUtil.has(results, TRUE_NODE);
     }
 }
 
@@ -1641,6 +1718,8 @@ class EqNode extends CompareNode {
         let [left, right] = this.evaluateChildren(env);
         let result = left === right;
         env.trace(`[EqNode] ${left} === ${right}: ${result}`);
+        // console.log('left: %o', left);
+        // console.log('right: %o', right);
         return result;
     }
 }

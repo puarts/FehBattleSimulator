@@ -2062,6 +2062,28 @@ class SetUtil {
      * @template T
      * @param {...Set<T>} sets - A list of sets.
      * @returns {Set<T>} A new set that contains elements present in all sets.
+     *
+     * @example
+     * // Basic usage with two sets
+     * const setA = new Set([1, 2, 3]);
+     * const setB = new Set([2, 3, 4]);
+     * const result = SetUtils.intersection(setA, setB);
+     * console.log(result); // Set { 2, 3 }
+     *
+     * @example
+     * // Usage with three or more sets
+     * const setA = new Set([1, 2, 3, 4]);
+     * const setB = new Set([2, 3]);
+     * const setC = new Set([3, 4, 5]);
+     * const result = SetUtils.intersection(setA, setB, setC);
+     * console.log(result); // Set { 3 }
+     *
+     * @example
+     * // Returns an empty set if no common elements exist
+     * const setA = new Set([1, 2]);
+     * const setB = new Set([3, 4]);
+     * const result = SetUtils.intersection(setA, setB);
+     * console.log(result); // Set {}
      */
     static intersection(...sets) {
         if (sets.length === 0) return new Set();
@@ -2648,6 +2670,15 @@ class UnitQuery extends Query {
      */
     differentGroup(unit) {
         return this.filter(u => u.isDifferentGroup(unit));
+    }
+
+    /**
+     * 支援ユニットのみを絞り込む
+     * @param {Unit} unit
+     * @return {this}
+     */
+    supportPartners(unit) {
+        return this.filter(u => unit.isPartner(u));
     }
 
     /**

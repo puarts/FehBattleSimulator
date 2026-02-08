@@ -188,6 +188,15 @@ describe('Test skill effect', () => {
             let collectionNode = COLLECTION_NODE();
             expect(EXISTS(collectionNode).evaluate(new NodeEnv())).toBe(false);
         });
+
+        test('intersect', () => {
+            const numbers = [1, 2, 3, 4, 5].map(v => new ConstantNumberNode(v - 1));
+            const collectionNode1 = COLLECTION_NODE(numbers[0], numbers[1], numbers[2]);
+            const collectionNode2 = COLLECTION_NODE(numbers[1], numbers[2], numbers[3]);
+            const result =
+                new IntersectCollectionNode(collectionNode1, collectionNode2).evaluate(new NodeEnv());
+            expect(new Set(result)).toEqual(new Set([1, 2]));
+        });
     });
 });
 

@@ -1,34 +1,267 @@
 // スキル実装
-// Budding Staff
+// Gift of Love
+// Mt: 14 Rng:2
+// Enables (Canto (Dist.; Max 3, Min 1)) . Accelerates Special trigger (cooldown count-1).
+// If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
+// After start-of-turn effects trigger on player phase, and after start-of-turn effects trigger on enemy phase (except for in Summoner Duels), for unit and allies within 3 spaces of unit, neutralizes stat penalties and two Penalty effects (does not apply to Penalty effects that are applied at the same time; neutralizes the first applicable Penalty effects on unit's or ally's list of active effects).
+// For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+X during combat (for
+// unit, X = 15; for allies, X = 5), and also, if unit's or ally's
+// Spd > foe's Spd, neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's or ally's follow-up attacks during combat.
+// Unit deals +25 damage during combat (excluding area-of-effect Specials). If decreasing the Spd difference necessary to make a follow-up attack by 10 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups), triggers (Potent Follow 100%] during combat.
+// If unit initiates combat, unit can make a follow-up attack before foe's next attack during combat.
+
+// S/R Detect Aerial
+// For foes on the map whose Res ‹ unit's Res at start of combat, inflicts Spd/Res-5, neutralizes foe's bonuses to Spd/Res, and foe suffers +10 damage during combat (excluding area-of-effect Specials).
+// Inflicts Spd/Res-4 on foe, and unit deals +8 damage during combat (excluding area-of-effect Specials).
+
+// Truly Inspired
+// At start of player phase or enemy phase, grants (Truly Incited] to unit for 1 turn, and also, if any foes within 3 rows or 3 columns centered on unit have Res < unit's Res+5, inflicts (Ploy] and (Exposurel on those foes through their next actions.
+// Grants Atk/Res+4 during combat.
+
+// Sweet Staff
 // Mt: 14
 // Rng: 2
 // Calculates damage from staff like other weapons.
 // Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1).
-// For foes within 3 rows or 3 columns centered on unit, inflicts Atk/Spd/Def/Res-5, reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials), and neutralizes foe's non-Special "if foe would reduce unit's HP to 0, unit survives with 1 HP" effects during combat.
-// Grants Atk/Spd/Def/Res+10 to unit, unit deals +25 damage (excluding area-of-effect Specials), and reduces damage from foe's attacks by 15 during combat (excluding area-of-effect Specials).
-// Unit can use the following (Style) :
-// Freeze Style
+// At start of player phase or enemy phase, grants
+// "neutralizes foe's bonuses during combat," "increases Spd difference necessary for foe to make a follow-up attack by 10 during combat," and [Canto (1)] to unit and allies within 2 spaces of unit for 1 turn.
+// Grants Atk/Spd/Def/Res+15 to unit, unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 15 (excluding area-of-effect Specials), reduces damage from foe's Specials by an additional 15 (excluding area-of-effect Specials), restores 7 HP to unit when unit deals damage to foe, and grants Special cooldown count-2 to unit before foe's first attack during combat.
 
-// Windfire Charm
-// @5
+// Guardian+
+// Rng: 2
+// This skill is treated as a Rally Assist skill.
+// Restores HP = 50% of unit's Atk (min 8 HP) to target
+// ally, grants Spd/Def/Res+6 and [Fringe Bonus] to unit and target ally for 1 turn, and also, when there is no ally on the map with [Physical Twin Save) (including unit and target ally), grants (Physical Twin Save) to target ally for 1 turn. (Using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
+// [Physical Twin Save)
+// If a sword, lance, axe, bow, dagger, or beast foe initiates combat against an ally within 2 spaces of unit, triggers Savior on unit (triggers only if unit is not equipped with a skill that can trigger another Savior effect; if unit is granted multiple statuses that enable "Savior" effects to trigger, Savior will not trigger).
+// If foe uses sword, lance, axe, bow, dagger, or beast damage, disables foe's effects that "calculate damage using the lower of foe's Def or Res" (including area-of-effect Specials), and any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat during combat (excludes boosted Special effects from engaging; only highest value applied; does not stack).
+
+// Deluge Charm
 // If an Assist skill is used, unit's Special cooldown count does not go down.
 // When Special triggers, boosts damage by 70% of the greater of unit's or foe's Atk (calculates damage from staff after combat damage is added).
 // Reduces damage from foe's first attack by 40% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
-// At start of player phase or enemy phase, grants [Atk Liberate] and [Spd Liberate] to unit and allies within 2 spaces of unit for 1 turn.
+// At start of player phase or enemy phase, grants (Spd Liberatel and [Res Liberatel to unit and allies within 2 spaces of unit for 1 turn.
+
+// Huge Personality
+// Disables foe's effects that "calculate damage using the lower of foe's Def or Res" (including area-of-effect
+// Specials).
+// If magic, staff, or dragon foe initiates combat against an ally within 2 spaces of unit, triggers (Savior] on unit.
+// For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+5, reduces damage from foe's attacks by 7 (excluding area-of-effect Specials), neutralizes effects that inflict "Special cooldown charge -X" on unit or ally, and unit's or ally's
+// next attack deals damage = 40% of foe's first-attack
+// damage prior to reductions during combat (resets at end of combat; only highest value applied; does not stack).
+// Neutralizes foe's bonuses, and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+
+// Bow of Love+
+// Mt: 12
+// Rng: 2 Eff: E
+// Effective against flying foes.
+// At start of player phase or enemy phase, grants Atk/Def+6, "neutralizes foe's bonuses during combat," and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
+// Grants Atk/Spd/Def/Res+5 to unit, unit deals +20 damage (excluding area-of-effect Specials), and reduces damage from foe's attacks by 10 during combat (excluding area-of-effect Specials).
+
+// Draconic Bond
+// Rng: 2
+// Accelerates Special trigger (cooldown count-1).
+// If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
+// At start of player phase or enemy phase, grants Atk/Res+6, [Fell Spirit] and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
+// Grants Atk/Spd/Def/Res+15 to unit, unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 15 (excluding area-of-effect Specials), and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat. If unit or foe is engaged, or if unit's Res > foe's Res, unit attacks twice during combat.
+
+// A/R Detect Aerial
+// For foes on the map whose Res ‹ unit's Res at start of combat, inflicts Atk/Res-5, neutralizes foe's bonuses to Atk/Res, and foe sutters +10 damage during combat (excluding area-of-effect Specials).
+// Inflicts Atk/Res-4 on foe, and unit deals +8 damage during combat (excluding area-of-effect Specials).
+
+// Fell Refuge
+// Enables [Canto (Dist.; Max 3, Min 1)] .
+// Disables foe's skills that "calculate damage using the lower of foe's Def or Res" (including area-of-effect
+// Specials).
+// For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+5, deals +7 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 7 during combat (excluding area-of-effect Specials), and also, if this unit's Res ≥ foe's Res+5 at start of combat, and if foe's attack can trigger foe's Special, inflicts Special cooldown count+ 1 on foe before foe's first attack and before foe's first follow-up attack during combat (cannot exceed foe's maximum Special cooldown).
+// Reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials), grants Special cooldown count-1 to unit before unit's first attack, and reduces the percentage of foe's non-Special
+// "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+
+// Duo Skill
+// Grants [Divinely Inspiring) , (Reflex), and "unit makes a guaranteed follow-up attack during combat" to unit and allies within 3 spaces of unit for 1 turn.
+
+// Budding Staff
+{
+    const skillId = Weapon.BuddingStaff;
+    // Mt: 14
+    // Rng: 2
+    // Calculates damage from staff like other weapons.
+    // Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1).
+    // For foes within 3 rows or 3 columns centered on unit,
+    SkillEffectRegistrar.registerSkillsForFoesDuringCombat(skillId,
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        UNIT.doEffects(
+            // inflicts Atk/Spd/Def/Res-5,
+            INFLICTS_PENALTY(ATK_SPD_DEF_RES(5)).on(FOE),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% (excluding area-of-effect Specials), and
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_N_PERCENT(50).excludingAoe(),
+            // neutralizes foe's non-Special "if foe would reduce unit's HP to 0, unit survives with 1 HP" effects during combat.
+            NEUTRALIZES_FOES_NON_SPECIAL_SURVIVING_WITH_1_HP.duringCombat(),
+        ),
+    );
+
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Grants Atk/Spd/Def/Res+10 to unit,
+        GRANTS_BONUS(ATK_SPD_DEF_RES(10)).to(UNIT),
+        // unit deals +25 damage (excluding area-of-effect Specials), and
+        UNIT.do(DEALS_DAMAGE(25).excludingAoe()).and(
+            // reduces damage from foe's attacks by 15 during combat (excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(15).excludingAoe(),
+        ),
+    );
+    // Unit can use the following (Style) :
+    // Freeze Style
+    setUnitCanUseFollowingStyle(skillId, StyleType.FREEZE);
+}
+
+{
+    const style = StyleType.FREEZE;
+    const skillId = getStyleSkillId(style);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    // ―――――――― Freeze Style ――――――――
+    // Unit can attack foes within 6 spaces of unit and 3 rows or 3 columns centered on unit regardless of unit's range.
+    CANNOT_MOVE_STYLE_ATTACK_RANGE_HOOKS.addSkill(skillId, () =>
+        SPACES_OF_TARGET_NODE(AND_NODE(
+            IS_SPACE_WITHIN_N_SPACES_OF_TARGET_NODE(6),
+            IS_SPACE_WITHIN_N_ROWS_OR_M_COLUMNS_CENTERED_ON_TARGET_NODE(3, 3))
+        ),
+    );
+    // (Damage dealt by unit's attacks and damage from foe's attacks during that combat are reduced to 0, and foes' Savior effects will not trigger (Røkkr take at least 1 damage).)
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId,
+        IS_STYLE_ACTIVE(style),
+        // (Damage dealt by unit's attacks and damage from foe's attacks during that combat are reduced to 0, and
+        REDUCES_DAMAGE_FROM_TARGET_TO_ZERO_NODE,
+        REDUCES_DAMAGE_FROM_TARGET_FOE_TO_ZERO_NODE,
+    );
+    // foes' Savior effects will not trigger (Røkkr take at least 1 damage).)
+    BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // When unit is in combat, foes' Savior effects will not trigger.
+            DOES_NOT_TRIGGER_TARGETS_FOES_SAVIOR_EFFECTS_NODE,
+        ),
+    ));
+    AFTER_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After combat, inflicts【Gravity】,【Isolation】, and status preventing counterattacks on foe through its next action, and
+            INFLICTS_STATUS_EFFECTS(
+                StatusEffectType.Gravity,
+                StatusEffectType.Isolation,
+                StatusEffectType.CounterattacksDisrupted,
+            ).on(FOE).throughTheirNextActions(),
+            // grants another action to unit.
+            GRANTS_ANOTHER_ACTION_TO_TARGET_AFTER_COMBAT_NODE,
+        )
+    ));
+
+    // Unit cannot move or
+    CANNOT_MOVE_STYLES.add(style);
+    // attack structures,
+    CANNOT_ATTACK_STRUCTURE_STYLES.add(style);
+    // after-combat movement effects do not occur, and
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
+    ));
+    // TODO: 実装する
+    // remaining movement granted from Canto is treated as 0.
+
+    // Unit suffers a counterattack if any of the following conditions are met:
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // foe is armored with Range = 2,
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_2_NODE),
+            // foe can counterattack regardless of unit's range, or
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // foe's Range is the same as the distance between unit and foe.
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
+    // Skill effect's Range is treated as 2.
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
+    // This Style can be used only once per turn.
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
+    // TODO: 実装する
+    // 【Style】
+    // Change Style using the Style button at the bottom of the screen.
+    // A unit's Style is only active when that unit is taking an action.
+    // Style use is disabled when unit is deployed using Pair Up or when unit is equipped with multiple skills that have a Style.
+}
+
+// Windfire Charm
+{
+    const skillId = Special.WindfireCharm;
+    // @5
+    setSpecialCountAndType(skillId, 5, true, true, false);
+    // If an Assist skill is used, unit's Special cooldown count does not go down.
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET.add(skillId);
+    // When Special triggers,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // boosts damage by 70% of the greater of unit's or foe's Atk
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(
+            MAX_NODE(UNITS_ATK_NODE, FOES_ATK_NODE).percentage(70),
+        )
+        // (calculates damage from staff after combat damage is added).
+    ));
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Reduces damage from foe's first attack by 40% during combat
+        UNIT.do(REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY(40).duringCombat()
+            // ("first attack" normally means only the first strike;
+            // for effects that grant "unit attacks twice," it means the first and second strikes).
+            .includingSecondStrike(),
+        ),
+    );
+    // At start of player phase or enemy phase,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
+        // grants [Atk Liberate] and [Spd Liberate] to unit and allies within 2 spaces of unit for 1 turn.
+        GRANTS_STATUS_EFFECTS(
+            StatusEffectType.AtkLiberate,
+            StatusEffectType.SpdLiberate,
+        ).to(UNIT.and(ALLIES_WITHIN.spaces(2).of(UNIT))).forNTurn(1),
+    ));
+}
 
 // Budding Flower
-// Enables [Canto (Dist.; Max 3, Min 1)] .
-// If unit initiates combat, after combat, inflicts [Undefended) and (Discord] on target and foes within 2 spaces of target through their next actions, and applies [Divine Vein (Haze)] on target's space and on each space within 2 spaces of target's space for 1 turn.
-// Grants Atk/Spd/Def/Res+5 to unit, unit deals +7 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 7 (excluding area-of-effect Specials), and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also, if decreasing the Spd difference necessary to make a follow-up attack by 10 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups), triggers (Potent Follow 100% during combat.
+{
+    const skillId = PassiveC.BuddingFlower;
+    // Enables [Canto (Dist.; Max 3, Min 1)] .
+    enablesCantoDistMin(skillId, 0, 3, 1);
+    // If unit initiates combat, after combat,
+    AFTER_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        // inflicts [Undefended) and (Discord]
+        INFLICTS_STATUS_EFFECTS(
+            StatusEffectType.Undefended,
+            StatusEffectType.Discord,
+            // on target and foes within 2 spaces of target through their next actions, and
+            // TODO: 戦闘後targetを表すノードを作成
+        ).on(FOE.and(FOES_WITHIN.spaces(2).of(FOE))).throughTheirNextActions(),
 
-// Style
-// Unit can use the following (Style) :
-// Freeze Style
-// Unit can attack foes within 6 spaces of unit and 3 rows or 3 columns centered on unit regardless of unit's range. (Damage dealt by unit's attacks and damage from foe's attacks during that combat are reduced to O, and foes' Savior effects will not trigger (Røkkr take at least 1 damage).)
-// After combat, inflicts (Gravity) , (Isolation] , and status preventing counterattacks on foe through its next action, and grants another action to unit.
-// Unit cannot move or attack structures, after-combat movement effects do not occur, and remaining movement granted from Canto is treated as O. Unit suffers a counterattack if any of the following
-// conditions are met: foe is armored with Range = 2,
-// foe can counterattack regardless of unit's range, or foe's Range is the same as the distance between unit and foe. Skill effect's Range is treated as 2. This Style can be used only once per turn.
+        // applies [Divine Vein (Haze)]
+        // on target's space and on each space within 2 spaces of target's space for 1 turn.
+        FOR_EACH_SPACES_NODE(SPACES_WITHIN_N_SPACES_OF_FOE_NODE(2),
+            APPLY_DIVINE_VEIN_NODE(DivineVeinType.Haze, SKILL_OWNER_GROUP_NODE, 1),
+        ),
+    ));
+
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Grants Atk/Spd/Def/Res+5 to unit,
+        GRANTS_BONUS(ATK_SPD_DEF_RES(5)).to(UNIT),
+        // unit deals +7 damage (excluding area-of-effect Specials),
+        UNIT.doEffects(
+            DEALS_DAMAGE(7).excludingAoe(),
+            // reduces damage from foe's attacks by 7 (excluding area-of-effect Specials), and
+            REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(7).excludingAoe(),
+        ),
+        // neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also,
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        // if decreasing the Spd difference necessary to make a follow-up attack by 10
+        // would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
+        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
+            // triggers (Potent Follow 100% during combat.
+            UNIT.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(100)).duringCombat(),
+        ),
+    );
+}
 
 // Instructor's Opus
 // Mt: 14 Rng:2
@@ -227,5 +460,350 @@
             // and grants Special cooldown charge +1 to unit per attack during combat (only highest value applied; does not stack).
             GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_N(1).to(UNIT).perAttack().duringCombat().onlyHighestNotStack(),
         )
+    );
+}
+
+{
+    let skillId = Weapon.MeleeLancePlus;
+    SkillEffectRegistrar.registerSkillsForFoesDuringCombat(skillId,
+        // on foes within 3 rows or 3 columns centered on unit
+        IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+        EFFECTS(
+            // Inflicts Atk/Spd/Def/Res-5
+            INFLICTS_PENALTY(ATK_SPD_DEF_RES(5)),
+            // and neutralizes effects that grant "Special cooldown charge +X"
+            NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS(true),
+            // to those foes during their combat.
+        ).to(FOE).duringCombat(),
+    );
+    // At start of combat, if unit's HP ≥ 25%,
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId,
+        IS_UNITS_HP_GTE_25_PERCENT_AT_START_OF_COMBAT_NODE,
+        // unit deals +X × 5 damage during combat
+        UNIT.do(DEALS_DAMAGE(MULT_NODE(X, 5)).duringCombat()
+            // (max 20; X = number of foes within 3 spaces of target, including target;
+            .max(20).x(NUM_OF_UNITS(FOES_WITHIN.spaces(3).of(TARGET_FOE).include(TARGET_FOE)))
+            // excluding area-of-effect Specials).
+            .excludingAoe())
+    );
+}
+
+// Unequaled Tome	14	2
+{
+    let skillId = Weapon.UnequaledTome;
+    // Accelerates Special trigger (cooldown count-1).
+    // Unit can move through foes' spaces.
+    CAN_MOVE_THROUGH_FOES_SPACE_SKILLS.add(skillId);
+
+    // unit can move to that space
+    UNIT_CAN_MOVE_TO_A_SPACE_HOOKS.addSkill(skillId, () =>
+        // If any space within 2 spaces of unit meets any of the following conditions,
+        ANY_SPACE.withinSpaces(2).ofUnit(UNIT).meetAnyConditions(
+            // - There is an ally.
+            // - There is a Divine Vein effect applied.
+            // - It is defensive terrain.
+            // - It counts as difficult terrain, excluding impassable terrain.
+            IS_THERE_ALLY,
+            IS_THERE_DIVINE_VEIN_EFFECT_APPLIED,
+            IS_IT_DEFENSIVE_TERRAIN,
+            DOES_IT_COUNT_AS_DIFFICULT_TERRAIN_EXCLUDING_IMPASSABLE_TERRAIN,
+            // or any space within 2 spaces of that space:
+        ).orWithinSpacesOfThatSpaces(2),
+    );
+    // At start of turn, and after unit acts (if Canto triggers, after Canto),
+    setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, NODE_FUNC(
+        // inflicts Atk/Res-7,
+        // 【Sabotage】,
+        // and a penalty that neutralizes non-Special "if foe would reduce unit's HP to 0, unit survives with 1 HP" effects
+        EFFECTS(
+            INFLICTS_PENALTY(ATK_RES(7)),
+            INFLICTS_STATUS_EFFECTS(StatusEffectType.Sabotage),
+            INFLICTS_STATUS_EFFECTS(StatusEffectType.NeutralizeUnitSurvivesWith1HP),
+            // on closest foes and foes within 2 spaces of those foes through their next actions.
+        ).on(CLOSEST_FOES.and(FOES_WITHIN.spaces(2).of(CLOSEST_FOES))).throughTheirNextActions(),
+    ));
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Grants Atk/Spd/Def/Res+15 to unit,
+        GRANTS_BONUS(ATK_SPD_DEF_RES(15)).to(UNIT),
+        UNIT.doEffects(
+            // unit deals +25 damage (excluding area-of-effect Specials), and
+            DEALS_DAMAGE(25).excludingAoe(),
+            // reduces damage from foe's attacks by 15 during combat (excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(15).duringCombat().excludingAoe(),
+        ),
+    );
+}
+
+// SuperiorTalent
+{
+    let skillId = PassiveA.SuperiorTalent;
+    // Grants Atk/Spd/Def/Res+9.
+    // Disables foe's effects that "calculate damage using the lower of foe's Def or Res" (including area-of-effect Specials).
+    DISABLES_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SET.add(skillId);
+    // At start of player phase or enemy phase,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
+        // grants Atk/Res+6,【Creation Pulse】, and 【Canto (１)】
+        GRANTS_EFFECTS(
+            ATK_RES(6),
+            StatusEffectType.CreationPulse,
+            StatusEffectType.Canto1,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+        ).to(UNIT.and(ALLIES_WITHIN.spaces(2).of(UNIT))).forNTurn(1),
+    ));
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        UNIT.doEffects(
+            // Grants bonus to Atk = X × 80%
+            GRANTS_BONUS(ATK(X.percentage(80)))
+                // (X = A + B;
+                .x(
+                    ADD_NODE(
+                        // A = highest total bonuses among unit and allies within 3 spaces of unit;
+                        HIGHEST(TARGETS_TOTAL_BONUSES).among(UNIT.and(ALLIES_WITHIN.spaces(3).of(UNIT))),
+                        // B = highest total penalties among foe and foes within 3 spaces of that foe),
+                        HIGHEST(TARGETS_TOTAL_PENALTIES).among(FOE.and(FOES_WITHIN.spaces(3).of(FOE))),
+                    ),
+                ),
+            // neutralizes unit's penalties to Atk/Res,
+            NEUTRALIZES_STAT_PENALTIES(StatFlags.ATK_RES),
+            // reduces damage from foe's attacks by 7 (excluding area-of-effect Specials), and
+            REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(7).excludingAoe(),
+            // reduces the percentage of foe's non-Special "reduce damage by X%" skills by 50% during combat
+            REDUCES_PERCENTAGE_OF_FOES_NON_SPECIAL_DAMAGE_REDUCTION_BY_N_PERCENT(50).duringCombat()
+                // (excluding area-of-effect Specials).
+                .excludingAoe(),
+        ),
+    );
+}
+
+// IlianLongsword
+{
+    let skillId = Weapon.IlianLongsword;
+    // Accelerates Special trigger (cooldown count-1).
+    // If a skill compares unit's Spd to a foe's or ally's Spd, treats unit's Spd as if granted +7.
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => SPD(7))
+    // At start of player phase or enemy phase,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
+        // grants 【Reflex】,【Dodge】, and【Truly Incited】
+        GRANTS_EFFECTS(
+            StatusEffectType.Reflex,
+            StatusEffectType.Dodge,
+            StatusEffectType.TrulyIncited,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+        ).to(UNIT.and(ALLIES_WITHIN.spaces(2).of(UNIT))).forNTurn(1),
+    ));
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Grants Atk/Spd/Def/Res+15 to unit,
+        GRANTS_BONUS(ATK_SPD_DEF_RES(15)).to(UNIT),
+        UNIT.doEffects(
+            // unit deals +25 damage (excluding area-of-effect Specials),
+            DEALS_DAMAGE(25).excludingAoe(),
+            // reduces damage from foe's attacks by 15 (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(15).excludingAoe(),
+            // reduces damage from foe's Specials by an additional 15 (excluding area-of-effect Specials), and
+            REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY(15).excludingAoe(),
+            // neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X.on(UNIT).duringCombat(),
+        ),
+        // If decreasing the Spd difference necessary to make a follow-up attack by 10 would allow unit to trigger a follow-up attack
+        // (excluding guaranteed or prevented follow-ups),
+        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
+            // triggers【Potent Follow 100%】during combat.
+            UNIT.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(100).duringCombat()),
+        ),
+    );
+}
+
+// 【Truly Incited】
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.TrulyIncited);
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        UNIT.do(
+            // Grants bonus to Atk/Spd/Def/Res during combat =
+            GRANTS_BONUS(ATK_SPD_DEF_RES(
+                // number of spaces from start position to end position of whoever initiated combat × 2 (max 8).
+                NUM_OF_SPACES_START_TO_END_OF_WHOEVER_INITIATED_COMBAT_NODE.mult(2).max(8),
+            )).duringCombat(),
+        ),
+    );
+}
+
+// Blue-Sky Gust
+{
+    let skillId = PassiveA.BlueSkyGust;
+    // Enables【Canto (Dist. +1; Max ４)】.
+    enablesCantoDist(skillId, 1, 4);
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId,
+        // If unit initiates combat or if there is an ally within 3 columns or 3 rows centered on unit,
+        UNIT.check(INITIATED_COMBAT).or(THERE_IS(ALLIES_WITHIN.columns(3).rows(3).centeredOn(UNIT))),
+        // grants Atk/Spd+10 to unit,
+        GRANTS_BONUS(ATK_SPD(10)).to(UNIT),
+        // unit deals +X×4 damage (excluding area-of-effect Specials), and
+        UNIT.do(DEALS_DAMAGE(X.mult(4)).excludingAoe()).andEffects(
+            // reduces damage from foe's first attack by X×3 during combat
+            REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY(X.mult(3)).duringCombat()
+                // ("first attack" normally means only the first strike;
+                // for effects that grant "unit attacks twice," it means the first and second strikes;
+                .includingSecondStrike(),
+            // X = number of allies within 3 rows or 3 columns centered on unit; max 3).
+        ).x(NUM_OF(ALLIES_WITHIN.rowsOrColumns(3, 3).centeredOn(UNIT)).max(3)),
+    );
+}
+
+{
+    const skillId = Weapon.IlianGreatlance;
+    // Enables【Canto (Dist. +1; Max ４)】.
+    enablesCantoDist(skillId, 1, 4);
+    // Grants Res+3.
+    /**
+     * @param {UnitNode} unitNode
+     * @returns {SkillEffectNode[]}
+     */
+    const getSkills = unitNode => makeArray(
+        // For unit and allies within 3 rows or 3 columns centered on unit,
+        // grants Atk/Spd/Def/Res+Z (for unit, Z = 15; for allies, Z = 5) and
+        unitNode.do(GRANTS_BONUS(ATK_SPD_DEF_RES(UNIT === unitNode ? 15 : 5))).and(
+            // deals +Y damage (excluding area-of-effect Specials; for unit, Y = 25; for allies, Y = 10) during combat, and also,
+            DEALS_DAMAGE(UNIT === unitNode ? 25 : 10).excludingAoe().duringCombat()
+        ),
+        // if decreasing the Spd difference necessary to make a follow-up attack by 25 would allow unit or ally to trigger a follow-up attack
+        // (excluding guaranteed or prevented follow-ups),
+        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(25).to(unitNode),
+            // triggers【Potent Follow X%】during combat
+            unitNode.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(X).duringCombat().x(
+                // (if unit or ally cannot perform follow-up and attack twice, X = 100; otherwise, X = 50).
+                IF_ELSE_NODE(unitNode.cannotAny(CAN_FOLLOWUP_ATTACK_WITHOUT_POTENT, CAN_ATTACK_TWICE),
+                    100,
+                    50,
+                ))
+            ),
+        ),
+    );
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        ...getSkills(UNIT),
+    );
+    SkillEffectRegistrar.registerSkillsForAlliesDuringCombat(skillId,
+        IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+        ...getSkills(ALLY),
+    );
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Reduces damage from foe's attacks by 15 during combat (excluding area-of-effect Specials).
+        UNIT.do(REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(15).excludingAoe().duringCombat()),
+        // If unit initiates combat,
+        IF(UNIT.check(INITIATED_COMBAT),
+            // unit can make a follow-up attack before foe's next attack.
+            UNIT.can(MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK),
+        ),
+    );
+}
+
+// Songful Essence	2
+{
+    const skillId = Support.SongfulEssence;
+    setRefresh(skillId, 2);
+    AFTER_REFRESH_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
+        // Grants another action to target ally, and
+        // if Canto has already been triggered by target ally, re-enables Canto.
+        IF(CANTO_HAS_ALREADY_BEEN_TRIGGERED.by(TARGET_ALLY),
+            RE_ENABLES_CANTO.to(TARGET_ALLY),
+        ),
+    ));
+    // At start of player phase or enemy phase,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
+        // grants 【Draconic Hex】and【Preempt Pulse】to unit and allies within 3 spaces of unit for 1 turn.
+        GRANTS_STATUS_EFFECTS(
+            StatusEffectType.DraconicHex,
+            StatusEffectType.PreemptPulse,
+        ).to(UNIT.and(ALLIES_WITHIN.spaces(3).of(UNIT))).forNTurn(1),
+    ));
+    /** @type {UnitsNode} */
+    const targetAllies = ALLIES_WITHIN.spaces(3).of(UNIT);
+    const targetAlliesWithin3SpacesOfUnit =
+        // (if support partner other than calvary with a Range = 2 is on player team,
+        IF_OTHERWISE_UNITS(
+            UNIT.partners().otherThan(TARGET_NODE.isCavalry().and(TARGET_NODE.is(RANGE, 2))).isOnPlayerTeam(),
+            // targets any support partner;
+            targetAllies.filter(ARE_TARGET_AND_SKILL_OWNER_PARTNERS_NODE),
+            // otherwise,
+            // targets ally with the highest Atk at start of battle,
+            targetAllies.withHighest(TARGETS_STATS_AT_START_OF_BATTLE.atk())
+                // excluding unit and cavalry allies with Range = 2;
+                .excluding(UNIT.and(ALLIES.with(TARGET_NODE.isCavalry().and(TARGET_NODE.is(RANGE, 2))))),
+        );
+    // "at start of battle" excludes increases to Atk granted after ally is deployed,
+    // such as Legendary Effects, Mythic Effects, Bonus Heroes, Great Talent, etc.).
+    // (Cannot target an ally with Sing or Dance. This skill treated as Sing or Dance.)
+    // At start of turn,
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(
+        // grants "unit can move 1 extra space" (that turn only; does not stack)
+        GRANTS_STATUS_EFFECTS(
+            StatusEffectType.MobilityIncreased,
+            // to target allies within 3 spaces of unit
+        ).to(targetAlliesWithin3SpacesOfUnit).forNTurn(1),
+    ));
+}
+
+// Ilian Battleaxe	16	1
+{
+    const skillId = Weapon.IlianBattleaxe;
+    // Enables【Canto (Dist. +1; Max ４)】.
+    enablesCantoDist(skillId, 1, 4);
+    // Accelerates Special trigger (cooldown count-1).
+    // At start of turn and after unit acts (if Canto triggers, after Canto),
+    setAtStartOfTurnAndAfterUnitActsIfCantoAfterCanto(skillId, NODE_FUNC(
+        EFFECTS(
+            // inflicts Spd/Def-7, 【Frozen】, and【Sabotage】
+            INFLICTS_PENALTY(SPD_DEF(7)),
+            INFLICTS_STATUS_EFFECTS(StatusEffectType.Frozen),
+            INFLICTS_STATUS_EFFECTS(StatusEffectType.Sabotage),
+            // on closest foes and foes within 2 spaces of those foes through their next actions.
+        ).on(CLOSEST_FOES.and(FOES_WITHIN.spaces(2).of(CLOSEST_FOES))).throughTheirNextActions(),
+    ));
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Grants Atk/Spd/Def/Res+15 to unit,
+        GRANTS_BONUS(ATK_SPD_DEF_RES(15)).to(UNIT),
+        // unit deals +25 damage (excluding area-of-effect Specials),
+        UNIT.do(DEALS_DAMAGE(25).excludingAoe()).andEffects(
+            // reduces damage from foe's attacks by 15 (excluding area-of-effect Specials), and
+            REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(15).excludingAoe(),
+            // reduces damage from foe's Specials by an additional 15 during combat (excluding area-of-effect Specials), and also,
+            REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY(15).duringCombat().excludingAoe(),
+        ),
+        // when unit's Special triggers, neutralizes foe's "reduces damage by X%" effects from non-Special skills
+        WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        // (excluding area-of-effect Specials).
+    );
+}
+
+// Dragoon Pillar
+{
+    const skillId = PassiveA.DragoonPillar;
+    // At start of player phase or enemy phase,
+    setAtStartOfPlayerPhaseOrEnemyPhase(skillId, NODE_FUNC(
+        // grants 【Atk Liberate】,【Spd Liberate】, and "neutralizes 'effective against flying' bonuses"
+        GRANTS_STATUS_EFFECTS(
+            StatusEffectType.AtkLiberate,
+            StatusEffectType.SpdLiberate,
+            StatusEffectType.ShieldFlying,
+            // to unit and allies within 2 spaces of unit for 1 turn.
+        ).to(UNIT.and(ALLIES_WITHIN.spaces(2).of(UNIT))).forNTurn(1),
+    ));
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Grants Atk/Spd/Def/Res+9 to unit,
+        GRANTS_BONUS(ATK_SPD_DEF_RES(9)).to(UNIT),
+        // unit deals +7 damage (excluding area-of-effect Specials),
+        UNIT.doEffects(
+            DEALS_DAMAGE(7).excludingAoe(),
+            // reduces damage from foe's attacks by 7 (excluding area-of-effect Specials),
+            REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(7).excludingAoe(),
+            // inflicts Special cooldown charge -1 on foe per attack (only highest value applied; does not stack), and
+            INFLICTS_SPECIAL_COOLDOWN_CHARGE_MINUS_N_ON_FOE(1).perAttack().onlyHighestNotStack(),
+            // grants Special cooldown count-X to unit before unit's first attack
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_BEFORE_UNITS_FIRST_ATTACK(X).duringCombat(),
+            // and before unit's first follow-up attack during combat
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK(X).duringCombat(),
+            // (X = number of staff and flying allies on the map, including unit; max 3).
+        ).x(NUM_OF(ALLIES_ON_MAP.anyOf(TARGET_NODE.isStaff(), TARGET_NODE.isFlying()).including(UNIT)).max(3)),
+        // Restores 7 HP to unit after combat.
+        RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE(7),
     );
 }

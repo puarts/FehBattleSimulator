@@ -90,7 +90,10 @@ class TargetAllyNode extends UnitNode {
 const TARGET_ALLY = new TargetAllyNode();
 
 const ALLIES = UNIT.sameGroup();
+const ALLIES_ON_MAP = UNIT.sameGroup(); // sameGroupがマップ上のフィルタを行っている
 const FOES = UNIT.differentGroup();
+
+const SUPPORT_PARTNERS = UNIT.sameGroup()
 
 // TODO: リファクタリング
 class UnitsWithinNode extends UnitsNode {
@@ -274,19 +277,31 @@ class CallUnitFuncNode extends SingleEffectNode {
         });
     }
 
+    setDebug() {
+        this._debug = true;
+        return this;
+    }
+
     evaluate(env) {
         if (!this._targetNode) {
             throw new Error('target node is not set in CallUnitFuncNode');
         }
         const units = this._targetNode.evaluate(env);
         const args = this._getArgs(this._args, env);
+        let results = [];
         for (const unit of units) {
             if (!unit) {
                 throw new Error('unit is not set in CallUnitFuncNode');
             }
-            env.info(this._messageBuilder(unit, ...args));
-            this._actionFunc(unit, ...args);
+            if (this._debug) {
+                env.debug(this._messageBuilder(unit, ...args));
+            } else {
+                env.info(this._messageBuilder(unit, ...args));
+            }
+            const result = this._actionFunc(unit, ...args);
+            results.push(result);
         }
+        return results;
     }
 
     _getArgs(args, env) {
@@ -394,3 +409,34 @@ const NEUTRALIZES_STAT_PENALTIES = statFlags => CALL_UNIT_FUNC(
     (unit, fs) => `${unit.nameWithGroup}は弱化を解除予約: ${fs}`,
     statFlags
 );
+
+const RE_ENABLES_CANTO = CALL_UNIT_FUNC(
+    (unit) => unit.reEnablesCantoOnMap(),
+    (unit) => `${unit.nameWithGroup}は再移動を再発動可能になる`,
+);
+
+const CANTO_HAS_ALREADY_BEEN_TRIGGERED =
+    new GetSkillEffectFieldNode()
+        .setKey(Unit.nameOf(unit => unit.isCantoActivatedInCurrentTurn))
+        .setLogMessage('再移動を発動済みか');
+
+const MOVE_TYPE = new GetSkillEffectFieldNode()
+    .setKey(Unit.nameOf(unit => unit.moveType))
+    .setLogMessageFunc((name, n) => `${name}の移動タイプ: ${n}`);
+
+const WEAPON_TYPE = new GetSkillEffectFieldNode()
+    .setKey(Unit.nameOf(unit => unit.weaponType))
+    .setLogMessageFunc((name, n) => `${name}の武器タイプ: ${n}`);
+
+/**
+ * 射程
+ * @type {SkillEffectFieldNode}
+ */
+const RANGE = new GetSkillEffectFieldNode()
+    .setKey(Unit.nameOf(unit => unit.attackRange))
+    .setLogMessageFunc((name, n) => `${name}の射程: ${n}`);
+
+const ON_MAP = CALL_UNIT_FUNC(
+    (unit) => unit.isOnMap,
+    (unit) => `${unit.nameWithGroup}はマップ上にいるか`,
+).setDebug();

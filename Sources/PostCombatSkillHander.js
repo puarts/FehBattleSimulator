@@ -932,7 +932,7 @@ class PostCombatSkillHander {
             func(attackUnit, attackTargetUnit);
         }
 
-        let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit);
+        let env = new AfterCombatEnv(this, attackUnit, attackTargetUnit, this.map);
         env.setName('戦闘後(攻撃していれば)').setLogLevel(getSkillLogLevel());
         AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS.evaluateWithUnit(attackUnit, env);
 

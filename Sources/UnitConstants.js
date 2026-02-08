@@ -427,6 +427,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.AtkLiberate, ["AtkLiberate.webp", "攻撃の解放", ""]],
     [StatusEffectType.ResLiberate, ["ResLiberate.webp", "魔防の解放", ""]],
     [StatusEffectType.TrulyIncited, ["TrulyIncited.webp", "真奮激", ""]],
+    [StatusEffectType.SpdLiberate, ["SpdLiberate.webp", "速さの解放", ""]],
 ]);
 
 function statusEffectTypeToIconFilePath(value) {
