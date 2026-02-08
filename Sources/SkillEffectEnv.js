@@ -111,6 +111,8 @@ class NodeEnv {
      * @type {boolean|null} */
     isStatusFixedNullable = null;
 
+    calcPotentialDamage = false;
+
     #logLevel = LoggerBase.LogLevel.OFF;
 
     /** @type {GroupLogger<NodeEnv.SkillLogContent>} */

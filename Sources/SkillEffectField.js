@@ -155,7 +155,7 @@ class ModSkillEffectFieldNode extends SkillEffectFieldNode {
         this._isBattleContext = false;
     }
 
-    evaluate(env) {
+    onEvaluate(env) {
         const operand = this._transEvaluation(env, this._operandNode.evaluate(env));
         for (const unit of this._targetNode.evaluate(env)) {
             const targetObj = this._isBattleContext ? unit.battleContext : unit;

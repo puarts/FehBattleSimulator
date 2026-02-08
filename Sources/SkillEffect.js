@@ -933,8 +933,9 @@ class UniteUnitsNode extends UnitsNode {
      */
     constructor(...unitsNode) {
         let units = unitsNode.map(
-            node => node instanceof UnitNode ? UniteUnitsNode.makeFromUnit(node) : node
+            node => node instanceof UnitNode ? UniteUnitsNode.toUnitsNode(node) : node
         );
+        // noinspection JSCheckFunctionSignatures
         super(...units);
     }
 
@@ -1477,6 +1478,7 @@ class MapSpacesNode extends CollectionNode {
         let tiles = Array.from(this._spacesNode.evaluate(env));
         let results = tiles.map(t => this._funcNode.evaluate(env.copy().setTile(t)));
         env.trace(`Map tiles: ${tiles.map(s => s.positionToString()).join(', ')} => results: [${results}]`);
+        // noinspection JSValidateTypes
         return results;
     }
 }
@@ -2930,6 +2932,43 @@ class EffectNode extends SkillEffectNode {
     x(value) {
     }
 
+    /**
+     * @final
+     * @param {NodeEnv} env
+     */
+    evaluate(env) {
+        let result;
+        if (this._xNode) {
+            // 1. X の計算式を評価してスタックに積む
+            const xValue = this._xNode.evaluate(env);
+            env.storeValue(xValue);
+            env.trace(`[Stack] Push X = ${xValue}`);
+
+            try {
+                // 2. 具象クラスのロジックを実行
+                result = this.onEvaluate(env);
+            } finally {
+                // 3. 確実にスタックを掃除
+                env.popValue();
+                env.trace(`[Stack] Pop X`);
+            }
+        } else {
+            result = this.onEvaluate(env);
+        }
+
+        // 共通の評価変換（EnsureMax など）を適用して返す
+        return this._transEvaluation(env, result);
+    }
+
+    /**
+     * 具象クラスで実装するべき評価ロジック
+     * @abstract
+     * @param env
+     */
+    onEvaluate(env) {
+        return super.evaluate(env);
+    }
+
     _toNode(value) {
         if (value instanceof SkillEffectNode) {
             return value;
@@ -2963,15 +3002,15 @@ class EffectNode extends SkillEffectNode {
 }
 
 class XNumberNode extends NumberNode {
+    /** @override */
     evaluate(env) {
-        let parent = this._parent;
-        while (parent) {
-            if (parent instanceof EffectNode && parent._xNode) {
-                return parent._xNode.evaluate(env);
-            }
-            parent = parent._parent;
+        // 環境スタックの一番上を読み取る
+        const val = env.readValue();
+        if (val === undefined) {
+            throw new Error("X value is accessed but stack is empty.");
         }
-        throw new Error('Cannot find x node');
+        env.trace(`[Stack] Read X = ${val}`);
+        return val;
     }
 }
 
@@ -3137,7 +3176,7 @@ class SingleEffectNode extends EffectNode {
         return copy;
     }
 
-    evaluate(env) {
+    onEvaluate(env) {
         return this._transEvaluation(env, super.evaluate(env));
     }
 
@@ -3173,6 +3212,8 @@ class SingleEffectNode extends EffectNode {
 }
 
 const EMPTY_EFFECT_NODE = new class extends SingleEffectNode {
+    onEvaluate(env) {
+    }
 };
 
 // Grants Plus
@@ -5535,7 +5576,7 @@ class EffectsNode extends EffectNode {
         return copy;
     }
 
-    evaluate(env) {
+    onEvaluate(env) {
         return this._effectNodes.map(n => n.evaluate(env));
     }
 
@@ -6777,6 +6818,7 @@ class ForEachTargetForSpacesNode extends SpacesNode {
      * @param {...SpacesNode} children
      */
     constructor(predNode, ...children) {
+        // noinspection JSCheckFunctionSignatures
         super(...children);
         this._predNode = predNode;
         this.joinFunc = unitEvaluations => IterUtil.concat(...unitEvaluations.flat());
@@ -6855,7 +6897,7 @@ class TargetsPlaceableSpacesWithinNSpacesFromUnitsNode extends SpacesNode {
         let units = this._unitsNode.evaluate(env);
         let resultSet = new Set();
         for (let u of units) {
-            let tileSet = new Set(env.battleMap.__enumeratePlaceableTilesWithinSpecifiedSpaces(u, unit, n));
+            let tileSet = new Set(env.battleMap.__enumeratePlaceableTilesWithinSpecifiedSpaces(u.placedTile, unit, n));
             env.debug(`${unit.nameWithGroup}が移動可能な${u.nameWithGroup}の周囲${n}以内のマス: ${SetUtil.toString(tileSet)}`);
             resultSet = SetUtil.union(resultSet, tileSet);
         }
@@ -7887,7 +7929,7 @@ class TargetsOncePerTurnSkillEffectNode extends SkillEffectNode {
         // 保存する可能性がある値なのでエンコードする
         let encodedId = Base62.encode(this._id);
         let activatedSkills;
-        let isActivated = false;
+        let isActivated;
         let phase;
         if (env.isInDamageCalculation()) {
             phase = '戦闘中';
