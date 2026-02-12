@@ -178,6 +178,14 @@ class UnitNode extends SkillEffectNode {
 
     /**
      * @param {EffectNode} effect
+     * @returns {BoolNode}
+     */
+    not(effect) {
+        return TO_BOOL(effect.to(this).first()).not();
+    }
+
+    /**
+     * @param {EffectNode} effect
      */
     can(effect) {
         return this.do(effect);
@@ -196,6 +204,14 @@ class UnitNode extends SkillEffectNode {
      */
     is(effect, value) {
         return EQ_NODE(this.get(effect), value);
+    }
+
+    /**
+     * @param {UnitsNode} unitsNode
+     * @return {BoolNode}
+     */
+    isAdjacentTo(unitsNode) {
+        return unitsNode.filter(DISTANCE_BETWEEN_UNITS_NODE(this, TARGET_NODE).eq(1)).exists();
     }
 
     isCavalry() {
@@ -309,6 +325,22 @@ class UnitNode extends SkillEffectNode {
         const copy = this.clone();
         copy._ofUnit = unit;
         return copy;
+    }
+
+    get atk() {
+        return STAT_OF(this.clone(), StatusIndex.ATK);
+    }
+
+    get spd() {
+        return STAT_OF(this.clone(), StatusIndex.SPD);
+    }
+
+    get def() {
+        return STAT_OF(this.clone(), StatusIndex.DEF);
+    }
+
+    get res() {
+        return STAT_OF(this.clone(), StatusIndex.RES);
     }
 }
 
@@ -559,6 +591,14 @@ class UnitsNode extends CollectionNode {
      */
     with(predNode) {
         return new FilterUnitsNode(this, predNode);
+    }
+
+    /**
+     * @param {StatusEffectType} status
+     * @return {UnitsNode}
+     */
+    withStatus(status) {
+        return new FilterUnitsNode(this, HAS_TARGET_STATUS_EFFECT_NODE(status));
     }
 
     /**
@@ -2771,6 +2811,8 @@ class EffectNode extends SkillEffectNode {
      * @abstract
      */
     to(target) {
+        this._targetNode = target;
+        return this;
     }
 
     /**
@@ -2779,6 +2821,7 @@ class EffectNode extends SkillEffectNode {
      * @abstract
      */
     on(target) {
+        return this.to(target);
     }
 
     /**
@@ -2925,11 +2968,26 @@ class EffectNode extends SkillEffectNode {
     }
 
     /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    oncePerTurn() {
+    }
+
+    /**
+     * @returns {EffectNode}
+     * @abstract
+     */
+    whenSpecialTriggers() {
+    }
+
+    /**
      * @params {NumberResolvable} value
      * @returns {EffectNode}
      * @abstract
      */
     x(value) {
+        throw new Error('not implemented');
     }
 
     /**
@@ -2937,36 +2995,104 @@ class EffectNode extends SkillEffectNode {
      * @param {NodeEnv} env
      */
     evaluate(env) {
+        if (!this._targetNode) {
+            throw new Error('target unit node is not set in SkillEffect');
+        }
+        let results = [];
+        for (const unit of this._targetNode.evaluate(env)) {
+            results.push(this._evaluatePerUnit(unit, env));
+        }
+        return results;
+    }
+
+    /**
+     * ユニット単位の評価。X値スタック操作・_transEvaluation を含む。
+     * @final
+     * @param {Unit} unit
+     * @param {NodeEnv} env
+     */
+    _evaluatePerUnit(unit, env) {
+        if (!this.canActivateSkillInThisTurn(unit, env)) return;
         let result;
         if (this._xNode) {
-            // 1. X の計算式を評価してスタックに積む
             const xValue = this._xNode.evaluate(env);
             env.storeValue(xValue);
             env.trace(`[Stack] Push X = ${xValue}`);
-
             try {
-                // 2. 具象クラスのロジックを実行
-                result = this.onEvaluate(env);
+                result = this._evaluateCore(unit, env);
             } finally {
-                // 3. 確実にスタックを掃除
                 env.popValue();
                 env.trace(`[Stack] Pop X`);
             }
         } else {
-            result = this.onEvaluate(env);
+            result = this._evaluateCore(unit, env);
         }
-
-        // 共通の評価変換（EnsureMax など）を適用して返す
         return this._transEvaluation(env, result);
     }
 
+    canActivateSkillInThisTurn(unit, env) {
+        const id = `${env.skillId}` || '';
+        if (this._oncePerTurn) {
+            env.trace(`[SkillEffect] ${id} は1ターン1回しか発動しない`);
+            // 保存する可能性がある値なのでエンコードする
+            let encodedId = Base62.encode(this._id);
+            let activatedSkills;
+            let isActivated;
+            if (env.isInDamageCalculation()) {
+                // 戦闘中のコンテキストだけではなくユニットに保存されている情報も参照する
+                isActivated =
+                    unit.battleContext.activatedSkillsPerTurn.has(encodedId) ||
+                    unit.activatedOncePerTurnSkillEffectIdsThisTurn.has(encodedId);
+                activatedSkills = unit.battleContext.activatedSkillsPerTurn;
+            } else {
+                isActivated = unit.activatedOncePerTurnSkillEffectIdsThisTurn.has(encodedId);
+                activatedSkills = unit.activatedOncePerTurnSkillEffectIdsThisTurn;
+            }
+            if (isActivated) {
+                env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${id}）を発動済み`);
+                return false;
+            } else {
+                activatedSkills.add(encodedId);
+                env.debug(`${unit.nameWithGroup}は1ターン1回のスキル効果（${id}）をこのターン初めて発動`);
+            }
+        }
+        return true;
+    }
+
     /**
-     * 具象クラスで実装するべき評価ロジック
-     * @abstract
-     * @param env
+     * 委譲ノードがあればそれぞれを _evaluatePerUnit で評価し、なければ onEvaluate を呼ぶ。
+     * @final
+     * @param {Unit} unit
+     * @param {NodeEnv} env
      */
-    onEvaluate(env) {
-        return super.evaluate(env);
+    _evaluateCore(unit, env) {
+        const delegates = this._getDelegateNodes(unit, env);
+        if (delegates) {
+            return delegates.map(n => n._evaluatePerUnit(unit, env));
+        }
+        return this.onEvaluate(unit, env);
+    }
+
+    /**
+     * 複合ノードがオーバーライドして子ノードの配列を返す。
+     * null を返すと末端ノードとして onEvaluate が呼ばれる。
+     * @param {Unit} unit
+     * @param {NodeEnv} env
+     * @returns {EffectNode[]|null}
+     */
+    _getDelegateNodes(unit, env) {
+        return null;
+    }
+
+    /**
+     * 具象クラスで実装するべき評価ロジック（末端ノード用）
+     * @abstract
+     * @param {Unit} unit
+     * @param env
+     * @returns any
+     */
+    onEvaluate(unit, env) {
+        throw new Error("Not implemented");
     }
 
     _toNode(value) {
@@ -3176,8 +3302,8 @@ class SingleEffectNode extends EffectNode {
         return copy;
     }
 
-    onEvaluate(env) {
-        return this._transEvaluation(env, super.evaluate(env));
+    onEvaluate(unit, env) {
+        return super.onEvaluate(unit, env);
     }
 
     max(value) {
@@ -3209,10 +3335,22 @@ class SingleEffectNode extends EffectNode {
         copy._xNode = this._toNode(value);
         return copy;
     }
+
+    oncePerTurn() {
+        const copy = this.clone();
+        copy._oncePerTurn = true;
+        return copy;
+    }
+
+    whenSpecialTriggers() {
+        const copy = this.clone();
+        copy._whenSpecialTriggers = true;
+        return copy;
+    }
 }
 
 const EMPTY_EFFECT_NODE = new class extends SingleEffectNode {
-    onEvaluate(env) {
+    onEvaluate(unit, env) {
     }
 };
 
@@ -3588,6 +3726,16 @@ class MaxStatsNode extends StatsNode {
         return maxStats;
     }
 }
+
+const TO_ATK_SPD = statsNode => MULT_STATS_NODE(
+    StatsNode.makeStatsNodeFrom(1, 1, 0, 0),
+    statsNode
+);
+
+const TO_ATK_DEF = statsNode => MULT_STATS_NODE(
+    StatsNode.makeStatsNodeFrom(1, 0, 1, 0),
+    statsNode
+)
 
 const MAX_STATS_NODE = statsNodes => new MaxStatsNode(statsNodes);
 
@@ -4128,6 +4276,31 @@ class UnitsStatAtStartOfCombatNode extends GetStatNode {
     }
 }
 
+class StatAtStartOfCombatNode extends GetStatNode {
+    statsDescription = "戦闘開始時";
+
+    of(unitNode) {
+        const copy = this.clone()
+        copy._unitNode = unitNode;
+        return copy;
+    }
+
+    getUnit(env) {
+        return this._unitNode.evaluate(env);
+    }
+
+    getStats(env) {
+        if (env.isComparingStats) {
+            env.trace('Comparing stats');
+            return this.getUnit(env).getEvalStatusesInPrecombat();
+        } else {
+            return this.getUnit(env).getStatusesInPrecombat();
+        }
+    }
+}
+
+const STAT_AT_START_OF_COMBAT = index => new StatAtStartOfCombatNode(index);
+
 class FoesStatAtStartOfCombatNode extends UnitsStatAtStartOfCombatNode {
     static {
         Object.assign(this.prototype, GetFoeDuringCombatMixin);
@@ -4246,6 +4419,52 @@ class UnitsStatsDuringCombat extends TargetsStatsDuringCombat {
         }
     }
 }
+
+class StatDuringCombat extends TargetsStatsDuringCombat {
+    /**
+     * @returns {SkillRequirement}
+     */
+    getRequirement() {
+        return SkillRequirement.STAT;
+    }
+
+    _statName = '戦闘中のステータス';
+
+    of(unitNode) {
+        const copy = this.clone()
+        copy._unitNode = unitNode;
+        return copy;
+    }
+
+    getUnit(env) {
+        return this._unitNode.evaluate(env);
+    }
+
+    getStats(env) {
+        let unit = this.getUnit(env);
+        if (env.isComparingStats) {
+            env.trace('Comparing stats');
+            this.setRequirement(SkillRequirement.STAT);
+            return unit.getEvalStatusesInCombat(env.getFoeDuringCombatOf(unit));
+        } else {
+            return unit.getStatusesInCombat(env.getFoeDuringCombatOf(unit));
+        }
+    }
+}
+
+const STAT_DURING_COMBAT = index => new StatDuringCombat(index);
+
+/**
+ * @param {UnitNode} unitNode
+ * @param {StatusIndex} index
+ * @return {NumberNode}
+ * @constructor
+ */
+const STAT_OF = (unitNode, index) =>
+    COND_OP(IS_IN_COMBAT_PHASE_NODE,
+        STAT_DURING_COMBAT(index).of(unitNode),
+        STAT_AT_START_OF_COMBAT(index).of(unitNode),
+    );
 
 // noinspection JSUnusedGlobalSymbols
 const UNITS_STAT_DURING_COMBAT_NODE = index => new UnitsStatsDuringCombat(index);
@@ -5576,15 +5795,33 @@ class EffectsNode extends EffectNode {
         return copy;
     }
 
-    onEvaluate(env) {
-        return this._effectNodes.map(n => n.evaluate(env));
+    /** @override */
+    _getDelegateNodes(unit, env) {
+        return this._effectNodes;
+    }
+
+    /** @override */
+    onEvaluate(unit, env) {
+        throw new Error("not implemented");
     }
 
     x(value) {
         const copy = this.clone();
         copy._xNode = this._toNode(value);
-        // Xの値は親から子へ伝播させる必要があるため、子もクローン
-        copy._effectNodes = this._effectNodes.map(n => n.x(value));
+        return copy;
+    }
+
+    oncePerTurn() {
+        const copy = this.clone();
+        copy._oncePerTurn = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.oncePerTurn());
+        return copy;
+    }
+
+    whenSpecialTriggers() {
+        const copy = this.clone();
+        copy._whenSpecialTriggers = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.whenSpecialTriggers());
         return copy;
     }
 }
@@ -5605,6 +5842,17 @@ const GRANTS_EFFECTS = (...effects) =>
             : GRANTS_STATUS_EFFECTS(effect)
     ));
 
+/**
+ * @param {...(StatsNode|StatusEffectType)} effects
+ * @return {EffectNode}
+ */
+const INFLICTS_EFFECTS = (...effects) =>
+    EFFECTS(...effects.map(effect =>
+        effect instanceof StatsNode
+            ? INFLICTS_PENALTY(effect)
+            : INFLICTS_STATUS_EFFECTS(effect)
+    ));
+
 class IfElseEffectNode extends EffectsNode {
     constructor(predNode, trueEffectNode, falseEffectNode) {
         super();
@@ -5612,8 +5860,9 @@ class IfElseEffectNode extends EffectsNode {
         this._effectNodes = [trueEffectNode, falseEffectNode];
     }
 
-    evaluate(env) {
-        return this._effectNodes[this._predNode.evaluate(env) ? 0 : 1].evaluate(env);
+    /** @override */
+    _getDelegateNodes(unit, env) {
+        return [this._effectNodes[this._predNode.evaluate(env) ? 0 : 1]];
     }
 }
 
@@ -9291,10 +9540,10 @@ class CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode
     }
 
     evaluate(env) {
-        if (!this._targetUnitNode) {
-            throw new Error('targetUnitNode is not set');
+        if (!this._targetNode) {
+            throw new Error('targetNode is not set');
         }
-        let unit = this._targetUnitNode.evaluate(env);
+        let unit = this._targetNode.evaluate(env);
         let foe = env.getFoeDuringCombatOf(unit);
         let spd = this._spd.evaluate(env);
         let result = DamageCalculationUtility.examinesCanFollowupAttack(unit, foe, -spd);
@@ -9308,8 +9557,9 @@ class CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode
      * @return {CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode}
      */
     to(unitNode) {
-        this._targetUnitNode = unitNode;
-        return this;
+        const copy = this.clone();
+        copy._targetNode = unitNode;
+        return copy;
     }
 }
 

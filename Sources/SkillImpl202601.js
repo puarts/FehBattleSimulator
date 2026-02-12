@@ -807,3 +807,127 @@
         RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE(7),
     );
 }
+
+// Skybound Bow	14	2
+{
+    const skillId = Weapon.SkyboundBow;
+    // Accelerates Special trigger (cooldown count-1).
+    // Effective against flying foes.
+    // If a Rally or movement Assist skill is used by unit,
+    setIfRallyOrMovementAssistSkillIsUsedByUnit(skillId, NODE_FUNC(
+        // grants【Coax】to target for 1 turn and
+        GRANTS_STATUS_EFFECTS(StatusEffectType.Coax).to(TARGET).forNTurn(1),
+        // grants another action to unit (once per turn).
+        GRANTS_ANOTHER_ACTION.to(UNIT).oncePerTurn(),
+    ));
+    // If a Rally or movement Assist skill is used by unit or targets unit,
+    setIfRallyOrMovementAssistSkillIsUsedByUnitOrTargetsUnit(skillId, NODE_FUNC(
+        // inflicts Atk/Spd/Def-7, 【Exposure】, and【Panic】
+        INFLICTS_EFFECTS(ATK_SPD_DEF(7), StatusEffectType.Exposure, StatusEffectType.Panic)
+            // on closest foes to both unit and target ally or unit and targeting ally after movement
+            .on(UNIT.closestFoes()
+                .and(TARGET_ALLY.closestFoes())
+                // and foes within 2 spaces of those foes through their next actions.
+                .and(FOES_WITHIN.spaces(2).of(UNIT.closestFoes()))
+                .and(FOES_WITHIN.spaces(2).of(TARGET_ALLY.closestFoes()))
+            ),
+    ));
+    SkillEffectRegistrar.registerSkillsForAlliesDuringCombat(skillId,
+        // Allies on the map with【Coax】active deal +7 damage during combat (excluding area-of-effect Specials).
+        IS_STATUS_EFFECT_ACTIVE_ON_TARGET_NODE(StatusEffectType.Coax),
+        ALLY.do(DEALS_DAMAGE(7).duringCombat().excludingAoe()),
+        // If Savior has not triggered,
+        IF(ALLY.not(SAVIOR_HAS_TRIGGERED),
+            // those allies attack twice during combat.
+            ALLY.do(ATTACKS_TWICE.duringCombat())
+        )
+    );
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Grants Atk/Spd/Def/Res+15 to unit,
+        GRANTS_BONUS(ATK_SPD_DEF_RES(15)).to(UNIT),
+        // unit deals +25 damage (excluding area-of-effect Specials),
+        UNIT.do(DEALS_DAMAGE(25).excludingAoe()).andEffects(
+            // grants Special cooldown charge +1 to unit per attack (only highest value applied; does not stack), and
+            GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_N(1).to(UNIT).perAttack().onlyHighestNotStack(),
+            // reduces damage from foe's attacks by 15 during combat (excluding area-of-effect Specials).
+            REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(15).duringCombat().excludingAoe(),
+        ),
+        // If unit's Spd > foe's Spd or if unit is not adjacent to an ally with an active【Coax】effect,
+        IF(UNIT.spd.sgt(FOE.spd).or(UNIT.isAdjacentTo(ALLIES.withStatus(StatusEffectType.Coax)).not()),
+            // unit attacks twice during combat.
+            UNIT.do(ATTACKS_TWICE).duringCombat(),
+        ),
+    );
+}
+
+// 【Coax】
+{
+    // const skillId = getStatusEffectSkillId(StatusEffectType.Coax);
+    // Grants a status that can trigger certain skill effects to unit.
+}
+
+// Waning Shot	4
+{
+    const skillId = Special.WaningShot;
+    setSpecialCountAndType(skillId, 4, true, true, false);
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        // Boosts damage by 80% of the greater of unit's Spd or Def when Special triggers.
+        UNIT.do(BOOSTS_DAMAGE_BY(PERCENTAGE_NODE(80, GREATER(UNIT.spd, UNIT.def))).whenSpecialTriggers()),
+    ));
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Inflicts penalty on foe’s Atk/Def =
+        INFLICTS_PENALTY(TO_ATK_DEF(
+            // highest penalty on each stat between target and foes within 2 spaces of target
+            // (calculates each stat penalty independently) and
+            HIGHEST_PENALTIES_ON_EACH_STAT_BETWEEN_TARGET_AND_TARGET_ALLIES_WITHIN_N_SPACES_NODE(2),
+        )).on(FOE),
+        // reduces damage from foe's first attack by 40% during combat
+        // ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+        // TODO: 奥義としての登録をできるようにする（同じ文言でも奥義扱いにする）
+        REDUCES_DAMAGE_FROM_FOES_FIRST_ATTACK_BY_N_PERCENT_BY_SPECIAL_DURING_COMBAT_INCLUDING_TWICE_NODE(40),
+    );
+}
+
+// Atk/Spd Airspace
+{
+    const skillId = PassiveA.AtkSpdAirspace;
+    // Enables【Canto (２)】.
+    enablesCantoN(skillId, 2);
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId,
+        // If unit initiates combat or is within 3 spaces of an ally,
+        // TODO: `isWithin`メソッドの作成
+        UNIT.check(INITIATED_COMBAT).or(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        // grants Atk/Spd+10 to unit and
+        GRANTS_BONUS(ATK_SPD(10)).to(UNIT),
+        // unit deals +X damage during combat (excluding area-of-effect Specials;
+        UNIT.do(DEALS_DAMAGE(X).duringCombat().excludingAoe())
+            .x(
+                // if any space within 2 spaces of unit or foe has a Divine Vein effect applied,
+                // is defensive terrain, or counts as difficult or impassable terrain for units other than flying, X = 12; otherwise, X = 7),
+                // TODO: リファクタリング
+                IF_VALUE_NODE(
+                    SOME_NODE(
+                        MAP_SPACES_NODE(
+                            SPACES_WITHIN_N_SPACES_OF_TARGET_OR_TARGET_FOE_NODE(2),
+                            OR_NODE(
+                                HAS_DIVINE_VEIN_NODE,
+                                IS_DEFENSIVE_TERRAIN_NODE,
+                                COUNTS_AS_DIFFICULT_OR_IM_PASSABLE_TERRAIN_NODE_FOR_UNITS_OTHER_THAN_FLYING_NODE,
+                            )
+                        )
+                    ),
+                    12,
+                    7,
+                ),
+            ),
+        // and restores 7 HP to unit after combat.
+        RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE(7),
+    );
+}
+
+// Harmonized Skill
+// Grants【Resonance: Blades】to unit and allies from the same titles as unit.
+//
+// Inflicts【Frozen】and【Share Spoils+】on closest foes and any foe within 2 spaces of those foes through their next actions.
+// (Harmonized Skills can be used by tapping the Harmonized button. This skill can only be used once per map. Harmonized Skills cannot be used by units deployed using Pair Up.)
+// (When unit has a status or a skill that enables use of a Style, Duo Skills and Harmonized Skills cannot be used while unit can take an action (those skills can be used after unit has acted).)

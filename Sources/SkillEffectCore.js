@@ -99,9 +99,13 @@ class SkillEffectHooks {
     /**
      * @param {number|string} skillId
      * @param {E} env
+     * @template {NodeEnv} E
      * @return {*[]}
      */
     evaluate(skillId, env) {
+        if (env) {
+            env.skillId = skillId;
+        }
         if (String(skillId).startsWith('custom_')) {
             let str = skillId;
             let firstUnderscore = str.indexOf('_');
@@ -320,12 +324,13 @@ class SkillEffectHooks {
 }
 
 const SkillRequirement = Object.freeze({
+    NONE: 0,
     // 戦闘中バフ決定後
-    STAT: 0,
+    STAT: 1,
     // 戦闘中バフ決定後の戦闘中バフ決定後
-    STAT_AFTER_STAT: 1,
+    STAT_AFTER_STAT: 2,
     // 神速に必要な条件
-    FOLLOW_UP_COND_BEFORE_POTENT: 2,
+    FOLLOW_UP_COND_BEFORE_POTENT: 3,
 });
 
 class SkillEffectNode {
@@ -429,7 +434,7 @@ class SkillEffectNode {
     getRequirements(existingSet = new Set()) {
         // 1. 自身の要件を追加
         const requirement = this.getRequirement();
-        if (requirement) {
+        if (requirement !== null && requirement !== undefined) {
             existingSet.add(requirement);
         }
 
@@ -556,6 +561,15 @@ class NumberNode extends SkillEffectNode {
                 return [self.evaluate(env)];
             }
         }
+    }
+
+    /**
+     * stats gt
+     * @param b
+     * @return {BoolNode}
+     */
+    sgt(b) {
+        return GT_NODE(this, b, true);
     }
 
     /**
@@ -1598,6 +1612,7 @@ class MaxNode extends NumberOperationNode {
 }
 
 const MAX_NODE = (...node) => new MaxNode(...node);
+const GREATER = (a, b) => MAX_NODE(a, b);
 
 class SumNode extends NumberOperationNode {
     /**
@@ -1668,8 +1683,10 @@ class CompareNode extends BoolNode {
 
 class GtNode extends CompareNode {
     evaluate(env) {
+        const oldIsComparingStats = env.isComparingStats;
         env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
+        env.isComparingStats = oldIsComparingStats;
         let result = left > right;
         env?.trace(`[GtNode] ${left} > ${right}: ${result}`);
         return result;
@@ -1680,8 +1697,10 @@ const GT_NODE = (a, b, isComparingStats = false) => new GtNode(a, b, isComparing
 
 class GteNode extends CompareNode {
     evaluate(env) {
+        const oldIsComparingStats = env.isComparingStats;
         env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
+        env.isComparingStats = oldIsComparingStats;
         let result = left >= right;
         env?.trace(`[GteNode] ${left} >= ${right}: ${result}`);
         return result;
@@ -1693,8 +1712,10 @@ const GTE_NODE = (a, b, isComparingStats = false) => new GteNode(a, b, isCompari
 // noinspection JSUnusedGlobalSymbols
 class LtNode extends CompareNode {
     evaluate(env) {
+        const oldIsComparingStats = env.isComparingStats;
         env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
+        env.isComparingStats = oldIsComparingStats;
         return left < right;
     }
 }
@@ -1703,8 +1724,10 @@ const LT_NODE = (a, b, isComparingStats = false) => new LtNode(a, b, isComparing
 
 class LteNode extends CompareNode {
     evaluate(env) {
+        const oldIsComparingStats = env.isComparingStats;
         env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
+        env.isComparingStats = oldIsComparingStats;
         return left <= right;
     }
 }
@@ -1714,8 +1737,10 @@ const LTE_NODE = (a, b, isComparingStats = false) => new LteNode(a, b, isCompari
 // noinspection JSUnusedGlobalSymbols
 class EqNode extends CompareNode {
     evaluate(env) {
+        const oldIsComparingStats = env.isComparingStats;
         env.isComparingStats = this.isComparingStats;
         let [left, right] = this.evaluateChildren(env);
+        env.isComparingStats = oldIsComparingStats;
         let result = left === right;
         env.trace(`[EqNode] ${left} === ${right}: ${result}`);
         // console.log('left: %o', left);

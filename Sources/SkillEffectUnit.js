@@ -1,51 +1,30 @@
-class SkillOwnerUnitNode extends UnitNode {
+class SkillOwnerUnitNode extends EnvUnitNode {
     /**
      * @override
      */
     getUnit(env) {
-        return env.skillOwner;
-    }
-
-    /**
-     * @override
-     */
-    evaluate(env) {
         return env.skillOwner;
     }
 }
 
 const SKILL_OWNER = new SkillOwnerUnitNode();
 
-class TextUnitNode extends UnitNode {
+class TextUnitNode extends EnvUnitNode {
     /**
      * @override
      */
     getUnit(env) {
-        return env.textUnit;
-    }
-
-    /**
-     * @override
-     */
-    evaluate(env) {
         return env.textUnit;
     }
 }
 
 const UNIT = new TextUnitNode();
 
-class TextFoeNode extends UnitNode {
+class TextFoeNode extends EnvUnitNode {
     /**
      * @override
      */
     getUnit(env) {
-        return env.textFoe;
-    }
-
-    /**
-     * @override
-     */
-    evaluate(env) {
         return env.textFoe;
     }
 }
@@ -53,41 +32,38 @@ class TextFoeNode extends UnitNode {
 const FOE = new TextFoeNode();
 const TARGET_FOE = new TextFoeNode();
 
-class TextAllyNode extends UnitNode {
+class TextAllyNode extends EnvUnitNode {
     /**
      * @override
      */
     getUnit(env) {
-        return env.textAlly;
-    }
-
-    /**
-     * @override
-     */
-    evaluate(env) {
         return env.textAlly;
     }
 }
 
 const ALLY = new TextAllyNode();
 
-class TargetAllyNode extends UnitNode {
+class TargetAllyNode extends EnvUnitNode {
     /**
      * @override
      */
     getUnit(env) {
         return env.assistTarget;
     }
-
-    /**
-     * @override
-     */
-    evaluate(env) {
-        return env.assistTarget;
-    }
 }
 
 const TARGET_ALLY = new TargetAllyNode();
+
+class TextTargetNode extends EnvUnitNode {
+    /**
+     * @override
+     */
+    getUnit(env) {
+        return env.textTarget;
+    }
+}
+
+const TARGET = new TextTargetNode();
 
 const ALLIES = UNIT.sameGroup();
 const ALLIES_ON_MAP = UNIT.sameGroup(); // sameGroupがマップ上のフィルタを行っている
@@ -282,26 +258,14 @@ class CallUnitFuncNode extends SingleEffectNode {
         return this;
     }
 
-    evaluate(env) {
-        if (!this._targetNode) {
-            throw new Error('target node is not set in CallUnitFuncNode');
-        }
-        const units = this._targetNode.evaluate(env);
+    onEvaluate(unit, env) {
         const args = this._getArgs(this._args, env);
-        let results = [];
-        for (const unit of units) {
-            if (!unit) {
-                throw new Error('unit is not set in CallUnitFuncNode');
-            }
-            if (this._debug) {
-                env.debug(this._messageBuilder(unit, ...args));
-            } else {
-                env.info(this._messageBuilder(unit, ...args));
-            }
-            const result = this._actionFunc(unit, ...args);
-            results.push(result);
+        if (this._debug) {
+            env.debug(this._messageBuilder(unit, ...args));
+        } else {
+            env.info(this._messageBuilder(unit, ...args));
         }
-        return results;
+        return this._actionFunc(unit, ...args);
     }
 
     _getArgs(args, env) {
@@ -440,3 +404,18 @@ const ON_MAP = CALL_UNIT_FUNC(
     (unit) => unit.isOnMap,
     (unit) => `${unit.nameWithGroup}はマップ上にいるか`,
 ).setDebug();
+
+class GeneralGrantsAnotherActionNode extends SingleEffectNode {
+    constructor() {
+        super();
+    }
+
+    onEvaluate(unit, env) {
+        if (env.assistTargeting === unit) {
+            env.trace(`${env.assistTargeting.nameWithGroup}は自分を行動可能な状態にする（補助時再行動）`);
+            unit.grantsAnotherActionOnAssist(true);
+        }
+    }
+}
+
+const GRANTS_ANOTHER_ACTION = new GeneralGrantsAnotherActionNode();

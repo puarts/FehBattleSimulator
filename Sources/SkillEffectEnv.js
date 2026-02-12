@@ -46,6 +46,8 @@ class NodeEnv {
         }
     }
 
+    skillId = '';
+
     isComparingStats = false;
     /** @type {string} */
     phase = NodeEnv.PHASE.NULL_PHASE;
@@ -118,7 +120,8 @@ class NodeEnv {
     /** @type {GroupLogger<NodeEnv.SkillLogContent>} */
     groupLogger = new GroupLogger();
 
-    writeDamageLog = () => {};
+    writeDamageLog = () => {
+    };
 
     /** @type {function(string): void} */
     #logFunc = (_message) => {
@@ -344,6 +347,11 @@ class NodeEnv {
 
     setTextAlly(ally) {
         this.textAlly = ally;
+        return this;
+    }
+
+    setTextTarget(unit) {
+        this.textTarget = unit;
         return this;
     }
 

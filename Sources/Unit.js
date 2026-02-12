@@ -388,6 +388,13 @@ class Unit extends BattleMapElement {
         return ObjectUtil.nameOf(selector);
     }
 
+    /**
+     * @enum {number}
+     */
+    static AnotherActionType = {
+        ON_ASSIST: 0,
+    };
+
     #hpAddAfterEnteringBattle = 0;
     #statusesAddAfterEnteringBattle = [0, 0, 0, 0];
     #statusEffects = [];
@@ -582,6 +589,8 @@ class Unit extends BattleMapElement {
 
         this.isActionDone = false;
         this.reservedAnotherAction = false;
+        /** @type {Set<AnotherActionType>} */
+        this.reservedAnotherActionTypes = new Set();
         // このターン自分から攻撃を行ったか
         this.isAttackDone = false;
         // このターン相手から攻撃を行われたか
@@ -3318,6 +3327,7 @@ class Unit extends BattleMapElement {
 
     initReservedAnotherAction() {
         this.reservedAnotherAction = false;
+        this.reservedAnotherActionTypes = new Set();
     }
 
     getReservedBuffs() {
@@ -3427,9 +3437,10 @@ class Unit extends BattleMapElement {
     }
 
     applyReservedAnotherAction() {
-        if (this.reservedAnotherAction) {
+        if (this.reservedAnotherAction || this.reservedAnotherActionTypes.size > 0) {
             this.isActionDone = false;
             this.reservedAnotherAction = false;
+            this.reservedAnotherActionTypes.clear();
         }
     }
 
@@ -6830,13 +6841,17 @@ class Unit extends BattleMapElement {
         }
     }
 
-    grantsAnotherActionOnAssist() {
+    grantsAnotherActionOnAssist(reserves = false) {
         if (this.isActionDone) {
             let env = new NodeEnv().setTarget(this).setAssistTargeting(this).setSkillOwner(this)
                 .setName('再行動後').setLogLevel(getSkillLogLevel());
             AFTER_BEING_GRANTED_ANOTHER_ACTION_ON_ASSIST_HOOKS.evaluateWithUnit(this, env);
         }
-        this.isActionDone = false;
+        if (reserves) {
+            this.reservedAnotherActionTypes.add(Unit.AnotherActionType.ON_ASSIST);
+        } else {
+            this.isActionDone = false;
+        }
         this.activatedOncePerTurnSkillEffectIdsThisTurn.add(Unit.GRANTS_ANOTHER_ACTION_ON_ASSIST_ID);
         if (g_appData?.globalBattleContext) {
             g_appData.globalBattleContext.reservedIsAnotherActionByAssistActivatedInCurrentTurn[this.groupId] = true;

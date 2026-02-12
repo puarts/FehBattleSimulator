@@ -43,15 +43,10 @@ class CallBattleContextFuncNode extends SingleEffectNode {
         });
     }
 
-    evaluate(env) {
-        let units = this._targetNode.evaluate(env);
-        let results = [];
-        for (const unit of units) {
-            let result = this._actionFunc(unit.battleContext, ...this._args);
-            env.info(this._messageBuilder(unit, result, ...this._args));
-            results.push(result);
-        }
-        return results;
+    onEvaluate(unit, env) {
+        let result = this._actionFunc(unit.battleContext, ...this._args);
+        env.info(this._messageBuilder(unit, result, ...this._args));
+        return result;
     }
 }
 
@@ -207,6 +202,17 @@ const CAN_ATTACK_TWICE =
         (u, r) => `${u.nameWithGroup}は2回攻撃を発動しているか: ${r}`
     );
 
+
+class AttacksTwiceNode extends SingleEffectNode {
+    onEvaluate(unit, env) {
+        env.info(`${unit.nameWithGroup}は2回攻撃（受けの時も2回攻撃）`);
+        unit.battleContext.attackCount = 2;
+        unit.battleContext.counterattackCount = 2;
+    }
+}
+
+const ATTACKS_TWICE = new AttacksTwiceNode();
+
 const [
     ,
     _NEUTRALIZES_FOES_NON_SPECIAL_SURVIVING_WITH_1_HP
@@ -219,12 +225,10 @@ const [
 const NEUTRALIZES_FOES_NON_SPECIAL_SURVIVING_WITH_1_HP = _NEUTRALIZES_FOES_NON_SPECIAL_SURVIVING_WITH_1_HP(true);
 
 class MakeFollowUpAttackBeforeFoesNextAttackNode extends SingleEffectNode {
-    evaluate(env) {
-        for (const unit of this._targetNode.evaluate(env)) {
-            env.info(`${unit.nameWithGroup}は戦闘中、追撃可能なら自分の攻撃の直後に追撃を行う（攻め立て）`);
-            unit.battleContext.isDesperationActivatable = true;
-            unit.battleContext.isDefDesperationActivatable = true;
-        }
+    onEvaluate(unit, env) {
+        env.info(`${unit.nameWithGroup}は戦闘中、追撃可能なら自分の攻撃の直後に追撃を行う（攻め立て）`);
+        unit.battleContext.isDesperationActivatable = true;
+        unit.battleContext.isDefDesperationActivatable = true;
     }
 }
 
@@ -240,6 +244,35 @@ const GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_X_BEFORE_UNITS_FIRST_FOLLOW_UP_ATTACK 
     MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
         .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionBeforeFirstFollowupAttack))
         .setLogMessage('自分の最初の追撃前に自身の奥義発動カウント-');
+
+const [
+    SAVIOR_HAS_TRIGGERED,
+    ,
+] = makeBattleContextFieldOperators(
+    BattleContext.nameOf(ctx => ctx.isSaviorActivated),
+    SkillEffectField.Op.NONE,
+    '',
+    (name, n) => `${name}は護り手を発動している: ${n}`
+)
+
+class BoostsDamageNode extends SingleEffectNode {
+    /**
+     * @param {NumberResolvable} damage
+     */
+    constructor(damage) {
+        super();
+        this._damage = NumberNode.toNumberNode(damage);
+    }
+
+    onEvaluate(unit, env) {
+        let value = this._damage.evaluate(env);
+        unit.battleContext.addSpecialAddDamage(value);
+        let damage = unit.battleContext.getSpecialAddDamage();
+        env.info(`${unit.nameWithGroup}は奥義ダメージに${value}加算: ${damage - value} → ${damage}`);
+    }
+}
+
+const BOOSTS_DAMAGE_BY = (damage) => new BoostsDamageNode(damage);
 
 ///
 

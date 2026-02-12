@@ -483,11 +483,17 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
       let defUnitInfo = atkUnitInfo;
       heroDatabase.initUnit(defUnit, defUnitInfo.name);
 
-      calclator.calcDamage(atkUnit, defUnit, false);
+      try {
+        calclator.calcDamage(atkUnit, defUnit, false);
 
-      atkUnit.hp = atkUnit.maxHpWithSkills;
-      defUnit.hp = defUnit.maxHpWithSkills;
-      calclator.calcDamage(defUnit, atkUnit, false);
+        atkUnit.hp = atkUnit.maxHpWithSkills;
+        defUnit.hp = defUnit.maxHpWithSkills;
+        calclator.calcDamage(defUnit, atkUnit, false);
+      } catch (e) {
+        console.error(e);
+        console.error(atkUnit.nameWithGroup + " vs " + defUnit.nameWithGroup);
+        throw e;
+      }
     }
 
     log += calclator.getProfileLog();

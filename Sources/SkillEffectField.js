@@ -3,6 +3,7 @@ class SkillEffectField {
      * @enum {string}
      */
     static Op = {
+        NONE: '',
         ADD: '+',
         SUB: '-',
         MUL: '*',
@@ -113,21 +114,17 @@ class SkillEffectFieldNode extends SingleEffectNode {
 }
 
 class GetSkillEffectFieldNode extends SkillEffectFieldNode {
-    evaluate(env) {
-        let results = [];
-        for (const unit of this._targetNode.evaluate(env)) {
-            const targetObj = this._isBattleContext ? unit.battleContext : unit;
+    onEvaluate(unit, env) {
+        const targetObj = this._isBattleContext ? unit.battleContext : unit;
 
-            // 文字列キーを使ってアクセス
-            const result = targetObj[this._key];
-            results.push(result);
-            if (this._logMessageFunc) {
-                env.debug(`${this._logMessageFunc(unit.nameWithGroup, result)}`);
-            } else {
-                env.debug(`${unit.nameWithGroup}の${this._logMessage} : ${this._toLog(result)}`);
-            }
+        // 文字列キーを使ってアクセス
+        const result = targetObj[this._key];
+        if (this._logMessageFunc) {
+            env.debug(`${this._logMessageFunc(unit.nameWithGroup, result)}`);
+        } else {
+            env.debug(`${unit.nameWithGroup}の${this._logMessage} : ${this._toLog(result)}`);
         }
-        return results;
+        return result;
     }
 }
 
@@ -155,23 +152,22 @@ class ModSkillEffectFieldNode extends SkillEffectFieldNode {
         this._isBattleContext = false;
     }
 
-    onEvaluate(env) {
+    onEvaluate(unit, env) {
         const operand = this._transEvaluation(env, this._operandNode.evaluate(env));
-        for (const unit of this._targetNode.evaluate(env)) {
-            const targetObj = this._isBattleContext ? unit.battleContext : unit;
+        const targetObj = this._isBattleContext ? unit.battleContext : unit;
 
-            // 文字列キーを使ってアクセス
-            const beforeValue = targetObj[this._key];
-            const originalValue = this._copy(beforeValue);
-            const result = targetObj[this._key] = SkillEffectField.calc(beforeValue, operand, this._op);
-            if (this._logMessageFunc) {
-                env.info(`${this._logMessageFunc(unit.nameWithGroup, operand)}
+        // 文字列キーを使ってアクセス
+        const beforeValue = targetObj[this._key];
+        const originalValue = this._copy(beforeValue);
+        const result = targetObj[this._key] = SkillEffectField.calc(beforeValue, operand, this._op);
+        if (this._logMessageFunc) {
+            env.info(`${this._logMessageFunc(unit.nameWithGroup, operand)}
                 : ${this._toLog(originalValue)} → ${this._toLog(result)}`);
-            } else {
-                env.info(`${unit.nameWithGroup}は${this._logMessage}${operand}
+        } else {
+            env.info(`${unit.nameWithGroup}は${this._logMessage}${this._toLog(operand)}
                 : ${this._toLog(originalValue)} → ${this._toLog(result)}`);
-            }
         }
+        return result;
     }
 
     _copy(value) {

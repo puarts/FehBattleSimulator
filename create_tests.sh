@@ -52,6 +52,7 @@ TEST_FILE_NAMES=(
     UnitManager
     BeginningOfTurnSkillHandler
     SkillEffect
+    GetRequirements
     )
 
 TARGET_FILE=All.test.js
