@@ -9,6 +9,15 @@ function initVueComponents() {
             updateMapUi();
         }
     });
+    Vue.component('unit-builder-unit-detail', function (resolve, reject) {
+        setTimeout(function () {
+            // resolve コールバックにコンポーネント定義を渡します
+            resolve({
+                props: ['value'],
+                template: "#unit-builder-unit-detail-template"
+            })
+        }, 0)
+    });
     Vue.component('unit-detail', {
         props: ['value'],
         computed: {

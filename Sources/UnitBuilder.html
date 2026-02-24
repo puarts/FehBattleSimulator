@@ -3,7 +3,6 @@
     <title>ユニットビルダー</title>
     <link rel="stylesheet" href="css/main.css?20181201" type="text/css" />
     <link rel="stylesheet" href="css/loading.css">
-    <link rel="stylesheet" href="AetherRaidTacticsBoard/Release2/feh-battle-simulator.css">
     <link rel="stylesheet" href="feh-battle-simulator.css">
     <script>
         const g_startTime = Date.now();
@@ -535,10 +534,11 @@
                                     </span>
                                 </div>
 
-                                <unit-detail v-model="unit" v-if="!unit.canHavePairUpUnit || !unit.isEditingPairUpUnit">
-                                </unit-detail>
-                                <unit-detail v-model="unit.pairUpUnit"
-                                    v-show="unit.canHavePairUpUnit && unit.isEditingPairUpUnit"></unit-detail>
+                                <unit-builder-unit-detail v-model="unit"
+                                    v-if="!unit.canHavePairUpUnit || !unit.isEditingPairUpUnit">
+                                </unit-builder-unit-detail>
+                                <unit-builder-unit-detail v-model="unit.pairUpUnit"
+                                    v-show="unit.canHavePairUpUnit && unit.isEditingPairUpUnit"></unit-builder-unit-detail>
                             </li>
                         </ul>
                     </div>
@@ -620,7 +620,7 @@
             text-align: center;
         }
     </style>
-    <script type="text/x-template" id="unit-detail-template">
+    <script type="text/x-template" id="unit-builder-unit-detail-template">
         <div v-if="value != null">
             <div class="unitStatusAndSkillContainer" style="float:left;display:block;padding: 10px 0px 10px 10px;position:relative;" >
                 <div style="float:right;position:absolute;top:4px;right:4px" v-if="value.hasPairUpUnit">
