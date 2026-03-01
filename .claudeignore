@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Generated files
+All.test.js
+Documents/Api/
+
+# Images (binary assets)
+images/
+
+# C# project (not part of JS simulator)
+FehBattleSimulatorLib/
+FehBattleSimulatorLibTest/
+FehBattleSimulatorLib.sln
+
+# Build artifacts
+Outputs/
+x64/
+.vs/
+
+# IDE / editor
+.idea/
+.vscode/
+.junie/
+
+# OS
+.DS_Store
