@@ -59,6 +59,7 @@ ESLint runs as part of `npm test`. Fix lint errors before committing.
 - **Type header**: English (`feat`, `fix`, `docs`, `chore`, `refactor`, `test`)
 - **Summary and body**: Japanese
 - Follow existing style (short imperative phrases)
+- Do not include `Co-Authored-By` lines in commit messages
 
 ### Branch Strategy
 
