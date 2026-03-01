@@ -6,6 +6,9 @@ vendor/
 All.test.js
 Documents/Api/
 
+# Samples (local scratch files)
+Sources/samples/
+
 # Images (binary assets)
 images/
 

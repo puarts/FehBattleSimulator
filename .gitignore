@@ -5,6 +5,9 @@ vendor/
 # Generated files
 All.test.js
 
+# Samples (local scratch files)
+Sources/samples/
+
 # Build artifacts
 Outputs/
 x64/
