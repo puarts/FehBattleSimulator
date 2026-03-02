@@ -285,7 +285,7 @@
                 AND_NODE(
                     CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE,
                     // and if foe's Res at the start of battle ≤ 39,
-                    LT_NODE(FOR_FOE_NODE(TARGETS_STAT_AT_START_OF_BATTLE(StatusIndex.RES)), 39),
+                    LTE_NODE(FOR_FOE_NODE(TARGETS_STAT_AT_START_OF_BATTLE(StatusIndex.RES)), 39),
                 ),
                 // inflicts Special cooldown count+1 on foe
                 // before foe's first attack during combat
@@ -611,14 +611,13 @@
         // and effects that prevent unit's follow-up attacks during combat.
         NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_FOLLOW_UP_ATTACKS_DURING_COMBAT_NODE,
         // If【Exposure】is active on foe,
-        IF_NODE(HAS_FOE_STATUS_EFFECT_NODE(StatusEffectType.Exposure),
-            // if unit has weapon-triangle advantage,
-            // or if foe initiates combat,
-            IF_NODE(
-                OR_NODE(
-                    HAS_TARGET_WEAPON_TRIANGLE_ADVANTAGE_NODE,
-                    DOES_FOE_INITIATE_COMBAT_NODE,
-                ),
+        // if unit has weapon-triangle advantage,
+        // or if foe initiates combat,
+        IF_NODE(
+            OR_NODE(
+                HAS_FOE_STATUS_EFFECT_NODE(StatusEffectType.Exposure),
+                HAS_TARGET_WEAPON_TRIANGLE_ADVANTAGE_NODE,
+                DOES_FOE_INITIATE_COMBAT_NODE,
             ),
             // unit attacks twice during combat.
             TARGET_ATTACKS_TWICE_DURING_COMBAT_NODE,
@@ -941,7 +940,7 @@
             ),
         ),
     ));
-    SkillEffectRegistrar.registerSelfTargetingSkills(skillId,
+    SkillEffectRegistrar.registerForAllyTargetingSkills(skillId,
         // For allies within 3 rows or 3 columns centered on unit,
         IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
         // grants Atk/Spd/Def/Res+5,
@@ -1131,7 +1130,7 @@
         ],
     );
     // For unit and allies within 3 rows or 3 columns centered on unit,
-    SkillEffectRegistrar.registerForAllyTargetingSkills(skillId,
+    SkillEffectRegistrar.registerSelfTargetingSkills(skillId,
         TRUE_NODE,
         // grants Atk/Spd/Def/Res+X
         GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(15),
@@ -1528,7 +1527,7 @@
             OR_NODE(
                 GT_NODE(UNITS_EVAL_DEF_NODE, FOES_EVAL_DEF_NODE),
                 // or the number of allies within 3 columns or 3 rows centered on unit ≥ 2,
-                GTE_NODE(2, NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE),
+                GTE_NODE(NUM_OF_ALLIES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 2),
             ),
             // unit attacks twice during combat.
             TARGET_ATTACKS_TWICE_DURING_COMBAT_NODE,
@@ -1574,7 +1573,7 @@
             ),
             GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
                 ATK_DEF_RES(2),
-                ATK_SPD(10),
+                ATK_DEF_RES(10),
             ),
         ),
     ));
@@ -1594,7 +1593,7 @@
             // to unit and allies within 3 rows or 3 columns centered on unit.
             GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
                 ATK_DEF_RES(4),
-                ATK_SPD(20),
+                ATK_DEF_RES(20),
             ),
             FOR_EACH_UNIT_NODE(
                 FILTER_UNITS_NODE(
@@ -2415,7 +2414,7 @@
         IF_NODE(CAN_TARGETS_ATTACK_TRIGGER_TARGETS_SPECIAL_NODE,
             // grants Special cooldown count - X ÷ 3 to unit
             // before unit's first attack during combat.
-            INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGET_BEFORE_TARGET_FIRST_ATTACK_NODE(
+            GRANTS_SPECIAL_COOLDOWN_COUNT_MINUS_N_TO_TARGET_BEFORE_TARGETS_FIRST_ATTACK_DURING_COMBAT_NODE(
                 MULT_TRUNC_NODE(xNode, 1 / 3),
             ),
         ),
@@ -3121,7 +3120,7 @@
         // If unit initiates combat or is within 2 spaces of an ally,
         OR_NODE(DOES_UNIT_INITIATE_COMBAT_NODE, IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
         // grants bonus to unit’s Atk/Spd/Def/Res =
-        GRANTS_ATK_SPD_DEF_TO_TARGET_DURING_COMBAT_NODE(
+        GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE(
             // number of foes within 3 rows or 3 columns centered on unit × 3, + 5 (max 14),
             MULT_ADD_MAX_NODE(NUM_OF_FOES_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE, 3, 5, 14),
         ),
@@ -6133,7 +6132,7 @@
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         // Neutralizes effects that inflict
         // “Special cooldown charge -X” on unit and
-        NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X_TO_FOE,
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
         // reduces damage from foe’s attacks by 40% during combat
         // (excluding area-of-effect Specials).
         REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_DURING_COMBAT_EXCLUDING_AOE_SPECIALS_BY_SPECIAL_NODE(40),
