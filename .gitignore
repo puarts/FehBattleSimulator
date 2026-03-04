@@ -87,8 +87,9 @@ http-client.private.env.json
 # VS Code
 .vscode/
 
-# Claude Code
-.claude/
+# Claude Code local settings (not shared with team)
+.claude/settings.local.json
+.claude/CLAUDE.local.md
 
 # Junie
 .junie/
