@@ -901,6 +901,61 @@ describe('Test map', () => {
             HIGHEST(TARGETS_ATK_ON_MAP).among(UNIT.and(ALLIES_WITHIN.spaces(2).of(UNIT))).evaluate(env);
         expect(value).toEqual(80);
     });
+
+    test('foes within 2 spaces of foe', () => {
+        const env = new NodeEnv().setBattleMap(battleMap)
+            .setSkillOwner(allies[2]).setTextUnit(allies[2]).setTextFoe(enemies[2]);
+        const units = new Set(FOES_WITHIN.spaces(2).of(FOE).evaluate(env));
+        expect(units).toEqual(new Set([enemies[0], enemies[1], enemies[3], enemies[4]]));
+    });
+
+    test('foe and foes within 2 spaces of foe', () => {
+        const env = new NodeEnv().setBattleMap(battleMap)
+            .setSkillOwner(allies[2]).setTextUnit(allies[2]).setTextFoe(enemies[2]);
+        const units = new Set(FOE.and(FOES_WITHIN.spaces(2).of(FOE)).evaluate(env));
+        expect(units).toEqual(new Set([enemies[0], enemies[1], enemies[2], enemies[3], enemies[4]]));
+    });
+
+    test('foes within 2 spaces of foe including foe', () => {
+        const env = new NodeEnv().setBattleMap(battleMap)
+            .setSkillOwner(allies[2]).setTextUnit(allies[2]).setTextFoe(enemies[2]);
+        const units = new Set(FOES_WITHIN.spaces(2).of(FOE).include(FOE).evaluate(env));
+        expect(units).toEqual(new Set([enemies[0], enemies[1], enemies[2], enemies[3], enemies[4]]));
+    });
+
+    test('allies within 3 columns and 3 rows (reversed order)', () => {
+        battleMap.placeUnit(allies[0], 2, 4);
+        battleMap.placeUnit(allies[5], 5, 4);
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        const units = new Set(ALLIES_WITHIN.columns(3).rows(3).centeredOn(UNIT).evaluate(env));
+        expect(units).toEqual(new Set([allies[1], allies[3]]));
+    });
+
+    test('THERE_IS allies within 3 columns and 3 rows', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(THERE_IS(ALLIES_WITHIN.columns(3).rows(3).centeredOn(UNIT)).evaluate(env)).toBe(true);
+    });
+
+    test('NUM_OF allies within rowsOrColumns', () => {
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(NUM_OF(ALLIES_WITHIN.rowsOrColumns(3, 3).centeredOn(UNIT)).evaluate(env)).toBe(5);
+    });
+
+    test('ALLIES_WITHIN is not mutated by chaining', () => {
+        const before = ALLIES_WITHIN._filters.length;
+        ALLIES_WITHIN.spaces(3).of(UNIT);
+        ALLIES_WITHIN.rows(3).centeredOn(UNIT);
+        expect(ALLIES_WITHIN._filters.length).toBe(before);
+        expect(ALLIES_WITHIN._centerNode).toBeNull();
+    });
+
+    test('cloned UnitsWithinNode has independent filters', () => {
+        const a = ALLIES_WITHIN.spaces(2).of(UNIT);
+        const b = a.clone();
+        const env = new NodeEnv().setBattleMap(battleMap).setSkillOwner(allies[2]).setTextUnit(allies[2]);
+        expect(new Set(a.evaluate(env))).toEqual(new Set(b.evaluate(env)));
+        expect(a._filters).not.toBe(b._filters);
+    });
 });
 
 test("Status Effects", () => {
@@ -935,4 +990,23 @@ test("Status Effects", () => {
 
     expect(unclassified.length).toBe(0);
     expect(notInInfoMap.length).toBe(0);
+});
+
+describe('Function-as-node validation', () => {
+    test('addChildren rejects function', () => {
+        const node = new SkillEffectNode();
+        const MY_FACTORY = () => new SkillEffectNode();
+        expect(() => node.addChildren(MY_FACTORY)).toThrowError(/function.*passed/i);
+    });
+
+    test('addChildren error message includes function name', () => {
+        const node = new SkillEffectNode();
+        const MY_FACTORY = () => new SkillEffectNode();
+        expect(() => node.addChildren(MY_FACTORY)).toThrowError(/MY_FACTORY/);
+    });
+
+    test('doEffects rejects function', () => {
+        const MY_FACTORY = () => new SkillEffectNode();
+        expect(() => UNIT.doEffects(MY_FACTORY)).toThrowError(/function.*passed/i);
+    });
 });
