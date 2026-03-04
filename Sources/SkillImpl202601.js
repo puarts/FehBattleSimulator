@@ -1,84 +1,237 @@
 // スキル実装
-// Gift of Love
-// Mt: 14 Rng:2
-// Enables (Canto (Dist.; Max 3, Min 1)) . Accelerates Special trigger (cooldown count-1).
-// If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
-// After start-of-turn effects trigger on player phase, and after start-of-turn effects trigger on enemy phase (except for in Summoner Duels), for unit and allies within 3 spaces of unit, neutralizes stat penalties and two Penalty effects (does not apply to Penalty effects that are applied at the same time; neutralizes the first applicable Penalty effects on unit's or ally's list of active effects).
-// For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+X during combat (for
-// unit, X = 15; for allies, X = 5), and also, if unit's or ally's
-// Spd > foe's Spd, neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's or ally's follow-up attacks during combat.
-// Unit deals +25 damage during combat (excluding area-of-effect Specials). If decreasing the Spd difference necessary to make a follow-up attack by 10 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups), triggers (Potent Follow 100%] during combat.
-// If unit initiates combat, unit can make a follow-up attack before foe's next attack during combat.
 
-// S/R Detect Aerial
-// For foes on the map whose Res ‹ unit's Res at start of combat, inflicts Spd/Res-5, neutralizes foe's bonuses to Spd/Res, and foe suffers +10 damage during combat (excluding area-of-effect Specials).
-// Inflicts Spd/Res-4 on foe, and unit deals +8 damage during combat (excluding area-of-effect Specials).
-
-// Truly Inspired
-// At start of player phase or enemy phase, grants (Truly Incited] to unit for 1 turn, and also, if any foes within 3 rows or 3 columns centered on unit have Res < unit's Res+5, inflicts (Ploy] and (Exposurel on those foes through their next actions.
-// Grants Atk/Res+4 during combat.
-
-// Sweet Staff
-// Mt: 14
-// Rng: 2
-// Calculates damage from staff like other weapons.
-// Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1).
-// At start of player phase or enemy phase, grants
-// "neutralizes foe's bonuses during combat," "increases Spd difference necessary for foe to make a follow-up attack by 10 during combat," and [Canto (1)] to unit and allies within 2 spaces of unit for 1 turn.
-// Grants Atk/Spd/Def/Res+15 to unit, unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 15 (excluding area-of-effect Specials), reduces damage from foe's Specials by an additional 15 (excluding area-of-effect Specials), restores 7 HP to unit when unit deals damage to foe, and grants Special cooldown count-2 to unit before foe's first attack during combat.
-
-// Guardian+
-// Rng: 2
-// This skill is treated as a Rally Assist skill.
-// Restores HP = 50% of unit's Atk (min 8 HP) to target
-// ally, grants Spd/Def/Res+6 and [Fringe Bonus] to unit and target ally for 1 turn, and also, when there is no ally on the map with [Physical Twin Save) (including unit and target ally), grants (Physical Twin Save) to target ally for 1 turn. (Using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
-// [Physical Twin Save)
-// If a sword, lance, axe, bow, dagger, or beast foe initiates combat against an ally within 2 spaces of unit, triggers Savior on unit (triggers only if unit is not equipped with a skill that can trigger another Savior effect; if unit is granted multiple statuses that enable "Savior" effects to trigger, Savior will not trigger).
-// If foe uses sword, lance, axe, bow, dagger, or beast damage, disables foe's effects that "calculate damage using the lower of foe's Def or Res" (including area-of-effect Specials), and any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat during combat (excludes boosted Special effects from engaging; only highest value applied; does not stack).
-
-// Deluge Charm
-// If an Assist skill is used, unit's Special cooldown count does not go down.
-// When Special triggers, boosts damage by 70% of the greater of unit's or foe's Atk (calculates damage from staff after combat damage is added).
-// Reduces damage from foe's first attack by 40% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
-// At start of player phase or enemy phase, grants (Spd Liberatel and [Res Liberatel to unit and allies within 2 spaces of unit for 1 turn.
-
-// Huge Personality
-// Disables foe's effects that "calculate damage using the lower of foe's Def or Res" (including area-of-effect
-// Specials).
-// If magic, staff, or dragon foe initiates combat against an ally within 2 spaces of unit, triggers (Savior] on unit.
-// For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+5, reduces damage from foe's attacks by 7 (excluding area-of-effect Specials), neutralizes effects that inflict "Special cooldown charge -X" on unit or ally, and unit's or ally's
-// next attack deals damage = 40% of foe's first-attack
-// damage prior to reductions during combat (resets at end of combat; only highest value applied; does not stack).
-// Neutralizes foe's bonuses, and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
-
-// Bow of Love+
-// Mt: 12
-// Rng: 2 Eff: E
-// Effective against flying foes.
-// At start of player phase or enemy phase, grants Atk/Def+6, "neutralizes foe's bonuses during combat," and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
-// Grants Atk/Spd/Def/Res+5 to unit, unit deals +20 damage (excluding area-of-effect Specials), and reduces damage from foe's attacks by 10 during combat (excluding area-of-effect Specials).
-
-// Draconic Bond
-// Rng: 2
+// Heroic Maltet
+// Weapon
 // Accelerates Special trigger (cooldown count-1).
-// If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
-// At start of player phase or enemy phase, grants Atk/Res+6, [Fell Spirit] and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
-// Grants Atk/Spd/Def/Res+15 to unit, unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 15 (excluding area-of-effect Specials), and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat. If unit or foe is engaged, or if unit's Res > foe's Res, unit attacks twice during combat.
+// Reduces damage from area-of-effect Specials by 80% (excluding Røkkr area-of-effect Specials).
+// For foes within 3 rows or 3 columns centered on unit, inflicts Atk/Spd/Def/Res-5 on foe, inflicts Special cooldown charge -1 on foe per attack (only highest value applied; does not stack), neutralizes effects that grant “Special cooldown charge +X” to foe, and reduces the percentage of foe’s non-Special “reduce damage by X%” skills by 50% during combat (excluding area-of-effect Specials).
+// Grants Atk/Spd/Def/Res+10 to unit, unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe’s attacks by 15 (including area-of-effect Specials; excluding Røkkr area-of-effect Specials), reduces damage from foe’s Specials by an additional 15 (including area-of-effect Specials; excluding Røkkr area-of-effect Specials), and grants Special cooldown count-2 to unit before unit’s first follow-up attack during combat.
 
-// A/R Detect Aerial
-// For foes on the map whose Res ‹ unit's Res at start of combat, inflicts Atk/Res-5, neutralizes foe's bonuses to Atk/Res, and foe sutters +10 damage during combat (excluding area-of-effect Specials).
-// Inflicts Atk/Res-4 on foe, and unit deals +8 damage during combat (excluding area-of-effect Specials).
+// Armored Flare
+// Special
+// When Special triggers, boosts damage by unit’s Def.
+// Reduces damage from foe’s attacks by 40% during combat (twice per combat; excluding area-of-effect Specials).
+// At start of turn, grants Atk/Def 【Great Talent】 +2 to unit.
+// After combat, if unit’s Special triggered, grants Atk/Def 【Great Talent】 +4 to unit.
+// (This skill grants max of 【Great Talent】 +10.)
 
-// Fell Refuge
-// Enables [Canto (Dist.; Max 3, Min 1)] .
-// Disables foe's skills that "calculate damage using the lower of foe's Def or Res" (including area-of-effect
-// Specials).
-// For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+5, deals +7 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 7 during combat (excluding area-of-effect Specials), and also, if this unit's Res ≥ foe's Res+5 at start of combat, and if foe's attack can trigger foe's Special, inflicts Special cooldown count+ 1 on foe before foe's first attack and before foe's first follow-up attack during combat (cannot exceed foe's maximum Special cooldown).
-// Reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials), grants Special cooldown count-1 to unit before unit's first attack, and reduces the percentage of foe's non-Special
-// "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+// Armored Flare
+// Special
+// When Special triggers, boosts damage by unit's Def.
+// Reduces damage from foe's attacks by 40% during combat (twice per combat; excluding area-of-effect Specials).
+// At start of turn, grants Atk/Def 【Great Talent】 +2 to unit.
+// After combat, if unit's Special triggered, grants Atk/Def 【Great Talent】 +4 to unit.
+// (This skill grants max of 【Great Talent】 +10.)
 
-// Duo Skill
-// Grants [Divinely Inspiring) , (Reflex), and "unit makes a guaranteed follow-up attack during combat" to unit and allies within 3 spaces of unit for 1 turn.
+// Ostian Backbone
+// Passive A
+// Grants HP+5, Atk/Spd/Def/Res+9. Unit can counterattack regardless of foe's range.
+// For unit and allies within 3 spaces of unit, neutralizes effects that prevent unit's or ally's counterattacks during combat, and if foe initiates combat, unit and allies can make a follow-up attack before foe's next attack during combat.
+// Unit deals +7 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 7 (excluding area-of-effect Specials), neutralizes effects that inflict “Special cooldown charge -X” on unit, and neutralizes effects that allow foe to make a follow-up attack before unit's next attack during combat.
+
+// Patience
+// Passive B
+// If unit initiates combat, foe can counterattack before unit's first attack.
+// Inflicts Atk/Def/Res-4 on foe, foe cannot make a follow-up attack, deals damage = 20% of unit's Def (excluding area-of-effect Specials), reduces damage from foe's attacks by 20% of unit's Def (excluding area-of-effect Specials), and restores 7 HP to unit when unit deals damage to foe during combat.
+// If unit's Spd at start of battle ≥ 30, triggers 【Potent Follow X%】 during combat (if unit cannot perform follow-up and attack twice, X = 100; otherwise, X = 50; “at start of battle” excludes increases to Spd granted after ally is deployed, such as Legendary Effects, Mythic Effects, Bonus Heroes, Great Talent, etc.).
+
+// A/D Briar F Save
+// Passive C
+// If foe with Range = 2 initiates combat against an ally within 2 spaces of unit, triggers 【Savior】 on unit.
+// If foe's Range = 2, grants Atk/Def+4 to unit and reduces damage from foe's first attack by 5 during combat (“first attack” normally means only the first strike; for effects that grant “unit attacks twice,” it means the first and second strikes), and unit's next attack deals damage = 40% of foe's attack damage prior to reductions (resets at end of combat; only highest value applied; does not stack).
+
+// Harmonized Skill
+// Harmonized
+// Grants 【Resonance: Shields】 to unit and allies from the same titles as unit.
+// Grants another action to certain target, and if Canto has already been triggered, re-enables Canto (if there are allies from the same titles as unit on the map who have already acted, targets ally with the highest HP among those allies; otherwise, targets unit; if multiple targets meet the conditions, effect will not trigger).
+
+// Sisters' Blade
+// Weapon
+// Accelerates Special trigger (cooldown count-1).
+// For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+X (for unit, X = 15; for allies, X = 5), neutralizes effects that grant “Special cooldown charge +X” to foe or inflict “Special cooldown charge -X” on unit or ally, and grants Special cooldown charge +1 to unit or ally per attack during combat (only highest value applied; does not stack).
+// Unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe’s attacks by 15 (excluding area-of-effect Specials), and reduces damage from foe’s Specials by an additional 15 (excluding area-of-effect Specials) during combat, and restores 7 HP to unit after combat.
+// Unit can use the following 【Style】 : Scendscale Style
+
+// Swift Specter
+// Passive A
+// Enables 【Canto (Dist. +1; Max 4)】 .
+// At start of combat, if unit's HP ≥ 25% or if unit is within 3 spaces of an ally, grants Atk/Spd+9 to unit and deals +7 damage during combat (excluding area-of-effect Specials), and also, if unit's Spd > foe's Spd, neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+// At start of combat, if unit's HP ≥ 25% and unit is within 3 spaces of an ally, grants an additional Atk/Spd+3 to unit during combat.
+
+// Wild at Heart
+// Passive B
+// Unit attacks twice (even if foe initiates combat, unit attacks twice).
+// At start of turn, and after unit acts (if Canto triggers, after Canto), inflicts Spd/Def-7, 【Exposure】 , and 【Sabotage】 on closest foes and any foe within 2 spaces of those foes through their next actions.
+// Inflicts Atk/Spd/Def-5 on foe, unit deals damage = 20% of unit's Spd (excluding area-of-effect Specials), and reduces damage from foe's attacks by 20% of unit's Spd (excluding area-of-effect Specials) during combat.
+// If unit's HP > 1 and foe would reduce unit's HP to 0 during combat, unit survives with 1 HP (once per combat; does not stack with non-Special effects that allow unit to survive with 1 HP if foe's attack would reduce HP to 0).
+
+// Style
+// Unit can use the following 【Style】:
+// Scendscale Style
+// Unit can attack foes 3 spaces away (unit cannot attack adjacent foes).
+// Unit deals +10 damage during combat (excluding area-of-effect Specials).
+// Cannot move through spaces within 3 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
+// Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 1, or foe can counterattack regardless of unit's range.
+// After-combat movement effects do not occur. Skill effect's Range is treated as 1. Once used, this Style cannot be used for two turns.
+
+// Harmonized Skill
+// Grants 【Resonance: Blades】 to unit and allies from the same titles as unit.
+// Grants another action to a certain target, and if Canto has already been triggered, re-enables Canto (if there are allies from the same titles as unit on the map who have already acted, targets ally with the highest HP among those allies; otherwise, targets unit; if multiple targets meet the conditions, effect will not trigger).
+
+// Chosen Lance
+// Weapon
+// Enables 【Canto (Dist. +1; Max 4)】 .
+// Accelerates Special trigger (cooldown count-1).
+// Unit can counterattack regardless of foe's range.
+// At start of player phase or enemy phase, grants 【Empathy】 , 【Dodge】 , and 【Null Follow-Up】 to unit and allies within 2 spaces of unit for 1 turn.
+// Grants Atk/Spd/Def/Res+15 to unit, unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 15 (excluding area-of-effect Specials), and reduces damage from foe's Specials by an additional 15 (excluding area-of-effect Specials) during combat.
+// Unit can use the following 【Style】 : Chosen Lance Style
+
+// Frozen Mirror
+// Special
+// Boosts damage by 60% of unit's Spd when Special triggers.
+// Reduces damage from foe's attacks by 40% (excluding area-of-effect Specials), and unit's next attack deals damage = total damage reduced from foe's first attack during combat (by any source, including other skills; resets at end of combat).
+// At start of enemy phase (except for in Pawns of Loki), if there is no 【Divine Vein (Icicle)】 currently applied by unit or allies, applies 【Divine Vein (Icicle)】 to spaces 2 spaces away from unit for 1 turn (excluding spaces occupied by a foe, destructible terrain other than Divine Vein, or warp spaces in Rival Domains), and 【Divine Vein (Vert)】 to unit's space and spaces within 3 spaces of unit for 1 turn (excluding spaces with 【Divine Vein (Icicle)】 applied).
+// Spd/Res Faith
+// Passive C
+// At start of player phase or enemy phase, if unit is within 2 spaces of an ally, grants Spd/Res+6 and 【Bulwark】 to unit for 1 turn.
+// If 【Bulwark】 is active on unit, grants Spd/Res+4 to unit, reduces damage from foe's first attack by 5 (“first attack” normally means only the first strike; for effects that grant “unit attacks twice,” it means the first and second strikes), and grants Special cooldown count-1 to unit before foe's first attack during combat.
+
+// Style
+// Unit can use the following 【Style】 :
+// ———— Chosen Lance Style ————
+// Unit can attack foes 2 spaces away (unit cannot attack adjacent foes).
+// Decreases Spd difference necessary for unit to make a follow-up attack by 10 during combat.
+// Cannot move through spaces within 2 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill). Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 1, foe can counterattack regardless of unit's range, or foe's Range is the same as the distance between unit and foe.
+// After-combat movement effects do not occur. Skill effect's Range is treated as 1. This Style can be used only once per turn.
+
+// Gift of Love
+{
+    const skillId = Weapon.GiftOfLove;
+    // Mt: 14 Rng:2
+    // Enables (Canto (Dist.; Max 3, Min 1)) .
+    enablesCantoDistMin(skillId, 0, 3, 1);
+    // Accelerates Special trigger (cooldown count-1).
+    // If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
+    AT_COMPARING_STATS_HOOKS.addSkill(skillId, () => RES(5));
+    // After start-of-turn effects trigger on player phase, and after start-of-turn effects trigger on enemy phase (except for in Summoner Duels),
+    setAfterStartOfTurnEffectsTriggerOnPlayerOrEnemyPhaseExceptForInSummonerDuelsHooks(skillId, NODE_FUNC(
+        // for unit and allies within 3 spaces of unit,
+        UNIT.and(ALLIES_WITHIN.spaces(3).of(UNIT))
+            // neutralizes stat penalties
+            .do(NEUTRALIZES_STAT_PENALTIES())
+            // and two Penalty effects
+            // (does not apply to Penalty effects that are applied at the same time; neutralizes the first applicable Penalty effects on unit's or ally's list of active effects).
+            .and(NEUTRALIZES_N_PENALTY_EFFECTS(2).firstApplicable()),
+    ));
+    let getSkills = unitNode => makeArray(
+        // For unit and allies within 3 rows or 3 columns centered on unit,
+        // grants Atk/Spd/Def/Res+X during combat (for unit, X = 15; for allies, X = 5), and also,
+        unitNode.do(GRANTS_BONUS(ATK_SPD_DEF_RES(X)).duringCombat().x(unitNode === UNIT ? 15 : 5)),
+        // if unit's or ally's Spd > foe's Spd,
+        IF(unitNode.spd.sgt(FOE.spd),
+            unitNode.doEffects(
+                // neutralizes effects that guarantee foe's follow-up attacks and
+                NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS(true),
+                // effects that prevent unit's or ally's follow-up attacks
+                NEUTRALIZES_EFFECTS_THAT_PREVENT_UNITS_FOLLOW_UP_ATTACKS(true)
+                // during combat.
+            ).duringCombat(),
+        ),
+    );
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        ...getSkills(UNIT),
+    );
+    SkillEffectRegistrar.registerSkillsForAlliesDuringCombat(skillId,
+        IS_ALLY_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_UNIT_NODE,
+        ...getSkills(ALLY),
+    );
+
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // Unit deals +25 damage during combat (excluding area-of-effect Specials).
+        UNIT.do(DEALS_DAMAGE(25).duringCombat().excludingAoe()),
+        // If decreasing the Spd difference necessary to make a follow-up attack by 10 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
+        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
+            // triggers (Potent Follow 100%] during combat.
+            UNIT.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(100)).duringCombat(),
+        ),
+        // If unit initiates combat,
+        IF(UNIT.check(INITIATED_COMBAT),
+            // unit can make a follow-up attack before foe's next attack during combat.
+            UNIT.can(MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK).duringCombat(),
+        ),
+    );
+}
+
+    // S/R Detect Aerial
+    // For foes on the map whose Res ‹ unit's Res at start of combat, inflicts Spd/Res-5, neutralizes foe's bonuses to Spd/Res, and foe suffers +10 damage during combat (excluding area-of-effect Specials).
+    // Inflicts Spd/Res-4 on foe, and unit deals +8 damage during combat (excluding area-of-effect Specials).
+
+    // Truly Inspired
+    // At start of player phase or enemy phase, grants (Truly Incited] to unit for 1 turn, and also, if any foes within 3 rows or 3 columns centered on unit have Res < unit's Res+5, inflicts (Ploy] and (Exposurel on those foes through their next actions.
+    // Grants Atk/Res+4 during combat.
+
+    // Sweet Staff
+    // Mt: 14
+    // Rng: 2
+    // Calculates damage from staff like other weapons.
+    // Accelerates Special trigger (cooldown count-1; max cooldown count value cannot be reduced below 1).
+    // At start of player phase or enemy phase, grants
+    // "neutralizes foe's bonuses during combat," "increases Spd difference necessary for foe to make a follow-up attack by 10 during combat," and [Canto (1)] to unit and allies within 2 spaces of unit for 1 turn.
+    // Grants Atk/Spd/Def/Res+15 to unit, unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 15 (excluding area-of-effect Specials), reduces damage from foe's Specials by an additional 15 (excluding area-of-effect Specials), restores 7 HP to unit when unit deals damage to foe, and grants Special cooldown count-2 to unit before foe's first attack during combat.
+
+    // Guardian+
+    // Rng: 2
+    // This skill is treated as a Rally Assist skill.
+    // Restores HP = 50% of unit's Atk (min 8 HP) to target
+    // ally, grants Spd/Def/Res+6 and [Fringe Bonus] to unit and target ally for 1 turn, and also, when there is no ally on the map with [Physical Twin Save) (including unit and target ally), grants (Physical Twin Save) to target ally for 1 turn. (Using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
+    // [Physical Twin Save)
+    // If a sword, lance, axe, bow, dagger, or beast foe initiates combat against an ally within 2 spaces of unit, triggers Savior on unit (triggers only if unit is not equipped with a skill that can trigger another Savior effect; if unit is granted multiple statuses that enable "Savior" effects to trigger, Savior will not trigger).
+    // If foe uses sword, lance, axe, bow, dagger, or beast damage, disables foe's effects that "calculate damage using the lower of foe's Def or Res" (including area-of-effect Specials), and any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat during combat (excludes boosted Special effects from engaging; only highest value applied; does not stack).
+
+    // Deluge Charm
+    // If an Assist skill is used, unit's Special cooldown count does not go down.
+    // When Special triggers, boosts damage by 70% of the greater of unit's or foe's Atk (calculates damage from staff after combat damage is added).
+    // Reduces damage from foe's first attack by 40% during combat ("first attack" normally means only the first strike; for effects that grant "unit attacks twice," it means the first and second strikes).
+    // At start of player phase or enemy phase, grants (Spd Liberatel and [Res Liberatel to unit and allies within 2 spaces of unit for 1 turn.
+
+    // Huge Personality
+    // Disables foe's effects that "calculate damage using the lower of foe's Def or Res" (including area-of-effect
+    // Specials).
+    // If magic, staff, or dragon foe initiates combat against an ally within 2 spaces of unit, triggers (Savior] on unit.
+    // For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+5, reduces damage from foe's attacks by 7 (excluding area-of-effect Specials), neutralizes effects that inflict "Special cooldown charge -X" on unit or ally, and unit's or ally's
+    // next attack deals damage = 40% of foe's first-attack
+    // damage prior to reductions during combat (resets at end of combat; only highest value applied; does not stack).
+    // Neutralizes foe's bonuses, and neutralizes effects that guarantee foe's follow-up attacks and effects that prevent unit's follow-up attacks during combat.
+
+    // Bow of Love+
+    // Mt: 12
+    // Rng: 2 Eff: E
+    // Effective against flying foes.
+    // At start of player phase or enemy phase, grants Atk/Def+6, "neutralizes foe's bonuses during combat," and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
+    // Grants Atk/Spd/Def/Res+5 to unit, unit deals +20 damage (excluding area-of-effect Specials), and reduces damage from foe's attacks by 10 during combat (excluding area-of-effect Specials).
+
+    // Draconic Bond
+    // Rng: 2
+    // Accelerates Special trigger (cooldown count-1).
+    // If a skill compares unit's Res to a foe's or ally's Res, treats unit's Res as if granted +5.
+    // At start of player phase or enemy phase, grants Atk/Res+6, [Fell Spirit] and "Special cooldown charge +1 per attack during combat (only highest value applied; does not stack)" to unit and allies within 2 spaces of unit for 1 turn.
+    // Grants Atk/Spd/Def/Res+15 to unit, unit deals +25 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 15 (excluding area-of-effect Specials), and neutralizes effects that inflict "Special cooldown charge -X" on unit during combat. If unit or foe is engaged, or if unit's Res > foe's Res, unit attacks twice during combat.
+
+    // A/R Detect Aerial
+    // For foes on the map whose Res ‹ unit's Res at start of combat, inflicts Atk/Res-5, neutralizes foe's bonuses to Atk/Res, and foe sutters +10 damage during combat (excluding area-of-effect Specials).
+    // Inflicts Atk/Res-4 on foe, and unit deals +8 damage during combat (excluding area-of-effect Specials).
+
+    // Fell Refuge
+    // Enables [Canto (Dist.; Max 3, Min 1)] .
+    // Disables foe's skills that "calculate damage using the lower of foe's Def or Res" (including area-of-effect
+    // Specials).
+    // For unit and allies within 3 rows or 3 columns centered on unit, grants Atk/Spd/Def/Res+5, deals +7 damage (excluding area-of-effect Specials), reduces damage from foe's attacks by 7 during combat (excluding area-of-effect Specials), and also, if this unit's Res ≥ foe's Res+5 at start of combat, and if foe's attack can trigger foe's Special, inflicts Special cooldown count+ 1 on foe before foe's first attack and before foe's first follow-up attack during combat (cannot exceed foe's maximum Special cooldown).
+    // Reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials), grants Special cooldown count-1 to unit before unit's first attack, and reduces the percentage of foe's non-Special
+    // "reduce damage by X%" skills by 50% during combat (excluding area-of-effect Specials).
+
+    // Duo Skill
+    // Grants [Divinely Inspiring) , (Reflex), and "unit makes a guaranteed follow-up attack during combat" to unit and allies within 3 spaces of unit for 1 turn.
 
 // Budding Staff
 {
@@ -253,7 +406,7 @@
             REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY(7).excludingAoe(),
         ),
         // neutralizes effects that inflict "Special cooldown charge -X" on unit during combat, and also,
-        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X_ON_UNIT,
+        NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X.on(UNIT),
         // if decreasing the Spd difference necessary to make a follow-up attack by 10
         // would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
         IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
@@ -472,7 +625,7 @@
             // Inflicts Atk/Spd/Def/Res-5
             INFLICTS_PENALTY(ATK_SPD_DEF_RES(5)),
             // and neutralizes effects that grant "Special cooldown charge +X"
-            NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS(true),
+            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X,
             // to those foes during their combat.
         ).to(FOE).duringCombat(),
     );
@@ -602,7 +755,7 @@
             // reduces damage from foe's Specials by an additional 15 (excluding area-of-effect Specials), and
             REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY(15).excludingAoe(),
             // neutralizes effects that inflict "Special cooldown charge -X" on unit during combat.
-            NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X.on(UNIT).duringCombat(),
+            NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X.on(UNIT),
         ),
         // If decreasing the Spd difference necessary to make a follow-up attack by 10 would allow unit to trigger a follow-up attack
         // (excluding guaranteed or prevented follow-ups),
@@ -862,6 +1015,7 @@
 
 // 【Coax】
 {
+    // NOTE: それ自体には効果のないスキル
     // const skillId = getStatusEffectSkillId(StatusEffectType.Coax);
     // Grants a status that can trigger certain skill effects to unit.
 }
@@ -896,7 +1050,7 @@
     SkillEffectRegistrar.registerSkillsDuringCombat(skillId,
         // If unit initiates combat or is within 3 spaces of an ally,
         // TODO: `isWithin`メソッドの作成
-        UNIT.check(INITIATED_COMBAT).or(IS_TARGET_WITHIN_2_SPACES_OF_TARGETS_ALLY_NODE),
+        UNIT.check(INITIATED_COMBAT).or(IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE),
         // grants Atk/Spd+10 to unit and
         GRANTS_BONUS(ATK_SPD(10)).to(UNIT),
         // unit deals +X damage during combat (excluding area-of-effect Specials;
@@ -926,8 +1080,15 @@
 }
 
 // Harmonized Skill
-// Grants【Resonance: Blades】to unit and allies from the same titles as unit.
-//
-// Inflicts【Frozen】and【Share Spoils+】on closest foes and any foe within 2 spaces of those foes through their next actions.
-// (Harmonized Skills can be used by tapping the Harmonized button. This skill can only be used once per map. Harmonized Skills cannot be used by units deployed using Pair Up.)
-// (When unit has a status or a skill that enables use of a Style, Duo Skills and Harmonized Skills cannot be used while unit can take an action (those skills can be used after unit has acted).)
+{
+    const skillId = getDuoOrHarmonizedSkillId(Hero.HarmonizedIvy);
+    WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS.addSkill(skillId, NODE_FUNC(
+        // Grants【Resonance: Blades】to unit and allies from the same titles as unit.
+        GRANTS_STATUS_EFFECTS(StatusEffectType.ResonantBlades).to(UNIT.and(ALLIES_FROM_SAME_TITLES_AS_UNIT)),
+        // Inflicts【Frozen】and【Share Spoils+】on closest foes and any foe within 2 spaces of those foes through their next actions.
+        INFLICTS_STATUS_EFFECTS(StatusEffectType.Frozen, StatusEffectType.ShareSpoils)
+            .on(CLOSEST_FOES.and(FOES_WITHIN.spaces(2).of(CLOSEST_FOES))).throughTheirNextActions(),
+        // (Harmonized Skills can be used by tapping the Harmonized button. This skill can only be used once per map. Harmonized Skills cannot be used by units deployed using Pair Up.)
+        // (When unit has a status or a skill that enables use of a Style, Duo Skills and Harmonized Skills cannot be used while unit can take an action (those skills can be used after unit has acted).)
+    ));
+}
