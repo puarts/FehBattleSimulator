@@ -4128,6 +4128,18 @@ Weapon.BowOfLovePlus = 3563; // 麗愛の弓+
 Weapon.DraconicBond = 3564; // 竜姉妹の愛のブーケ
 PassiveB.ARDetectAerial = 3565; // 攻魔の看破・俯瞰
 PassiveC.FellRefuge = 3566; // 真邪竜の救済
+Weapon.HeroicMaltet = 3569; // 双勇マルテ
+Special.ArmoredFlare = 3570; // 重装の双炎
+PassiveA.OstianBackbone = 3571; // 真オスティアの反撃
+Weapon.SistersBlade = 3572; // 双愛王家の剣
+PassiveA.SwiftSpecter = 3573; // 攻速無欠・鬼没
+PassiveB.WildAtHeart = 3574; // 真獅子連斬
+Weapon.ChosenLance = 3575; // 氷の救世の槍
+Special.FrozenMirror = 3576; // 真氷の聖鏡
+PassiveC.SpdResFaith = 3577; // 速さ魔防の信念
+Weapon.AwakeningVoice = 3578; // 覚醒のブレス
+Special.ArmoredIceCap = 3579; // 重装の双氷
+PassiveB.HeiredDivinity = 3580; // 真新たなる神竜王
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;

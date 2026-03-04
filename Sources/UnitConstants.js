@@ -88,6 +88,7 @@ const Hero = {
     HarmonizedRyn: 1354,
     HarmonizedIvy: 1365,
     DuoBaldr: 1371,
+    HarmonizedHilda: 1380,
     // Duoの場合はDUO_HERO_SETにも追加する
 };
 
