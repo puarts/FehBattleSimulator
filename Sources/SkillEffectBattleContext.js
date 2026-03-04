@@ -182,6 +182,12 @@ const NEUTRALIZES_EFFECTS_THAT_GRANT_SPECIAL_COOLDOWN_CHARGE_PLUS_X =
         (u, _r, _n) => `${u.nameWithGroup}は自身の奥義発動カウント変動量-を無効`
     );
 
+const NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X =
+    new CallBattleContextFuncNode(
+        (ctx, _n) => ctx.neutralizesReducesCooldownCount(),
+        (u, _r, _n) => `${u.nameWithGroup}は自身の奥義発動カウント変動量-を無効`
+    );
+
 const DISABLES_FOES_EFFECTS_THAT_CALCULATE_DAMAGE_USING_LOWER_OF_FOES_DEF_OR_RES =
     MOD_BATTLE_CONTEXT_FIELD(true, SkillEffectField.Op.SET_TRUE)
         .setKey(BattleContext.nameOf(ctx => ctx.invalidatesReferenceLowerMit))

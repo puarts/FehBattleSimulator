@@ -398,6 +398,13 @@ class SkillEffectNode {
      */
     addChildren(...children) {
         for (const child of children) {
+            if (typeof child === 'function') {
+                throw new Error(
+                    `A function was passed as a child node to ${this.constructor.name}. ` +
+                    `Did you forget to call it with ()? ` +
+                    `Got: ${child.name || 'anonymous function'}`
+                );
+            }
             this._children.push(child);
             child.addParent(this);
         }

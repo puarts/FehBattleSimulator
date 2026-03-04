@@ -66,6 +66,7 @@ class TextTargetNode extends EnvUnitNode {
 const TARGET = new TextTargetNode();
 
 const ALLIES = UNIT.sameGroup();
+const ALLIES_FROM_SAME_TITLES_AS_UNIT = ALLIES.with(ARE_TARGET_AND_SKILL_OWNERS_HAS_SAME_TITLE_NODE);
 const ALLIES_ON_MAP = UNIT.sameGroup(); // sameGroupがマップ上のフィルタを行っている
 const FOES = UNIT.differentGroup();
 
@@ -368,7 +369,7 @@ const INFLICTS_STATUS_EFFECTS = (...effects) => GRANTS_STATUS_EFFECTS(...effects
  * @param {T} statFlags
  * @returns {SingleEffectNode}
  */
-const NEUTRALIZES_STAT_PENALTIES = statFlags => CALL_UNIT_FUNC(
+const NEUTRALIZES_STAT_PENALTIES = (statFlags = StatFlags.ALL) => CALL_UNIT_FUNC(
     (unit, fs) => unit.setReservedDebuffFlagsToNeutralize(fs),
     (unit, fs) => `${unit.nameWithGroup}は弱化を解除予約: ${fs}`,
     statFlags

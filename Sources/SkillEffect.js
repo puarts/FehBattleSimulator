@@ -153,6 +153,13 @@ class UnitNode extends SkillEffectNode {
      * @returns {T}
      */
     do(effect) {
+        if (typeof effect === 'function') {
+            throw new Error(
+                `A function was passed to do(). ` +
+                `Did you forget to call it with ()? ` +
+                `Got: ${effect.name || 'anonymous function'}`
+            );
+        }
         return effect.clone().to(this);
     }
 
@@ -161,6 +168,15 @@ class UnitNode extends SkillEffectNode {
      * @return {EffectNode}
      */
     doEffects(...effects) {
+        for (const e of effects) {
+            if (typeof e === 'function') {
+                throw new Error(
+                    `A function was passed to doEffects(). ` +
+                    `Did you forget to call it with ()? ` +
+                    `Got: ${e.name || 'anonymous function'}`
+                );
+            }
+        }
         // 1. 各 effect を clone() して「分身」を作る
         const clonedEffects = effects.map(e => e.clone());
 
@@ -5607,6 +5623,15 @@ class EffectsNode extends EffectNode {
      */
     constructor(...effectNodes) {
         super();
+        for (const n of effectNodes) {
+            if (typeof n === 'function') {
+                throw new Error(
+                    `A function was passed as an effect to EffectsNode. ` +
+                    `Did you forget to call it with ()? ` +
+                    `Got: ${n.name || 'anonymous function'}`
+                );
+            }
+        }
         this._effectNodes = effectNodes;
         this._effectNodes.forEach(n => n.addParent(this));
     }
