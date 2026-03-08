@@ -992,6 +992,211 @@ test("Status Effects", () => {
     expect(notInInfoMap.length).toBe(0);
 });
 
+describe('ModSkillEffectFieldNode DSL functions', () => {
+    /** @type {Unit} */
+    let unit;
+    /** @type {Unit} */
+    let foe;
+    /** @type {NodeEnv} */
+    let env;
+
+    beforeEach(() => {
+        heroDatabase = g_testHeroDatabase;
+        unit = heroDatabase.createUnit('アルフォンス');
+        foe = heroDatabase.createUnit('シャロン');
+        env = new NodeEnv();
+        env.setTarget(unit).setUnitsDuringCombat(unit, foe);
+        env.setTextUnit(unit).setTextFoe(foe);
+        env.setCombatPhase(NodeEnv.CombatPhase.AT_START_OF_COMBAT);
+    });
+
+    // --- SkillEffectField.Op.SET ---
+    test('SkillEffectField.calc SET op returns operand', () => {
+        expect(SkillEffectField.calc(10, 2, SkillEffectField.Op.SET)).toBe(2);
+        expect(SkillEffectField.calc(false, true, SkillEffectField.Op.SET)).toBe(true);
+        expect(SkillEffectField.calc(0, 99, SkillEffectField.Op.SET)).toBe(99);
+    });
+
+    // --- Category 1: Boolean SET_TRUE ---
+    test('CANNOT_TRIGGER_PRECOMBAT_SPECIAL sets field to true', () => {
+        expect(unit.battleContext.cannotTriggerPrecombatSpecial).toBe(false);
+        CANNOT_TRIGGER_PRECOMBAT_SPECIAL().to(UNIT).evaluate(env);
+        expect(unit.battleContext.cannotTriggerPrecombatSpecial).toBe(true);
+    });
+
+    test('DISABLES_DEFENSIVE_TERRAIN_EFFECTS sets field to true', () => {
+        expect(unit.battleContext.invalidatesDefensiveTerrainEffect).toBe(false);
+        DISABLES_DEFENSIVE_TERRAIN_EFFECTS().to(UNIT).evaluate(env);
+        expect(unit.battleContext.invalidatesDefensiveTerrainEffect).toBe(true);
+    });
+
+    test('DISABLES_SUPPORT_EFFECTS sets field to true', () => {
+        expect(unit.battleContext.invalidatesSupportEffect).toBe(false);
+        DISABLES_SUPPORT_EFFECTS().to(UNIT).evaluate(env);
+        expect(unit.battleContext.invalidatesSupportEffect).toBe(true);
+    });
+
+    test('INVALIDATES_COUNTERATTACK sets field to true', () => {
+        expect(unit.battleContext.invalidatesCounterattack).toBe(false);
+        INVALIDATES_COUNTERATTACK().to(UNIT).evaluate(env);
+        expect(unit.battleContext.invalidatesCounterattack).toBe(true);
+    });
+
+    test('DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS sets field to true', () => {
+        expect(unit.battleContext.nullCounterDisrupt).toBe(false);
+        DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS().to(UNIT).evaluate(env);
+        expect(unit.battleContext.nullCounterDisrupt).toBe(true);
+    });
+
+    test('PREVENTS_ATTACKER_SPECIAL sets field to true', () => {
+        expect(unit.battleContext.preventedAttackerSpecial).toBe(false);
+        PREVENTS_ATTACKER_SPECIAL().to(UNIT).evaluate(env);
+        expect(unit.battleContext.preventedAttackerSpecial).toBe(true);
+    });
+
+    test('PREVENTS_DEFENDER_SPECIAL sets field to true', () => {
+        expect(unit.battleContext.preventedDefenderSpecial).toBe(false);
+        PREVENTS_DEFENDER_SPECIAL().to(UNIT).evaluate(env);
+        expect(unit.battleContext.preventedDefenderSpecial).toBe(true);
+    });
+
+    test('PREVENTS_DEFENDER_SPECIAL_PER_ATTACK sets field to true', () => {
+        expect(unit.battleContext.preventedDefenderSpecialPerAttack).toBe(false);
+        PREVENTS_DEFENDER_SPECIAL_PER_ATTACK().to(UNIT).evaluate(env);
+        expect(unit.battleContext.preventedDefenderSpecialPerAttack).toBe(true);
+    });
+
+    test('DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY sets field to true', () => {
+        expect(unit.battleContext.canUnitDisableSkillsThatChangeAttackPriority).toBe(false);
+        DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY().to(UNIT).evaluate(env);
+        expect(unit.battleContext.canUnitDisableSkillsThatChangeAttackPriority).toBe(true);
+    });
+
+    test('CAN_COUNTERATTACK_REGARDLESS_OF_RANGE sets field to true', () => {
+        expect(unit.battleContext.canCounterattackToAllDistance).toBe(false);
+        CAN_COUNTERATTACK_REGARDLESS_OF_RANGE().to(UNIT).evaluate(env);
+        expect(unit.battleContext.canCounterattackToAllDistance).toBe(true);
+    });
+
+    test('CALCULATES_DAMAGE_USING_LOWER_OF_FOES_DEF_OR_RES sets field to true', () => {
+        expect(unit.battleContext.refersMinOfDefOrRes).toBe(false);
+        CALCULATES_DAMAGE_USING_LOWER_OF_FOES_DEF_OR_RES().to(UNIT).evaluate(env);
+        expect(unit.battleContext.refersMinOfDefOrRes).toBe(true);
+    });
+
+    test('INVALIDATES_FOES_NON_SPECIAL_DAMAGE_REDUCTION sets field to true', () => {
+        expect(unit.battleContext.invalidatesDamageReductionExceptSpecial).toBe(false);
+        INVALIDATES_FOES_NON_SPECIAL_DAMAGE_REDUCTION().to(UNIT).evaluate(env);
+        expect(unit.battleContext.invalidatesDamageReductionExceptSpecial).toBe(true);
+    });
+
+    test('IS_DESPERATION_ACTIVATABLE sets field to true', () => {
+        expect(unit.battleContext.isDesperationActivatable).toBe(false);
+        IS_DESPERATION_ACTIVATABLE().to(UNIT).evaluate(env);
+        expect(unit.battleContext.isDesperationActivatable).toBe(true);
+    });
+
+    test('IS_VANTAGE_ACTIVATABLE sets field to true', () => {
+        expect(unit.battleContext.isVantageActivatable).toBe(false);
+        IS_VANTAGE_ACTIVATABLE().to(UNIT).evaluate(env);
+        expect(unit.battleContext.isVantageActivatable).toBe(true);
+    });
+
+    test('HAS_DEEP_WOUNDS sets field to true', () => {
+        expect(unit.battleContext.hasDeepWounds).toBe(false);
+        HAS_DEEP_WOUNDS().to(UNIT).evaluate(env);
+        expect(unit.battleContext.hasDeepWounds).toBe(true);
+    });
+
+    test('DOES_NOT_TRIGGER_FOES_SAVIOR_EFFECTS sets field to true', () => {
+        expect(unit.battleContext.doesNotTriggerFoesSaviorEffects).toBe(false);
+        DOES_NOT_TRIGGER_FOES_SAVIOR_EFFECTS().to(UNIT).evaluate(env);
+        expect(unit.battleContext.doesNotTriggerFoesSaviorEffects).toBe(true);
+    });
+
+    // --- Category 2: Numeric ADD ---
+    test('DEALS_DAMAGE_PER_ATTACK adds to field', () => {
+        expect(unit.battleContext.additionalDamagePerAttack).toBe(0);
+        DEALS_DAMAGE_PER_ATTACK(10).to(UNIT).evaluate(env);
+        expect(unit.battleContext.additionalDamagePerAttack).toBe(10);
+        DEALS_DAMAGE_PER_ATTACK(5).to(UNIT).evaluate(env);
+        expect(unit.battleContext.additionalDamagePerAttack).toBe(15);
+    });
+
+    test('DEALS_DAMAGE_OF_SPECIAL adds to field', () => {
+        expect(unit.battleContext.additionalDamageOfSpecial).toBe(0);
+        DEALS_DAMAGE_OF_SPECIAL(7).to(UNIT).evaluate(env);
+        expect(unit.battleContext.additionalDamageOfSpecial).toBe(7);
+    });
+
+    test('RESTORES_HP_AFTER_COMBAT adds to field', () => {
+        expect(unit.battleContext.healedHpAfterCombat).toBe(0);
+        RESTORES_HP_AFTER_COMBAT(7).to(UNIT).evaluate(env);
+        expect(unit.battleContext.healedHpAfterCombat).toBe(7);
+    });
+
+    test('REDUCES_DAMAGE_PER_ATTACK adds to field', () => {
+        expect(unit.battleContext.damageReductionValuePerAttack).toBe(0);
+        REDUCES_DAMAGE_PER_ATTACK(5).to(UNIT).evaluate(env);
+        expect(unit.battleContext.damageReductionValuePerAttack).toBe(5);
+    });
+
+    test('INCREASES_SPD_DIFF_FOR_FOLLOWUP adds to field', () => {
+        expect(unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack).toBe(0);
+        INCREASES_SPD_DIFF_FOR_FOLLOWUP(10).to(UNIT).evaluate(env);
+        expect(unit.battleContext.additionalSpdDifferenceNecessaryForFollowupAttack).toBe(10);
+    });
+
+    test('FOLLOWUP_ATTACK_PRIORITY_INCREMENT adds 1', () => {
+        expect(unit.battleContext.followupAttackPriorityIncrement).toBe(0);
+        FOLLOWUP_ATTACK_PRIORITY_INCREMENT(1).to(UNIT).evaluate(env);
+        expect(unit.battleContext.followupAttackPriorityIncrement).toBe(1);
+    });
+
+    test('FOLLOWUP_ATTACK_PRIORITY_DECREMENT subtracts 1', () => {
+        expect(unit.battleContext.followupAttackPriorityDecrement).toBe(0);
+        FOLLOWUP_ATTACK_PRIORITY_DECREMENT(1).to(UNIT).evaluate(env);
+        expect(unit.battleContext.followupAttackPriorityDecrement).toBe(-1);
+    });
+
+    test('SPECIAL_COUNT_REDUCTION_BEFORE_ATTACK adds to field', () => {
+        expect(unit.battleContext.specialCountReductionBeforeAttack).toBe(0);
+        SPECIAL_COUNT_REDUCTION_BEFORE_ATTACK(1).to(UNIT).evaluate(env);
+        expect(unit.battleContext.specialCountReductionBeforeAttack).toBe(1);
+    });
+
+    // --- Category 3: Numeric SET ---
+    test('SETS_ATTACK_COUNT sets field', () => {
+        expect(unit.battleContext.attackCount).toBe(1);
+        SETS_ATTACK_COUNT(2).to(UNIT).evaluate(env);
+        expect(unit.battleContext.attackCount).toBe(2);
+    });
+
+    test('SETS_COUNTERATTACK_COUNT sets field', () => {
+        expect(unit.battleContext.counterattackCount).toBe(1);
+        SETS_COUNTERATTACK_COUNT(2).to(UNIT).evaluate(env);
+        expect(unit.battleContext.counterattackCount).toBe(2);
+    });
+
+    test('SETS_NON_SPECIAL_MIRACLE_HP_THRESHOLD sets field', () => {
+        SETS_NON_SPECIAL_MIRACLE_HP_THRESHOLD(25).to(UNIT).evaluate(env);
+        expect(unit.battleContext.nonSpecialMiracleHpPercentageThreshold).toBe(25);
+    });
+
+    // --- Category 4: Boolean SET_FALSE ---
+    test('DISABLES_INCREASE_COOLDOWN_COUNT_FOR_ATTACK sets field to false', () => {
+        unit.battleContext.increaseCooldownCountForAttack = true;
+        DISABLES_INCREASE_COOLDOWN_COUNT_FOR_ATTACK().to(UNIT).evaluate(env);
+        expect(unit.battleContext.increaseCooldownCountForAttack).toBe(false);
+    });
+
+    test('DISABLES_INCREASE_COOLDOWN_COUNT_FOR_DEFENSE sets field to false', () => {
+        unit.battleContext.increaseCooldownCountForDefense = true;
+        DISABLES_INCREASE_COOLDOWN_COUNT_FOR_DEFENSE().to(UNIT).evaluate(env);
+        expect(unit.battleContext.increaseCooldownCountForDefense).toBe(false);
+    });
+});
+
 describe('Function-as-node validation', () => {
     test('addChildren rejects function', () => {
         const node = new SkillEffectNode();

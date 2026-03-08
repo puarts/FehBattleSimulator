@@ -19,6 +19,7 @@ class SkillEffectField {
         ARRAY_PUSH: 'array push',
         ARRAY_ADD: 'array add',
         ARRAY_SUB: 'array sub',
+        SET: 'set',
     };
 
     /**
@@ -61,6 +62,8 @@ class SkillEffectField {
                 return ArrayUtil.add(a, b);
             case SkillEffectField.Op.ARRAY_SUB:
                 return ArrayUtil.sub(a, b);
+            case SkillEffectField.Op.SET:
+                return b;
             default:
                 throw new Error(`Invalid op: ${op}`);
         }

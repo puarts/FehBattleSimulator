@@ -280,6 +280,352 @@ class BoostsDamageNode extends SingleEffectNode {
 
 const BOOSTS_DAMAGE_BY = (damage) => new BoostsDamageNode(damage);
 
+// --- Category 1: Boolean SET_TRUE ---
+
+const CANNOT_TRIGGER_PRECOMBAT_SPECIAL = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.cannotTriggerPrecombatSpecial))
+        .setLogMessageFunc((name, _) => `${name}は範囲奥義を発動できない`);
+
+const DISABLES_DEFENSIVE_TERRAIN_EFFECTS = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.invalidatesDefensiveTerrainEffect))
+        .setLogMessageFunc((name, _) => `${name}は防御地形の効果を無効`);
+
+const DISABLES_SUPPORT_EFFECTS = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.invalidatesSupportEffect))
+        .setLogMessageFunc((name, _) => `${name}は支援効果を無効`);
+
+const INVALIDATES_COUNTERATTACK = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.invalidatesCounterattack))
+        .setLogMessageFunc((name, _) => `${name}は反撃不可`);
+
+const DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.nullCounterDisrupt))
+        .setLogMessageFunc((name, _) => `${name}は反撃不可を無効`);
+
+const PREVENTS_ATTACKER_SPECIAL = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.preventedAttackerSpecial))
+        .setLogMessageFunc((name, _) => `${name}は戦闘中の攻撃奥義を発動できない`);
+
+const PREVENTS_DEFENDER_SPECIAL = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.preventedDefenderSpecial))
+        .setLogMessageFunc((name, _) => `${name}は戦闘中の防御奥義を発動できない`);
+
+const PREVENTS_DEFENDER_SPECIAL_PER_ATTACK = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.preventedDefenderSpecialPerAttack))
+        .setLogMessageFunc((name, _) => `${name}は「敵から攻撃を受ける際に発動する奥義」を発動できない`);
+
+const DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.canUnitDisableSkillsThatChangeAttackPriority))
+        .setLogMessageFunc((name, _) => `${name}は戦闘順序入れ替えスキル(待ち伏せ、攻め立て等)無効`);
+
+const CAN_COUNTERATTACK_REGARDLESS_OF_RANGE = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.canCounterattackToAllDistance))
+        .setLogMessageFunc((name, _) => `${name}は距離に関係なく反撃する`);
+
+const CALCULATES_DAMAGE_USING_LOWER_OF_FOES_DEF_OR_RES = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.refersMinOfDefOrRes))
+        .setLogMessageFunc((name, _) => `${name}は敵の守備か魔防の低い方でダメージ計算`);
+
+const INVALIDATES_FOES_NON_SPECIAL_DAMAGE_REDUCTION = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.invalidatesDamageReductionExceptSpecial))
+        .setLogMessageFunc((name, _) => `${name}は相手の奥義以外のダメージ軽減を無効`);
+
+const INVALIDATES_FOES_NON_SPECIAL_DAMAGE_REDUCTION_ON_SPECIAL_ACTIVATION = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.invalidatesDamageReductionExceptSpecialOnSpecialActivation))
+        .setLogMessageFunc((name, _) => `${name}は奥義発動時、奥義以外のスキルによる「ダメージを〇〇%軽減」を無効`);
+
+const INVALIDATES_FOES_NON_SPECIAL_DAMAGE_REDUCTION_AFTER_DEFENDER_SPECIAL = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.invalidatesDamageReductionExceptSpecialForNextAttackAfterDefenderSpecial))
+        .setLogMessageFunc((name, _) => `${name}は奥義発動後相手の奥義以外のダメージ軽減を無効`);
+
+const CAN_ADD_DAMAGE_REDUCTION_TO_NEXT_ATTACK_AFTER_SPECIAL = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.canAddDamageReductionToNextAttackAfterSpecial))
+        .setLogMessageFunc((name, _) => `${name}は奥義で軽減した値を、自身の次の攻撃のダメージに+`);
+
+const DISABLES_SKILLS_FROM_ENEMY_ALLIES_IN_COMBAT = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.disablesSkillsFromEnemyAlliesInCombat))
+        .setLogMessageFunc((name, _) => `${name}は暗闘効果を発動(戦闘相手以外の敵軍のスキルを無効化)`);
+
+const IS_DESPERATION_ACTIVATABLE = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.isDesperationActivatable))
+        .setLogMessageFunc((name, _) => `${name}に攻め立て効果を設定`);
+
+const IS_DEF_DESPERATION_ACTIVATABLE = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.isDefDesperationActivatable))
+        .setLogMessageFunc((name, _) => `${name}に受け攻め立て効果を設定`);
+
+const IS_VANTAGE_ACTIVATABLE = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.isVantageActivatable))
+        .setLogMessageFunc((name, _) => `${name}に待ち伏せ効果を設定`);
+
+const CALCULATES_DAMAGE_FROM_STAFF_LIKE_OTHER_WEAPONS = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.wrathfulStaff))
+        .setLogMessageFunc((name, _) => `${name}は杖ダメージを通常扱い`);
+
+const HAS_DEEP_WOUNDS = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.hasDeepWounds))
+        .setLogMessageFunc((name, _) => `${name}は回復不可`);
+
+const HAS_DEEP_WOUNDS_DURING_COMBAT = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.hasDeepWoundsDuringCombat))
+        .setLogMessageFunc((name, _) => `${name}は戦闘中回復不可`);
+
+const DISABLES_AFTER_COMBAT_MOVEMENT = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.isAfterCombatMovementDisabled))
+        .setLogMessageFunc((name, _) => `${name}は戦闘後の移動効果無効`);
+
+const REDUCES_DAMAGE_FROM_FOE_TO_ZERO = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.reducesDamageFromFoeToZeroDuringCombat))
+        .setLogMessageFunc((name, _) => `${name}は相手からのダメージを0にする`);
+
+const NEUTRALIZES_BOOSTING_TRIANGLE_ADVANTAGE = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.neutralizesBoostingTriangleAdvantage))
+        .setLogMessageFunc((name, _) => `${name}は相性有利の強化を無効`);
+
+const NEUTRALIZES_REDUCING_TRIANGLE_DISADVANTAGE = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.neutralizesReducingTriangleDisadvantage))
+        .setLogMessageFunc((name, _) => `${name}は相性不利の軽減を無効`);
+
+const IS_ADVANTAGE_FOR_COLORLESS = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.isAdvantageForColorless))
+        .setLogMessageFunc((name, _) => `${name}は無属性に対して相性有利`);
+
+const IS_BANE_PER_ATTACK = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.isBanePerAttack))
+        .setLogMessageFunc((name, _) => `${name}は不利を攻撃ごとに設定`);
+
+const DOES_NOT_TRIGGER_FOES_SAVIOR_EFFECTS = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.doesNotTriggerFoesSaviorEffects))
+        .setLogMessageFunc((name, _) => `${name}は敵の護り手効果を無効`);
+
+const CAN_ACTIVATE_NON_SPECIAL_MIRACLE_AND_HEAL = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.canActivateNonSpecialMiracleAndHeal))
+        .setLogMessageFunc((name, _) => `${name}は奇跡後回復を発動可能`);
+
+const CAN_DAMAGE_REDUCTION_SPECIAL_TRIGGER_TWICE = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.canDamageReductionSpecialTriggerTwice))
+        .setLogMessageFunc((name, _) => `${name}はダメージ軽減奥義を複製発動`);
+
+const CAN_ACTIVATE_NON_SPECIAL_MIRACLE = (n = true) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_TRUE)
+        .setKey(BattleContext.nameOf(ctx => ctx.canActivateNonSpecialMiracle))
+        .setLogMessageFunc((name, _) => `${name}は奥義以外の祈りを発動可能`);
+
+// --- Category 2: Numeric ADD ---
+
+const DEALS_DAMAGE_PER_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.additionalDamagePerAttack))
+        .setLogMessage('与えるダメージ+（攻撃ごと）');
+
+const DEALS_DAMAGE_OF_FIRST_FOLLOW_UP_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.additionalDamageOfFirstFollowUpAttack))
+        .setLogMessage('戦闘中、最初の追撃のダメージ+');
+
+const DEALS_DAMAGE_OF_SPECIAL = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.additionalDamageOfSpecial))
+        .setLogMessage('戦闘中、自分の奥義によるダメージ+');
+
+const DEALS_DAMAGE_OF_SPECIAL_PER_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.additionalDamageOfSpecialPerAttackInCombat))
+        .setLogMessage('戦闘中、自分の奥義によるダメージ+（攻撃ごと）');
+
+const RESTORES_HP_AFTER_COMBAT = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.healedHpAfterCombat))
+        .setLogMessage('戦闘後HP回復+');
+
+const RESTORES_HP_BY_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.healedHpByAttack))
+        .setLogMessage('攻撃でダメージを与えた時回復+');
+
+const RESTORES_HP_BY_ATTACK_PER_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.healedHpByAttackPerAttack))
+        .setLogMessage('攻撃でダメージを与えた時回復+（攻撃ごと）');
+
+const REDUCES_DAMAGE_PER_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.damageReductionValuePerAttack))
+        .setLogMessage('受けるダメージ-（攻撃ごと、範囲奥義を除く）');
+
+const REDUCES_DAMAGE_AFTER_SPECIAL_TRIGGER_TWICE = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.damageReductionValueAfterSpecialTriggerTwice))
+        .setLogMessage('その後、受けるダメージ-');
+
+const INCREASES_SPD_DIFF_FOR_FOLLOWUP = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.additionalSpdDifferenceNecessaryForFollowupAttack))
+        .setLogMessage('追撃の速さ条件+');
+
+const SPECIAL_COUNT_REDUCTION_AFTER_FIRST_SPECIAL = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionAfterFirstSpecial))
+        .setLogMessage('各戦闘の最初の奥義発動後、奥義発動カウント-');
+
+const SPECIAL_COUNT_REDUCTION_BEFORE_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionBeforeAttack))
+        .setLogMessage('自分の攻撃前に自身の奥義発動カウント-');
+
+const SPECIAL_COUNT_REDUCTION_BEFORE_EACH_FOLLOWUP_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionBeforeEachFollowupAttack))
+        .setLogMessage('自分の各追撃前に自身の奥義発動カウント-');
+
+const SPECIAL_COUNT_INCREASE_BEFORE_FIRST_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountIncreaseBeforeFirstAttack))
+        .setLogMessage('自分の最初の攻撃前に自身の奥義発動カウント+');
+
+const SPECIAL_COUNT_INCREASE_BEFORE_SECOND_STRIKE = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountIncreaseBeforeSecondStrike))
+        .setLogMessage('最初の2回攻撃の2回目の攻撃前に奥義発動カウント+');
+
+const SPECIAL_COUNT_INCREASE_BEFORE_FOLLOWUP_ATTACK = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountIncreaseBeforeFollowupAttack))
+        .setLogMessage('最初の追撃前に奥義発動カウント+');
+
+const SPECIAL_COUNT_INCREASE_BEFORE_FIRST_ATTACK_BY_ENEMY = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountIncreaseBeforeFirstAttackByEnemy))
+        .setLogMessage('最初の攻撃前に敵の奥義発動カウント+');
+
+const SPECIAL_COUNT_REDUCTION_BEFORE_FIRST_ATTACK_BY_ENEMY = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionBeforeFirstAttackByEnemy))
+        .setLogMessage('相手の最初の攻撃前に自身の奥義発動カウント-');
+
+const SPECIAL_COUNT_REDUCTION_BEFORE_FIRST_FOLLOWUP_ATTACK_BY_ENEMY = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionBeforeFirstFollowUpAttackByEnemy))
+        .setLogMessage('相手の最初の追撃の前に自身の奥義発動カウント-');
+
+const SPECIAL_COUNT_REDUCTION_BEFORE_SECOND_STRIKE_BY_ENEMY = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialCountReductionBeforeSecondStrikeByEnemy))
+        .setLogMessage('相手の最初の2回攻撃の2回目の前に自身の奥義発動カウント-');
+
+const DAMAGE_AFTER_BEGINNING_OF_COMBAT = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.damageAfterBeginningOfCombat))
+        .setLogMessage('戦闘開始時にダメージ+');
+
+const MIRACLE_AND_HEAL_AMOUNT = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.miracleAndHealAmount))
+        .setLogMessage('奇跡後回復量+');
+
+const FOLLOWUP_ATTACK_PRIORITY_INCREMENT = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.ADD)
+        .setKey(BattleContext.nameOf(ctx => ctx.followupAttackPriorityIncrement))
+        .setLogMessage('絶対追撃+');
+
+const FOLLOWUP_ATTACK_PRIORITY_DECREMENT = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SUB)
+        .setKey(BattleContext.nameOf(ctx => ctx.followupAttackPriorityDecrement))
+        .setLogMessage('追撃不可');
+
+// --- Category 3: Numeric SET ---
+
+const SETS_ATTACK_COUNT = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET)
+        .setKey(BattleContext.nameOf(ctx => ctx.attackCount))
+        .setLogMessageFunc((name, n) => `${name}は${n}回攻撃`);
+
+const SETS_COUNTERATTACK_COUNT = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET)
+        .setKey(BattleContext.nameOf(ctx => ctx.counterattackCount))
+        .setLogMessageFunc((name, n) => `${name}は受けの時も${n}回攻撃`);
+
+const SETS_MAX_HP_RATIO_TO_HEAL_BY_SPECIAL = percentage =>
+    MOD_BATTLE_CONTEXT_FIELD(NumberNode.makeNumberNodeFrom(percentage).toRatio(), SkillEffectField.Op.SET)
+        .setKey(BattleContext.nameOf(ctx => ctx.maxHpRatioToHealBySpecial))
+        .setLogMessageFunc((name, n) => `${name}は自分の最大HPの${n * 100}%を回復`);
+
+const SETS_DAMAGE_REDUCTION_RATIO_BY_SPECIAL = percentage =>
+    MOD_BATTLE_CONTEXT_FIELD(NumberNode.makeNumberNodeFrom(percentage).toRatio(), SkillEffectField.Op.SET)
+        .setKey(BattleContext.nameOf(ctx => ctx.damageReductionRatioBySpecial))
+        .setLogMessageFunc((name, n) => `${name}は奥義発動、攻撃のダメージを${n * 100}%軽減`);
+
+const SETS_NON_SPECIAL_MIRACLE_HP_THRESHOLD = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET)
+        .setKey(BattleContext.nameOf(ctx => ctx.nonSpecialMiracleHpPercentageThreshold))
+        .setLogMessageFunc((name, n) => `${name}はHP${n}%以上の時奥義以外の祈り発動可能`);
+
+const SETS_SPECIAL_SUFFER_PERCENTAGE = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialSufferPercentage))
+        .setLogMessageFunc((name, n) => `${name}は敵の守備、魔防-${n}%扱い`);
+
+const SETS_SPECIAL_MULT_DAMAGE = n =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET)
+        .setKey(BattleContext.nameOf(ctx => ctx.specialMultDamage))
+        .setLogMessageFunc((name, n) => `${name}は奥義発動時、与えるダメージ${n}倍`);
+
+// --- Category 4: Boolean SET_FALSE ---
+
+const DISABLES_INCREASE_COOLDOWN_COUNT_FOR_ATTACK = (n = false) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_FALSE)
+        .setKey(BattleContext.nameOf(ctx => ctx.increaseCooldownCountForAttack))
+        .setLogMessageFunc((name, _) => `${name}は攻撃の奥義発動カウント変動量+を無効`);
+
+const DISABLES_INCREASE_COOLDOWN_COUNT_FOR_DEFENSE = (n = false) =>
+    MOD_BATTLE_CONTEXT_FIELD(n, SkillEffectField.Op.SET_FALSE)
+        .setKey(BattleContext.nameOf(ctx => ctx.increaseCooldownCountForDefense))
+        .setLogMessageFunc((name, _) => `${name}は防御の奥義発動カウント変動量+を無効`);
+
+// --- 複合便利関数 ---
+
+const MAKES_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK = (n = true) =>
+    EFFECTS(IS_DESPERATION_ACTIVATABLE(n), IS_DEF_DESPERATION_ACTIVATABLE(n));
+
+const ATTACKS_TWICE_NODE = EFFECTS(SETS_ATTACK_COUNT(2), SETS_COUNTERATTACK_COUNT(2));
+
+const ACTIVATES_NON_SPECIAL_MIRACLE = threshold =>
+    EFFECTS(CAN_ACTIVATE_NON_SPECIAL_MIRACLE(), SETS_NON_SPECIAL_MIRACLE_HP_THRESHOLD(threshold));
+
+const NEUTRALIZES_FOES_INCREASE_COOLDOWN_COUNT =
+    EFFECTS(DISABLES_INCREASE_COOLDOWN_COUNT_FOR_ATTACK(), DISABLES_INCREASE_COOLDOWN_COUNT_FOR_DEFENSE());
+
 ///
 
 const UNIT_CANNOT_TRIGGER_AREA_OF_EFFECT_SPECIALS_NODE = new class extends SkillEffectNode {
