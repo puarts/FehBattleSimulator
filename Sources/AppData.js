@@ -1143,7 +1143,7 @@ class AppData extends UnitManager {
         }
 
         // つながり英雄だった場合に自動的に設定する
-        let type = HeroIndexToEntwinedType.get(unit.heroIndex);
+        let type = HeroIdToEntwinedType.get(unit.heroId);
         if (type) {
             unit.entwinedId = type.id;
         } else {

@@ -4,7 +4,7 @@
  */
 
 function isThief(unit) {
-    return isThiefIndex(unit.heroIndex);
+    return isThiefId(unit.heroId);
 }
 
 function calcArenaBaseStatusScore(baseStatusTotal) {
@@ -819,6 +819,10 @@ class Unit extends BattleMapElement {
      */
     get canHavePairUpUnit() {
         return this.heroInfo != null && this.heroInfo.canHavePairUpUnit;
+    }
+
+    get heroId() {
+        return this.heroInfo?.id ?? -1;
     }
 
     initAdditionalPassives() {
@@ -2244,24 +2248,24 @@ class Unit extends BattleMapElement {
     }
 
     get isHarmonicAllyHero() {
-        let isInHero = Object.values(Hero).includes(this.heroIndex);
-        let isDuo = DUO_HERO_SET.has(this.heroIndex);
+        let isInHero = Object.values(Hero).includes(this.heroId);
+        let isDuo = DUO_HERO_SET.has(this.heroId);
         return this.heroInfo != null && isInHero && !isDuo && this.groupId === UnitGroupType.Ally;
     }
 
     get isDuoAllyHero() {
-        let isDuo = DUO_HERO_SET.has(this.heroIndex);
+        let isDuo = DUO_HERO_SET.has(this.heroId);
         return this.heroInfo != null && isDuo && this.groupId === UnitGroupType.Ally;
     }
 
     get isHarmonicEnemyHero() {
-        let isInHero = Object.values(Hero).includes(this.heroIndex);
-        let isDuo = DUO_HERO_SET.has(this.heroIndex);
+        let isInHero = Object.values(Hero).includes(this.heroId);
+        let isDuo = DUO_HERO_SET.has(this.heroId);
         return this.heroInfo != null && isInHero && !isDuo && this.groupId === UnitGroupType.Enemy;
     }
 
     get isDuoEnemyHero() {
-        let isDuo = DUO_HERO_SET.has(this.heroIndex);
+        let isDuo = DUO_HERO_SET.has(this.heroId);
         return this.heroInfo != null && isDuo && this.groupId === UnitGroupType.Enemy;
     }
 
@@ -5353,7 +5357,7 @@ class Unit extends BattleMapElement {
         }
 
         // 比翼・双界スキル
-        const duo = getDuoOrHarmonizedSkillId(this.heroIndex);
+        const duo = getDuoOrHarmonizedSkillId(this.heroId);
         if (duo != null) {
             skills.push(duo);
         }
@@ -5374,7 +5378,7 @@ class Unit extends BattleMapElement {
         for (const s of this.getStatusEffects()) {
             yield getStatusEffectSkillId(s);
         }
-        const duo = getDuoOrHarmonizedSkillId(this.heroIndex);
+        const duo = getDuoOrHarmonizedSkillId(this.heroId);
         if (duo != null) {
             yield duo;
         }

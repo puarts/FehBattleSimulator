@@ -23,6 +23,16 @@ class HeroDatabase {
             let info = this._heroInfos[i];
             this._nameToIndexDict[info.name] = i;
         }
+
+        /** @type {Map<Number, HeroInfo>} */
+        this._idToInfoDict = new Map();
+        /** @type {Map<Number, Number>} */
+        this._idToIndexDict = new Map();
+        for (let i = 0; i < this._heroInfos.length; ++i) {
+            let info = this._heroInfos[i];
+            this._idToInfoDict.set(info.id, info);
+            this._idToIndexDict.set(info.id, i);
+        }
     }
 
     /**
@@ -80,5 +90,21 @@ class HeroDatabase {
      */
     findIndexOfInfo(name) {
         return this._nameToIndexDict[name];
+    }
+
+    /**
+     * @param {Number} heroId
+     * @returns {HeroInfo}
+     */
+    getHeroInfoByHeroId(heroId) {
+        return this._idToInfoDict.get(heroId);
+    }
+
+    /**
+     * @param {Number} heroId
+     * @returns {Number}
+     */
+    getHeroIndexByHeroId(heroId) {
+        return this._idToIndexDict.get(heroId);
     }
 }

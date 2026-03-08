@@ -1378,11 +1378,11 @@ class BattleSimulatorBase {
         env.setName('比翼双界スキル使用可能判定').setLogLevel(LoggerBase.LogLevel.OFF);
         let cannotTrigger =
             CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP
-                .getValues(duoUnit.heroIndex)
+                .getValues(duoUnit.heroId)
                 .some(node => !node.evaluate(env));
         if (cannotTrigger) return false;
 
-        switch (duoUnit.heroIndex) {
+        switch (duoUnit.heroId) {
             case Hero.DuoSharena: {
                 let areThereAnyAllies =
                     this.__isThereAllyInSpecifiedSpaces(duoUnit, 3, u => u.isCombatDone);
@@ -1523,9 +1523,9 @@ class BattleSimulatorBase {
         let env = new EnumerationEnv(g_appData, duoUnit).setBattleMap(this.map);
         env.setName('比翼双界スキル').setLogLevel(getSkillLogLevel());
         // TODO: リファクタリング
-        WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroIndex).forEach(node => node.evaluate(env));
+        WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP.getValues(duoUnit.heroId).forEach(node => node.evaluate(env));
         WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS.evaluateWithUnit(duoUnit, env);
-        switch (duoUnit.heroIndex) {
+        switch (duoUnit.heroId) {
             case Hero.HarmonizedGoldmary:
                 // 自分と同じ出典の味方と、自分自身に
                 // - 守備、魔防+6、
@@ -4979,26 +4979,26 @@ class BattleSimulatorBase {
 
     #resetDuoOrHarmonizedSkill(unit) {
         unit.isDuoOrHarmonicSkillActivatedInThisTurn = false;
-        let heroIndex = unit.heroIndex;
-        let skillId = getDuoOrHarmonizedSkillId(heroIndex);
+        let heroId = unit.heroId;
+        let skillId = getDuoOrHarmonizedSkillId(heroId);
         if (RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET.has(skillId) ||
-            heroIndex === Hero.YoungPalla ||
-            heroIndex === Hero.DuoSigurd ||
-            heroIndex === Hero.DuoEirika ||
-            heroIndex === Hero.DuoSothis ||
-            heroIndex === Hero.DuoYmir) {
+            heroId === Hero.YoungPalla ||
+            heroId === Hero.DuoSigurd ||
+            heroId === Hero.DuoEirika ||
+            heroId === Hero.DuoSothis ||
+            heroId === Hero.DuoYmir) {
             if (this.isOddTurn) {
                 unit.duoOrHarmonizedSkillActivationCount = 0;
             }
         } else if (RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET.has(skillId) ||
-            heroIndex === Hero.SummerMia ||
-            heroIndex === Hero.SummerByleth ||
-            heroIndex === Hero.PirateVeronica ||
-            heroIndex === Hero.DuoHilda ||
-            heroIndex === Hero.DuoNina ||
-            heroIndex === Hero.DuoAskr ||
-            heroIndex === Hero.HarmonizedTiki ||
-            heroIndex === Hero.DuoKagero) {
+            heroId === Hero.SummerMia ||
+            heroId === Hero.SummerByleth ||
+            heroId === Hero.PirateVeronica ||
+            heroId === Hero.DuoHilda ||
+            heroId === Hero.DuoNina ||
+            heroId === Hero.DuoAskr ||
+            heroId === Hero.HarmonizedTiki ||
+            heroId === Hero.DuoKagero) {
             if (this.data.currentTurn % 3 === 1) {
                 unit.duoOrHarmonizedSkillActivationCount = 0;
             }
