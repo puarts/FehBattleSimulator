@@ -9,3 +9,24 @@ test('UnitManager_EnumerateUnits', () => {
         expect(unit.groupId).toBe(UnitGroupType.Ally);
     }
 });
+
+describe('Unit heroId', () => {
+    test('heroInfo が設定されている場合、heroInfo.id を返す', () => {
+        const heroes = ["アルフォンス", "シャロン", "アンナ", "ウェンディ", "ファ"];
+        for (const name of heroes) {
+            const unit = g_testHeroDatabase.createUnit(name);
+            expect(unit.heroId).toBe(unit.heroInfo.id);
+        }
+    });
+
+    test('異なる英雄は異なる heroId を持つ', () => {
+        const unit1 = g_testHeroDatabase.createUnit("アルフォンス");
+        const unit2 = g_testHeroDatabase.createUnit("シャロン");
+        expect(unit1.heroId).not.toBe(unit2.heroId);
+    });
+
+    test('heroInfo が null の場合、-1 を返す', () => {
+        const unit = new Unit("", "テスト", UnitGroupType.Ally);
+        expect(unit.heroId).toBe(-1);
+    });
+});
