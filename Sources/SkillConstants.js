@@ -4140,6 +4140,17 @@ PassiveC.SpdResFaith = 3577; // 速さ魔防の信念
 Weapon.AwakeningVoice = 3578; // 覚醒のブレス
 Special.ArmoredIceCap = 3579; // 重装の双氷
 PassiveB.HeiredDivinity = 3580; // 真新たなる神竜王
+Weapon.SpringThorn = 3581; // 春雷の戦神の槍
+PassiveA.DivineSpecter = 3582; // 天穹・鬼没
+PassiveC.WorldDestroyer = 3583; // 真神槌大地を穿つ
+Weapon.SpringHareEggPlus = 3584; // 春兎の卵＋
+PassiveC.ShadowShift3 = 3585; // 影助・引き戻し3
+Weapon.ArcaneSlicer = 3586; // 魔器・春風の旋刃
+Special.TrueBane = 3587; // 真瞬殺
+PassiveB.DisarmRumor = 3588; // 罠解除・流言
+Weapon.SpringDawning = 3589; // 春暁の優しき光
+PassiveB.StellarBrace = 3590; // 真月の腕輪
+PassiveC.AtkSpdLiberate = 3591; // 攻撃速さの解放
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
