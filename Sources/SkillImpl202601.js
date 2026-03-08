@@ -61,17 +61,17 @@
     // neutralizes effects that prevent unit’s or ally’s counterattacks during combat, and
     // if foe initiates combat, unit and allies can make a follow-up attack before foe’s next attack during combat.
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
+        DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS().to(UNIT),
         IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
-            TARGET_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+            MAKES_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK().to(UNIT),
         ),
     ));
     setForAlliesHooks(skillId,
         IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
         SKILL_EFFECT_NODE(
-            NEUTRALIZES_EFFECTS_THAT_PREVENT_TARGETS_COUNTERATTACKS_DURING_COMBAT_NODE,
+            DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS().to(ALLY),
             IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
-                TARGET_CAN_MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK_NODE,
+                MAKES_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK().to(ALLY),
             ),
         ),
     );
@@ -85,7 +85,7 @@
             NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X.on(UNIT),
         ),
         // neutralizes effects that allow foe to make a follow-up attack before unit’s next attack during combat.
-        UNIT_DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY,
+        DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY().to(UNIT),
     );
 }
 
@@ -161,7 +161,7 @@
             REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY(15).excludingAoe(),
         ),
         // restores 7 HP to unit after combat.
-        RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE(7),
+        RESTORES_HP_AFTER_COMBAT(7).to(UNIT),
     );
     // Unit can use the following【Style】: Scendscale Style
     // TODO: Styleの設定が必要（setUnitCanUseFollowingStyle）
@@ -225,7 +225,7 @@
         // If unit’s HP > 1 and foe would reduce unit’s HP to 0 during combat,
         // unit survives with 1 HP (once per combat;
         // does not stack with non-Special effects that allow unit to survive with 1 HP if foe’s attack would reduce HP to 0).
-        TARGET_CAN_ACTIVATE_NON_SPECIAL_MIRACLE_NODE(),
+        CAN_ACTIVATE_NON_SPECIAL_MIRACLE().to(UNIT),
     );
 }
 
@@ -757,14 +757,14 @@
     SkillEffectRegistrar.registerSkillsDuringCombat(skillId,
         IS_STYLE_ACTIVE(style),
         // (Damage dealt by unit's attacks and damage from foe's attacks during that combat are reduced to 0, and
-        REDUCES_DAMAGE_FROM_TARGET_TO_ZERO_NODE,
-        REDUCES_DAMAGE_FROM_TARGET_FOE_TO_ZERO_NODE,
+        REDUCES_DAMAGE_FROM_FOE_TO_ZERO().to(UNIT),
+        REDUCES_DAMAGE_FROM_FOE_TO_ZERO().to(FOE),
     );
     // foes' Savior effects will not trigger (Røkkr take at least 1 damage).)
     BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_STYLE_ACTIVE(style),
             // When unit is in combat, foes' Savior effects will not trigger.
-            DOES_NOT_TRIGGER_TARGETS_FOES_SAVIOR_EFFECTS_NODE,
+            DOES_NOT_TRIGGER_FOES_SAVIOR_EFFECTS().to(UNIT),
         ),
     ));
     AFTER_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
@@ -787,7 +787,7 @@
     // after-combat movement effects do not occur, and
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_STYLE_ACTIVE(style),
-            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+            DISABLES_AFTER_COMBAT_MOVEMENT().to(UNIT),
         ),
     ));
     // TODO: 実装する
@@ -1452,7 +1452,7 @@
             REDUCES_DAMAGE_FROM_FOES_SPECIALS_BY(15).duringCombat().excludingAoe(),
         ),
         // when unit's Special triggers, neutralizes foe's "reduces damage by X%" effects from non-Special skills
-        WHEN_SPECIAL_TRIGGERS_NEUTRALIZES_FOES_REDUCES_DAMAGE_BY_PERCENTAGE_EFFECTS_FROM_FOES_NON_SPECIAL_EXCLUDING_AOE_SPECIALS_NODE,
+        UNIT.do(INVALIDATES_FOES_NON_SPECIAL_DAMAGE_REDUCTION_ON_SPECIAL_ACTIVATION()),
         // (excluding area-of-effect Specials).
     );
 }
@@ -1487,7 +1487,7 @@
             // (X = number of staff and flying allies on the map, including unit; max 3).
         ).x(NUM_OF(ALLIES_ON_MAP.anyOf(TARGET_NODE.isStaff(), TARGET_NODE.isFlying()).including(UNIT)).max(3)),
         // Restores 7 HP to unit after combat.
-        RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE(7),
+        RESTORES_HP_AFTER_COMBAT(7).to(UNIT),
     );
 }
 
@@ -1605,7 +1605,7 @@
                 ),
             ),
         // and restores 7 HP to unit after combat.
-        RESTORES_N_HP_TO_UNIT_AFTER_COMBAT_NODE(7),
+        RESTORES_HP_AFTER_COMBAT(7).to(UNIT),
     );
 }
 
