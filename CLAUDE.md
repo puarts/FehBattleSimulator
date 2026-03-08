@@ -76,6 +76,14 @@ Skills are implemented in date-based files. **Always add new skills to the lates
 - `SkillImpl202501.js` — Jan 2025+
 - `SkillImpl202601.js` — Jan 2026+ **(current, add new skills here)**
 
+### EffectNode（DSLの中核クラス）
+
+スキル効果を表現するノードツリーの抽象基底クラス（`Sources/SkillEffect.js`）。FEHのスキルテキストを宣言的に記述するためのDSLノードとして機能し、ステータス増減・ダメージ補正・状態付与などの効果をツリー構造で表現する。メソッドチェーンによるフルーエントAPIで対象ユニット・適用条件・持続ターン数などの修飾をサポートする。
+
+- `SingleEffectNode` — 単一効果を表す具象クラス
+- `EffectsNode` — 複数効果を複合する具象クラス
+- DSL関数（`GRANTS_BONUS`, `DEALS_DAMAGE` 等）はこれらのノードを生成・組み合わせて効果ツリーを構築する
+
 ### Skill DSL Pattern
 
 Skills use an internal DSL with UPPER_SNAKE_CASE node constructors. Follow this pattern strictly:

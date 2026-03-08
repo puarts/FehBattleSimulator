@@ -2810,7 +2810,23 @@ class FromPositiveStatsNode extends FromPositiveNumbersNode {
 }
 
 /**
- *  @abstract
+ * スキル効果を表現するノードツリーの抽象基底クラス。
+ *
+ * FEHのスキルテキストを宣言的に記述するためのDSLノードとして機能し、
+ * ステータス増減・ダメージ補正・状態付与などの効果をツリー構造で表現する。
+ * メソッドチェーンによるフルーエントAPIを提供し、対象ユニット・適用条件・
+ * 持続ターン数などの修飾をサポートする。
+ *
+ * 具象クラスとして {@link SingleEffectNode}（単一効果）と
+ * {@link EffectsNode}（複数効果の複合）がある。
+ *
+ * @example
+ * // DSLでの使用例
+ * GRANTS_BONUS(ATK_SPD(5)).to(UNIT)
+ * DEALS_DAMAGE(7).excludingAoe().to(FOE)
+ *
+ * @abstract
+ * @extends SkillEffectNode
  */
 class EffectNode extends SkillEffectNode {
     /**
