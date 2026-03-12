@@ -9570,7 +9570,7 @@ class NSpacesInAnyTargetsCardinalDirectionNode extends SpacesNode {
 const N_SPACES_IN_ANY_TARGETS_CARDINAL_DIRECTION_NODE =
     n => new NSpacesInAnyTargetsCardinalDirectionNode(n);
 
-class CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode extends BoolNode {
+class CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode extends SingleEffectNode {
     /**
      * @param {NumberResolvable} spd
      */
@@ -9580,27 +9580,12 @@ class CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode
         this._requirement = SkillRequirement.FOLLOW_UP_COND_BEFORE_POTENT;
     }
 
-    evaluate(env) {
-        if (!this._targetNode) {
-            throw new Error('targetNode is not set');
-        }
-        let unit = this._targetNode.evaluate(env);
+    onEvaluate(unit, env) {
         let foe = env.getFoeDuringCombatOf(unit);
         let spd = this._spd.evaluate(env);
         let result = DamageCalculationUtility.examinesCanFollowupAttack(unit, foe, -spd);
         env.debug(`${unit.nameWithGroup}は追撃の速さ条件を(${-spd})した状態で追撃の速さ条件を満たしているか: ${result}`);
         return result;
-    }
-
-    // TODO: mixinにする
-    /**
-     * @param {UnitNode} unitNode
-     * @return {CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode}
-     */
-    to(unitNode) {
-        const copy = this.clone();
-        copy._targetNode = unitNode;
-        return copy;
     }
 }
 

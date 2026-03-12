@@ -1197,6 +1197,54 @@ describe('ModSkillEffectFieldNode DSL functions', () => {
     });
 });
 
+describe('CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP', () => {
+    let unit;
+    let foe;
+    let env;
+
+    beforeEach(() => {
+        heroDatabase = g_testHeroDatabase;
+        unit = heroDatabase.createUnit('アルフォンス');
+        foe = heroDatabase.createUnit('シャロン');
+        env = new NodeEnv();
+        env.setTarget(unit).setUnitsDuringCombat(unit, foe);
+        env.setTextUnit(unit).setTextFoe(foe);
+        env.setCombatPhase(NodeEnv.CombatPhase.AT_START_OF_COMBAT);
+    });
+
+    test('returns true when spd difference allows follow-up with decreased threshold', () => {
+        unit.spdWithSkills = 40;
+        foe.spdWithSkills = 30;
+        let result = UNIT.check(
+            CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10)
+        ).evaluate(env);
+        expect(result).toBe(true);
+    });
+
+    test('returns false when spd difference is insufficient even with decreased threshold', () => {
+        unit.spdWithSkills = 30;
+        foe.spdWithSkills = 40;
+        let result = UNIT.check(
+            CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10)
+        ).evaluate(env);
+        expect(result).toBe(false);
+    });
+
+    test('returns true when threshold decrease enables follow-up that would otherwise fail', () => {
+        unit.spdWithSkills = 30;
+        foe.spdWithSkills = 30;
+        let result = UNIT.check(
+            CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10)
+        ).evaluate(env);
+        expect(result).toBe(true);
+    });
+
+    test('has FOLLOW_UP_COND_BEFORE_POTENT requirement', () => {
+        let node = CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10);
+        expect(node._requirement).toBe(SkillRequirement.FOLLOW_UP_COND_BEFORE_POTENT);
+    });
+});
+
 describe('Function-as-node validation', () => {
     test('addChildren rejects function', () => {
         const node = new SkillEffectNode();
