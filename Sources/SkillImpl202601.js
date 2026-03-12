@@ -41,14 +41,33 @@
 // Armored Flare
 {
     const skillId = Special.ArmoredFlare;
-    // TODO: Armored Flare（重装の双炎）は「twice per combat」の40%ダメージ軽減と
-    // Great Talent付与を含む複雑な奥義のため、専用のフック実装が必要
     // @2
     // When Special triggers, boosts damage by unit’s Def.
     // Reduces damage from foe’s attacks by 40% during combat (twice per combat; excluding area-of-effect Specials).
     // At start of turn, grants Atk/Def【Great Talent】+2 to unit.
     // After combat, if unit’s Special triggered, grants Atk/Def【Great Talent】+4 to unit.
     // (This skill grants max of【Great Talent】+10.)
+    setSpecialCountAndType(skillId, 2, false, true, false, false);
+    // When Special triggers, boosts damage by unit’s Def.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(UNITS_DEF_NODE),
+    ));
+    // Reduces damage from foe’s attacks by 40% during combat (twice per combat; excluding area-of-effect Specials).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(40),
+        ANY_TARGETS_REDUCE_DAMAGE_EFFECT_ONLY_ONCE_CAN_BE_TRIGGERED_UP_TO_N_TIMES_PER_COMBAT_NODE(2),
+    ));
+    // At start of turn, grants Atk/Def【Great Talent】+2 to unit.
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(
+        GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_DEF(2), ATK_DEF(10)),
+    ));
+    // After combat, if unit’s Special triggered, grants Atk/Def【Great Talent】+4 to unit.
+    // (This skill grants max of【Great Talent】+10.)
+    AFTER_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_TARGETS_SPECIAL_TRIGGERED_NODE,
+            GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(ATK_DEF(4), ATK_DEF(10)),
+        ),
+    ));
 }
 
 // Ostian Backbone
@@ -60,22 +79,20 @@
     // For unit and allies within 3 spaces of unit,
     // neutralizes effects that prevent unit’s or ally’s counterattacks during combat, and
     // if foe initiates combat, unit and allies can make a follow-up attack before foe’s next attack during combat.
-    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
-        DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS().to(UNIT),
-        IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
-            MAKES_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK().to(UNIT),
-        ),
-    ));
-    setForAlliesHooks(skillId,
+    SkillEffectRegistrar.registerSkillsForAlliesDuringCombat(skillId,
         IS_TARGET_WITHIN_3_SPACES_OF_SKILL_OWNER_NODE,
-        SKILL_EFFECT_NODE(
-            DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS().to(ALLY),
-            IF_NODE(DOES_FOE_INITIATE_COMBAT_NODE,
-                MAKES_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK().to(ALLY),
-            ),
+        ALLY.do(DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS()),
+        IF(FOE.check(INITIATED_COMBAT),
+            ALLY.can(MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK),
         ),
     );
     SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
+        // neutralizes effects that prevent unit’s or ally’s counterattacks during combat, and
+        UNIT.do(DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS()),
+        // if foe initiates combat, unit and allies can make a follow-up attack before foe’s next attack during combat.
+        IF(FOE.check(INITIATED_COMBAT),
+            UNIT.can(MAKE_FOLLOW_UP_ATTACK_BEFORE_FOES_NEXT_ATTACK),
+        ),
         UNIT.doEffects(
             // Unit deals +7 damage (excluding area-of-effect Specials),
             DEALS_DAMAGE(7).excludingAoe(),
@@ -85,7 +102,7 @@
             NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X.on(UNIT),
         ),
         // neutralizes effects that allow foe to make a follow-up attack before unit’s next attack during combat.
-        DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY().to(UNIT),
+        UNIT.do(DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY()),
     );
 }
 
@@ -164,7 +181,7 @@
         RESTORES_HP_AFTER_COMBAT(7).to(UNIT),
     );
     // Unit can use the following【Style】: Scendscale Style
-    // TODO: Styleの設定が必要（setUnitCanUseFollowingStyle）
+    setUnitCanUseFollowingStyle(skillId, StyleType.SCENDSCALE);
 }
 
 // Swift Specter
@@ -225,16 +242,49 @@
         // If unit’s HP > 1 and foe would reduce unit’s HP to 0 during combat,
         // unit survives with 1 HP (once per combat;
         // does not stack with non-Special effects that allow unit to survive with 1 HP if foe’s attack would reduce HP to 0).
-        CAN_ACTIVATE_NON_SPECIAL_MIRACLE().to(UNIT),
+        UNIT.can(CAN_ACTIVATE_NON_SPECIAL_MIRACLE()),
     );
 }
 
-// TODO: Scendscale Style - Styleシステムの実装が必要
-// Unit can attack foes 3 spaces away (unit cannot attack adjacent foes).
-// Unit deals +10 damage during combat (excluding area-of-effect Specials).
-// Cannot move through spaces within 3 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
-// Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 1, or foe can counterattack regardless of unit's range.
-// After-combat movement effects do not occur. Skill effect's Range is treated as 1. Once used, this Style cannot be used for two turns.
+// Scendscale Style
+{
+    const style = StyleType.SCENDSCALE;
+    const skillId = getStyleSkillId(style);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    // Unit can attack foes 3 spaces away (unit cannot attack adjacent foes).
+    CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        CONSTANT_NUMBER_NODE(3));
+    SkillEffectRegistrar.registerSkillsDuringCombat(skillId, IS_STYLE_ACTIVE(style),
+        // Unit deals +10 damage during combat (excluding area-of-effect Specials).
+        UNIT.do(DEALS_DAMAGE(10).excludingAoe()),
+    );
+    // Cannot move through spaces within 3 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
+    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_FOE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(
+            IS_STYLE_ACTIVE(style),
+            FOR_TARGET_NODE(TARGETS_FOE_NODE, TARGET_HAS_TRIGGERED_THE_BULWARK_EFFECT_NODE),
+        ),
+    );
+    // Unit suffers a counterattack if any of the following conditions are met:
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // foe is armored with Range = 1, or
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_1_NODE),
+            // foe can counterattack regardless of unit's range.
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+        ),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After-combat movement effects do not occur.
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
+    ));
+    // Skill effect's Range is treated as 1.
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(style);
+    // Once used, this Style cannot be used for two turns.
+    setOnceUsedThisStyleCannotBeUsedForNTurns(skillId, 2);
+}
 
 // Harmonized Skill (Resonance: Blades)
 {
@@ -306,7 +356,7 @@
         ),
     );
     // Unit can use the following【Style】: Chosen Lance Style
-    // TODO: Styleの設定が必要（setUnitCanUseFollowingStyle）
+    setUnitCanUseFollowingStyle(skillId, StyleType.CHOSEN_LANCE);
 }
 
 // Frozen Mirror
@@ -347,11 +397,49 @@
     ));
 }
 
-// TODO: Chosen Lance Style - Styleシステムの実装が必要
-// Unit can attack foes 2 spaces away (unit cannot attack adjacent foes).
-// Decreases Spd difference necessary for unit to make a follow-up attack by 10 during combat.
-// Cannot move through spaces within 2 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill). Unit suffers a counterattack if any of the following conditions are met: foe is armored with Range = 1, foe can counterattack regardless of unit's range, or foe's Range is the same as the distance between unit and foe.
-// After-combat movement effects do not occur. Skill effect's Range is treated as 1. This Style can be used only once per turn.
+// Chosen Lance Style
+{
+    const style = StyleType.CHOSEN_LANCE;
+    const skillId = getStyleSkillId(style);
+    CAN_ACTIVATE_STYLE_HOOKS.addSkill(skillId, () => TRUE_NODE);
+    // Unit can attack foes 2 spaces away (unit cannot attack adjacent foes).
+    CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        CONSTANT_NUMBER_NODE(2));
+    // Decreases Spd difference necessary for unit to make a follow-up attack by 10 during combat.
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            DECREASES_SPD_DIFF_NECESSARY_FOR_UNIT_TO_MAKE_FOLLOW_UP_NODE(10),
+        ),
+    ));
+    // Cannot move through spaces within 2 spaces of foe that has triggered the Bulwark effect (does not apply if unit has a Pass skill).
+    CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_2_SPACES_OF_FOE_HOOKS.addSkill(skillId, () =>
+        AND_NODE(
+            IS_STYLE_ACTIVE(style),
+            FOR_TARGET_NODE(TARGETS_FOE_NODE, TARGET_HAS_TRIGGERED_THE_BULWARK_EFFECT_NODE),
+        ),
+    );
+    // Unit suffers a counterattack if any of the following conditions are met:
+    SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
+        OR_NODE(
+            // foe is armored with Range = 1,
+            AND_NODE(IS_FOE_ARMOR_NODE, FOES_RANGE_IS_1_NODE),
+            // foe can counterattack regardless of unit's range, or
+            CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE,
+            // foe's Range is the same as the distance between unit and foe.
+            EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE),
+        ),
+    );
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        IF_NODE(IS_STYLE_ACTIVE(style),
+            // After-combat movement effects do not occur.
+            AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
+        ),
+    ));
+    // Skill effect's Range is treated as 1.
+    STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.add(style);
+    // This Style can be used only once per turn.
+    STYLES_THAT_CAN_BE_USED_ONLY_ONCE_PER_TURN.add(style);
+}
 
 // Gift of Love
 {
@@ -399,7 +487,7 @@
         // Unit deals +25 damage during combat (excluding area-of-effect Specials).
         UNIT.do(DEALS_DAMAGE(25).duringCombat().excludingAoe()),
         // If decreasing the Spd difference necessary to make a follow-up attack by 10 would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
-        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
+        IF(UNIT.check(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10)),
             // triggers (Potent Follow 100%] during combat.
             UNIT.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(100)).duringCombat(),
         ),
@@ -573,7 +661,7 @@
         ),
         // unit's or ally's next attack deals damage = 40% of foe's first-attack damage prior to reductions during combat
         // (resets at end of combat; only highest value applied; does not stack).
-        // TODO: NEXT_ATTACK_DEALS_DAMAGE_EQ_N_PERCENT_OF_FOES_FIRST_ATTACK_DAMAGE_PRIOR_TO_REDUCTIONS ノードの存在確認が必要
+        TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE(40),
     );
     SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
         ...getSkills(UNIT),
@@ -680,10 +768,17 @@
         ),
         // if this unit's Res ≥ foe's Res+5 at start of combat,
         // and if foe's attack can trigger foe's Special,
-        // TODO: 「foe's attack can trigger foe's Special」条件の正確なノード確認が必要
         // inflicts Special cooldown count+1 on foe before foe's first attack and
         // before foe's first follow-up attack during combat
         // (cannot exceed foe's maximum Special cooldown).
+        APPLY_SKILL_EFFECTS_AFTER_STATUS_FIXED_NODE(
+            IF_NODE(AND_NODE(
+                    GTE_NODE(UNITS_EVAL_RES_DURING_COMBAT_NODE, ADD_NODE(FOES_EVAL_RES_DURING_COMBAT_NODE, 5)),
+                    CAN_FOES_ATTACK_TRIGGER_FOES_SPECIAL_NODE),
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_ATTACK_NODE(1),
+                INFLICTS_SPECIAL_COOLDOWN_COUNT_PLUS_N_ON_TARGETS_FOE_BEFORE_TARGETS_FOES_FIRST_FOLLOW_UP_ATTACK_NODE(1),
+            ),
+        ),
     );
     SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
         ...getSkills(UNIT),
@@ -757,14 +852,14 @@
     SkillEffectRegistrar.registerSkillsDuringCombat(skillId,
         IS_STYLE_ACTIVE(style),
         // (Damage dealt by unit's attacks and damage from foe's attacks during that combat are reduced to 0, and
-        REDUCES_DAMAGE_FROM_FOE_TO_ZERO().to(UNIT),
-        REDUCES_DAMAGE_FROM_FOE_TO_ZERO().to(FOE),
+        UNIT.do(REDUCES_DAMAGE_FROM_FOE_TO_ZERO()),
+        FOE.do(REDUCES_DAMAGE_FROM_FOE_TO_ZERO()),
     );
     // foes' Savior effects will not trigger (Røkkr take at least 1 damage).)
     BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_STYLE_ACTIVE(style),
             // When unit is in combat, foes' Savior effects will not trigger.
-            DOES_NOT_TRIGGER_FOES_SAVIOR_EFFECTS().to(UNIT),
+            UNIT.do(DOES_NOT_TRIGGER_FOES_SAVIOR_EFFECTS()),
         ),
     ));
     AFTER_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
@@ -787,7 +882,7 @@
     // after-combat movement effects do not occur, and
     AT_START_OF_COMBAT_HOOKS.addSkill(skillId, () => SKILL_EFFECT_NODE(
         IF_NODE(IS_STYLE_ACTIVE(style),
-            DISABLES_AFTER_COMBAT_MOVEMENT().to(UNIT),
+            UNIT.do(DISABLES_AFTER_COMBAT_MOVEMENT()),
         ),
     ));
     // TODO: 実装する
@@ -883,7 +978,7 @@
         NEUTRALIZES_EFFECTS_THAT_INFLICT_SPECIAL_COOLDOWN_CHARGE_MINUS_X.on(UNIT),
         // if decreasing the Spd difference necessary to make a follow-up attack by 10
         // would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
-        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
+        IF(UNIT.check(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10)),
             // triggers (Potent Follow 100% during combat.
             UNIT.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(100)).duringCombat(),
         ),
@@ -924,7 +1019,7 @@
         ),
         // if decreasing the Spd difference necessary to make a follow-up attack by 10
         // would allow unit to trigger a follow-up attack (excluding guaranteed or prevented follow-ups),
-        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
+        IF(UNIT.check(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10)),
             // triggers [Potent Follow 100%] during combat.
             UNIT.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(100)).duringCombat(),
         ),
@@ -1069,7 +1164,7 @@
         // to make a follow-up attack by 10
         // would allow unit to trigger a follow-up attack
         // (excluding guaranteed or prevented follow-ups),
-        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
+        IF(UNIT.check(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10)),
             // triggers【Potent Follow 100%】during combat.
             UNIT.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(100)).duringCombat(),
         ),
@@ -1289,7 +1384,7 @@
         ),
         // If decreasing the Spd difference necessary to make a follow-up attack by 10 would allow unit to trigger a follow-up attack
         // (excluding guaranteed or prevented follow-ups),
-        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10).to(UNIT),
+        IF(UNIT.check(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(10)),
             // triggers【Potent Follow 100%】during combat.
             UNIT.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(100).duringCombat()),
         ),
@@ -1350,7 +1445,7 @@
         ),
         // if decreasing the Spd difference necessary to make a follow-up attack by 25 would allow unit or ally to trigger a follow-up attack
         // (excluding guaranteed or prevented follow-ups),
-        IF(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(25).to(unitNode),
+        IF(unitNode.check(CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS(25)),
             // triggers【Potent Follow X%】during combat
             unitNode.do(TRIGGERS_POTENT_FOLLOW_N_PERCENT(X).duringCombat().x(
                 // (if unit or ally cannot perform follow-up and attack twice, X = 100; otherwise, X = 50).

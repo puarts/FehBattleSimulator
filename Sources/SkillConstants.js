@@ -4343,6 +4343,8 @@ const StyleType = {
     INTRINSIC_MULAGIR: 9,
     WEAPON_TRIANGLE_RED: 10,
     FREEZE: 11,
+    SCENDSCALE: 12,
+    CHOSEN_LANCE: 13,
     // CAN_ACTIVATE_STYLE_HOOKSを設定する（styleのIDに設定）
 }
 const STYLE_TYPE_NAMES = [
@@ -4354,6 +4356,12 @@ const STYLE_TYPE_NAMES = [
     '3すくみ・緑',
     '白夜雷神刀',
     '射程2',
+    '射程2',
+    '神弓ミュルグレ',
+    '3すくみ・赤',
+    '凍結',
+    '覇神断竜剣',
+    '氷の救世の槍',
 ];
 function getStyleTypeName(styleType) {
     return STYLE_TYPE_NAMES[styleType] ?? '';
