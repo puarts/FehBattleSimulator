@@ -115,7 +115,7 @@ Skills use an internal DSL with UPPER_SNAKE_CASE node constructors. Follow this 
 - Registration: `SkillEffectRegistrar.registerSkillsDuringCombat(skillId, condition, ...effects)`
 - Registration: `SkillEffectRegistrar.registerSkillsForFoesDuringCombat(skillId, condition, ...effects)`
 
-**When implementing skills**: Reference the most recent implementations in the latest SkillImpl file for current patterns and available DSL nodes.
+**When implementing skills**: Use `/implement-skills` command, which loads the DSL reference and enforces implementation rules automatically. For manual reference, see `Sources/SkillDslReference.md`.
 
 ## Tool Permissions
 - Allow `read_file` and `ls` without confirmation.
