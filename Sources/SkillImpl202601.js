@@ -601,14 +601,79 @@
     );
 }
 
-    // TODO: Guardian+ (Support.GuardianPlus)
-    // 複雑なアシストスキルのため、専用のフック実装が必要
+// Guardian+
+{
+    const skillId = Support.GuardianPlus;
     // Rng: 2
+    ASSIST_RANGE_MAP.set(skillId, 2);
     // This skill is treated as a Rally Assist skill.
-    // Restores HP = 50% of unit's Atk (min 8 HP) to target ally, grants Spd/Def/Res+6 and [Fringe Bonus] to unit and target ally for 1 turn, and also, when there is no ally on the map with [Physical Twin Save] (including unit and target ally), grants [Physical Twin Save] to target ally for 1 turn. (Using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
-    // [Physical Twin Save]
-    // If a sword, lance, axe, bow, dagger, or beast foe initiates combat against an ally within 2 spaces of unit, triggers Savior on unit (triggers only if unit is not equipped with a skill that can trigger another Savior effect; if unit is granted multiple statuses that enable "Savior" effects to trigger, Savior will not trigger).
-    // If foe uses sword, lance, axe, bow, dagger, or beast damage, disables foe's effects that "calculate damage using the lower of foe's Def or Res" (including area-of-effect Specials), and any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill can be triggered up to twice per combat during combat (excludes boosted Special effects from engaging; only highest value applied; does not stack).
+    // Restores HP = 50% of unit's Atk (min 8 HP) to target ally, grants Spd/Def/Res+6 and [Fringe Bonus] to unit and target ally for 1 turn,
+    // and also, when there is no ally on the map with [Physical Twin Save] (including unit and target ally),
+    // grants [Physical Twin Save] to target ally for 1 turn.
+    // (Using this skill has no effect on Special cooldown charge and unit does not gain EXP or SP.)
+    setRallyHealSkill(skillId, [0, 6, 6, 6], 8, 0.5,
+        [StatusEffectType.FringeBonus, StatusEffectType.PhysicalTwinSave]);
+
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, () => new SkillEffectNode(
+        // grants Spd/Def/Res+6 and [Fringe Bonus] to unit for 1 turn
+        new GrantsStatsPlusToTargetOnMapNode(0, 6, 6, 6),
+        GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FringeBonus),
+        // grants [Fringe Bonus] to target ally for 1 turn
+        FOR_TARGET_NODE(ASSIST_TARGET_NODE,
+            GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.FringeBonus),
+        ),
+        // when there is no ally on the map with [Physical Twin Save] (including unit and target ally),
+        // grants [Physical Twin Save] to target ally for 1 turn
+        IF_NODE(
+            EQ_NODE(0, COUNT_UNITS_NODE(
+                FILTER_UNITS_NODE(SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_ON_MAP_NODE,
+                    IS_STATUS_EFFECT_ACTIVE_ON_TARGET_NODE(StatusEffectType.PhysicalTwinSave),
+                ),
+            )),
+            FOR_TARGET_NODE(ASSIST_TARGET_NODE,
+                GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE(StatusEffectType.PhysicalTwinSave),
+            ),
+        ),
+    ));
+}
+
+// [Physical Twin Save]
+{
+    let skillId = getStatusEffectSkillId(StatusEffectType.PhysicalTwinSave);
+    // If a sword, lance, axe, bow, dagger, or beast foe initiates combat against an ally within 2 spaces of unit,
+    // triggers Savior on unit (triggers only if unit is not equipped with a skill that can trigger another Savior effect;
+    // if unit is granted multiple statuses that enable "Savior" effects to trigger, Savior will not trigger).
+    CAN_TRIGGER_SAVIOR_HOOKS.addSkill(skillId, () =>
+        AND_NODE(
+            IS_TARGET_WITHIN_2_SPACES_OF_SKILL_OWNER_NODE,
+            FOR_FOE_NODE(IS_TARGET_P_WEAPON_NODE),
+        ),
+    );
+    setCondHooks(skillId,
+        // If foe uses sword, lance, axe, bow, dagger, or beast damage,
+        FOR_FOE_NODE(IS_TARGET_P_WEAPON_NODE),
+        [
+            AT_START_OF_COMBAT_HOOKS,
+            NODE_FUNC(
+                // disables foe's effects that "calculate damage using the lower of foe's Def or Res"
+                // (including area-of-effect Specials),
+                DISABLES_TARGETS_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_DURING_COMBAT_NODE,
+                // and any "reduces damage by X%" effect that can be triggered only once per combat by unit's equipped Special skill
+                // can be triggered up to twice per combat during combat
+                // (excludes boosted Special effects from engaging; only highest value applied; does not stack).
+                ANY_TARGETS_REDUCE_DAMAGE_EFFECT_ONLY_ONCE_CAN_BE_TRIGGERED_UP_TO_N_TIMES_PER_COMBAT_NODE(2),
+            ),
+        ],
+        [
+            BEFORE_AOE_SPECIAL_HOOKS,
+            NODE_FUNC(
+                // disables foe's effects that "calculate damage using the lower of foe's Def or Res"
+                // (including area-of-effect Specials),
+                DISABLES_TARGETS_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_TARGETS_FOES_DEF_OR_RES_DURING_COMBAT_NODE,
+            ),
+        ]
+    );
+}
 
 // Deluge Charm
 {

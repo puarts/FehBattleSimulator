@@ -420,6 +420,7 @@ const STATUS_EFFECT_INFO_MAP = new Map([
     [StatusEffectType.ProfsGuidance, ["ProfsGuidance.webp", "師の導き", "SP2倍、奥義で軽減2回可&戦闘後にカウント-1"]],
     [StatusEffectType.FringeBonus, ["FringeBonus.webp", "真強化増幅", "攻速守魔が上昇、自分と周囲の味方の強化が最も高い値"]],
     [StatusEffectType.MagicTwinSave, ["MagicTwinSave.webp", "護り手・魔・双", "魔法攻撃に「護り手」、奥義のダメージ軽減2回発動可"]],
+    [StatusEffectType.PhysicalTwinSave, ["PhysicalTwinSave.webp", "護り手・理・双", "理の攻撃に「護り手」、奥義のダメージ軽減2回発動可"]],
     // [StatusEffectType.AtkShackle, ["AtkShackle.webp", "攻撃の枷", "攻撃が減少、自分の不利な状態異常の数+4（最大8）"]],
     [StatusEffectType.SpdShackle, ["SpdShackle.webp", "速さの枷", "速さが減少、自分の不利な状態異常の数+4（最大8）"]],
     [StatusEffectType.DefShackle, ["DefShackle.webp", "守備の枷", "守備が減少、自分の不利な状態異常の数+4（最大8）"]],
