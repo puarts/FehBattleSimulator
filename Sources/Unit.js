@@ -7037,6 +7037,10 @@ class Unit extends BattleMapElement {
     }
 
     deactivateStyleAfterAction() {
+        // remaining movement granted from Canto is treated as 0.
+        if (STYLES_THAT_REMAINING_MOVEMENT_FROM_CANTO_IS_TREATED_AS_0.has(this.getAvailableStyle())) {
+            this.restMoveCount = 0;
+        }
         this.deactivateStyle();
         this.isStyleActivatedInThisTurn = true;
         this.styleActivationsCount++;

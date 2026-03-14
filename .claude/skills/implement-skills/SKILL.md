@@ -280,11 +280,10 @@ setUnitCanUseFollowingStyle(skillId, StyleType.XXX);
 - `CAN_FOE_COUNTERATTACK_REGARDLESS_OF_RANGE_NODE` — foe can counterattack regardless of unit's range
 - `EQ_NODE(FOES_RANGE_NODE, DISTANCE_BETWEEN_TARGET_AND_TARGETS_FOE_NODE)` — foe's Range is the same as the distance
 
-**Canto残移動量0について**: 「remaining movement granted from Canto is treated as 0」は専用フック未実装。TODOとして残す。
+**Canto残移動量0について**: `STYLES_THAT_REMAINING_MOVEMENT_FROM_CANTO_IS_TREATED_AS_0.add(style)` で登録する。
 
 ## 専用フックが必要なスキル種別（TODO対象）
 
 以下は標準DSLでは実装不可。TODOとして残す:
 - 複雑な奥義（Frozen Mirror, Goddess Dance）
 - エンゲージ関連（Emblem Effect）
-- Guardian+（Rally Assist + heal + 状態付与の複合）

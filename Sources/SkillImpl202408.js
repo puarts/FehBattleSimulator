@@ -139,8 +139,8 @@
             AFTER_COMBAT_MOVEMENT_EFFECTS_DO_NOT_OCCUR_BECAUSE_OF_TARGET_NODE,
         ),
     ));
-    // TODO: 実装する
     // and remaining movement granted from Canto is treated as 0.
+    STYLES_THAT_REMAINING_MOVEMENT_FROM_CANTO_IS_TREATED_AS_0.add(style);
 
     // Skill effect's Range is treated as 2,
     // including by skill effects determined by attack Range, like Pavise and Aegis.
@@ -192,6 +192,8 @@
         ),
     ));
     STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.add(style);
+    // remaining movement granted from Canto is treated as 0.
+    STYLES_THAT_REMAINING_MOVEMENT_FROM_CANTO_IS_TREATED_AS_0.add(style);
 }
 
 // 比翼リュール

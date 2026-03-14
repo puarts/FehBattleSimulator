@@ -950,8 +950,8 @@
             UNIT.do(DISABLES_AFTER_COMBAT_MOVEMENT()),
         ),
     ));
-    // TODO: 実装する
     // remaining movement granted from Canto is treated as 0.
+    STYLES_THAT_REMAINING_MOVEMENT_FROM_CANTO_IS_TREATED_AS_0.add(style);
 
     // Unit suffers a counterattack if any of the following conditions are met:
     SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS.addSkill(skillId, () =>
