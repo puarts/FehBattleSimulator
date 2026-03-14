@@ -1,7 +1,7 @@
 ---
 name: fetch-status-icon
 description: FEH Wikiからステータス効果のアイコン画像を取得し、プロジェクトに保存します。
-usage: /fetch-status-icon <StatusEffectType名> (例: /fetch-status-icon PhysicalTwinSave)
+argument-hint: "<StatusEffectType名> (例: PhysicalTwinSave)"
 ---
 
 # ステータス効果アイコン取得
