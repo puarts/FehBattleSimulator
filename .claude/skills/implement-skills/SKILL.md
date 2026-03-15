@@ -285,5 +285,4 @@ setUnitCanUseFollowingStyle(skillId, StyleType.XXX);
 ## 専用フックが必要なスキル種別（TODO対象）
 
 以下は標準DSLでは実装不可。TODOとして残す:
-- 複雑な奥義（Frozen Mirror, Goddess Dance）
 - エンゲージ関連（Emblem Effect）

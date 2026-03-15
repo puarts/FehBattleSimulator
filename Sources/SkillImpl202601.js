@@ -362,12 +362,69 @@
 // Frozen Mirror
 {
     const skillId = Special.FrozenMirror;
-    // TODO: Frozen Mirror（真氷の聖鏡）は氷の聖鏡系の奥義で、
-    // 「unit’s next attack deals damage = total damage reduced from foe’s first attack」と
-    // Divine Vein (Icicle/Vert)の適用を含む複雑な奥義のため、専用のフック実装が必要
+    // @3
     // Boosts damage by 60% of unit’s Spd when Special triggers.
-    // Reduces damage from foe’s attacks by 40% (excluding area-of-effect Specials), and unit’s next attack deals damage = total damage reduced from foe’s first attack during combat (by any source, including other skills; resets at end of combat).
-    // At start of enemy phase (except for in Pawns of Loki), if there is no【Divine Vein (Icicle)】currently applied by unit or allies, applies【Divine Vein (Icicle)】to spaces 2 spaces away from unit for 1 turn (excluding spaces occupied by a foe, destructible terrain other than Divine Vein, or warp spaces in Rival Domains), and【Divine Vein (Vert)】to unit’s space and spaces within 3 spaces of unit for 1 turn (excluding spaces with【Divine Vein (Icicle)】applied).
+    // Reduces damage from foe’s attacks by 40% (excluding area-of-effect Specials),
+    // and unit’s next attack deals damage = total damage reduced from foe’s first attack
+    // during combat (by any source, including other skills; resets at end of combat).
+    // At start of enemy phase (except for in Pawns of Loki),
+    // if there is no【Divine Vein (Icicle)】currently applied by unit or allies,
+    // applies【Divine Vein (Icicle)】to spaces 2 spaces away from unit for 1 turn
+    // (excluding spaces occupied by a foe, destructible terrain other than Divine Vein,
+    // or warp spaces in Rival Domains),
+    // and【Divine Vein (Vert)】to unit’s space and spaces within 3 spaces of unit
+    // for 1 turn (excluding spaces with【Divine Vein (Icicle)】applied).
+    setSpecialCountAndType(skillId, 3, false, true, false, false);
+    // Boosts damage by 60% of unit’s Spd when Special triggers.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(MULT_TRUNC_NODE(0.6, UNITS_SPD_DURING_COMBAT_NODE)),
+    ));
+    // Reduces damage from foe’s attacks by 40% (excluding area-of-effect Specials),
+    // and unit’s next attack deals damage = total damage reduced from foe’s first attack
+    // during combat (by any source, including other skills; resets at end of combat).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(40),
+        TARGETS_NEXT_ATTACK_DEALS_DAMAGE_EQ_TOTAL_DAMAGE_REDUCED_FROM_TARGETS_FOES_FIRST_ATTACK_NODE,
+    ));
+    // At start of enemy phase (except for in Pawns of Loki),
+    let icicleSpacesCacheNode =
+        CACHE_NODE(`${skillId}_icicle-spaces`,
+            FILTER_SPACES_NODE(
+                // spaces 2 spaces away from unit
+                SPACES_N_SPACES_AWAY_FROM_TARGET_NODE(2),
+                NOT_NODE(
+                    OR_NODE(
+                        // excluding spaces occupied by a foe,
+                        IS_SPACE_OCCUPIED_BY_TARGETS_FOE_NODE,
+                        // destructible terrain other than Divine Vein,
+                        // or warp spaces in Rival Domains
+                        IS_TARGETS_DESTRUCTIBLE_TERRAIN_OTHER_THAN_DIVINE_VEIN_NODE,
+                    ),
+                ),
+            ),
+        );
+    setAtStartOfEnemyPhaseExceptForInPawnsOfLoki(skillId, NODE_FUNC(
+        // if there is no【Divine Vein (Icicle)】currently applied by unit or allies,
+        IF_NODE(IS_THERE_NO_DIVINE_VEIN_CURRENTLY_APPLIED_BY_TARGET_OR_TARGETS_ALLIES_NODE(DivineVeinType.Icicle),
+            // applies【Divine Vein (Icicle)】to spaces 2 spaces away from unit for 1 turn
+            FOR_EACH_SPACES_NODE(
+                icicleSpacesCacheNode,
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Icicle, TARGET_GROUP_NODE, 1),
+            ),
+            // and【Divine Vein (Vert)】to unit’s space and spaces within 3 spaces of unit
+            // for 1 turn (excluding spaces with【Divine Vein (Icicle)】applied).
+            FOR_EACH_SPACES_NODE(
+                DIFFERENCE_SPACES_NODE(
+                    FLAT_MAP_UNITS_NODE(
+                        UnitsNode.makeFromUnit(TARGET_NODE),
+                        SPACES_WITHIN_N_SPACES_OF_TARGET_NODE(3),
+                    ),
+                    icicleSpacesCacheNode,
+                ),
+                APPLY_DIVINE_VEIN_NODE(DivineVeinType.Vert, TARGET_GROUP_NODE, 1),
+            ),
+        ),
+    ));
 }
 
 // Spd/Res Faith
@@ -1094,32 +1151,132 @@
 // Goddess Dance
 {
     const skillId = Special.GoddessDance;
-    // TODO: Goddess Dance（計略・女神の舞）は踊り/歌う系の奥義で、
-    // Rally/移動補助スキル使用時に再行動を付与する複雑な仕組みが必要。
-    // setRefreshパターンとは異なり、Rally/移動補助スキルベースの再行動のため、
-    // 専用のフック実装が必要。
     // @4
+    setSpecialCountAndType(skillId, 4, false, true, false, false);
+
     // Boosts damage by 80% of unit's Spd when Special triggers.
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE(MULT_TRUNC_NODE(0.8, UNITS_SPD_DURING_COMBAT_NODE)),
+    ));
+
     // Reduces damage from foe's attacks by 40% during combat (excluding area-of-effect Specials).
-    // If a Rally or movement Assist skill is used by unit and if target ally has already acted, grants another action to target ally, and if Canto has already been triggered, re-enables Canto (once per turn; this effect does not trigger if target ally has Sing or Dance).
-    // If a Rally or movement Assist skill is used by unit, if there is only one ally with the highest HP among allies who have already acted in spaces adjacent to unit after movement (excluding target of Rally or movement Assist skill and allies with Sing or Dance), grants another action to that ally, and if Canto has already been triggered, re-enables Canto (will not trigger again for 2 turns after triggering).
+    AT_START_OF_COMBAT_HOOKS.addSkill(skillId, NODE_FUNC(
+        REDUCES_DAMAGE_FROM_TARGETS_FOES_ATTACKS_BY_X_PERCENT_BY_SPECIAL_NODE(40),
+    ));
+
+    // If a Rally or movement Assist skill is used by unit and if target ally has already acted,
+    // grants another action to target ally, and if Canto has already been triggered, re-enables Canto
+    // (once per turn; this effect does not trigger if target ally has Sing or Dance).
+    let effect1NodeFunc = () => new SkillEffectNode(
+        FOR_TARGET_NODE(ASSIST_TARGET_NODE,
+            IF_NODE(AND_NODE(
+                IS_TARGET_ACTION_DONE_NODE,
+                NOT_NODE(TARGET_HAS_REFRESH_ASSIST_NODE),
+            ),
+                GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE,
+                RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE,
+            ),
+        ),
+    );
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, effect1NodeFunc);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, effect1NodeFunc);
+
+    // If a Rally or movement Assist skill is used by unit,
+    // if there is only one ally with the highest HP among allies who have already acted
+    // in spaces adjacent to unit after movement
+    // (excluding target of Rally or movement Assist skill and allies with Sing or Dance),
+    // grants another action to that ally, and if Canto has already been triggered, re-enables Canto
+    // (will not trigger again for 2 turns after triggering).
+    let eligibleAlliesNode = CACHE_NODE(`${skillId}_adjacent-acted-allies`,
+        MAX_UNITS_NODE(
+            FILTER_UNITS_NODE(
+                TARGETS_ALLIES_WITHIN_N_SPACES_NODE(1),
+                AND_NODE(
+                    NOT_NODE(IS_TARGET_ASSIST_TARGET_NODE),
+                    NOT_NODE(TARGET_HAS_REFRESH_ASSIST_NODE),
+                    IS_TARGET_ACTION_DONE_NODE,
+                ),
+            ),
+            TARGETS_HP_ON_MAP_NODE,
+        ),
+    );
+    let effect2NodeFunc = () => new SkillEffectNode(
+        IF_NODE(EQ_NODE(COUNT_UNITS_NODE(eligibleAlliesNode), 1),
+            TARGETS_REST_SPECIAL_SKILL_AVAILABLE_TURN_NODE(2,
+                FOR_EACH_UNIT_NODE(eligibleAlliesNode,
+                    GRANTS_ANOTHER_ACTION_TO_TARGET_ONCE_PER_TURN_ON_ASSIST_NODE,
+                    RE_ENABLES_CANTO_TO_TARGET_ON_MAP_NODE,
+                ),
+            ),
+        ),
+    );
+    setIfRallyOrMovementAssistSkillEndedByUnit(skillId, effect2NodeFunc);
+
     // Equipping this skill counts as equipping a Sing or Dance skill.
+    SPECIALS_COUNTED_AS_SING_OR_DANCE.add(skillId);
 }
 
 // Instruct 4
 {
     const skillId = PassiveC.Instruct4;
-    // TODO: Great Talent付与の条件（ステータス比較）とRally使用時のGreat Talent付与は
-    // 複雑なGreat Talentシステムの実装が必要
-    // At start of turn, for allies within 2 spaces of unit, if unit's Atk, Spd, Def, or Res ≥ ally's stat - 10 (excluding effects from [Phantom]), grants [Great Talent] +3 to ally's corresponding stat.
-    // If a Rally or movement Assist skill is used by unit, if unit's Atk, Spd, Def, or Res ≥ ally's stat - 10 (excluding effects from [Phantom]), grants [Great Talent] +3 to target ally's corresponding stat (for staff Assist skills, stat value is determined after Assist skill is used).
+
+    // ステータスごとの条件付きGreat Talent付与の共通ノード:
+    // if unit's Atk, Spd, Def, or Res ≥ ally's stat - 10 (excluding effects from [Phantom]),
+    // grants [Great Talent] +3 to ally's corresponding stat.
     // (This skill grants max of [Great Talent] +9.)
+    // NOTE: TARGETS_STATS_ON_MAP_NODE は getStatusesInPrecombat() を使用し、Phantom(虚勢)は含まれない
+    let greatTalentPerStatNode = FOR_EACH_STAT_INDEX_NODE(
+        IF_NODE(GTE_NODE(
+                GET_STAT_AT_NODE(FOR_TARGET_NODE(SKILL_OWNER_NODE, TARGETS_STATS_ON_MAP_NODE), READ_NUM_NODE),
+                SUB_NODE(GET_STAT_AT_NODE(TARGETS_STATS_ON_MAP_NODE, READ_NUM_NODE), 10)),
+            GRANTS_GREAT_TALENTS_PLUS_TO_TARGET_NODE(
+                STATS_FROM_STAT_NODE(3, READ_NUM_NODE),
+                STATS_FROM_STAT_NODE(9, READ_NUM_NODE)),
+        ),
+    );
+
+    // At start of turn, for allies within 2 spaces of unit,
+    // if unit's Atk, Spd, Def, or Res ≥ ally's stat - 10 (excluding effects from [Phantom]),
+    // grants [Great Talent] +3 to ally's corresponding stat.
+    // (This skill grants max of [Great Talent] +9.)
+    AT_START_OF_TURN_HOOKS.addSkill(skillId, NODE_FUNC(
+        FOR_EACH_TARGETS_ALLY_WITHIN_N_SPACES_NODE(2,
+            greatTalentPerStatNode,
+        ),
+    ));
+
+    // If a Rally or movement Assist skill is used by unit,
+    // if unit's Atk, Spd, Def, or Res ≥ ally's stat - 10 (excluding effects from [Phantom]),
+    // grants [Great Talent] +3 to target ally's corresponding stat
+    // (for staff Assist skills, stat value is determined after Assist skill is used).
+    // (This skill grants max of [Great Talent] +9.)
+    let assistGreatTalentNode = () => new SkillEffectNode(
+        FOR_TARGET_NODE(ASSIST_TARGET_NODE,
+            greatTalentPerStatNode,
+        ),
+    );
+    AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, assistGreatTalentNode);
+    AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS.addSkill(skillId, assistGreatTalentNode);
 
     SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
         // Grants Atk/Spd/Def/Res+X to unit
         // (X = maximum value of [Great Talent] among allies on the map; max 9;
         // calculates each stat bonus independently),
-        // TODO: Great Talentの最大値参照ノードの確認が必要
+        FOR_EACH_STAT_INDEX_NODE(
+            GRANTS_STAT_PLUS_AT_TO_TARGET_DURING_COMBAT_NODE(
+                READ_NUM_NODE,
+                ENSURE_MAX_NODE(
+                    GET_STAT_AT_NODE(
+                        new HighestValueOnEachStatAmongUnitsNode(
+                            TARGETS_ALLIES_ON_MAP_NODE,
+                            TARGETS_GREAT_TALENTS_STATS_NODE,
+                        ),
+                        READ_NUM_NODE,
+                    ),
+                    9,
+                ),
+            ),
+        ),
         // unit deals +5 damage (excluding area-of-effect Specials), and
         UNIT.do(DEALS_DAMAGE(5).excludingAoe()),
         // reduces damage from foe's first attack by 5 during combat

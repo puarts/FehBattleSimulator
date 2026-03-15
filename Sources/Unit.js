@@ -3528,8 +3528,9 @@ class Unit extends BattleMapElement {
     }
 
     get hasRefreshAssist() {
-        return this.supportInfo != null
-            && this.supportInfo.assistType === AssistType.Refresh;
+        return (this.supportInfo != null
+            && this.supportInfo.assistType === AssistType.Refresh)
+            || SPECIALS_COUNTED_AS_SING_OR_DANCE.has(this.special);
     }
 
     get hasHealAssist() {

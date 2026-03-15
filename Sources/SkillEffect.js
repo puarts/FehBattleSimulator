@@ -4698,6 +4698,21 @@ const FOES_DEF_GREAT_TALENT_NODE = new FoesGreatTalentsNode(StatusIndex.DEF);
 // noinspection JSUnusedGlobalSymbols
 const FOES_RES_GREAT_TALENT_NODE = new FoesGreatTalentsNode(StatusIndex.RES);
 
+class TargetsGreatTalentsStatsNode extends StatsNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.getGreatTalents();
+        env.debug(`${unit.nameWithGroup}の大器: [${result}]`);
+        return result;
+    }
+}
+
+const TARGETS_GREAT_TALENTS_STATS_NODE = new TargetsGreatTalentsStatsNode();
+
 /**
  * @abstract
  */
@@ -8420,6 +8435,31 @@ class HasTargetPerformedActionNode extends BoolNode {
 }
 
 const HAS_TARGET_PERFORMED_ACTION_NODE = new HasTargetPerformedActionNode();
+
+class TargetHasRefreshAssistNode extends BoolNode {
+    static {
+        Object.assign(this.prototype, GetUnitMixin);
+    }
+
+    evaluate(env) {
+        let unit = this.getUnit(env);
+        let result = unit.hasRefreshAssist;
+        env.debug(`${unit.nameWithGroup}は歌う/踊るを持っているか: ${result}`);
+        return result;
+    }
+}
+
+const TARGET_HAS_REFRESH_ASSIST_NODE = new TargetHasRefreshAssistNode();
+
+class IsTargetAssistTargetNode extends BoolNode {
+    evaluate(env) {
+        let result = env.target === env.assistTarget;
+        env.debug(`${env.target.nameWithGroup}は補助対象か: ${result}`);
+        return result;
+    }
+}
+
+const IS_TARGET_ASSIST_TARGET_NODE = new IsTargetAssistTargetNode();
 
 class EndsTargetImmediatelyNode extends SkillEffectNode {
     static {

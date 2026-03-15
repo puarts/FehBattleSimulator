@@ -584,6 +584,12 @@ function isRefreshSupportSkill(skillId) {
 }
 
 /**
+ * この奥義を装備すると「歌う」「踊る」を装備しているものとして扱われる奥義スキルIDの集合。
+ * Equipping this skill counts as equipping a Sing or Dance skill.
+ */
+const SPECIALS_COUNTED_AS_SING_OR_DANCE = new Set();
+
+/**
  * 応援扱いの回復サポートスキルIDの集合
  */
 const RALLY_HEAL_SKILL_SET = new Set();
