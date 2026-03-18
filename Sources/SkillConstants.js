@@ -4151,6 +4151,17 @@ PassiveB.DisarmRumor = 3588; // 罠解除・流言
 Weapon.SpringDawning = 3589; // 春暁の優しき光
 PassiveB.StellarBrace = 3590; // 真月の腕輪
 PassiveC.AtkSpdLiberate = 3591; // 攻撃速さの解放
+Weapon.ComradesAxe = 3592; // 戦友との絆の斧
+Special.GatheredFlames = 3593; // 集いし炎
+PassiveB.ImpetusGuard = 3594; // 助走・キャンセル
+PassiveC.ASOutcrySeize = 3595; // 攻速鼓舞・奪取無効
+PassiveX.MomentumEcho = 3596; // 響・助走
+Weapon.ApprenticeLance = 3597; // 若きフェレ騎士の槍
+PassiveC.ADOutcryDull = 3598; // 攻守鼓譟・強化無効
+Weapon.MeleeBladePlus = 3599; // 混戦の剣＋
+PassiveA.DefResClash3 = 3600; // 守備魔防の激突3
+Weapon.BoundByIce = 3601; // 氷の絆のブレス
+Support.DragonsTwirl = 3602; // 真・尊き竜の血を…
 
 // Debug Skills
 Weapon.DevSword1 = G_WEAPON_ID_BASE + WeaponType.Sword * 100 + 1;
