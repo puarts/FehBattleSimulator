@@ -222,3 +222,18 @@ coverage/
 - 最終確認: `./run_tests.sh` で全テスト + ESLint
 - `All.test.js` は結合生成ファイルのため直接読み込み禁止（コンテキストウィンドウの浪費）
 - テスト追加は `Tests/*.test.js` の個別ファイルを直接編集する
+
+## 実装結果
+
+### 計画からの差異
+
+- プレースホルダテストファイルに `test('placeholder', () => {});` を追加。計画では空describeブロックだったが、Jestが "at least one test" エラーを出すため必要。実テスト追加時に削除。
+- コードレビューで以下を修正:
+  - `run_tests.sh` の終了コード保持（`EXIT_CODE=$?; exit $EXIT_CODE`）
+  - 変数のクォート（`$CATEGORY` → `"$CATEGORY"`, `$TARGET_FILE` → `"$TARGET_FILE"`）
+  - ループ変数名 `cat` → `c`（`cat`コマンドとの名前衝突回避）
+
+### テスト結果
+
+- 全テスト: 197パス（既存188 + プレースホルダ9）
+- カテゴリ別: `skill`(1), `infra`(7), `combat`, `dsl` 各カテゴリ正常動作確認

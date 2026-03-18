@@ -1,17 +1,30 @@
 #!/usr/bin/env bash
 
-./create_tests.sh
+CATEGORIES="skill combat dsl infra"
+CATEGORY=""
+
+# 第1引数がカテゴリ名かチェック
+for c in $CATEGORIES; do
+  if [ "$1" = "$c" ]; then
+    CATEGORY="$1"
+    shift  # カテゴリ引数を消費
+    break
+  fi
+done
+
+# create_tests.sh にカテゴリを渡す
+./create_tests.sh "$CATEGORY"
 
 TARGET_FILE=All.test.js
 
-# 引数の数($#)が0より大きいかチェック
-if [ $# -gt 0 ]; then
-  # 引数がある場合: test:only に引数をそのまま渡す
-  # "$@" を使うことで、スペースを含む引数(例: -t "closest")も正しく渡されます
+if [ -n "$CATEGORY" ] || [ $# -gt 0 ]; then
+  # カテゴリ指定時またはJest引数ありの場合: ESLintスキップ
   npm run test:only -- "$@"
 else
-  # 引数がない場合: 従来の npm test (jest + eslint) を実行
+  # 引数なし: 従来の npm test (jest + eslint)
   npm test
 fi
 
-rm $TARGET_FILE
+EXIT_CODE=$?
+rm "$TARGET_FILE"
+exit $EXIT_CODE

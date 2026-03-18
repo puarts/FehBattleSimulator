@@ -4,6 +4,7 @@ vendor/
 
 # Generated files
 All.test.js
+coverage/
 
 # Samples (local scratch files)
 Sources/samples/
