@@ -1,0 +1,29 @@
+{
+  "plugin_root": "/Users/studio/.claude/plugins/cache/piercelamb-plugins/deep-implement/0.2.1",
+  "sections_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/testing/sections",
+  "target_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "state_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/testing/implementation",
+  "git_root": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "commit_style": "conventional",
+  "test_command": "uv run pytest",
+  "sections": [
+    "section-01-test-split",
+    "section-02-unit-builder",
+    "section-03-battle-scenario-builder",
+    "section-04-coverage-perf",
+    "section-05-skill-regression-template",
+    "section-06-skill-regression-tests",
+    "section-07-combat-logic-tests",
+    "section-08-dsl-node-tests"
+  ],
+  "sections_state": {},
+  "pre_commit": {
+    "present": false,
+    "type": "none",
+    "config_file": null,
+    "native_hook": null,
+    "may_modify_files": false,
+    "detected_formatters": []
+  },
+  "created_at": "2026-03-18T19:30:43.878315+00:00"
+}
