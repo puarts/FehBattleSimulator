@@ -145,9 +145,9 @@ function runBenchmark(operation, ciThreshold, localThreshold) {
 
 | Benchmark | Local Threshold | CI Threshold | Rationale |
 |-----------|----------------|--------------|-----------|
-| All-hero battle calculation | 480ms | 1200ms | Baseline 238ms x2 (local), x5 (CI) |
-| Beginning-of-turn skills | 400ms | 1000ms | Estimate, adjust after baseline |
-| Unit initialization | 200ms | 500ms | Estimate, adjust after baseline |
+| All-hero battle calculation | 1500ms | 3000ms | Actual baseline ~500-700ms, generous margin for CI variability |
+| Beginning-of-turn skills | 800ms | 2000ms | Adjusted after baseline measurement |
+| Unit initialization | 200ms | 500ms | Measured baseline fits this threshold |
 
 **Environment detection**: Use `process.env.CI` which GitHub Actions sets to `"true"` automatically. The `isCI` constant should be defined at the `describe` block level.
 
@@ -163,10 +163,17 @@ After Section 01 is complete, verify that `./run_tests.sh infra` includes and ru
 
 ## Implementation Checklist
 
-1. Modify `jest.config.js`: add `collectCoverage`, `coverageDirectory`, `coverageReporters`
-2. Modify `.gitignore`: add `coverage/`
-3. Create `Tests/Performance.test.js` with three benchmark tests (all-hero battle, beginning-of-turn, unit initialization)
-4. Verify locally: `npx jest --coverage` produces `coverage/` directory
-5. Verify locally: `npx jest` (without flag) does NOT produce coverage
-6. Verify performance tests pass: `./run_tests.sh infra` (requires Section 01 completion)
-7. Adjust threshold values based on actual measured baselines if initial estimates are off
+1. [x] Modify `jest.config.js`: add `collectCoverage`, `coverageDirectory`, `coverageReporters`
+2. [x] `.gitignore` already had `coverage/` entry (no change needed)
+3. [x] Create `Tests/Performance.test.js` with three benchmark tests
+4. [ ] Verify locally: `npx jest --coverage` produces `coverage/` directory (deferred)
+5. [ ] Verify locally: `npx jest` (without flag) does NOT produce coverage (deferred)
+6. [x] Performance tests pass in full test suite (221 tests)
+7. [x] Threshold values adjusted based on actual baselines (battle: 1500/3000ms, BOT: 800/2000ms)
+
+**Deviations from plan:**
+- `.gitignore` already contained `coverage/` entry, no modification needed
+- `.github/workflows/jekyll.yml` not modified (CI env already sets `CI=true`)
+- Thresholds increased from initial estimates after baseline measurement
+- All-hero battle benchmark uses try/catch for heroes with known skill bugs (consistent with existing DamageCalculator_HeroBattleTest pattern)
+- Units created via `g_testHeroDatabase.createUnit` instead of `test_createDefaultUnit` to ensure heroInfo is set
