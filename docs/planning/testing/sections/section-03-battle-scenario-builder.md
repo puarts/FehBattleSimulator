@@ -161,7 +161,7 @@ The `execute()` method must perform these steps in order:
 6. **Set turn number** on `calculator.battleContext.currentTurn` (or equivalent property).
 7. **Call `calculator.updateAllUnitSpur()`** to calculate spur/drive effects.
 8. **Call `calculator.calcDamage(attacker, defender)`** and capture result.
-9. **Cleanup**: Set `g_appData = null`.
+9. **Cleanup**: Call `resetGlobalTestState()` (sets `g_appData` to a fresh `UnitManager` instead of `null` to avoid SkillInfo constructor crash).
 10. **Return** the combat result.
 
 ### Internal Logic for `executeBeginningOfTurn()`
@@ -171,7 +171,7 @@ The `execute()` method must perform these steps in order:
 3. **Set `g_appData`** to handler's `unitManager`.
 4. **Set turn number** on handler's `battleContext`.
 5. **Call `applySkillsForBeginningOfTurn()`** for each unit.
-6. **Cleanup**: Set `g_appData = null`.
+6. **Cleanup**: Call `resetGlobalTestState()`.
 
 ### Auto-Placement Strategy
 
@@ -217,7 +217,7 @@ test('Example: weapon skill grants Atk/Spd+5', () => {
 
 1. **Receives built Units, not UnitBuilders**: `BattleScenarioBuilder` takes `Unit` objects, not `UnitBuilder` instances. This keeps the two classes loosely coupled and allows units to be built once and shared across multiple scenarios if needed.
 
-2. **Cleanup after execute()**: `g_appData` is set to `null` after each `execute()` call to prevent state leakage between tests. This works in concert with `resetGlobalTestState()` (from section-02) which is called in `beforeEach`.
+2. **Cleanup after execute()**: `resetGlobalTestState()` is called after each `execute()` call to prevent state leakage between tests. Using `null` was avoided because SkillInfo constructor accesses `g_appData.isDebugMenuEnabled` and crashes on null.
 
 3. **Auto-placement is a convenience, not a requirement**: Units with explicit positions (set via `UnitBuilder.atPosition()`) keep their positions. Only unpositioned units get auto-placed. This allows tests to control positioning when it matters (e.g., testing spur ranges) while keeping simple tests concise.
 
@@ -226,11 +226,11 @@ test('Example: weapon skill grants Atk/Spd+5', () => {
 ## Verification Checklist
 
 After implementation, verify:
-- [ ] `BattleScenarioBuilder` can execute a basic 1v1 combat and return a result
-- [ ] Additional allies/foes are registered and their spur effects apply
-- [ ] `onTurn()` correctly sets the turn number in the battle context
-- [ ] `executeBeginningOfTurn()` triggers beginning-of-turn skill processing
-- [ ] Auto-placed units have no position overlaps
-- [ ] `g_appData` is `null` after `execute()` returns
-- [ ] Two consecutive `execute()` calls produce independent results
-- [ ] All tests in `Tests/TestHelper.test.js` for the BattleScenarioBuilder block pass
+- [x] `BattleScenarioBuilder` can execute a basic 1v1 combat and return a result
+- [x] Additional allies/foes are registered and their spur effects apply
+- [x] `onTurn()` correctly sets the turn number in the battle context
+- [x] `executeBeginningOfTurn()` triggers beginning-of-turn skill processing (verified with 伝承リリーナ special count)
+- [x] Auto-placed units have no position overlaps
+- [x] `g_appData` is reset to fresh UnitManager after `execute()` returns (not null — see design decisions)
+- [x] Two consecutive `execute()` calls produce independent results
+- [x] All 7 tests in `Tests/TestHelper.test.js` for the BattleScenarioBuilder block pass

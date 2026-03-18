@@ -267,6 +267,7 @@ class UnitBuilder {
     atPosition(x, y) {
         this._unit.placedTile.posX = x;
         this._unit.placedTile.posY = y;
+        this._unit._hasExplicitPosition = true;
         return this;
     }
 
@@ -341,6 +342,131 @@ class RegressionTestHelper {
             posX: unit.placedTile ? unit.placedTile.posX : null,
             posY: unit.placedTile ? unit.placedTile.posY : null,
         };
+    }
+}
+
+class BattleScenarioBuilder {
+    constructor() {
+        this._attacker = null;
+        this._defender = null;
+        this._allies = [];
+        this._foes = [];
+        this._turn = 1;
+    }
+
+    withAttacker(unit) {
+        this._attacker = unit;
+        return this;
+    }
+
+    withDefender(unit) {
+        this._defender = unit;
+        return this;
+    }
+
+    addAlly(unit) {
+        this._allies.push(unit);
+        return this;
+    }
+
+    addFoe(unit) {
+        this._foes.push(unit);
+        return this;
+    }
+
+    onTurn(turnNumber) {
+        this._turn = turnNumber;
+        return this;
+    }
+
+    _autoPlaceUnits() {
+        let allyUnits = [this._attacker, ...this._allies];
+        let enemyUnits = [this._defender, ...this._foes];
+        let occupied = new Set();
+
+        // Collect already-positioned units
+        for (let unit of [...allyUnits, ...enemyUnits]) {
+            if (unit._hasExplicitPosition) {
+                occupied.add(`${unit.placedTile.posX},${unit.placedTile.posY}`);
+            }
+        }
+
+        // Auto-place attacker in column 0 if not explicitly positioned
+        if (this._attacker && !this._attacker._hasExplicitPosition) {
+            let pos = this._findFreePosition(0, occupied);
+            this._attacker.placedTile.posX = pos[0];
+            this._attacker.placedTile.posY = pos[1];
+            occupied.add(`${pos[0]},${pos[1]}`);
+        }
+
+        // Auto-place defender in column 5 if not explicitly positioned
+        if (this._defender && !this._defender._hasExplicitPosition) {
+            let pos = this._findFreePosition(5, occupied);
+            this._defender.placedTile.posX = pos[0];
+            this._defender.placedTile.posY = pos[1];
+            occupied.add(`${pos[0]},${pos[1]}`);
+        }
+
+        // Auto-place remaining allies along column 0
+        for (let ally of this._allies) {
+            if (!ally._hasExplicitPosition) {
+                let pos = this._findFreePosition(0, occupied);
+                ally.placedTile.posX = pos[0];
+                ally.placedTile.posY = pos[1];
+                occupied.add(`${pos[0]},${pos[1]}`);
+            }
+        }
+
+        // Auto-place remaining foes along column 5
+        for (let foe of this._foes) {
+            if (!foe._hasExplicitPosition) {
+                let pos = this._findFreePosition(5, occupied);
+                foe.placedTile.posX = pos[0];
+                foe.placedTile.posY = pos[1];
+                occupied.add(`${pos[0]},${pos[1]}`);
+            }
+        }
+    }
+
+    _findFreePosition(col, occupied) {
+        for (let row = 0; row < 100; row++) {
+            let key = `${col},${row}`;
+            if (!occupied.has(key)) {
+                return [col, row];
+            }
+        }
+        return [col, 0];
+    }
+
+    execute() {
+        if (!this._attacker || !this._defender) {
+            throw new Error('BattleScenarioBuilder requires both attacker and defender');
+        }
+
+        this._autoPlaceUnits();
+
+        let calculator = new test_DamageCalculator();
+        calculator.unitManager.units = [this._attacker, this._defender, ...this._allies, ...this._foes];
+        g_appData = calculator.unitManager;
+        calculator.battleContext.currentTurn = this._turn;
+        calculator.updateAllUnitSpur();
+        let result = calculator.calcDamage(this._attacker, this._defender);
+        resetGlobalTestState();
+        return result;
+    }
+
+    executeBeginningOfTurn() {
+        this._autoPlaceUnits();
+
+        let handler = new test_BeginningOfTurnSkillHandler();
+        let allUnits = [this._attacker, this._defender, ...this._allies, ...this._foes].filter(u => u != null);
+        handler.unitManager.units = allUnits;
+        g_appData = handler.unitManager;
+        handler.battleContext.currentTurn = this._turn;
+        for (let unit of allUnits) {
+            handler.applySkillsForBeginningOfTurn(unit);
+        }
+        resetGlobalTestState();
     }
 }
 
