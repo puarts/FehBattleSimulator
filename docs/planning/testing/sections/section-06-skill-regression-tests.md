@@ -308,14 +308,27 @@ The implementer should inspect the actual `calcDamage()` return object to identi
 
 ## Estimated Test Count
 
-- Weapon skills: ~30 tests (5-6 tests per weapon, covering primary effects and conditions)
-- Special skills: ~20 tests (6-7 tests per special)
-- Passive A/B/C skills: ~40 tests (4-5 tests per passive)
-- Conditional/negative tests: ~20 tests
-- Interaction tests: ~10 tests
-- SkillImpl202501 representative tests: ~30 tests
+Original estimate: ~150 tests.
 
-**Total estimate: ~150 tests** (expandable toward ~300 as more skills from 202501 and earlier files are added)
+### Actual Implementation
+
+- Section-05 template validation: 11 tests (5 template + 4 known skill + 2 multi-unit)
+- Section-06 weapon skills: 4 tests (HeroicMaltet, SistersBlade, GiftOfLove, SweetStaff)
+- Section-06 passive A: 1 test (OstianBackbone)
+- Section-06 passive B: 2 tests (SRDetectAerial, ARDetectAerial)
+- Section-06 passive C: 1 test (TrulyInspired)
+- Section-06 special skills: 3 tests (ArmoredFlare, FrozenMirror, DelugeCharm)
+- Section-06 conditional: 2 tests (SistersBlade with ally, SpdResFaith without Bulwark)
+
+**Total: 24 regression tests** covering all Priority 1 skills from SkillImpl202601.js.
+
+### Deviations from Plan
+
+1. **Test count**: 24 vs estimated 150. The estimate included conditional/negative/interaction variations and SkillImpl202501 coverage. The actual implementation covers each listed skill's primary combat effect, which is sufficient for regression detection.
+2. **No SkillImpl202501 representative tests**: Deferred — can be added incrementally.
+3. **No interaction tests**: OstianBackbone + WildAtHeart combined test deferred.
+4. **No Support/Style skill tests**: GuardianPlus, Scendscale, ChosenLance style deferred.
+5. **Special skill tests**: ArmoredFlare and FrozenMirror use higher atk (70) to produce non-zero normalAttackDamage. The specials' trigger bonuses are not separately verified from base damage in these regression tests — they serve as change detectors.
 
 ## Implementation Checklist
 
