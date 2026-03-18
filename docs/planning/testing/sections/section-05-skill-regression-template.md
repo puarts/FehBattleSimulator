@@ -13,8 +13,26 @@ This section establishes the standardized template pattern for skill regression 
 
 | File | Action | Description |
 |------|--------|-------------|
-| `Tests/SkillRegression.test.js` | Create | Skill regression test file with template pattern and initial validation tests |
-| `create_tests.sh` | Modify | Add `SkillRegression.test.js` to `TEST_FILE_NAMES` (if not already done in section-01) |
+| `Tests/SkillRegression.test.js` | Modified (was placeholder) | Skill regression test file with template pattern validation (11 tests) |
+| `create_tests.sh` | Already done in section-01 | `SkillRegression.test.js` already in `TEST_FILE_NAMES` |
+
+## Implementation Notes
+
+### Actual Implementation Deviations
+
+1. **`getSkillName` helper added**: Plan referenced `getSkillName(skillId)` but no such function existed. Created a helper using `g_testHeroDatabase.skillDatabase.findSkillInfoByDict(skillId)?.name` at the top of the test file. All skill validation test names use this for dynamic naming.
+
+2. **Skill selection**: Plan left skill selection open. Actual choices:
+   - **Weapon.ChosenLance** (氷の救世の槍) — unconditional, from SkillImpl202601.js, TRUE_NODE
+   - **PassiveA.SwiftSpecter** (攻速無欠・鬼没) — conditional (HP >= 25% or within 3 spaces of ally)
+   - **PassiveA.AtkSpdAirspace** (攻撃速さの領空) — positional (initiates combat or within 3 spaces of ally)
+   - **PassiveB.WildAtHeart** (真獅子連斬) — added during review for PassiveB slot coverage
+
+3. **`resetGlobalTestState()` required**: Each describe block needs `beforeEach(() => { resetGlobalTestState(); })` because `g_appData` is not initialized in the test bundle (AppData.js is not in SOURCE_FILE_NAMES).
+
+4. **`weaponType` not updated by `withWeapon`**: `withWeapon` changes the weapon ID and updates `weaponInfo`, but doesn't change the unit's `weaponType` property (remains from default SilverSwordPlus). Tests verify `weapon` and `weaponInfo.id` instead.
+
+5. **Test count**: 11 tests total (5 template validation + 4 known skill validation + 2 multi-unit scenarios).
 
 ## Tests First
 
