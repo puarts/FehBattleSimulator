@@ -16,7 +16,12 @@
     "section-07-combat-logic-tests",
     "section-08-dsl-node-tests"
   ],
-  "sections_state": {},
+  "sections_state": {
+    "section-01-test-split": {
+      "status": "complete",
+      "commit_hash": "efcf16dc"
+    }
+  },
   "pre_commit": {
     "present": false,
     "type": "none",

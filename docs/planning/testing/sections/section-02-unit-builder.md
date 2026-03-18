@@ -295,3 +295,18 @@ section-01 のテスト分割が完了していない場合は:
 ```
 
 `TestHelper.test.js` の全テストが PASS すれば完了。
+
+## 実装結果
+
+### 計画からの差異
+
+- `resetGlobalTestState()`: `g_appData = null` → `g_appData = new UnitManager()` に変更。SkillInfoコンストラクタが `g_appData.isDebugMenuEnabled` にアクセスするため null だと NPE が発生する
+- `build()` で `saveCurrentHpAndSpecialCount()` を呼び出すよう追加。restHpスナップショットの整合性を保証
+- `extractCombatSnapshot` に `totalAttackCount`, `preCombatDamage` フィールドを追加（追撃回数検出用）
+- `withHp(value)` メソッドを追加（withAtk/withSpd等と一貫したAPI）
+- `withHpPercent` テストは `Math.floor` で期待値を計算する形に調整（maxHpWithSkills の getter が hpMult を含む計算を行うため）
+
+### テスト結果
+
+- infra カテゴリ: 22テスト全パス
+- 全テスト: 212テスト全パス（既存188 + section-01 プレースホルダ9 + section-02 UnitBuilder/状態管理/Regression 15）
