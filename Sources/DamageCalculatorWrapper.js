@@ -14542,7 +14542,7 @@ class DamageCalculatorWrapper {
 
 
     __applyDamageReductionRatioBySpecial(defUnit, atkUnit) {
-        let attackRange = atkUnit.getActualAttackRange(defUnit);
+        let attackRange = atkUnit.getAttackRangeDuringCombat(defUnit);
         for (let skillId of defUnit.enumerateSkills()) {
             let func = getSkillFunc(skillId, applyDamageReductionRatioBySpecialFuncMap);
             func?.call(this, defUnit, atkUnit, attackRange);

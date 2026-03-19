@@ -2676,6 +2676,30 @@ class Unit extends BattleMapElement {
         return calcDistance(this.posX, this.posY, attackTargetUnit.posX, attackTargetUnit.posY);
     }
 
+    /**
+     * 戦闘中の攻撃射程を返します。スタイルやスキルによる射程変更を考慮し、
+     * マップ上の実距離ではなく武器の射程にフォールバックします。
+     * @param {Unit} attackTargetUnit
+     * @returns {number}
+     */
+    getAttackRangeDuringCombat(attackTargetUnit) {
+        if (this.isCantoActivated()) {
+            return 0;
+        }
+        if (STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.has(this.getCurrentStyle())) {
+            return 1;
+        }
+        if (STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.has(this.getCurrentStyle())) {
+            return 2;
+        }
+        for (let skillId of this.enumerateSkills()) {
+            if (SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1.has(skillId)) return 1;
+            if (SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2.has(skillId)) return 2;
+        }
+
+        return this.attackRange;
+    }
+
     /// すり抜けを発動可能ならtrue、そうでなければfalseを返します。
     canActivatePass() {
         let env = new NodeEnv().setUnitManager(g_appData).setTarget(this).setSkillOwner(this);
