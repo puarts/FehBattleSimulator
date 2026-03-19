@@ -156,6 +156,70 @@ async function build() {
     }
 
     console.log(`\nBuild complete: ${Object.keys(BUILDS).length} files -> dist/`);
+
+    // --deploy: Deploy.bat と同じデプロイ先にコピー
+    if (process.argv.includes('--deploy')) {
+        await deploy();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// デプロイ（Deploy.bat の後半と同じ処理）
+// ---------------------------------------------------------------------------
+
+const HTML_FILES = [
+    'AetherRaidSimulator', 'ArenaSimulator', 'DamageCalculator',
+    'SummonerDuelsSimulator', 'UnitBuilder', 'HeroIconLister', 'StatusCalculator',
+];
+
+async function deploy() {
+    // Deploy.bat: set trunk_root=%~dp0..\..\trunk
+    const trunkRoot = join(ROOT, '..', '..', 'trunk');
+    const siteRoot = join(trunkRoot, 'Websites', 'fire-emblem.fun');
+    const jsDestination = join(siteRoot, 'AetherRaidTacticsBoard', 'Release2');
+    const htmlDestination = join(siteRoot, 'blog', 'entries');
+
+    if (!existsSync(trunkRoot)) {
+        console.error(`ERROR: trunk directory not found: ${trunkRoot}`);
+        console.error('Deploy requires the trunk directory at ../../trunk relative to the project root.');
+        process.exit(1);
+    }
+
+    mkdirSync(jsDestination, { recursive: true });
+    mkdirSync(htmlDestination, { recursive: true });
+
+    // JS ファイルをデプロイ先にコピー
+    console.log('\nDeploying JS files...');
+    for (const name of Object.keys(BUILDS)) {
+        const src = join(DIST, `${name}.js`);
+        const dest = join(jsDestination, `${name}.js`);
+        copyFileSync(src, dest);
+        console.log(`  ${dest}`);
+    }
+
+    // CSS ファイルをデプロイ先にコピー
+    console.log('Deploying CSS files...');
+    const cssSrc = join(DIST, 'feh-battle-simulator.css');
+    if (existsSync(cssSrc)) {
+        const cssDest = join(jsDestination, 'feh-battle-simulator.css');
+        copyFileSync(cssSrc, cssDest);
+        console.log(`  ${cssDest}`);
+    }
+
+    // HTML ファイルをデプロイ先にコピー
+    console.log('Deploying HTML files...');
+    for (const name of HTML_FILES) {
+        const src = join(SOURCES, `${name}.html`);
+        const dest = join(htmlDestination, `${name}.html`);
+        if (existsSync(src)) {
+            copyFileSync(src, dest);
+            console.log(`  ${dest}`);
+        } else {
+            console.warn(`  WARNING: ${src} not found`);
+        }
+    }
+
+    console.log('\nDeploy complete.');
 }
 
 build().catch(err => {
