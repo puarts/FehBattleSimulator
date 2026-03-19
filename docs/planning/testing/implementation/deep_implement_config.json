@@ -20,6 +20,34 @@
     "section-01-test-split": {
       "status": "complete",
       "commit_hash": "efcf16dc"
+    },
+    "section-02-unit-builder": {
+      "status": "complete",
+      "commit_hash": "fa2dd632"
+    },
+    "section-03-battle-scenario-builder": {
+      "status": "complete",
+      "commit_hash": "ae295e8c"
+    },
+    "section-04-coverage-perf": {
+      "status": "complete",
+      "commit_hash": "8e472b85"
+    },
+    "section-05-skill-regression-template": {
+      "status": "complete",
+      "commit_hash": "022a6396"
+    },
+    "section-06-skill-regression-tests": {
+      "status": "complete",
+      "commit_hash": "0ce3f12d"
+    },
+    "section-07-combat-logic-tests": {
+      "status": "complete",
+      "commit_hash": "9b63bcde"
+    },
+    "section-08-dsl-node-tests": {
+      "status": "complete",
+      "commit_hash": "b68ad10c"
     }
   },
   "pre_commit": {

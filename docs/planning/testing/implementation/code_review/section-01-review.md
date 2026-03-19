@@ -1,0 +1,15 @@
+# Code Review: Section 01 - テスト分割実行アーキテクチャ
+
+The implementation faithfully follows the plan with all specified files created and logic implemented. However, there are several issues worth raising:
+
+1. **MEDIUM: `rm $TARGET_FILE` missing error handling path** — In `run_tests.sh` line 28, if `npm run test:only` or `npm test` fails (non-zero exit), the script still removes `All.test.js` and then exits with status 0 (the exit code of `rm`). The original `run_tests.sh` likely had the same issue, but since this section rewrites the file, the test exit code is now silently swallowed. The script should capture the npm exit code and propagate it: `npm run test:only -- "$@"; EXIT_CODE=$?; rm $TARGET_FILE; exit $EXIT_CODE`. This matters for CI and for AI agents that check exit codes to determine pass/fail.
+
+2. **LOW: Unquoted variable expansion in `run_tests.sh` line 16** — `./create_tests.sh $CATEGORY` is unquoted. If `CATEGORY` is empty, this works by coincidence (passes no argument), but defensive scripting would use `"$CATEGORY"` or conditionally pass it. Similarly, `rm $TARGET_FILE` on line 28 should be `rm "$TARGET_FILE"` for robustness.
+
+3. **LOW: `cat` variable name collision** — In `run_tests.sh` line 7, the loop variable is named `cat`, which shadows the `cat` command. While it does not cause a bug here (the loop does not invoke `cat`), it is poor practice and confusing to readers. Consider renaming to `c` or `category_name`.
+
+4. **NITPICK: Placeholder tests add noise** — Each new test file includes `test('placeholder', () => {});` which will show as 9 passing tests in output, inflating the count. The plan specified 'empty describe blocks' without placeholder tests. These phantom green tests could mask a situation where real tests are accidentally missing. This is very minor but deviates from the plan's specification.
+
+5. **OBSERVATION: No verification that the plan's regression check (188 existing tests all pass) was performed** — The diff itself cannot confirm this, but the review should note that the implementer must have run `./run_tests.sh` with no arguments and confirmed all 188 tests pass. The 9 new placeholder tests would bring the total to 197.
+
+6. **OBSERVATION: The plan says unknown categories fall back to all tests (requirement 6 in manual verification)** — The `*` case in `create_tests.sh` handles this correctly. However, `run_tests.sh` does NOT recognize an unknown category as a category — it falls through the for-loop without setting CATEGORY, meaning `./create_tests.sh` gets no argument (correct fallback), but then the unknown string remains in `$@` and gets passed to Jest as an argument, which would cause `npm run test:only -- foo` instead of `npm test`. This means an unknown category like `foo` would skip ESLint AND pass `foo` as a Jest argument, which Jest might reject or silently ignore. The plan says unknown categories should fall back to full test execution (including ESLint via `npm test`), but the implementation does not achieve this.
