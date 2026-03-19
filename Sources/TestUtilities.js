@@ -399,9 +399,10 @@ class BattleScenarioBuilder {
             occupied.add(`${pos[0]},${pos[1]}`);
         }
 
-        // Auto-place defender in column 5 if not explicitly positioned
+        // Auto-place defender at attacker's attack range
+        let defenderCol = this._attacker ? (this._attacker.attackRange || 1) : 1;
         if (this._defender && !this._defender._hasExplicitPosition) {
-            let pos = this._findFreePosition(5, occupied);
+            let pos = this._findFreePosition(defenderCol, occupied);
             this._defender.placedTile.posX = pos[0];
             this._defender.placedTile.posY = pos[1];
             occupied.add(`${pos[0]},${pos[1]}`);
@@ -417,10 +418,10 @@ class BattleScenarioBuilder {
             }
         }
 
-        // Auto-place remaining foes along column 5
+        // Auto-place remaining foes along defender column
         for (let foe of this._foes) {
             if (!foe._hasExplicitPosition) {
-                let pos = this._findFreePosition(5, occupied);
+                let pos = this._findFreePosition(defenderCol, occupied);
                 foe.placedTile.posX = pos[0];
                 foe.placedTile.posY = pos[1];
                 occupied.add(`${pos[0]},${pos[1]}`);
