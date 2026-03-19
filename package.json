@@ -5,7 +5,9 @@
   "main": "Sources/index.html",
   "scripts": {
     "test": "jest && eslint ./Sources/",
-    "test:only": "jest"
+    "test:only": "jest",
+    "build": "node scripts/build.mjs",
+    "build:minify": "node scripts/build.mjs --minify"
   },
   "repository": {
     "type": "git",

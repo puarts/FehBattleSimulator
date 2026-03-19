@@ -11,6 +11,7 @@ Sources/samples/
 
 # Build artifacts
 Outputs/
+dist/
 x64/
 
 # C++ / Visual Studio
