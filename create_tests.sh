@@ -65,6 +65,7 @@ TEST_FILE_NAMES=(
     DslNode
     Performance
     TestHelper
+    SmokeTest
     )
 
 # カテゴリに応じたテストファイル選択
@@ -81,7 +82,7 @@ case "$1" in
     SELECTED_TEST_FILES=(SkillEffect GetRequirements DslNode)
     ;;
   infra)
-    SELECTED_TEST_FILES=(UnitManager SimpleUtility Performance TestHelper)
+    SELECTED_TEST_FILES=(UnitManager SimpleUtility Performance TestHelper SmokeTest)
     ;;
   *)
     SELECTED_TEST_FILES=("${TEST_FILE_NAMES[@]}")
