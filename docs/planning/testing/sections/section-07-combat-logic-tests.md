@@ -2,29 +2,33 @@
 
 ## Overview
 
-This section covers the creation of five new combat logic test files that verify core FEH battle mechanics independently of specific skill IDs. These tests use `createDummy` units with controlled stats to isolate and verify combat mechanics such as special charge, follow-up attacks, damage reduction, combat flow, and status effects.
+This section covers the creation of five combat logic test files that verify core FEH battle mechanics independently of specific skill IDs. Tests use `createDummy` units with controlled stats to isolate and verify combat mechanics.
 
-**Dependencies**: This section depends on section-03 (BattleScenarioBuilder) being complete, as all tests use `BattleScenarioBuilder` to execute combat scenarios. It also depends on section-02 (UnitBuilder) for `UnitBuilder.createDummy()`.
+**Dependencies**: section-02 (UnitBuilder), section-03 (BattleScenarioBuilder).
 
-**Category**: All files in this section belong to the `combat` category for `./run_tests.sh combat`.
+**Category**: `combat` category for `./run_tests.sh combat`.
 
 ---
 
-## Files to Create
+## Implementation Status
 
-| File | Purpose | Estimated Tests |
-|------|---------|-----------------|
-| `Tests/SpecialCount.test.js` | Special charge mechanics | ~25 |
-| `Tests/FollowUpAttack.test.js` | Follow-up attack determination | ~15 |
-| `Tests/DamageReduction.test.js` | Damage reduction mechanics | ~20 |
-| `Tests/CombatFlow.test.js` | Combat flow (Miracle, Sweep, post-combat) | ~25 |
-| `Tests/StatusEffect.test.js` | Status effects (Panic, Cancel, Feud, Style) | ~20 |
+**Total tests: 39** (plan estimated ~105; reduced scope per code review — core mechanics covered, edge cases deferred)
 
-## Files to Modify
+## Actual Files
+
+| File | Purpose | Actual Tests |
+|------|---------|--------------|
+| `Tests/SpecialCount.test.js` | Special charge, acceleration, deceleration, offensive specials | 8 |
+| `Tests/FollowUpAttack.test.js` | Speed-based follow-up, QR, Wary Fighter, interactions | 8 |
+| `Tests/DamageReduction.test.js` | Basic damage, buffs/debuffs, follow-up damage, weapon triangle | 7 |
+| `Tests/CombatFlow.test.js` | Combat flow, Miracle, Sweep, AoE, Vantage, Desperation | 11 |
+| `Tests/StatusEffect.test.js` | Panic, Guard, Deep Wounds, buff/debuff interaction | 5 |
+
+## Files Modified
 
 | File | Change |
 |------|--------|
-| `create_tests.sh` | Add the five new test files to `TEST_FILE_NAMES` and to the `combat` category case |
+| `create_tests.sh` | Already registered in section-01 (test files + combat category) |
 
 ---
 
@@ -458,6 +462,26 @@ describe('FEH edge cases - Triangle Adept', () => {
     });
 });
 ```
+
+---
+
+## Implementation Deviations
+
+### Key discoveries during implementation
+
+1. **`result.defRestHp` / `result.atkRestHp` capture pre-combat HP**, not post-combat. All HP-based assertions use damage values and attack counts instead.
+2. **Defensive specials (Pavise/Otate) don't work with dummy units** — the internal mechanism requires proper special setup that dummies lack. Replaced with offensive special (Moonbow) tests.
+3. **EstimatedDamage mode continues combat after KO** — units aren't removed from combat when HP reaches 0 in this mode, so both sides always get their attacks.
+4. **Post-combat effects (Seal Atk debuffs) don't apply in EstimatedDamage mode** — removed Seal Atk test.
+5. **Guard4 used instead of Guard3** — Guard3 doesn't exist in the codebase; Guard4 (PassiveB.Guard4) is the available version.
+
+### Deferred tests (not implemented)
+- Distant Counter (requires ranged weapon setup not feasible with dummy units)
+- Canto / post-combat movement
+- Beginning-of-turn Pulse
+- Percentage damage reduction, stacking, piercing
+- FEH edge cases (AoE+Vantage, Phantom Spd, Triangle Adept, Cancel Affinity)
+- Feud skills, Style effects, Cancel status
 
 ---
 
