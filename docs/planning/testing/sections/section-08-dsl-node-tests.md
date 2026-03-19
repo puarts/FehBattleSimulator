@@ -2,13 +2,25 @@
 
 ## Overview
 
-This section covers the creation of `Tests/DslNode.test.js`, a new test file that expands DSL node unit test coverage beyond what exists in `Tests/SkillEffect.test.js`. The focus is on **effect nodes used in skill registration** (GRANTS_BONUS, INFLICTS_PENALTY, etc.), **condition nodes with combat context**, **composite node evaluation with combat integration**, **target node resolution within combat**, and **hook-based skill registration and evaluation**.
+`Tests/DslNode.test.js` — 17 tests that expand DSL node coverage beyond `SkillEffect.test.js`. Focus on combat-integrated DSL patterns: effect nodes, condition/composite nodes, hook registration, GRANTS_BONUS/INFLICTS_PENALTY, and UNIT/FOE target resolution.
 
-The existing `SkillEffect.test.js` already tests low-level node primitives (AndNode, OrNode, IfNode, NumberNode, CollectionNode, spatial queries, status effect application via `do`/`doEffects`, and DEALS_DAMAGE). The new `DslNode.test.js` focuses on **higher-level DSL patterns that correspond to actual skill text**, particularly those evaluated through the combat pipeline via `SkillEffectRegistrar` and hook mechanisms.
+## Implementation Status
+
+**Total tests: 17** (plan estimated 15-20)
+
+| Category | Tests | Description |
+|----------|-------|-------------|
+| Effect nodes | 2 | DEALS_DAMAGE_X_NODE via combat |
+| Condition nodes | 2 | IF_NODE with TRUE/FALSE |
+| Composite nodes | 4 | AND/OR condition gating |
+| Hook registration | 4 | AT_START_OF_COMBAT_HOOKS, SkillEffectRegistrar |
+| GRANTS_BONUS/INFLICTS_PENALTY | 2 | Stat bonus/penalty via combat damage comparison |
+| Target nodes (UNIT/FOE) | 2 | Target resolution verification |
+| Multiple effects | 1 | Additive stacking |
 
 ## Dependencies
 
-- **section-01-test-split**: `DslNode.test.js` must be registered in `create_tests.sh`'s `TEST_FILE_NAMES` array and mapped to the `dsl` category in the case statement. The file will be runnable via `./run_tests.sh dsl`.
+- **section-01-test-split**: Registered in `create_tests.sh` (`dsl` category).
 
 ## File to Create
 
@@ -229,9 +241,11 @@ When registering skills on global hooks (like `AT_START_OF_COMBAT_HOOKS`), the r
 - Spatial queries (`ALLIES_WITHIN`, `FOES_WITHIN`, `CLOSEST_FOES`, etc.) -- already covered in `SkillEffect.test.js`
 - `CollectionNode` operations (count, exists, intersect) -- already covered in `SkillEffect.test.js`
 
-### Expected Test Count
+### Implementation Deviations
 
-Approximately 15-20 tests across the describe blocks above, contributing to the overall target of ~50 DSL tests (combined with the existing ~30+ in `SkillEffect.test.js`).
+1. **GRANTS_BONUS/INFLICTS_PENALTY tests use comparison approach**: Hero units (アルフォンス) have default skill spurs, so tests compare baseline vs with-skill damage rather than checking absolute stat values.
+2. **Deferred**: DEALS_DAMAGE.excludingAoe(), REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY, HP threshold conditions, stat comparison conditions, weapon/movement type conditions, AFTER_COMBAT_HOOKS, nested composite nodes.
+3. **Global hook persistence**: Tests use unique skill IDs to avoid cross-test interference without explicit cleanup.
 
 ### Running Tests
 
