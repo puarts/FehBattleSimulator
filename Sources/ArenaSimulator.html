@@ -373,9 +373,9 @@
                                 </div>
                             </td>
                             <td>
-                                <draggable tag="div" @end="enemyUnitSorted">
+                                <draggable v-model="allyUnits" tag="div" @end="enemyUnitSorted">
                                     <button type="button" @click="g_app.selectItem(unit.id)" v-for="unit in allyUnits"
-                                            v-bind:class="unit.id + ' iconButton'" style="position:relative">
+                                            :key="unit.id" v-bind:class="unit.id + ' iconButton'" style="position:relative">
                                         <span style="font-weight: bold; font-size:12px; position:absolute">
                                             <div v-if="unit.summonerLevel!=SummonerLevel.None" style="color:red; ">
                                                 絆{{summonerLevelToString(unit.summonerLevel)}}</div>
@@ -418,9 +418,9 @@
                                 </div>
                             </td>
                             <td>
-                                <draggable tag="div" @end="enemyUnitSorted" style="position:relative">
+                                <draggable v-model="enemyUnits" tag="div" @end="enemyUnitSorted" style="position:relative">
                                     <button type="button" @click="g_app.selectItem(unit.id)" v-for="unit in enemyUnits"
-                                            v-bind:class="unit.id + ' iconButton'" style="position:relative">
+                                            :key="unit.id" v-bind:class="unit.id + ' iconButton'" style="position:relative">
                                         <span style="font-weight: bold; font-size:12px; position:absolute">
                                             <div v-if="unit.summonerLevel!==SummonerLevel.None" style="color:red; ">
                                                 {{summonerLevelToString(unit.summonerLevel)}}</div>

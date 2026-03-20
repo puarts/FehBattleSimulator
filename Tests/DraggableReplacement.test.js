@@ -69,4 +69,25 @@ describe('Vue.Draggable Replacement', () => {
             expect(bsSource).toMatch(/nodeType.*ELEMENT_NODE|ELEMENT_NODE.*nodeType/);
         });
     });
+
+    describe('v-model binding for array synchronization', () => {
+        const htmlFiles = [
+            'ArenaSimulator.html',
+            'AetherRaidSimulator.html',
+            'SummonerDuelsSimulator.html',
+        ];
+
+        for (const file of htmlFiles) {
+            it(`should use v-model on draggable in ${file}`, () => {
+                const filePath = resolve(__dirname, '../Sources', file);
+                const content = readFileSync(filePath, 'utf-8');
+                // All draggable elements should have v-model binding
+                const draggableMatches = content.match(/<draggable/g);
+                const vModelMatches = content.match(/<draggable[^>]*v-model="/g);
+                expect(draggableMatches).not.toBeNull();
+                expect(vModelMatches).not.toBeNull();
+                expect(vModelMatches.length).toBe(draggableMatches.length);
+            });
+        }
+    });
 });
