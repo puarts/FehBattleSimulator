@@ -3733,13 +3733,13 @@ class DamageCalculatorWrapper {
         this._applySkillEffectForUnitFuncDict[Weapon.HadoNoSenfu] = (targetUnit, enemyUnit, calcPotentialDamage) => {
             if (!targetUnit.isWeaponRefined) {
                 // <通常効果>
-                if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
+                if (this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
                     targetUnit.battleContext.followupAttackPriorityIncrement++;
                 }
             } else {
                 // <錬成効果>
                 if (targetUnit.battleContext.restHpPercentage >= 25 ||
-                    this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(atkUnit, defUnit, calcPotentialDamage)) {
+                    this.__isEnemyCountIsGreaterThanOrEqualToAllyCount(targetUnit, enemyUnit, calcPotentialDamage)) {
                     targetUnit.addAllSpur(4);
                     targetUnit.battleContext.followupAttackPriorityIncrement++;
                 }

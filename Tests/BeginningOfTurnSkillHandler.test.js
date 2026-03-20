@@ -20,6 +20,7 @@ test('BeginningOfTurnSkillHandler_Simple', () => test_executeTest(() => {
     handler.map.getTile(2, 2).setUnit(enemyUnit);
     handler.map.getTile(2, 0).setUnit(enemyAllyUnit);
     handler.unitManager.units = [unit, unit, enemyUnit, enemyAllyUnit];
+    globalThis.g_appData = handler.unitManager;
 
     // 全ての英雄のターン開始時スキルを実行して例外が出ない事を確認する
     using_(new ScopedStopwatch(x => log += `${g_testHeroDatabase.length}回のターン開始時スキル評価の時間: ${x} ms\n`), () => {

@@ -11,6 +11,8 @@ describe('Test skill effect', () => {
     });
 
     describe(`Test ${MultiValueMap.name}`, () => {
+        let map;
+
         beforeEach(() => {
             map = new MultiValueMap();
         });
@@ -46,8 +48,10 @@ describe('Test skill effect', () => {
     });
 
     describe(`Test ${SkillEffectHooks.name}`, () => {
+        /** @type {SkillEffectHooks<ConstantNumberNode>} */
+        let skillEffectMap;
+
         beforeEach(() => {
-            /** @type {SkillEffectHooks<ConstantNumberNode>} */
             skillEffectMap = new SkillEffectHooks();
         });
 
@@ -201,6 +205,7 @@ describe('Test skill effect', () => {
 });
 
 describe('Stats node', () => {
+    let heroDatabase;
     /** @type {Unit} */
     let unit;
     /** @type {NodeEnv} */
@@ -211,6 +216,7 @@ describe('Stats node', () => {
     const PHANTOM_SPD_3_VALUE = 10;
 
     beforeEach(() => {
+        heroDatabase = g_testHeroDatabase;
         unit = heroDatabase.createUnit('アルフォンス');
         env = new NodeEnv();
         env.setTarget(unit);
@@ -270,6 +276,7 @@ describe('Stats node', () => {
 });
 
 describe('Bonuses or penalties', () => {
+    let heroDatabase;
     /** @type {Unit} */
     let unit;
     /** @type {Unit} */
@@ -286,6 +293,10 @@ describe('Bonuses or penalties', () => {
         foe = heroDatabase.createUnit('シャロン');
         env = new NodeEnv();
         env.setTarget(unit).setUnitsDuringCombat(unit, foe);
+
+        let calculator = new test_DamageCalculator();
+        calculator.unitManager.units = [unit, foe];
+        globalThis.g_appData = calculator.unitManager;
 
         [unit.atkWithSkills, unit.spdWithSkills, unit.defWithSkills, unit.resWithSkills] = BASE_STATS;
         [foe.atkWithSkills, foe.spdWithSkills, foe.defWithSkills, foe.resWithSkills] = BASE_STATS;
@@ -413,6 +424,7 @@ describe('Bonuses or penalties', () => {
 });
 
 describe('Skills during combat', () => {
+    let heroDatabase;
     /** @type {Unit} */
     let atkUnit;
     /** @type {Unit} */
@@ -426,7 +438,7 @@ describe('Skills during combat', () => {
         calculator = new test_DamageCalculator();
         calculator.unitManager.units = [atkUnit, defUnit];
         calculator.isLogEnabled = true;
-        g_appData = calculator.unitManager;
+        globalThis.g_appData = calculator.unitManager;
         // g_appData.skillLogLevel = LoggerBase.LogLevel.ALL;
     });
 
@@ -486,6 +498,8 @@ describe('Skills during combat', () => {
 });
 
 describe('Effect Node', () => {
+    let heroDatabase;
+    let battleMap;
     /** @type {Unit} */
     let atkUnit;
     /** @type {Unit} */
@@ -502,7 +516,7 @@ describe('Effect Node', () => {
         calculator = new test_DamageCalculator();
         calculator.unitManager.units = [atkUnit, defUnit];
         calculator.isLogEnabled = true;
-        g_appData = calculator.unitManager;
+        globalThis.g_appData = calculator.unitManager;
         // g_appData.skillLogLevel = LoggerBase.LogLevel.ALL;
     });
 
@@ -673,6 +687,12 @@ describe('Effect Node', () => {
 
 
 describe('Test map', () => {
+    let heroDatabase;
+    let battleMap;
+    let allies;
+    let enemies;
+    let calclator;
+
     beforeEach(() => {
         heroDatabase = g_testHeroDatabase;
         battleMap = new BattleMap('');
@@ -993,6 +1013,7 @@ test("Status Effects", () => {
 });
 
 describe('ModSkillEffectFieldNode DSL functions', () => {
+    let heroDatabase;
     /** @type {Unit} */
     let unit;
     /** @type {Unit} */
@@ -1198,6 +1219,7 @@ describe('ModSkillEffectFieldNode DSL functions', () => {
 });
 
 describe('CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP', () => {
+    let heroDatabase;
     let unit;
     let foe;
     let env;

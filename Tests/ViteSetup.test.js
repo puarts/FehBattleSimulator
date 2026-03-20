@@ -2,49 +2,43 @@
  * Section 01: Vite Setup verification tests
  *
  * These tests verify that Vite is properly installed and configured.
- * Run with: node --test Tests/ViteSetup.test.js
- * (Uses Node.js built-in test runner since Vitest is not yet configured)
+ * Compatible with both Node.js built-in test runner and Vitest.
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { fileURLToPath } from 'url';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = join(fileURLToPath(import.meta.url), '../..');
 
 describe('A.1 package.json dependencies', () => {
     const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8'));
 
     it('should have vite in devDependencies', () => {
-        assert.ok(pkg.devDependencies.vite, 'vite should be in devDependencies');
+        expect(pkg.devDependencies.vite).toBeTruthy();
     });
 
     it('should have @vitejs/plugin-vue in devDependencies', () => {
-        assert.ok(pkg.devDependencies['@vitejs/plugin-vue'],
-            '@vitejs/plugin-vue should be in devDependencies');
+        expect(pkg.devDependencies['@vitejs/plugin-vue']).toBeTruthy();
     });
 });
 
 describe('A.2 vite.config.js', () => {
     it('should exist at project root', () => {
-        assert.ok(existsSync(join(ROOT, 'vite.config.js')),
-            'vite.config.js should exist at project root');
+        expect(existsSync(join(ROOT, 'vite.config.js'))).toBe(true);
     });
 
-    it('should set root to Sources', async () => {
+    it('should set root to Sources', () => {
         const content = readFileSync(join(ROOT, 'vite.config.js'), 'utf-8');
-        assert.ok(content.includes("root:") && content.includes("Sources"),
-            'vite.config.js should set root to Sources directory');
+        expect(content.includes("root:") && content.includes("Sources")).toBe(true);
     });
 
-    it('should configure build.outDir to ../dist', async () => {
+    it('should configure build.outDir to ../dist', () => {
         const content = readFileSync(join(ROOT, 'vite.config.js'), 'utf-8');
-        assert.ok(content.includes("outDir") && content.includes("../dist"),
-            'vite.config.js should set outDir to ../dist');
+        expect(content.includes("outDir") && content.includes("../dist")).toBe(true);
     });
 
-    it('should list all 8 HTML entry points in rollupOptions.input', async () => {
+    it('should list all 8 HTML entry points in rollupOptions.input', () => {
         const content = readFileSync(join(ROOT, 'vite.config.js'), 'utf-8');
         const expectedHtmlFiles = [
             'AetherRaidSimulator',
@@ -57,20 +51,17 @@ describe('A.2 vite.config.js', () => {
             'HeroStatusClusterer',
         ];
         for (const name of expectedHtmlFiles) {
-            assert.ok(content.includes(name),
-                `vite.config.js should reference ${name}`);
+            expect(content.includes(name)).toBe(true);
         }
     });
 
-    it('should set build.target to es2015', async () => {
+    it('should set build.target to es2015', () => {
         const content = readFileSync(join(ROOT, 'vite.config.js'), 'utf-8');
-        assert.ok(content.includes('es2015'),
-            'vite.config.js should set build target to es2015');
+        expect(content.includes('es2015')).toBe(true);
     });
 
-    it('should include comment or placeholder for Vue 3 runtime compiler alias', async () => {
+    it('should include comment or placeholder for Vue 3 runtime compiler alias', () => {
         const content = readFileSync(join(ROOT, 'vite.config.js'), 'utf-8');
-        assert.ok(content.includes('vue/dist/vue.esm-bundler') || content.includes('esm-bundler'),
-            'vite.config.js should have a placeholder for Vue 3 runtime compiler alias');
+        expect(content.includes('vue/dist/vue.esm-bundler') || content.includes('esm-bundler')).toBe(true);
     });
 });

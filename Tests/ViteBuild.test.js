@@ -2,18 +2,17 @@
  * Vite Build Output Verification Tests
  *
  * Validates that `vite build` produces correct output.
- * Run with: node --test Tests/ViteBuild.test.js
- * (Uses Node.js built-in test runner since Vitest is not yet configured)
+ * Run with: npx vitest run Tests/ViteBuild.test.js
  *
  * Prerequisites: Run `npx vite build` before running these tests.
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'node:url';
 
-const DIST = join(import.meta.dirname, '..', 'dist');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const DIST = join(__dirname, '..', 'dist');
 
 const SIMULATOR_HTMLS = [
     'AetherRaidSimulator.html',
@@ -28,13 +27,12 @@ const SIMULATOR_HTMLS = [
 
 describe('Vite Build Output', () => {
     it('vite build should have produced dist/ directory', () => {
-        assert.ok(existsSync(DIST), 'dist/ directory should exist');
+        expect(existsSync(DIST)).toBeTruthy();
     });
 
     it('all 8 simulator HTML files exist in dist/', () => {
         for (const html of SIMULATOR_HTMLS) {
-            assert.ok(existsSync(join(DIST, html)),
-                `${html} should exist in dist/`);
+            expect(existsSync(join(DIST, html))).toBeTruthy();
         }
     });
 
@@ -43,8 +41,7 @@ describe('Vite Build Output', () => {
             const filePath = join(DIST, html);
             if (!existsSync(filePath)) continue;
             const content = readFileSync(filePath, 'utf-8');
-            assert.ok(content.includes('type="module"'),
-                `${html} should contain <script type="module">`);
+            expect(content.includes('type="module"')).toBeTruthy();
         }
     });
 
@@ -53,10 +50,8 @@ describe('Vite Build Output', () => {
             const filePath = join(DIST, html);
             if (!existsSync(filePath)) continue;
             const content = readFileSync(filePath, 'utf-8');
-            assert.ok(!content.includes('loadScripts'),
-                `${html} should not contain loadScripts`);
-            assert.ok(!content.includes('createScriptElement'),
-                `${html} should not contain createScriptElement`);
+            expect(content.includes('loadScripts')).toBe(false);
+            expect(content.includes('createScriptElement')).toBe(false);
         }
     });
 
@@ -67,7 +62,7 @@ describe('Vite Build Output', () => {
         const assetsDir = join(DIST, 'assets');
         if (!existsSync(assetsDir)) return;
         const jsFiles = readdirSync(assetsDir).filter(f => f.endsWith('.js'));
-        assert.ok(jsFiles.length > 0, 'Should have JS bundles');
+        expect(jsFiles.length > 0).toBeTruthy();
         // Verify entry point files reference shared chunks (code splitting works)
         let hasChunkImport = false;
         for (const jsFile of jsFiles) {
@@ -77,21 +72,18 @@ describe('Vite Build Output', () => {
                 break;
             }
         }
-        assert.ok(hasChunkImport || jsFiles.length === 1,
-            'Should have code-split chunks with inter-chunk imports');
+        expect(hasChunkImport || jsFiles.length === 1).toBeTruthy();
     });
 
     it('total JS output is substantial (> 1MB combined)', () => {
         const assetsDir = join(DIST, 'assets');
         if (!existsSync(assetsDir)) return;
         const jsFiles = readdirSync(assetsDir).filter(f => f.endsWith('.js'));
-        assert.ok(jsFiles.length > 0, 'Should have at least one JS bundle');
+        expect(jsFiles.length > 0).toBeTruthy();
         let totalSize = 0;
         for (const jsFile of jsFiles) {
             totalSize += statSync(join(assetsDir, jsFile)).size;
         }
-        const totalKB = Math.round(totalSize / 1024);
-        assert.ok(totalSize > 1024 * 1024,
-            `Total JS output should be > 1MB (was ${totalKB}KB)`);
+        expect(totalSize > 1024 * 1024).toBeTruthy();
     });
 });

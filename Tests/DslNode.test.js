@@ -12,7 +12,7 @@ describe('DSL Node Tests', () => {
         calculator = new test_DamageCalculator();
         calculator.unitManager.units = [atkUnit, defUnit];
         calculator.isLogEnabled = false;
-        g_appData = calculator.unitManager;
+        globalThis.g_appData = calculator.unitManager;
     });
 
     describe('Effect nodes via combat', () => {
@@ -173,7 +173,7 @@ describe('DSL Node Tests', () => {
             defUnit = g_testHeroDatabase.createUnit('アルフォンス', UnitGroupType.Enemy);
             calculator = new test_DamageCalculator();
             calculator.unitManager.units = [atkUnit, defUnit];
-            g_appData = calculator.unitManager;
+            globalThis.g_appData = calculator.unitManager;
 
             let skillId = 'test-grants-bonus-atk-spd';
             SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
@@ -193,7 +193,7 @@ describe('DSL Node Tests', () => {
             defUnit = g_testHeroDatabase.createUnit('アルフォンス', UnitGroupType.Enemy);
             calculator = new test_DamageCalculator();
             calculator.unitManager.units = [atkUnit, defUnit];
-            g_appData = calculator.unitManager;
+            globalThis.g_appData = calculator.unitManager;
 
             let skillId = 'test-inflicts-penalty-def-res';
             SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
@@ -221,7 +221,7 @@ describe('DSL Node Tests', () => {
             let baseAtk = g_testHeroDatabase.createUnit('アルフォンス');
             let baseDef = g_testHeroDatabase.createUnit('アルフォンス', UnitGroupType.Enemy);
             baseCalc.unitManager.units = [baseAtk, baseDef];
-            g_appData = baseCalc.unitManager;
+            globalThis.g_appData = baseCalc.unitManager;
             let baseResult = baseCalc.calcDamage(baseAtk, baseDef);
             expect(result.atkUnit_normalAttackDamage).toBe(baseResult.atkUnit_normalAttackDamage + 7);
         });
@@ -238,7 +238,7 @@ describe('DSL Node Tests', () => {
             let baseAtk = g_testHeroDatabase.createUnit('アルフォンス');
             let baseDef = g_testHeroDatabase.createUnit('アルフォンス', UnitGroupType.Enemy);
             baseCalc.unitManager.units = [baseAtk, baseDef];
-            g_appData = baseCalc.unitManager;
+            globalThis.g_appData = baseCalc.unitManager;
             let baseResult = baseCalc.calcDamage(baseAtk, baseDef);
             // Foe's counter damage should be 6 less
             expect(result.defUnit_normalAttackDamage).toBe(baseResult.defUnit_normalAttackDamage - 6);

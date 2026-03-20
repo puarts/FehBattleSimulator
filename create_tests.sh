@@ -67,7 +67,7 @@ TEST_FILE_NAMES=(
     TestHelper
     SmokeTest
     BuildFilter
-    EsmValidation
+    # EsmValidation -- uses ESM imports, Vitest-only
     )
 
 # カテゴリに応じたテストファイル選択

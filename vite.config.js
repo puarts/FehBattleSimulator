@@ -12,12 +12,9 @@ export default defineConfig({
         root: './',
         include: ['Tests/**/*.test.js'],
         exclude: ['**/All.test.js', '**/node_modules/**'],
+        // Single-threaded: tests share global state (g_appData, skill hooks)
         pool: 'threads',
-        poolOptions: {
-            threads: {
-                singleThread: true,
-            },
-        },
+        singleThread: true,
     },
     build: {
         outDir: '../dist',

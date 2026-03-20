@@ -1,4 +1,12 @@
 describe('Test feud skills', () => {
+  let heroDatabase;
+  let atkUnit;
+  let atkAllyUnit;
+  let defUnit;
+  let defAllyUnit;
+  let defAllyUnit2;
+  let calclator;
+
   beforeEach(() => {
     // _  0  1  2
     // 0    da
@@ -25,7 +33,7 @@ describe('Test feud skills', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    g_appData = calclator.unitManager;
+    globalThis.g_appData = calclator.unitManager;
   });
 
   describe('Test disable skills from other enemies', () => {
@@ -253,11 +261,18 @@ describe('Test feud skills', () => {
 
 // 無効系スキル
 describe('Test invalidation skills', () => {
+  let heroDatabase;
+  let atkUnit;
+  let defUnit;
+  let atkAllyUnit;
+  let defAllyUnit;
+  let calclator;
+
   beforeEach(() => {
     // _  0  1  2
     // 0 du
     // 1 au
-    // 2 
+    // 2
     heroDatabase = g_testHeroDatabase;
 
     atkUnit = heroDatabase.createUnit("アルフォンス");
@@ -474,6 +489,7 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     calclator.map.getTile(2, 0).setUnit(defAllyUnit);
     calclator.unitManager.units = [atkUnit, defUnit, atkAllyUnit, defAllyUnit];
     calclator.isLogEnabled = false;
+    globalThis.g_appData = calclator.unitManager;
     // calclator.disableProfile();
 
     atkUnit.weaponRefinement = WeaponRefinementType.Special;
@@ -571,6 +587,7 @@ describe('Test for additional damage calculation', () => {
   let atkUnit;
   /** @type {Unit} */
   let defUnit;
+  let atkAllyUnit;
   beforeEach(() => {
     atkUnit = test_createDefaultUnit();
     atkUnit.atkWithSkills = 0;
@@ -802,6 +819,9 @@ test('DamageCalculator_SpecialDamageReductionTest', () => test_executeTest(() =>
 /// ダメージ軽減テストです。
 /// ダメージ軽減を半分無効にするスキルのテスト
 describe('Test to reduce the percentage of foe\'s non-Special "reduce damage by X%" skills', () => {
+  let atkUnit;
+  let defUnit;
+
   beforeEach(() => {
     atkUnit = test_createDefaultUnit();
     defUnit = test_createDefaultUnit(UnitGroupType.Enemy);
@@ -935,6 +955,12 @@ test('DamageCalculator_RangedSpecial', () => test_executeTest(() => {
 }));
 
 describe('Test great talent', () => {
+  let heroDatabase;
+  let atkUnit;
+  let defUnit;
+  let defAllyUnit;
+  let calclator;
+
   beforeEach(() => {
     heroDatabase = g_testHeroDatabase;
 
@@ -945,15 +971,19 @@ describe('Test great talent', () => {
     atkUnit.placedTile.posX = 0;
     atkUnit.placedTile.posY = 1;
 
-    defAllyUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
+    defUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
     defUnit.defWithSkills = 30;
     defUnit.setGreatTalent(StatusIndex.DEF, 4);
+    defUnit.placedTile.posX = 0;
+    defUnit.placedTile.posY = 0;
+
+    defAllyUnit = heroDatabase.createUnit("アルフォンス", UnitGroupType.Enemy);
     defAllyUnit.placedTile.posX = 1;
     defAllyUnit.placedTile.posY = 0;
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    g_appData = calclator.unitManager;
+    globalThis.g_appData = calclator.unitManager;
   });
 
   test('Test great talent applied', () => {

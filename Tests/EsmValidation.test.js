@@ -1,9 +1,10 @@
-const { execFileSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execFileSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Tests run from concatenated All.test.js at project root, so __dirname IS the root
-const ROOT = __dirname;
+// When run via Vitest, __dirname equivalent is the Tests/ dir, so go up one level
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCES = path.join(ROOT, 'Sources');
 
 describe('ESM Validation', () => {

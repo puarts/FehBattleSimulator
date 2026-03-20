@@ -89,22 +89,22 @@ describe('UnitBuilder', () => {
 
 describe('Global state management', () => {
     test('resetGlobalTestState resets g_appData to clean UnitManager', () => {
-        g_appData = { dummy: true };
+        globalThis.g_appData = { dummy: true };
         resetGlobalTestState();
-        expect(g_appData).toBeInstanceOf(UnitManager);
+        expect(globalThis.g_appData).toBeInstanceOf(UnitManager);
     });
 
     test('separate execute calls do not leak state', () => {
         let atk = UnitBuilder.createDummy(UnitGroupType.Ally).build();
         let def = UnitBuilder.createDummy(UnitGroupType.Enemy).build();
-        let prevAppData = g_appData;
+        let prevAppData = globalThis.g_appData;
         test_calcDamage(atk, def);
         // test_calcDamage sets g_appData to its own UnitManager
-        expect(g_appData).not.toBe(prevAppData);
+        expect(globalThis.g_appData).not.toBe(prevAppData);
         resetGlobalTestState();
         // After reset, g_appData is a fresh UnitManager (not the one from calcDamage)
-        expect(g_appData).not.toBe(prevAppData);
-        expect(g_appData).toBeInstanceOf(UnitManager);
+        expect(globalThis.g_appData).not.toBe(prevAppData);
+        expect(globalThis.g_appData).toBeInstanceOf(UnitManager);
     });
 });
 
@@ -226,14 +226,14 @@ describe('BattleScenarioBuilder', () => {
     test('execute() cleans up global state afterward', () => {
         let atk1 = UnitBuilder.createDummy(UnitGroupType.Ally).build();
         let def1 = UnitBuilder.createDummy(UnitGroupType.Enemy).build();
-        let prevAppData = g_appData;
+        let prevAppData = globalThis.g_appData;
         new BattleScenarioBuilder()
             .withAttacker(atk1)
             .withDefender(def1)
             .execute();
         // g_appData should be reset after execute (not the calculator's unitManager)
-        expect(g_appData).toBeInstanceOf(UnitManager);
-        expect(g_appData).not.toBe(prevAppData);
+        expect(globalThis.g_appData).toBeInstanceOf(UnitManager);
+        expect(globalThis.g_appData).not.toBe(prevAppData);
 
         // Second scenario should work independently
         let atk2 = UnitBuilder.createDummy(UnitGroupType.Ally).build();

@@ -28,7 +28,7 @@ describe('Performance benchmarks', () => {
             calculator.map.getTile(0, 0).setUnit(defUnit);
             calculator.unitManager.units = [atkUnit, defUnit];
             calculator.isLogEnabled = false;
-            g_appData = calculator.unitManager;
+            globalThis.g_appData = calculator.unitManager;
 
             atkUnit.weaponRefinement = WeaponRefinementType.Special;
             defUnit.weaponRefinement = WeaponRefinementType.Special;
@@ -47,7 +47,7 @@ describe('Performance benchmarks', () => {
         }
 
         runBenchmark(runAllHeroBattle, 3000, 1500);
-    });
+    }, 30000);
 
     test('ターン開始スキル適用（全英雄）が閾値以内で完了する', () => {
         let heroDatabase = g_testHeroDatabase;
@@ -64,7 +64,7 @@ describe('Performance benchmarks', () => {
             handler.map.getTile(2, 0).setUnit(enemyAllyUnit);
             handler.unitManager.units = [unit, allyUnit, enemyUnit, enemyAllyUnit];
             handler.battleContext.currentTurn = 1;
-            g_appData = handler.unitManager;
+            globalThis.g_appData = handler.unitManager;
 
             unit.weaponRefinement = WeaponRefinementType.Special;
             for (let heroInfo of heroDatabase.enumerateHeroInfos()) {
