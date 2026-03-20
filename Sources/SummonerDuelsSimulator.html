@@ -1484,13 +1484,28 @@
 
     <script>
         function createScriptElement(src, onloadFunc) {
-            let element = document.createElement("script");
-            element.type = "text/javascript";
-            element.src = src;
-            element.onload = onloadFunc;
-            // document.body.appendChild(element);
-            let headElement = document.getElementsByTagName('head')[0];
-            headElement.appendChild(element);
+            const isExternal = /^https?:\/\//.test(src);
+            if (isExternal) {
+                const element = document.createElement('script');
+                element.type = 'text/javascript';
+                element.src = src;
+                element.onload = onloadFunc;
+                document.getElementsByTagName('head')[0].appendChild(element);
+                return;
+            }
+            fetch(src)
+                .then(res => res.text())
+                .then(code => {
+                    const filtered = code.split('\n')
+                        .filter(line => !(/^import /.test(line) || /^export \{/.test(line)))
+                        .join('\n');
+                    const blob = new Blob([filtered], { type: 'text/javascript' });
+                    const element = document.createElement('script');
+                    element.type = 'text/javascript';
+                    element.src = URL.createObjectURL(blob);
+                    element.onload = onloadFunc;
+                    document.getElementsByTagName('head')[0].appendChild(element);
+                });
         }
 
         function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
