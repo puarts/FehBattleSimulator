@@ -1,14 +1,8 @@
 /// @file
 /// @brief Vueのcomponentの定義です。
 
-// Temporary Vuex shim (to be replaced by Pinia in Section 07)
-function mapStateShim(keys) {
-    const result = {};
-    for (const key of keys) {
-        result[key] = function() { return this.$store.state[key]; };
-    }
-    return result;
-}
+import { mapState, mapActions } from 'pinia';
+import { useMainStore } from './store.js';
 
 function initVueComponents(app) {
     app.component('battle-map', {
@@ -21,7 +15,7 @@ function initVueComponents(app) {
     app.component('unit-detail', {
         props: ['value'],
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData', 'imageRootPath'])
+            ...mapState(useMainStore, ['battleSimulator', 'appData', 'imageRootPath'])
         },
         template: `
           <table border='0' style='border-width: 0px;border-style:none;'>
@@ -630,7 +624,7 @@ function initVueComponents(app) {
     app.component('tile-detail', {
         props: ['value'],
         computed: {
-            ...mapStateShim(['battleSimulator'])
+            ...mapState(useMainStore, ['battleSimulator'])
         },
         template: `
           <div>
@@ -668,7 +662,7 @@ function initVueComponents(app) {
     app.component('structure-detail', {
         props: ['value'],
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData'])
+            ...mapState(useMainStore, ['battleSimulator', 'appData'])
         },
         template: `
           <div style="height:500px;vertical-align:middle;display: table-cell;padding:10px">
@@ -1059,7 +1053,7 @@ function initVueComponents(app) {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData', 'imageRootPath']),
+            ...mapState(useMainStore, ['battleSimulator', 'appData', 'imageRootPath']),
         },
         template: `
           <div class="skill-grid">
@@ -1380,7 +1374,7 @@ function initVueComponents(app) {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData']),
+            ...mapState(useMainStore, ['battleSimulator', 'appData']),
         },
         template: `
           <div>
@@ -1416,7 +1410,7 @@ function initVueComponents(app) {
             testMethod: {type: Function, required: false},
         },
         computed: {
-            ...mapStateShim(['battleSimulator'])
+            ...mapState(useMainStore, ['battleSimulator'])
         },
         methods: {
             getAttacker: function () {
@@ -1516,9 +1510,11 @@ function initVueComponents(app) {
 
     app.component('ControlButtons', {
         name: 'ControlButtons',
-        methods: {},
+        methods: {
+            ...mapActions(useMainStore, ['loadLazyImages']),
+        },
         mounted() {
-            this.$store.dispatch('loadLazyImages');
+            this.loadLazyImages();
         },
         template: `
             <div class="control-panel">
@@ -1533,18 +1529,16 @@ function initVueComponents(app) {
     app.component('UpperButtons', {
         name: 'UpperButtons',
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData'])
+            ...mapState(useMainStore, ['battleSimulator', 'appData'])
         },
         methods: {
-            updateMap() {
-                this.$store.dispatch('updateMap');
-            },
+            ...mapActions(useMainStore, ['updateMap', 'saveSettings', 'loadLazyImages']),
             endTurn() {
                 this.battleSimulator.vm.endTurn();
             },
             onSaveSettings() {
                 this.battleSimulator.clearSimpleLog();
-                this.$store.dispatch('saveSettings');
+                this.saveSettings();
                 let toCookie = LocalStorageUtil.getBoolean('uses-cookie-for-storing-settings', false);
                 if (toCookie) {
                     this.battleSimulator.vm.showFlash('設定を保存しました', 'warning', true);
@@ -1564,7 +1558,7 @@ function initVueComponents(app) {
             },
         },
         mounted() {
-            this.$store.dispatch('loadLazyImages');
+            this.loadLazyImages();
         },
         template: `
             <div class="control-row">
@@ -1620,26 +1614,28 @@ function initVueComponents(app) {
     app.component('LowerButtons', {
         name: 'LowerButtons',
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData'])
+            ...mapState(useMainStore, ['battleSimulator', 'appData'])
         },
-        methods: {},
+        methods: {
+            ...mapActions(useMainStore, ['loadLazyImages', 'showSettingDialog', 'showImportDialog', 'showExportDialog']),
+        },
         mounted() {
-            this.$store.dispatch('loadLazyImages');
+            this.loadLazyImages();
         },
         template: `
             <div class="control-row">
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/Settings.png"
-                    @click="$store.dispatch('showSettingDialog');">
+                    @click="showSettingDialog();">
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/ImportSettings.png"
-                    @click="$store.dispatch('showImportDialog');">
+                    @click="showImportDialog();">
                 <input type="button" style="background-image: url(/images/dummy.png) "
                     class="lazy fehButton imageButton"
                     data-src="/AetherRaidTacticsBoard/images/ExportSettings.png"
-                    @click="$store.dispatch('showExportDialog');">
+                    @click="showExportDialog();">
                 <input type="checkbox" id="enableSound" class="fehButton"
                     v-model="appData.audioManager.isBgmEnabled" @change="battleSimulator.vm.bgmEnabledChanged">
                 <label for="enableSound" class="fehButton"
@@ -1657,7 +1653,7 @@ function initVueComponents(app) {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...mapStateShim(['battleSimulator'])
+            ...mapState(useMainStore, ['battleSimulator'])
         },
         methods: {
             getSkillButtonStyle(unit) {
@@ -1707,7 +1703,7 @@ function initVueComponents(app) {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData']),
+            ...mapState(useMainStore, ['battleSimulator', 'appData']),
         },
         template: `
           <fieldset v-if="appData.gameMode === GameMode.Arena"  style="font-size:12px;">
@@ -1729,7 +1725,7 @@ function initVueComponents(app) {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData'])
+            ...mapState(useMainStore, ['battleSimulator', 'appData'])
         },
         template: `
           <span v-bind:style="battleSimulator.vm.debugMenuStyle">
@@ -1850,14 +1846,15 @@ function initVueComponents(app) {
 
     app.component('SimulationControls', {
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData'])
+            ...mapState(useMainStore, ['battleSimulator', 'appData'])
         },
         methods: {
+            ...mapActions(useMainStore, ['resetPlacement']),
             onHealHp() {
                 this.battleSimulator.vm.healHpFullForAllUnits();
             },
             onResetPlacement() {
-                this.$store.dispatch('resetPlacement');
+                this.resetPlacement();
             },
             openTeamFormationDialog() {
                 $('#teamFormationDialog').dialog('open');
@@ -1945,7 +1942,7 @@ function initVueComponents(app) {
             openAutoClearDialog: {type: Function, required: true},
         },
         computed: {
-            ...mapStateShim(['battleSimulator']),
+            ...mapState(useMainStore, ['battleSimulator']),
         },
         template: `
             <div>
@@ -2000,7 +1997,7 @@ function initVueComponents(app) {
             copyDebugLogToClipboard: {type: Function, required: true},
         },
         computed: {
-            ...mapStateShim(['battleSimulator'])
+            ...mapState(useMainStore, ['battleSimulator'])
         },
         methods: {
             onSimulatorLogLevelChange(e) {
@@ -2266,7 +2263,7 @@ function initVueComponents(app) {
             };
         },
         computed: {
-            ...mapStateShim(['battleSimulator'])
+            ...mapState(useMainStore, ['battleSimulator'])
         },
         methods: {
             setUnitName(name) {
@@ -2535,7 +2532,7 @@ function initVueComponents(app) {
             onInfo: {type: Function, required: false},
         },
         computed: {
-            ...mapStateShim(['battleSimulator', 'appData'])
+            ...mapState(useMainStore, ['battleSimulator', 'appData'])
         },
         methods: {
             defaultInfoHandler() {

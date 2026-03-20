@@ -4,6 +4,7 @@ import { isPhysicalWeaponType } from './Skill.js';
 import { ScopedStopwatch, using_, startProgressiveProcess, distinct } from './Utilities.js';
 import { heroInfos as sampleHeroInfos } from './SampleHeroInfos.js';
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import { initVueComponents } from './VueComponents.js';
 
 // Side-effect imports for skill registration
@@ -671,11 +672,7 @@ function initializeStatusClusterer(heroInfos) {
             },
         }
     });
-    // Stub $store for components registered via initVueComponents
-    app.config.globalProperties.$store = {
-        state: {},
-        dispatch() {},
-    };
+    app.use(createPinia());
     initVueComponents(app);
     g_heroStatusClustererViewModel = app.mount('#heroStatusClusterer');
 }

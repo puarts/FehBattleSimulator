@@ -2,6 +2,8 @@
 /// @brief シミュレーターのメインコードです。
 
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import { useMainStore } from './store.js';
 import { UnitRarity, StatusType, statusTypeToShortString } from './HeroInfoConstants.js';
 import { GameMode } from './DamageCalculator.js';
 import { UnitGroupType } from './UnitConstants.js';
@@ -1035,35 +1037,18 @@ class BattleSimulatorBase {
             }
         }
 
+        const pinia = createPinia();
         const app = createApp({
             data() { return appData; },
             methods: this.methods,
         });
+        app.use(pinia);
 
-        // Temporary Vuex-like store via globalProperties (to be replaced by Pinia in Section 07)
-        const storeState = {
-            appData: appData,
-            battleSimulator: this,
-            imageRootPath: g_imageRootPath,
-        };
-        const storeActions = {
-            updateMap() { return updateMap(); },
-            saveSettings() { return saveSettings(); },
-            showSettingDialog() { return showSettingDialog(); },
-            showImportDialog() { return showImportDialog(); },
-            showExportDialog() { return showExportDialog(); },
-            loadLazyImages() { return loadLazyImages(); },
-            resetPlacement() { return resetPlacement(); },
-        };
-        app.config.globalProperties.$store = {
-            state: storeState,
-            dispatch(action) {
-                if (storeActions[action]) {
-                    return storeActions[action]();
-                }
-                console.warn(`Unknown store action: ${action}`);
-            },
-        };
+        // Initialize Pinia store state
+        const mainStore = useMainStore();
+        mainStore.appData = appData;
+        mainStore.battleSimulator = this;
+        mainStore.imageRootPath = g_imageRootPath;
 
         // Error handler
         app.config.errorHandler = (err, vm, info) => {
