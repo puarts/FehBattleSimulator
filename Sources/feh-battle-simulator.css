@@ -1483,39 +1483,102 @@ td.enemy {
     color: red;
 }
 
-/* 選択中の表示文字色を赤に */
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-    /*color: #e74c3c; !important;!* 好きな色に *!*/
+/* カスタム select2 コンポーネント */
+.custom-select2 {
+    position: relative;
+    display: inline-block;
+    min-width: 100px;
+    font-size: 12px;
 }
 
-/* ドロップダウンリスト内の項目文字色を青に */
-.select2-container--default .select2-results__option {
-    /*color: #3498db; !* 好きな色に *!*/
-}
-
-/* ホバー時に色を変えたい場合 */
-.select2-container--default .select2-results__option--highlighted[aria-selected] {
-    /*background-color: #ecf0f1;*/
-    /*color: #2c3e50;*/
-}
-
-.select2-container--default.invalid-value .select2-selection--single .select2-selection__rendered {
-    color: red;
+.custom-select2-selection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    padding: 2px 8px;
+    min-height: 28px;
+    background: #fff;
+    cursor: pointer;
     line-height: 28px;
+    box-sizing: border-box;
 }
 
-.select2-results__options {
+.custom-select2-selected-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+.custom-select2-arrow {
+    margin-left: 4px;
+    font-size: 10px;
+    color: #888;
+}
+
+.custom-select2-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #aaa;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    min-width: 200px;
+}
+
+.custom-select2-search {
+    width: 100%;
+    padding: 4px 8px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    outline: none;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.custom-select2-results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.custom-select2-option {
+    padding: 4px 8px;
+    cursor: pointer;
     font-size: 12px;
 }
 
-.select2-selection__rendered {
+.custom-select2-option--highlighted {
+    background-color: #5897fb;
+    color: #fff;
+}
+
+.custom-select2-option--selected {
+    font-weight: bold;
+}
+
+.custom-select2-option--disabled {
+    color: #999;
+    cursor: default;
+}
+
+.custom-select2-no-results {
+    padding: 4px 8px;
+    color: #999;
     font-size: 12px;
 }
 
-/*.select2-container--default .select2-selection--single .select2-selection__rendered {*/
-/*    color: #444;*/
-/*    line-height: 28px;*/
-/*}*/
+.custom-select2.invalid-value .custom-select2-selection {
+    color: red;
+}
 
 /*.debugInfo {*/
 /*    display: block;*/

@@ -717,9 +717,41 @@ function initVueComponents(app) {
         `,
     });
 
-    // select2 を使うためのVueコンポーネント
+    // jQuery Select2 を置き換えるカスタム検索ドロップダウンコンポーネント
     app.component('select2', {
-        template: '<select></select>',
+        template: `
+            <div class="custom-select2" :class="{ 'invalid-value': showInvalid }" ref="root">
+                <div class="custom-select2-selection" @click="toggleDropdown" ref="selection">
+                    <span class="custom-select2-selected-text">{{ displayText }}</span>
+                    <span class="custom-select2-arrow">&#9662;</span>
+                </div>
+                <div v-if="isOpen" class="custom-select2-dropdown" ref="dropdown">
+                    <input type="text" class="custom-select2-search" ref="searchInput"
+                           v-model="searchQuery" @input="onSearchInput"
+                           @keydown.down.prevent="moveHighlight(1)"
+                           @keydown.up.prevent="moveHighlight(-1)"
+                           @keydown.enter.prevent="selectHighlighted"
+                           @keydown.esc.prevent="closeDropdown"
+                           placeholder="" />
+                    <ul class="custom-select2-results" ref="resultsList">
+                        <li v-for="(opt, idx) in filteredOptions" :key="opt.id"
+                            class="custom-select2-option"
+                            :class="{
+                                'custom-select2-option--highlighted': idx === highlightIndex,
+                                'custom-select2-option--selected': String(opt.id) === String(selectedValue),
+                                'custom-select2-option--disabled': opt.disabled
+                            }"
+                            @mousedown.prevent="selectOption(opt)"
+                            @mouseenter="highlightIndex = idx">
+                            {{ opt.text }}
+                        </li>
+                        <li v-if="filteredOptions.length === 0" class="custom-select2-no-results">
+                            該当なし
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        `,
 
         props: {
             options: {
@@ -730,110 +762,144 @@ function initVueComponents(app) {
                 type: [Number, String],
                 required: false,
             },
+            // :value prop alias for templates using :value + @update:model-value
+            value: {
+                type: [Number, String],
+                required: false,
+            },
             fallbackValue: {type: [Number, String], default: -1, required: false},
             isDebugMode: {type: Boolean, default: false, required: false},
         },
-        emits: ['update:modelValue'],
+        emits: ['update:modelValue', 'input'],
 
-        mounted() {
-            this.initSelect2(this.options, this.modelValue);
+        data() {
+            return {
+                isOpen: false,
+                searchQuery: '',
+                highlightIndex: 0,
+                selectedValue: this.modelValue != null ? this.modelValue : this.value,
+            };
+        },
+
+        computed: {
+            effectiveOptions() {
+                if (this.isDebugMode) {
+                    const hasCurrent = this.options.some(opt => String(opt.id) === String(this.selectedValue));
+                    if (!hasCurrent && this.selectedValue != null) {
+                        return [
+                            ...this.options,
+                            { id: this.selectedValue, text: `（不正な値: ${this.selectedValue}）`, disabled: true }
+                        ];
+                    }
+                }
+                return this.options;
+            },
+            filteredOptions() {
+                const query = this.searchQuery.trim();
+                if (!query) return this.effectiveOptions;
+                // 全角スペースを半角スペースに変換して分割
+                const keywords = query.replace(/\u3000/g, ' ').toLowerCase().split(/\s+/).filter(w => w);
+                return this.effectiveOptions.filter(opt => {
+                    if (typeof opt.text === 'undefined') return false;
+                    const text = opt.text.toLowerCase();
+                    return keywords.every(word => text.includes(word));
+                });
+            },
+            displayText() {
+                const found = this.effectiveOptions.find(opt => String(opt.id) === String(this.selectedValue));
+                return found ? found.text : '';
+            },
+            showInvalid() {
+                if (!this.isDebugMode) return false;
+                return !this.options.some(opt => String(opt.id) === String(this.selectedValue));
+            },
         },
 
         methods: {
-            resetData(options, value) {
-                $(this.$el)
-                    .empty()
-                    .select2({
-                        data: options,
-                        matcher: this.matchMultiWords
-                    })
-                    .val(value)
-                    .trigger('change')
-            },
-            initSelect2(options, value) {
-                this.resetData(options, value);
-                $(this.$el)
-                    .on('change', event => {
-                        const raw = event.target.value;
-                        const parsed = parseInt(raw, 10);
-                        const newVar = isNaN(parsed) ? raw : parsed;
-                        if (newVar === 0 || newVar) {
-                            this.$emit('update:modelValue', newVar);
-                        }
-                    });
-            },
-            applyInvalidValueClass(hasCurrent) {
-                // 不正値表示用にスタイルを付与（任意）
-                const container = $(this.$el).next('.select2-container');
-                if (!hasCurrent) {
-                    container.addClass('invalid-value');
+            toggleDropdown() {
+                if (this.isOpen) {
+                    this.closeDropdown();
                 } else {
-                    container.removeClass('invalid-value');
+                    this.openDropdown();
                 }
             },
-            matchMultiWords(params, data) {
-                if ($.trim(params.term) === '') return data;
-                if (typeof data.text === 'undefined') return null;
-
-                // 全角スペースを半角スペースに変換して分割
-                const keywords = params.term.replace(/\u3000/g, ' ').toLowerCase().split(/\s+/);
-                const text = data.text.toLowerCase();
-
-                const isMatch = keywords.every(word => text.includes(word));
-                return isMatch ? $.extend({}, data, true) : null;
+            openDropdown() {
+                this.isOpen = true;
+                this.searchQuery = '';
+                this.highlightIndex = 0;
+                this.$nextTick(() => {
+                    if (this.$refs.searchInput) {
+                        this.$refs.searchInput.focus();
+                    }
+                });
+            },
+            closeDropdown() {
+                this.isOpen = false;
+                this.searchQuery = '';
+            },
+            onSearchInput() {
+                this.highlightIndex = 0;
+            },
+            selectOption(opt) {
+                if (opt.disabled) return;
+                const raw = String(opt.id);
+                const parsed = parseInt(raw, 10);
+                const value = isNaN(parsed) ? raw : parsed;
+                this.selectedValue = value;
+                this.$emit('update:modelValue', value);
+                this.$emit('input', value);
+                this.closeDropdown();
+            },
+            selectHighlighted() {
+                if (this.filteredOptions.length > 0 && this.highlightIndex < this.filteredOptions.length) {
+                    this.selectOption(this.filteredOptions[this.highlightIndex]);
+                }
+            },
+            moveHighlight(delta) {
+                const len = this.filteredOptions.length;
+                if (len === 0) return;
+                this.highlightIndex = Math.max(0, Math.min(len - 1, this.highlightIndex + delta));
+                this.$nextTick(() => {
+                    const list = this.$refs.resultsList;
+                    if (!list) return;
+                    const item = list.children[this.highlightIndex];
+                    if (item) item.scrollIntoView({ block: 'nearest' });
+                });
+            },
+            onDocumentClick(e) {
+                if (this.$refs.root && !this.$refs.root.contains(e.target)) {
+                    this.closeDropdown();
+                }
             },
         },
 
         watch: {
-            modelValue(newVal, oldVal) {
-                // 1. 現在の UI 側 select2 の値を取得
-                const uiVal = $(this.$el).val();
-
-                // 2. UI とプロップが異なる場合のみ反映して change を起こす
-                if (String(uiVal) !== String(newVal)) {
-                    $(this.$el)
-                        .val(newVal)
-                        .trigger('change');
-                }
-                if (this.isDebugMode) {
-                    const hasCurrent = this.options.some(opt => String(opt.id) === String(this.modelValue));
-                    this.applyInvalidValueClass(hasCurrent);
-                }
+            modelValue(newVal) {
+                this.selectedValue = newVal;
             },
-
-            options(newOptions, oldOptions) {
-                // まず、現在の this.modelValue が newOptions に含まれているかチェック
-                const hasCurrent = newOptions.some(opt => String(opt.id) === String(this.modelValue));
-                // デバッグモードならオプションにない値が含まれても元の値を保持する
-                // その際に警告を表示する
-                // そうでない場合は元の値に-1をセットする
-                if (this.isDebugMode) {
-                    let effectiveOptions = newOptions.slice();
-
-                    if (!hasCurrent) {
-                        // 「不正な値」用のダミーオプションを作成
-                        effectiveOptions.push({
-                            id: this.modelValue,
-                            text: `（不正な値: ${this.modelValue}）`,
-                            disabled: true
-                        });
+            value(newVal) {
+                this.selectedValue = newVal;
+            },
+            options(newOptions) {
+                const hasCurrent = newOptions.some(opt => String(opt.id) === String(this.selectedValue));
+                if (!hasCurrent) {
+                    if (!this.isDebugMode) {
+                        // オプションにない要素は fallbackValue を使用
+                        const parsed = parseInt(String(this.fallbackValue), 10);
+                        const fallback = isNaN(parsed) ? this.fallbackValue : parsed;
+                        this.selectedValue = fallback;
+                        this.$emit('update:modelValue', fallback);
                     }
-                    this.resetData(effectiveOptions, this.modelValue);
-
-                    // 不正値表示用にスタイルを付与（任意）
-                    this.applyInvalidValueClass(hasCurrent);
-                } else {
-                    // オプションにない要素は -1（fallbackValue 使用）
-                    const selectedValue = hasCurrent ? this.modelValue : this.fallbackValue;
-                    this.resetData(newOptions, selectedValue);
                 }
             },
         },
 
+        mounted() {
+            document.addEventListener('click', this.onDocumentClick);
+        },
         beforeUnmount() {
-            // select2 インスタンスのクリーンアップ
-            $(this.$el).off().select2('destroy');
-        }
+            document.removeEventListener('click', this.onDocumentClick);
+        },
     });
 
     app.component('FlashMessage', {
