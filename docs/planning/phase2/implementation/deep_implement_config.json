@@ -1,0 +1,77 @@
+{
+  "plugin_root": "/Users/studio/.claude/plugins/cache/piercelamb-plugins/deep-implement/0.2.1",
+  "sections_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/phase2/sections",
+  "target_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "state_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/phase2/implementation",
+  "git_root": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "commit_style": "conventional",
+  "test_command": "uv run pytest",
+  "sections": [
+    "section-01-build-filter",
+    "section-02-stage-a-infra",
+    "section-03-stage-b-constants",
+    "section-04-stage-c-data",
+    "section-05-stage-d-info",
+    "section-06-stage-e-skill-dsl",
+    "section-07-stage-f-core",
+    "section-08-stage-g-skill-impl",
+    "section-09-stage-h-combat",
+    "section-10-stage-ij-app-ui",
+    "section-11-esm-validation"
+  ],
+  "sections_state": {
+    "section-01-build-filter": {
+      "status": "complete",
+      "commit_hash": "0b4b57c3"
+    },
+    "section-02-stage-a-infra": {
+      "status": "complete",
+      "commit_hash": "e6b958dc"
+    },
+    "section-03-stage-b-constants": {
+      "status": "complete",
+      "commit_hash": "24c11465"
+    },
+    "section-04-stage-c-data": {
+      "status": "complete",
+      "commit_hash": "2bbb0c6f"
+    },
+    "section-05-stage-d-info": {
+      "status": "complete",
+      "commit_hash": "748df445"
+    },
+    "section-06-stage-e-skill-dsl": {
+      "status": "complete",
+      "commit_hash": "ecb294b9"
+    },
+    "section-07-stage-f-core": {
+      "status": "complete",
+      "commit_hash": "f58c9d1f"
+    },
+    "section-08-stage-g-skill-impl": {
+      "status": "complete",
+      "commit_hash": "00cbf100"
+    },
+    "section-09-stage-h-combat": {
+      "status": "complete",
+      "commit_hash": "4d9f54e1"
+    },
+    "section-10-stage-ij-app-ui": {
+      "status": "complete",
+      "commit_hash": "278567c6"
+    },
+    "section-11-esm-validation": {
+      "status": "complete",
+      "commit_hash": "b4bbefc3"
+    }
+  },
+  "pre_commit": {
+    "present": false,
+    "type": "none",
+    "config_file": null,
+    "native_hook": null,
+    "may_modify_files": false,
+    "detected_formatters": []
+  },
+  "created_at": "2026-03-20T05:59:38.939369+00:00"
+}
