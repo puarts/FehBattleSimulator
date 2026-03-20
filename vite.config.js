@@ -4,6 +4,21 @@ import { defineConfig } from 'vite';
 export default defineConfig({
     root: 'Sources',
     // plugins: [vue()], // Enable in Section 06
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        setupFiles: ['./vitest.setup.js'],
+        // Override top-level root ('Sources') so Vitest resolves Tests/ from project root
+        root: './',
+        include: ['Tests/**/*.test.js'],
+        exclude: ['**/All.test.js', '**/node_modules/**'],
+        pool: 'threads',
+        poolOptions: {
+            threads: {
+                singleThread: true,
+            },
+        },
+    },
     build: {
         outDir: '../dist',
         emptyOutDir: true,
