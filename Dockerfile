@@ -1,11 +1,9 @@
 FROM node:22
 
-COPY ./package.json /
+WORKDIR /app
+COPY ./package.json ./package-lock.json /app/
 RUN npm install
 
-COPY ./create_tests.sh /
-COPY ./run_tests.sh /
-COPY ./jest.config.js /
-COPY ./jest.setup.js /
+COPY . /app/
 
-CMD ["bash", "run_tests.sh"]
+CMD ["npm", "test"]

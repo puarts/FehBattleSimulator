@@ -24,7 +24,7 @@ jobs:
           node-version-file: 'package.json'
       - name: npm install
         run: npm install
-      - name: Create Test
-        run: ./create_tests.sh
       - name: Run Test and Lint
-        run: ./run_tests.sh
+        run: npm test
+      - name: Build
+        run: npm run build

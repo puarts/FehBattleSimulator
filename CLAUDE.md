@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A Fire Emblem Heroes (FEH) battle simulator supporting Aether Raids, Arena, Tempest Trials, and Summoner Duels. Built with vanilla JavaScript, Vue.js, and jQuery. No build tools — HTML files are opened directly in the browser.
+A Fire Emblem Heroes (FEH) battle simulator supporting Aether Raids, Arena, Tempest Trials, and Summoner Duels. Built with JavaScript (ESM), Vue 3, and Pinia. Uses Vite for build/dev and Vitest for testing.
 
 Repository: `puarts/FehBattleSimulator`
 
@@ -11,13 +11,20 @@ Repository: `puarts/FehBattleSimulator`
 - `Sources/` — All application source code (JS, HTML, CSS)
 - `Tests/` — Test files (`*.test.js`)
 - `Documents/` — Doxygen-generated API docs (do not regenerate)
-- `.github/workflows/` — CI (Jekyll build + Jest + ESLint)
+- `.github/workflows/` — CI (Jekyll build + Vitest + ESLint + Vite build)
 
 ## Running & Testing
 
 ### Local Development
 
-Open HTML files directly in a browser (no dev server needed):
+```bash
+# Start Vite dev server (recommended)
+npm run dev
+
+# Or open HTML files directly in Sources/ for quick checks
+```
+
+Simulators:
 - `Sources/ArenaSimulator.html` — Main simulator
 - `Sources/SummonerDuelsSimulator.html` — Summoner Duels
 - `Sources/UnitBuilder.html` — Unit builder
@@ -27,18 +34,16 @@ Open HTML files directly in a browser (no dev server needed):
 
 ```bash
 # Full test + lint (matches CI)
-./run_tests.sh
+npm test
 
 # Tests only (no ESLint)
-./run_tests.sh --testNamePattern "pattern"
+npm run test:only
 
-# Docker (matches GitHub Actions environment)
-docker compose up --build
+# Watch mode
+npm run test:watch
 ```
 
-**How tests work**: `create_tests.sh` concatenates all source files and test files into a single `All.test.js`, then Jest runs it in jsdom. The test entry point pattern is `**/All.test.js`.
-
-**Important**: When adding new source files, they must be added to `create_tests.sh`'s `SOURCE_FILE_NAMES` array. New test files go in `TEST_FILE_NAMES`.
+**How tests work**: Each test file in `Tests/` uses ESM imports directly. Vitest runs them with jsdom environment. No file concatenation needed — just create a new `.test.js` file in `Tests/`.
 
 ### Lint
 
@@ -128,4 +133,4 @@ Skills use an internal DSL with UPPER_SNAKE_CASE node constructors. Follow this 
 3. **Skill pattern adherence** — Always follow the established node-based DSL patterns in the latest SkillImpl file
 4. **Prefer latest file** — When reading skill implementation examples, prefer newer date files over older ones as patterns evolve
 5. **Do not regenerate docs** — `Documents/Api/` is manually regenerated; do not modify
-6. **Test file registration** — New source files must be added to `create_tests.sh`
+6. **Test files** — Add new test files to `Tests/` with `.test.js` extension. Use ESM imports.
