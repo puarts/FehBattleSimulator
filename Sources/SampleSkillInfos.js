@@ -1,3 +1,7 @@
+import { SkillInfo } from './Skill.js';
+import { SkillType, WeaponType, AssistType, EffectiveType } from './SkillConstants.js';
+import { MoveType } from './HeroInfoConstants.js';
+
 const weaponInfos = [
   new SkillInfo(1, '鉄の剣', 6, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 6, false, false, AssistType.None, true, 0, WeaponType.Sword, 50, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
   new SkillInfo(2, '鋼の剣', 8, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 8, false, false, AssistType.None, true, 0, WeaponType.Sword, 100, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Weapon),
@@ -3608,3 +3612,5 @@ const captainInfos = [
   new SkillInfo(2963, '寒気凛烈', 0, 0, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false, 0, false, false, AssistType.None, false, 0, WeaponType.None, 0, true, [WeaponType.All], [MoveType.Infantry,MoveType.Armor,MoveType.Flying,MoveType.Cavalry], false, false, '', SkillType.Captain)
 ];
 
+
+export { weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos, captainInfos };

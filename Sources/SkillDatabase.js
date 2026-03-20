@@ -1,3 +1,4 @@
+import { SkillType } from './SkillConstants.js';
 
 class SkillDatabase {
     constructor() {
@@ -101,3 +102,5 @@ class SkillDatabase {
         }
     }
 }
+
+export { SkillDatabase };

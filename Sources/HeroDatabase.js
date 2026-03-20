@@ -108,3 +108,5 @@ class HeroDatabase {
         return this._idToIndexDict.get(heroId);
     }
 }
+
+export { HeroDatabase };

@@ -1,3 +1,8 @@
+import { SkillType, NoneOption } from './SkillConstants.js';
+import { stringToWeaponType, weaponTypeToString, isWeaponTypeDagger, isWeaponTypeBow, isWeaponTypeBreath, isWeaponTypeBeast, isInheritableWeaponType, isRefreshSupportSkill } from './Skill.js';
+import { StatusType, MoveType, UnitRarity, IvType, BookVersions, isLegendarySeason, getGrowthRateOfStar5, calcGrowthValue, __getStatusRankValue } from './HeroInfoConstants.js';
+import { g_siteRootPath, g_heroIconRootPath } from './GlobalDefinitions.js';
+
 /**
  * @file
  * @brief HeroInfo クラスやそれに関連する関数や変数定義です。
@@ -661,3 +666,5 @@ class HeroInfo {
         }
     }
 }
+
+export { HeroInfo };

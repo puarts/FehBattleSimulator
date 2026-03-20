@@ -1,3 +1,6 @@
+import { HeroInfo } from './HeroInfo.js';
+import { MoveType, SeasonType, BlessingType } from './HeroInfoConstants.js';
+
 const heroInfos = [
   new HeroInfo('ウェンディ', 'Gwendolyn.png', MoveType.Armor, '槍', 1, 49, 30, 24, 38, 28, 23, 8, 5, 12, 6, '0/0', '0/0', '0/0', '0/0', '0/0', 74, -1, 477, -1, 590, 698, -1, SeasonType.None, BlessingType.None, '可憐な重騎士', ['ウェンディ',], 0, [1307, 74,], [], 1, false, '封印の剣', 'ガチャ', '2017-02-02', [477,], [], [590,], [698,], [], ''),
   new HeroInfo('シーマ', 'Sheena.png', MoveType.Armor, '斧', 1, 45, 30, 25, 36, 33, 21, 8, 6, 12, 7, '0/0', '0/0', '0/0', '0/0', '0/0', 125, -1, 477, 565, -1, 699, -1, SeasonType.None, BlessingType.None, 'グラの王女', ['シーマ',], 0, [1385, 125,], [], 2, true, '紋章の謎', 'ガチャ', '2017-02-02', [477,], [565,], [], [699,], [], ''),
@@ -1391,3 +1394,5 @@ const heroInfos = [
   new HeroInfo('救世フィヨルム', 'KyuseiFjorm-Icon.png', MoveType.Infantry, '槍', 1, 39, 45, 48, 34, 38, 17, 12, 9, 12, 8, '0/0', '0/0', '0/0', '0/0', '0/0', 3575, -1, 3576, 3405, 3367, 3577, -1, SeasonType.Water, BlessingType.None, '氷宿す王女', ['フィヨルム',], 220, [3575,], [], 1397, false, 'ヒーローズ', '救世英雄', '2026-02-16', [3576,], [3405,], [3367,], [3577,], [], '|救世水|死闘220|'),
   new HeroInfo('神階チキ', 'MythicTiki-Icon.png', MoveType.Armor, '無竜', 1, 52, 48, 16, 47, 49, 26, 11, 3, 12, 10, '0/0', '0/0', '0/0', '0/0', '0/0', 3578, -1, 3579, 3257, 3580, 3119, -1, SeasonType.Light, BlessingType.Hp5_Def5, '悠久を生きる巫女', ['チキ',], 0, [3578,], [], 1398, false, '覚醒', '神階英雄ガチャ', '2026-02-27', [3579,], [3257,], [3580,], [3119,], [], '|神階光|枠追加|Hp5_Def5|')
 ];
+
+export { heroInfos };
