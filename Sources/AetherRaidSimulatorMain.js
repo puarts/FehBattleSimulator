@@ -5,8 +5,6 @@ import { BattleSimulatorBase, createMap, loadSettings } from './BattleSimulatorB
 import { ScopedStopwatch, using_ } from './Utilities.js';
 import { weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos, captainInfos } from './SampleSkillInfos.js';
 import { heroInfos } from './SampleHeroInfos.js';
-import { initVueComponents } from './VueComponents.js';
-
 // Side-effect imports for skill registration
 import './SkillEffectCore.js';
 import './SkillEffectEnv.js';

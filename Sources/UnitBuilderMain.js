@@ -8,8 +8,6 @@ import { ElemDelimiter, g_explicitSiteRootPath } from './GlobalDefinitions.js';
 import { changeCurrentUnitTab } from './SettingManager.js';
 import { weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos } from './SampleSkillInfos.js';
 import { heroInfos } from './SampleHeroInfos.js';
-import { initVueComponents } from './VueComponents.js';
-
 // Side-effect imports for skill registration
 import './SkillEffectCore.js';
 import './SkillEffectEnv.js';
