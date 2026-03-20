@@ -13,6 +13,7 @@ Sources/samples/
 Outputs/
 dist/
 x64/
+.vite/
 
 # C++ / Visual Studio
 .vs/
