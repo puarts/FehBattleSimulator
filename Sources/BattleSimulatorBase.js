@@ -12305,3 +12305,5 @@ function importSettingsFromString(
         loadsMapSettings
     );
 }
+
+export { BattleSimulatorBase, MovementAssistResult, MoveResult, OwnerType, ModuleLoadState, hasTargetOptionValue, isTrapActivationResult, determineAssistType, removeTouchEventFromDraggableElements, addTouchEventToDraggableElements, moveStructureToMap, moveStructureToTrashBox, moveStructureToDefenceStorage, moveStructureToOffenceStorage, moveUnitToTrashBox, moveUnitToMap, moveUnit, placeUnitToMap, syncSelectedTileColor, updateMapUi, updateMap, changeMap, removeBreakableWallsFromTrashBox, createMap, resetPlacement, removeAllObjsFromMap, removeAllUnitsFromMap, updateAllUi, loadSettings, loadSettingsFromDict, saveSettings, exportPerTurnSettingAsString, importPerTurnSetting, importSettingsFromString };

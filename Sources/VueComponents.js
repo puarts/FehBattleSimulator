@@ -3224,3 +3224,5 @@ Vue.config.errorHandler = (err, vm, info) => {
     console.error('[Vue]', vm && vm.$options && vm.$options.name, info, err);
 };
 initVueComponents();
+
+export { initVueComponents };

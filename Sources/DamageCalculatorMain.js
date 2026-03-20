@@ -1103,3 +1103,5 @@ function initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos
         }
     });
 }
+
+export { DamageCalculatorMode, DamageCalcModeOptions, DamageCalcHeroDatabase, DamageCalcData, g_damageCalcData, initDamageCalculator };

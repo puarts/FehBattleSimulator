@@ -861,3 +861,5 @@ function dropEventImpl(objId, dropTargetId) {
     // ユニットの状態が変わるので再描画
     g_app.clearDamageCalcSummary();
 }
+
+export { DoubleClickChecker, selectItemById };

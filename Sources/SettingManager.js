@@ -499,3 +499,5 @@ class SettingManager {
         this.loadSettingsFromDict(dict, true, true, true, true, true);
     }
 }
+
+export { changeCurrentUnitTab, SettingManager };

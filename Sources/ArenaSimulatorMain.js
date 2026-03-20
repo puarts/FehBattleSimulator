@@ -36,3 +36,5 @@ function initAetherRaidBoard(
         }
     });
 }
+
+export { ArenaSimulator, g_app, initAetherRaidBoard };

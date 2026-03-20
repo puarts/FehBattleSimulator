@@ -1301,3 +1301,5 @@ class ImageProcessor {
         }
     }
 }
+
+export { drawImage, ImageProcessor };

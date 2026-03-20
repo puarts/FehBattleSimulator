@@ -24,3 +24,5 @@ class KeyRepeatHandler {
         clearTimeout(this._keyRepeatTimeoutId);
     }
 }
+
+export { KeyRepeatHandler };

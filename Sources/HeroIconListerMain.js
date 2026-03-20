@@ -90,3 +90,5 @@ function init(heroInfos) {
     g_appData.heroInfos = heroInfos;
     g_appData.applyFilter();
 }
+
+export { AppData, g_appData, init };

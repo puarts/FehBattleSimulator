@@ -142,3 +142,5 @@ function findAetherRaidDefensePreset(id) {
     }
     return null;
 }
+
+export { AetherRaidDefensePreset, AetherRaidDefensePresetInfo, AetherRaidDefensePresetOptions_AnimaSeason, AetherRaidDefensePresetOptions_DarkSeason, AetherRaidOffensePresetOptions_AstraSeason, AetherRaidOffensePresetOptions_LightSeason, findAetherRaidDefensePreset };

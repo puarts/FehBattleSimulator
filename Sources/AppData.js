@@ -2504,3 +2504,5 @@ class AppData extends UnitManager {
 }
 
 const g_appData = new AppData();
+
+export { AppData, OcrSettingTarget, SettingCompressMode, ItemType, getItemTypeName, SelectMode, SelectModeOptions, PawnsOfLokiDifficality, PawnsOfLokiDifficalityOptions, g_idGenerator, g_deffenceStructureContainer, g_offenceStructureContainer, g_appData };

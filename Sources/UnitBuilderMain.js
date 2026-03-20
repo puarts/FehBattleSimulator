@@ -143,3 +143,5 @@ function initUnitBuilder() {
         updateUrl();
     });
 }
+
+export { UnitBuilderMain, g_app, initUnitBuilder };

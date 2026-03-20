@@ -27,3 +27,5 @@ function initAetherRaidBoard(
         loadSettings();
     });
 }
+
+export { AetherRaidSimulator, g_app, initAetherRaidBoard };

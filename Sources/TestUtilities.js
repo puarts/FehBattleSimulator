@@ -1,3 +1,20 @@
+import { Weapon, WeaponType, AssistType } from './SkillConstants.js';
+import { MoveType } from './HeroInfoConstants.js';
+import { UnitGroupType } from './UnitConstants.js';
+import { SkillInfo } from './Skill.js';
+import { Unit } from './Unit.js';
+import { Tile } from './Tile.js';
+import { HeroDatabase } from './HeroDatabase.js';
+import { SkillDatabase } from './SkillDatabase.js';
+import { UnitManager } from './UnitManager.js';
+import { BattleMap } from './BattleMap.js';
+import { GlobalBattleContext } from './GlobalBattleContext.js';
+import { BeginningOfTurnSkillHandler } from './BeginningOfTurnSkillHandler.js';
+import { DamageCalculatorWrapper } from './DamageCalculatorWrapper.js';
+import { DamageType } from './DamageCalculator.js';
+import { SimpleLogger } from './Logger.js';
+import { ScopedStopwatch, using_ } from './Utilities.js';
+
 function test_createDefaultSkillInfo() {
     return new SkillInfo(
         "", "", 16, 2, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false,
@@ -487,3 +504,5 @@ function test_executeTest(testFunc, isTestTimeLogEnabled = false) {
         console.log(log);
     }
 }
+
+export { test_createDefaultSkillInfo, test_createDefaultUnit, test_HeroDatabase, test_BeginningOfTurnSkillHandler, test_DamageCalculator, test_calcDamageWithUnits, test_calcDamage, UnitBuilder, BattleScenarioBuilder, RegressionTestHelper, resetGlobalTestState, test_executeTest };

@@ -115,3 +115,5 @@ function initAetherRaidBoard(
         }
     });
 }
+
+export { SummonerDuelsSimulator, g_app, initAetherRaidBoard };

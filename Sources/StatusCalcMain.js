@@ -142,3 +142,5 @@ function diffToHtml(value) {
     else if (value < 0) return `<span style='color:red'>${signedValue}</span>`;
     else return signedValue;
 }
+
+export { unit, g_app, updateStatus, init, diffToHtml };
