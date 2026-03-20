@@ -104,7 +104,7 @@ function init(heroInfos) {
     const app = createApp({
         data() { return g_appData; }
     });
-    app.mount('#app');
+    const vm = app.mount('#app');
     g_appData.heroInfos = heroInfos;
     g_appData.applyFilter();
 }

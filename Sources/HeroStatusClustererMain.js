@@ -677,8 +677,7 @@ function initializeStatusClusterer(heroInfos) {
         dispatch() {},
     };
     initVueComponents(app);
-    app.mount('#heroStatusClusterer');
-    g_heroStatusClustererViewModel = app;
+    g_heroStatusClustererViewModel = app.mount('#heroStatusClusterer');
 }
 
 // Initialization

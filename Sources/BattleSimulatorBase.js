@@ -2,6 +2,14 @@
 /// @brief シミュレーターのメインコードです。
 
 import { createApp } from 'vue';
+import { UnitRarity, StatusType, statusTypeToShortString } from './HeroInfoConstants.js';
+import { GameMode } from './DamageCalculator.js';
+import { UnitGroupType } from './UnitConstants.js';
+import { Ornament } from './Structures.js';
+import { Unit, isThief } from './Unit.js';
+import { getDivineVeinName } from './Tile.js';
+import { LocalStorageUtil } from './Utilities.js';
+import { DetailLevel, GroupLog } from './Logger.js';
 
 function hasTargetOptionValue(targetOptionId, options) {
     for (let index in options) {
@@ -1062,23 +1070,14 @@ class BattleSimulatorBase {
             console.error('[Vue]', vm && vm.$options && vm.$options.name, info, err);
         };
 
-        // Expose global variables to templates (Vue 3 requires explicit registration)
-        const globals = app.config.globalProperties;
-        if (typeof UnitRarity !== 'undefined') globals.UnitRarity = UnitRarity;
-        if (typeof GameMode !== 'undefined') globals.GameMode = GameMode;
-        if (typeof UnitGroupType !== 'undefined') globals.UnitGroupType = UnitGroupType;
-        if (typeof StatusType !== 'undefined') globals.StatusType = StatusType;
-        if (typeof Ornament !== 'undefined') globals.Ornament = Ornament;
-        if (typeof Unit !== 'undefined') globals.Unit = Unit;
-        if (typeof updateAllUi !== 'undefined') globals.updateAllUi = updateAllUi;
-        if (typeof updateMapUi !== 'undefined') globals.updateMapUi = updateMapUi;
-        if (typeof loadSettings !== 'undefined') globals.loadSettings = loadSettings;
-        if (typeof statusTypeToShortString !== 'undefined') globals.statusTypeToShortString = statusTypeToShortString;
-        if (typeof isThief !== 'undefined') globals.isThief = isThief;
-        if (typeof getDivineVeinName !== 'undefined') globals.getDivineVeinName = getDivineVeinName;
-        if (typeof LocalStorageUtil !== 'undefined') globals.LocalStorageUtil = LocalStorageUtil;
-        if (typeof DetailLevel !== 'undefined') globals.DetailLevel = DetailLevel;
-        if (typeof GroupLog !== 'undefined') globals.GroupLog = GroupLog;
+        // Expose globals to Vue 3 templates (they can't access module-scoped variables)
+        Object.assign(app.config.globalProperties, {
+            UnitRarity, GameMode, UnitGroupType, StatusType,
+            Ornament, Unit,
+            updateAllUi, updateMapUi, loadSettings,
+            statusTypeToShortString, isThief, getDivineVeinName,
+            LocalStorageUtil, DetailLevel, GroupLog,
+        });
 
         // Register components before mounting
         initVueComponents(app);

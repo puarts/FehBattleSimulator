@@ -43,7 +43,7 @@ function initVueComponents(app) {
                   <tr>
                     <td>
                       <select2 :options="battleSimulator.vm.heroOptions" v-model="value.heroIndex" class="hero"
-                               @input="battleSimulator.vm.heroIndexChanged">
+                               @update:model-value="battleSimulator.vm.heroIndexChanged">
                       </select2>
                       <a v-bind:href="value.detailPageUrl" target="_blank" v-if="value.heroIndex >= 0">
                         <img class="urlJumpIcon" v-bind:src="imageRootPath + 'UrlJump.png'"/></a>
@@ -174,7 +174,7 @@ function initVueComponents(app) {
                                     <label class="normal">支援: </label>
                                     <select2 :options="battleSimulator.vm.heroOptions" v-model="value.partnerHeroIndex"
                                              class="hero"
-                                             @input="battleSimulator.updateAllUnitSpur();battleSimulator.updatePartner(value)">
+                                             @update:model-value="battleSimulator.updateAllUnitSpur();battleSimulator.updatePartner(value)">
                                     </select2>
                                     <span class="debugInfo"
                                           v-bind:style="battleSimulator.vm.debugMenuStyle">({{ value.partnerHeroIndex }}
@@ -194,7 +194,7 @@ function initVueComponents(app) {
                       <label class="normal">紋章士: </label>
                       <select2 :options="battleSimulator.vm.emblemHeroOptions" v-model="value.emblemHeroIndex"
                                class="hero"
-                               @input="value.resetMaxSpecialCount();battleSimulator.updateAllUnitSpur();battleSimulator.vm.emblemHeroMergeChanged(true)">
+                               @update:model-value="value.resetMaxSpecialCount();battleSimulator.updateAllUnitSpur();battleSimulator.vm.emblemHeroMergeChanged(true)">
                       </select2>
                       <span class="debugInfo" v-bind:style="battleSimulator.vm.debugMenuStyle">(
                         {{ value.emblemHeroIndex }}
@@ -739,7 +739,7 @@ function initVueComponents(app) {
             fallbackValue: {type: [Number, String], default: -1, required: false},
             isDebugMode: {type: Boolean, default: false, required: false},
         },
-        emits: ['update:modelValue', 'input'],
+        emits: ['update:modelValue'],
 
         mounted() {
             this.initSelect2(this.options, this.modelValue);
@@ -765,7 +765,6 @@ function initVueComponents(app) {
                         const newVar = isNaN(parsed) ? raw : parsed;
                         if (newVar === 0 || newVar) {
                             this.$emit('update:modelValue', newVar);
-                            this.$emit('input', newVar);
                         }
                     });
             },
@@ -946,7 +945,7 @@ function initVueComponents(app) {
                     :options="CustomSkill.OPTIONS"
                     v-model="unit.customSkills[index][0]"
                     :is-debug-mode="vm.isDebugMenuEnabled"
-                    @input="vm.initCustomSkillArgs(index);vm.customSkillChanged();"
+                    @update:model-value="vm.initCustomSkillArgs(index);vm.customSkillChanged();"
                     class="custom-skill"
                 ></select2>
                 <!-- 引数 -->
@@ -1023,7 +1022,7 @@ function initVueComponents(app) {
                           <select2
                               :options="CustomSkill.Arg.NODE_TO_OPTIONS.getValues(argNode)"
                               v-model="unit.getCustomSkillArgs(index)[argNode]"
-                              @input="v => vm.customSkillChanged(unit, v)"
+                              @update:model-value="v => vm.customSkillChanged(unit, v)"
                               class="custom-skill-args"
                               style="width: 220px"
                           ></select2>
@@ -1041,7 +1040,7 @@ function initVueComponents(app) {
                             >
                                 <select2
                                   :options="CustomSkill.Arg.NODE_TO_OPTIONS.getValues(argNode)"
-                                  @input="v => {vm.customSkillArgsArrayChanged(unit.getCustomSkillArgs(index)[argNode], i, v);}"
+                                  @update:model-value="v => {vm.customSkillArgsArrayChanged(unit.getCustomSkillArgs(index)[argNode], i, v);}"
                                   :value="unit.getCustomSkillArgs(index)[argNode][i]"
                                   class="custom-skill-args"
                                 >
@@ -1077,7 +1076,7 @@ function initVueComponents(app) {
                     :name="unit.id + '-weapon'"
                     :value="unit.weapon"
                     :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
-                    @input="v => battleSimulator.vm.weaponChanged(unit, v)"
+                    @update:model-value="v => battleSimulator.vm.weaponChanged(unit, v)"
                     @options-changed="battleSimulator.vm.initSkills"
                     class="skill">
                 </select2>
@@ -1124,7 +1123,7 @@ function initVueComponents(app) {
                     class="skill"
                     :value="unit.support"
                     :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
-                    @input="v => battleSimulator.vm.supportChanged(unit, v)"
+                    @update:model-value="v => battleSimulator.vm.supportChanged(unit, v)"
                     @options-changed="battleSimulator.vm.initSkills"
                     :options="battleSimulator.vm.enableAllSkillOptions
                               ? battleSimulator.vm.supportOptions
@@ -1161,7 +1160,7 @@ function initVueComponents(app) {
                     class="skill"
                     :value="unit.special"
                     :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
-                    @input="v => battleSimulator.vm.specialChanged(unit, v)"
+                    @update:model-value="v => battleSimulator.vm.specialChanged(unit, v)"
                     @options-changed="battleSimulator.vm.initSkills"
                     :options="battleSimulator.vm.enableAllSkillOptions
                                 ? battleSimulator.vm.specialOptions
@@ -1233,7 +1232,7 @@ function initVueComponents(app) {
                                 : null"
                     :value="unit['passive' + slot]"
                     :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
-                    @input="v => battleSimulator.vm.passiveSlotChanged(unit, v, slot)"
+                    @update:model-value="v => battleSimulator.vm.passiveSlotChanged(unit, v, slot)"
                     @options-changed="battleSimulator.vm.initSkills"
                     class="skill"
                 />
@@ -1269,7 +1268,7 @@ function initVueComponents(app) {
                 <select2 :options="battleSimulator.vm.captainOptions" 
                          v-model="unit.captain"
                          :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
-                         @input="battleSimulator.vm.captainChanged"
+                         @update:model-value="battleSimulator.vm.captainChanged"
                          class="skill">
                 </select2>
               </div>
@@ -1302,7 +1301,7 @@ function initVueComponents(app) {
                 <select2 :options="battleSimulator.vm.additionalPassiveOptions"
                          v-model="unit.additionalPassives[index][0]"
                          :is-debug-mode="battleSimulator.vm.isDebugMenuEnabled"
-                         @input="battleSimulator.vm.additionalSkillChanged" class="skill">
+                         @update:model-value="battleSimulator.vm.additionalSkillChanged" class="skill">
                 </select2>
               </div>
 

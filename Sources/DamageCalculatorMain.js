@@ -1141,8 +1141,7 @@ function initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos
             },
         }
     });
-    app.mount('#damageCalc');
-    g_damageCalcVm = app;
+    g_damageCalcVm = app.mount('#damageCalc');
 }
 
 // Initialization
