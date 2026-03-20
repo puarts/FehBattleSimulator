@@ -1,3 +1,5 @@
+import { TurnSettingCookiePrefix, NameValueDelimiter, ElemDelimiter, UnitCookiePrefix, StructureCookiePrefix, TileCookiePrefix } from './GlobalDefinitions.js';
+
 /// @file
 /// @brief TurnSetting クラスとそれに関連するクラスや関数等の定義です。
 
@@ -161,3 +163,5 @@ class TurnSetting {
         }
     }
 }
+
+export { TurnSetting };

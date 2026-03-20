@@ -1,3 +1,6 @@
+import { BattleMapElement } from './BattleMapElement.js';
+import { g_imageRootPath, StructureCookiePrefix, ValueDelimiter } from './GlobalDefinitions.js';
+
 /// @file
 /// @brief マップ上の配置物を表すクラスとそれに関連する関数等の定義です。
 
@@ -1073,3 +1076,12 @@ function isMovableForUnit(structure) {
 
     return structure instanceof TileTypeStructureBase;
 }
+
+export { ObjType, OrnamentSettings, findOrnamentTypeIndexByIcon, StructureBase, OffenceStructureBase, DefenceStructureBase };
+export { DefFortress, OfFortress, DefBoltTower, OfBoltTower, ExcapeLadder, AetherAmphorae, AetherFountain, SafetyFence };
+export { DefArmorSchool, OfArmorSchool, DefCatapult, OfCatapult, DefCavalrySchool, OfCavalrySchool };
+export { DefFlierSchool, OfFlierSchool, DefHealingTower, OfHealingTower, DefInfantrySchool, OfInfantrySchool, Ornament };
+export { DefPanicManor, OfPanicManor, DefTacticsRoom, OfTacticsRoom, DefBrightShrine, OfBrightShrine, DefDarkShrine, OfDarkShrine };
+export { OfHiyokuNoHisyo, DefHiyokuNoTorikago, TileTypeStructureBase, TrapBase };
+export { FalseHexTrap, HexTrap, FalseBoltTrap, BoltTrap, FalseHeavyTrap, HeavyTrap };
+export { OfCallingCircle, DefCallingCircle, Wall, BreakableWallIconType, BreakableWall, isMovableForUnit };

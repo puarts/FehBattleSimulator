@@ -1,3 +1,6 @@
+import { BattleMapElement } from './BattleMapElement.js';
+import { ValueDelimiter } from './GlobalDefinitions.js';
+
 /// @file
 /// @brief Tile クラスとそれに関連するクラスや関数等の定義です。
 
@@ -1503,3 +1506,7 @@ class TilePriorityContext {
         }
     }
 }
+
+export { TileType, tileTypeToString, TileTypeOptions, CanNotReachTile, ObstructTile };
+export { DivineVeinType, DIVINE_VEIN_NAMES, getDivineVeinName, DIVINE_VEIN_ICE_TYPES, DIVINE_VEIN_GREEN_TYPES, divineVeinColor };
+export { setUnitToTile, Tile, TilePriorityContext };

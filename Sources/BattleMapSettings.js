@@ -1,6 +1,5 @@
-
-
-
+import { TileType } from './Tile.js';
+import { BreakableWallIconType } from './Structures.js';
 
 /**
  * マップの種類を変更します。
@@ -2039,3 +2038,5 @@ function resetBattleMapPlacement(map, type, withUnits = false) {
     map.__clearTiles();
     __resetBattleMapPlacement(map, type, withUnits);
 }
+
+export { changeMapKind, resetBattleMapPlacement };
