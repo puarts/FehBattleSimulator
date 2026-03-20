@@ -1,3 +1,13 @@
+import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, Captain } from './SkillConstants.js';
+import { StatusEffectType } from './Skill.js';
+import { SkillEffectRegistrar } from './SkillEffectRegistrar.js';
+import { SkillEffectNode, NODE_FUNC, NumberNode, TRUE_NODE, makeArray } from './SkillEffectCore.js';
+import { AT_START_OF_TURN_HOOKS, AT_START_OF_COMBAT_HOOKS, AFTER_COMBAT_HOOKS, BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS } from './SkillEffectHooks.js';
+import { WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS, CAN_ACTIVATE_STYLE_HOOKS, CAN_ATTACK_FOES_N_SPACES_AWAY_DURING_STYLE_HOOKS } from './SkillEffectHooks.js';
+import { CANNOT_UNIT_MOVE_THROUGH_SPACES_WITHIN_3_SPACES_OF_FOE_HOOKS, SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS, WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS } from './SkillEffectHooks.js';
+import { FOR_ALLIES_STATS_SKILLS_USING_STATS_HOOKS, FOR_ALLIES_NON_STATS_SKILL_USING_STATS_HOOKS, FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS } from './SkillEffectHooks.js';
+import { getNormalSkillId, getDuoOrHarmonizedSkillId, getStyleSkillId, getStatusEffectSkillId } from './Skill.js';
+
 // スキル実装
 // Winter Trinket+
 {

@@ -1,3 +1,12 @@
+import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, Captain } from './SkillConstants.js';
+import { StatusEffectType } from './Skill.js';
+import { SkillEffectRegistrar } from './SkillEffectRegistrar.js';
+import { SkillEffectNode, NODE_FUNC, NumberNode, TRUE_NODE } from './SkillEffectCore.js';
+import { AT_START_OF_TURN_HOOKS, AT_START_OF_COMBAT_HOOKS, AFTER_COMBAT_HOOKS, AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS, BEFORE_AOE_SPECIAL_HOOKS } from './SkillEffectHooks.js';
+import { AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS, AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS, FOR_ALLIES_NON_STATS_SKILL_USING_STATS_HOOKS, FOR_ALLIES_AT_START_OF_COMBAT_HOOKS } from './SkillEffectHooks.js';
+import { AFTER_RALLY_SKILL_IS_USED_BY_UNIT_HOOKS, AFTER_MOVEMENT_SKILL_IS_USED_BY_UNIT_HOOKS } from './SkillEffectHooks.js';
+import { getNormalSkillId, getEmblemHeroSkillId, getStatusEffectSkillId } from './Skill.js';
+
 // noinspection JSUnusedLocalSymbols
 // 速さの吸収4
 {
