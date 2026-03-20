@@ -1,18 +1,27 @@
 /// @file
 /// @brief Vueのcomponentの定義です。
 
-function initVueComponents() {
-    Vue.component('battle-map', {
+// Temporary Vuex shim (to be replaced by Pinia in Section 07)
+function mapStateShim(keys) {
+    const result = {};
+    for (const key of keys) {
+        result[key] = function() { return this.$store.state[key]; };
+    }
+    return result;
+}
+
+function initVueComponents(app) {
+    app.component('battle-map', {
         template: '<div id="mapArea"></div>',
         mounted() {
             // 初回マウント時に既存のロジックをそのまま呼ぶだけ
             updateMapUi();
         }
     });
-    Vue.component('unit-detail', {
+    app.component('unit-detail', {
         props: ['value'],
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData', 'imageRootPath'])
+            ...mapStateShim(['battleSimulator', 'appData', 'imageRootPath'])
         },
         template: `
           <table border='0' style='border-width: 0px;border-style:none;'>
@@ -597,19 +606,19 @@ function initVueComponents() {
             <tr>
               <td>
                 <skill-form
-                    v-model="value"
+                    :unit="value"
                 >
                 </skill-form>
                 <skill-action-area
-                    v-model="value"
+                    :unit="value"
                 >
                 </skill-action-area>
                 <arena-score
-                    v-model="value"
+                    :unit="value"
                 >
                 </arena-score>
                 <unit-debug
-                    v-model="value"
+                    :unit="value"
                 >
                 </unit-debug>
               </td>
@@ -618,10 +627,10 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('tile-detail', {
+    app.component('tile-detail', {
         props: ['value'],
         computed: {
-            ...Vuex.mapState(['battleSimulator'])
+            ...mapStateShim(['battleSimulator'])
         },
         template: `
           <div>
@@ -656,10 +665,10 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('structure-detail', {
+    app.component('structure-detail', {
         props: ['value'],
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData'])
+            ...mapStateShim(['battleSimulator', 'appData'])
         },
         template: `
           <div style="height:500px;vertical-align:middle;display: table-cell;padding:10px">
@@ -698,7 +707,7 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('status-label', {
+    app.component('status-label', {
         props: ['statusType', 'unit'],
         template: `
           {{statusType}}
@@ -715,7 +724,7 @@ function initVueComponents() {
     });
 
     // select2 を使うためのVueコンポーネント
-    Vue.component('select2', {
+    app.component('select2', {
         template: '<select></select>',
 
         props: {
@@ -723,16 +732,17 @@ function initVueComponents() {
                 type: Array,
                 required: true,
             },
-            value: {
+            modelValue: {
                 type: [Number, String],
                 required: false,
             },
             fallbackValue: {type: [Number, String], default: -1, required: false},
             isDebugMode: {type: Boolean, default: false, required: false},
         },
+        emits: ['update:modelValue', 'input'],
 
         mounted() {
-            this.initSelect2(this.options, this.value);
+            this.initSelect2(this.options, this.modelValue);
         },
 
         methods: {
@@ -754,6 +764,7 @@ function initVueComponents() {
                         const parsed = parseInt(raw, 10);
                         const newVar = isNaN(parsed) ? raw : parsed;
                         if (newVar === 0 || newVar) {
+                            this.$emit('update:modelValue', newVar);
                             this.$emit('input', newVar);
                         }
                     });
@@ -781,28 +792,25 @@ function initVueComponents() {
         },
 
         watch: {
-            value(newVal, oldVal) {
-                // console.log(`select2: value changed: ${oldVal} -> ${newVal}`);
+            modelValue(newVal, oldVal) {
                 // 1. 現在の UI 側 select2 の値を取得
                 const uiVal = $(this.$el).val();
-                // console.log(`select2: UI val = ${uiVal}, prop newVal = ${newVal}`);
 
                 // 2. UI とプロップが異なる場合のみ反映して change を起こす
                 if (String(uiVal) !== String(newVal)) {
-                    // console.log('update with new value: ' + newVal);
                     $(this.$el)
                         .val(newVal)
                         .trigger('change');
                 }
                 if (this.isDebugMode) {
-                    const hasCurrent = this.options.some(opt => String(opt.id) === String(this.value));
+                    const hasCurrent = this.options.some(opt => String(opt.id) === String(this.modelValue));
                     this.applyInvalidValueClass(hasCurrent);
                 }
             },
 
             options(newOptions, oldOptions) {
-                // まず、現在の this.value が newOptions に含まれているかチェック
-                const hasCurrent = newOptions.some(opt => String(opt.id) === String(this.value));
+                // まず、現在の this.modelValue が newOptions に含まれているかチェック
+                const hasCurrent = newOptions.some(opt => String(opt.id) === String(this.modelValue));
                 // デバッグモードならオプションにない値が含まれても元の値を保持する
                 // その際に警告を表示する
                 // そうでない場合は元の値に-1をセットする
@@ -812,30 +820,30 @@ function initVueComponents() {
                     if (!hasCurrent) {
                         // 「不正な値」用のダミーオプションを作成
                         effectiveOptions.push({
-                            id: this.value,
-                            text: `（不正な値: ${this.value}）`,
+                            id: this.modelValue,
+                            text: `（不正な値: ${this.modelValue}）`,
                             disabled: true
                         });
                     }
-                    this.resetData(effectiveOptions, this.value);
+                    this.resetData(effectiveOptions, this.modelValue);
 
                     // 不正値表示用にスタイルを付与（任意）
                     this.applyInvalidValueClass(hasCurrent);
                 } else {
                     // オプションにない要素は -1（fallbackValue 使用）
-                    const selectedValue = hasCurrent ? this.value : this.fallbackValue;
+                    const selectedValue = hasCurrent ? this.modelValue : this.fallbackValue;
                     this.resetData(newOptions, selectedValue);
                 }
             },
         },
 
-        beforeDestroy() {
+        beforeUnmount() {
             // select2 インスタンスのクリーンアップ
             $(this.$el).off().select2('destroy');
         }
     });
 
-    Vue.component('FlashMessage', {
+    app.component('FlashMessage', {
         name: 'FlashMessage',
         props: [
             'flashMessages',
@@ -861,11 +869,8 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('SkillToggle', {
+    app.component('SkillToggle', {
         name: 'SkillToggle',
-        model: {
-            prop: 'unit',
-        },
         props: {
             unit: {type: Unit, required: true},
             vm: {required: true},
@@ -893,11 +898,8 @@ function initVueComponents() {
         }
     });
 
-    Vue.component('SkillActions', {
+    app.component('SkillActions', {
         name: 'SkillAction',
-        model: {
-            prop: 'unit',
-        },
         props: {
             unit: {type: Unit, required: true},
             vm: {required: true},
@@ -928,11 +930,8 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('CustomSkillForm', {
+    app.component('CustomSkillForm', {
         name: 'CustomSkillForm',
-        model: {
-            prop: 'unit',
-        },
         props: {
             unit: {type: Unit, required: true},
             vm: {required: true},
@@ -1055,16 +1054,13 @@ function initVueComponents() {
         `
     })
 
-    Vue.component('SkillForm', {
+    app.component('SkillForm', {
         name: 'SkillForm',
-        model: {
-            prop: 'unit',
-        },
         props: {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData', 'imageRootPath']),
+            ...mapStateShim(['battleSimulator', 'appData', 'imageRootPath']),
         },
         template: `
           <div class="skill-grid">
@@ -1293,7 +1289,7 @@ function initVueComponents() {
             >
               <div class="skill-icon">
                 <skill-toggle
-                    v-model="unit"
+                    :unit="unit"
                     :vm="battleSimulator.vm"
                     :skills="unit.additionalPassives"
                     :index="index"
@@ -1320,7 +1316,7 @@ function initVueComponents() {
 
               <div class="skill-actions">
                 <skill-actions
-                    v-model="unit"
+                    :unit="unit"
                     :vm="battleSimulator.vm"
                     :skills="unit.additionalPassives"
                     :index="index"
@@ -1343,7 +1339,7 @@ function initVueComponents() {
             >
               <div class="skill-icon">
                 <skill-toggle
-                    v-model="unit"
+                    :unit="unit"
                     :vm="battleSimulator.vm"
                     :skills="unit.customSkills"
                     :index="index"
@@ -1354,7 +1350,7 @@ function initVueComponents() {
 
               <div class="skill-content custom-skill-name">
                 <custom-skill-form
-                    v-model="unit"
+                    :unit="unit"
                     :vm="battleSimulator.vm"
                     :skills="unit.customSkills"
                     :func-id="funcId"
@@ -1366,7 +1362,7 @@ function initVueComponents() {
 
               <div class="skill-actions">
                 <skill-actions
-                    v-model="unit"
+                    :unit="unit"
                     :vm="battleSimulator.vm"
                     :skills="unit.customSkills"
                     :index="index"
@@ -1379,16 +1375,13 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('SkillActionArea', {
+    app.component('SkillActionArea', {
         name: 'SkillActionArea',
-        model: {
-            prop: 'unit',
-        },
         props: {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData']),
+            ...mapStateShim(['battleSimulator', 'appData']),
         },
         template: `
           <div>
@@ -1418,13 +1411,13 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('MapButton', {
+    app.component('MapButton', {
         name: 'MapButton',
         props: {
             testMethod: {type: Function, required: false},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator'])
+            ...mapStateShim(['battleSimulator'])
         },
         methods: {
             getAttacker: function () {
@@ -1522,7 +1515,7 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('ControlButtons', {
+    app.component('ControlButtons', {
         name: 'ControlButtons',
         methods: {},
         mounted() {
@@ -1538,10 +1531,10 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('UpperButtons', {
+    app.component('UpperButtons', {
         name: 'UpperButtons',
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData'])
+            ...mapStateShim(['battleSimulator', 'appData'])
         },
         methods: {
             updateMap() {
@@ -1625,10 +1618,10 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('LowerButtons', {
+    app.component('LowerButtons', {
         name: 'LowerButtons',
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData'])
+            ...mapStateShim(['battleSimulator', 'appData'])
         },
         methods: {},
         mounted() {
@@ -1659,16 +1652,13 @@ function initVueComponents() {
         `
     })
 
-    Vue.component('MapButtonInUnitTab', {
+    app.component('MapButtonInUnitTab', {
         name: 'MapButtonInUnitTab',
-        model: {
-            prop: 'unit',
-        },
         props: {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator'])
+            ...mapStateShim(['battleSimulator'])
         },
         methods: {
             getSkillButtonStyle(unit) {
@@ -1712,16 +1702,13 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('ArenaScore', {
+    app.component('ArenaScore', {
         name: 'ArenaScore',
-        model: {
-            prop: 'unit',
-        },
         props: {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData']),
+            ...mapStateShim(['battleSimulator', 'appData']),
         },
         template: `
           <fieldset v-if="appData.gameMode === GameMode.Arena"  style="font-size:12px;">
@@ -1737,16 +1724,13 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('UnitDebug', {
+    app.component('UnitDebug', {
         name: 'UnitDebug',
-        model: {
-            prop: 'unit',
-        },
         props: {
             unit: {type: Unit, required: true},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData'])
+            ...mapStateShim(['battleSimulator', 'appData'])
         },
         template: `
           <span v-bind:style="battleSimulator.vm.debugMenuStyle">
@@ -1825,7 +1809,7 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('DebugSettings', {
+    app.component('DebugSettings', {
         name: 'DebugSettings',
         props: {
             isDebugMenuEnabled: {type: Boolean, required: true},
@@ -1865,9 +1849,9 @@ function initVueComponents() {
         }
     });
 
-    Vue.component('SimulationControls', {
+    app.component('SimulationControls', {
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData'])
+            ...mapStateShim(['battleSimulator', 'appData'])
         },
         methods: {
             onHealHp() {
@@ -1954,7 +1938,7 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('debug-buttons', {
+    app.component('debug-buttons', {
         props: {
             resetUnitRandom: {type: Function, required: true},
             activateAllUnit: {type: Function, required: true},
@@ -1962,7 +1946,7 @@ function initVueComponents() {
             openAutoClearDialog: {type: Function, required: true},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator']),
+            ...mapStateShim(['battleSimulator']),
         },
         template: `
             <div>
@@ -2006,7 +1990,7 @@ function initVueComponents() {
           `
     });
 
-    Vue.component('log-panel', {
+    app.component('log-panel', {
         props: {
             simulatorLogLevel: {type: Number, required: true},
             simulatorLogLevelOption: {type: Array, required: true},
@@ -2017,7 +2001,7 @@ function initVueComponents() {
             copyDebugLogToClipboard: {type: Function, required: true},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator'])
+            ...mapStateShim(['battleSimulator'])
         },
         methods: {
             onSimulatorLogLevelChange(e) {
@@ -2056,11 +2040,7 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('EditableTable', {
-        model: {
-            prop: 'rows',
-            event: 'update:rows'
-        },
+    app.component('EditableTable', {
         props: {
             rows: {type: Array, required: true},
             storageKey: {type: String, required: true},
@@ -2105,7 +2085,7 @@ function initVueComponents() {
                     // ファイルの内容を取得
                     let results = JSON.parse(event.target.result);
                     if (replace) {
-                        this.$set(this, 'rows', results);
+                        this.rows = results;
                     } else {
                         results.forEach(x => {
                             this.rows.push(x);
@@ -2272,7 +2252,7 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('UnitStorageDialog', {
+    app.component('UnitStorageDialog', {
         props: {
             getAppData: {type: Function, required: true},
             weaponTypeIconPath: {type: Function, required: true},
@@ -2287,7 +2267,7 @@ function initVueComponents() {
             };
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator'])
+            ...mapStateShim(['battleSimulator'])
         },
         methods: {
             setUnitName(name) {
@@ -2318,7 +2298,7 @@ function initVueComponents() {
                 const savedUnit = this.rows[originalIndex];
                 const result = window.confirm(`${savedUnit.name}を${name}で上書きして良いですか？`);
                 if (result) {
-                    Vue.set(this.rows, originalIndex, {
+                    this.rows.splice(originalIndex, 1, {
                         name: name,
                         weaponType: currentUnit.weaponType,
                         moveType: currentUnit.moveType,
@@ -2367,7 +2347,7 @@ function initVueComponents() {
 
             <h3>保存ユニット一覧</h3>
 
-            <editable-table v-model="rows" 
+            <editable-table :rows="rows"
                             :storage-key="storageKey"
             >
               <template slot="table-head">
@@ -2426,11 +2406,7 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('divine-vein-opacity-settings', {
-        model: {
-            prop: 'divineVeinOpacities',
-            event: 'change'
-        },
+    app.component('divine-vein-opacity-settings', {
         props: {
             divineVeinOpacities: { type: Object, required: true }
         },
@@ -2483,11 +2459,7 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('divine-vein-display-settings', {
-        model: {
-            prop: 'divineVeinDisplaySettings',
-            event: 'change'
-        },
+    app.component('divine-vein-display-settings', {
         props: {
             divineVeinDisplaySettings: { type: Object, required: true }
         },
@@ -2558,13 +2530,13 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('log-action-buttons', {
+    app.component('log-action-buttons', {
         props: {
             onCopy: {type: Function, required: true},
             onInfo: {type: Function, required: false},
         },
         computed: {
-            ...Vuex.mapState(['battleSimulator', 'appData'])
+            ...mapStateShim(['battleSimulator', 'appData'])
         },
         methods: {
             defaultInfoHandler() {
@@ -2617,7 +2589,7 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('damage-calc-result', {
+    app.component('damage-calc-result', {
         props: {
             combatResult: {
                 type: CombatResult,
@@ -2932,7 +2904,7 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('log-node', {
+    app.component('log-node', {
         name: 'log-node',
         props: {
             node: {type: GroupLog, required: true}, // GroupLog<SkillLogContent>
@@ -3004,8 +2976,9 @@ function initVueComponents() {
         methods: {
             setOpenAll(val) {
                 this.open = !!val;
-                if (this.hasChildren) {
-                    this.$children.forEach(c => c.setOpenAll && c.setOpenAll(val));
+                if (this.hasChildren && this.$refs.childNodes) {
+                    const refs = Array.isArray(this.$refs.childNodes) ? this.$refs.childNodes : [this.$refs.childNodes];
+                    refs.forEach(c => c.setOpenAll && c.setOpenAll(val));
                 }
             },
         },
@@ -3029,6 +3002,7 @@ function initVueComponents() {
             </div>
             <div class="log-children" v-show="open" v-if="hasChildren">
               <log-node
+                ref="childNodes"
                 v-for="(child, i) in node.children"
                 :key="i"
                 :node="child"
@@ -3043,7 +3017,7 @@ function initVueComponents() {
         `,
     });
 
-    Vue.component('attack-calc-result', {
+    app.component('attack-calc-result', {
         props: {
             combatResult: {type: CombatResult, required: true},
             attackResult: {type: AttackResult, required: true},
@@ -3113,7 +3087,7 @@ function initVueComponents() {
         `
     });
 
-    Vue.component('strike-calc-result', {
+    app.component('strike-calc-result', {
         props: {
             combatResult: {type: CombatResult, required: true, default: null,},
             attackResult: {type: AttackResult, required: true, default: null,},
@@ -3220,9 +3194,5 @@ function initVueComponents() {
         `
     });
 }
-Vue.config.errorHandler = (err, vm, info) => {
-    console.error('[Vue]', vm && vm.$options && vm.$options.name, info, err);
-};
-initVueComponents();
 
 export { initVueComponents };

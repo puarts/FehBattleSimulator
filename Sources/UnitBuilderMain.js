@@ -172,7 +172,6 @@ function initUnitBuilder() {
 
 // Initialization
 window.g_app = g_app;
-initVueComponents();
 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos, [], false);
 g_app.registerHeroOptions(heroInfos, false);
 initUnitBuilder();

@@ -3,6 +3,7 @@ import { MoveType } from './HeroInfoConstants.js';
 import { isPhysicalWeaponType } from './Skill.js';
 import { ScopedStopwatch, using_, startProgressiveProcess, distinct } from './Utilities.js';
 import { heroInfos as sampleHeroInfos } from './SampleHeroInfos.js';
+import { createApp } from 'vue';
 import { initVueComponents } from './VueComponents.js';
 
 // Side-effect imports for skill registration
@@ -655,9 +656,8 @@ let g_heroStatusClustererData = null;
 let g_heroStatusClustererViewModel = null;
 function initializeStatusClusterer(heroInfos) {
     g_heroStatusClustererData = new HeroStatusClustererData(heroInfos);
-    g_heroStatusClustererViewModel = new Vue({
-        el: "#heroStatusClusterer",
-        data: g_heroStatusClustererData,
+    const app = createApp({
+        data() { return g_heroStatusClustererData; },
         methods: {
             mergeClusters() {
                 g_heroStatusClustererData.initClusters();
@@ -671,11 +671,18 @@ function initializeStatusClusterer(heroInfos) {
             },
         }
     });
+    // Stub $store for components registered via initVueComponents
+    app.config.globalProperties.$store = {
+        state: {},
+        dispatch() {},
+    };
+    initVueComponents(app);
+    app.mount('#heroStatusClusterer');
+    g_heroStatusClustererViewModel = app;
 }
 
 // Initialization
 const resolvedHeroInfos = window.heroInfos || sampleHeroInfos;
-initVueComponents();
 initializeStatusClusterer(resolvedHeroInfos);
 
 export { HeroStatusClustererData, g_heroStatusClustererData, initializeStatusClusterer };

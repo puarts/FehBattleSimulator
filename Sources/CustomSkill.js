@@ -189,13 +189,13 @@ class CustomSkill {
                 EFFECTIVE_TYPES,
                 STATUS_EFFECT_TYPES
             } = this.Node;
-            vm.$set(customSkill, 1, {
+            customSkill[1] = {
                 [NON_NEGATIVE_INTEGER]: 0,
                 [PERCENTAGE]: 100,
                 [VARIABLE_PERCENTAGE]: 100,
                 [EFFECTIVE_TYPES]: [''],
                 [STATUS_EFFECT_TYPES]: [''],
-            });
+            };
         }
 
         static idsToNodes(args, key) {

@@ -1,6 +1,8 @@
 /// @file
 /// @brief シミュレーターのメインコードです。
 
+import { createApp } from 'vue';
+
 function hasTargetOptionValue(targetOptionId, options) {
     for (let index in options) {
         let option = options[index];
@@ -435,9 +437,9 @@ class BattleSimulatorBase {
                     }
                 } else if (value !== -1) {
                     // なし以外が設定
-                    this.$set(values, i, value);
+                    values[i] = value;
                     if (values.length === i + 1) {
-                        this.$set(values, i + 1, '');
+                        values[i + 1] = '';
                     }
                 }
                 this.updateCurrentUnit();
@@ -1025,48 +1027,64 @@ class BattleSimulatorBase {
             }
         }
 
-        // Vuex を Vue に登録
-        Vue.use(Vuex);
-
-        // ストア作成
-        const store = new Vuex.Store({
-            state: {
-                appData: appData,
-                battleSimulator: this,
-                imageRootPath: g_imageRootPath,
-            },
-            mutations: {
-            },
-            actions: {
-                updateMap({state}, payload) {
-                    return updateMap();
-                },
-                saveSettings({state}, payload) {
-                    return saveSettings();
-                },
-                showSettingDialog({state}, payload) {
-                    return showSettingDialog();
-                },
-                showImportDialog({state}, payload) {
-                    return showImportDialog();
-                },
-                showExportDialog({state}, payload) {
-                    return showExportDialog();
-                },
-                loadLazyImages({state}, payload) {
-                    return loadLazyImages();
-                },
-                resetPlacement({state}, payload) {
-                    return resetPlacement();
-                },
-            }
-        });
-        return new Vue({
-            el: "#app",
-            store,
-            data: appData,
+        const app = createApp({
+            data() { return appData; },
             methods: this.methods,
         });
+
+        // Temporary Vuex-like store via globalProperties (to be replaced by Pinia in Section 07)
+        const storeState = {
+            appData: appData,
+            battleSimulator: this,
+            imageRootPath: g_imageRootPath,
+        };
+        const storeActions = {
+            updateMap() { return updateMap(); },
+            saveSettings() { return saveSettings(); },
+            showSettingDialog() { return showSettingDialog(); },
+            showImportDialog() { return showImportDialog(); },
+            showExportDialog() { return showExportDialog(); },
+            loadLazyImages() { return loadLazyImages(); },
+            resetPlacement() { return resetPlacement(); },
+        };
+        app.config.globalProperties.$store = {
+            state: storeState,
+            dispatch(action) {
+                if (storeActions[action]) {
+                    return storeActions[action]();
+                }
+                console.warn(`Unknown store action: ${action}`);
+            },
+        };
+
+        // Error handler
+        app.config.errorHandler = (err, vm, info) => {
+            console.error('[Vue]', vm && vm.$options && vm.$options.name, info, err);
+        };
+
+        // Expose global variables to templates (Vue 3 requires explicit registration)
+        const globals = app.config.globalProperties;
+        if (typeof UnitRarity !== 'undefined') globals.UnitRarity = UnitRarity;
+        if (typeof GameMode !== 'undefined') globals.GameMode = GameMode;
+        if (typeof UnitGroupType !== 'undefined') globals.UnitGroupType = UnitGroupType;
+        if (typeof StatusType !== 'undefined') globals.StatusType = StatusType;
+        if (typeof Ornament !== 'undefined') globals.Ornament = Ornament;
+        if (typeof Unit !== 'undefined') globals.Unit = Unit;
+        if (typeof updateAllUi !== 'undefined') globals.updateAllUi = updateAllUi;
+        if (typeof updateMapUi !== 'undefined') globals.updateMapUi = updateMapUi;
+        if (typeof loadSettings !== 'undefined') globals.loadSettings = loadSettings;
+        if (typeof statusTypeToShortString !== 'undefined') globals.statusTypeToShortString = statusTypeToShortString;
+        if (typeof isThief !== 'undefined') globals.isThief = isThief;
+        if (typeof getDivineVeinName !== 'undefined') globals.getDivineVeinName = getDivineVeinName;
+        if (typeof LocalStorageUtil !== 'undefined') globals.LocalStorageUtil = LocalStorageUtil;
+        if (typeof DetailLevel !== 'undefined') globals.DetailLevel = DetailLevel;
+        if (typeof GroupLog !== 'undefined') globals.GroupLog = GroupLog;
+
+        // Register components before mounting
+        initVueComponents(app);
+
+        app.mount('#app');
+        return app;
     }
 
     tileTypeChanged() {

@@ -464,17 +464,17 @@
                     <div class="jquery" id="unitSettings">
                         <ul class="contents">
                             <li v-for="unit in enemyUnits">
-                                <unit-detail v-model="unit"></unit-detail>
+                                <unit-detail :value="unit"></unit-detail>
                             </li>
                             <li v-for="unit in allyUnits">
-                                <unit-detail v-model="unit"></unit-detail>
+                                <unit-detail :value="unit"></unit-detail>
                             </li>
                             <li v-for="structure in offenceStructureStorage.objs">
-                                <structure-detail v-model="structure">
+                                <structure-detail :value="structure">
                                 </structure-detail>
                             </li>
                             <li v-for="structure in defenseStructureStorage.objs">
-                                <structure-detail v-model="structure">
+                                <structure-detail :value="structure">
                                 </structure-detail>
                             </li>
                             <!-- </ul>
@@ -544,11 +544,11 @@
                            @change="onChangeEnemyIceColor">
                     <label class="normal" for="onChangeEnemyIceColor">敵の天脈・氷の色をかえる</label>
                     <divine-vein-opacity-settings
-                            v-model="divineVeinOpacities"
+                            :divine-vein-opacities="divineVeinOpacities"
                             @change="updateAllUi"
                     >
                     </divine-vein-opacity-settings>
-                    <divine-vein-display-settings v-model="divineVeinDisplaySettings" @change="updateAllUi">
+                    <divine-vein-display-settings :divine-vein-display-settings="divineVeinDisplaySettings" @change="updateAllUi">
                     </divine-vein-display-settings>
                     <br/>
                     マップのマスサイズ: <input type="number" v-model="map.cellWidth" class="numeric" @change="cellSizeChanged" />
@@ -1356,17 +1356,8 @@
         onload="this.media='all'">
     <script async src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
-    <!-- vue.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
-
-    <!-- vuex.js -->
-    <script src="https://unpkg.com/vuex@3.6.2/dist/vuex.min.js"></script>
-
     <!-- sortable.js -->
     <script async src="https://cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
-
-    <!-- vuedraggable.js -->
-    <script async src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.23.2/vuedraggable.umd.min.js"></script>
 
     <!-- クッキー(実際は使ってないので消してもいいかも) -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script> -->

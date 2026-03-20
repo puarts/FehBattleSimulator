@@ -51,7 +51,6 @@ function initAetherRaidBoard(
 
 // Initialization
 window.g_app = g_app;
-initVueComponents();
 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos, captainInfos, true);
 g_app.registerHeroOptions(heroInfos, false);
 initAetherRaidBoard(heroInfos);

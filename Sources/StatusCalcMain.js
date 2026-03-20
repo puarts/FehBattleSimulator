@@ -8,6 +8,7 @@ import { SummonerLevel } from './UnitConstants.js';
 import { HeroInfo } from './HeroInfo.js';
 import { heroInfos } from './SampleHeroInfos.js';
 import { weaponInfos } from './SampleSkillInfos.js';
+import { createApp } from 'vue';
 
 // Side-effect imports for skill registration
 import './SkillEffectCore.js';
@@ -103,14 +104,15 @@ function init(heroInfo, skillInfos, totalSp) {
     unit.initializeSkillsToDefault();
     unit.weaponInfo = __findSkillInfo(skillInfos, unit.weapon);
 
-    g_app = new Vue({
-        el: "#app",
-        data: {
-            /** @member {Unit} */
-            value: unit,
-            isWeaponEnabled: false,
-            totalSp: 0,
-            isDuelSkillEnabled: false,
+    const app = createApp({
+        data() {
+            return {
+                /** @member {Unit} */
+                value: unit,
+                isWeaponEnabled: false,
+                totalSp: 0,
+                isDuelSkillEnabled: false,
+            };
         },
         methods: {
             reset() {
@@ -156,6 +158,7 @@ function init(heroInfo, skillInfos, totalSp) {
             },
         }
     });
+    g_app = app.mount('#app');
     g_app.totalSp = totalSp;
     updateStatus();
 }

@@ -23,6 +23,7 @@ import { roundFloat, startProgressiveProcess } from './Utilities.js';
 import { g_appData } from './AppData.js';
 import { weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos } from './SampleSkillInfos.js';
 import { heroInfos } from './SampleHeroInfos.js';
+import { createApp } from 'vue';
 
 // Side-effect imports for skill registration
 import './SkillEffectCore.js';
@@ -1118,9 +1119,8 @@ function initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos
     g_damageCalcData = new DamageCalcData(
         heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
         passiveSInfos, passiveXInfos);
-    g_damageCalcVm = new Vue({
-        el: "#damageCalc",
-        data: g_damageCalcData,
+    const app = createApp({
+        data() { return g_damageCalcData; },
         methods: {
             triangleAdvantageChanged: function () {
                 g_damageCalcData.updateDamageDealt();
@@ -1141,6 +1141,8 @@ function initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos
             },
         }
     });
+    app.mount('#damageCalc');
+    g_damageCalcVm = app;
 }
 
 // Initialization

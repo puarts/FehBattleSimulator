@@ -1,3 +1,4 @@
+import { createApp } from 'vue';
 import { HeroDatabase } from './HeroDatabase.js';
 import { heroInfos as sampleHeroInfos } from './SampleHeroInfos.js';
 
@@ -100,10 +101,10 @@ let g_appData = null;
 
 function init(heroInfos) {
     g_appData = new AppData(heroInfos);
-    const vm = new Vue({
-        el: "#app",
-        data: g_appData
+    const app = createApp({
+        data() { return g_appData; }
     });
+    app.mount('#app');
     g_appData.heroInfos = heroInfos;
     g_appData.applyFilter();
 }

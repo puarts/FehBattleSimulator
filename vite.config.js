@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite';
-// import vue from '@vitejs/plugin-vue'; // Enable in Section 06
+import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
     root: 'Sources',
-    // plugins: [vue()], // Enable in Section 06
+    plugins: [vue()],
     test: {
         globals: true,
         environment: 'jsdom',
@@ -38,11 +38,14 @@ export default defineConfig({
             // Fallback: run 8 individual builds if manualChunks doesn't work.
         },
     },
+    define: {
+        __VUE_OPTIONS_API__: true,
+        __VUE_PROD_DEVTOOLS__: false,
+        __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
+    },
     resolve: {
         alias: {
-            // Enable in Section 06 (Vue 3 Core):
-            // Vue 3 runtime compiler build needed for in-HTML templates
-            // 'vue': 'vue/dist/vue.esm-bundler.js',
+            'vue': 'vue/dist/vue.esm-bundler.js',
         },
     },
 });
