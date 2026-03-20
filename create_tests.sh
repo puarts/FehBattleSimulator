@@ -66,6 +66,7 @@ TEST_FILE_NAMES=(
     Performance
     TestHelper
     SmokeTest
+    BuildFilter
     )
 
 # カテゴリに応じたテストファイル選択
@@ -94,7 +95,7 @@ touch ./$TARGET_FILE
 cp /dev/null ./$TARGET_FILE
 
 for name in ${SOURCE_FILE_NAMES[@]}; do
-    cat ./Sources/${name}.js >> ./$TARGET_FILE
+    grep -v -E '^import |^export \{' ./Sources/${name}.js >> ./$TARGET_FILE || true
 done
 
 for name in ${TEST_UTIL_FILE_NAMES[@]}; do

@@ -109,6 +109,22 @@ const BUILDS = {
 // ビルド実行
 // ---------------------------------------------------------------------------
 
+/**
+ * import/export 行を除去するフィルタ。
+ * ESM化で追加される import/export 文を結合出力から除去し、
+ * グローバルスコープ前提の結合モードとの互換性を維持する。
+ *
+ * @param {string} content - ファイル内容
+ * @returns {string} フィルタ適用後の内容
+ */
+// Keep in sync with Tests/BuildFilter.test.js
+function filterImportExport(content) {
+    return content
+        .split('\n')
+        .filter(line => !(/^import /.test(line) || /^export \{/.test(line)))
+        .join('\n');
+}
+
 function mergeFiles(fileNames) {
     const parts = [];
     for (const name of fileNames) {
@@ -117,7 +133,7 @@ function mergeFiles(fileNames) {
             console.warn(`WARNING: ${filePath} was not found`);
             continue;
         }
-        parts.push(readFileSync(filePath, 'utf-8'));
+        parts.push(filterImportExport(readFileSync(filePath, 'utf-8')));
     }
     // Deploy.bat (type コマンド) と同じく、ファイル内容をそのまま連結
     return parts.join('');
