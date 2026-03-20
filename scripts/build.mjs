@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 // =============================================================================
-// Phase 1: Deploy.bat の結合 + JSMin を置き換える Node.js ビルドスクリプト
+// [DEPRECATED] Phase 1: Deploy.bat の結合 + JSMin を置き換える Node.js ビルドスクリプト
 // Deploy.bat と同じファイルリスト・結合順序で HTML 別に 1 ファイルを出力する
+//
+// NOTE: This script is deprecated in favor of Vite (`npm run vite:build`).
+// The filterImportExport() function is no longer needed since Vite handles
+// ESM modules natively. This script is kept as a fallback until the full
+// migration is validated. It will be removed in section-12-ci-cleanup.
 // =============================================================================
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, copyFileSync } from 'fs';

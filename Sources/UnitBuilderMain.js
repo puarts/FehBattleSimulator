@@ -1,4 +1,30 @@
+import { BattleSimulatorBase, loadSettings } from './BattleSimulatorBase.js';
+import { ScopedStopwatch, using_, selectText } from './Utilities.js';
+import { g_appData } from './AppData.js';
+import { GameMode } from './DamageCalculator.js';
+import { StatusType } from './HeroInfoConstants.js';
+import { SummonerLevel } from './UnitConstants.js';
+import { ElemDelimiter, g_explicitSiteRootPath } from './GlobalDefinitions.js';
+import { changeCurrentUnitTab } from './SettingManager.js';
+import { weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos } from './SampleSkillInfos.js';
+import { heroInfos } from './SampleHeroInfos.js';
+import { initVueComponents } from './VueComponents.js';
 
+// Side-effect imports for skill registration
+import './SkillEffectCore.js';
+import './SkillEffectEnv.js';
+import './SkillEffect.js';
+import './SkillEffectField.js';
+import './SkillEffectUnit.js';
+import './SkillEffectBattleContext.js';
+import './SkillEffectHooks.js';
+import './SkillEffectRegistrar.js';
+import './SkillEffectAliases.js';
+import './CustomSkill.js';
+import './SkillImpl.js';
+import './SkillImpl202408.js';
+import './SkillImpl202501.js';
+import './SkillImpl202601.js';
 
 class UnitBuilderMain extends BattleSimulatorBase {
     constructor() {
@@ -143,5 +169,18 @@ function initUnitBuilder() {
         updateUrl();
     });
 }
+
+// Initialization
+window.g_app = g_app;
+initVueComponents();
+g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos, [], false);
+g_app.registerHeroOptions(heroInfos, false);
+initUnitBuilder();
+
+// Hide loader, show app
+const loader = document.getElementById('loader');
+if (loader) loader.style.display = 'none';
+const appElem = document.getElementById('app');
+if (appElem) appElem.style.display = '';
 
 export { UnitBuilderMain, g_app, initUnitBuilder };

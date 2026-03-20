@@ -1,3 +1,25 @@
+import { HeroDatabase } from './HeroDatabase.js';
+import { MoveType } from './HeroInfoConstants.js';
+import { isPhysicalWeaponType } from './Skill.js';
+import { ScopedStopwatch, using_, startProgressiveProcess, distinct } from './Utilities.js';
+import { heroInfos as sampleHeroInfos } from './SampleHeroInfos.js';
+import { initVueComponents } from './VueComponents.js';
+
+// Side-effect imports for skill registration
+import './SkillEffectCore.js';
+import './SkillEffectEnv.js';
+import './SkillEffect.js';
+import './SkillEffectField.js';
+import './SkillEffectUnit.js';
+import './SkillEffectBattleContext.js';
+import './SkillEffectHooks.js';
+import './SkillEffectRegistrar.js';
+import './SkillEffectAliases.js';
+import './CustomSkill.js';
+import './SkillImpl.js';
+import './SkillImpl202408.js';
+import './SkillImpl202501.js';
+import './SkillImpl202601.js';
 
 const TabId = {
     Basic: 0,
@@ -650,3 +672,10 @@ function initializeStatusClusterer(heroInfos) {
         }
     });
 }
+
+// Initialization
+const resolvedHeroInfos = window.heroInfos || sampleHeroInfos;
+initVueComponents();
+initializeStatusClusterer(resolvedHeroInfos);
+
+export { HeroStatusClustererData, g_heroStatusClustererData, initializeStatusClusterer };

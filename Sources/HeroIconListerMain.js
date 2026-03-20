@@ -1,4 +1,21 @@
+import { HeroDatabase } from './HeroDatabase.js';
+import { heroInfos as sampleHeroInfos } from './SampleHeroInfos.js';
 
+// Side-effect imports for skill registration
+import './SkillEffectCore.js';
+import './SkillEffectEnv.js';
+import './SkillEffect.js';
+import './SkillEffectField.js';
+import './SkillEffectUnit.js';
+import './SkillEffectBattleContext.js';
+import './SkillEffectHooks.js';
+import './SkillEffectRegistrar.js';
+import './SkillEffectAliases.js';
+import './CustomSkill.js';
+import './SkillImpl.js';
+import './SkillImpl202408.js';
+import './SkillImpl202501.js';
+import './SkillImpl202601.js';
 
 class AppData extends HeroDatabase {
     constructor(heroInfos) {
@@ -90,5 +107,9 @@ function init(heroInfos) {
     g_appData.heroInfos = heroInfos;
     g_appData.applyFilter();
 }
+
+// Initialization (type="module" is deferred, so DOM is ready)
+const resolvedHeroInfos = window.heroInfos || sampleHeroInfos;
+init(resolvedHeroInfos);
 
 export { AppData, g_appData, init };

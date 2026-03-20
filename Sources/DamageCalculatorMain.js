@@ -1,6 +1,45 @@
 /// @file
 /// @brief DamageCalculator.html の実装に必要なクラスや関数等の定義です。
 
+import { Unit } from './Unit.js';
+import { HeroDatabase } from './HeroDatabase.js';
+import { SkillDatabase } from './SkillDatabase.js';
+import { Tile } from './Tile.js';
+import { BattleMap } from './BattleMap.js';
+import { GlobalBattleContext } from './GlobalBattleContext.js';
+import { DamageCalculatorWrapper } from './DamageCalculatorWrapper.js';
+import { BeginningOfTurnSkillHandler } from './BeginningOfTurnSkillHandler.js';
+import { UnitManager } from './UnitManager.js';
+import { HtmlLogger } from './Logger.js';
+import { KeyRepeatHandler } from './KeyRepeatHandler.js';
+import { DamageCalcEnv, DamageType, GameMode, DamageCalculator as DamageCalcCore } from './DamageCalculator.js';
+import { DamageCalculationUtility } from './DamageCalculationUtility.js';
+import { UnitGroupType } from './UnitConstants.js';
+import { BlessingType, StatusType } from './HeroInfoConstants.js';
+import { WeaponType, SkillType, Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, WeaponRefinementType } from './SkillConstants.js';
+import { isNormalAttackSpecial, isPhysicalWeaponType, SkillInfo, COUNT2_SPECIALS, INHERITABLE_COUNT2_SPECIALS, COUNT3_SPECIALS, INHERITABLE_COUNT3_SPECIALS, COUNT4_SPECIALS, INHERITABLE_COUNT4_SPECIALS, COUNT5_SPECIALS, INHERITABLE_COUNT5_SPECIALS } from './Skill.js';
+import { BookVersions } from './HeroInfoConstants.js';
+import { roundFloat, startProgressiveProcess } from './Utilities.js';
+import { g_appData } from './AppData.js';
+import { weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos } from './SampleSkillInfos.js';
+import { heroInfos } from './SampleHeroInfos.js';
+
+// Side-effect imports for skill registration
+import './SkillEffectCore.js';
+import './SkillEffectEnv.js';
+import './SkillEffect.js';
+import './SkillEffectField.js';
+import './SkillEffectUnit.js';
+import './SkillEffectBattleContext.js';
+import './SkillEffectHooks.js';
+import './SkillEffectRegistrar.js';
+import './SkillEffectAliases.js';
+import './CustomSkill.js';
+import './SkillImpl.js';
+import './SkillImpl202408.js';
+import './SkillImpl202501.js';
+import './SkillImpl202601.js';
+
 const DamageCalculatorMode = {
     Simple: 0,
     SpecialDamageGraph: 1,
@@ -1103,5 +1142,19 @@ function initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos
         }
     });
 }
+
+// Initialization
+initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos);
+if (g_appData) {
+    g_appData.skillDatabase = g_damageCalcData.heroDatabase.skillDatabase;
+    g_appData.map = g_damageCalcData.battleMap;
+}
+if (typeof addKeyRepeatEvents === 'function') addKeyRepeatEvents();
+
+// Hide loader, show app
+const loader = document.getElementById('loader');
+if (loader) loader.style.display = 'none';
+const damageCalcElem = document.getElementById('damageCalc');
+if (damageCalcElem) damageCalcElem.style.display = '';
 
 export { DamageCalculatorMode, DamageCalcModeOptions, DamageCalcHeroDatabase, DamageCalcData, g_damageCalcData, initDamageCalculator };

@@ -1,6 +1,30 @@
 /// @file
 /// @brief ステータス計算器のメインコードです。
 
+import { Unit } from './Unit.js';
+import { SkillInfo } from './Skill.js';
+import { StatusType } from './HeroInfoConstants.js';
+import { SummonerLevel } from './UnitConstants.js';
+import { HeroInfo } from './HeroInfo.js';
+import { heroInfos } from './SampleHeroInfos.js';
+import { weaponInfos } from './SampleSkillInfos.js';
+
+// Side-effect imports for skill registration
+import './SkillEffectCore.js';
+import './SkillEffectEnv.js';
+import './SkillEffect.js';
+import './SkillEffectField.js';
+import './SkillEffectUnit.js';
+import './SkillEffectBattleContext.js';
+import './SkillEffectHooks.js';
+import './SkillEffectRegistrar.js';
+import './SkillEffectAliases.js';
+import './CustomSkill.js';
+import './SkillImpl.js';
+import './SkillImpl202408.js';
+import './SkillImpl202501.js';
+import './SkillImpl202601.js';
+
 let unit = new Unit();
 let g_app = null;
 
@@ -141,6 +165,13 @@ function diffToHtml(value) {
     if (value > 0) return `<span style='color:blue'>${signedValue}</span>`;
     else if (value < 0) return `<span style='color:red'>${signedValue}</span>`;
     else return signedValue;
+}
+
+// Initialization with sample data
+if (heroInfos && heroInfos.length > 0) {
+    const heroInfo = heroInfos[0];
+    const maxSp = 2000;
+    init(heroInfo, weaponInfos, maxSp);
 }
 
 export { unit, g_app, updateStatus, init, diffToHtml };

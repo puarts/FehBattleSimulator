@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="css/main.css" type="text/css" />
     <link rel="stylesheet" href="css/loading.css">
     <link rel="stylesheet" href="feh-battle-simulator.css">
-    <script src="Local.js"></script>
 </head>
 
 <body>
@@ -416,126 +415,7 @@
     <!-- chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.4/Chart.bundle.min.js"></script>
 
-    <script>
-        g_appData = {};
-        g_appData.isDevelopmentMode = false;
-        function createScriptElement(src, onloadFunc) {
-            const isExternal = /^https?:\/\//.test(src);
-            if (isExternal) {
-                const element = document.createElement('script');
-                element.type = 'text/javascript';
-                element.src = src;
-                element.onload = onloadFunc;
-                document.getElementsByTagName('head')[0].appendChild(element);
-                return;
-            }
-            fetch(src)
-                .then(res => res.text())
-                .then(code => {
-                    const filtered = code.split('\n')
-                        .filter(line => !(/^import /.test(line) || /^export \{/.test(line)))
-                        .join('\n');
-                    const blob = new Blob([filtered], { type: 'text/javascript' });
-                    const element = document.createElement('script');
-                    element.type = 'text/javascript';
-                    element.src = URL.createObjectURL(blob);
-                    element.onload = onloadFunc;
-                    document.getElementsByTagName('head')[0].appendChild(element);
-                });
-        }
-
-        let rootPath = "";
-        // rootPath = "/AetherRaidTacticsBoard/Release2/";
-
-        function loadScripts(scriptFileNames, allScriptLoaded, index = 0) {
-            if (index == scriptFileNames.length) {
-                allScriptLoaded();
-                return;
-            }
-
-            let reloadSuffix = "20200513";
-            let scriptFileName = rootPath + scriptFileNames[index];
-            let src = scriptFileName + "?" + reloadSuffix;
-            const startTime = Date.now();
-            createScriptElement(src, x => {
-                const endTime = Date.now();
-                console.log(`${endTime - startTime} ms to load ${src}`);
-                loadScripts(scriptFileNames, allScriptLoaded, ++index);
-            });
-        }
-
-        function addKeyRepeatEvents() {
-            addKeyRepeatEventById("incrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.min(g_damageCalcData.atkUnit.atkWithSkills + 1, 99));
-            addKeyRepeatEventById("decrementAtk", () => g_damageCalcData.atkUnit.atkWithSkills = Math.max(g_damageCalcData.atkUnit.atkWithSkills - 1, 0));
-            addKeyRepeatEventById("incrementSpd", () => g_damageCalcData.atkUnit.spdWithSkills = Math.min(g_damageCalcData.atkUnit.spdWithSkills + 1, 99));
-            addKeyRepeatEventById("decrementSpd", () => g_damageCalcData.atkUnit.spdWithSkills = Math.max(g_damageCalcData.atkUnit.spdWithSkills - 1, 0));
-            addKeyRepeatEventById("incrementAttackerMit", () => g_damageCalcData.atkUnit.defWithSkills = Math.min(g_damageCalcData.atkUnit.defWithSkills + 1, 99));
-            addKeyRepeatEventById("decrementAttackerMit", () => g_damageCalcData.atkUnit.defWithSkills = Math.max(g_damageCalcData.atkUnit.defWithSkills - 1, 0));
-            addKeyRepeatEventById("incrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.min(g_damageCalcData.defUnit.defWithSkills + 1, 99));
-            addKeyRepeatEventById("decrementMit", () => g_damageCalcData.defUnit.defWithSkills = Math.max(g_damageCalcData.defUnit.defWithSkills - 1, 0));
-            addKeyRepeatEventById("incrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.min(g_damageCalcData.damageReductionPercentage + 1, 100));
-            addKeyRepeatEventById("decrementDamageReduction", () => g_damageCalcData.damageReductionPercentage = Math.max(g_damageCalcData.damageReductionPercentage - 1, 0));
-        }
-
-
-        $(function () {
-            const isLocal = typeof weaponInfos == 'undefined';
-            console.log(`isLocal=${isLocal}`);
-            let additionalScripts = [];
-            if (isLocal) {
-                additionalScripts = [
-                    "GlobalDefinitions_Debug.js",
-                    "Utilities.js",
-                    "Logger.js",
-                    "SkillConstants.js",
-                    "Skill.js",
-                    "BattleMapElement.js",
-                    "Tile.js",
-                    "BattleMap.js",
-                    "GlobalBattleContext.js",
-                    "Structures.js",
-                    "Table.js",
-                    "HeroInfoConstants.js",
-                    "HeroInfo.js",
-                    "UnitConstants.js",
-                    "BattleContext.js",
-                    "Unit.js",
-                    "UnitManager.js",
-                    "SkillDatabase.js",
-                    "HeroDatabase.js",
-                    "AudioManager.js",
-                    "DamageCalculationUtility.js",
-                    "DamageCalculator.js",
-                    "PostCombatSkillHander.js",
-                    "DamageCalculatorWrapper.js",
-                    "BeginningOfTurnSkillHandler.js",
-                    "AudioManager.js",
-                    "SampleSkillInfos.js",
-                    "SampleHeroInfos.js",
-                    "VueComponents.js",
-                    "KeyRepeatHandler.js",
-                    "DamageCalculatorMain.js",
-                    ...SKILL_EFFECT_FILES,
-                    ...SKILL_IMPL_FILES,
-                ];
-            }
-            const startTime = Date.now();
-            loadScripts(additionalScripts, () => {
-                const endTime = Date.now();
-                console.log(`${endTime - startTime} ms to load all scripts`);
-                initDamageCalculator(heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
-                    passiveSInfos, passiveXInfos);
-                g_appData.skillDatabase = g_damageCalcData.heroDatabase.skillDatabase;
-                g_appData.map = g_damageCalcData.battleMap;
-                addKeyRepeatEvents();
-
-                const loader = document.getElementById("loader");
-                loader.style.display = "none";
-                const app = document.getElementById("damageCalc");
-                app.style.display = "";
-            });
-        });
-    </script>
+    <script type="module" src="./DamageCalculatorMain.js"></script>
 </body>
 
 </html>
