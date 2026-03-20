@@ -1,6 +1,14 @@
 /// @file
 /// @brief DamageCalculator クラスとそれに関連するクラスや関数等の定義です。
 
+import { GroupLogger, LoggerBase } from './Logger.js';
+import { NodeEnv } from './SkillEffectEnv.js';
+import { getSkillLogLevel } from './SkillEffect.js';
+import { DamageCalculationUtility, TriangleAdvantage } from './DamageCalculationUtility.js';
+import { Special, Weapon, PassiveB, StatusEffectType, WeaponType } from './SkillConstants.js';
+import { isDefenseSpecial, getSkillFunc } from './Skill.js';
+import { addSpecialDamageAfterDefenderSpecialActivatedFuncMap, applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap, applySpecialDamageReductionPerAttackFuncMap, applySkillEffectAfterSpecialActivatedFuncMap, applySkillEffectsPerAttackFuncMap, activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap } from './Skill.js';
+import { AFTER_ATTACK_HOOKS, AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS, AT_START_OF_ATTACK_HOOKS } from './SkillEffectHooks.js';
 
 const GameMode = {
     AetherRaid: 0,
@@ -2986,3 +2994,5 @@ class DamageCalculator {
         if (this.isLogEnabled) this.writeDebugLog(unit.getNameWithGroup() + "の奥義カウント" + currentSpCount + "→" + unit.tmpSpecialCount);
     }
 }
+
+export { GameMode, DamageType, DamageCalcResult, CombatResult, AttackResult, StrikeResult, DamageCalcContext, DamageCalcEnv, OneAttackResult, DamageCalculator };

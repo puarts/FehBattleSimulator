@@ -1,3 +1,14 @@
+import { Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS, Captain, StatusEffectType, WeaponType } from './SkillConstants.js';
+import { LoggerBase, GroupLogger } from './Logger.js';
+import { NodeEnv, DamageCalculatorWrapperEnv } from './SkillEffectEnv.js';
+import { getSkillLogLevel } from './SkillEffect.js';
+import { isPhysicalWeaponType, isWeaponTypeBreathOrBeast, isWeaponTypeBreath, isNormalAttackSpecial, isDefenseSpecial, getSkillFunc } from './Skill.js';
+import { applySkillEffectForUnitFuncMap, applyPrecombatDamageReductionRatioFuncMap, applySKillEffectForUnitAtBeginningOfCombatFuncMap, applySkillEffectFromAlliesFuncMap, applySkillEffectFromEnemyAlliesFuncMap, applySkillEffectFromAlliesExcludedFromFeudFuncMap, applySkillEffectAfterSetAttackCountFuncMap, applySkillEffectForUnitAfterCombatStatusFixedFuncMap, calcFixedAddDamageFuncMap, applyDamageReductionRatioBySpecialFuncMap, applyPotentSkillEffectFuncMap, canActivateSaveSkillFuncMap, selectReferencingResOrDefFuncMap, updateUnitSpurFromEnemyAlliesFuncMap, updateUnitSpurFromAlliesFuncMap, applySkillEffectsAfterAfterBeginningOfCombatFuncMap, applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap } from './Skill.js';
+import { DamageCalculator, GameMode, DamageType, DamageCalcEnv, CombatResult } from './DamageCalculator.js';
+import { TriangleAdvantage } from './DamageCalculationUtility.js';
+import { PostCombatSkillHander } from './PostCombatSkillHander.js';
+import { AT_START_OF_COMBAT_HOOKS, BEFORE_COMBAT_HOOKS, BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS, BEFORE_AOE_SPECIAL_HOOKS, CAN_TRIGGER_SAVIOR_HOOKS, IS_ASSIGN_DECOY_FOR_SAME_RANGE_ACTIVE_HOOKS, FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS, FOR_FOES_INFLICTS_STATS_MINUS_HOOKS, FOR_ALLIES_STATS_SKILLS_USING_STATS_HOOKS, FOR_ALLIES_NON_STATS_SKILL_USING_STATS_HOOKS, FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_OTHER_SKILLS_DURING_COMBAT_HOOKS, FOR_ALLIES_AT_START_OF_COMBAT_HOOKS } from './SkillEffectHooks.js';
+import { FOR_FOE_STATS_SKILLS_USING_STATS_HOOKS, FOR_FOE_NON_STATS_SKILL_USING_STATS_HOOKS, FOR_FOES_AT_START_OF_COMBAT_HOOKS, FOR_FOES_INFLICTS_EFFECTS_AFTER_OTHER_SKILLS_HOOKS, FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS, STATS_SKILL_USING_STATS_HOOKS, NON_STATS_SKILL_USING_STATS_HOOKS, SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS, WHEN_APPLIES_POTENT_EFFECTS_HOOKS, FOR_ALLIES_WHEN_APPLIES_POTENT_EFFECTS_HOOKS, AFTER_FOLLOW_UP_CONFIGURED_HOOKS, WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS, AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS, FOR_ALLIES_AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS, AFTER_CONDITION_CONFIGURED_HOOKS } from './SkillEffectHooks.js';
 
 class PerformanceProfile {
     constructor() {
@@ -17191,3 +17202,5 @@ class DamageCalculatorWrapper {
         damageCalcEnv.applySkill('全ての条件決定後', damageCalcEnv.atkUnit, damageCalcEnv.defUnit, applySkill, this);
     }
 }
+
+export { PerformanceProfile, ScopedTileChanger, DamageCalculatorWrapper };

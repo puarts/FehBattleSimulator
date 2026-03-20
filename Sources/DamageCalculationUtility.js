@@ -1,6 +1,13 @@
 /// @file
 /// @brief DamageCalculationUtility クラスの定義です。
 
+import { EffectiveType, WeaponType, Weapon, ColorType } from './SkillConstants.js';
+import { MoveType } from './HeroInfoConstants.js';
+import { isWeaponTypeBreath, isWeaponTypeBeast, isWeaponTypeTome } from './Skill.js';
+import { LoggerBase } from './Logger.js';
+import { NodeEnv } from './SkillEffectEnv.js';
+import { getSkillLogLevel } from './SkillEffect.js';
+import { CALC_TRIANGLE_ADVANTAGE_HOOKS } from './SkillEffectHooks.js';
 
 const TriangleAdvantage = {
     None: 0,
@@ -156,3 +163,5 @@ class DamageCalculationUtility {
         return diff > 0 ? Math.min(diff * percentage, maxPercentage) / 100.0 : 0;
     }
 }
+
+export { TriangleAdvantage, ColorToTriangleAdvantageTable, EffectiveFuncTable, DamageCalculationUtility };

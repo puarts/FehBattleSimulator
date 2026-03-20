@@ -1,3 +1,13 @@
+import { Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS, Captain, StatusEffectType, WeaponType } from './SkillConstants.js';
+import { IterUtil, GeneratorUtil } from './Utilities.js';
+import { OffenceStructureBase } from './Structures.js';
+import { MoveType } from './HeroInfoConstants.js';
+import { UnitGroupType } from './UnitConstants.js';
+import { getSkillLogLevel } from './SkillEffect.js';
+import { getSkillFunc, isNormalAttackSpecial, isPhysicalWeaponType, isWeaponTypeBreathOrBeast, isMeleeWeaponType } from './Skill.js';
+import { hasTransformSkillsFuncMap, applySkillForBeginningOfTurnFuncMap, applyEnemySkillForBeginningOfTurnFuncMap, applySkillAfterSkillsForBeginningOfTurnFuncMap, applySkillAfterEnemySkillsForBeginningOfTurnFuncMap, applyHealSkillForBeginningOfTurnFuncMap } from './Skill.js';
+import { AtStartOfTurnEnv } from './SkillEffect.js';
+import { AT_START_OF_TURN_HOOKS, AT_START_OF_ENEMY_PHASE_HOOKS, AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS, AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS, CAN_TRANSFORM_AT_START_OF_TURN_HOOKS, CAN_TRANSFORM_AT_START_OF_ENEMY_TURN_HOOKS } from './SkillEffectHooks.js';
 
 class BeginningOfTurnSkillHandler {
     /**
@@ -3390,3 +3400,5 @@ class BeginningOfTurnSkillHandler {
         return this._unitManager.isThereAnyUnitInTheSameGroupOnMap(unit, conditionFunc);
     }
 }
+
+export { BeginningOfTurnSkillHandler };
