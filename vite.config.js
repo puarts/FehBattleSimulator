@@ -16,6 +16,9 @@ export default defineConfig({
         pool: 'threads',
         singleThread: true,
     },
+    server: {
+        cors: true,
+    },
     build: {
         outDir: '../dist',
         emptyOutDir: true,

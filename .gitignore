@@ -9,6 +9,9 @@ coverage/
 # Samples (local scratch files)
 Sources/samples/
 
+# Environment overrides (user-local)
+.env*.local
+
 # Build artifacts
 Outputs/
 dist/
