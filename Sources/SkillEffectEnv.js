@@ -1,3 +1,5 @@
+import { LoggerBase, GroupLogger, ConsoleLogger } from './Logger.js';
+
 // TODO: コンストラクタを設定するか検討する
 // TODO: 直接設定されたくない値をプライベートにする(targetUnitOrAlly, targetFoe)
 class NodeEnv {
@@ -866,3 +868,5 @@ class NeutralizingEndActionEnv extends NodeEnv {
             .setTextUnit(targetUnit);
     }
 }
+
+export { NodeEnv, DamageCalculatorWrapperEnv, DamageCalculatorEnv, BattleSimulatorBaseEnv, EnumerationEnv, ForFoesEnv, ForAlliesEnv, PreventingStatusEffectEnv, NeutralizingEndActionEnv };

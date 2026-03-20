@@ -1,3 +1,5 @@
+import { SkillEffectHooks, SkillEffectNode, SkillRequirement, IF_NODE } from './SkillEffectCore.js';
+
 class SkillEffectRegistrar {
     static buildSkill(skill, context) {
         context.skillId = skill.id;
@@ -234,3 +236,5 @@ class SkillEffectRegistrar {
         }
     }
 }
+
+export { SkillEffectRegistrar };
