@@ -9,6 +9,7 @@ import { EnsureMinNode, EnsureMaxNode, EnsureMinMaxNode, ENSURE_MAX_MIN_NODE, MU
 import { FirstValueNode, UniqueCollectionNode, FlattenCollectionNode, MapCollectionNode, FilterCollectionNode, CountCollectionNode, IntersectCollectionNode, TopNNode, SumNumbersNode, CannotAnyNode, TraceBoolNode, NumThatIsNode, TernaryConditionalNumberNode, UnionSetNode, SetSizeNode } from './SkillEffectCore.js';
 import { NodeEnv } from './SkillEffectEnv.js';
 import { GeneratorUtil, ArrayUtil, SetUtil } from './Utilities.js';
+import { StatusIndex } from './Skill.js';
 
 // Mixin
 // TODO: 冗長なものはMixinを使用するようにする

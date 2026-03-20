@@ -132,5 +132,6 @@ Skills use an internal DSL with UPPER_SNAKE_CASE node constructors. Follow this 
 2. **Performance** — Mass unit evaluation happens frequently; avoid unnecessary allocations and DOM operations
 3. **Skill pattern adherence** — Always follow the established node-based DSL patterns in the latest SkillImpl file
 4. **Prefer latest file** — When reading skill implementation examples, prefer newer date files over older ones as patterns evolve
+7. **想定外の問題は即報告** — deep-plan / deep-implement 実行中にプラン通りにいかない問題（循環依存、API非互換、テスト失敗等）を発見した場合、独自判断で回避せず必ずユーザーに報告して指示を仰ぐこと
 5. **Do not regenerate docs** — `Documents/Api/` is manually regenerated; do not modify
 6. **Test files** — Add new test files to `Tests/` with `.test.js` extension. Use ESM imports.
