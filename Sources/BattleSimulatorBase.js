@@ -3,7 +3,7 @@
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import { useMainStore } from './store.js';
+import { useMainStore, setupStoreActions } from './store.js';
 import { UnitRarity, StatusType, statusTypeToShortString } from './HeroInfoConstants.js';
 import { GameMode } from './DamageCalculator.js';
 import { UnitGroupType } from './UnitConstants.js';
@@ -1044,11 +1044,12 @@ class BattleSimulatorBase {
         });
         app.use(pinia);
 
-        // Initialize Pinia store state
+        // Initialize Pinia store state and inject module-scoped action delegates
         const mainStore = useMainStore();
         mainStore.appData = appData;
         mainStore.battleSimulator = this;
         mainStore.imageRootPath = g_imageRootPath;
+        setupStoreActions({ updateMap, saveSettings, resetPlacement });
 
         // Error handler
         app.config.errorHandler = (err, vm, info) => {

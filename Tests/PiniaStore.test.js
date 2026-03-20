@@ -1,19 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { setActivePinia, createPinia, mapState, mapActions } from 'pinia';
-import { useMainStore } from '../Sources/store.js';
+import { useMainStore, setupStoreActions } from '../Sources/store.js';
 
-// Mock global functions that store actions delegate to
-globalThis.updateMap = vi.fn();
-globalThis.saveSettings = vi.fn();
-globalThis.showSettingDialog = vi.fn();
-globalThis.showImportDialog = vi.fn();
-globalThis.showExportDialog = vi.fn();
-globalThis.loadLazyImages = vi.fn();
-globalThis.resetPlacement = vi.fn();
+// Mock window-global functions (defined in HTML <script> tags)
+window.showSettingDialog = vi.fn();
+window.showImportDialog = vi.fn();
+window.showExportDialog = vi.fn();
+window.loadLazyImages = vi.fn();
+
+// Mock module-scoped delegates (injected via setupStoreActions)
+const mockDelegates = {
+    updateMap: vi.fn(),
+    saveSettings: vi.fn(),
+    resetPlacement: vi.fn(),
+};
 
 describe('Pinia Store Migration', () => {
     beforeEach(() => {
         setActivePinia(createPinia());
+        setupStoreActions(mockDelegates);
         vi.clearAllMocks();
     });
 
@@ -38,29 +43,33 @@ describe('Pinia Store Migration', () => {
         expect(store.imageRootPath).toBe('/images');
     });
 
-    it('should have actions that delegate to global functions', () => {
+    it('should delegate module-scoped actions via setupStoreActions', () => {
         const store = useMainStore();
 
         store.updateMap();
-        expect(globalThis.updateMap).toHaveBeenCalledOnce();
+        expect(mockDelegates.updateMap).toHaveBeenCalledOnce();
 
         store.saveSettings();
-        expect(globalThis.saveSettings).toHaveBeenCalledOnce();
-
-        store.showSettingDialog();
-        expect(globalThis.showSettingDialog).toHaveBeenCalledOnce();
-
-        store.showImportDialog();
-        expect(globalThis.showImportDialog).toHaveBeenCalledOnce();
-
-        store.showExportDialog();
-        expect(globalThis.showExportDialog).toHaveBeenCalledOnce();
-
-        store.loadLazyImages();
-        expect(globalThis.loadLazyImages).toHaveBeenCalledOnce();
+        expect(mockDelegates.saveSettings).toHaveBeenCalledOnce();
 
         store.resetPlacement();
-        expect(globalThis.resetPlacement).toHaveBeenCalledOnce();
+        expect(mockDelegates.resetPlacement).toHaveBeenCalledOnce();
+    });
+
+    it('should delegate window-global actions via window.*', () => {
+        const store = useMainStore();
+
+        store.showSettingDialog();
+        expect(window.showSettingDialog).toHaveBeenCalledOnce();
+
+        store.showImportDialog();
+        expect(window.showImportDialog).toHaveBeenCalledOnce();
+
+        store.showExportDialog();
+        expect(window.showExportDialog).toHaveBeenCalledOnce();
+
+        store.loadLazyImages();
+        expect(window.loadLazyImages).toHaveBeenCalledOnce();
     });
 
     it('should provide mapState-compatible computed properties', () => {
@@ -75,10 +84,8 @@ describe('Pinia Store Migration', () => {
         expect(computed).toHaveProperty('battleSimulator');
         expect(computed).toHaveProperty('imageRootPath');
 
-        // mapState returns getter functions that read from the active store
         expect(typeof computed.appData).toBe('function');
 
-        // Verify getters return correct values when called with a store context
         const mockThis = { $pinia: store.$pinia };
         expect(computed.appData.call(mockThis)).toStrictEqual({ test: true });
         expect(computed.battleSimulator.call(mockThis)).toStrictEqual({ id: 1 });
