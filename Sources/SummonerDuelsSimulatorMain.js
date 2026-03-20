@@ -1,6 +1,8 @@
 /// @file
 /// @brief シミュレーターのメインコードです。
 
+import { openDialogById, closeDialogById, initSimDialog } from './DialogUtil.js';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import { BattleSimulatorBase, resetPlacement, loadSettings, updateAllUi } from './BattleSimulatorBase.js';
 import { ScopedStopwatch, using_ } from './Utilities.js';
 import { g_appData } from './AppData.js';
@@ -142,6 +144,9 @@ function initAetherRaidBoard(
 
 // Initialization
 window.g_app = g_app;
+window.openDialogById = openDialogById;
+window.closeDialogById = closeDialogById;
+window.initSimDialog = initSimDialog;
 g_app.registerSkillOptions(weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos, captainInfos, true);
 g_app.registerHeroOptions(heroInfos, false);
 initAetherRaidBoard(heroInfos);

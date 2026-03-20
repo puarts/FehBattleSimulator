@@ -3108,10 +3108,9 @@ class BattleSimulatorBase {
                 results.push({ heroInfo: heroInfo, result: result });
             },
             function (iter, iterMax) {
-                $("#progress").progressbar({
-                    value: iter,
-                    max: iterMax,
-                });
+                const progressEl = document.getElementById("progress");
+                progressEl.max = iterMax;
+                progressEl.value = iter;
 
                 let lastIndex = results.length - 1;
                 let winRate = results[lastIndex].result.winCount / unitCount;
@@ -3138,7 +3137,7 @@ class BattleSimulatorBase {
                 let originalDisableAllLogs = self.disableAllLogs;
                 self.disableAllLogs = true;
                 importSettingsFromString(serializedTurn);
-                $("#progress").progressbar({ disabled: true });
+                document.getElementById("progress").removeAttribute("value");
                 updateAllUi();
                 self.disableAllLogs = originalDisableAllLogs;
             });
@@ -5391,16 +5390,15 @@ class BattleSimulatorBase {
                 self.simulateEnemyTurn(currentUnit, tile, currentTurn, origAliveAllyCount);
             },
             function (iter, iterMax) {
-                $("#progress").progressbar({
-                    value: iter,
-                    max: iterMax,
-                });
+                const progressEl = document.getElementById("progress");
+                progressEl.max = iterMax;
+                progressEl.value = iter;
                 updateAllUi();
             },
             function () {
                 g_appData.globalBattleContext.currentTurn = currentTurn;
                 importPerTurnSetting(self.tempSerializedTurn);
-                $("#progress").progressbar({ disabled: true });
+                document.getElementById("progress").removeAttribute("value");
                 updateAllUi();
             });
     }
@@ -5856,16 +5854,15 @@ class BattleSimulatorBase {
                 self.simulateEnemyTurn(currentUnit, tile, currentTurn, origAliveAllyCount);
             },
             function (iter, iterMax) {
-                $("#progress").progressbar({
-                    value: iter,
-                    max: iterMax,
-                });
+                const progressEl = document.getElementById("progress");
+                progressEl.max = iterMax;
+                progressEl.value = iter;
                 updateAllUi();
             },
             function () {
                 g_appData.globalBattleContext.currentTurn = currentTurn;
                 importPerTurnSetting(self.tempSerializedTurn);
-                $("#progress").progressbar({ disabled: true });
+                document.getElementById("progress").removeAttribute("value");
                 updateAllUi();
             });
     }
@@ -11737,7 +11734,7 @@ const OwnerType = {
 let g_trashArea = new StructureContainer('trashArea');
 
 function removeTouchEventFromDraggableElements() {
-    let draggableItems = $(".draggable-elem");
+    let draggableItems = document.querySelectorAll(".draggable-elem");
     for (let i = 0; i < draggableItems.length; ++i) {
         let item = draggableItems[i];
         item.removeEventListener('touchstart', touchStartEvent, { passive: false });
@@ -11748,7 +11745,7 @@ function removeTouchEventFromDraggableElements() {
 
 function addTouchEventToDraggableElements() {
     // ドラッグ可能アイテムへのタッチイベントの設定
-    let draggableItems = $(".draggable-elem");
+    let draggableItems = document.querySelectorAll(".draggable-elem");
     for (let i = 0; i < draggableItems.length; ++i) {
         let item = draggableItems[i];
         item.addEventListener('touchstart', touchStartEvent, { passive: false });

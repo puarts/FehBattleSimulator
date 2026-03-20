@@ -1,6 +1,8 @@
 /// @file
 /// @brief AppData クラスとそれに関連するクラスや関数等の定義です。
 
+import LZString from 'lz-string';
+
 function __registerSkillOptions(options, infos) {
     for (let info of infos) {
         options.push({ id: info.id, text: info.name });

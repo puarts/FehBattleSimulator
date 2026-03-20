@@ -61,7 +61,6 @@
 
     <!-- 重要なところは予め接続 -->
     <link rel="preconnect" href="//cdnjs.cloudflare.com">
-    <link rel="preconnect" href="//code.jquery.com">
 
 
     <!-- ローディングアイコン -->
@@ -361,7 +360,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <div id="progress" style="height:5px;"></div>
+                                <progress id="progress" style="height:5px;width:100%;"></progress>
                             </td>
                         </tr>
                         <tr>
@@ -394,7 +393,7 @@
                                         :reset-unit-random="resetUnitRandom"
                                         :activate-all-unit="activateAllUnit"
                                         :reset-unit-for-testing="resetUnitForTesting"
-                                        :open-auto-clear-dialog="() => $('#autoClearDialog').dialog('open')"
+                                        :open-auto-clear-dialog="() => openDialogById('autoClearDialog')"
                                 >
                                 </debug-buttons>
                             </td>
@@ -1121,7 +1120,7 @@
     </div>
     <script>
         function showMjolnirsStrikeSettingDialog() {
-            $('#mjolnirsStrikeSettingDialog').dialog('open');
+            openDialogById('mjolnirsStrikeSettingDialog');
         }
         function setImageSrcFromDatasetSrc(lazyImages) {
             for (let lazyImage of lazyImages) {
@@ -1167,54 +1166,28 @@
         }
         function showOcrSettingDialog() {
             g_imageAnalysisDialogOpened = true;
-            $('#ocrSettingDialog').dialog('open');
+            openDialogById('ocrSettingDialog');
             loadLazyTemplateImages();
             g_app.loadImageAnalysisLibraries();
         }
         function showDialog(id) {
-            $(id).dialog('open');
+            openDialogById(id);
         }
         function showSettingDialog() {
-            $('#settingDialog').dialog('open');
+            openDialogById('settingDialog');
         }
         function showExportDialog() {
             g_appData.updateExportText();
-            $('#exportDialog').dialog('open');
+            openDialogById('exportDialog');
         }
         function showImportDialog() {
-            $('#importDialog').dialog('open');
+            openDialogById('importDialog');
         }
         function showSaveUnitDialog() {
-            showDialog('#saveUnitDialog');
+            showDialog('saveUnitDialog');
             g_appData.storeUnit();
             g_app.vm.$refs.unitStorageDialog.setUnitName(g_appData.currentUnit.name);
         }
-        function createDialog(elem, title,
-            width = 370, height = 500,
-            positionOf = "#unitSettings",
-            modal = false, position = null) {
-            let p = position ? position : { my: "left top", at: "left top", of: positionOf };
-            elem.dialog({
-                autoOpen: false,
-                modal: modal,
-                title: title,
-                width: width,
-                height: height,
-                resizable: true,
-                closeText: "",
-                position: p,
-                buttons: [
-                    {
-                        html: '<span class="dialog-button-text">閉じる</span>',
-                        class: 'dialog-button',
-                        click: function () {
-                            $(this).dialog("close");
-                        }
-                    },
-                ]
-            });
-        }
-
         function createDialogs() {
             function setScroll(id) {
                 let node = document.getElementById(id);
@@ -1233,62 +1206,45 @@
             setScroll("debugLogPanel");
 
             // タブ
-            $('.jquery .tabs li').click(function () {
-                var index = $('.jquery .tabs li').index(this);
-                g_app.setCurrentUnitIndex(index);
+            const tabItems = document.querySelectorAll('.jquery .tabs li');
+            tabItems.forEach((li, index) => {
+                li.addEventListener('click', () => {
+                    g_app.setCurrentUnitIndex(index);
+                });
             });
 
-            createDialog($("#mjolnirsStrikeSettingDialog"), "ミョルニル査定計算の設定", 370, 500, "#mapArea");
-            $("#ocrSettingDialog").dialog({
-                autoOpen: false,
-                modal: false,
-                title: "画像から自動設定",
+            initSimDialog("mjolnirsStrikeSettingDialog", "ミョルニル査定計算の設定");
+            initSimDialog("ocrSettingDialog", "画像から自動設定", {
                 width: 470,
-                height: 600,
-                closeText: "",
-                position: {
-                    my: "left bottom",
-                    at: "left bottom",
-                    of: "#mapArea"
-                },
                 buttons: [
                     {
-                        html: '<span class="dialog-button-text">設定開始</span>',
-                        class: 'dialog-button',
+                        text: '設定開始',
                         click: function () {
                             const files = document.getElementById("ocrSettingFile").files;
                             g_app.setUnitsByStatusImages(files);
-                            var closeDialog = $("#closesDialogAfterStartAnalysis")[0].checked;
-                            if (closeDialog) {
-                                $(this).dialog("close");
+                            var shouldClose = document.getElementById("closesDialogAfterStartAnalysis").checked;
+                            if (shouldClose) {
+                                closeDialogById('ocrSettingDialog');
                             }
                         }
                     },
-                    {
-                        html: '<span class="dialog-button-text">閉じる</span>',
-                        class: 'dialog-button',
-                        click: function () {
-                            $(this).dialog("close");
-                        }
-                    },
+                    { text: '閉じる', click: function () { closeDialogById('ocrSettingDialog'); } },
                 ]
             });
-            createDialog($("#durabilityTestDialog"), "耐久/殲滅力テスト", 490, 700);
-            createDialog($("#aetherRaidDefensePresetDialog"), "模擬戦相手の設定");
-            createDialog($("#itemDialog"), "アイテム");
-            createDialog($("#editMapDialog"), "マップ編集");
-            createDialog($("#setupResonantBattleEnemyDialog"), "双界の敵ステータス設定");
-            createDialog($("#autoClearDialog"), "お助けツール(開発中)");
-            createDialog($("#settingDialog"), "詳細設定", 370, 370, "#mapArea");
-            createDialog($("#exportDialog"), "設定のエクスポート", 370, 420, "#mapArea");
-            createDialog($("#importDialog"), "設定のインポート", 370, 420, "#mapArea");
-            createDialog($("#saveUnitDialog"), "ユニットの保存・読み込み", 500, 600, "#unitSettings", true);
-            createDialog($("#teamFormationDialog"), "部隊編成", 500, 600, "#mapArea", true, {
-                my: "left top", at: "left top", of: "#app"
-            });
+            initSimDialog("durabilityTestDialog", "耐久/殲滅力テスト", { width: 490 });
+            initSimDialog("aetherRaidDefensePresetDialog", "模擬戦相手の設定");
+            initSimDialog("itemDialog", "アイテム");
+            initSimDialog("editMapDialog", "マップ編集");
+            initSimDialog("setupResonantBattleEnemyDialog", "双界の敵ステータス設定");
+            initSimDialog("autoClearDialog", "お助けツール(開発中)");
+            initSimDialog("settingDialog", "詳細設定");
+            initSimDialog("exportDialog", "設定のエクスポート", { width: 370 });
+            initSimDialog("importDialog", "設定のインポート", { width: 370 });
+            initSimDialog("saveUnitDialog", "ユニットの保存・読み込み", { width: 500 });
+            initSimDialog("teamFormationDialog", "部隊編成", { width: 500 });
         }
         function copyMapSourceCodeToClipboard() {
-            var textarea = $("#mapSourceCode")[0];
+            var textarea = document.getElementById("mapSourceCode");
             textarea.select();
             textarea.setSelectionRange(0, 99999);
             document.execCommand("copy");
@@ -1302,34 +1258,34 @@
             document.execCommand("copy");
         }
         function copyExportUrlToClipboard() {
-            var textarea = $("#exportUrl")[0];
+            var textarea = document.getElementById("exportUrl");
             textarea.select();
             textarea.setSelectionRange(0, 99999); /*For mobile devices*/
             document.execCommand("copy");
         }
         function copyExportTextToClipboard() {
-            var textarea = $("#exportText")[0];
+            var textarea = document.getElementById("exportText");
             textarea.select();
             textarea.setSelectionRange(0, 99999); /*For mobile devices*/
             document.execCommand("copy");
         }
         function pasteClipboardToImportText() {
             // セキュリティの都合で(コピーしたパスワードなどを取得できないように)多くのブラウザでは動作しない
-            var textarea = $("#importText")[0];
+            var textarea = document.getElementById("importText");
             textarea.focus();
             document.execCommand("paste");
         }
         function clearImportText() {
-            var textarea = $("#importText")[0];
+            var textarea = document.getElementById("importText");
             textarea.value = '';
         }
         function importTextFromInputText(text, compressMode = null) {
-            var loadsEnemySettings = $("#loadsEnemySettings")[0].checked;
-            var loadsAllySettings = $("#loadsAllySettings")[0].checked;
-            var loadsDefenceSettings = $("#loadsDefenceSettings")[0].checked;
-            var loadsOffenceSettings = $("#loadsOffenceSettings")[0].checked;
-            var loadsMapSettings = $("#loadsMapSettings")[0].checked;
-            var textarea = $("#importText")[0];
+            var loadsEnemySettings = document.getElementById("loadsEnemySettings").checked;
+            var loadsAllySettings = document.getElementById("loadsAllySettings").checked;
+            var loadsDefenceSettings = document.getElementById("loadsDefenceSettings").checked;
+            var loadsOffenceSettings = document.getElementById("loadsOffenceSettings").checked;
+            var loadsMapSettings = document.getElementById("loadsMapSettings").checked;
+            var textarea = document.getElementById("importText");
             importSettingsFromString(
                 text,
                 loadsAllySettings,
@@ -1339,13 +1295,13 @@
                 loadsMapSettings,
                 compressMode);
             updateAllUi();
-            var closeDialog = $("#closesDialogAfterImport")[0].checked;
+            var closeDialog = document.getElementById("closesDialogAfterImport").checked;
             if (closeDialog) {
-                $("#importDialog").dialog('close');
+                closeDialogById('importDialog');
             }
         }
         function importText() {
-            const textarea = $("#importText")[0];
+            const textarea = document.getElementById("importText");
             importTextFromInputText(textarea.value);
         }
 
@@ -1365,31 +1321,6 @@
             importTextFromInputText(compressedSetting, SettingCompressMode.Uri);
         }
     </script>
-
-    <!-- jquery -->
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E=" crossorigin="anonymous"></script> -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
-    <script src="https://fire-emblem.fun/js/jquery-3.7.0.min.js"></script>
-
-    <!-- jquery-ui -->
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css" media="print"
-        onload="this.media='all'">
-    <script async src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-
-    <!-- クッキー(実際は使ってないので消してもいいかも) -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script> -->
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
-    <!-- 文字列圧縮 -->
-    <script async src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
-
-    <!-- 画像解析 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css" media="print"
-        onload="this.media='all'">
-    <script async type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
 
     <!-- <script defer type="text/javascript" src="https://docs.opencv.org/4.2.0/opencv.js"></script> -->
 

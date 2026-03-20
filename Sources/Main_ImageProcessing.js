@@ -1,6 +1,9 @@
 /// @file
 /// @brief シミュレーターの画像処理部分を切り出した実装です。
 
+import Cropper from 'cropperjs';
+import 'cropperjs/dist/cropper.min.css';
+
 function drawImage(canvas, imageData, scale) {
     const tempCanvas = document.getElementById("tempCanvas");
     let tempCtx = tempCanvas.getContext("2d");
@@ -610,13 +613,12 @@ class ImageProcessor {
                         }
                     },
                     (iter, iterMax) => {
-                        $("#progress").progressbar({
-                            value: iter,
-                            max: iterMax,
-                        });
+                        const progressEl = document.getElementById("progress");
+                        progressEl.max = iterMax;
+                        progressEl.value = iter;
                     },
                     () => {
-                        $("#progress").progressbar({ disabled: true });
+                        document.getElementById("progress").removeAttribute("value");
                         self.writeSimpleLogLine(`地形は${g_appData.getLabelOfMap(minMapType)}`);
                         g_app.vm.mapKind = minMapType;
                         changeMap();
@@ -664,10 +666,9 @@ class ImageProcessor {
                         }
                     },
                     (iter, iterMax) => {
-                        $("#progress").progressbar({
-                            value: iter,
-                            max: iterMax,
-                        });
+                        const progressEl = document.getElementById("progress");
+                        progressEl.max = iterMax;
+                        progressEl.value = iter;
 
                         if (iter == self.vm.mapImageFiles.length) {
                             self.writeSimpleLogLine(`地形は${g_appData.getLabelOfMap(minMapType)}`);
@@ -680,7 +681,7 @@ class ImageProcessor {
                         }
                     },
                     () => {
-                        $("#progress").progressbar({ disabled: true });
+                        document.getElementById("progress").removeAttribute("value");
 
                         // トラップは2つあるので片方のインスタンスを本物トラップに置き換える
                         let boltTrapPoints = processor.__getSortedMatchedPoints(matchedPoints, st => st instanceof FalseBoltTrap);

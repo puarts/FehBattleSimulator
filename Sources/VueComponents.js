@@ -4,6 +4,7 @@
 import { mapState, mapActions } from 'pinia';
 import { useMainStore } from './store.js';
 import { VueDraggable } from 'vue-draggable-plus';
+import { openDialogById, closeDialogById } from './DialogUtil.js';
 
 function initVueComponents(app) {
     app.component('battle-map', {
@@ -230,7 +231,7 @@ function initVueComponents(app) {
                              v-bind:style="battleSimulator.vm.debugMenuStyle">
                       <input v-if="appData.gameMode === GameMode.ResonantBattles" type="button"
                              value="双界の敵ステータス設定..." style="width:140px" class="buttonUi"
-                             @click="$('#setupResonantBattleEnemyDialog').dialog('open');">
+                             @click="openDialogById('setupResonantBattleEnemyDialog');">
                     </td>
                   </tr>
                   <tr>
@@ -1927,19 +1928,19 @@ function initVueComponents(app) {
                 this.resetPlacement();
             },
             openTeamFormationDialog() {
-                $('#teamFormationDialog').dialog('open');
+                openDialogById('teamFormationDialog');
             },
             openAetherRaidDialog() {
-                $('#aetherRaidDefensePresetDialog').dialog('open');
+                openDialogById('aetherRaidDefensePresetDialog');
             },
             openItemDialog() {
-                $('#itemDialog').dialog('open');
+                openDialogById('itemDialog');
             },
             openDurabilityTestDialog() {
-                $('#durabilityTestDialog').dialog('open');
+                openDialogById('durabilityTestDialog');
             },
             openEditMapDialog() {
-                $('#editMapDialog').dialog('open');
+                openDialogById('editMapDialog');
             },
             onCookieSettingChange(event) {
                 const isChecked = event.target.checked;

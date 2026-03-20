@@ -1,3 +1,4 @@
+import LZString from 'lz-string';
 import { BattleSimulatorBase, loadSettings } from './BattleSimulatorBase.js';
 import { ScopedStopwatch, using_, selectText } from './Utilities.js';
 import { g_appData } from './AppData.js';
@@ -97,7 +98,7 @@ function copyDebugLogToClipboard() {
 }
 
 function copyUrl() {
-    var textarea = $("#urlTextArea")[0];
+    var textarea = document.getElementById("urlTextArea");
     textarea.select();
     textarea.setSelectionRange(0, 99999); /*For mobile devices*/
     document.execCommand("copy");
@@ -127,7 +128,7 @@ function updateUrl() {
     // g_app.writeDebugLogLine(`■URLの更新`);
     let settingText = g_app.getCurrentSetting();
     g_appData.exportSettingUrl = g_explicitSiteRootPath + "?pid=1736&s=" + LZString.compressToEncodedURIComponent(settingText) + "#app";
-    let textarea = $("#urlTextArea")[0];
+    let textarea = document.getElementById("urlTextArea");
     textarea.textContent = settingText;
 }
 

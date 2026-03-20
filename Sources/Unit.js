@@ -1,3 +1,4 @@
+import LZString from 'lz-string';
 import { ObjectUtil, MathUtil, ArrayUtil } from './Utilities.js';
 import { BattleMapElement } from './BattleMapElement.js';
 import { BattleContext } from './BattleContext.js';

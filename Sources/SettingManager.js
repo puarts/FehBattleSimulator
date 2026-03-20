@@ -1,18 +1,23 @@
 /// @file
 /// @brief SettingManager クラスとそれに関連する関数等の定義です。
 
+import LZString from 'lz-string';
+
 // todo: ビューに依存してしまっているのでどうにかする
 function changeCurrentUnitTab(tabIndex) {
-    let $tabs = $('#unitSettings > ul.contents > li');
+    let tabs = document.querySelectorAll('#unitSettings > ul.contents > li');
     if (tabIndex < 0) {
-        $tabs.removeClass('active');
+        tabs.forEach(tab => tab.classList.remove('active'));
         return;
     }
-    $tabs.removeClass('active').eq(tabIndex).addClass('active');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    if (tabs[tabIndex]) {
+        tabs[tabIndex].classList.add('active');
+    }
 
     // アイコン
-    $('.weaponIcon').attr('src', g_imageRootPath + "Weapon.png");
-    $('.supportIcon').attr('src', g_imageRootPath + "Support.png");
+    document.querySelectorAll('.weaponIcon').forEach(el => el.src = g_imageRootPath + "Weapon.png");
+    document.querySelectorAll('.supportIcon').forEach(el => el.src = g_imageRootPath + "Support.png");
 }
 
 /// シリアライズ可能なシミュレーターの設定を管理するクラスです。
