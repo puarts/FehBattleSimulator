@@ -1,3 +1,5 @@
+import { ObjectUtil } from './Utilities.js';
+
 /**
  * @abstract
  */
@@ -612,3 +614,5 @@ const DetailUtils = Object.freeze({
         return _entries.map(([value, label]) => ({text: label, value}));
     },
 });
+
+export { LoggerBase, GroupLog, GroupLogger, SimpleLogger, HtmlLogger, ConsoleLogger, DetailLevel, DetailLabels, DetailUtils };

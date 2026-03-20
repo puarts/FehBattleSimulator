@@ -35,3 +35,5 @@ const G_PASSIVE_B_ID_BASE = 140_000;
 const G_PASSIVE_C_ID_BASE = 150_000;
 const G_PASSIVE_S_ID_BASE = 160_000;
 const G_PASSIVE_X_ID_BASE = 170_000;
+
+export { g_siteRootPath, g_explicitSiteRootPath, g_imageRootPath, g_corsImageRootPath, g_audioRootPath, g_heroIconRootPath, g_skillIconRootPath, g_iconRootPath, TurnSettingCookiePrefix, UnitCookiePrefix, StructureCookiePrefix, TileCookiePrefix, TurnWideCookieId, NameValueDelimiter, ElemDelimiter, ValueDelimiter, ArrayValueElemDelimiter, DebugModeDefault, TabChar, G_SKILL_LOG_LEVEL, g_debugImageRootPath, g_debugSkillIconRootPath, G_DEV_SKILL_NUM, G_WEAPON_ID_BASE, G_ASSIST_ID_BASE, G_SPECIAL_ID_BASE, G_PASSIVE_A_ID_BASE, G_PASSIVE_B_ID_BASE, G_PASSIVE_C_ID_BASE, G_PASSIVE_S_ID_BASE, G_PASSIVE_X_ID_BASE };

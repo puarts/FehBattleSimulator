@@ -1,3 +1,5 @@
+import { Cell, CellType } from './Cell.js';
+
 /// @file
 /// @brief Table クラスとそれに関連するクラスや関数等の定義です。
 
@@ -326,3 +328,5 @@ class Table {
         return html;
     }
 }
+
+export { getCellId, getPositionFromCellId, updateCellBgColor, setCellFocusBorder, clearCellFocusStyle, BackgroundImageInfo, Table };

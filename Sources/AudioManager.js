@@ -221,3 +221,5 @@ class AudioManager {
         this._bgmList[id] = audio;
     }
 }
+
+export { SoundEffectId, BgmId, AudioManager };

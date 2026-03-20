@@ -68,3 +68,5 @@ class Cell {
         }
     }
 }
+
+export { CellType, Cell };

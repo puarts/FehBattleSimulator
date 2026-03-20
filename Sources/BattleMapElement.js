@@ -14,3 +14,5 @@ class BattleMapElement {
         return [this.posX, this.posY];
     }
 }
+
+export { BattleMapElement };
