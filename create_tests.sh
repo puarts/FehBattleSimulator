@@ -67,6 +67,7 @@ TEST_FILE_NAMES=(
     TestHelper
     SmokeTest
     BuildFilter
+    EsmValidation
     )
 
 # カテゴリに応じたテストファイル選択

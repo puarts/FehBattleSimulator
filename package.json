@@ -8,7 +8,8 @@
     "test:only": "jest",
     "build": "node scripts/build.mjs",
     "build:minify": "node scripts/build.mjs --minify",
-    "deploy": "node scripts/build.mjs --minify --deploy"
+    "deploy": "node scripts/build.mjs --minify --deploy",
+    "validate:esm": "node scripts/validate-esm.mjs && node scripts/check-esm-coverage.mjs"
   },
   "repository": {
     "type": "git",
