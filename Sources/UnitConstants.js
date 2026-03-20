@@ -1,3 +1,6 @@
+import { g_imageRootPath } from './GlobalDefinitions.js';
+import { StatusType } from './HeroInfoConstants.js';
+
 // Hero enum の値は heroId (HeroInfo.id) を使用する
 const Hero = {
     HaloweenHector: 435,
@@ -494,3 +497,12 @@ function groupIdToString(groupId) {
             return "";
     }
 }
+
+export { Hero, DUO_HERO_SET, RESET_DUO_OR_HARMONIZED_SKILL_AT_ODD_TURN_SET, RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET };
+export { IvStateOptions, UnitGroupType, SummonerLevel, SummonerLevelOptions, PartnerLevel };
+export { EntwinedType, HeroIdToEntwinedType, EntwinedOptions, EntwinedValues, CombatResultType, PerTurnStatusType, NotReserved };
+export { isThiefId, summonerLevelToString, NEGATIVE_STATUS_EFFECT_SET, isNegativeStatusEffect, isPositiveStatusEffect };
+export { getPositiveStatusEffectTypes, getNegativeStatusEffectTypes, sortPositiveStatusEffectTypes, sortNegativeStatusEffectTypes };
+export { getPositiveStatusEffectTypesInOrder, getNegativeStatusEffectTypesInOrder };
+export { STATUS_EFFECT_INFO_MAP, statusEffectTypeToIconFilePath, getStatusEffectName, getStatusDescription };
+export { combatResultToString, groupIdToString };

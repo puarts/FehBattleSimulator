@@ -1,3 +1,5 @@
+import { g_heroIconRootPath } from './GlobalDefinitions.js';
+
 const UnitRarity = {
     Star1: 1,
     Star2: 2,
@@ -395,3 +397,9 @@ function isDefenseMythicSeasonType(season) {
 function isLegendarySeasonType(season) {
     return season !== SeasonType.None && !isMythicSeasonType(season);
 }
+
+export { UnitRarity, StatusType, MoveType, SeasonType, IvType, BlessingType, BlessingTypeOptions, BookVersions, GrowthRateOfStar5, StatusRankTable };
+export { moveTypeIconPath, getSeasonTypeName, isLegendarySeason, isAetherRaidAllySeason, isAetherRaidEnemySeason };
+export { getGrowthRateOfStar5, calcAppliedGrowthRate, calcAppliedGrowthRate_Optimized, calcGrowthValue, calcStatusLvN, getGrowthAmountOfStar5FromPureGrowthRate };
+export { getFlowStatus, getAssetStatus, statusTypeToShortString, statusTypeToString, nameToStatusType, statusIndexStr, __getStatusRankValue };
+export { isMythicSeasonType, isOffenseMythicSeasonType, isDefenseMythicSeasonType, isLegendarySeasonType };
