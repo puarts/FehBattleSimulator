@@ -1,3 +1,10 @@
+import { Tile, TileType, DivineVeinType, CanNotReachTile } from './Tile.js';
+import { BreakableWall, BreakableWallIconType, Wall, DefenceStructureBase, OffenceStructureBase, TileTypeStructureBase, TrapBase, OfCallingCircle, DefCallingCircle } from './Structures.js';
+import { UnitGroupType } from './UnitConstants.js';
+import { MoveType } from './HeroInfoConstants.js';
+import { ArrayUtil, MapUtil } from './Utilities.js';
+import { g_imageRootPath, g_corsImageRootPath } from './GlobalDefinitions.js';
+
 /// @file
 /// @brief BattleMap クラスとそれに関連するクラスや関数等の定義です。
 
@@ -3663,3 +3670,8 @@ class BattleMap {
         }
     }
 }
+
+export { MapType, MapType_ArenaOffset, MapType_ResonantBattlesOffset, MapType_TempestTrialsOffset, MapType_SummonerDuelsOffset };
+export { SummonerDuelsMapKindOptions, ResonantBattlesMapKindOptions, TempestTrialsMapKindOptions, ArenaMapKindOptions, ArenaMapRotation };
+export { isAetherRaidMap, isArenaMap, isResonantBattlesMap, isTempestTrialsMap, isSummonerDuelsMap };
+export { DefaultResonantBattleMap, DefaultTempestTrialsMap, tileTypeToThumb, tileTypeToColor, getMapBackgroundImage, BattleMap };

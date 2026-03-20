@@ -1,3 +1,8 @@
+import { Unit, UnitUtil } from './Unit.js';
+import { UnitGroupType } from './UnitConstants.js';
+import { MoveType } from './HeroInfoConstants.js';
+import { IterUtil, GeneratorUtil, UnitQuery } from './Utilities.js';
+import { isWeaponTypeBreath, isWeaponTypeBeast } from './Skill.js';
 
 const MaxEnemyUnitCount = 12;
 const MaxAllyUnitCount = 20;
@@ -349,3 +354,5 @@ class UnitManager {
         return IterUtil.minElements(units, u => targetUnit.distance(u));
     }
 }
+
+export { UnitManager, MaxEnemyUnitCount, MaxAllyUnitCount };

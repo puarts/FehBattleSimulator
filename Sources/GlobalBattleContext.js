@@ -1,3 +1,6 @@
+import { UnitGroupType } from './UnitConstants.js';
+import { Captain } from './SkillConstants.js';
+import { SeasonType } from './HeroInfoConstants.js';
 
 class GlobalBattleContext {
     constructor() {
@@ -293,3 +296,5 @@ class GlobalBattleContext {
         return this.miracleWithoutSpecialActivationCountInCurrentTurn[groupId] >= 1;
     }
 }
+
+export { GlobalBattleContext };

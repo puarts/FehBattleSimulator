@@ -1,3 +1,22 @@
+import { ObjectUtil, MathUtil, ArrayUtil } from './Utilities.js';
+import { BattleMapElement } from './BattleMapElement.js';
+import { BattleContext } from './BattleContext.js';
+import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, Captain, CantoSupport, WeaponRefinementType, EmblemHero, WeaponType, SkillType } from './SkillConstants.js';
+import { MoveType, StatusType, BlessingType, UnitRarity } from './HeroInfoConstants.js';
+import { UnitGroupType, SummonerLevel, PerTurnStatusType, NotReserved, CombatResultType, isThiefId, Hero } from './UnitConstants.js';
+import { CanNotReachTile } from './Tile.js';
+import { DefenceStructureBase, OffenceStructureBase } from './Structures.js';
+import { isMeleeWeaponType, isRangedWeaponType, isPhysicalWeaponType, isWeaponTypeDagger, isWeaponTypeTome, isWeaponTypeBeast, isWeaponTypeThatCanAddAtk2AfterTransform } from './Skill.js';
+import { getColorFromWeaponType, getAttackRangeOfWeaponType, stringToWeaponType, getSkillFunc, getAtkBuffAmount, getSpdBuffAmount, getDefBuffAmount, getResBuffAmount } from './Skill.js';
+import { getDivineVeinSkillId, getEmblemHeroSkillId } from './Skill.js';
+import { applySkillsAfterCantoActivatedFuncMap, setOnetimeActionActivatedFuncMap, applyEndActionSkillsFuncMap, resetMaxSpecialCountFuncMap } from './Skill.js';
+import { canDisableAttackOrderSwapSkillFuncMap, calcMoveCountForCantoFuncMap, calcHealAmountFuncMap, isAfflictorFuncMap, canActivateObstructToAdjacentTilesFuncMap } from './Skill.js';
+import { LoggerBase } from './Logger.js';
+import { NodeEnv } from './SkillEffectEnv.js';
+import { IS_DEBUFFER_TIER_1_HOOKS, IS_DEBUFFER_TIER_2_HOOKS, IS_AFFLICTOR_HOOKS, CALC_HEAL_AMOUNT_HOOKS } from './SkillEffectHooks.js';
+import { getSkillLogLevel } from './SkillEffect.js';
+import { ValueDelimiter } from './GlobalDefinitions.js';
+
 /**
  * @file
  * @brief Unit クラスやそれに関連する関数や変数定義です。
@@ -7422,3 +7441,7 @@ function isAfflictor(attackUnit, lossesInCombat, result) {
 function canRefreshTo(targetUnit) {
     return !targetUnit.hasRefreshAssist && targetUnit.isActionDone;
 }
+
+export { Unit, AttackableUnitInfo, AttackEvaluationContext, AssistableUnitInfo, ActionContext, PrecombatContext, UnitUtil };
+export { isThief, calcArenaBaseStatusScore, calcArenaTotalSpScore, calcBuffAmount, calcHealAmount };
+export { isDebufferTier1, isDebufferTier2, isAfflictor, canRefreshTo };

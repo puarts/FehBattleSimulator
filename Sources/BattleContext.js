@@ -1,3 +1,6 @@
+import { ObjectUtil } from './Utilities.js';
+import { DamageCalculationUtility } from './DamageCalculationUtility.js';
+
 /// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {
     /**
@@ -1136,3 +1139,5 @@ class BattleContext {
         return this.preventedDefenderSpecial || this.preventedDefenderSpecialPerAttack;
     }
 }
+
+export { BattleContext };
