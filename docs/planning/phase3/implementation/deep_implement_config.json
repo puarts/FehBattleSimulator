@@ -1,0 +1,82 @@
+{
+  "plugin_root": "/Users/studio/.claude/plugins/cache/piercelamb-plugins/deep-implement/0.2.1",
+  "sections_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/phase3/sections",
+  "target_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "state_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/phase3/implementation",
+  "git_root": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "commit_style": "conventional",
+  "test_command": "uv run pytest",
+  "sections": [
+    "section-01-vite-setup",
+    "section-02-vite-build",
+    "section-03-vitest-setup",
+    "section-04-vitest-migration",
+    "section-05-dev-server",
+    "section-06-vue3-core",
+    "section-07-pinia-migration",
+    "section-08-vue3-components",
+    "section-09-select2-replacement",
+    "section-10-draggable-replacement",
+    "section-11-jquery-removal",
+    "section-12-ci-cleanup"
+  ],
+  "sections_state": {
+    "section-01-vite-setup": {
+      "status": "complete",
+      "commit_hash": "b454e8666dce7a8169ebc93cbfc26c0a542391cd"
+    },
+    "section-02-vite-build": {
+      "status": "complete",
+      "commit_hash": "5042f6e60f94ab0de49725d9ee545a9fe0f14061"
+    },
+    "section-03-vitest-setup": {
+      "status": "complete",
+      "commit_hash": "7065db2f"
+    },
+    "section-04-vitest-migration": {
+      "status": "complete",
+      "commit_hash": "3b64d7b1"
+    },
+    "section-05-dev-server": {
+      "status": "complete",
+      "commit_hash": "8d764118"
+    },
+    "section-06-vue3-core": {
+      "status": "complete",
+      "commit_hash": "cc0fdd27"
+    },
+    "section-07-pinia-migration": {
+      "status": "complete",
+      "commit_hash": "032e5ca6"
+    },
+    "section-08-vue3-components": {
+      "status": "complete",
+      "commit_hash": "583a6786"
+    },
+    "section-09-select2-replacement": {
+      "status": "complete",
+      "commit_hash": "fcb240b2"
+    },
+    "section-10-draggable-replacement": {
+      "status": "complete",
+      "commit_hash": "0209554d"
+    },
+    "section-11-jquery-removal": {
+      "status": "complete",
+      "commit_hash": "690012b3"
+    },
+    "section-12-ci-cleanup": {
+      "status": "complete",
+      "commit_hash": "ab1e7771"
+    }
+  },
+  "pre_commit": {
+    "present": false,
+    "type": "none",
+    "config_file": null,
+    "native_hook": null,
+    "may_modify_files": false,
+    "detected_formatters": []
+  },
+  "created_at": "2026-03-20T11:42:31.500225+00:00"
+}
