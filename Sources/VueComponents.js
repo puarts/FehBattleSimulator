@@ -3,6 +3,7 @@
 
 import { mapState, mapActions } from 'pinia';
 import { useMainStore } from './store.js';
+import { VueDraggable } from 'vue-draggable-plus';
 
 function initVueComponents(app) {
     app.component('battle-map', {
@@ -901,6 +902,9 @@ function initVueComponents(app) {
             document.removeEventListener('click', this.onDocumentClick);
         },
     });
+
+    // vue-draggable-plus を draggable として登録（Vue.Draggable 2.x 互換）
+    app.component('draggable', VueDraggable);
 
     app.component('FlashMessage', {
         name: 'FlashMessage',

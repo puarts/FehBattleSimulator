@@ -24,11 +24,11 @@ describe('Vue 3 Component Migration - Static Analysis', () => {
         expect(matches).toBeNull();
     });
 
-    // 32 components registered via app.component() inside initVueComponents()
-    it('should use app.component() for all 32 registrations', () => {
+    // 33 components registered via app.component() inside initVueComponents()
+    it('should use app.component() for all 33 registrations', () => {
         const matches = vueComponentsSource.match(/app\.component\s*\(/g);
         expect(matches).not.toBeNull();
-        expect(matches.length).toBe(32);
+        expect(matches.length).toBe(33);
     });
 
     it('should not contain Vue 2 deprecated APIs', () => {

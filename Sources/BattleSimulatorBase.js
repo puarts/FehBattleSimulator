@@ -833,7 +833,10 @@ class BattleSimulatorBase {
             enemyUnitSorted: function (event) {
                 let slotOrder = 0;
                 for (let elem of event.to.childNodes) {
+                    // Vue 3 may insert comment/text nodes; skip non-elements
+                    if (elem.nodeType !== Node.ELEMENT_NODE) continue;
                     let unit = g_app.findUnitById(elem.classList[0]);
+                    if (!unit) continue;
                     unit.slotOrder = slotOrder;
                     ++slotOrder;
                 }
