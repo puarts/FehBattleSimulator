@@ -53,7 +53,7 @@ describe('Section 6: Remaining cycle resolution', () => {
 
         it('SkillEffectCore.js exports setCustomSkillRegistry', () => {
             const content = readSource('SkillEffectCore.js');
-            expect(content).toMatch(/export\s*\{[^}]*setCustomSkillRegistry[^}]*\}/);
+            expect(content).toMatch(/export\s+(function\s+setCustomSkillRegistry|\{[^}]*setCustomSkillRegistry[^}]*\})/);
         });
 
         it('CustomSkill.js imports and calls setCustomSkillRegistry', () => {
