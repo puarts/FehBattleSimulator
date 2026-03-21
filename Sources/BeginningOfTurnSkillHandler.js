@@ -1,12 +1,11 @@
-import { Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS, Captain, WeaponType } from './SkillConstants.js';
+import { Captain, PassiveA, PassiveB, PassiveC, PassiveS, Special, Weapon, WeaponRefinementType, WeaponType } from './SkillConstants.js';
 import { StatusEffectType } from './StatusConstants.js';
 import { IterUtil, GeneratorUtil } from './Utilities.js';
 import { OffenceStructureBase } from './Structures.js';
-import { MoveType } from './HeroInfoConstants.js';
+import { MoveType, StatusType } from './HeroInfoConstants.js';
 import { UnitGroupType } from './UnitConstants.js';
 import { getSkillLogLevel } from './SkillEffect.js';
-import { getSkillFunc, isNormalAttackSpecial, isPhysicalWeaponType, isWeaponTypeBreathOrBeast, isMeleeWeaponType } from './Skill.js';
-import { hasTransformSkillsFuncMap, applySkillForBeginningOfTurnFuncMap, applyEnemySkillForBeginningOfTurnFuncMap, applySkillAfterSkillsForBeginningOfTurnFuncMap, applySkillAfterEnemySkillsForBeginningOfTurnFuncMap, applyHealSkillForBeginningOfTurnFuncMap } from './Skill.js';
+import { applyEnemySkillForBeginningOfTurnFuncMap, applyHealSkillForBeginningOfTurnFuncMap, applySkillAfterEnemySkillsForBeginningOfTurnFuncMap, applySkillAfterSkillsForBeginningOfTurnFuncMap, applySkillForBeginningOfTurnFuncMap, getSkillFunc, hasTransformSkillsFuncMap, isDefenseSpecial, isMeleeWeaponType, isNormalAttackSpecial, isPhysicalWeaponType, isRangedWeaponType, isRefreshSupportSkill, isWeaponTypeBeast, isWeaponTypeBreath, isWeaponTypeBreathOrBeast, isWeaponTypeTome } from './Skill.js';
 import { AtStartOfTurnEnv } from './SkillEffect.js';
 import { AT_START_OF_TURN_HOOKS, AT_START_OF_ENEMY_PHASE_HOOKS, AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_PLAYER_PHASE_HOOKS, AFTER_START_OF_TURN_EFFECTS_TRIGGER_ON_ENEMY_PHASE_HOOKS, CAN_TRANSFORM_AT_START_OF_TURN_HOOKS, CAN_TRANSFORM_AT_START_OF_ENEMY_TURN_HOOKS } from './SkillEffectHooks.js';
 

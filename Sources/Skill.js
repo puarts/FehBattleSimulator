@@ -1,6 +1,7 @@
-import { WeaponType, Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, Captain, SkillType, WeaponRefinementType, EmblemHero, NONE_ID } from './SkillConstants.js';
+import { Captain, ColorType, EmblemHero, NONE_ID, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, SkillType, Special, Support, Weapon, WeaponRefinementType, WeaponType } from './SkillConstants.js';
 import { g_siteRootPath, g_skillIconRootPath } from './GlobalDefinitions.js';
 import { StatusEffectType, POSITIVE_STATUS_EFFECT_ARRAY, POSITIVE_STATUS_EFFECT_ORDER_MAP, NEGATIVE_STATUS_EFFECT_ARRAY, NEGATIVE_STATUS_EFFECT_ORDER_MAP, StatusIndex, StatFlags, getStatusName } from './StatusConstants.js';
+import { g_appData } from './AppDataGlobal.js';
 
 /**
  * @file

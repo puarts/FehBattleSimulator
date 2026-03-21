@@ -1,19 +1,18 @@
 import LZString from 'lz-string';
-import { ObjectUtil, MathUtil, ArrayUtil } from './Utilities.js';
+import { ArrayUtil, Base62, Base62Util, JsonUtil, MathUtil, ObjectUtil, SetUtil, boolToInt, calcDistance, getKeyByValue, intToBool, toBoolean } from './Utilities.js';
 import { BattleMapElement } from './BattleMapElement.js';
 import { BattleContext } from './BattleContext.js';
-import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, Captain, CantoSupport, WeaponRefinementType, EmblemHero, WeaponType, SkillType } from './SkillConstants.js';
-import { MoveType, StatusType, BlessingType, UnitRarity } from './HeroInfoConstants.js';
-import { UnitGroupType, SummonerLevel, PerTurnStatusType, NotReserved, CombatResultType, isThiefId, Hero } from './UnitConstants.js';
+import { ACCELERATES_SPECIAL_TRIGGER_SET, ATK_WITH_SKILLS_MAP, AssistType, CANNOT_MOVE_STYLES, CantoSupport, Captain, DEF_WITH_SKILLS_MAP, EffectiveType, EmblemHero, HP_WITH_SKILLS_MAP, NoneValue, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, REDUCE_SPECIAL_COUNT_WHEN_NO_WEAPON_SKILL_INFO_SET, RES_WITH_SKILLS_MAP, SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1, SKILL_IDS_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2, SKILL_ID_TO_STYLE_TYPE, SPD_WITH_SKILLS_MAP, STATUS_EFFECT_TYPE_TO_STYLE_TYPE, STYLES_THAT_IS_DISABLED_WHEN_UNIT_HAS_ANOTHER_STYLE, STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_1, STYLES_THAT_SKILLS_EFFECTS_RANGE_IS_TREATED_AS_2, SkillType, Special, StyleType, Support, Weapon, WeaponRefinementType, WeaponType } from './SkillConstants.js';
+import { BlessingType, IvType, MoveType, SeasonType, StatusType, UnitRarity, calcAppliedGrowthRate_Optimized, calcGrowthValue, getGrowthRateOfStar5, isMythicSeasonType } from './HeroInfoConstants.js';
+import { CombatResultType, DUO_HERO_SET, EntwinedType, Hero, NotReserved, PartnerLevel, PerTurnStatusType, SummonerLevel, UnitGroupType, groupIdToString, isNegativeStatusEffect, isPositiveStatusEffect, isThiefId } from './UnitConstants.js';
 import { CanNotReachTile } from './Tile.js';
-import { DefenceStructureBase, OffenceStructureBase } from './Structures.js';
-import { isMeleeWeaponType, isRangedWeaponType, isPhysicalWeaponType, isWeaponTypeDagger, isWeaponTypeTome, isWeaponTypeBeast, isWeaponTypeThatCanAddAtk2AfterTransform } from './Skill.js';
-import { getColorFromWeaponType, getAttackRangeOfWeaponType, stringToWeaponType, getSkillFunc, getAtkBuffAmount, getSpdBuffAmount, getDefBuffAmount, getResBuffAmount } from './Skill.js';
-import { getDivineVeinSkillId, getEmblemHeroSkillId } from './Skill.js';
-import { applySkillsAfterCantoActivatedFuncMap, setOnetimeActionActivatedFuncMap, applyEndActionSkillsFuncMap, resetMaxSpecialCountFuncMap } from './Skill.js';
-import { canDisableAttackOrderSwapSkillFuncMap, calcMoveCountForCantoFuncMap, calcHealAmountFuncMap, isAfflictorFuncMap, canActivateObstructToAdjacentTilesFuncMap } from './Skill.js';
+import { BreakableWall, DefenceStructureBase, OffenceStructureBase } from './Structures.js';
+import { CAN_SAVE_FROM_P_SKILL_SET, SAVE_SKILL_SET, SPECIALS_COUNTED_AS_SING_OR_DANCE, applyEndActionSkillsFuncMap, applySkillsAfterCantoActivatedFuncMap, calcHealAmountFuncMap, calcMoveCountForCantoFuncMap, canActivateObstructToAdjacentTilesFuncMap, canAddStatusEffectByRallyFuncMap, canDisableAttackOrderSwapSkillFuncMap, getAssistRange, getAtkBuffAmount, getAttackRangeOfWeaponType, getColorFromWeaponType, getCustomSkillId, getDefBuffAmount, getDivineVeinSkillId, getDuoOrHarmonizedSkillId, getEmblemHeroSkillId, getNormalSkillId, getRefinementSkillId, getResBuffAmount, getSkillFunc, getSpdBuffAmount, getSpecialRefinementSkillId, getStatusEffectSkillId, getStyleSkillId, isAfflictorFuncMap, isDefenseSpecial, isMeleeWeaponType, isNormalAttackSpecial, isPhysicalWeaponType, isRallyHealSkill, isRallyUp, isRangedAttackSpecial, isRangedWeaponType, isTeleportationSkill, isWeaponSpecialRefined, isWeaponTypeBeast, isWeaponTypeDagger, isWeaponTypeThatCanAddAtk2AfterTransform, isWeaponTypeTome, resetMaxSpecialCountFuncMap, setOnetimeActionActivatedFuncMap, stringToWeaponType } from './Skill.js';
 import { LoggerBase } from './Logger.js';
-import { ValueDelimiter } from './GlobalDefinitions.js';
+import { ArrayValueElemDelimiter, UnitCookiePrefix, ValueDelimiter, g_siteRootPath } from './GlobalDefinitions.js';
+import { NEGATIVE_STATUS_EFFECT_ORDER_MAP, POSITIVE_STATUS_EFFECT_ORDER_MAP, StatusEffectType, StatusIndex } from './StatusConstants.js';
+import { canRalliedForcibly, canRallyForcibly } from './SkillUtil.js';
+import { g_appData } from './AppDataGlobal.js';
 
 /**
  * @file

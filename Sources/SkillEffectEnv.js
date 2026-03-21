@@ -1,4 +1,5 @@
 import { LoggerBase, GroupLogger, ConsoleLogger } from './Logger.js';
+import { g_appData } from './AppDataGlobal.js';
 
 // TODO: コンストラクタを設定するか検討する
 // TODO: 直接設定されたくない値をプライベートにする(targetUnitOrAlly, targetFoe)

@@ -9,8 +9,17 @@ import { EnsureMinNode, EnsureMaxNode, EnsureMinMaxNode, ENSURE_MAX_MIN_NODE, MU
 import { FirstValueNode, UniqueCollectionNode, FlattenCollectionNode, MapCollectionNode, FilterCollectionNode, CountCollectionNode, IntersectCollectionNode, TopNNode, SumNumbersNode, CannotAnyNode, TraceBoolNode, NumThatIsNode, TernaryConditionalNumberNode, UnionSetNode, SetSizeNode } from './SkillEffectCore.js';
 import { EffectNode, XNumberNode, X } from './SkillEffectCore.js';
 import { NodeEnv } from './SkillEffectEnv.js';
-import { GeneratorUtil, ArrayUtil, SetUtil } from './Utilities.js';
-import { StatusIndex } from './StatusConstants.js';
+import { ArrayUtil, Base62, GeneratorUtil, IterUtil, MathUtil, SetUtil } from './Utilities.js';
+import { NEGATIVE_STATUS_EFFECT_ORDER_MAP, POSITIVE_STATUS_EFFECT_ORDER_MAP, StatusEffectType, StatusIndex } from './StatusConstants.js';
+import { ALLIES, GRANTS_BONUS, GRANTS_STATUS_EFFECTS, INFLICTS_PENALTY, INFLICTS_STATUS_EFFECTS, MOVE_TYPE, UNIT, WEAPON_TYPE } from './SkillEffectUnit.js';
+import { MoveType, statusTypeToString } from './HeroInfoConstants.js';
+import { Special, WeaponType } from './SkillConstants.js';
+import { DefenceStructureBase, OffenceStructureBase, SafetyFence, TrapBase } from './Structures.js';
+import { PartnerLevel, UnitGroupType, getStatusEffectName } from './UnitConstants.js';
+import { DivineVeinType, getDivineVeinName } from './Tile.js';
+import { LoggerBase } from './Logger.js';
+import { isMeleeWeaponType, isRangedWeaponType, isWeaponTypeBreath, isWeaponTypeBreathOrBeast, isWeaponTypeTome } from './Skill.js';
+import { g_appData } from './AppDataGlobal.js';
 
 // Mixin
 // TODO: 冗長なものはMixinを使用するようにする

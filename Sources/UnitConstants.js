@@ -1,5 +1,6 @@
 import { g_imageRootPath } from './GlobalDefinitions.js';
 import { StatusType } from './HeroInfoConstants.js';
+import { NEGATIVE_STATUS_EFFECT_ORDER_MAP, POSITIVE_STATUS_EFFECT_ORDER_MAP, StatusEffectType } from './StatusConstants.js';
 
 // Hero enum の値は heroId (HeroInfo.id) を使用する
 const Hero = {

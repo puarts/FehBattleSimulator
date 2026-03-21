@@ -100,13 +100,15 @@ describe('Skill.jsからのre-export後方互換', () => {
 });
 
 describe('SkillEffect.jsの循環参照解消', () => {
-    it('SkillEffect.jsがSkill.jsからimportしていない', async () => {
+    it('SkillEffect.jsがSkill.jsからStatusIndex/StatusEffectTypeをimportしていない', async () => {
         const fs = await import('fs');
         const path = await import('path');
         const sourcesDir = path.resolve(process.cwd(), 'Sources');
         const content = fs.readFileSync(path.join(sourcesDir, 'SkillEffect.js'), 'utf-8');
-        // SkillEffect.js should not import from Skill.js
-        const skillImports = content.match(/import\s+\{[^}]*\}\s+from\s+['"]\.\/Skill\.js['"]/g);
-        expect(skillImports).toBeNull();
+        // SkillEffect.js should not import StatusIndex/StatusEffectType from Skill.js
+        // (these were moved to StatusConstants.js in Section 3)
+        // Other symbols (e.g., isRangedWeaponType) from Skill.js are OK (no cycle)
+        const statusImports = content.match(/import\s+\{[^}]*(?:StatusIndex|StatusEffectType)[^}]*\}\s+from\s+['"]\.\/Skill\.js['"]/g);
+        expect(statusImports).toBeNull();
     });
 });

@@ -1,5 +1,6 @@
 import { TileType } from './Tile.js';
-import { BreakableWallIconType } from './Structures.js';
+import { BreakableWallIconType, Wall } from './Structures.js';
+import { MapType, isAetherRaidMap, isArenaMap, isResonantBattlesMap, isSummonerDuelsMap, isTempestTrialsMap } from './BattleMap.js';
 
 /**
  * マップの種類を変更します。

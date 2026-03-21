@@ -3,6 +3,29 @@
 
 import LZString from 'lz-string';
 import { setAppData, g_appData } from './AppDataGlobal.js';
+import { Base62Util, CommandQueue, IdGenerator, LocalStorageUtil, ObjectStorage, ObjectUtil, StructureContainer, boolToInt, intToBool } from './Utilities.js';
+import { DivineVeinType, Tile } from './Tile.js';
+import { MaxAllyUnitCount, MaxEnemyUnitCount, UnitManager } from './UnitManager.js';
+import { GameMode } from './DamageCalculator.js';
+import { ArenaMapKindOptions, BattleMap, MapType, isArenaMap, isSummonerDuelsMap } from './BattleMap.js';
+import { AudioManager } from './AudioManager.js';
+import { GlobalBattleContext } from './GlobalBattleContext.js';
+import { BlessingType, MoveType, SeasonType, StatusType, isLegendarySeasonType, isMythicSeasonType } from './HeroInfoConstants.js';
+import { EmblemHero, EngagedSpecialIcon, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, Special, Support, Weapon, WeaponRefinementType } from './SkillConstants.js';
+import { DetailLevel, HtmlLogger, LoggerBase } from './Logger.js';
+import { ArrayValueElemDelimiter, DebugModeDefault, ValueDelimiter, g_explicitSiteRootPath } from './GlobalDefinitions.js';
+import { EntwinedOptions, EntwinedType, HeroIdToEntwinedType, PartnerLevel, SummonerLevelOptions, UnitGroupType } from './UnitConstants.js';
+import { AetherAmphorae, AetherFountain, BoltTrap, DefArmorSchool, DefBoltTower, DefBrightShrine, DefCallingCircle, DefCatapult, DefCavalrySchool, DefDarkShrine, DefFlierSchool, DefFortress, DefHealingTower, DefHiyokuNoTorikago, DefInfantrySchool, DefPanicManor, DefTacticsRoom, ExcapeLadder, FalseBoltTrap, FalseHeavyTrap, FalseHexTrap, HeavyTrap, HexTrap, OfArmorSchool, OfBoltTower, OfBrightShrine, OfCallingCircle, OfCatapult, OfCavalrySchool, OfDarkShrine, OfFlierSchool, OfFortress, OfHealingTower, OfHiyokuNoHisyo, OfInfantrySchool, OfPanicManor, OfTacticsRoom, Ornament, OrnamentSettings, SafetyFence, StructureBase } from './Structures.js';
+import { SkillDatabase } from './SkillDatabase.js';
+import { HeroDatabase } from './HeroDatabase.js';
+import { EMBLEM_HERO_SET } from './Skill.js';
+import { Unit, isThief } from './Unit.js';
+import { AetherRaidDefensePresetOptions_AnimaSeason, AetherRaidDefensePresetOptions_DarkSeason, findAetherRaidDefensePreset } from './AetherRaidDefensePresets.js';
+import { changeMapKind, resetBattleMapPlacement } from './BattleMapSettings.js';
+import { captainInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfos, passiveXInfos, specialInfos, supportInfos, weaponInfos } from './SampleSkillInfos.js';
+import { getSkillIconDivTag, getSpecialChargedImgTag, getStatsEffectImgTagStr } from './GameUtilities.js';
+import { updateMapUi } from './BattleSimulatorBase.js';
+import { heroInfos } from './SampleHeroInfos.js';
 
 function __registerSkillOptions(options, infos) {
     for (let info of infos) {

@@ -4,14 +4,29 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { useMainStore, setupStoreActions } from './store.js';
-import { UnitRarity, StatusType, statusTypeToShortString } from './HeroInfoConstants.js';
+import { MoveType, SeasonType, StatusType, UnitRarity, statusTypeToShortString } from './HeroInfoConstants.js';
 import { GameMode } from './DamageCalculator.js';
-import { UnitGroupType } from './UnitConstants.js';
-import { Ornament } from './Structures.js';
-import { Unit, isThief } from './Unit.js';
+import { Hero, UnitGroupType, getNegativeStatusEffectTypes, getPositiveStatusEffectTypes } from './UnitConstants.js';
+import { DefFortress, DefHiyokuNoTorikago, OfFortress, OfHiyokuNoHisyo, Ornament, OrnamentSettings, StructureBase } from './Structures.js';
+import { Unit, calcArenaBaseStatusScore, calcArenaTotalSpScore, isAfflictor, isDebufferTier1, isDebufferTier2, isThief } from './Unit.js';
 import { getDivineVeinName } from './Tile.js';
-import { LocalStorageUtil } from './Utilities.js';
-import { DetailLevel, GroupLog } from './Logger.js';
+import { CookieWriter, LocalStorageUtil, importJs } from './Utilities.js';
+import { DetailLevel, GroupLog, LoggerBase } from './Logger.js';
+import { AssistType, PassiveA, PassiveB, PassiveC, SkillType, Special, Support } from './SkillConstants.js';
+import { DamageCalculatorWrapper } from './DamageCalculatorWrapper.js';
+import { BeginningOfTurnSkillHandler } from './BeginningOfTurnSkillHandler.js';
+import { OriginalAi } from './Main_OriginalAi.js';
+import { DefaultResonantBattleMap, DefaultTempestTrialsMap, MapType } from './BattleMap.js';
+import { CustomSkill } from './CustomSkill.js';
+import { EnumerationEnv } from './SkillEffectEnv.js';
+import { CAN_TRIGGER_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP, WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS, WHEN_TRIGGERS_DUO_OR_HARMONIZED_EFFECT_HOOKS_MAP } from './SkillEffectHooks.js';
+import { StatusEffectType } from './StatusConstants.js';
+import { TurnSetting } from './TurnSetting.js';
+import { TurnSettingCookiePrefix, g_imageRootPath } from './GlobalDefinitions.js';
+import { canAddStatusEffectByRallyFuncMap, isRallyHealSkill, isRangedWeaponType } from './Skill.js';
+import { canRalliedForcibly, canRallyForcibly } from './SkillUtil.js';
+import { getSkillLogLevel } from './SkillEffect.js';
+import { g_appData } from './AppDataGlobal.js';
 
 function hasTargetOptionValue(targetOptionId, options) {
     for (let index in options) {

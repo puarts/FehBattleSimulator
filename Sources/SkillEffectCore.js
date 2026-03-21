@@ -1,4 +1,9 @@
-import { ArrayUtil } from './Utilities.js';
+import { ArrayUtil, Base62, IterUtil, MathUtil, ObjectUtil, SetUtil } from './Utilities.js';
+import { LoggerBase } from './Logger.js';
+import { EmblemHero, getStyleTypeName } from './SkillConstants.js';
+import { NodeEnv } from './SkillEffectEnv.js';
+import { getStatusEffectName } from './UnitConstants.js';
+import { g_appData } from './AppDataGlobal.js';
 
 /** @type {{ funcIdToFunc: Map, registeredSkillIds: Set, funcIdToName: Map } | null} */
 let _customSkillRegistry = null;

@@ -2,11 +2,12 @@ import { Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS } from './Skill
 import { StatusEffectType } from './StatusConstants.js';
 import { MoveType } from './HeroInfoConstants.js';
 import { LoggerBase } from './Logger.js';
-import { isWeaponTypeBreathOrBeast, getSkillFunc } from './Skill.js';
-import { applyAttackSkillEffectAfterCombatFuncMap, applySkillEffectAfterCombatForUnitFuncMap, applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap, applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap, applyPostCombatAllySkillFuncMap } from './Skill.js';
+import { applyAttackSkillEffectAfterCombatFuncMap, applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap, applyPostCombatAllySkillFuncMap, applySkillEffectAfterCombatForUnitFuncMap, applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap, getSkillFunc, isRangedWeaponType, isWeaponTypeBeast, isWeaponTypeBreathOrBeast } from './Skill.js';
 import { getSkillLogLevel } from './SkillEffect.js';
 import { AfterCombatEnv } from './SkillEffect.js';
 import { AFTER_COMBAT_HOOKS, AFTER_COMBAT_AFTER_HEAL_OR_DAMAGE_HOOKS, AFTER_COMBAT_EVEN_IF_DEFEATED_HOOKS, AFTER_COMBAT_IF_UNIT_ATTACKED_HOOKS, AFTER_COMBAT_FOR_ALLIES_EVEN_IF_DEFEATED_HOOKS, FOR_ALLIES_AFTER_COMBAT_HOOKS } from './SkillEffectHooks.js';
+import { DivineVeinType } from './Tile.js';
+import { stealBonusEffects } from './SkillUtil.js';
 
 class PostCombatSkillHander {
     /**

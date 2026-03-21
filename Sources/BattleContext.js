@@ -1,5 +1,6 @@
 import { ObjectUtil } from './Utilities.js';
 import { DamageCalculationUtility } from './DamageCalculationUtility.js';
+import { StatusIndex } from './StatusConstants.js';
 
 /// ダメージ計算時のコンテキストです。 DamageCalculator でこのコンテキストに設定された値が使用されます。
 class BattleContext {

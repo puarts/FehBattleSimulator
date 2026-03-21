@@ -1,5 +1,6 @@
 import { SkillEffectNode, NumberNode, BoolNode } from './SkillEffectCore.js';
 import { SingleEffectNode } from './SkillEffect.js';
+import { ArrayUtil } from './Utilities.js';
 
 class SkillEffectField {
     /**

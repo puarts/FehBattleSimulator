@@ -1,4 +1,8 @@
 import { Unit } from './UnitCore.js';
+import { StatusEffectType, StatusIndex } from './StatusConstants.js';
+import { MathUtil } from './Utilities.js';
+import { EffectiveType, PassiveA, PassiveB, PassiveS, Weapon } from './SkillConstants.js';
+import { canDisableAttackOrderSwapSkillFuncMap, getEvalResAdd, getEvalSpdAdd, getSkillFunc, isPrecombatSpecial, isTriangleAdeptSkill } from './Skill.js';
 
 // ─── 戦闘関連メソッド（prototype 拡張） ───
 // Layer 5 への依存なし。

@@ -1,4 +1,5 @@
 import { g_heroIconRootPath } from './GlobalDefinitions.js';
+import { StatusIndex } from './StatusConstants.js';
 
 const UnitRarity = {
     Star1: 1,

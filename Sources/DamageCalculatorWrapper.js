@@ -1,15 +1,22 @@
-import { Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS, Captain, WeaponType } from './SkillConstants.js';
-import { StatusEffectType } from './StatusConstants.js';
+import { Captain, ColorType, DISABLES_FOES_SKILLS_THAT_CALCULATE_DAMAGE_USING_THE_LOWER_OF_FOES_DEF_OR_RES_SET, EffectiveType, NoneValue, PassiveA, PassiveB, PassiveC, PassiveS, Special, Weapon, WeaponRefinementType, WeaponType } from './SkillConstants.js';
+import { StatusEffectType, StatusIndex } from './StatusConstants.js';
 import { LoggerBase, GroupLogger } from './Logger.js';
 import { NodeEnv, DamageCalculatorWrapperEnv } from './SkillEffectEnv.js';
 import { getSkillLogLevel } from './SkillEffect.js';
-import { isPhysicalWeaponType, isWeaponTypeBreathOrBeast, isWeaponTypeBreath, isNormalAttackSpecial, isDefenseSpecial, getSkillFunc } from './Skill.js';
-import { applySkillEffectForUnitFuncMap, applyPrecombatDamageReductionRatioFuncMap, applySKillEffectForUnitAtBeginningOfCombatFuncMap, applySkillEffectFromAlliesFuncMap, applySkillEffectFromEnemyAlliesFuncMap, applySkillEffectFromAlliesExcludedFromFeudFuncMap, applySkillEffectAfterSetAttackCountFuncMap, applySkillEffectForUnitAfterCombatStatusFixedFuncMap, calcFixedAddDamageFuncMap, applyDamageReductionRatioBySpecialFuncMap, applyPotentSkillEffectFuncMap, canActivateSaveSkillFuncMap, selectReferencingResOrDefFuncMap, updateUnitSpurFromEnemyAlliesFuncMap, updateUnitSpurFromAlliesFuncMap, applySkillEffectsAfterAfterBeginningOfCombatFuncMap, applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap } from './Skill.js';
+import { ADVANTAGEOUS_AGAINST_COLORLESS_WEAPONS, BEAST_COMMON_SKILL_MAP, BeastCommonSkillType, CAN_SAVE_FROM_MAGIC_SKILL_SET, CAN_SAVE_FROM_MELEE_SKILL_SET, CAN_SAVE_FROM_P_SKILL_SET, CAN_SAVE_FROM_RANGED_SKILL_SET, applyDamageReductionRatioBySpecialFuncMap, applyPotentSkillEffectFuncMap, applyPrecombatDamageReductionRatioFuncMap, applySKillEffectForUnitAtBeginningOfCombatFuncMap, applySkillEffectAfterSetAttackCountFuncMap, applySkillEffectForUnitAfterCombatStatusFixedFuncMap, applySkillEffectForUnitFuncMap, applySkillEffectFromAlliesExcludedFromFeudFuncMap, applySkillEffectFromAlliesFuncMap, applySkillEffectFromEnemyAlliesFuncMap, applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap, applySkillEffectsAfterAfterBeginningOfCombatFuncMap, calcFixedAddDamageFuncMap, canActivateSaveSkillFuncMap, getBreakerSkillTargetWeaponType, getRangedAttackSpecialDamageRate, getSelfDamageDealtRateToAddSpecialDamage, getSkillFunc, isDefenseSpecial, isMeleeWeaponType, isNormalAttackSpecial, isPhysicalWeaponType, isRangedWeaponType, isWeaponSpecialRefined, isWeaponTypeBeast, isWeaponTypeBow, isWeaponTypeBreath, isWeaponTypeBreathOrBeast, isWeaponTypeDagger, isWeaponTypeTome, selectReferencingResOrDefFuncMap, updateUnitSpurFromAlliesFuncMap, updateUnitSpurFromEnemyAlliesFuncMap } from './Skill.js';
 import { DamageCalculator, GameMode, DamageType, DamageCalcEnv, CombatResult } from './DamageCalculator.js';
-import { TriangleAdvantage } from './DamageCalculationUtility.js';
+import { DamageCalculationUtility, TriangleAdvantage } from './DamageCalculationUtility.js';
 import { PostCombatSkillHander } from './PostCombatSkillHander.js';
 import { AT_START_OF_COMBAT_HOOKS, BEFORE_COMBAT_HOOKS, BEFORE_AOE_SPECIAL_ACTIVATION_CHECK_HOOKS, BEFORE_AOE_SPECIAL_HOOKS, CAN_TRIGGER_SAVIOR_HOOKS, IS_ASSIGN_DECOY_FOR_SAME_RANGE_ACTIVE_HOOKS, FOR_ALLIES_GRANTS_STATS_PLUS_TO_ALLIES_DURING_COMBAT_HOOKS, FOR_FOES_INFLICTS_STATS_MINUS_HOOKS, FOR_ALLIES_STATS_SKILLS_USING_STATS_HOOKS, FOR_ALLIES_NON_STATS_SKILL_USING_STATS_HOOKS, FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_OTHER_SKILLS_DURING_COMBAT_HOOKS, FOR_ALLIES_AT_START_OF_COMBAT_HOOKS } from './SkillEffectHooks.js';
 import { FOR_FOE_STATS_SKILLS_USING_STATS_HOOKS, FOR_FOE_NON_STATS_SKILL_USING_STATS_HOOKS, FOR_FOES_AT_START_OF_COMBAT_HOOKS, FOR_FOES_INFLICTS_EFFECTS_AFTER_OTHER_SKILLS_HOOKS, FOR_ALLIES_GRANTS_EFFECTS_TO_ALLIES_AFTER_COMBAT_HOOKS, STATS_SKILL_USING_STATS_HOOKS, NON_STATS_SKILL_USING_STATS_HOOKS, SUFFERS_COUNTERATTACK_DURING_STYLE_HOOKS, WHEN_APPLIES_POTENT_EFFECTS_HOOKS, FOR_ALLIES_WHEN_APPLIES_POTENT_EFFECTS_HOOKS, AFTER_FOLLOW_UP_CONFIGURED_HOOKS, WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS, AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS, FOR_ALLIES_AFTER_EFFECTS_THAT_DEAL_DAMAGE_AS_COMBAT_BEGINS_HOOKS, AFTER_CONDITION_CONFIGURED_HOOKS } from './SkillEffectHooks.js';
+import { Unit, UnitUtil } from './Unit.js';
+import { ArrayUtil, Stopwatch, calcDistance, using_ } from './Utilities.js';
+import { DivineVeinType, setUnitToTile } from './Tile.js';
+import { MoveType } from './HeroInfoConstants.js';
+import { TabChar } from './GlobalDefinitions.js';
+import { EntwinedValues, PartnerLevel, UnitGroupType } from './UnitConstants.js';
+import { DefenceStructureBase, Ornament } from './Structures.js';
+import { g_appData } from './AppDataGlobal.js';
 
 class PerformanceProfile {
     constructor() {

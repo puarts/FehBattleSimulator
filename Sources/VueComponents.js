@@ -5,6 +5,14 @@ import { mapState, mapActions } from 'pinia';
 import { useMainStore } from './store.js';
 import { VueDraggable } from 'vue-draggable-plus';
 import { openDialogById, closeDialogById } from './DialogUtil.js';
+import { Unit } from './Unit.js';
+import { LocalStorageUtil, MathUtil } from './Utilities.js';
+import { DivineVeinType, getDivineVeinName } from './Tile.js';
+import { AttackResult, CombatResult, StrikeResult } from './DamageCalculator.js';
+import { DetailLevel, DetailUtils, GroupLog, LoggerBase } from './Logger.js';
+import { loadSettings, resetPlacement, saveSettings, updateAllUi, updateMapUi } from './BattleSimulatorBase.js';
+import { weaponTypeIconPath } from './SkillConstants.js';
+import { moveTypeIconPath } from './HeroInfoConstants.js';
 
 function initVueComponents(app) {
     app.component('battle-map', {

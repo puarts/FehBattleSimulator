@@ -3,6 +3,18 @@
 
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.min.css';
+import { OcrSettingTarget } from './AppData.js';
+import { BoltTrap, FalseBoltTrap, FalseHeavyTrap, FalseHexTrap, HeavyTrap, HexTrap, Ornament, TrapBase, findOrnamentTypeIndexByIcon } from './Structures.js';
+import { EmblemHero, PassiveA, PassiveB, PassiveC, SkillType, Special, Support, WeaponRefinementType } from './SkillConstants.js';
+import { GameMode } from './DamageCalculator.js';
+import { MapType } from './BattleMap.js';
+import { SummonerLevel } from './UnitConstants.js';
+import { StatusType, nameToStatusType } from './HeroInfoConstants.js';
+import { changeMap, moveStructureToMap, resetPlacement, updateAllUi } from './BattleSimulatorBase.js';
+import { combineText, convertOcrResultToArray, cropAndBinarizeImageAndOcr, cropAndPostProcessAndOcr, cropCanvas, getMaxLengthElem, getMaxLengthElem2, loadAndProcessImage, manipurateHsv, startProgressiveProcess } from './Utilities.js';
+import { isRangedWeaponType } from './Skill.js';
+import { selectItemById } from './Main_MouseAndTouch.js';
+import { g_appData } from './AppDataGlobal.js';
 
 function drawImage(canvas, imageData, scale) {
     const tempCanvas = document.getElementById("tempCanvas");

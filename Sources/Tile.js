@@ -1,5 +1,11 @@
 import { BattleMapElement } from './BattleMapElement.js';
-import { ValueDelimiter } from './GlobalDefinitions.js';
+import { TileCookiePrefix, ValueDelimiter } from './GlobalDefinitions.js';
+import { BreakableWall, DefFortress, DefenceStructureBase, ExcapeLadder, ObjType, OfFortress, OffenceStructureBase, TileTypeStructureBase, Wall, isMovableForUnit } from './Structures.js';
+import { CombatResultType, UnitGroupType } from './UnitConstants.js';
+import { MoveType } from './HeroInfoConstants.js';
+import { AssistType, Support, Weapon } from './SkillConstants.js';
+import { StatusEffectType } from './StatusConstants.js';
+import { hasPathfinderEffect, isRangedWeaponType } from './Skill.js';
 
 /// @file
 /// @brief Tile クラスとそれに関連するクラスや関数等の定義です。

@@ -1,9 +1,17 @@
-import { Tile, TileType, DivineVeinType, CanNotReachTile } from './Tile.js';
+import { CanNotReachTile, DivineVeinType, Tile, TileType, divineVeinColor, getDivineVeinName } from './Tile.js';
 import { BreakableWall, BreakableWallIconType, Wall, DefenceStructureBase, OffenceStructureBase, TileTypeStructureBase, TrapBase, OfCallingCircle, DefCallingCircle } from './Structures.js';
-import { UnitGroupType } from './UnitConstants.js';
+import { UnitGroupType, statusEffectTypeToIconFilePath } from './UnitConstants.js';
 import { MoveType } from './HeroInfoConstants.js';
-import { ArrayUtil, MapUtil } from './Utilities.js';
+import { ArrayUtil, LocalStorageUtil, MapUtil } from './Utilities.js';
 import { g_imageRootPath, g_corsImageRootPath } from './GlobalDefinitions.js';
+import { BackgroundImageInfo, Table, getPositionFromCellId } from './Table.js';
+import { EmblemHero, PassiveB, PassiveC, Special, Weapon } from './SkillConstants.js';
+import { StatusEffectType } from './StatusConstants.js';
+import { LoggerBase } from './Logger.js';
+import { TileQuery, UnitQuery, getDivineVeinTag, getSpecialChargedImgTag } from './GameUtilities.js';
+import { CellType } from './Cell.js';
+import { canWarpFuncMap, enumerateRangedSpecialTilesFuncMap, enumerateTeleportTilesForAllyFuncMap, enumerateTeleportTilesForUnitFuncMap, getSkillFunc, isWeaponTypeBeast } from './Skill.js';
+import { g_appData } from './AppDataGlobal.js';
 
 /// @file
 /// @brief BattleMap クラスとそれに関連するクラスや関数等の定義です。
