@@ -833,9 +833,6 @@ function weaponTypeToString(weaponType) {
     return WEAPON_TYPE_TO_STRING_MAP.get(weaponType) ?? "不明";
 }
 
-function canRallyForciblyByPlayer(unit) {
-    return getSkillFunc(unit.support, canRallyForciblyByPlayerFuncMap)?.call(this, unit) ?? false;
-}
 
 /**
  * @type {Set<number|string>}
@@ -863,85 +860,6 @@ const GALEFORCE_SKILLS = new Set();
  */
 const CAN_MOVE_THROUGH_FOES_SPACE_SKILLS = new Set();
 
-/**
- * 既に強化済みであるなどにより強化できない味方に対しても強制的に応援を実行できるスキルであるかを判定します。
- */
-function canRallyForcibly(skill, unit) {
-    let func = getSkillFunc(skill, canRallyForciblyFuncMap);
-    if (func?.call(this, unit) ?? false) {
-        return true;
-    }
-    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTargeting(unit)
-        // .setName('強制的に応援可能判定').setLogLevel(getSkillLogLevel());
-        .setName('強制的に応援可能判定').setLogLevel(LoggerBase.LogLevel.OFF);
-    if (CAN_RALLY_FORCIBLY_HOOKS.evaluateSomeWithUnit(unit, env)) {
-        return true;
-    }
-    switch (skill) {
-        case Support.GoldSerpent:
-            // TODO: 調査する
-            return true;
-        case Weapon.Heidr:
-        case Weapon.GoldenCurse:
-            return true;
-        case Weapon.RetainersReport:
-            if (unit.isWeaponSpecialRefined) {
-                return true;
-            }
-            break;
-        case Weapon.EverlivingBreath:
-        case PassiveB.AtkFeint3:
-        case PassiveB.SpdFeint3:
-        case PassiveB.DefFeint3:
-        case PassiveB.ResFeint3:
-        case PassiveB.AtkSpdRuse3:
-        case PassiveB.AtkDefRuse3:
-        case PassiveB.AtkResRuse3:
-        case PassiveB.DefResRuse3:
-        case PassiveB.SpdResRuse3:
-        case PassiveB.SpdDefRuse3:
-            return true;
-        default:
-            return false;
-    }
-}
-
-function canRalliedForcibly(skillId, unit) {
-    if (getSkillFunc(skillId, canRalliedForciblyFuncMap)?.call(this, unit) ?? false) {
-        return true;
-    }
-    let env = new NodeEnv().setTarget(unit).setSkillOwner(unit).setAssistTarget(unit)
-        .setName('強制的に被応援可能判定').setLogLevel(getSkillLogLevel());
-    if (CAN_RALLIED_FORCIBLY_HOOKS.evaluateSomeWithUnit(unit, env)) {
-        return true;
-    }
-    switch (skillId) {
-        case Support.GoldSerpent:
-            // TODO: 調査する
-            return true;
-        case Weapon.Heidr:
-        case Weapon.GoldenCurse:
-            return true;
-        case Weapon.RetainersReport:
-            if (unit.isWeaponSpecialRefined) {
-                return true;
-            }
-            break;
-        case PassiveB.AtkFeint3:
-        case PassiveB.SpdFeint3:
-        case PassiveB.DefFeint3:
-        case PassiveB.ResFeint3:
-        case PassiveB.AtkSpdRuse3:
-        case PassiveB.AtkDefRuse3:
-        case PassiveB.AtkResRuse3:
-        case PassiveB.DefResRuse3:
-        case PassiveB.SpdResRuse3:
-        case PassiveB.SpdDefRuse3:
-            return true;
-        default:
-            return false;
-    }
-}
 
 /**
  * 戦闘前に発動するスペシャルであるかどうかを判定します。
@@ -1505,52 +1423,6 @@ const DISARM_HEX_TRAP_SKILL_SET = new Set([
 ]);
 
 
-// TODO: リファクタリングする(適切な場所に移動する。引数の型を確定する)
-/**
- * enemiesのスキルを奪取する
- * @param {Generator<Unit>|Unit[]} enemies
- * @param {Unit} targetUnit
- * @param {Generator<Unit>|Unit[]} targetAllies
- * @param logger
- */
-function stealBonusEffects(enemies, targetUnit, targetAllies, logger = null) {
-    let statusSet = new Set();
-    let enemyArray = Array.from(enemies);
-
-    let hasDosage = enemyArray.some(u => u.hasStatusEffect(StatusEffectType.Dosage));
-    if (hasDosage) {
-        logger?.writeDebugLog(`${targetUnit.nameWithGroup}からの奪取を無効`);
-        logger?.writeDebugLog(`${targetUnit.nameWithGroup}の強化を解除`);
-        targetUnit.getPositiveStatusEffects().forEach(e => targetUnit.reservedStatusEffectSetToNeutralize.add(e));
-        targetUnit.reservedBuffFlagsToNeutralize = [true, true, true, true];
-        return;
-    }
-
-    enemyArray.forEach(enemy => enemy.getPositiveStatusEffects().forEach(e => {
-        logger?.writeDebugLog(`${enemy.nameWithGroup}から${getStatusEffectName(e)}を解除`);
-        statusSet.add(e);
-    }));
-    for (let targetAlly of targetAllies) {
-        // ステータス
-        for (let statusEffect of statusSet) {
-            targetAlly.reserveToAddStatusEffect(statusEffect);
-        }
-        // 強化
-        enemyArray.forEach(enemy => {
-            let buffs = enemy.getBuffs(false);
-            targetAlly.reserveToApplyBuffs(...buffs);
-            if (buffs.some(i => i > 0)) {
-                logger?.writeDebugLog(`${enemy.nameWithGroup} → ${targetAlly.nameWithGroup}へ強化${buffs}を付与`);
-            }
-        });
-    }
-    // ステータス解除予約
-    for (let enemy of enemyArray) {
-        // 現在付与されているステータスについて解除予約する（このターン予約分は解除できない）
-        enemy.getPositiveStatusEffects().forEach(e => enemy.reservedStatusEffectSetToNeutralize.add(e));
-        enemy.reservedBuffFlagsToNeutralize = [true, true, true, true];
-    }
-}
 
 // TODO: ここから下の内容を別ファイルに分ける
 
@@ -1753,8 +1625,8 @@ export { TOME_WEAPON_TYPE_SET, isWeaponTypeTome, BREATH_WEAPON_TYPE_SET, isWeapo
 export { BEAST_WEAPON_TYPE_SET, isWeaponTypeBeast, isRangedWeaponType, MELEE_WEAPON_TYPE_SET, isMeleeWeaponType };
 export { isWeaponTypeBreathOrBeast, isInheritableWeaponType };
 export { WEAPON_TYPE_TO_COLOR_MAP, getColorFromWeaponType, STRING_TO_WEAPON_TYPE_MAP, WEAPON_TYPE_TO_STRING_MAP, stringToWeaponType, weaponTypeToString };
-export { canRallyForciblyByPlayer, SWAP_ASSIST_SKILLS, REPOSITION_ASSIST_SKILLS, DRAW_BACK_ASSIST_SKILLS, GALEFORCE_SKILLS, CAN_MOVE_THROUGH_FOES_SPACE_SKILLS };
-export { canRallyForcibly, canRalliedForcibly, isPrecombatSpecial };
+export { SWAP_ASSIST_SKILLS, REPOSITION_ASSIST_SKILLS, DRAW_BACK_ASSIST_SKILLS, GALEFORCE_SKILLS, CAN_MOVE_THROUGH_FOES_SPACE_SKILLS };
+export { isPrecombatSpecial };
 export { TELEPORTATION_SKILL_SET, isTeleportationSkill, hasPathfinderEffect, getSelfDamageDealtRateToAddSpecialDamage };
 export { TRIANGLE_ADEPT_SET, isTriangleAdeptSkill, EVAL_SPD_ADD_MAP, getEvalSpdAdd, EVAL_RES_ADD_MAP, getEvalResAdd };
 export { WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET, isWeaponTypeThatCanAddAtk2AfterTransform, BeastCommonSkillType, BEAST_COMMON_SKILL_MAP };
@@ -1764,7 +1636,7 @@ export { SAVE_SKILL_SET, CAN_SAVE_FROM_MELEE_SKILL_SET, CAN_SAVE_FROM_RANGED_SKI
 export { StatusEffectType, POSITIVE_STATUS_EFFECT_ARRAY, POSITIVE_STATUS_EFFECT_ORDER_MAP, NEGATIVE_STATUS_EFFECT_ARRAY, NEGATIVE_STATUS_EFFECT_ORDER_MAP };
 export { SkillInfo, COUNT2_SPECIALS, INHERITABLE_COUNT2_SPECIALS, COUNT3_SPECIALS, INHERITABLE_COUNT3_SPECIALS, COUNT4_SPECIALS, INHERITABLE_COUNT4_SPECIALS, COUNT5_SPECIALS, INHERITABLE_COUNT5_SPECIALS };
 export { NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET, DISARM_TRAP_SKILL_SET, DISARM_HEX_TRAP_SKILL_SET };
-export { StatusIndex, StatFlags, getStatusName, stealBonusEffects, getSkillFunc };
+export { StatusIndex, StatFlags, getStatusName, getSkillFunc };
 export { applySpecialDamageReductionPerAttackFuncMap, applySkillEffectForUnitFuncMap, canActivateCantoFuncMap, calcMoveCountForCantoFuncMap };
 export { evalSpdAddFuncMap, evalResAddFuncMap, applyPrecombatDamageReductionRatioFuncMap };
 export { applySkillForBeginningOfTurnFuncMap, applyEnemySkillForBeginningOfTurnFuncMap, setOnetimeActionActivatedFuncMap };
