@@ -1,5 +1,5 @@
 import { Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS } from './SkillConstants.js';
-import { StatusEffectType } from './Skill.js';
+import { StatusEffectType } from './StatusConstants.js';
 import { MoveType } from './HeroInfoConstants.js';
 import { LoggerBase } from './Logger.js';
 import { isWeaponTypeBreathOrBeast, getSkillFunc } from './Skill.js';

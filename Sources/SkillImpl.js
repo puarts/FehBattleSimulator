@@ -1,5 +1,5 @@
 import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveX, WeaponType, EmblemHero } from './SkillConstants.js';
-import { StatusEffectType } from './Skill.js';
+import { StatusEffectType } from './StatusConstants.js';
 import { MoveType } from './HeroInfoConstants.js';
 import { NORMAL_ATTACK_SPECIAL_SET, RANGED_ATTACK_SPECIAL_SET, DEFENSE_SPECIAL_SET, REFRESH_SUPPORT_SKILL_SET, RALLY_HEAL_SKILL_SET, TELEPORTATION_SKILL_SET, SAVE_SKILL_SET } from './Skill.js';
 import { NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET, DISARM_TRAP_SKILL_SET, DISARM_HEX_TRAP_SKILL_SET, WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET } from './Skill.js';

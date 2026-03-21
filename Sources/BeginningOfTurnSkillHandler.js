@@ -1,5 +1,5 @@
 import { Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS, Captain, WeaponType } from './SkillConstants.js';
-import { StatusEffectType } from './Skill.js';
+import { StatusEffectType } from './StatusConstants.js';
 import { IterUtil, GeneratorUtil } from './Utilities.js';
 import { OffenceStructureBase } from './Structures.js';
 import { MoveType } from './HeroInfoConstants.js';

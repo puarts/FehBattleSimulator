@@ -1,5 +1,5 @@
 import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, Captain } from './SkillConstants.js';
-import { StatusEffectType } from './Skill.js';
+import { StatusEffectType } from './StatusConstants.js';
 import { SkillEffectRegistrar } from './SkillEffectRegistrar.js';
 import { SkillEffectNode, NODE_FUNC, NumberNode, TRUE_NODE, makeArray } from './SkillEffectCore.js';
 import { AT_START_OF_TURN_HOOKS, AT_START_OF_COMBAT_HOOKS, AFTER_COMBAT_HOOKS, BEFORE_AOE_SPECIAL_HOOKS } from './SkillEffectHooks.js';

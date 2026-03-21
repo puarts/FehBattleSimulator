@@ -6,7 +6,7 @@ import { NodeEnv } from './SkillEffectEnv.js';
 import { getSkillLogLevel } from './SkillEffect.js';
 import { DamageCalculationUtility, TriangleAdvantage } from './DamageCalculationUtility.js';
 import { Special, Weapon, PassiveB, WeaponType } from './SkillConstants.js';
-import { StatusEffectType } from './Skill.js';
+import { StatusEffectType } from './StatusConstants.js';
 import { isDefenseSpecial, getSkillFunc } from './Skill.js';
 import { addSpecialDamageAfterDefenderSpecialActivatedFuncMap, applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap, applySpecialDamageReductionPerAttackFuncMap, applySkillEffectAfterSpecialActivatedFuncMap, applySkillEffectsPerAttackFuncMap, activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap } from './Skill.js';
 import { AFTER_ATTACK_HOOKS, AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS, AT_START_OF_ATTACK_HOOKS } from './SkillEffectHooks.js';

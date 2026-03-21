@@ -1,5 +1,5 @@
 import { Weapon, Special, PassiveA, PassiveB, PassiveC, PassiveS, Captain, WeaponType } from './SkillConstants.js';
-import { StatusEffectType } from './Skill.js';
+import { StatusEffectType } from './StatusConstants.js';
 import { LoggerBase, GroupLogger } from './Logger.js';
 import { NodeEnv, DamageCalculatorWrapperEnv } from './SkillEffectEnv.js';
 import { getSkillLogLevel } from './SkillEffect.js';
