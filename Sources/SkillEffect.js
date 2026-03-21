@@ -7,7 +7,7 @@ import { MultiValueMap, SkillEffectHooks, SkillRequirement, SET_SKILL_FUNCS, mak
 import { COLLECTION_NODE, UNIQUE_COLLECTION_NODE, FLATTEN_COLLECTION_NODE, MAP_COLLECTION_NODE, FILTER_COLLECTION_NODE, COUNT_COLLECTION, NUM_OF, EXISTS, THERE_IS, THERE_ARE, TOP_N_NODE, SUM_NUMBERS_NODE } from './SkillEffectCore.js';
 import { EnsureMinNode, EnsureMaxNode, EnsureMinMaxNode, ENSURE_MAX_MIN_NODE, MULT_ADD_NODE, MULT_MAX_NODE, MULT_ADD_MAX_NODE, ADD_MULT_NODE, ADD_MULT_MAX_NODE, ADD_MAX_NODE, MAX_ADD_NODE, MULT_CEIL_NODE } from './SkillEffectCore.js';
 import { FirstValueNode, UniqueCollectionNode, FlattenCollectionNode, MapCollectionNode, FilterCollectionNode, CountCollectionNode, IntersectCollectionNode, TopNNode, SumNumbersNode, CannotAnyNode, TraceBoolNode, NumThatIsNode, TernaryConditionalNumberNode, UnionSetNode, SetSizeNode } from './SkillEffectCore.js';
-import { EffectNode, XNumberNode, X, SingleEffectNode, EffectsNode, setUnitsNodeResolver } from './SkillEffectCore.js';
+import { EffectNode, XNumberNode, X } from './SkillEffectCore.js';
 import { NodeEnv } from './SkillEffectEnv.js';
 import { GeneratorUtil, ArrayUtil, SetUtil } from './Utilities.js';
 import { StatusIndex } from './StatusConstants.js';
@@ -2823,8 +2823,214 @@ class FromPositiveStatsNode extends FromPositiveNumbersNode {
     }
 }
 
-// EffectNode, XNumberNode, X, SingleEffectNode are now defined in SkillEffectCore.js
-// They are imported at the top of this file and re-exported from the export block below.
+// EffectNode, XNumberNode, X are defined in SkillEffectCore.js
+
+class SingleEffectNode extends EffectNode {
+    /**
+     * @param {TargetUnitNode} target
+     */
+    constructor(target = null) {
+        super();
+        if (target) {
+            this._targetNode = UnitsNode.toUnitsNode(target);
+            this._targetNode.addParent(this);
+        }
+    }
+
+    /**
+     * @override
+     */
+    to(target) {
+        const copy = this.clone();
+        copy._targetNode = UnitsNode.toUnitsNode(target);
+        copy._targetNode.addParent(copy);
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    on(target) {
+        return this.to(target);
+    }
+
+    /**
+     * @override
+     */
+    by(target) {
+        return this.to(target);
+    }
+
+    /**
+     * @override
+     */
+    and(effectNode) {
+        const target = this._targetNode;
+        // 自分をクローンし、相手もターゲットを適用（＝クローン）して結合する
+        return EFFECTS(this.clone(), effectNode.to(target)).to(target);
+    }
+
+    /**
+     * @override
+     */
+    andEffects(...effectNodes) {
+        const target = this._targetNode;
+        // 全ての子要素を安全にクローンして新しい EffectsNode を作る
+        const clonedOthers = effectNodes.map(e => e.to(target));
+        return EFFECTS(this.clone(), ...clonedOthers).to(target);
+    }
+
+    /**
+     * @override
+     */
+    forNTurn(n) {
+        const copy = this.clone();
+        copy._forNTurnNode = NumberNode.makeNumberNodeFrom(n);
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    throughTheirNextActions() {
+        const copy = this.clone();
+        copy._throughTheirNextActions = true;
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    stats(statsNode) {
+        const copy = this.clone();
+        copy._statsNode = statsNode;
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    statFlags(statFlags) {
+        const copy = this.clone();
+        copy._statFlags = statFlags;
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    status(statusEffect) {
+        const copy = this.clone();
+        copy._statusEffects = [statusEffect];
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    statuses(...statusEffects) {
+        const copy = this.clone();
+        copy._statusEffects = statusEffects;
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    count(count) {
+        const copy = this.clone();
+        copy._countNode = NumberNode.toNumberNode(count);
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    duringCombat() {
+        const copy = this.clone();
+        copy._duringCombat = true;
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    excludingAoe() {
+        const copy = this.clone();
+        copy._excludingAoe = true;
+        return copy;
+    }
+
+    /**
+     * @returns {SingleEffectNode}
+     */
+    includingAoe() {
+        const copy = this.clone();
+        copy._includingAoe = true;
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    firstApplicable() {
+        const copy = this.clone();
+        copy._firstApplicable = true;
+        return copy;
+    }
+
+    afterMovement() {
+        const copy = this.clone();
+        copy._afterMovement = true;
+        return copy;
+    }
+
+    onEvaluate(unit, env) {
+        return super.onEvaluate(unit, env);
+    }
+
+    max(value) {
+        const copy = this.clone();
+        copy._maxNode = this._toNode(value);
+        return copy;
+    }
+
+    onlyHighestNotStack() {
+        const copy = this.clone();
+        copy._onlyHighestNotStack = true;
+        return copy;
+    }
+
+    perAttack() {
+        const copy = this.clone();
+        copy._perAttack = true;
+        return copy;
+    }
+
+    includingSecondStrike() {
+        const copy = this.clone();
+        copy._includingSecondStrike = true;
+        return copy;
+    }
+
+    x(value) {
+        const copy = this.clone();
+        copy._xNode = this._toNode(value);
+        return copy;
+    }
+
+    oncePerTurn() {
+        const copy = this.clone();
+        copy._oncePerTurn = true;
+        return copy;
+    }
+
+    whenSpecialTriggers() {
+        const copy = this.clone();
+        copy._whenSpecialTriggers = true;
+        return copy;
+    }
+}
 
 const EMPTY_EFFECT_NODE = new class extends SingleEffectNode {
     onEvaluate(unit, env) {
@@ -5096,6 +5302,241 @@ const FOR_UNIT_NODE = (unit, ...nodes) => FOR_EACH_UNIT_NODE(UnitsNode.makeFromU
 /**
  * @param {...EffectNode} effects
  */
+class EffectsNode extends EffectNode {
+    /**
+     * @param {...EffectNode} effectNodes
+     */
+    constructor(...effectNodes) {
+        super();
+        for (const n of effectNodes) {
+            if (typeof n === 'function') {
+                throw new Error(
+                    `A function was passed as an effect to EffectsNode. ` +
+                    `Did you forget to call it with ()? ` +
+                    `Got: ${n.name || 'anonymous function'}`
+                );
+            }
+        }
+        this._effectNodes = effectNodes;
+        this._effectNodes.forEach(n => n.addParent(this));
+    }
+
+    /**
+     * @override
+     */
+    to(target) {
+        const copy = this.clone();
+        copy._targetNode = UnitsNode.toUnitsNode(target);
+        // 子要素すべてにターゲットを適用したクローンを作成
+        copy._effectNodes = this._effectNodes.map(n => n.to(target));
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    on(target) {
+        return this.to(target);
+    }
+
+    /**
+     * @override
+     */
+    by(target) {
+        return this.to(target);
+    }
+
+    /**
+     * @override
+     */
+    and(effectNode) {
+        const target = this._targetNode;
+        // this.clone() を呼ぶことで、保持している _effectNodes も丸ごとコピーされる
+        return EFFECTS(this.clone(), effectNode.to(target)).to(target);
+    }
+
+    /**
+     * @override
+     */
+    andEffects(...effectNodes) {
+        const target = this._targetNode;
+        const clonedOthers = effectNodes.map(e => e.to(target));
+        return EFFECTS(this.clone(), ...clonedOthers).to(target);
+    }
+
+    /**
+     * @override
+     */
+    forNTurn(number) {
+        const copy = this.clone();
+        copy._forNTurnNode = NumberNode.makeNumberNodeFrom(number);
+        copy._effectNodes = copy._effectNodes.map(n => n.forNTurn(number));
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    throughTheirNextActions() {
+        const copy = this.clone();
+        copy._throughTheirNextActions = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.throughTheirNextActions());
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    count(count) {
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.count(count));
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    duringCombat() {
+        const copy = this.clone();
+        copy._duringCombat = true;
+        // 重要：子要素もすべて duringCombat 状態にした「新しいリスト」に差し替える
+        copy._effectNodes = copy._effectNodes.map(n => n.duringCombat());
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    excludingAoe() {
+        const copy = this.clone();
+        copy._excludingAoe = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.excludingAoe());
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    includingAoe() {
+        const copy = this.clone();
+        copy._excludingAoe = false;
+        copy._effectNodes = copy._effectNodes.map(n => n.includingAoe());
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    firstApplicable() {
+        const copy = this.clone();
+        copy._firstApplicable = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.firstApplicable());
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    statFlags(statFlags) {
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.statFlags(statFlags));
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    stats(statsNode) {
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.stats(statsNode));
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    status(statusEffect) {
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.status(statusEffect));
+        return copy;
+    }
+
+    /**
+     * @override
+     */
+    statuses(...statusEffects) {
+        const copy = this.clone();
+        copy._effectNodes = copy._effectNodes.map(n => n.statuses(...statusEffects));
+        return copy;
+    }
+
+    afterMovement() {
+        const copy = this.clone();
+        copy._afterMovement = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.afterMovement());
+        return copy;
+    }
+
+    max(value) {
+        const copy = this.clone();
+        copy._max = this._toNode(value);
+        copy._effectNodes = copy._effectNodes.map(n => n.max(value));
+        return copy;
+    }
+
+    onlyHighestNotStack() {
+        const copy = this.clone();
+        copy._onlyHighestNotStack = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.onlyHighestNotStack());
+        return copy;
+    }
+
+    perAttack() {
+        const copy = this.clone();
+        copy._perAttack = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.perAttack());
+        return copy;
+    }
+
+    includingSecondStrike() {
+        const copy = this.clone();
+        copy._includingSecondStrike = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.includingSecondStrike());
+        return copy;
+    }
+
+    /** @override */
+    _getDelegateNodes(unit, env) {
+        return this._effectNodes;
+    }
+
+    /** @override */
+    onEvaluate(unit, env) {
+        throw new Error("not implemented");
+    }
+
+    x(value) {
+        const copy = this.clone();
+        copy._xNode = this._toNode(value);
+        return copy;
+    }
+
+    oncePerTurn() {
+        const copy = this.clone();
+        copy._oncePerTurn = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.oncePerTurn());
+        return copy;
+    }
+
+    whenSpecialTriggers() {
+        const copy = this.clone();
+        copy._whenSpecialTriggers = true;
+        copy._effectNodes = copy._effectNodes.map(n => n.whenSpecialTriggers());
+        return copy;
+    }
+}
+
+
 const EFFECTS = (...effects) => new EffectsNode(...effects);
 
 /**
@@ -8843,9 +9284,6 @@ class CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode
 const CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS =
     spd => new CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode(spd);
 
-
-// Register UnitsNode resolver for classes in SkillEffectCore.js
-setUnitsNodeResolver(UnitsNode.toUnitsNode.bind(UnitsNode));
 
 export { GetUnitMixin, GetTargetsFoeMixin, GetTargetsAllyMixin, GetUnitDuringCombatMixin, GetFoeDuringCombatMixin, GetSkillOwnerMixin, GetAssistTargetsAllyMixin, GetAssistTargetingMixin, GetAssistTargetMixin, GetValueMixin, GetTargetTileMixin, CheckIfStatsDuringCombatAreDeterminedMixin };
 export { NSpacesMixin, ForUnitMixin, DebugEnvNode, DEBUG_ENV_NODE, PrintDebugNode, PRINT_DEBUG_NODE, UnitNode, EnvUnitNode, TargetNode, TARGET_NODE, TargetsFoeDuringCombatNode, TARGETS_FOE_DURING_COMBAT_NODE, TargetsFoeNode, TARGETS_FOE_NODE, UNIT_DURING_COMBAT_NODE, FOE_NODE, SKILL_OWNER_NODE };

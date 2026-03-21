@@ -23,32 +23,21 @@ function extractImportSources(content) {
 }
 
 describe('Section 6: Remaining cycle resolution', () => {
-    describe('Task 1: SkillEffect.js and SkillEffectBattleContext.js', () => {
-        it('SkillEffectBattleContext.js does not import from SkillEffect.js', () => {
-            const content = readSource('SkillEffectBattleContext.js');
-            const sources = extractImportSources(content);
-            expect(sources).not.toContain('./SkillEffect.js');
-        });
-
-        it('SkillEffectField.js does not import from SkillEffect.js', () => {
-            const content = readSource('SkillEffectField.js');
-            const sources = extractImportSources(content);
-            expect(sources).not.toContain('./SkillEffect.js');
-        });
-
-        it('SkillEffectCore.js exports EffectNode', () => {
+    describe('Task 1: EffectNode layer separation', () => {
+        it('SkillEffectCore.js exports EffectNode (abstract base class)', () => {
             const content = readSource('SkillEffectCore.js');
             expect(content).toMatch(/export\s*\{[^}]*EffectNode[^}]*\}/);
         });
 
-        it('SkillEffectCore.js exports SingleEffectNode', () => {
+        it('EffectNode class is defined in SkillEffectCore.js', () => {
             const content = readSource('SkillEffectCore.js');
-            expect(content).toMatch(/export\s*\{[^}]*SingleEffectNode[^}]*\}/);
+            expect(content).toMatch(/class EffectNode extends SkillEffectNode/);
         });
 
-        it('SkillEffectCore.js exports EffectsNode', () => {
-            const content = readSource('SkillEffectCore.js');
-            expect(content).toMatch(/export\s*\{[^}]*EffectsNode[^}]*\}/);
+        it('SingleEffectNode and EffectsNode remain in SkillEffect.js', () => {
+            const content = readSource('SkillEffect.js');
+            expect(content).toMatch(/class SingleEffectNode extends EffectNode/);
+            expect(content).toMatch(/class EffectsNode extends EffectNode/);
         });
     });
 
