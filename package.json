@@ -9,7 +9,9 @@
     "test:watch": "vitest",
     "build": "vite build",
     "dev": "vite",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint:deps": "madge --circular Sources/",
+    "detect-missing-imports": "node scripts/detect-missing-imports.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +31,7 @@
     "@vitejs/plugin-vue": "^6.0.5",
     "eslint": "^8.57.0",
     "jsdom": "^29.0.1",
+    "madge": "^8.0.0",
     "vite": "^8.0.1",
     "vitest": "^4.1.0"
   },
