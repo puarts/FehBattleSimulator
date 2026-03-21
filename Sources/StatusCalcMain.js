@@ -25,6 +25,8 @@ import './SkillImpl.js';
 import './SkillImpl202408.js';
 import './SkillImpl202501.js';
 import './SkillImpl202601.js';
+import { initUnitSkillEffects } from './UnitSkillEffect.js';
+initUnitSkillEffects(Unit);
 
 let unit = new Unit();
 let g_app = null;

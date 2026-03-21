@@ -40,6 +40,8 @@ import './SkillImpl.js';
 import './SkillImpl202408.js';
 import './SkillImpl202501.js';
 import './SkillImpl202601.js';
+import { initUnitSkillEffects } from './UnitSkillEffect.js';
+initUnitSkillEffects(Unit);
 
 const DamageCalculatorMode = {
     Simple: 0,

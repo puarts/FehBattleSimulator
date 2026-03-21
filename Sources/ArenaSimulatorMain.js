@@ -25,6 +25,9 @@ import './SkillImpl.js';
 import './SkillImpl202408.js';
 import './SkillImpl202501.js';
 import './SkillImpl202601.js';
+import { initUnitSkillEffects } from './UnitSkillEffect.js';
+import { Unit } from './Unit.js';
+initUnitSkillEffects(Unit);
 
 /// シミュレーター本体です。
 class ArenaSimulator extends BattleSimulatorBase {

@@ -15,13 +15,13 @@ const TESTS = path.join(ROOT, 'Tests');
 const SOURCE_FILE_NAMES = [
     'GlobalDefinitions', 'Utilities', 'Logger', 'SkillConstants', 'StatusConstants', 'Skill', 'SkillUtil',
     'BattleMapElement', 'Tile', 'Structures', 'Cell', 'Table',
-    'HeroInfoConstants', 'HeroInfo', 'UnitConstants', 'BattleContext', 'Unit',
+    'HeroInfoConstants', 'HeroInfo', 'UnitConstants', 'BattleContext', 'UnitCore', 'UnitBattle',
     'UnitManager', 'BattleMap', 'GlobalBattleContext', 'DamageCalculationUtility',
     'DamageCalculator', 'PostCombatSkillHander', 'DamageCalculatorWrapper',
     'BeginningOfTurnSkillHandler', 'SkillDatabase', 'HeroDatabase',
     'SampleSkillInfos', 'SampleHeroInfos', 'SkillEffectCore', 'SkillEffectEnv',
     'SkillEffect', 'SkillEffectField', 'SkillEffectUnit',
-    'SkillEffectBattleContext', 'SkillEffectHooks', 'SkillEffectRegistrar',
+    'SkillEffectBattleContext', 'SkillEffectHooks', 'UnitSkillEffect', 'SkillEffectRegistrar',
     'SkillEffectAliases', 'CustomSkill', 'SkillImpl', 'SkillImpl202408',
     'SkillImpl202501', 'SkillImpl202601', 'TestUtilities',
 ];
@@ -32,6 +32,7 @@ function filterImportExport(content) {
     return content
         .split('\n')
         .filter(line => !(/^import /.test(line) || /^export \{/.test(line)))
+        .map(line => line.replace(/^export (function|class|const|let|var) /, '$1 '))
         .join('\n');
 }
 
@@ -49,5 +50,8 @@ for (const name of TEST_UTIL_FILE_NAMES) {
 // Execute in a context where 'this' is globalThis, so var/function declarations
 // and explicit assignments become global properties.
 // Wrap in a function to catch const/let/class and expose them via 'this'.
+// UnitSkillEffect.js の initUnitSkillEffects を呼び出して prototype にメソッドを追加
+concatenated += '\ninitUnitSkillEffects(Unit);\n';
+
 const script = new vm.Script(concatenated, { filename: 'vitest-concatenated-sources.js' });
 script.runInThisContext();
