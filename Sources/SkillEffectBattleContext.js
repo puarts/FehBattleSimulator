@@ -1,5 +1,4 @@
-import { BoolNode } from './SkillEffectCore.js';
-import { SingleEffectNode } from './SkillEffect.js';
+import { BoolNode, SingleEffectNode } from './SkillEffectCore.js';
 import { GetSkillEffectFieldNode, ModSkillEffectFieldNode, SkillEffectField } from './SkillEffectField.js';
 
 const MOD_BATTLE_CONTEXT_FIELD = (n, op) =>

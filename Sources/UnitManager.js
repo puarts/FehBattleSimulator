@@ -1,7 +1,8 @@
 import { Unit, UnitUtil } from './Unit.js';
 import { UnitGroupType } from './UnitConstants.js';
 import { MoveType } from './HeroInfoConstants.js';
-import { IterUtil, GeneratorUtil, UnitQuery } from './Utilities.js';
+import { IterUtil, GeneratorUtil } from './Utilities.js';
+import { UnitQuery } from './GameUtilities.js';
 import { isWeaponTypeBreath, isWeaponTypeBeast } from './Skill.js';
 
 const MaxEnemyUnitCount = 12;

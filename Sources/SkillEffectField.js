@@ -1,5 +1,4 @@
-import { SkillEffectNode, NumberNode, BoolNode } from './SkillEffectCore.js';
-import { SingleEffectNode } from './SkillEffect.js';
+import { SkillEffectNode, NumberNode, BoolNode, SingleEffectNode } from './SkillEffectCore.js';
 
 class SkillEffectField {
     /**

@@ -1,5 +1,5 @@
 import { NONE_ID, SkillType, EffectiveType, EFFECTIVE_TYPE_NAMES, AssistType, getAssistTypeName, CantoSupport, getCantoAssistName } from './SkillConstants.js';
-import { MultiValueMap, SkillEffectNode, SKILL_EFFECT_NODE, NODE_FUNC, NumberNode, ConstantNumberNode, CONSTANT_NUMBER_NODE, ZERO_NUMBER_NODE, ENSURE_MIN_MAX_NODE, TRUE_NODE } from './SkillEffectCore.js';
+import { MultiValueMap, SkillEffectNode, SKILL_EFFECT_NODE, NODE_FUNC, NumberNode, ConstantNumberNode, CONSTANT_NUMBER_NODE, ZERO_NUMBER_NODE, ENSURE_MIN_MAX_NODE, TRUE_NODE, setCustomSkillRegistry } from './SkillEffectCore.js';
 import { AT_START_OF_COMBAT_HOOKS, AT_START_OF_ATTACK_HOOKS, AFTER_COMBAT_HOOKS, WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS, AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS, WHEN_CANTO_TRIGGERS_HOOKS, CANCEL_FOES_ATTACK_HOOKS, HAS_PATHFINDER_HOOKS, WHEN_CANTO_ALLY_CAN_MOVE_TO_A_SPACE_HOOKS, IS_DEBUFFER_TIER_1_HOOKS, IS_DEBUFFER_TIER_2_HOOKS, IS_AFFLICTOR_HOOKS } from './SkillEffectHooks.js';
 import { StatsNode, ZERO_STATS_NODE, UnitsNode, EMPTY_SPACES_NODE, SPACES_IF_NODE } from './SkillEffect.js';
 import { StatusEffectType } from './StatusConstants.js';
@@ -2122,5 +2122,12 @@ CustomSkill.setFuncId(
     },
     []
 );
+
+// SkillEffectCore.jsへのCustomSkillレジストリ登録（循環依存回避）
+setCustomSkillRegistry({
+    funcIdToFunc: CustomSkill.FUNC_ID_TO_FUNC,
+    registeredSkillIds: CustomSkill.registeredSkillIds,
+    funcIdToName: CustomSkill.FUNC_ID_TO_NAME,
+});
 
 export { CustomSkill };
