@@ -13,6 +13,7 @@ const TESTS = path.join(ROOT, 'Tests');
 
 // Same order as create_tests.sh SOURCE_FILE_NAMES
 const SOURCE_FILE_NAMES = [
+    'AppDataGlobal',
     'GlobalDefinitions', 'Utilities', 'GameUtilities', 'Logger', 'SkillConstants', 'StatusConstants', 'Skill', 'SkillUtil',
     'BattleMapElement', 'Tile', 'Structures', 'Cell', 'Table',
     'HeroInfoConstants', 'HeroInfo', 'UnitConstants', 'BattleContext', 'UnitCore', 'UnitBattle',

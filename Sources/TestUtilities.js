@@ -13,6 +13,7 @@ import { BeginningOfTurnSkillHandler } from './BeginningOfTurnSkillHandler.js';
 import { DamageCalculatorWrapper } from './DamageCalculatorWrapper.js';
 import { DamageType } from './DamageCalculator.js';
 import { SimpleLogger } from './Logger.js';
+import { setAppData } from './AppDataGlobal.js';
 import { ScopedStopwatch, using_ } from './Utilities.js';
 
 function test_createDefaultSkillInfo() {
@@ -183,7 +184,7 @@ function test_calcDamageWithUnits(atkUnit, defUnit, additionalUnits, isLogEnable
 
 function test_calcDamage(atkUnit, defUnit, isLogEnabled = false) {
     let calclator = new test_DamageCalculator();
-    g_appData = calclator.unitManager;
+    setAppData(calclator.unitManager);
     calclator.isLogEnabled = isLogEnabled;
     return calclator.calcDamage(atkUnit, defUnit);
 }
@@ -321,7 +322,7 @@ class UnitBuilder {
 }
 
 function resetGlobalTestState() {
-    g_appData = new UnitManager();
+    setAppData(new UnitManager());
 }
 
 class RegressionTestHelper {
@@ -465,7 +466,7 @@ class BattleScenarioBuilder {
 
         let calculator = new test_DamageCalculator();
         calculator.unitManager.units = [this._attacker, this._defender, ...this._allies, ...this._foes];
-        g_appData = calculator.unitManager;
+        setAppData(calculator.unitManager);
         calculator.battleContext.currentTurn = this._turn;
         calculator.updateAllUnitSpur();
         let result = calculator.calcDamage(this._attacker, this._defender);
@@ -479,7 +480,7 @@ class BattleScenarioBuilder {
         let handler = new test_BeginningOfTurnSkillHandler();
         let allUnits = [this._attacker, this._defender, ...this._allies, ...this._foes].filter(u => u != null);
         handler.unitManager.units = allUnits;
-        g_appData = handler.unitManager;
+        setAppData(handler.unitManager);
         handler.battleContext.currentTurn = this._turn;
         for (let unit of allUnits) {
             handler.applySkillsForBeginningOfTurn(unit);

@@ -2,6 +2,7 @@
 /// @brief AppData クラスとそれに関連するクラスや関数等の定義です。
 
 import LZString from 'lz-string';
+import { setAppData, g_appData } from './AppDataGlobal.js';
 
 function __registerSkillOptions(options, infos) {
     for (let info of infos) {
@@ -2505,6 +2506,7 @@ class AppData extends UnitManager {
     }
 }
 
-const g_appData = new AppData();
+const _appData = new AppData();
+setAppData(_appData);
 
 export { AppData, OcrSettingTarget, SettingCompressMode, ItemType, getItemTypeName, SelectMode, SelectModeOptions, PawnsOfLokiDifficality, PawnsOfLokiDifficalityOptions, g_idGenerator, g_deffenceStructureContainer, g_offenceStructureContainer, g_appData };
