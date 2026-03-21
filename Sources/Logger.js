@@ -1,5 +1,3 @@
-import { ObjectUtil } from './Utilities.js';
-
 /**
  * @abstract
  */
@@ -20,7 +18,11 @@ class LoggerBase {
         ALL: 13
     });
 
-    static LOG_LEVEL_MAP = ObjectUtil.makeMapFromObj(this.LogLevel);
+    static get LOG_LEVEL_MAP() {
+        const map = new Map(Object.entries(LoggerBase.LogLevel).map(([text, value]) => [value, text]));
+        Object.defineProperty(LoggerBase, 'LOG_LEVEL_MAP', { value: map, writable: false, configurable: false });
+        return map;
+    }
 
     static levelStr(level) {
         return this.LOG_LEVEL_MAP.get(level);
