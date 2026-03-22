@@ -159,7 +159,7 @@ The 37-item gap is primarily from StatusIndex alias resolution (25-30) and moveU
 
 ## Impact on Subsequent Sections
 
-- **Section 02 (StatusIndex unification)**: May be **skippable or significantly reduced** in scope. The only remaining work would be optional naming convention changes (e.g., `StatusIndex.ATK` → `StatusIndex.Atk`).
-- **Section 03 (GameMode relocation)**: Still needed. Move GameMode to StatusConstants.js (L1) and add imports to 4 files.
+- **Section 02 (StatusIndex unification)**: 完了済み。違反ゼロのため検証テスト作成のみに縮小。
+- **Section 03 (GameMode relocation)**: 計画通り実行可能。ただし VueComponents.js の GameMode 未import（14箇所）が計画に含まれていないため、実装時に確認が必要。
 - **Section 04 (moveUnit separation)**: Scope reduced to 1 violation: `moveStructureToTrashBox` call in SkillEffect.js line 4565.
-- **Section 05 (Final validation)**: Scope adjusted to reflect actual violation count.
+- **Section 05 (Final validation)**: 計画のテスト内容に修正が必要。詳細は `section-05-final-validation.md` の「実装時の修正事項」セクションに記載。

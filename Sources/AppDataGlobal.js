@@ -7,3 +7,15 @@ export var g_appData;
 export function setAppData(appData) {
     g_appData = appData;
 }
+
+/** @type {((structure: Object) => void) | null} */
+export let moveStructureToTrashBoxCallback = null;
+
+/**
+ * Register the moveStructureToTrashBox implementation.
+ * Called by Layer 7 (BattleSimulatorBase.js) at initialization.
+ * @param {(structure: Object) => void} callback
+ */
+export function setMoveStructureToTrashBoxCallback(callback) {
+    moveStructureToTrashBoxCallback = callback;
+}

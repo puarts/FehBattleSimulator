@@ -13,7 +13,20 @@
     "section-04-moveunit-separation",
     "section-05-final-validation"
   ],
-  "sections_state": {},
+  "sections_state": {
+    "section-01-baseline-inventory": {
+      "status": "complete",
+      "commit_hash": "a0e40bf0"
+    },
+    "section-02-statusindex-unification": {
+      "status": "complete",
+      "commit_hash": "790b423b"
+    },
+    "section-03-gamemode-relocation": {
+      "status": "complete",
+      "commit_hash": "7cb4b143"
+    }
+  },
   "pre_commit": {
     "present": false,
     "type": "none",

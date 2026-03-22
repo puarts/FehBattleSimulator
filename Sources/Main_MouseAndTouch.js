@@ -1,6 +1,8 @@
 /// @file
 /// @brief シミュレーターのマウスやタッチイベントの実装です。
 
+import { moveUnit, moveUnitToTrashBox, moveStructureToMap, moveStructureToTrashBox, moveStructureToDefenceStorage, moveStructureToOffenceStorage, MoveResult, updateAllUi } from './BattleSimulatorBase.js';
+
 class DoubleClickChecker {
     constructor() {
         this.init();

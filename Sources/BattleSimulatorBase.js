@@ -26,7 +26,7 @@ import { TurnSettingCookiePrefix, g_imageRootPath } from './GlobalDefinitions.js
 import { canAddStatusEffectByRallyFuncMap, isRallyHealSkill, isRangedWeaponType } from './Skill.js';
 import { canRalliedForcibly, canRallyForcibly } from './SkillUtil.js';
 import { getSkillLogLevel } from './SkillEffect.js';
-import { g_appData } from './AppDataGlobal.js';
+import { g_appData, setMoveStructureToTrashBoxCallback } from './AppDataGlobal.js';
 
 function hasTargetOptionValue(targetOptionId, options) {
     for (let index in options) {
@@ -11786,6 +11786,9 @@ function moveStructureToTrashBox(structure) {
     removeFromAll(structure);
     g_trashArea.addStructure(structure);
 }
+
+// Layer 5以下からアクセスできるようコールバックを登録
+setMoveStructureToTrashBoxCallback(moveStructureToTrashBox);
 
 function moveStructureToDefenceStorage(structure) {
     removeFromAll(structure);

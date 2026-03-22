@@ -19,7 +19,7 @@ import { PartnerLevel, UnitGroupType, getStatusEffectName } from './UnitConstant
 import { DivineVeinType, getDivineVeinName } from './Tile.js';
 import { LoggerBase } from './Logger.js';
 import { isMeleeWeaponType, isRangedWeaponType, isWeaponTypeBreath, isWeaponTypeBreathOrBeast, isWeaponTypeTome } from './Skill.js';
-import { g_appData } from './AppDataGlobal.js';
+import { g_appData, moveStructureToTrashBoxCallback } from './AppDataGlobal.js';
 
 // Mixin
 // TODO: 冗長なものはMixinを使用するようにする
@@ -4562,7 +4562,11 @@ class DestroysOffenceSafetyFenceNode extends SkillEffectNode {
         for (let st of g_appData.getOffenseStructures()) {
             if (st instanceof SafetyFence) {
                 env.debug('攻撃の安全柵を破壊');
-                moveStructureToTrashBox(st);
+                if (moveStructureToTrashBoxCallback) {
+                    moveStructureToTrashBoxCallback(st);
+                } else {
+                    console.error('moveStructureToTrashBoxCallback is not registered');
+                }
             }
         }
     }
