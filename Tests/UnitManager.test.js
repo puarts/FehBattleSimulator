@@ -1,3 +1,4 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
 
 test('UnitManager_EnumerateUnits', () => {
     let manager = new test_UnitManager();

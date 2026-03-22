@@ -1,3 +1,7 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { PassiveB, Special } from '../Sources/SkillConstants.js';
+import { StatusEffectType } from '../Sources/StatusConstants.js';
+
 describe('Status effects', () => {
     beforeEach(() => {
         resetGlobalTestState();

@@ -1,3 +1,6 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { Weapon, PassiveA, PassiveB, PassiveC, Special } from '../Sources/SkillConstants.js';
+
 // スキルIDからスキル名を取得するヘルパー
 function getSkillName(skillId) {
     let info = g_testHeroDatabase.skillDatabase.findSkillInfoByDict(skillId);

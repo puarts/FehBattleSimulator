@@ -1,3 +1,5 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+
 describe('Performance benchmarks', () => {
     const isCI = !!process.env.CI;
 

@@ -1,3 +1,5 @@
+import { StatusEffectType } from '../Sources/StatusConstants.js';
+
 describe('getRequirements tests', () => {
     test('IF node with stat comparison should return STAT requirement', () => {
         // UNIT.spd.sgt(FOE.spd) の部分をテスト

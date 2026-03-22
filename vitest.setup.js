@@ -2,6 +2,12 @@
 // Loads all source files via concatenation (stripping import/export),
 // mimicking the create_tests.sh approach. This is necessary because
 // source files have circular dependencies that prevent proper ESM loading.
+//
+// TODO: Remove this concatenation after resolving circular dependencies in:
+//   - SkillEffect.js ↔ SkillEffectUnit.js (class hierarchy cycle at evaluation time)
+//   - SkillEffect.js ↔ SkillEffectField.js (SingleEffectNode cross-reference)
+//   - SkillImpl files (hundreds of missing ESM imports from concatenation globals)
+// See: docs/planning/phase4/implementation/code_review/section-09-interview.md
 
 import fs from 'node:fs';
 import path from 'node:path';

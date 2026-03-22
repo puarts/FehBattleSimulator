@@ -25,6 +25,14 @@
     "section-03-gamemode-relocation": {
       "status": "complete",
       "commit_hash": "7cb4b143"
+    },
+    "section-04-moveunit-separation": {
+      "status": "complete",
+      "commit_hash": "a039d369"
+    },
+    "section-05-final-validation": {
+      "status": "complete",
+      "commit_hash": "658efa8d"
     }
   },
   "pre_commit": {

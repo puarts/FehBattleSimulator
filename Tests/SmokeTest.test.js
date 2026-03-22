@@ -1,3 +1,7 @@
+import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, WeaponType } from '../Sources/SkillConstants.js';
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { StatusEffectType } from '../Sources/StatusConstants.js';
+
 // =============================================================================
 // Phase 0: スモークテスト
 // Vite + Vue 3 移行の安全網として、アプリの基本動作を確認する

@@ -1,3 +1,8 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { StatusEffectType } from '../Sources/StatusConstants.js';
+import { NumberNode, SkillEffectHooks, NODE_FUNC, IF_NODE, TRUE_NODE, FALSE_NODE, CONSTANT_NUMBER_NODE, MultiValueMap } from '../Sources/SkillEffectCore.js';
+import { NodeEnv } from '../Sources/SkillEffectEnv.js';
+
 describe('DSL Node Tests', () => {
     /** @type {Unit} */
     let atkUnit;

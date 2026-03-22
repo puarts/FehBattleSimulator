@@ -1,3 +1,5 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+
 describe('Damage reduction mechanics', () => {
     beforeEach(() => {
         resetGlobalTestState();

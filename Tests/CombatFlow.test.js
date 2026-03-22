@@ -1,3 +1,6 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { Special, PassiveB, Weapon } from '../Sources/SkillConstants.js';
+
 describe('Combat flow', () => {
     beforeEach(() => {
         resetGlobalTestState();

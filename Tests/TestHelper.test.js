@@ -1,3 +1,6 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { Weapon } from '../Sources/SkillConstants.js';
+
 describe('UnitBuilder', () => {
     test('fromHero creates a valid unit from hero name', () => {
         let unit = UnitBuilder.fromHero('マルス').build();

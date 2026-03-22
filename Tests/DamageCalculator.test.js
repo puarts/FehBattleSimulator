@@ -1,3 +1,6 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { PassiveA } from '../Sources/SkillConstants.js';
+
 describe('Test feud skills', () => {
   let heroDatabase;
   let atkUnit;

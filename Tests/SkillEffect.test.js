@@ -1,3 +1,6 @@
+import { NumberNode, CONSTANT_NUMBER_NODE, MultiValueMap, SkillEffectHooks } from '../Sources/SkillEffectCore.js';
+import { NodeEnv } from '../Sources/SkillEffectEnv.js';
+
 describe('Test skill effect', () => {
     describe(`Test ${NumberNode.name}`, () => {
         test('mult function', () => {

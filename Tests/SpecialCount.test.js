@@ -1,3 +1,6 @@
+import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { Special, PassiveA, PassiveB } from '../Sources/SkillConstants.js';
+
 describe('Special count mechanics', () => {
     beforeEach(() => {
         resetGlobalTestState();
