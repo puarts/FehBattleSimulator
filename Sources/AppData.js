@@ -6,7 +6,7 @@ import { setAppData, g_appData } from './AppDataGlobal.js';
 import { Base62Util, CommandQueue, IdGenerator, LocalStorageUtil, ObjectStorage, ObjectUtil, StructureContainer, boolToInt, intToBool } from './Utilities.js';
 import { DivineVeinType, Tile } from './Tile.js';
 import { MaxAllyUnitCount, MaxEnemyUnitCount, UnitManager } from './UnitManager.js';
-import { GameMode } from './DamageCalculator.js';
+import { GameMode } from './StatusConstants.js';
 import { ArenaMapKindOptions, BattleMap, MapType, isArenaMap, isSummonerDuelsMap } from './BattleMap.js';
 import { AudioManager } from './AudioManager.js';
 import { GlobalBattleContext } from './GlobalBattleContext.js';

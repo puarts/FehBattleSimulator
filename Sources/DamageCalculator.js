@@ -13,16 +13,6 @@ import { ArrayUtil, MathUtil, floorNumberWithFloatError, truncNumberWithFloatErr
 import { UnitGroupType, getStatusEffectName } from './UnitConstants.js';
 import { Unit } from './Unit.js';
 
-const GameMode = {
-    AetherRaid: 0,
-    Arena: 1,
-    AllegianceBattles: 2,
-    ResonantBattles: 3,
-    TempestTrials: 4,
-    PawnsOfLoki: 5,
-    SummonerDuels: 6, // 英雄決闘
-};
-
 const DamageType = {
     ActualDamage: 0,
     EstimatedDamage: 1,
@@ -2998,4 +2988,4 @@ class DamageCalculator {
     }
 }
 
-export { GameMode, DamageType, DamageCalcResult, CombatResult, AttackResult, StrikeResult, DamageCalcContext, DamageCalcEnv, OneAttackResult, DamageCalculator };
+export { DamageType, DamageCalcResult, CombatResult, AttackResult, StrikeResult, DamageCalcContext, DamageCalcEnv, OneAttackResult, DamageCalculator };

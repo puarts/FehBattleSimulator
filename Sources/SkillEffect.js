@@ -10,7 +10,7 @@ import { FirstValueNode, UniqueCollectionNode, FlattenCollectionNode, MapCollect
 import { EffectNode, XNumberNode, X } from './SkillEffectCore.js';
 import { NodeEnv } from './SkillEffectEnv.js';
 import { ArrayUtil, Base62, GeneratorUtil, IterUtil, MathUtil, SetUtil } from './Utilities.js';
-import { NEGATIVE_STATUS_EFFECT_ORDER_MAP, POSITIVE_STATUS_EFFECT_ORDER_MAP, StatusEffectType, StatusIndex } from './StatusConstants.js';
+import { GameMode, NEGATIVE_STATUS_EFFECT_ORDER_MAP, POSITIVE_STATUS_EFFECT_ORDER_MAP, StatusEffectType, StatusIndex } from './StatusConstants.js';
 import { ALLIES, GRANTS_BONUS, GRANTS_STATUS_EFFECTS, INFLICTS_PENALTY, INFLICTS_STATUS_EFFECTS, MOVE_TYPE, UNIT, WEAPON_TYPE } from './SkillEffectUnit.js';
 import { MoveType, statusTypeToString } from './HeroInfoConstants.js';
 import { Special, WeaponType } from './SkillConstants.js';

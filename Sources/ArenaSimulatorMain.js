@@ -6,7 +6,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import { BattleSimulatorBase, resetPlacement, changeMap, removeBreakableWallsFromTrashBox, updateAllUi, loadSettings } from './BattleSimulatorBase.js';
 import { ScopedStopwatch, using_ } from './Utilities.js';
 import { g_appData } from './AppData.js';
-import { GameMode } from './DamageCalculator.js';
+import { GameMode } from './StatusConstants.js';
 import { MapType, isArenaMap } from './BattleMap.js';
 import { weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveXInfos, passiveSInfos, captainInfos } from './SampleSkillInfos.js';
 import { heroInfos } from './SampleHeroInfos.js';

@@ -5,7 +5,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { useMainStore, setupStoreActions } from './store.js';
 import { MoveType, SeasonType, StatusType, UnitRarity, statusTypeToShortString } from './HeroInfoConstants.js';
-import { GameMode } from './DamageCalculator.js';
+import { GameMode } from './StatusConstants.js';
 import { Hero, UnitGroupType, getNegativeStatusEffectTypes, getPositiveStatusEffectTypes } from './UnitConstants.js';
 import { DefFortress, DefHiyokuNoTorikago, OfFortress, OfHiyokuNoHisyo, Ornament, OrnamentSettings, StructureBase } from './Structures.js';
 import { Unit, calcArenaBaseStatusScore, calcArenaTotalSpScore, isAfflictor, isDebufferTier1, isDebufferTier2, isThief } from './Unit.js';

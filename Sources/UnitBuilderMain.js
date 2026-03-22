@@ -2,7 +2,7 @@ import LZString from 'lz-string';
 import { BattleSimulatorBase, loadSettings } from './BattleSimulatorBase.js';
 import { ScopedStopwatch, using_, selectText } from './Utilities.js';
 import { g_appData } from './AppData.js';
-import { GameMode } from './DamageCalculator.js';
+import { GameMode } from './StatusConstants.js';
 import { StatusType } from './HeroInfoConstants.js';
 import { SummonerLevel } from './UnitConstants.js';
 import { ElemDelimiter, g_explicitSiteRootPath } from './GlobalDefinitions.js';

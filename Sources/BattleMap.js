@@ -6,7 +6,7 @@ import { ArrayUtil, LocalStorageUtil, MapUtil } from './Utilities.js';
 import { g_imageRootPath, g_corsImageRootPath } from './GlobalDefinitions.js';
 import { BackgroundImageInfo, Table, getPositionFromCellId } from './Table.js';
 import { EmblemHero, PassiveB, PassiveC, Special, Weapon } from './SkillConstants.js';
-import { StatusEffectType } from './StatusConstants.js';
+import { GameMode, StatusEffectType } from './StatusConstants.js';
 import { LoggerBase } from './Logger.js';
 import { TileQuery, UnitQuery, getDivineVeinTag, getSpecialChargedImgTag } from './GameUtilities.js';
 import { CellType } from './Cell.js';

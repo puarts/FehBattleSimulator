@@ -353,4 +353,14 @@ function getStatusName(index) {
     return ["攻撃", "速さ", "守備", "魔防"][index];
 }
 
-export { StatusEffectType, POSITIVE_STATUS_EFFECT_ARRAY, POSITIVE_STATUS_EFFECT_ORDER_MAP, NEGATIVE_STATUS_EFFECT_ARRAY, NEGATIVE_STATUS_EFFECT_ORDER_MAP, StatusIndex, StatFlags, getStatusName };
+const GameMode = {
+    AetherRaid: 0,
+    Arena: 1,
+    AllegianceBattles: 2,
+    ResonantBattles: 3,
+    TempestTrials: 4,
+    PawnsOfLoki: 5,
+    SummonerDuels: 6, // 英雄決闘
+};
+
+export { StatusEffectType, POSITIVE_STATUS_EFFECT_ARRAY, POSITIVE_STATUS_EFFECT_ORDER_MAP, NEGATIVE_STATUS_EFFECT_ARRAY, NEGATIVE_STATUS_EFFECT_ORDER_MAP, StatusIndex, StatFlags, getStatusName, GameMode };

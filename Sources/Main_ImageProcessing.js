@@ -6,7 +6,7 @@ import 'cropperjs/dist/cropper.min.css';
 import { OcrSettingTarget } from './AppData.js';
 import { BoltTrap, FalseBoltTrap, FalseHeavyTrap, FalseHexTrap, HeavyTrap, HexTrap, Ornament, TrapBase, findOrnamentTypeIndexByIcon } from './Structures.js';
 import { EmblemHero, PassiveA, PassiveB, PassiveC, SkillType, Special, Support, WeaponRefinementType } from './SkillConstants.js';
-import { GameMode } from './DamageCalculator.js';
+import { GameMode } from './StatusConstants.js';
 import { MapType } from './BattleMap.js';
 import { SummonerLevel } from './UnitConstants.js';
 import { StatusType, nameToStatusType } from './HeroInfoConstants.js';
