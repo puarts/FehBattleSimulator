@@ -35,10 +35,18 @@ describe('Final Validation: All layer violations resolved', () => {
 
         // DamageCalculator.js(L4)のLayer 5依存は既知でこのフェーズではスコープ外
         // violation-status.md に記録済み
+        // L4→L5の既知の依存。将来解消予定。数が増えたらテスト失敗にする。
         const knownExceptions = {
             'DamageCalculator.js': ['SkillEffect.js', 'SkillEffectHooks.js', 'SkillEffectEnv.js'],
             'DamageCalculatorWrapper.js': ['SkillEffect.js', 'SkillEffectEnv.js', 'SkillEffectHooks.js'],
         };
+        const KNOWN_EXCEPTION_LIMIT = 6; // 現在の例外総数。減らすのはOK、増やすのはNG。
+
+        it('known exceptions do not exceed the limit', () => {
+            const totalExceptions = Object.values(knownExceptions).reduce((sum, arr) => sum + arr.length, 0);
+            expect(totalExceptions, `例外数が${KNOWN_EXCEPTION_LIMIT}件を超えています。新しいL4→L5依存を追加しないでください。`)
+                .toBeLessThanOrEqual(KNOWN_EXCEPTION_LIMIT);
+        });
 
         const layer1to4Files = [
             'StatusConstants.js',         // L1
