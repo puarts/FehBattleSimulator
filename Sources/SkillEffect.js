@@ -11,7 +11,6 @@ import { EffectNode, XNumberNode, X } from './SkillEffectCore.js';
 import { NodeEnv } from './SkillEffectEnv.js';
 import { ArrayUtil, Base62, GeneratorUtil, IterUtil, MathUtil, SetUtil } from './Utilities.js';
 import { GameMode, NEGATIVE_STATUS_EFFECT_ORDER_MAP, POSITIVE_STATUS_EFFECT_ORDER_MAP, StatusEffectType, StatusIndex } from './StatusConstants.js';
-import { ALLIES, GRANTS_BONUS, GRANTS_STATUS_EFFECTS, INFLICTS_PENALTY, INFLICTS_STATUS_EFFECTS, MOVE_TYPE, UNIT, WEAPON_TYPE } from './SkillEffectUnit.js';
 import { MoveType, statusTypeToString } from './HeroInfoConstants.js';
 import { Special, WeaponType } from './SkillConstants.js';
 import { DefenceStructureBase, OffenceStructureBase, SafetyFence, TrapBase } from './Structures.js';
@@ -9298,6 +9297,621 @@ const CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOL
     spd => new CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode(spd);
 
 
+// ============================================================================
+// SkillEffectField (merged from SkillEffectField.js)
+// ============================================================================
+
+class SkillEffectField {
+    /**
+     * @enum {string}
+     */
+    static Op = {
+        NONE: '',
+        ADD: '+',
+        SUB: '-',
+        MUL: '*',
+        MUL_TRUNC: 'Math.floor',
+        DIV: '/',
+        MOD: '%',
+        AND: 'and',
+        OR: 'or',
+        SET_TRUE: 'true',
+        SET_FALSE: 'false',
+        STATS_OR: 'stats or',
+        STATS_AND: 'stats and',
+        ARRAY_PUSH: 'array push',
+        ARRAY_ADD: 'array add',
+        ARRAY_SUB: 'array sub',
+        SET: 'set',
+    };
+
+    /**
+     * @template T
+     * @param {T} a
+     * @param {T} b
+     * @param {SkillEffectField.Op} op
+     * @returns {T}
+     */
+    static calc(a, b, op) {
+        switch (op) {
+            case SkillEffectField.Op.ADD:
+                return a + b;
+            case SkillEffectField.Op.SUB:
+                return a - b;
+            case SkillEffectField.Op.MUL:
+                return a * b;
+            case SkillEffectField.Op.MUL_TRUNC:
+                return Math.trunc(a * b);
+            case SkillEffectField.Op.DIV:
+                return a / b;
+            case SkillEffectField.Op.MOD:
+                return a % b;
+            case SkillEffectField.Op.AND:
+                return a && b;
+            case SkillEffectField.Op.OR:
+                return a || b;
+            case SkillEffectField.Op.SET_TRUE:
+                return true;
+            case SkillEffectField.Op.SET_FALSE:
+                return false;
+            case SkillEffectField.Op.STATS_OR:
+                return ArrayUtil.or(a, b);
+            case SkillEffectField.Op.STATS_AND:
+                return ArrayUtil.and(a, b);
+            case SkillEffectField.Op.ARRAY_PUSH:
+                a.push(b);
+                return a;
+            case SkillEffectField.Op.ARRAY_ADD:
+                return ArrayUtil.add(a, b);
+            case SkillEffectField.Op.ARRAY_SUB:
+                return ArrayUtil.sub(a, b);
+            case SkillEffectField.Op.SET:
+                return b;
+            default:
+                throw new Error(`Invalid op: ${op}`);
+        }
+    }
+}
+
+/**
+ * @typedef {BoolResolvable|NumberResolvable|StatsNode|StatusEffectType} SkillEffectFieldType
+ * @abstract
+ */
+class SkillEffectFieldNode extends SingleEffectNode {
+    /**
+     * @param {string} key
+     * @returns {SkillEffectFieldNode}
+     */
+    setKey(key) {
+        const copy = this.clone();
+        copy._key = key;
+        return copy;
+    }
+
+    /**
+     * @param logMessage
+     * @returns {SkillEffectFieldNode}
+     */
+    setLogMessage(logMessage) {
+        this._logMessage = logMessage;
+        return this;
+    }
+
+    /**
+     * @param {function} logMessageFunc
+     * @returns {SkillEffectFieldNode}
+     */
+    setLogMessageFunc(logMessageFunc) {
+        this._logMessageFunc = logMessageFunc;
+        return this;
+    }
+
+    battleContext() {
+        this._isBattleContext = true;
+        return this;
+    }
+
+    _toLog(value) {
+        if (Array.isArray(value)) {
+            return `[${value.join(', ')}]`;
+        }
+        return value;
+    }
+}
+
+class GetSkillEffectFieldNode extends SkillEffectFieldNode {
+    onEvaluate(unit, env) {
+        const targetObj = this._isBattleContext ? unit.battleContext : unit;
+
+        // 文字列キーを使ってアクセス
+        const result = targetObj[this._key];
+        if (this._logMessageFunc) {
+            env.debug(`${this._logMessageFunc(unit.nameWithGroup, result)}`);
+        } else {
+            env.debug(`${unit.nameWithGroup}の${this._logMessage} : ${this._toLog(result)}`);
+        }
+        return result;
+    }
+}
+
+class ModSkillEffectFieldNode extends SkillEffectFieldNode {
+    /**
+     * @param {NumberResolvable|BoolResolvable} operand
+     * @param {SkillEffectField.Op} op
+     */
+    constructor(operand, op) {
+        super();
+        this._operandNode = null;
+        if (!(operand instanceof SkillEffectNode)) {
+            if (typeof operand === 'boolean') {
+                this._operandNode = BoolNode.makeBoolNodeFrom(operand);
+            } else if (typeof operand === 'number') {
+                this._operandNode = NumberNode.makeNumberNodeFrom(operand);
+            } else {
+                throw new Error(`Invalid operand: ${operand}, type: ${typeof operand}`);
+            }
+        } else {
+            this._operandNode = operand;
+        }
+        this._operandNode?.addParent(this);
+        this._op = op;
+        this._isBattleContext = false;
+    }
+
+    onEvaluate(unit, env) {
+        const operand = this._transEvaluation(env, this._operandNode.evaluate(env));
+        const targetObj = this._isBattleContext ? unit.battleContext : unit;
+
+        // 文字列キーを使ってアクセス
+        const beforeValue = targetObj[this._key];
+        const originalValue = this._copy(beforeValue);
+        const result = targetObj[this._key] = SkillEffectField.calc(beforeValue, operand, this._op);
+        if (this._logMessageFunc) {
+            env.info(`${this._logMessageFunc(unit.nameWithGroup, operand)}
+                : ${this._toLog(originalValue)} → ${this._toLog(result)}`);
+        } else {
+            env.info(`${unit.nameWithGroup}は${this._logMessage}${this._toLog(operand)}
+                : ${this._toLog(originalValue)} → ${this._toLog(result)}`);
+        }
+        return result;
+    }
+
+    _copy(value) {
+        if (Array.isArray(value)) {
+            return [...value];
+        }
+        return value;
+    }
+}
+
+// ============================================================================
+// SkillEffectUnit (merged from SkillEffectUnit.js)
+// ============================================================================
+
+class SkillOwnerUnitNode extends EnvUnitNode {
+    /**
+     * @override
+     */
+    getUnit(env) {
+        return env.skillOwner;
+    }
+}
+
+const SKILL_OWNER = new SkillOwnerUnitNode();
+
+class TextUnitNode extends EnvUnitNode {
+    /**
+     * @override
+     */
+    getUnit(env) {
+        return env.textUnit;
+    }
+}
+
+const UNIT = new TextUnitNode();
+
+class TextFoeNode extends EnvUnitNode {
+    /**
+     * @override
+     */
+    getUnit(env) {
+        return env.textFoe;
+    }
+}
+
+const FOE = new TextFoeNode();
+const TARGET_FOE = new TextFoeNode();
+
+class TextAllyNode extends EnvUnitNode {
+    /**
+     * @override
+     */
+    getUnit(env) {
+        return env.textAlly;
+    }
+}
+
+const ALLY = new TextAllyNode();
+
+class TargetAllyNode extends EnvUnitNode {
+    /**
+     * @override
+     */
+    getUnit(env) {
+        return env.assistTarget;
+    }
+}
+
+const TARGET_ALLY = new TargetAllyNode();
+
+class TextTargetNode extends EnvUnitNode {
+    /**
+     * @override
+     */
+    getUnit(env) {
+        return env.textTarget;
+    }
+}
+
+const TARGET = new TextTargetNode();
+
+const ALLIES = UNIT.sameGroup();
+const ALLIES_FROM_SAME_TITLES_AS_UNIT = ALLIES.with(ARE_TARGET_AND_SKILL_OWNERS_HAS_SAME_TITLE_NODE);
+const ALLIES_ON_MAP = UNIT.sameGroup(); // sameGroupがマップ上のフィルタを行っている
+const FOES = UNIT.differentGroup();
+
+const SUPPORT_PARTNERS = UNIT.sameGroup()
+
+// TODO: リファクタリング
+class UnitsWithinNode extends UnitsNode {
+    constructor() {
+        super();
+        /** @type {UnitsNode} */
+        this._centerNode = null;
+        /** @type {Array<(query: UnitQuery, centerUnit: Unit, env: NodeEnv) => UnitQuery>} */
+        this._filters = [];
+    }
+
+    /**
+     * @param {NumberResolvable} spaces
+     * @return {this}
+     */
+    spaces(spaces) {
+        let clone = this.clone();
+        const spacesNode = NumberNode.toNumberNode(spaces);
+        clone._filters.push(
+            (unitQuery, centerUnit, env) =>
+                unitQuery.withinSpacesOf(centerUnit, spacesNode.evaluate(env), false)
+        );
+        return clone;
+    }
+
+    /**
+     * @param {NumberResolvable} rows
+     * @return {this}
+     */
+    rows(rows) {
+        let clone = this.clone();
+        const rowsNode = NumberNode.toNumberNode(rows);
+        clone._filters.push(
+            (unitQuery, centerUnit, env) =>
+                unitQuery.withinRowsOf(centerUnit, rowsNode.evaluate(env), false)
+        );
+        return clone;
+    }
+
+    /**
+     * @param {NumberResolvable} columns
+     * @return {this}
+     */
+    columns(columns) {
+        let clone = this.clone();
+        const rowsNode = NumberNode.toNumberNode(columns);
+        clone._filters.push(
+            (unitQuery, centerUnit, env) =>
+                unitQuery.withinColumnsOf(centerUnit, rowsNode.evaluate(env), false)
+        );
+        return clone;
+    }
+
+    /**
+     * @param {NumberResolvable} rows
+     * @param {NumberResolvable} columns
+     * @return {this}
+     */
+    rowsOrColumns(rows, columns = rows) {
+        let clone = this.clone();
+        const rowsNode = NumberNode.toNumberNode(rows);
+        const columnsNode = NumberNode.toNumberNode(columns);
+        clone._filters.push(
+            (unitQuery, centerUnit, env) =>
+                unitQuery.withinRowsOrColumnsOf(
+                    centerUnit, rowsNode.evaluate(env), columnsNode.evaluate(env), false
+                )
+        );
+        return clone;
+    }
+
+    /**
+     * @return {this}
+     */
+    allies() {
+        let clone = this.clone();
+        clone._filters.push(
+            (unitQuery, centerUnit, env) => unitQuery.sameGroup(UNIT.evaluate(env))
+        );
+        return clone;
+    }
+
+    /**
+     * @return {this}
+     */
+    unitAndAllies() {
+        let clone = this.clone();
+        clone._filters.push(
+            (unitQuery, centerUnit, env) => unitQuery.andSameGroup(UNIT.evaluate(env))
+        );
+        return clone;
+    }
+
+    /**
+     * @return {this}
+     */
+    foes() {
+        let clone = this.clone();
+        clone._filters.push(
+            (unitQuery, centerUnit, env) => unitQuery.differentGroup(UNIT.evaluate(env))
+        );
+        return clone;
+    }
+
+    /**
+     * @param {TargetUnitNode} units
+     * @return {this}
+     */
+    of(units) {
+        const clone = this.clone();
+        clone._centerNode = UnitsNode.toUnitsNode(units);
+        return clone;
+    }
+
+    /**
+     * @param {TargetUnitNode} units
+     * @return {this}
+     */
+    centeredOn(units) {
+        return this.of(units);
+    }
+
+    evaluate(env) {
+        /** @type {Set<Unit>} */
+        let unitSet = new Set();
+        for (const centerUnit of this._centerNode.evaluate(env)) {
+            let unitQuery = env.getUnitQuery().onMap();
+            for (const filter of this._filters) {
+                unitQuery = filter(unitQuery, centerUnit, env);
+            }
+            unitSet = SetUtil.union(unitSet, unitQuery.toSet());
+        }
+        return unitSet;
+    }
+}
+
+// ※ andAlliesの理由: 範囲内にいるユニットは自分(UNIT)も含む可能性があるので最初のフィルタリングの段階でUNITを入れなければならない
+// (例) ALLIES_WITHIN.spaces(1).of(ALLIES_WITHIN.spaces(1).of(UNIT))
+const ALLIES_WITHIN = new UnitsWithinNode().unitAndAllies();
+
+const FOES_WITHIN = new UnitsWithinNode().foes();
+
+const CLOSEST_FOES = UNIT.closestFoes();
+
+/**
+ * @param {string} key
+ * @param {SkillEffectField.Op} op
+ * @param {string} message
+ * @param {(unitName: string, operand: any) => string} messageFunc
+ * @return {[GetSkillEffectFieldNode, (arg: SkillEffectFieldType) => SkillEffectFieldNode]}
+ */
+function makeUnitFieldOperators(key, op, message, messageFunc = null) {
+    // 共通の設定処理を行う関数
+    const setup = (node) =>
+        node.setKey(key)
+            .setLogMessage(message)
+            .setLogMessageFunc(messageFunc);
+
+    return [
+        setup(new GetSkillEffectFieldNode()),
+        operand => setup(new ModSkillEffectFieldNode(operand, op)),
+    ];
+}
+
+/**
+ * @template T
+ */
+class CallUnitFuncNode extends SingleEffectNode {
+    /**
+     * @param {function(Unit, ...T): void} actionFunc
+     * @param {function(Unit, ...T): string} messageBuilder
+     * @param {...T} args
+     */
+    constructor(actionFunc, messageBuilder, ...args) {
+        super();
+        this._actionFunc = actionFunc;
+        this._messageBuilder = messageBuilder;
+        this._args = args;
+        args.forEach(arg => {
+            if (arg instanceof SkillEffectNode) arg.addParent(this);
+        });
+    }
+
+    setDebug() {
+        this._debug = true;
+        return this;
+    }
+
+    onEvaluate(unit, env) {
+        const args = this._getArgs(this._args, env);
+        if (this._debug) {
+            env.debug(this._messageBuilder(unit, ...args));
+        } else {
+            env.info(this._messageBuilder(unit, ...args));
+        }
+        return this._actionFunc(unit, ...args);
+    }
+
+    _getArgs(args, env) {
+        if (args.length === 1 && args[0] instanceof SkillEffectNode) {
+            return args[0].evaluate(env);
+        }
+        return args;
+    }
+}
+
+/*
+ * 実装
+ */
+
+const [
+    BONUS_DURING_COMBAT,
+    GRANTS_BONUS_DURING_COMBAT,
+] = makeUnitFieldOperators(
+    Unit.nameOf(unit => unit.spurs),
+    SkillEffectField.Op.ARRAY_ADD,
+    `攻撃/速さ/守備/魔防+`
+);
+
+const GRANTS_BONUS_ON_MAP = statsNode => CALL_UNIT_FUNC(
+    (unit, ...stats) => unit.reserveToApplyBuffs(...stats),
+    (unit, ...stats) => `${unit.nameWithGroup}にバフ予約: [${stats}]`,
+    statsNode
+);
+
+/**
+ * 戦闘中、マップ上でのステータス加算（攻撃+4など）
+ * @param {StatsNode} statsNode
+ * @returns {EffectNode}
+ */
+const GRANTS_BONUS = statsNode =>
+    IF_ELSE_EFFECT(IS_IN_COMBAT_PHASE_NODE,
+        GRANTS_BONUS_DURING_COMBAT(statsNode),
+        GRANTS_BONUS_ON_MAP(statsNode)
+    );
+
+const [
+    PENALTY_DURING_COMBAT,
+    INFLICTS_PENALTY_DURING_COMBAT,
+] = makeUnitFieldOperators(
+    Unit.nameOf(unit => unit.spurs),
+    SkillEffectField.Op.ARRAY_SUB,
+    `攻撃/速さ/守備/魔防-`
+);
+
+const INFLICTS_PENALTY_ON_MAP = statsNode => CALL_UNIT_FUNC(
+    (unit, ...stats) => unit.reserveToApplyDebuffs(...stats.map(n => -n)),
+    (unit, ...stats) => `${unit.nameWithGroup}にデバフ予約: [${stats}]`,
+    statsNode
+);
+
+/**
+ * 戦闘中、マップ上でのステータス減算（攻撃-4など）
+ * @param {StatsNode} statsNode
+ * @returns {EffectNode}
+ */
+const INFLICTS_PENALTY = statsNode =>
+    IF_ELSE_EFFECT(IS_IN_COMBAT_PHASE_NODE,
+        INFLICTS_PENALTY_DURING_COMBAT(statsNode),
+        INFLICTS_PENALTY_ON_MAP(statsNode)
+    );
+
+const CALL_UNIT_FUNC = (actionFunc, messageBuilder, ...args) =>
+    new CallUnitFuncNode(actionFunc, messageBuilder, ...args);
+
+const [
+    ,
+    NEUTRALIZES_N_PENALTY_EFFECTS,
+] = makeUnitFieldOperators(
+    (Unit.nameOf(unit => unit.reservedNegativeStatusEffectCountInOrder)),
+    SkillEffectField.Op.ADD,
+    '',
+    (name, n) => `${name}は戦闘中、不利な状態を上位${n}個解除`,
+);
+
+/**
+ * @template {StatusEffectType} T
+ * @param {...T} effects
+ * @returns {SingleEffectNode}
+ */
+const GRANTS_STATUS_EFFECTS = (...effects) => CALL_UNIT_FUNC(
+    (unit, ...es) => unit.reserveToAddStatusEffects(...es),
+    (unit, ...es) =>
+        `${unit.nameWithGroup}に${es.map(e => getStatusEffectName(e)).join(', ')}を付与予約`,
+    ...effects
+);
+
+/**
+ * @param {...StatusEffectType} effects
+ * @returns {SingleEffectNode}
+ */
+const INFLICTS_STATUS_EFFECTS = (...effects) => GRANTS_STATUS_EFFECTS(...effects);
+
+/**
+ * @template {StatFlags} T
+ * @param {T} statFlags
+ * @returns {SingleEffectNode}
+ */
+const NEUTRALIZES_STAT_PENALTIES = (statFlags = StatFlags.ALL) => CALL_UNIT_FUNC(
+    (unit, fs) => unit.setReservedDebuffFlagsToNeutralize(fs),
+    (unit, fs) => `${unit.nameWithGroup}は弱化を解除予約: ${fs}`,
+    statFlags
+);
+
+const RE_ENABLES_CANTO = CALL_UNIT_FUNC(
+    (unit) => unit.reEnablesCantoOnMap(),
+    (unit) => `${unit.nameWithGroup}は再移動を再発動可能になる`,
+);
+
+const CANTO_HAS_ALREADY_BEEN_TRIGGERED =
+    new GetSkillEffectFieldNode()
+        .setKey(Unit.nameOf(unit => unit.isCantoActivatedInCurrentTurn))
+        .setLogMessage('再移動を発動済みか');
+
+const MOVE_TYPE = new GetSkillEffectFieldNode()
+    .setKey(Unit.nameOf(unit => unit.moveType))
+    .setLogMessageFunc((name, n) => `${name}の移動タイプ: ${n}`);
+
+const WEAPON_TYPE = new GetSkillEffectFieldNode()
+    .setKey(Unit.nameOf(unit => unit.weaponType))
+    .setLogMessageFunc((name, n) => `${name}の武器タイプ: ${n}`);
+
+/**
+ * 射程
+ * @type {SkillEffectFieldNode}
+ */
+const RANGE = new GetSkillEffectFieldNode()
+    .setKey(Unit.nameOf(unit => unit.attackRange))
+    .setLogMessageFunc((name, n) => `${name}の射程: ${n}`);
+
+const ON_MAP = CALL_UNIT_FUNC(
+    (unit) => unit.isOnMap,
+    (unit) => `${unit.nameWithGroup}はマップ上にいるか`,
+).setDebug();
+
+class GeneralGrantsAnotherActionNode extends SingleEffectNode {
+    constructor() {
+        super();
+    }
+
+    onEvaluate(unit, env) {
+        if (env.assistTargeting === unit) {
+            env.trace(`${env.assistTargeting.nameWithGroup}は自分を行動可能な状態にする（補助時再行動）`);
+            unit.grantsAnotherActionOnAssist(true);
+        }
+    }
+}
+
+const GRANTS_ANOTHER_ACTION = new GeneralGrantsAnotherActionNode();
+
+
 export { GetUnitMixin, GetTargetsFoeMixin, GetTargetsAllyMixin, GetUnitDuringCombatMixin, GetFoeDuringCombatMixin, GetSkillOwnerMixin, GetAssistTargetsAllyMixin, GetAssistTargetingMixin, GetAssistTargetMixin, GetValueMixin, GetTargetTileMixin, CheckIfStatsDuringCombatAreDeterminedMixin };
 export { NSpacesMixin, ForUnitMixin, DebugEnvNode, DEBUG_ENV_NODE, PrintDebugNode, PRINT_DEBUG_NODE, UnitNode, EnvUnitNode, TargetNode, TARGET_NODE, TargetsFoeDuringCombatNode, TARGETS_FOE_DURING_COMBAT_NODE, TargetsFoeNode, TARGETS_FOE_NODE, UNIT_DURING_COMBAT_NODE, FOE_NODE, SKILL_OWNER_NODE };
 export { AssistTargetingNode, ASSIST_TARGETING_NODE, AssistTargetNode, ASSIST_TARGET_NODE, TargetsAllyNode, TARGETS_ALLY_NODE, ForTargetNode, FOR_TARGET_NODE, FOR_UNIT_DURING_COMBAT_NODE, FOR_FOE_NODE, FOR_TARGETS_FOE_DURING_COMBAT_NODE, FOR_TARGETS_FOE_NODE, FOR_SKILL_OWNER_NODE, UnitsNode };
@@ -9441,3 +10055,7 @@ export { TARGETS_STATUS_EFFECTS_NODE, TargetsBonusStatusEffectsNode, TARGETS_BON
 export { AreTargetAndSkillOwnersHasSameTitleNode, ARE_TARGET_AND_SKILL_OWNERS_HAS_SAME_TITLE_NODE, IsTargetActionDoneNode, IS_TARGET_ACTION_DONE_NODE, IsTargetMythicNode, IS_TARGET_MYTHIC_NODE, CanTargetsFoeDestroyTileNode, CAN_TARGETS_FOE_DESTROY_TILE_NODE, NumberOfTimesTargetHasAttackedNode };
 export { NUMBER_OF_TIMES_TARGET_HAS_ATTACKED_NODE, IsTargetSupportRankSPlusNode, IS_TARGET_SUPPORT_RANK_S_PLUS_NODE, NSpacesInALineCenteredOnTargetsFoesSpaceAndBehindThoseSpacesNode, N_SPACES_IN_A_LINE_CENTERED_ON_TARGETS_FOES_SPACE_AND_BEHIND_THOSE_SPACES_NODE };
 export { NSpacesInAnyTargetsCardinalDirectionNode, N_SPACES_IN_ANY_TARGETS_CARDINAL_DIRECTION_NODE, CanDecreasingSpdTriggerFollowUpExcludingGuaranteedOrPreventedFollowUpsNode, CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS };
+export { SkillEffectField, SkillEffectFieldNode, GetSkillEffectFieldNode, ModSkillEffectFieldNode };
+export { SkillOwnerUnitNode, SKILL_OWNER, TextUnitNode, UNIT, TextFoeNode, FOE, TARGET_FOE, TextAllyNode, ALLY, TargetAllyNode, TARGET_ALLY, TextTargetNode, TARGET, ALLIES, ALLIES_FROM_SAME_TITLES_AS_UNIT, ALLIES_ON_MAP, FOES, SUPPORT_PARTNERS, UnitsWithinNode, ALLIES_WITHIN, FOES_WITHIN };
+export { CLOSEST_FOES, makeUnitFieldOperators, CallUnitFuncNode, BONUS_DURING_COMBAT, GRANTS_BONUS_DURING_COMBAT, GRANTS_BONUS_ON_MAP, GRANTS_BONUS, PENALTY_DURING_COMBAT, INFLICTS_PENALTY_DURING_COMBAT, INFLICTS_PENALTY_ON_MAP, INFLICTS_PENALTY, CALL_UNIT_FUNC, NEUTRALIZES_N_PENALTY_EFFECTS };
+export { GRANTS_STATUS_EFFECTS, INFLICTS_STATUS_EFFECTS, NEUTRALIZES_STAT_PENALTIES, RE_ENABLES_CANTO, CANTO_HAS_ALREADY_BEEN_TRIGGERED, MOVE_TYPE, WEAPON_TYPE, RANGE, ON_MAP, GeneralGrantsAnotherActionNode, GRANTS_ANOTHER_ACTION };
