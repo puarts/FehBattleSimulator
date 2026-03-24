@@ -903,7 +903,7 @@ function isTeleportationSkill(skillId) {
     return TELEPORTATION_SKILL_SET.has(skillId);
 }
 
-PATHFINDER_SKILL_SET = new Set([
+const PATHFINDER_SKILL_SET = new Set([
     PassiveB.TwinSkyWing,
     Weapon.JotnarBow,
     Captain.Eminence,
@@ -1628,7 +1628,7 @@ export { isWeaponTypeBreathOrBeast, isInheritableWeaponType };
 export { WEAPON_TYPE_TO_COLOR_MAP, getColorFromWeaponType, STRING_TO_WEAPON_TYPE_MAP, WEAPON_TYPE_TO_STRING_MAP, stringToWeaponType, weaponTypeToString };
 export { SWAP_ASSIST_SKILLS, REPOSITION_ASSIST_SKILLS, DRAW_BACK_ASSIST_SKILLS, GALEFORCE_SKILLS, CAN_MOVE_THROUGH_FOES_SPACE_SKILLS };
 export { isPrecombatSpecial };
-export { TELEPORTATION_SKILL_SET, isTeleportationSkill, hasPathfinderEffect, getSelfDamageDealtRateToAddSpecialDamage };
+export { TELEPORTATION_SKILL_SET, isTeleportationSkill, PATHFINDER_SKILL_SET, hasPathfinderEffect, getSelfDamageDealtRateToAddSpecialDamage };
 export { TRIANGLE_ADEPT_SET, isTriangleAdeptSkill, EVAL_SPD_ADD_MAP, getEvalSpdAdd, EVAL_RES_ADD_MAP, getEvalResAdd };
 export { WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET, isWeaponTypeThatCanAddAtk2AfterTransform, BeastCommonSkillType, BEAST_COMMON_SKILL_MAP };
 export { ADVANTAGEOUS_AGAINST_COLORLESS_WEAPONS, BREAKER_SKILL_TO_TARGET_WEAPON_TYPE_MAP, getBreakerSkillTargetWeaponType };
