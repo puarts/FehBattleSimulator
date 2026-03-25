@@ -16,6 +16,12 @@ import { SimpleLogger } from './Logger.js';
 import { setAppData } from './AppDataGlobal.js';
 import { ScopedStopwatch, using_ } from './Utilities.js';
 
+let _testHeroDatabase = null;
+
+function setTestHeroDatabase(db) {
+    _testHeroDatabase = db;
+}
+
 function test_createDefaultSkillInfo() {
     return new SkillInfo(
         "", "", 16, 2, 0, 0, 0, 0, 0, [], [], 0, 1, 1, false, false,
@@ -196,7 +202,7 @@ class UnitBuilder {
 
     static fromHero(heroName, groupId = UnitGroupType.Ally) {
         let builder = new UnitBuilder();
-        builder._unit = g_testHeroDatabase.createUnit(heroName, groupId);
+        builder._unit = _testHeroDatabase.createUnit(heroName, groupId);
         return builder;
     }
 
@@ -236,49 +242,49 @@ class UnitBuilder {
 
     withWeapon(weaponId) {
         this._unit.weapon = weaponId;
-        g_testHeroDatabase.updateUnitSkillInfo(this._unit);
+        _testHeroDatabase.updateUnitSkillInfo(this._unit);
         return this;
     }
 
     withSupport(supportId) {
         this._unit.support = supportId;
-        g_testHeroDatabase.updateUnitSkillInfo(this._unit);
+        _testHeroDatabase.updateUnitSkillInfo(this._unit);
         return this;
     }
 
     withSpecial(specialId) {
         this._unit.special = specialId;
-        g_testHeroDatabase.updateUnitSkillInfo(this._unit);
+        _testHeroDatabase.updateUnitSkillInfo(this._unit);
         return this;
     }
 
     withPassiveA(passiveAId) {
         this._unit.passiveA = passiveAId;
-        g_testHeroDatabase.updateUnitSkillInfo(this._unit);
+        _testHeroDatabase.updateUnitSkillInfo(this._unit);
         return this;
     }
 
     withPassiveB(passiveBId) {
         this._unit.passiveB = passiveBId;
-        g_testHeroDatabase.updateUnitSkillInfo(this._unit);
+        _testHeroDatabase.updateUnitSkillInfo(this._unit);
         return this;
     }
 
     withPassiveC(passiveCId) {
         this._unit.passiveC = passiveCId;
-        g_testHeroDatabase.updateUnitSkillInfo(this._unit);
+        _testHeroDatabase.updateUnitSkillInfo(this._unit);
         return this;
     }
 
     withPassiveS(passiveSId) {
         this._unit.passiveS = passiveSId;
-        g_testHeroDatabase.updateUnitSkillInfo(this._unit);
+        _testHeroDatabase.updateUnitSkillInfo(this._unit);
         return this;
     }
 
     withPassiveX(passiveXId) {
         this._unit.passiveX = passiveXId;
-        g_testHeroDatabase.updateUnitSkillInfo(this._unit);
+        _testHeroDatabase.updateUnitSkillInfo(this._unit);
         return this;
     }
 
@@ -506,4 +512,4 @@ function test_executeTest(testFunc, isTestTimeLogEnabled = false) {
     }
 }
 
-export { test_createDefaultSkillInfo, test_createDefaultUnit, test_HeroDatabase, test_BeginningOfTurnSkillHandler, test_DamageCalculator, test_calcDamageWithUnits, test_calcDamage, UnitBuilder, BattleScenarioBuilder, RegressionTestHelper, resetGlobalTestState, test_executeTest };
+export { test_createDefaultSkillInfo, test_createDefaultUnit, test_HeroDatabase, test_BeginningOfTurnSkillHandler, test_DamageCalculator, test_calcDamageWithUnits, test_calcDamage, UnitBuilder, BattleScenarioBuilder, RegressionTestHelper, resetGlobalTestState, test_executeTest, setTestHeroDatabase };

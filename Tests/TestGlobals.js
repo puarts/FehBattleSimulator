@@ -1,6 +1,7 @@
 const g_testHeroDatabase = new test_HeroDatabase(
     heroInfos, weaponInfos, supportInfos, specialInfos, passiveAInfos, passiveBInfos, passiveCInfos,
     passiveSInfos, passiveXInfos);
+setTestHeroDatabase(g_testHeroDatabase);
 
 class test_UnitManager extends UnitManager {
     constructor() {
