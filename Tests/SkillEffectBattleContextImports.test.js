@@ -23,4 +23,12 @@ describe('SkillEffectBattleContext.js ESM imports', () => {
         const followupNode = NEUTRALIZES_EFFECTS_THAT_GUARANTEE_FOES_FOLLOW_UP_ATTACKS(true);
         expect(followupNode).toBeDefined();
     });
+
+    it('ObjectUtil.getKeyName is callable via the import chain (exercises error-message path)', async () => {
+        const { ObjectUtil } = await import('../Sources/Utilities.js');
+        const { NodeEnv } = await import('../Sources/SkillEffectEnv.js');
+        // This is the exact call pattern used in SkillEffectBattleContext.js:2946 etc.
+        const keyName = ObjectUtil.getKeyName(NodeEnv.CombatPhase, NodeEnv.CombatPhase.AFTER_FOLLOWUP_CONFIGURED);
+        expect(keyName).toBe('AFTER_FOLLOWUP_CONFIGURED');
+    });
 });
