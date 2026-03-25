@@ -1,33 +1,183 @@
-import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveX, WeaponType, EmblemHero } from './SkillConstants.js';
-import { GameMode, StatusEffectType } from './StatusConstants.js';
+import {
+    AssistType,
+    ColorType,
+    EffectiveType,
+    EmblemHero,
+    PassiveA,
+    PassiveB,
+    PassiveC,
+    PassiveX,
+    Special,
+    Support,
+    Weapon,
+    WeaponType,
+} from './SkillConstants.js';
+import {
+    NEGATIVE_STATUS_EFFECT_ORDER_MAP,
+    GameMode,
+    StatusEffectType,
+    StatusIndex,
+} from './StatusConstants.js';
 import { MoveType } from './HeroInfoConstants.js';
-import { NORMAL_ATTACK_SPECIAL_SET, RANGED_ATTACK_SPECIAL_SET, DEFENSE_SPECIAL_SET, REFRESH_SUPPORT_SKILL_SET, RALLY_HEAL_SKILL_SET, TELEPORTATION_SKILL_SET, SAVE_SKILL_SET } from './Skill.js';
-import { NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET, DISARM_TRAP_SKILL_SET, DISARM_HEX_TRAP_SKILL_SET, WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET } from './Skill.js';
-import { BEAST_COMMON_SKILL_MAP, COUNT2_SPECIALS, getNormalSkillId, getRefinementSkillId, getSpecialRefinementSkillId } from './Skill.js';
-import { hasTransformSkillsFuncMap, applySkillForBeginningOfTurnFuncMap, applyEnemySkillForBeginningOfTurnFuncMap } from './Skill.js';
-import { applySkillAfterSkillsForBeginningOfTurnFuncMap, applySkillAfterEnemySkillsForBeginningOfTurnFuncMap, applySkillEffectForUnitFuncMap } from './Skill.js';
-import { applySkillEffectForUnitAfterCombatStatusFixedFuncMap, canActivateCantoFuncMap, calcMoveCountForCantoFuncMap } from './Skill.js';
-import { evalSpdAddFuncMap, evalResAddFuncMap, applyPrecombatDamageReductionRatioFuncMap } from './Skill.js';
-import { applySkillEffectFromAlliesFuncMap, applySkillEffectFromAlliesExcludedFromFeudFuncMap, updateUnitSpurFromEnemyAlliesFuncMap } from './Skill.js';
-import { applyRefreshFuncMap, applySkillEffectsPerCombatFuncMap, applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap } from './Skill.js';
-import { applySkillsAfterRallyForSupporterFuncMap, applySkillsAfterRallyForTargetUnitFuncMap, applyMovementAssistSkillFuncMap } from './Skill.js';
-import { applySupportSkillForSupporterFuncMap, applySupportSkillForTargetUnitFuncMap, canRallyForciblyFuncMap, canRallyForciblyByPlayerFuncMap } from './Skill.js';
-import { canRalliedForciblyFuncMap, enumerateTeleportTilesForUnitFuncMap, applySkillEffectAfterCombatForUnitFuncMap } from './Skill.js';
-import { applySKillEffectForUnitAtBeginningOfCombatFuncMap, updateUnitSpurFromAlliesFuncMap, canActivateObstructToAdjacentTilesFuncMap } from './Skill.js';
-import { canActivateObstructToTilesIn2SpacesFuncMap, applySkillEffectAfterMovementSkillsActivatedFuncMap, applyHighPriorityAnotherActionSkillEffectFuncMap } from './Skill.js';
-import { applyEndActionSkillsFuncMap, applySkillsAfterCantoActivatedFuncMap, getTargetUnitTileAfterMoveAssistFuncMap } from './Skill.js';
-import { findTileAfterMovementAssistFuncMap, resetMaxSpecialCountFuncMap, isAfflictorFuncMap } from './Skill.js';
-import { applyDamageReductionRatioBySpecialFuncMap, activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap, addSpecialDamageAfterDefenderSpecialActivatedFuncMap } from './Skill.js';
-import { applySkillEffectAfterSpecialActivatedFuncMap, enumerateRangedSpecialTilesFuncMap, applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap } from './Skill.js';
-import { canDisableAttackOrderSwapSkillFuncMap, calcFixedAddDamageFuncMap, applyHealSkillForBeginningOfTurnFuncMap } from './Skill.js';
-import { applyMovementSkillAfterCombatFuncMap, applySkillEffectRelatedToFollowupAttackPossibilityFuncMap, applyPotentSkillEffectFuncMap } from './Skill.js';
-import { applySkillEffectsPerAttackFuncMap, applySkillEffectAfterSetAttackCountFuncMap, canActivateSaveSkillFuncMap } from './Skill.js';
-import { selectReferencingResOrDefFuncMap, enumerateTeleportTilesForAllyFuncMap, applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap } from './Skill.js';
-import { hasPathfinderEffectFuncMap, applySkillEffectFromEnemyAlliesFuncMap, applyAttackSkillEffectAfterCombatFuncMap } from './Skill.js';
-import { applySpecialSkillEffectWhenHealingFuncMap, canAddStatusEffectByRallyFuncMap, getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap } from './Skill.js';
-import { calcHealAmountFuncMap, applyPostCombatAllySkillFuncMap, canWarpFuncMap } from './Skill.js';
-import { applySkillEffectsAfterAfterBeginningOfCombatFuncMap, applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap } from './Skill.js';
-import { hasDivineVeinSkillsWhenActionDoneFuncMap, applySpecialDamageReductionPerAttackFuncMap } from './Skill.js';
+import {
+    BEAST_COMMON_SKILL_MAP,
+    CAN_MOVE_THROUGH_FOES_SPACE_SKILLS,
+    COUNT2_SPECIALS,
+    COUNT3_SPECIALS,
+    COUNT4_SPECIALS,
+    DEFENSE_SPECIAL_SET,
+    DISARM_HEX_TRAP_SKILL_SET,
+    DISARM_TRAP_SKILL_SET,
+    INHERITABLE_COUNT3_SPECIALS,
+    NO_EFFECT_ON_SPECIAL_COOLDOWN_CHARGE_ON_SUPPORT_SKILL_SET,
+    NORMAL_ATTACK_SPECIAL_SET,
+    PRECOMBAT_HEAL_THRESHOLD_MAP,
+    RALLY_BUFF_AMOUNT_MAP,
+    RALLY_HEAL_SKILL_SET,
+    RANGED_ATTACK_SPECIAL_DAMAGE_RATE_MAP,
+    RANGED_ATTACK_SPECIAL_SET,
+    REFRESH_SUPPORT_SKILL_SET,
+    SAVE_SKILL_SET,
+    TELEPORTATION_SKILL_SET,
+    WEAPON_TYPES_ADD_ATK2_AFTER_TRANSFORM_SET,
+    BeastCommonSkillType,
+    activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap,
+    addSpecialDamageAfterDefenderSpecialActivatedFuncMap,
+    applyAttackSkillEffectAfterCombatFuncMap,
+    applyAttackSkillEffectAfterCombatNeverthelessDeadForUnitFuncMap,
+    applyDamageReductionRatioBySpecialFuncMap,
+    applyEndActionSkillsFuncMap,
+    applyEnemySkillForBeginningOfTurnFuncMap,
+    applyHealSkillForBeginningOfTurnFuncMap,
+    applyHighPriorityAnotherActionSkillEffectFuncMap,
+    applyMovementAssistSkillFuncMap,
+    applyMovementSkillAfterCombatFuncMap,
+    applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap,
+    applyPostCombatAllySkillFuncMap,
+    applyPotentSkillEffectFuncMap,
+    applyPrecombatDamageReductionRatioFuncMap,
+    applyRefreshFuncMap,
+    applySkillAfterEnemySkillsForBeginningOfTurnFuncMap,
+    applySkillAfterSkillsForBeginningOfTurnFuncMap,
+    applySkillEffectAfterCombatForUnitFuncMap,
+    applySkillEffectAfterCombatNeverthelessDeadForUnitFuncMap,
+    applySkillEffectAfterMovementSkillsActivatedFuncMap,
+    applySkillEffectAfterSetAttackCountFuncMap,
+    applySkillEffectAfterSpecialActivatedFuncMap,
+    applySkillEffectForUnitAfterCombatStatusFixedFuncMap,
+    applySKillEffectForUnitAtBeginningOfCombatFuncMap,
+    applySkillEffectForUnitFuncMap,
+    applySkillEffectFromAlliesExcludedFromFeudFuncMap,
+    applySkillEffectFromAlliesFuncMap,
+    applySkillEffectFromEnemyAlliesFuncMap,
+    applySkillEffectRelatedToFollowupAttackPossibilityFuncMap,
+    applySkillEffectsAfterAfterBeginningOfCombatFromAlliesFuncMap,
+    applySkillEffectsAfterAfterBeginningOfCombatFuncMap,
+    applySkillEffectsPerAttackFuncMap,
+    applySkillEffectsPerCombatFuncMap,
+    applySkillForBeginningOfTurnFuncMap,
+    applySkillsAfterCantoActivatedFuncMap,
+    applySkillsAfterRallyForSupporterFuncMap,
+    applySkillsAfterRallyForTargetUnitFuncMap,
+    applySpecialDamageReductionPerAttackFuncMap,
+    applySpecialSkillEffectWhenHealingFuncMap,
+    applySupportSkillForSupporterFuncMap,
+    applySupportSkillForTargetUnitFuncMap,
+    calcFixedAddDamageFuncMap,
+    calcHealAmountFuncMap,
+    calcMoveCountForCantoFuncMap,
+    canActivateCantoFuncMap,
+    canActivateObstructToAdjacentTilesFuncMap,
+    canActivateObstructToTilesIn2SpacesFuncMap,
+    canActivateSaveSkillFuncMap,
+    canAddStatusEffectByRallyFuncMap,
+    canDisableAttackOrderSwapSkillFuncMap,
+    canRalliedForciblyFuncMap,
+    canRallyForciblyByPlayerFuncMap,
+    canRallyForciblyFuncMap,
+    canWarpFuncMap,
+    enumerateRangedSpecialTilesFuncMap,
+    enumerateTeleportTilesForAllyFuncMap,
+    enumerateTeleportTilesForUnitFuncMap,
+    evalResAddFuncMap,
+    evalSpdAddFuncMap,
+    findTileAfterMovementAssistFuncMap,
+    getAssistTypeWhenCheckingCanActivatePrecombatAssistFuncMap,
+    getEmblemHeroSkillId,
+    getNormalSkillId,
+    getRefinementSkillId,
+    getSpecialRefinementSkillId,
+    getTargetUnitTileAfterMoveAssistFuncMap,
+    hasDivineVeinSkillsWhenActionDoneFuncMap,
+    hasPathfinderEffectFuncMap,
+    hasTransformSkillsFuncMap,
+    isAfflictorFuncMap,
+    isDefenseSpecial,
+    isMeleeWeaponType,
+    isNormalAttackSpecial,
+    isRangedWeaponType,
+    isWeaponTypeBeast,
+    isWeaponTypeBreath,
+    isWeaponTypeBreathOrBeast,
+    resetMaxSpecialCountFuncMap,
+    selectReferencingResOrDefFuncMap,
+    setOnetimeActionActivatedFuncMap,
+    updateUnitSpurFromAlliesFuncMap,
+    updateUnitSpurFromEnemyAlliesFuncMap,
+} from './Skill.js';
+import {
+    ADD_MAX_NODE,
+    AND_NODE,
+    GTE_NODE,
+    IF_NODE,
+    LTE_NODE,
+    NODE_FUNC,
+    OR_NODE,
+    SKILL_EFFECT_NODE,
+    SUB_NODE,
+} from './SkillEffectCore.js';
+import {
+    AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS,
+    AT_START_OF_TURN_HOOKS,
+    WHEN_APPLIES_SPECIAL_EFFECTS_AT_START_OF_COMBAT_HOOKS,
+} from './SkillEffectHooks.js';
+import {
+    SkillEffectRegistrar,
+} from './SkillEffectRegistrar.js';
+import {
+    COUNT_IF_UNITS_NODE,
+    CURRENT_TURN_NODE,
+    EXISTS_UNITS,
+    FOR_EACH_TARGET_AND_TARGETS_ALLY_WITHIN_3_SPACES_OF_TARGET_NODE,
+    GRANTS_ALL_STATS_PLUS_4_TO_TARGET_DURING_COMBAT_NODE,
+    GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+    GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE,
+    GRANTS_ATK_SPD_TO_TARGET_ON_MAP_NODE,
+    GRANTS_STATUS_EFFECTS_ON_TARGET_ON_MAP_NODE,
+    IS_TARGET_MYTHIC_NODE,
+    IS_TARGET_WITHIN_3_ROWS_OR_3_COLUMNS_CENTERED_ON_SKILL_OWNER_NODE,
+    IS_TARGET_WITHIN_3_SPACES_OF_TARGETS_ALLY_NODE,
+    IS_THE_UNITS_OR_FOES_SPECIAL_READY_OR_WAS_THE_UNITS_OR_FOES_SPECIAL_TRIGGERED_BEFORE_OR_DURING_THIS_COMBAT,
+    PERCENTAGE_NODE,
+} from './SkillEffect.js';
+import {
+    BOOSTS_DAMAGE_WHEN_SPECIAL_TRIGGERS_NODE,
+    GRANTS_SPECIAL_COOLDOWN_CHARGE_PLUS_1_TO_UNIT_PER_ATTACK_DURING_COMBAT_NODE,
+    REDUCES_DAMAGE_BY_X_PERCENT_NODE,
+    REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_BY_ENGAGE_SKILL_NODE,
+    REDUCES_DAMAGE_FROM_TARGETS_FOES_NEXT_ATTACK_BY_N_PERCENT_ONCE_PER_COMBAT_NODE,
+} from './SkillEffectBattleContext.js';
+import {
+    FOES_EVAL_RES_NODE,
+    FOES_RANGE_IS_2_NODE,
+    SKILL_OWNERS_ALLIES_ON_MAP_NODE,
+    SKILL_OWNER_AND_SKILL_OWNERS_ALLIES_ON_MAP_NODE,
+    UNITS_EVAL_RES_NODE,
+    UNITS_RES_NODE,
+    setDivineNectarAnotherActionSkill,
+    setSpecialCountAndType,
+} from './SkillEffectAliases.js';
+
 
 // noinspection JSUnusedLocalSymbols
 // 各スキルの実装
