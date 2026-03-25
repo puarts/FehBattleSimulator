@@ -31,4 +31,11 @@ describe('Remaining imports - dynamic import verification', () => {
         expect(mod.setTestHeroDatabase).toBeDefined();
         expect(typeof mod.setTestHeroDatabase).toBe('function');
     });
+
+    // setTestHeroDatabase → UnitBuilder.fromHero の依存注入経路を検証
+    it('UnitBuilder.fromHero works after setTestHeroDatabase is called', () => {
+        const unit = UnitBuilder.fromHero('アルフォンス').build();
+        expect(unit).toBeDefined();
+        expect(unit.heroInfo).toBeDefined();
+    });
 });
