@@ -4,6 +4,7 @@ import { BattleContext } from './BattleContext.js';
 import { PERCENTAGE_NODE } from './SkillEffectAliases.js';
 import { NodeEnv } from './SkillEffectEnv.js';
 import { g_appData } from './AppDataGlobal.js';
+import { ObjectUtil } from './Utilities.js';
 
 const MOD_BATTLE_CONTEXT_FIELD = (n, op) =>
     new ModSkillEffectFieldNode(n, op).battleContext();
