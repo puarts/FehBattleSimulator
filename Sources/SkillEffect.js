@@ -9912,6 +9912,19 @@ class GeneralGrantsAnotherActionNode extends SingleEffectNode {
 const GRANTS_ANOTHER_ACTION = new GeneralGrantsAnotherActionNode();
 
 
+// PERCENTAGE_NODE: SkillEffectAliases.js → SkillEffectBattleContext.js の循環依存を解消するため、
+// SkillEffectAliases.js から移動。両ファイルが import 可能な下層ファイルに配置。
+/**
+ * @param {number|NumberNode} percentage
+ * @param {number|NumberNode} num
+ * @returns {MultTruncNode}
+ * @constructor
+ */
+const PERCENTAGE_NODE = (percentage, num) =>
+    MULT_TRUNC_NODE(MULT_NODE(INT_PERCENTAGE_NUMBER_NODE(percentage), 0.01), num);
+
+export { PERCENTAGE_NODE };
+
 export { GetUnitMixin, GetTargetsFoeMixin, GetTargetsAllyMixin, GetUnitDuringCombatMixin, GetFoeDuringCombatMixin, GetSkillOwnerMixin, GetAssistTargetsAllyMixin, GetAssistTargetingMixin, GetAssistTargetMixin, GetValueMixin, GetTargetTileMixin, CheckIfStatsDuringCombatAreDeterminedMixin };
 export { NSpacesMixin, ForUnitMixin, DebugEnvNode, DEBUG_ENV_NODE, PrintDebugNode, PRINT_DEBUG_NODE, UnitNode, EnvUnitNode, TargetNode, TARGET_NODE, TargetsFoeDuringCombatNode, TARGETS_FOE_DURING_COMBAT_NODE, TargetsFoeNode, TARGETS_FOE_NODE, UNIT_DURING_COMBAT_NODE, FOE_NODE, SKILL_OWNER_NODE };
 export { AssistTargetingNode, ASSIST_TARGETING_NODE, AssistTargetNode, ASSIST_TARGET_NODE, TargetsAllyNode, TARGETS_ALLY_NODE, ForTargetNode, FOR_TARGET_NODE, FOR_UNIT_DURING_COMBAT_NODE, FOR_FOE_NODE, FOR_TARGETS_FOE_DURING_COMBAT_NODE, FOR_TARGETS_FOE_NODE, FOR_SKILL_OWNER_NODE, UnitsNode };

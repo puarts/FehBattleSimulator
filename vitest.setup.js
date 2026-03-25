@@ -36,11 +36,32 @@ const SOURCE_FILE_NAMES = [
 const TEST_UTIL_FILE_NAMES = ['TestGlobals'];
 
 function filterImportExport(content) {
-    return content
-        .split('\n')
-        .filter(line => !(/^import /.test(line) || /^export \{/.test(line)))
-        .map(line => line.replace(/^export (function|class|const|let|var) /, '$1 '))
-        .join('\n');
+    const lines = content.split('\n');
+    const result = [];
+    let inMultiLineImport = false;
+    for (const line of lines) {
+        if (inMultiLineImport) {
+            // Skip lines until we find the closing of the import statement
+            if (/\bfrom\s+['"]/.test(line) || /^}\s*from\s+['"]/.test(line)) {
+                inMultiLineImport = false;
+            }
+            continue;
+        }
+        if (/^import /.test(line)) {
+            // Check if this is a complete single-line import
+            if (/from\s+['"]/.test(line) || /^import\s+['"]/.test(line)) {
+                continue; // single-line import, skip it
+            }
+            // Multi-line import starts here
+            inMultiLineImport = true;
+            continue;
+        }
+        if (/^export \{/.test(line)) {
+            continue;
+        }
+        result.push(line.replace(/^export (function|class|const|let|var) /, '$1 '));
+    }
+    return result.join('\n');
 }
 
 // Concatenate all source files
