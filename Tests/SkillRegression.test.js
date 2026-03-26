@@ -1,5 +1,7 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
 import { Weapon, PassiveA, PassiveB, PassiveC, Special } from '../Sources/SkillConstants.js';
+import { UnitBuilder, BattleScenarioBuilder, RegressionTestHelper, resetGlobalTestState } from '../Sources/TestUtilities.js';
+import { g_testHeroDatabase } from './TestGlobals.js';
 
 // スキルIDからスキル名を取得するヘルパー
 function getSkillName(skillId) {

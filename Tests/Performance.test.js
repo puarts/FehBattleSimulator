@@ -1,4 +1,8 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { WeaponRefinementType } from '../Sources/SkillConstants.js';
+import { test_DamageCalculator, test_BeginningOfTurnSkillHandler, resetGlobalTestState } from '../Sources/TestUtilities.js';
+import { g_testHeroDatabase } from './TestGlobals.js';
+import { setAppData } from '../Sources/AppDataGlobal.js';
 
 describe('Performance benchmarks', () => {
     const isCI = !!process.env.CI;
@@ -30,7 +34,7 @@ describe('Performance benchmarks', () => {
             calculator.map.getTile(0, 0).setUnit(defUnit);
             calculator.unitManager.units = [atkUnit, defUnit];
             calculator.isLogEnabled = false;
-            globalThis.g_appData = calculator.unitManager;
+            setAppData(calculator.unitManager);
 
             atkUnit.weaponRefinement = WeaponRefinementType.Special;
             defUnit.weaponRefinement = WeaponRefinementType.Special;
@@ -66,7 +70,7 @@ describe('Performance benchmarks', () => {
             handler.map.getTile(2, 0).setUnit(enemyAllyUnit);
             handler.unitManager.units = [unit, allyUnit, enemyUnit, enemyAllyUnit];
             handler.battleContext.currentTurn = 1;
-            globalThis.g_appData = handler.unitManager;
+            setAppData(handler.unitManager);
 
             unit.weaponRefinement = WeaponRefinementType.Special;
             for (let heroInfo of heroDatabase.enumerateHeroInfos()) {

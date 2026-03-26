@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { UnitBuilder } from '../Sources/TestUtilities.js';
+import './TestGlobals.js';
 
 describe('Remaining imports - dynamic import verification', () => {
     it('CustomSkill.js dynamic import succeeds', async () => {

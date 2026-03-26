@@ -1,3 +1,5 @@
+import { describe, test, expect } from 'vitest';
+
 describe('Build filter', () => {
     // build.mjs の filterImportExport と同じロジック (Keep in sync with scripts/build.mjs)
     function filterImportExport(content) {

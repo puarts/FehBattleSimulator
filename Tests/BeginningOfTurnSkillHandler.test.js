@@ -1,3 +1,8 @@
+import { test_executeTest, test_BeginningOfTurnSkillHandler } from '../Sources/TestUtilities.js';
+import { g_testHeroDatabase } from './TestGlobals.js';
+import { setAppData } from '../Sources/AppDataGlobal.js';
+import { using_, ScopedStopwatch } from '../Sources/Utilities.js';
+import { WeaponRefinementType } from '../Sources/SkillConstants.js';
 
 test('BeginningOfTurnSkillHandler_StudiedForblaze', () => test_executeTest(() => {
     let handler = new test_BeginningOfTurnSkillHandler();
@@ -20,7 +25,7 @@ test('BeginningOfTurnSkillHandler_Simple', () => test_executeTest(() => {
     handler.map.getTile(2, 2).setUnit(enemyUnit);
     handler.map.getTile(2, 0).setUnit(enemyAllyUnit);
     handler.unitManager.units = [unit, unit, enemyUnit, enemyAllyUnit];
-    globalThis.g_appData = handler.unitManager;
+    setAppData(handler.unitManager);
 
     // 全ての英雄のターン開始時スキルを実行して例外が出ない事を確認する
     using_(new ScopedStopwatch(x => log += `${g_testHeroDatabase.length}回のターン開始時スキル評価の時間: ${x} ms\n`), () => {

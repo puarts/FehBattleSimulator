@@ -1,3 +1,5 @@
+import { describe, test, expect } from 'vitest';
+
 // Vitest setup verification test
 // This file validates the Vitest configuration works correctly.
 

@@ -1,4 +1,6 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { UnitBuilder, BattleScenarioBuilder, resetGlobalTestState } from '../Sources/TestUtilities.js';
+import './TestGlobals.js';
 
 describe('Damage reduction mechanics', () => {
     beforeEach(() => {

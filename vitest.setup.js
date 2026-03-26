@@ -33,6 +33,8 @@ const SOURCE_FILE_NAMES = [
     'SkillImpl202501', 'SkillImpl202601', 'TestUtilities',
 ];
 
+// TestGlobals.js is now an ESM module with import/export statements.
+// Apply filterImportExport to strip them for concatenation compatibility.
 const TEST_UTIL_FILE_NAMES = ['TestGlobals'];
 
 function filterImportExport(content) {
@@ -72,7 +74,7 @@ for (const name of SOURCE_FILE_NAMES) {
 }
 for (const name of TEST_UTIL_FILE_NAMES) {
     const filePath = path.join(TESTS, name + '.js');
-    concatenated += fs.readFileSync(filePath, 'utf-8') + '\n';
+    concatenated += filterImportExport(fs.readFileSync(filePath, 'utf-8')) + '\n';
 }
 
 // Execute in a context where 'this' is globalThis, so var/function declarations

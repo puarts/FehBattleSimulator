@@ -1,5 +1,9 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
-import { Weapon } from '../Sources/SkillConstants.js';
+import { Weapon, PassiveC } from '../Sources/SkillConstants.js';
+import { UnitBuilder, BattleScenarioBuilder, RegressionTestHelper, resetGlobalTestState, test_calcDamage } from '../Sources/TestUtilities.js';
+import { UnitManager } from '../Sources/UnitManager.js';
+import { g_appData, setAppData } from '../Sources/AppDataGlobal.js';
+import './TestGlobals.js';
 
 describe('UnitBuilder', () => {
     test('fromHero creates a valid unit from hero name', () => {
@@ -92,22 +96,22 @@ describe('UnitBuilder', () => {
 
 describe('Global state management', () => {
     test('resetGlobalTestState resets g_appData to clean UnitManager', () => {
-        globalThis.g_appData = { dummy: true };
+        setAppData({ dummy: true });
         resetGlobalTestState();
-        expect(globalThis.g_appData).toBeInstanceOf(UnitManager);
+        expect(g_appData).toBeInstanceOf(UnitManager);
     });
 
     test('separate execute calls do not leak state', () => {
         let atk = UnitBuilder.createDummy(UnitGroupType.Ally).build();
         let def = UnitBuilder.createDummy(UnitGroupType.Enemy).build();
-        let prevAppData = globalThis.g_appData;
+        let prevAppData = g_appData;
         test_calcDamage(atk, def);
         // test_calcDamage sets g_appData to its own UnitManager
-        expect(globalThis.g_appData).not.toBe(prevAppData);
+        expect(g_appData).not.toBe(prevAppData);
         resetGlobalTestState();
         // After reset, g_appData is a fresh UnitManager (not the one from calcDamage)
-        expect(globalThis.g_appData).not.toBe(prevAppData);
-        expect(globalThis.g_appData).toBeInstanceOf(UnitManager);
+        expect(g_appData).not.toBe(prevAppData);
+        expect(g_appData).toBeInstanceOf(UnitManager);
     });
 });
 
@@ -229,14 +233,14 @@ describe('BattleScenarioBuilder', () => {
     test('execute() cleans up global state afterward', () => {
         let atk1 = UnitBuilder.createDummy(UnitGroupType.Ally).build();
         let def1 = UnitBuilder.createDummy(UnitGroupType.Enemy).build();
-        let prevAppData = globalThis.g_appData;
+        let prevAppData = g_appData;
         new BattleScenarioBuilder()
             .withAttacker(atk1)
             .withDefender(def1)
             .execute();
         // g_appData should be reset after execute (not the calculator's unitManager)
-        expect(globalThis.g_appData).toBeInstanceOf(UnitManager);
-        expect(globalThis.g_appData).not.toBe(prevAppData);
+        expect(g_appData).toBeInstanceOf(UnitManager);
+        expect(g_appData).not.toBe(prevAppData);
 
         // Second scenario should work independently
         let atk2 = UnitBuilder.createDummy(UnitGroupType.Ally).build();

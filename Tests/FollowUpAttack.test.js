@@ -1,5 +1,7 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
 import { PassiveB, PassiveS } from '../Sources/SkillConstants.js';
+import { UnitBuilder, BattleScenarioBuilder, resetGlobalTestState } from '../Sources/TestUtilities.js';
+import './TestGlobals.js';
 
 describe('Follow-up attack determination', () => {
     beforeEach(() => {

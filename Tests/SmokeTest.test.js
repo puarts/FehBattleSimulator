@@ -1,6 +1,24 @@
-import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, WeaponType } from '../Sources/SkillConstants.js';
+import { Weapon, Support, Special, PassiveA, PassiveB, PassiveC, PassiveS, WeaponType, SkillType } from '../Sources/SkillConstants.js';
 import { UnitGroupType } from '../Sources/UnitConstants.js';
 import { StatusEffectType } from '../Sources/StatusConstants.js';
+import { MoveType, StatusType, BlessingType, SeasonType } from '../Sources/HeroInfoConstants.js';
+import { UnitBuilder, BattleScenarioBuilder, resetGlobalTestState } from '../Sources/TestUtilities.js';
+import { g_testHeroDatabase } from './TestGlobals.js';
+import { Unit } from '../Sources/Unit.js';
+import { BattleContext } from '../Sources/BattleContext.js';
+import { BattleMap } from '../Sources/BattleMap.js';
+import { Cell } from '../Sources/Cell.js';
+import { DamageCalculatorWrapper as DamageCalculator } from '../Sources/DamageCalculatorWrapper.js';
+import { HeroDatabase } from '../Sources/HeroDatabase.js';
+import { SkillDatabase } from '../Sources/SkillDatabase.js';
+import { UnitManager } from '../Sources/UnitManager.js';
+import { HeroInfo } from '../Sources/HeroInfo.js';
+import { SkillEffectRegistrar } from '../Sources/SkillEffectRegistrar.js';
+import { SkillEffectNode, IF_NODE, TRUE_NODE, FALSE_NODE } from '../Sources/SkillEffectCore.js';
+import { UNIT, FOE, GRANTS_BONUS, INFLICTS_PENALTY } from '../Sources/SkillEffectUnit.js';
+import { SingleEffectNode, EffectsNode, ATK_SPD, ATK_SPD_DEF_RES } from '../Sources/SkillEffect.js';
+import { DEALS_DAMAGE, REDUCES_DAMAGE_FROM_FOES_ATTACKS_BY } from '../Sources/SkillEffectBattleContext.js';
+import { AT_START_OF_COMBAT_HOOKS, AFTER_COMBAT_HOOKS, AT_START_OF_TURN_HOOKS } from '../Sources/SkillEffectHooks.js';
 
 // =============================================================================
 // Phase 0: スモークテスト

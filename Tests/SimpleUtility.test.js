@@ -1,3 +1,5 @@
+import { ObjectUtil } from '../Sources/Utilities.js';
+
 // Simple test for ObjectUtil.getKeyName function
 test('ObjectUtil_getKeyName', () => {
     // Create a simple object for testing

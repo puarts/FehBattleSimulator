@@ -1,5 +1,8 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
-import { PassiveA } from '../Sources/SkillConstants.js';
+import { PassiveA, PassiveC } from '../Sources/SkillConstants.js';
+import { test_DamageCalculator, test_executeTest, resetGlobalTestState } from '../Sources/TestUtilities.js';
+import { g_testHeroDatabase } from './TestGlobals.js';
+import { setAppData } from '../Sources/AppDataGlobal.js';
 
 describe('Test feud skills', () => {
   let heroDatabase;
@@ -36,7 +39,7 @@ describe('Test feud skills', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    globalThis.g_appData = calclator.unitManager;
+    setAppData(calclator.unitManager);
   });
 
   describe('Test disable skills from other enemies', () => {
@@ -492,7 +495,7 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     calclator.map.getTile(2, 0).setUnit(defAllyUnit);
     calclator.unitManager.units = [atkUnit, defUnit, atkAllyUnit, defAllyUnit];
     calclator.isLogEnabled = false;
-    globalThis.g_appData = calclator.unitManager;
+    setAppData(calclator.unitManager);
     // calclator.disableProfile();
 
     atkUnit.weaponRefinement = WeaponRefinementType.Special;
@@ -986,7 +989,7 @@ describe('Test great talent', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    globalThis.g_appData = calclator.unitManager;
+    setAppData(calclator.unitManager);
   });
 
   test('Test great talent applied', () => {

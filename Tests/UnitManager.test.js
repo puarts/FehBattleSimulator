@@ -1,4 +1,6 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
+import { g_testHeroDatabase, test_UnitManager } from './TestGlobals.js';
+import { Unit } from '../Sources/Unit.js';
 
 test('UnitManager_EnumerateUnits', () => {
     let manager = new test_UnitManager();

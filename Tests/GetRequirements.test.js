@@ -1,4 +1,7 @@
 import { StatusEffectType } from '../Sources/StatusConstants.js';
+import { SkillRequirement, IF } from '../Sources/SkillEffectCore.js';
+import { UNIT, FOE, ALLIES, INFLICTS_STATUS_EFFECTS } from '../Sources/SkillEffectUnit.js';
+import { ATTACKS_TWICE } from '../Sources/SkillEffectBattleContext.js';
 
 describe('getRequirements tests', () => {
     test('IF node with stat comparison should return STAT requirement', () => {

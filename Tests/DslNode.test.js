@@ -1,7 +1,16 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
 import { StatusEffectType } from '../Sources/StatusConstants.js';
-import { NumberNode, SkillEffectHooks, NODE_FUNC, IF_NODE, TRUE_NODE, FALSE_NODE, CONSTANT_NUMBER_NODE, MultiValueMap } from '../Sources/SkillEffectCore.js';
+import { NumberNode, SkillEffectHooks, NODE_FUNC, IF_NODE, TRUE_NODE, FALSE_NODE, CONSTANT_NUMBER_NODE, MultiValueMap, AndNode, OrNode } from '../Sources/SkillEffectCore.js';
 import { NodeEnv } from '../Sources/SkillEffectEnv.js';
+import { test_DamageCalculator } from '../Sources/TestUtilities.js';
+import { g_testHeroDatabase } from './TestGlobals.js';
+import { setAppData } from '../Sources/AppDataGlobal.js';
+import { AT_START_OF_COMBAT_HOOKS } from '../Sources/SkillEffectHooks.js';
+import { DEALS_DAMAGE_X_NODE } from '../Sources/SkillEffectAliases.js';
+import { SkillEffectRegistrar } from '../Sources/SkillEffectRegistrar.js';
+import { UNIT, FOE, GRANTS_BONUS, INFLICTS_PENALTY } from '../Sources/SkillEffectUnit.js';
+import { ATK_SPD, ATK_SPD_DEF_RES, DEF_RES } from '../Sources/SkillEffect.js';
+import { MathUtil } from '../Sources/Utilities.js';
 
 describe('DSL Node Tests', () => {
     /** @type {Unit} */
@@ -17,7 +26,7 @@ describe('DSL Node Tests', () => {
         calculator = new test_DamageCalculator();
         calculator.unitManager.units = [atkUnit, defUnit];
         calculator.isLogEnabled = false;
-        globalThis.g_appData = calculator.unitManager;
+        setAppData(calculator.unitManager);
     });
 
     describe('Effect nodes via combat', () => {
@@ -178,7 +187,7 @@ describe('DSL Node Tests', () => {
             defUnit = g_testHeroDatabase.createUnit('アルフォンス', UnitGroupType.Enemy);
             calculator = new test_DamageCalculator();
             calculator.unitManager.units = [atkUnit, defUnit];
-            globalThis.g_appData = calculator.unitManager;
+            setAppData(calculator.unitManager);
 
             let skillId = 'test-grants-bonus-atk-spd';
             SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
@@ -198,7 +207,7 @@ describe('DSL Node Tests', () => {
             defUnit = g_testHeroDatabase.createUnit('アルフォンス', UnitGroupType.Enemy);
             calculator = new test_DamageCalculator();
             calculator.unitManager.units = [atkUnit, defUnit];
-            globalThis.g_appData = calculator.unitManager;
+            setAppData(calculator.unitManager);
 
             let skillId = 'test-inflicts-penalty-def-res';
             SkillEffectRegistrar.registerSkillsDuringCombat(skillId, TRUE_NODE,
@@ -226,7 +235,7 @@ describe('DSL Node Tests', () => {
             let baseAtk = g_testHeroDatabase.createUnit('アルフォンス');
             let baseDef = g_testHeroDatabase.createUnit('アルフォンス', UnitGroupType.Enemy);
             baseCalc.unitManager.units = [baseAtk, baseDef];
-            globalThis.g_appData = baseCalc.unitManager;
+            setAppData(baseCalc.unitManager);
             let baseResult = baseCalc.calcDamage(baseAtk, baseDef);
             expect(result.atkUnit_normalAttackDamage).toBe(baseResult.atkUnit_normalAttackDamage + 7);
         });
@@ -243,7 +252,7 @@ describe('DSL Node Tests', () => {
             let baseAtk = g_testHeroDatabase.createUnit('アルフォンス');
             let baseDef = g_testHeroDatabase.createUnit('アルフォンス', UnitGroupType.Enemy);
             baseCalc.unitManager.units = [baseAtk, baseDef];
-            globalThis.g_appData = baseCalc.unitManager;
+            setAppData(baseCalc.unitManager);
             let baseResult = baseCalc.calcDamage(baseAtk, baseDef);
             // Foe's counter damage should be 6 less
             expect(result.defUnit_normalAttackDamage).toBe(baseResult.defUnit_normalAttackDamage - 6);
