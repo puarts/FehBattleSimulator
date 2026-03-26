@@ -1,8 +1,8 @@
 import { UnitGroupType } from '../Sources/UnitConstants.js';
 import { PassiveA, PassiveC } from '../Sources/SkillConstants.js';
-import { test_DamageCalculator, test_executeTest, resetGlobalTestState } from '../Sources/TestUtilities.js';
-import { g_testHeroDatabase } from './TestGlobals.js';
-import { setAppData } from '../Sources/AppDataGlobal.js';
+// Note: ESM TestUtilities/TestGlobals importなし。全英雄戦闘テスト(HeroBattleTest)で
+// ESM/連結版ノード型混線が発生するため、連結版グローバルを使用する。
+// Section 12で連結方式廃止後にESM化する。
 
 describe('Test feud skills', () => {
   let heroDatabase;
@@ -39,7 +39,7 @@ describe('Test feud skills', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    setAppData(calclator.unitManager);
+    globalThis.g_appData = calclator.unitManager;
   });
 
   describe('Test disable skills from other enemies', () => {
@@ -495,7 +495,7 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     calclator.map.getTile(2, 0).setUnit(defAllyUnit);
     calclator.unitManager.units = [atkUnit, defUnit, atkAllyUnit, defAllyUnit];
     calclator.isLogEnabled = false;
-    setAppData(calclator.unitManager);
+    globalThis.g_appData = calclator.unitManager;
     // calclator.disableProfile();
 
     atkUnit.weaponRefinement = WeaponRefinementType.Special;
@@ -989,7 +989,7 @@ describe('Test great talent', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    setAppData(calclator.unitManager);
+    globalThis.g_appData = calclator.unitManager;
   });
 
   test('Test great talent applied', () => {

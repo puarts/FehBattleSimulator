@@ -5,6 +5,9 @@ import { UnitManager } from '../Sources/UnitManager.js';
 import { Unit } from '../Sources/Unit.js';
 import { initUnitSkillEffects } from '../Sources/UnitSkillEffect.js';
 // SkillImpl*のスキル登録をESMモジュールのSkillEffectRegistrarに実行
+// Note: 連結版でも同じ登録が行われるため二重登録となるが、ESM版test utilitiesが
+// ESM版フックを参照するため必要。ただし全英雄戦闘テスト(HeroBattleTest)等の
+// 網羅的テストではESM/連結ノード混線が起きるため、そのようなテストは連結版を使用すること。
 import '../Sources/SkillImpl.js';
 import '../Sources/SkillImpl202408.js';
 import '../Sources/SkillImpl202501.js';
