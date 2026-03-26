@@ -358,6 +358,19 @@ setAppData(calculator.unitManager);
 
 ## Actual Implementation Results
 
+### ステータス: 条件付き完了
+
+大部分のテストファイル（53中51）をESM import化したが、ESM/連結版ノード型混線の制約により2ファイルは連結版グローバル依存のまま。Section 12（連結方式廃止）で完全ESM化する。
+
+### 既知の制約: ESM/連結二重世界
+
+TestGlobals.js が SkillImpl*.js をESM importすることで、ESM版とconnection版の両方にスキル効果が登録される「二重世界」が存在する。これは ESM版 test_BeginningOfTurnSkillHandler や ESM版 test_DamageCalculator が ESM版フックを参照するために必要だが、以下のリスクがある:
+
+- **全英雄網羅テスト**（DamageCalculator_HeroBattleTest等）で、特定ヒーローのスキル効果評価中にESM/連結版ノードが混在し `TypeError: _targetNode.evaluate is not a function` が発生する
+- このため、網羅的テストを含むファイルは連結版グローバルのまま残す必要がある
+
+Section 12 で連結方式を廃止すれば二重世界は解消される。
+
 ### 変更されたファイル
 
 | ファイル | 実際の変更内容 |
@@ -367,7 +380,6 @@ setAppData(calculator.unitManager);
 | `Tests/TestEsmMigration.test.js` | 新規作成: ESM化の検証テスト（3テスト） |
 | `Tests/SmokeTest.test.js` | TestUtilities, TestGlobals, DSLシンボル, ソースクラス追加import |
 | `Tests/CombatFlow.test.js` | TestUtilities + TestGlobals side-effect import |
-| `Tests/DamageCalculator.test.js` | TestUtilities, TestGlobals, setAppData追加import |
 | `Tests/DamageReduction.test.js` | TestUtilities + TestGlobals side-effect import |
 | `Tests/FollowUpAttack.test.js` | TestUtilities + TestGlobals side-effect import |
 | `Tests/SpecialCount.test.js` | TestUtilities + TestGlobals side-effect import |
@@ -384,13 +396,23 @@ setAppData(calculator.unitManager);
 | `Tests/VitestSetup.test.js` | `import { describe, test, expect } from 'vitest'` 追加 |
 | `Tests/RemainingImports.test.js` | UnitBuilder, TestGlobals import追加 |
 
-### 計画からの逸脱
+### Section 12 へ先送りしたファイル（連結版グローバル依存のまま）
 
-1. **SkillEffect.test.js は除外**: DSLノード型同一性に強く依存しており、ESM/連結版のノードクラスが別インスタンスとなるため32テスト失敗する。Section 12（連結方式廃止）で一括対処する。
-2. **vitest.setup.js**: TestGlobalsを連結リストから除外するのではなく、`filterImportExport`を適用して連結版との互換性を維持。ESM側は各テストファイルのimportで初期化。
-3. **BuildFilter.test.js, VitestSetup.test.js**: 計画では「変更不要」だったが、検証テスト「全テストファイルにESM import文が存在する」を満たすために`import { describe, test, expect } from 'vitest'`を追加。
+| ファイル | 理由 |
+|---------|------|
+| `Tests/SkillEffect.test.js` | DSLノード型同一性に強く依存。ESM化すると32テスト失敗 |
+| `Tests/DamageCalculator.test.js` | HeroBattleTest（全英雄戦闘）でESM/連結ノード混線によるTypeError。連結版に戻して解消 |
+
+これらのファイルは `g_testHeroDatabase`, `test_DamageCalculator`, `globalThis.g_appData` 等を import なしで使用しており、検証テスト（TestEsmMigration.test.js）の除外リストに明記。
+
+### 計画からのその他の逸脱
+
+1. **vitest.setup.js**: TestGlobalsを連結リストから除外するのではなく、`filterImportExport`を適用して連結版との互換性を維持。ESM側は各テストファイルのimportで初期化。
+2. **BuildFilter.test.js, VitestSetup.test.js**: 計画では「変更不要」だったが、検証テスト「全テストファイルにESM import文が存在する」を満たすために`import { describe, test, expect } from 'vitest'`を追加。
 
 ### テスト結果
 
-- 641 passed, 2 failed (pre-existing: DamageCalculator_HeroBattleTest timeout, Performance threshold flakiness)
+- 51 files passed, 1 failed (Performance threshold flakiness — 環境依存)
+- 641 tests passed, 1 failed
+- DamageCalculator.test.js: 37/37 全合格（連結版に戻したことで解消）
 - TestEsmMigration.test.js: 3/3 passed
