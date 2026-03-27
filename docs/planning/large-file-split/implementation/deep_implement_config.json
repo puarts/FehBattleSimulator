@@ -1,0 +1,42 @@
+{
+  "plugin_root": "/Users/studio/.claude/plugins/cache/piercelamb-plugins/deep-implement/0.2.1",
+  "sections_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/large-file-split/sections",
+  "target_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "state_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/large-file-split/implementation",
+  "git_root": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "commit_style": "conventional",
+  "test_command": "uv run pytest",
+  "sections": [
+    "section-01-performance-profile",
+    "section-02-scoped-tile-changer",
+    "section-03-unit-context",
+    "section-04-unit-utility"
+  ],
+  "sections_state": {
+    "section-01-performance-profile": {
+      "status": "complete",
+      "commit_hash": "e863dd32"
+    },
+    "section-02-scoped-tile-changer": {
+      "status": "complete",
+      "commit_hash": "7d3784b6"
+    },
+    "section-03-unit-context": {
+      "status": "complete",
+      "commit_hash": "0b097319"
+    },
+    "section-04-unit-utility": {
+      "status": "complete",
+      "commit_hash": "a6f139bd"
+    }
+  },
+  "pre_commit": {
+    "present": false,
+    "type": "none",
+    "config_file": null,
+    "native_hook": null,
+    "may_modify_files": false,
+    "detected_formatters": []
+  },
+  "created_at": "2026-03-27T21:33:06.457617+00:00"
+}
