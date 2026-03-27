@@ -1,0 +1,47 @@
+{
+  "plugin_root": "/Users/studio/.claude/plugins/cache/piercelamb-plugins/deep-implement/0.2.1",
+  "sections_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/phase5/sections",
+  "target_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "state_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/phase5/implementation",
+  "git_root": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "commit_style": "conventional",
+  "test_command": "uv run pytest",
+  "sections": [
+    "section-01-filter-evacuation",
+    "section-02-concatenation-removal",
+    "section-03-damagecalculator-esm",
+    "section-04-skilleffect-esm",
+    "section-05-verification"
+  ],
+  "sections_state": {
+    "section-01-filter-evacuation": {
+      "status": "complete",
+      "commit_hash": "ed32bc1d"
+    },
+    "section-02-concatenation-removal": {
+      "status": "complete",
+      "commit_hash": "f75c884d"
+    },
+    "section-03-damagecalculator-esm": {
+      "status": "complete",
+      "commit_hash": "f75c884d"
+    },
+    "section-04-skilleffect-esm": {
+      "status": "complete",
+      "commit_hash": "f75c884d"
+    },
+    "section-05-verification": {
+      "status": "complete",
+      "commit_hash": "9abf25d2"
+    }
+  },
+  "pre_commit": {
+    "present": false,
+    "type": "none",
+    "config_file": null,
+    "native_hook": null,
+    "may_modify_files": false,
+    "detected_formatters": []
+  },
+  "created_at": "2026-03-26T23:32:28.075614+00:00"
+}

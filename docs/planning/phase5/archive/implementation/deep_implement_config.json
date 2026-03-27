@@ -1,0 +1,32 @@
+{
+  "plugin_root": "/Users/studio/.claude/plugins/cache/piercelamb-plugins/deep-implement/0.2.1",
+  "sections_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/phase5/sections",
+  "target_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "state_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/phase5/implementation",
+  "git_root": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "commit_style": "conventional",
+  "test_command": "uv run pytest",
+  "sections": [
+    "section-01-investigation",
+    "section-02-merge-unit",
+    "section-03-merge-field",
+    "section-04-post-merge-verify",
+    "section-05-unexported-symbols",
+    "section-06-battlecontext-imports",
+    "section-07-hooks-registrar-imports",
+    "section-08-aliases-imports",
+    "section-09-skillimpl-imports",
+    "section-10-remaining-imports",
+    "section-11-test-esm"
+  ],
+  "sections_state": {},
+  "pre_commit": {
+    "present": false,
+    "type": "none",
+    "config_file": null,
+    "native_hook": null,
+    "may_modify_files": false,
+    "detected_formatters": []
+  },
+  "created_at": "2026-03-26T22:20:15.575849+00:00"
+}
