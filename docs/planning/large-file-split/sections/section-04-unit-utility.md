@@ -213,6 +213,28 @@ set BF=%BF%,...,unit\BattleContext,unit\Unit,unit\UnitUtility,unit\UnitManager,.
 
 コミットメッセージ: `refactor(unit): ユーティリティ関数群をUnitUtility.jsに分離`
 
+## 実装結果
+
+**実施日**: 2026-03-28
+**結果**: 計画通りに完了。全312テストパス（ESLint含む）。
+
+### 実際のファイルパス
+- 新規: `Sources/unit/UnitUtility.js` (281行、ESLintコメント含む)
+- 新規: `Tests/UnitUtility.test.js` (7テスト)
+- 変更: `Sources/unit/Unit.js` (6789→6788行、末尾のユーティリティ関数群を削除)
+- 変更: `create_tests.sh` (SOURCE_FILE_NAMESとTEST_FILE_NAMES更新)
+- 変更: `Deploy.bat` (全4ビルドターゲット更新)
+- 変更: HTML 7ファイル (loadScripts更新)
+
+### 計画からの差異
+- なし。計画通りverbatim移動を実施。
+
+### コードレビュー所見
+- `.call(this, ...)` パターン（calcHealAmount/isAfflictor）は既知の技術的負債として記録。今回未修正。
+- テストは存在チェックのみ。既存テストが回帰検出を担保。
+
+---
+
 ## 重要な注意事項
 
 - **ロジック変更禁止**: コードの移動のみ。typo修正、コード整形、未使用変数削除は行わない

@@ -17,6 +17,7 @@ SOURCE_FILE_NAMES=(
     unit/BattleContext
     unit/UnitContext
     unit/Unit
+    unit/UnitUtility
     unit/UnitManager
     map/BattleMap
     unit/GlobalBattleContext
@@ -71,6 +72,7 @@ TEST_FILE_NAMES=(
     FileSplit
     ScopedTileChanger
     UnitContext
+    UnitUtility
     )
 
 # カテゴリに応じたテストファイル選択
