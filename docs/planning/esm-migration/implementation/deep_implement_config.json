@@ -1,0 +1,45 @@
+{
+  "plugin_root": "/Users/studio/.claude/plugins/cache/piercelamb-plugins/deep-implement/0.2.1",
+  "sections_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/esm-migration/sections",
+  "target_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "state_dir": "/Users/studio/Documents/GitHub/FehBattleSimulator/docs/planning/esm-migration/implementation",
+  "git_root": "/Users/studio/Documents/GitHub/FehBattleSimulator",
+  "commit_style": "conventional",
+  "test_command": "uv run pytest",
+  "sections": [
+    "section-01-ast-analysis-tool",
+    "section-02-dependency-graph",
+    "section-03-strict-mode",
+    "section-04-directory-design",
+    "section-05-file-relocation",
+    "section-06-battlesimulatorbase-split",
+    "section-07-large-file-splits"
+  ],
+  "sections_state": {
+    "section-01-ast-analysis-tool": {
+      "status": "complete",
+      "commit_hash": "c948f340"
+    },
+    "section-02-dependency-graph": {
+      "status": "complete",
+      "commit_hash": "b222324c"
+    },
+    "section-03-strict-mode": {
+      "status": "complete",
+      "commit_hash": "25ff87d8"
+    },
+    "section-04-directory-design": {
+      "status": "complete",
+      "commit_hash": "4f1c4379"
+    }
+  },
+  "pre_commit": {
+    "present": false,
+    "type": "none",
+    "config_file": null,
+    "native_hook": null,
+    "may_modify_files": false,
+    "detected_formatters": []
+  },
+  "created_at": "2026-03-27T17:49:59.567957+00:00"
+}
