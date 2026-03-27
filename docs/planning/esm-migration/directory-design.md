@@ -4,15 +4,17 @@
 
 ## 概要
 
-Sources/配下の64個のJSファイルを機能ドメイン別の10ディレクトリに再配置する。JSコードの内容は一切変更しない（パス更新のみ）。
+Sources/配下の64個のJSファイルを機能ドメイン別の10ディレクトリに再配置する。アプリケーションロジックは変更しない（パス参照のみ更新）。
 
 ### 重要な前提
 
-依存グラフ分析（section-02）の結果、64ファイル中39ファイルが1つの巨大SCC（強連結成分）を形成している。これはグローバルスコープでの暗黙的依存が推移的に絡み合っている実態を反映する。したがって、ディレクトリ境界は**依存方向の強制**ではなく**機能ドメインによる整理**として機能する。循環依存の解消はESM化フェーズ（Phase 3以降）で行う。
+依存グラフ分析（section-02）の結果、64ファイル中39ファイルが1つの巨大SCC（強連結成分）を形成している。これはグローバルスコープでの暗黙的依存が推移的に絡み合っている実態を反映する。したがって、ディレクトリ境界は**依存方向の強制**ではなく**機能ドメインによる整理**として機能する。循環依存の解消は将来のESM化（別途計画策定）で行う。
 
 ### ロード順序の維持ルール
 
-**Phase 2aでは、create_tests.sh / HTML / Deploy.bat のファイル列挙順序は「相対パスのみ更新、相対順序は維持」とする。** initialization-rootファイル（SkillConstants, Skill, Tile, BattleMap, DamageCalculationUtility, CustomSkill, VueComponents等）はロード順序に依存するため、順序変更は動作を壊す。
+**Phase 2aでは、create_tests.sh / HTML / Deploy.bat のファイル列挙順序は「現行の相対順序を完全に維持し、各エントリにディレクトリプレフィックスを付加するのみ」とする。** initialization-rootファイル（SkillConstants, Skill, Tile, BattleMap, DamageCalculationUtility, CustomSkill, VueComponents等）はロード順序に依存するため、順序変更は動作を壊す。
+
+**注意: 移動バッチの実行順序と最終的なロード順序は別物である。** バッチは機能ドメイン単位で移動するが、create_tests.sh / HTML / Deploy.bat の列挙順は現行順を維持する。バッチNの移動時には、そのバッチに含まれるファイルの列挙箇所だけにプレフィックスを追加し、他のエントリの位置は動かさない。
 
 ### クロスディレクトリ依存分析
 
@@ -129,9 +131,9 @@ Sources/
 │   ├── HeroIconListerMain.js       [Layer 1, global-mutable-state]
 │   └── HeroStatusClustererMain.js  [Layer 4, global-assignment]
 │
+│
 ├── Local.js                 # ローカル開発用（ルートに維持）
 ├── TestUtilities.js         # テスト用（ルートに維持）
-│
 ├── *.html                   # HTMLファイル（ルートに維持）
 └── samples/                 # 既存（変更なし）
     └── tmp.js
@@ -158,17 +160,23 @@ Sources/
 
 1. **Utilities.jsはcore/に維持**: Layer 3/SCCに属するが、機能的にはコアユーティリティ。依存方向としてはSkillConstants→Tile→UnitConstantsを参照するためSCCに引き込まれているが、配置はcore/が自然。
 
-2. **HeroIconListerMain.jsはpages/に配置**: Layer 1で多くのLayer 3ファイルから参照される特異なファイル。機能的にはページエントリだが、グローバル状態（g_heroIconBgColorDict等）を他ファイルが参照している。ESM化時にこのグローバル状態を別モジュールに分離する候補。
+2. **HeroIconListerMain.jsはpages/に暫定配置**: Layer 1で多くのLayer 3ファイルから参照される特異なファイル。実質的にはshared moduleだが、ファイル名が`*Main.js`パターンでありページエントリとして作られた経緯がある。グローバル状態（g_heroIconBgColorDict等）を他ファイルが参照しており、pages/の「ページ固有エントリポイント」という意味とは矛盾する。**ESM化時にグローバル状態をdata/等の別モジュールに分離し、pages/の純粋なエントリポイントにすることを前提とした暫定配置**。現時点で別ディレクトリに移しても同様の問題が起きる（shared/に1ファイルだけ置くのは不自然）。
 
 3. **StatusCalcMain.jsはpages/に配置**: Layer 3/SCCに属するが、機能的にはページエントリ。DamageCalculator.jsやBattleSimulatorBase.jsから参照されているためSCCに巻き込まれている。
 
 4. **SkillEffectRegistrar.jsはskill-dsl/に維持**: Layer 4だが、機能的にはDSL基盤の一部。
 
+5. **database/を独立ディレクトリにする根拠**: 内部エッジ0（全依存がdata/への外部参照）だが、独立ディレクトリにする理由は依存分析ではなく運用都合。データベースクラス（SkillDatabase, HeroDatabase）とサンプルデータ（SampleSkillInfos, SampleHeroInfos）とプリセット（AetherRaidDefensePresets）は「データソース」として機能的に一貫しており、data/（定義・定数・列挙）とは役割が異なる。
+
+6. **skill-impl/を独立ディレクトリにする根拠**: 内部エッジ0（全依存がskill-dsl等への外部参照）だが、変更頻度が最も高くupdate_skillsブランチとのコンフリクトリスクが最大のため、運用上の独立性を確保する。
+
 ---
 
 ## 移動バッチ計画
 
-依存レイヤーの低いファイルから順に移動する。各バッチ完了時に`./run_tests.sh`でテスト確認。
+機能ドメイン単位で移動する。各バッチ完了時に`./run_tests.sh`でテスト確認。create_tests.sh / HTML / Deploy.bat のロード順は現行順を維持する（バッチ順に並べ替えない）。
+
+**Local.jsの更新**: Local.jsはSKILL_EFFECT_FILESとSKILL_IMPL_FILESの2つの配列のみパス更新が必要。したがってLocal.jsの更新が発生するのはバッチ7（skill-dsl/）とバッチ10（skill-impl/）のみ。他のバッチではLocal.jsは更新不要。
 
 ### バッチ1: core/ — 基盤ユーティリティ（5ファイル）
 
@@ -302,7 +310,9 @@ Sources/
 
 **更新対象**: create_tests.sh, 全HTML, Deploy.bat, Local.js (SKILL_IMPL_FILES)
 
-**コンフリクト注意**: update_skillsブランチとの衝突リスクが最も高い。移動しない判断もあり得る。
+**条件付き実施**: update_skillsブランチとの衝突リスクが最も高い。以下の条件で判断する:
+- **移動する場合**: update_skillsブランチとのマージが近い、またはコンフリクト量が許容範囲内
+- **移動しない場合**: マージコストが高すぎる場合はskill-impl/への移動をスキップし、Sources/ルートに維持。この場合、確定ディレクトリ構成のskill-impl/セクションは「将来のESM化時に移動」として保留扱いとなる
 
 ---
 
@@ -310,21 +320,58 @@ Sources/
 
 ### create_tests.sh
 
-**方式A（採用）**: SOURCE_FILE_NAMESにディレクトリ付きパスを記載。
+**方式A（採用）**: SOURCE_FILE_NAMESの各エントリにディレクトリプレフィックスを付加する。**現行の列挙順序はそのまま維持する**（ディレクトリ順に並べ替えない）。
 
 ```bash
+# 現行順序を維持し、各エントリにプレフィックスを追加するのみ
 SOURCE_FILE_NAMES=(
-    core/GlobalDefinitions
-    core/GlobalDefinitions_Debug
-    core/Utilities
-    core/Logger
-    core/KeyRepeatHandler
-    data/SkillConstants
-    data/Skill
-    # ... 以下同様
-)
+    core/GlobalDefinitions          # was: GlobalDefinitions
+    core/Utilities                  # was: Utilities
+    core/Logger                     # was: Logger
+    data/SkillConstants             # was: SkillConstants
+    data/Skill                      # was: Skill
+    map/BattleMapElement            # was: BattleMapElement
+    map/Tile                        # was: Tile
+    map/Structures                  # was: Structures
+    map/Cell                        # was: Cell
+    map/Table                       # was: Table
+    data/HeroInfoConstants          # was: HeroInfoConstants
+    data/HeroInfo                   # was: HeroInfo
+    data/UnitConstants              # was: UnitConstants
+    unit/BattleContext              # was: BattleContext
+    unit/Unit                       # was: Unit
+    unit/UnitManager                # was: UnitManager
+    map/BattleMap                   # was: BattleMap
+    unit/GlobalBattleContext        # was: GlobalBattleContext
+    combat/DamageCalculationUtility # was: DamageCalculationUtility
+    combat/DamageCalculator         # was: DamageCalculator
+    combat/PostCombatSkillHander    # was: PostCombatSkillHander
+    combat/DamageCalculatorWrapper  # was: DamageCalculatorWrapper
+    combat/BeginningOfTurnSkillHandler # was: BeginningOfTurnSkillHandler
+    database/SkillDatabase          # was: SkillDatabase
+    database/HeroDatabase           # was: HeroDatabase
+    database/SampleSkillInfos       # was: SampleSkillInfos
+    database/SampleHeroInfos        # was: SampleHeroInfos
+    skill-dsl/SkillEffectCore       # was: SkillEffectCore
+    skill-dsl/SkillEffectEnv        # was: SkillEffectEnv
+    skill-dsl/SkillEffect           # was: SkillEffect
+    skill-dsl/SkillEffectField      # was: SkillEffectField
+    skill-dsl/SkillEffectUnit       # was: SkillEffectUnit
+    skill-dsl/SkillEffectBattleContext # was: SkillEffectBattleContext
+    skill-dsl/SkillEffectHooks      # was: SkillEffectHooks
+    skill-dsl/SkillEffectRegistrar  # was: SkillEffectRegistrar
+    skill-dsl/SkillEffectAliases    # was: SkillEffectAliases
+    skill-impl/CustomSkill          # was: CustomSkill
+    skill-impl/SkillImpl            # was: SkillImpl
+    skill-impl/SkillImpl202408      # was: SkillImpl202408
+    skill-impl/SkillImpl202501      # was: SkillImpl202501
+    skill-impl/SkillImpl202601      # was: SkillImpl202601
+    TestUtilities                   # ルートに維持
+    )
 # cat行は変更不要: cat ./Sources/${name}.js >> ./$TARGET_FILE
 ```
+
+**注意**: 同一ディレクトリのファイルが連続していないのは意図的。現行のロード順を維持するため。
 
 ### HTMLファイルのloadScripts/additionalScripts配列
 
@@ -405,7 +452,7 @@ const SKILL_IMPL_FILES = [
 - [x] 全64 JSファイルがいずれかのディレクトリに割り当てられている（漏れなし）
 - [x] 1ディレクトリあたり5〜9ファイルの粒度（最小5、最大9）
 - [x] 循環依存がディレクトリ境界を跨ぐことは許容し、記録済み（39ファイルSCC）
-- [x] SkillImpl系ファイルの移動は最後のバッチ（コンフリクト対策）
+- [x] SkillImpl系ファイルの移動は最後のバッチ（条件付き実施、コンフリクト対策）
 - [x] 移動バッチ計画の各バッチで更新対象が明確
 - [x] 周辺ファイル（create_tests.sh, HTML, Deploy.bat, Local.js）のパス更新方式が確定
 - [x] update_skillsブランチとのコンフリクト対策手順が記載
