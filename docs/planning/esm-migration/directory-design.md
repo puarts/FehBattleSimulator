@@ -41,11 +41,11 @@ Sources/配下の64個のJSファイルを機能ドメイン別の10ディレク
 - **skill-impl/**は内部エッジ0 — 全依存が外部（主にskill-dsl）。ESM化時のimport先が明確
 - **combat/**と**unit/**は内部率7%と低いが、ファイル数が少なく機能的凝集は高い
 
-この分析は、Phase 2b（section-06, section-07）での分割優先順位付けに使用する。
+この分析は、`docs/planning/esm-migration/claude-plan.md` のPhase 2b（巨大ファイルの責務分割）での分割優先順位付けに使用する。
 
 ---
 
-## 確定ディレクトリ構成
+## 基本ディレクトリ構成案
 
 ```
 Sources/
@@ -121,7 +121,7 @@ Sources/
 │   ├── BattleSimulatorBase.js      [Layer 3/SCC, global-assignment]
 │   └── VueComponents.js            [Layer 4, initialization-root]
 │
-├── pages/                   # ページ固有エントリポイント
+├── pages/                   # ページ起点のファイル群
 │   ├── AetherRaidSimulatorMain.js  [Layer 3/SCC, global-assignment]
 │   ├── ArenaSimulatorMain.js       [Layer 3/SCC, global-assignment]
 │   ├── SummonerDuelsSimulatorMain.js [Layer 3/SCC, global-assignment]
@@ -130,7 +130,6 @@ Sources/
 │   ├── UnitBuilderMain.js          [Layer 3/SCC, global-assignment]
 │   ├── HeroIconListerMain.js       [Layer 1, global-mutable-state]
 │   └── HeroStatusClustererMain.js  [Layer 4, global-assignment]
-│
 │
 ├── Local.js                 # ローカル開発用（ルートに維持）
 ├── TestUtilities.js         # テスト用（ルートに維持）
@@ -156,11 +155,19 @@ Sources/
 | ルート | 2 |
 | **合計** | **64** |
 
+### skill-impl/ の扱い
+
+本設計では `skill-impl/` を含む構成を基本案とする。ただし、`update_skills` ブランチとのマージコストが高い場合に限り、Phase 2aでは SkillImpl 系ファイルの物理移動を見送り、`Sources/` ルートに維持する代替案を許容する。
+
+- **基本案**: `CustomSkill.js`, `SkillImpl*.js` を `skill-impl/` に移動
+- **代替案**: SkillImpl 系ファイルのみ `Sources/` ルートに維持し、他ディレクトリのみ先行移動
+- どちらの場合も、将来のESM化までに最終配置を再評価する
+
 ### 設計根拠とsection-02からの調整
 
 1. **Utilities.jsはcore/に維持**: Layer 3/SCCに属するが、機能的にはコアユーティリティ。依存方向としてはSkillConstants→Tile→UnitConstantsを参照するためSCCに引き込まれているが、配置はcore/が自然。
 
-2. **HeroIconListerMain.jsはpages/に暫定配置**: Layer 1で多くのLayer 3ファイルから参照される特異なファイル。実質的にはshared moduleだが、ファイル名が`*Main.js`パターンでありページエントリとして作られた経緯がある。グローバル状態（g_heroIconBgColorDict等）を他ファイルが参照しており、pages/の「ページ固有エントリポイント」という意味とは矛盾する。**ESM化時にグローバル状態をdata/等の別モジュールに分離し、pages/の純粋なエントリポイントにすることを前提とした暫定配置**。現時点で別ディレクトリに移しても同様の問題が起きる（shared/に1ファイルだけ置くのは不自然）。
+2. **HeroIconListerMain.jsはpages/に暫定配置**: Layer 1で多くのLayer 3ファイルから参照される特異なファイル。実質的にはshared moduleだが、ファイル名が`*Main.js`パターンでありページ起点のファイルとして作られた経緯がある。グローバル状態（g_heroIconBgColorDict等）を他ファイルが参照しており、pages/を「純粋なエントリポイント群」とみなすことはできない。**したがって本設計におけるpages/は「ページ起点のファイル群」という意味で用いる。** ESM化時にグローバル状態をdata/等の別モジュールに分離し、pages/を純粋なエントリポイントへ整理する。
 
 3. **StatusCalcMain.jsはpages/に配置**: Layer 3/SCCに属するが、機能的にはページエントリ。DamageCalculator.jsやBattleSimulatorBase.jsから参照されているためSCCに巻き込まれている。
 
@@ -310,9 +317,12 @@ Sources/
 
 **更新対象**: create_tests.sh, 全HTML, Deploy.bat, Local.js (SKILL_IMPL_FILES)
 
-**条件付き実施**: update_skillsブランチとの衝突リスクが最も高い。以下の条件で判断する:
-- **移動する場合**: update_skillsブランチとのマージが近い、またはコンフリクト量が許容範囲内
-- **移動しない場合**: マージコストが高すぎる場合はskill-impl/への移動をスキップし、Sources/ルートに維持。この場合、確定ディレクトリ構成のskill-impl/セクションは「将来のESM化時に移動」として保留扱いとなる
+**条件付き実施**: update_skillsブランチとの衝突リスクが最も高いため、Phase 2a開始時点で以下のどちらかを確定する。
+- **基本案（推奨）**: skill-impl/ へ移動する
+  - 条件: update_skillsブランチとのマージが近い、または想定コンフリクト量が許容範囲内
+- **代替案**: SkillImpl系のみ `Sources/` ルートに維持する
+  - 条件: マージコストが高すぎる、またはrename追跡の破綻が懸念される
+  - この場合、Phase 2a完了時点では本設計書の `skill-impl/` は「将来移動予定」として扱う
 
 ---
 
@@ -386,13 +396,20 @@ SOURCE_FILE_NAMES=(
 
 ### Deploy.bat
 
-ファイル名変数にディレクトリプレフィックス（バックスラッシュ区切り）を追加:
+`Deploy.bat` は `BF` だけでなく、`ef` / `im` / ページ個別の引数列も更新対象である。**ディレクトリプレフィックスの追加対象は `BF` 変数に限定されない**。SkillEffect 系、SkillImpl 系、各ページ専用ファイル指定を含めて、`Sources\...js` に解決される全エントリを更新する。
 
 ```bat
 rem Before
+set ef=SkillEffectCore,SkillEffectEnv,SkillEffect,...
+set im=SkillEffectAliases,CustomSkill,SkillImpl,...
 set BF=GlobalDefinitions,Utilities,...
+call %~dp0MergeSourcesAndCompress.bat FehArenaSimulator %battle_simulator_filenames%,ArenaSimulatorMain
+
 rem After
+set ef=skill-dsl\SkillEffectCore,skill-dsl\SkillEffectEnv,skill-dsl\SkillEffect,...
+set im=skill-dsl\SkillEffectAliases,skill-impl\CustomSkill,skill-impl\SkillImpl,...
 set BF=core\GlobalDefinitions,core\Utilities,...
+call %~dp0MergeSourcesAndCompress.bat FehArenaSimulator %battle_simulator_filenames%,pages\ArenaSimulatorMain
 ```
 
 ### Local.js
@@ -411,6 +428,8 @@ const SKILL_IMPL_FILES = [
     // ...
 ];
 ```
+
+**補足**: `TestUtilities.js` のように `Sources/` ルートへ維持するファイルは、例外的にディレクトリプレフィックスを付与しない。
 
 ---
 
