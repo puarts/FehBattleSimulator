@@ -1,6 +1,13 @@
 /// @file
 /// @brief 自動攻略用のAIの実験実装です。
 
+import { AssistType, Support } from './SkillConstants.js';
+import { TrapBase } from './Structures.js';
+import { CanNotReachTile } from './Tile.js';
+import { Unit } from './Unit.js';
+import { UnitGroupType } from './UnitConstants.js';
+import { CommandQueue, ScopedStopwatch, TreeNode } from './Utilities.js';
+
 /// 自動攻略用AIの検証用クラスです。
 class OriginalAi {
 

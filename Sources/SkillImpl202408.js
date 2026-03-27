@@ -163,6 +163,8 @@ import {
     ATK_DEF,
     ATK_RES,
     ATK_SPD,
+    DEF,
+    RES,
     AppliesDivineVeinIceToTargetsSpaceAndSpacesWithinNSpacesOfTargetFor2TurnsNode,
     AppliesDivineVeinNode,
     ApplyDivineVeinNode,

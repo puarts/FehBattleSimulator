@@ -25,6 +25,8 @@ import { g_appData } from './AppDataGlobal.js';
 import { Unit } from './Unit.js';
 import { DamageCalculationUtility, TriangleAdvantage } from './DamageCalculationUtility.js';
 import { DamageCalculatorWrapper } from './DamageCalculatorWrapper.js';
+import { isWeaponSpecialRefined } from './Skill.js';
+import { ATK, DEF, RES, SPD } from './SkillEffect.js';
 import { stealBonusEffects } from './SkillUtil.js';
 import { DebugUtil, floorNumberWithFloatError, GeneratorUtil, IterUtil, MathUtil } from './Utilities.js';
 import {

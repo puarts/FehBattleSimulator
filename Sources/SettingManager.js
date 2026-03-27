@@ -6,9 +6,8 @@ import { CookieWriter, LocalStorageUtil } from './Utilities.js';
 import { OwnerType, loadSettings, loadSettingsFromDict, moveStructureToDefenceStorage, moveStructureToMap, moveStructureToOffenceStorage, moveStructureToTrashBox, moveUnitToMap, moveUnitToTrashBox, resetPlacement, saveSettings, updateAllUi } from './BattleSimulatorBase.js';
 import { TurnSetting } from './TurnSetting.js';
 import { TurnWideCookieId, g_imageRootPath } from './GlobalDefinitions.js';
-import { setAppData } from './AppDataGlobal.js';
+import { setAppData, g_deffenceStructureContainer, g_offenceStructureContainer } from './AppDataGlobal.js';
 import { resetBattleMapPlacement } from './BattleMapSettings.js';
-import { g_deffenceStructureContainer, g_offenceStructureContainer } from './AppData.js';
 
 // todo: ビューに依存してしまっているのでどうにかする
 function changeCurrentUnitTab(tabIndex) {

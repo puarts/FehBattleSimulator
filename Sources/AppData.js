@@ -2,12 +2,12 @@
 /// @brief AppData クラスとそれに関連するクラスや関数等の定義です。
 
 import LZString from 'lz-string';
-import { setAppData, g_appData } from './AppDataGlobal.js';
+import { setAppData, setStructureContainers, g_appData } from './AppDataGlobal.js';
 import { Base62Util, CommandQueue, IdGenerator, LocalStorageUtil, ObjectStorage, ObjectUtil, StructureContainer, boolToInt, intToBool } from './Utilities.js';
 import { DivineVeinType, Tile } from './Tile.js';
 import { MaxAllyUnitCount, MaxEnemyUnitCount, UnitManager } from './UnitManager.js';
 import { GameMode } from './StatusConstants.js';
-import { ArenaMapKindOptions, BattleMap, MapType, isArenaMap, isSummonerDuelsMap } from './BattleMap.js';
+import { AetherRaidMapImageFiles, ArenaMapKindOptions, BattleMap, MapType, isArenaMap, isSummonerDuelsMap } from './BattleMap.js';
 import { AudioManager } from './AudioManager.js';
 import { GlobalBattleContext } from './GlobalBattleContext.js';
 import { BlessingType, MoveType, SeasonType, StatusType, isLegendarySeasonType, isMythicSeasonType } from './HeroInfoConstants.js';
@@ -26,6 +26,7 @@ import { captainInfos, passiveAInfos, passiveBInfos, passiveCInfos, passiveSInfo
 import { getSkillIconDivTag, getSpecialChargedImgTag, getStatsEffectImgTagStr } from './GameUtilities.js';
 import { updateMapUi } from './BattleSimulatorBase.js';
 import { heroInfos } from './SampleHeroInfos.js';
+import { SettingManager } from './SettingManager.js';
 
 function __registerSkillOptions(options, infos) {
     for (let info of infos) {
@@ -52,6 +53,7 @@ function __findSkillInfo(skillInfos, id) {
 const g_idGenerator = new IdGenerator();
 const g_deffenceStructureContainer = new StructureContainer('deffenceStructureContainer');
 const g_offenceStructureContainer = new StructureContainer('offenceStructureContainer');
+setStructureContainers(g_deffenceStructureContainer, g_offenceStructureContainer);
 
 const OcrSettingTarget = {
     SelectedTarget: 0,

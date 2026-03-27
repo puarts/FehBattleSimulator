@@ -8,6 +8,14 @@ export function setAppData(appData) {
     g_appData = appData;
 }
 
+export var g_deffenceStructureContainer;
+export var g_offenceStructureContainer;
+
+export function setStructureContainers(defence, offence) {
+    g_deffenceStructureContainer = defence;
+    g_offenceStructureContainer = offence;
+}
+
 /** @type {((structure: Object) => void) | null} */
 export let moveStructureToTrashBoxCallback = null;
 

@@ -3,6 +3,8 @@
  * @brief 模擬戦機能で使用する飛空城防衛プリセットの定義です。
  */
 
+import { SeasonType } from './HeroInfoConstants.js';
+
 const AetherRaidDefensePreset = {
     PresetDark20200809: 0,
     Yume20200821: 1,

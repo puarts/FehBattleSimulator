@@ -10,7 +10,7 @@ import { GameMode, StatusEffectType } from './StatusConstants.js';
 import { LoggerBase } from './Logger.js';
 import { TileQuery, UnitQuery, getDivineVeinTag, getSpecialChargedImgTag } from './GameUtilities.js';
 import { CellType } from './Cell.js';
-import { canWarpFuncMap, enumerateRangedSpecialTilesFuncMap, enumerateTeleportTilesForAllyFuncMap, enumerateTeleportTilesForUnitFuncMap, getSkillFunc, isWeaponTypeBeast } from './Skill.js';
+import { canWarpFuncMap, enumerateRangedSpecialTilesFuncMap, enumerateTeleportTilesForAllyFuncMap, enumerateTeleportTilesForUnitFuncMap, getSkillFunc, isWeaponTypeBeast, isWeaponSpecialRefined } from './Skill.js';
 import { BattleMapEnv, getSkillLogLevel, AOE_SPECIAL_SPACES_HOOKS } from './BattleMapSkillSupport.js';
 import { g_appData } from './AppDataGlobal.js';
 
@@ -3683,4 +3683,4 @@ class BattleMap {
 export { MapType, MapType_ArenaOffset, MapType_ResonantBattlesOffset, MapType_TempestTrialsOffset, MapType_SummonerDuelsOffset };
 export { SummonerDuelsMapKindOptions, ResonantBattlesMapKindOptions, TempestTrialsMapKindOptions, ArenaMapKindOptions, ArenaMapRotation };
 export { isAetherRaidMap, isArenaMap, isResonantBattlesMap, isTempestTrialsMap, isSummonerDuelsMap };
-export { DefaultResonantBattleMap, DefaultTempestTrialsMap, tileTypeToThumb, tileTypeToColor, getMapBackgroundImage, BattleMap };
+export { DefaultResonantBattleMap, DefaultTempestTrialsMap, tileTypeToThumb, tileTypeToColor, getMapBackgroundImage, BattleMap, AetherRaidMapImageFiles };

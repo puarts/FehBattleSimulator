@@ -9,8 +9,8 @@ import { GameMode } from './StatusConstants.js';
 import { Hero, UnitGroupType, getNegativeStatusEffectTypes, getPositiveStatusEffectTypes } from './UnitConstants.js';
 import { DefFortress, DefHiyokuNoTorikago, OfFortress, OfHiyokuNoHisyo, Ornament, OrnamentSettings, StructureBase } from './Structures.js';
 import { Unit, calcArenaBaseStatusScore, calcArenaTotalSpScore, isAfflictor, isDebufferTier1, isDebufferTier2, isThief } from './Unit.js';
-import { getDivineVeinName } from './Tile.js';
-import { CookieWriter, LocalStorageUtil, importJs } from './Utilities.js';
+import { getDivineVeinName, TilePriorityContext } from './Tile.js';
+import { CookieWriter, LocalStorageUtil, StructureContainer, importJs } from './Utilities.js';
 import { DetailLevel, GroupLog, LoggerBase } from './Logger.js';
 import { AssistType, PassiveA, PassiveB, PassiveC, SkillType, Special, Support } from './SkillConstants.js';
 import { DamageCalculatorWrapper } from './DamageCalculatorWrapper.js';
@@ -26,7 +26,7 @@ import { TurnSettingCookiePrefix, g_imageRootPath } from './GlobalDefinitions.js
 import { canAddStatusEffectByRallyFuncMap, isRallyHealSkill, isRangedWeaponType } from './Skill.js';
 import { canRalliedForcibly, canRallyForcibly } from './SkillUtil.js';
 import { BattleMapEnv, AtStartOfTurnEnv, getSkillLogLevel } from './SkillEffectEnv.js';
-import { g_appData, setMoveStructureToTrashBoxCallback } from './AppDataGlobal.js';
+import { g_appData, g_deffenceStructureContainer, g_offenceStructureContainer, setMoveStructureToTrashBoxCallback } from './AppDataGlobal.js';
 
 function hasTargetOptionValue(targetOptionId, options) {
     for (let index in options) {

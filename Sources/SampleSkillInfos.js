@@ -1,5 +1,5 @@
 import { SkillInfo } from './Skill.js';
-import { SkillType, WeaponType, AssistType, EffectiveType } from './SkillConstants.js';
+import { Captain, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, SkillType, Special, Support, Weapon, WeaponType, AssistType, EffectiveType } from './SkillConstants.js';
 import { MoveType } from './HeroInfoConstants.js';
 
 const weaponInfos = [

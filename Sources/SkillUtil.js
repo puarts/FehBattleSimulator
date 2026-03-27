@@ -2,7 +2,7 @@ import { LoggerBase } from './Logger.js';
 import { Support, Weapon, PassiveB } from './SkillConstants.js';
 import { StatusEffectType } from './StatusConstants.js';
 import { getStatusEffectName } from './UnitConstants.js';
-import { getSkillFunc, canRallyForciblyByPlayerFuncMap, canRallyForciblyFuncMap, canRalliedForciblyFuncMap } from './Skill.js';
+import { getSkillFunc, isWeaponSpecialRefined, canRallyForciblyByPlayerFuncMap, canRallyForciblyFuncMap, canRalliedForciblyFuncMap } from './Skill.js';
 import { NodeEnv, getSkillLogLevel } from './SkillEffectEnv.js';
 import { CAN_RALLY_FORCIBLY_HOOKS, CAN_RALLIED_FORCIBLY_HOOKS } from './SkillEffectHooks.js';
 

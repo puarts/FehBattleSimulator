@@ -2,6 +2,16 @@
 /// @brief シミュレーターのマウスやタッチイベントの実装です。
 
 import { moveUnit, moveUnitToTrashBox, moveStructureToMap, moveStructureToTrashBox, moveStructureToDefenceStorage, moveStructureToOffenceStorage, MoveResult, updateAllUi } from './BattleSimulatorBase.js';
+import { Cell } from './Cell.js';
+import { getAssistRange, isRallyHealSkill, StatusEffectType } from './Skill.js';
+import { AssistType, CANNOT_ATTACK_STRUCTURE_STYLES } from './SkillConstants.js';
+import { canRalliedForcibly, canRallyForcibly, canRallyForciblyByPlayer } from './SkillUtil.js';
+import { BreakableWall, DefenceStructureBase, OffenceStructureBase, TileTypeStructureBase } from './Structures.js';
+import { getCellId, getPositionFromCellId, setCellFocusBorder } from './Table.js';
+import { ObstructTile } from './Tile.js';
+import { Unit } from './Unit.js';
+import { UnitGroupType } from './UnitConstants.js';
+import { CommandType, GeneratorUtil, IterUtil, KeyboardManager, LocalStorageUtil, Queue } from './Utilities.js';
 
 class DoubleClickChecker {
     constructor() {

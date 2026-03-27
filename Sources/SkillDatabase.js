@@ -1,4 +1,4 @@
-import { SkillType } from './SkillConstants.js';
+import { Captain, PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, SkillType, Special, Support } from './SkillConstants.js';
 
 class SkillDatabase {
     constructor() {

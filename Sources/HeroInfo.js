@@ -1,4 +1,4 @@
-import { SkillType, NoneOption } from './SkillConstants.js';
+import { PassiveA, PassiveB, PassiveC, PassiveS, PassiveX, SkillType, Special, Support, Weapon, NoneOption } from './SkillConstants.js';
 import { stringToWeaponType, weaponTypeToString, isWeaponTypeDagger, isWeaponTypeBow, isWeaponTypeBreath, isWeaponTypeBeast, isInheritableWeaponType, isRefreshSupportSkill } from './Skill.js';
 import { StatusType, MoveType, UnitRarity, IvType, BookVersions, isLegendarySeason, getGrowthRateOfStar5, calcGrowthValue, __getStatusRankValue } from './HeroInfoConstants.js';
 import { g_siteRootPath, g_heroIconRootPath } from './GlobalDefinitions.js';

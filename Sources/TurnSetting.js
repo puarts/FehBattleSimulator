@@ -1,3 +1,4 @@
+import { setAppData } from './AppDataGlobal.js';
 import { TurnSettingCookiePrefix, NameValueDelimiter, ElemDelimiter, UnitCookiePrefix, StructureCookiePrefix, TileCookiePrefix } from './GlobalDefinitions.js';
 
 /// @file

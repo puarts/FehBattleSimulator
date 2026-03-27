@@ -1,9 +1,44 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Vite root is Sources/, but HTML references /images/ and /AetherRaidTacticsBoard/
+// which live at the repo root. This plugin serves them directly from the repo root.
+function serveRepoRootAssets() {
+    const repoRoot = __dirname;
+    const prefixes = ['/images/', '/AetherRaidTacticsBoard/'];
+    const mimeTypes = {
+        '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp',
+        '.css': 'text/css', '.js': 'application/javascript', '.json': 'application/json',
+    };
+    return {
+        name: 'serve-repo-root-assets',
+        configureServer(server) {
+            server.middlewares.use((req, res, next) => {
+                const url = req.url.split('?')[0];
+                if (prefixes.some(p => url.startsWith(p))) {
+                    const filePath = path.join(repoRoot, url);
+                    if (fs.existsSync(filePath)) {
+                        const ext = path.extname(filePath).toLowerCase();
+                        res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
+                        fs.createReadStream(filePath).pipe(res);
+                        return;
+                    }
+                }
+                next();
+            });
+        },
+    };
+}
 
 export default defineConfig({
     root: 'Sources',
-    plugins: [vue()],
+    plugins: [vue(), serveRepoRootAssets()],
     test: {
         globals: true,
         environment: 'jsdom',
@@ -17,6 +52,12 @@ export default defineConfig({
     },
     server: {
         cors: true,
+        fs: {
+            allow: [
+                // Allow serving files from repo root (images/, AetherRaidTacticsBoard/)
+                path.resolve(__dirname),
+            ],
+        },
     },
     build: {
         outDir: '../dist',
@@ -24,14 +65,14 @@ export default defineConfig({
         target: 'es2015',
         rollupOptions: {
             input: {
-                AetherRaidSimulator: 'AetherRaidSimulator.html',
-                ArenaSimulator: 'ArenaSimulator.html',
-                SummonerDuelsSimulator: 'SummonerDuelsSimulator.html',
-                UnitBuilder: 'UnitBuilder.html',
-                StatusCalculator: 'StatusCalculator.html',
-                DamageCalculator: 'DamageCalculator.html',
-                HeroIconLister: 'HeroIconLister.html',
-                HeroStatusClusterer: 'HeroStatusClusterer.html',
+                AetherRaidSimulator: path.resolve(__dirname, 'Sources/AetherRaidSimulator.html'),
+                ArenaSimulator: path.resolve(__dirname, 'Sources/ArenaSimulator.html'),
+                SummonerDuelsSimulator: path.resolve(__dirname, 'Sources/SummonerDuelsSimulator.html'),
+                UnitBuilder: path.resolve(__dirname, 'Sources/UnitBuilder.html'),
+                StatusCalculator: path.resolve(__dirname, 'Sources/StatusCalculator.html'),
+                DamageCalculator: path.resolve(__dirname, 'Sources/DamageCalculator.html'),
+                HeroIconLister: path.resolve(__dirname, 'Sources/HeroIconLister.html'),
+                HeroStatusClusterer: path.resolve(__dirname, 'Sources/HeroStatusClusterer.html'),
             },
             // Output chunking will be configured in Section 02 after testing.
             // Fallback: run 8 individual builds if manualChunks doesn't work.
