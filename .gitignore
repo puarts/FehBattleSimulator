@@ -5,6 +5,7 @@ vendor/
 # Generated files
 All.test.js
 coverage/
+Tools/output/
 
 # Samples (local scratch files)
 Sources/samples/
