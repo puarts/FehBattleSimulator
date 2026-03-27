@@ -743,6 +743,68 @@ class NodeEnv {
     }
 }
 
+function getSkillLogLevel() {
+    if (typeof g_appData === 'undefined') {
+        return LoggerBase.LogLevel.OFF;
+    }
+    return g_appData?.skillLogLevel ?? LoggerBase.LogLevel.OFF;
+}
+
+class CantoEnv extends NodeEnv {
+    /**
+     * @param {Unit} targetUnit
+     */
+    constructor(targetUnit) {
+        super();
+        this.setSkillOwner(targetUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
+    }
+}
+
+class BattleMapEnv extends NodeEnv {
+    /**
+     * @param {BattleMap} battleMap
+     * @param {Unit} targetUnit
+     */
+    constructor(battleMap, targetUnit) {
+        super();
+        this.setBattleMap(battleMap)
+            .setSkillOwner(targetUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
+    }
+}
+
+class AtStartOfTurnEnv extends NodeEnv {
+    /**
+     * @param {BeginningOfTurnSkillHandler} handler
+     * @param {Unit} targetUnit
+     */
+    constructor(handler, targetUnit) {
+        super();
+        this.phase = NodeEnv.PHASE.AT_START_OF_TURN;
+        this.setBeginningOfTurnSkillHandler(handler).setBattleMap(handler.map)
+            .setSkillOwner(targetUnit).setTarget(targetUnit)
+            .setTextUnit(targetUnit);
+    }
+}
+
+class AfterCombatEnv extends NodeEnv {
+    /**
+     * @param {PostCombatSkillHander} handler
+     * @param {Unit} targetUnit
+     * @param {Unit} enemyUnit
+     * @param {BattleMap} battleMap
+     */
+    constructor(handler, targetUnit, enemyUnit, battleMap) {
+        super();
+        this.phase = NodeEnv.PHASE.AFTER_COMBAT;
+        this.setPostCombatHandler(handler)
+            .setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit)
+            .setBattleMap(battleMap)
+            .setTextUnit(targetUnit).setTextFoe(enemyUnit);
+    }
+}
+
 // TODO: rename. ex) DuringCombatEnv, AtStartOfCombatEnv
 class DamageCalculatorWrapperEnv extends NodeEnv {
     /**
@@ -870,4 +932,4 @@ class NeutralizingEndActionEnv extends NodeEnv {
     }
 }
 
-export { NodeEnv, DamageCalculatorWrapperEnv, DamageCalculatorEnv, BattleSimulatorBaseEnv, EnumerationEnv, ForFoesEnv, ForAlliesEnv, PreventingStatusEffectEnv, NeutralizingEndActionEnv };
+export { NodeEnv, DamageCalculatorWrapperEnv, DamageCalculatorEnv, BattleSimulatorBaseEnv, EnumerationEnv, ForFoesEnv, ForAlliesEnv, PreventingStatusEffectEnv, NeutralizingEndActionEnv, getSkillLogLevel, CantoEnv, BattleMapEnv, AtStartOfTurnEnv, AfterCombatEnv };

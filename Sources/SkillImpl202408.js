@@ -21,6 +21,8 @@ import {
     Weapon,
 } from './SkillConstants.js';
 import { StatusEffectType, StatusIndex } from './StatusConstants.js';
+import { Hero, RESET_DUO_OR_HARMONIZED_SKILL_EVERY_3_TURNS_SET } from './UnitConstants.js';
+import { DivineVeinType } from './Tile.js';
 import { SkillEffectRegistrar } from './SkillEffectRegistrar.js';
 import {
     ADD_NODE,

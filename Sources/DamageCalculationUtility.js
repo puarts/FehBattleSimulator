@@ -5,8 +5,7 @@ import { EffectiveType, WeaponType, Weapon, ColorType } from './SkillConstants.j
 import { MoveType } from './HeroInfoConstants.js';
 import { isWeaponTypeBreath, isWeaponTypeBeast, isWeaponTypeTome } from './Skill.js';
 import { LoggerBase } from './Logger.js';
-import { NodeEnv } from './SkillEffectEnv.js';
-import { getSkillLogLevel } from './SkillEffect.js';
+import { NodeEnv, getSkillLogLevel } from './SkillEffectEnv.js';
 import { CALC_TRIANGLE_ADVANTAGE_HOOKS } from './SkillEffectHooks.js';
 
 const TriangleAdvantage = {

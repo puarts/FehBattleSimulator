@@ -2,14 +2,14 @@
 /// @brief DamageCalculator クラスとそれに関連するクラスや関数等の定義です。
 
 import { GroupLogger, LoggerBase } from './Logger.js';
-import { NodeEnv } from './SkillEffectEnv.js';
-import { getSkillLogLevel } from './SkillEffect.js';
+import { NodeEnv, DamageCalculatorEnv, getSkillLogLevel } from './SkillEffectEnv.js';
 import { DamageCalculationUtility, TriangleAdvantage } from './DamageCalculationUtility.js';
 import { PassiveB, Special, Weapon, WeaponType, colorTypeToString } from './SkillConstants.js';
 import { StatusEffectType, StatusIndex } from './StatusConstants.js';
 import { MIRACLE_AND_HEAL_SPECIAL_SET, activatesNextAttackSkillEffectAfterSpecialActivatedFuncMap, addSpecialDamageAfterDefenderSpecialActivatedFuncMap, applyNTimesDamageReductionRatiosByNonDefenderSpecialFuncMap, applySkillEffectAfterSpecialActivatedFuncMap, applySkillEffectsPerAttackFuncMap, applySpecialDamageReductionPerAttackFuncMap, getSkillFunc, isDefenseSpecial, isRangedWeaponType } from './Skill.js';
 import { AFTER_ATTACK_HOOKS, AT_APPLYING_ONCE_PER_COMBAT_DAMAGE_REDUCTION_HOOKS, AT_START_OF_ATTACK_HOOKS } from './SkillEffectHooks.js';
-import { ArrayUtil, MathUtil, floorNumberWithFloatError, truncNumberWithFloatError } from './Utilities.js';
+import { HtmlLogUtil } from './GameUtilities.js';
+import { ArrayUtil, MathUtil, floorNumberWithFloatError, roundFloat, truncNumberWithFloatError } from './Utilities.js';
 import { UnitGroupType, getStatusEffectName } from './UnitConstants.js';
 import { Unit } from './Unit.js';
 

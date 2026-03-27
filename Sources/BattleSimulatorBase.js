@@ -25,7 +25,7 @@ import { TurnSetting } from './TurnSetting.js';
 import { TurnSettingCookiePrefix, g_imageRootPath } from './GlobalDefinitions.js';
 import { canAddStatusEffectByRallyFuncMap, isRallyHealSkill, isRangedWeaponType } from './Skill.js';
 import { canRalliedForcibly, canRallyForcibly } from './SkillUtil.js';
-import { getSkillLogLevel } from './SkillEffect.js';
+import { BattleMapEnv, AtStartOfTurnEnv, getSkillLogLevel } from './SkillEffectEnv.js';
 import { g_appData, setMoveStructureToTrashBoxCallback } from './AppDataGlobal.js';
 
 function hasTargetOptionValue(targetOptionId, options) {

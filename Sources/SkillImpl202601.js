@@ -18,6 +18,8 @@ import {
     Weapon,
 } from './SkillConstants.js';
 import { StatFlags, StatusEffectType } from './StatusConstants.js';
+import { Hero } from './UnitConstants.js';
+import { DivineVeinType } from './Tile.js';
 import { SkillEffectRegistrar } from './SkillEffectRegistrar.js';
 import {
     ADD_NODE,
@@ -274,6 +276,7 @@ import {
     TARGETS_NEXT_ATTACK_DEALS_DAMAGE_X_PERCENT_OF_TARGETS_FORES_ATTACK_PRIOR_TO_REDUCTION_ONLY_HIGHEST_VALUE_APPLIED_AND_DOES_NOT_STACK_NODE,
     TRIGGERS_POTENT_FOLLOW_N_PERCENT,
     WHEN_TARGET_DEALS_DAMAGE_DURING_COMBAT_RESTORES_N_HP_TO_TARGET_NODE,
+    CAN_FOLLOWUP_ATTACK_WITHOUT_POTENT,
 } from './SkillEffectBattleContext.js';
 import {
     DEALS_DAMAGE_PERCENTAGE_OF_TARGETS_STAT_EXCLUDING_AOE_SPECIALS,

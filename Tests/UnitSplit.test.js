@@ -6,8 +6,30 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { BattleMapElement } from '../Sources/BattleMapElement.js';
+import {
+    Unit,
+    AttackableUnitInfo,
+    AttackEvaluationContext,
+    AssistableUnitInfo,
+    ActionContext,
+    PrecombatContext,
+    UnitUtil,
+    initUnitSkillEffects,
+    isThief,
+    calcArenaBaseStatusScore,
+    calcArenaTotalSpScore,
+    calcBuffAmount,
+    calcHealAmount,
+    isDebufferTier1,
+    isDebufferTier2,
+    isAfflictor,
+    canRefreshTo,
+} from '../Sources/Unit.js';
 
 const SOURCES = path.resolve(import.meta.dirname, '..', 'Sources');
+
+initUnitSkillEffects(Unit);
 
 describe('UnitCore.js', () => {
     it('Unitクラスがimportでき、基本プロパティにアクセスできる', () => {

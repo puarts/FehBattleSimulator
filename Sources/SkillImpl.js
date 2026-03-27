@@ -19,6 +19,14 @@ import {
     StatusIndex,
 } from './StatusConstants.js';
 import { MoveType } from './HeroInfoConstants.js';
+import { getStatusEffectName } from './UnitConstants.js';
+import { DivineVeinType } from './Tile.js';
+import { g_appData } from './AppDataGlobal.js';
+import { Unit } from './Unit.js';
+import { DamageCalculationUtility, TriangleAdvantage } from './DamageCalculationUtility.js';
+import { DamageCalculatorWrapper } from './DamageCalculatorWrapper.js';
+import { stealBonusEffects } from './SkillUtil.js';
+import { DebugUtil, floorNumberWithFloatError, GeneratorUtil, IterUtil, MathUtil } from './Utilities.js';
 import {
     BEAST_COMMON_SKILL_MAP,
     CAN_MOVE_THROUGH_FOES_SPACE_SKILLS,

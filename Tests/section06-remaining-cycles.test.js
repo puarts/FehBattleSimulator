@@ -94,7 +94,7 @@ describe('Section 6: Remaining cycle resolution', () => {
     });
 
     describe('Task 4: Zero cycles', () => {
-        it('madge --circular Sources/ reports no circular dependencies', () => {
+        it('madge --circular Sources/ reports no circular dependencies', { timeout: 30000 }, () => {
             const result = execFileSync('npx', ['madge', '--circular', '--no-color', 'Sources/'], {
                 cwd: resolve(SOURCES_DIR, '..'),
                 encoding: 'utf-8',

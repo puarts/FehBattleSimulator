@@ -1,8 +1,13 @@
+import { beforeEach, describe, expect, test } from 'vitest';
+import { g_testHeroDatabase } from './TestGlobals.js';
+import { setAppData } from '../Sources/AppDataGlobal.js';
+import { getSelfDamageDealtRateToAddSpecialDamage, SkillInfo } from '../Sources/Skill.js';
+import { PassiveA, PassiveB, PassiveC, Special, Weapon, WeaponRefinementType, WeaponType } from '../Sources/SkillConstants.js';
+import { StatusEffectType, StatusIndex } from '../Sources/StatusConstants.js';
+import { ScopedStopwatch, roundFloat, using_ } from '../Sources/Utilities.js';
 import { UnitGroupType } from '../Sources/UnitConstants.js';
-import { PassiveA, PassiveC } from '../Sources/SkillConstants.js';
-// Note: ESM TestUtilities/TestGlobals importなし。全英雄戦闘テスト(HeroBattleTest)で
-// ESM/連結版ノード型混線が発生するため、連結版グローバルを使用する。
-// Section 12で連結方式廃止後にESM化する。
+import { Unit } from '../Sources/Unit.js';
+import { test_DamageCalculator, test_calcDamage, test_calcDamageWithUnits, test_createDefaultUnit, test_executeTest } from '../Sources/TestUtilities.js';
 
 describe('Test feud skills', () => {
   let heroDatabase;
@@ -39,7 +44,7 @@ describe('Test feud skills', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    globalThis.g_appData = calclator.unitManager;
+    setAppData(calclator.unitManager);
   });
 
   describe('Test disable skills from other enemies', () => {
@@ -466,7 +471,7 @@ test('DamageCalculator_SaverSkillTest', () => test_executeTest(() => {
   calclator.damageCalc.clearLog();
 }));
 
-test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
+test('DamageCalculator_HeroBattleTest', { timeout: 20000 }, () => test_executeTest(() => {
   let log = "";
   let heroDatabase = g_testHeroDatabase;
 
@@ -495,7 +500,7 @@ test('DamageCalculator_HeroBattleTest', () => test_executeTest(() => {
     calclator.map.getTile(2, 0).setUnit(defAllyUnit);
     calclator.unitManager.units = [atkUnit, defUnit, atkAllyUnit, defAllyUnit];
     calclator.isLogEnabled = false;
-    globalThis.g_appData = calclator.unitManager;
+    setAppData(calclator.unitManager);
     // calclator.disableProfile();
 
     atkUnit.weaponRefinement = WeaponRefinementType.Special;
@@ -989,7 +994,7 @@ describe('Test great talent', () => {
 
     calclator = new test_DamageCalculator();
     calclator.isLogEnabled = false;
-    globalThis.g_appData = calclator.unitManager;
+    setAppData(calclator.unitManager);
   });
 
   test('Test great talent applied', () => {

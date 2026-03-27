@@ -1,5 +1,51 @@
-import { NumberNode, CONSTANT_NUMBER_NODE, MultiValueMap, SkillEffectHooks } from '../Sources/SkillEffectCore.js';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { g_testHeroDatabase } from './TestGlobals.js';
+import { setAppData } from '../Sources/AppDataGlobal.js';
+import { test_DamageCalculator } from '../Sources/TestUtilities.js';
+import { BattleMap } from '../Sources/BattleMap.js';
+import { PassiveS } from '../Sources/SkillConstants.js';
+import { NEGATIVE_STATUS_EFFECT_ARRAY, POSITIVE_STATUS_EFFECT_ARRAY, StatFlags, StatusEffectType } from '../Sources/StatusConstants.js';
+import { STATUS_EFFECT_INFO_MAP, UnitGroupType } from '../Sources/UnitConstants.js';
+import { ArrayUtil, MathUtil } from '../Sources/Utilities.js';
+import {
+    NumberNode, CONSTANT_NUMBER_NODE, MultiValueMap, SkillEffectHooks,
+    ConstantNumberNode, SkillEffectNode, AndNode, TRUE_NODE, FALSE_NODE,
+    OrNode, CannotAnyNode, IfNode, CollectionNode, COLLECTION_NODE,
+    COUNT_COLLECTION, EXISTS, IntersectCollectionNode, MultNode,
+    MultTruncNode, MULT_NODE, NODE_FUNC, NUM_OF, SkillRequirement,
+    THERE_IS, X,
+} from '../Sources/SkillEffectCore.js';
 import { NodeEnv } from '../Sources/SkillEffectEnv.js';
+import { AT_COMPARING_STATS_HOOKS, AT_START_OF_COMBAT_HOOKS } from '../Sources/SkillEffectHooks.js';
+import {
+    TARGET_NODE, UNIT, FOE, ALLIES_WITHIN, ANY_SPACE, FOES_WITHIN,
+    CAN_DECREASING_SPD_TRIGGER_FOLLOW_UP_EXCLUDING_GUARANTEED_OR_PREVENTED_FOLLOW_UPS,
+    CLOSEST_FOES, DEF, EFFECTS, FOR_UNIT, GRANTS_ALL_STATS_PLUS_5_TO_TARGET_DURING_COMBAT_NODE,
+    GRANTS_ATK_SPD_DEF_RES_TO_TARGET_DURING_COMBAT_NODE, GRANTS_BONUS, GRANTS_STATUS_EFFECTS,
+    HIGHEST, INFLICTS_ALL_STATS_MINUS_5_ON_FOE_DURING_COMBAT_NODE,
+    INFLICTS_ATK_SPD_DEF_RES_ON_FOE_DURING_COMBAT_NODE,
+    INFLICTS_ATK_SPD_DEF_RES_ON_TARGET_DURING_COMBAT_NODE, INFLICTS_PENALTY,
+    NEUTRALIZES_N_PENALTY_EFFECTS, NEUTRALIZES_STAT_PENALTIES,
+    PLACED_SPACES, STATS, SkillEffectField, TARGETS_EVAL_SPD_NODE,
+    UNITS_NODE,
+} from '../Sources/SkillEffect.js';
+import {
+    CALCULATES_DAMAGE_USING_LOWER_OF_FOES_DEF_OR_RES, CANNOT_TRIGGER_PRECOMBAT_SPECIAL,
+    CAN_COUNTERATTACK_REGARDLESS_OF_RANGE, DEALS_DAMAGE, DEALS_DAMAGE_OF_SPECIAL,
+    DEALS_DAMAGE_PER_ATTACK, DISABLES_DEFENSIVE_TERRAIN_EFFECTS,
+    DISABLES_INCREASE_COOLDOWN_COUNT_FOR_ATTACK, DISABLES_INCREASE_COOLDOWN_COUNT_FOR_DEFENSE,
+    DISABLES_SKILLS_THAT_CHANGE_ATTACK_PRIORITY, DISABLES_SKILLS_THAT_PREVENT_COUNTERATTACKS,
+    DISABLES_SUPPORT_EFFECTS, DOES_NOT_TRIGGER_FOES_SAVIOR_EFFECTS,
+    FOLLOWUP_ATTACK_PRIORITY_DECREMENT, FOLLOWUP_ATTACK_PRIORITY_INCREMENT, HAS_DEEP_WOUNDS,
+    INCREASES_SPD_DIFF_FOR_FOLLOWUP,
+    INVALIDATES_COUNTERATTACK, INVALIDATES_FOES_NON_SPECIAL_DAMAGE_REDUCTION,
+    IS_DESPERATION_ACTIVATABLE, IS_VANTAGE_ACTIVATABLE, PREVENTS_ATTACKER_SPECIAL,
+    PREVENTS_DEFENDER_SPECIAL, PREVENTS_DEFENDER_SPECIAL_PER_ATTACK, REDUCES_DAMAGE_PER_ATTACK,
+    RESTORES_HP_AFTER_COMBAT, SETS_ATTACK_COUNT, SETS_COUNTERATTACK_COUNT,
+    SETS_NON_SPECIAL_MIRACLE_HP_THRESHOLD, SPECIAL_COUNT_REDUCTION_BEFORE_ATTACK,
+} from '../Sources/SkillEffectBattleContext.js';
+import { DEALS_DAMAGE_X_NODE, TARGETS_ATK_ON_MAP, TARGETS_SPD_ON_MAP } from '../Sources/SkillEffectAliases.js';
+import { INFLICTS_STATUS_EFFECTS } from '../Sources/SkillEffectUnit.js';
 
 describe('Test skill effect', () => {
     describe(`Test ${NumberNode.name}`, () => {
@@ -299,7 +345,7 @@ describe('Bonuses or penalties', () => {
 
         let calculator = new test_DamageCalculator();
         calculator.unitManager.units = [unit, foe];
-        globalThis.g_appData = calculator.unitManager;
+        setAppData(calculator.unitManager);
 
         [unit.atkWithSkills, unit.spdWithSkills, unit.defWithSkills, unit.resWithSkills] = BASE_STATS;
         [foe.atkWithSkills, foe.spdWithSkills, foe.defWithSkills, foe.resWithSkills] = BASE_STATS;
@@ -441,7 +487,7 @@ describe('Skills during combat', () => {
         calculator = new test_DamageCalculator();
         calculator.unitManager.units = [atkUnit, defUnit];
         calculator.isLogEnabled = true;
-        globalThis.g_appData = calculator.unitManager;
+        setAppData(calculator.unitManager);
         // g_appData.skillLogLevel = LoggerBase.LogLevel.ALL;
     });
 
@@ -519,7 +565,7 @@ describe('Effect Node', () => {
         calculator = new test_DamageCalculator();
         calculator.unitManager.units = [atkUnit, defUnit];
         calculator.isLogEnabled = true;
-        globalThis.g_appData = calculator.unitManager;
+        setAppData(calculator.unitManager);
         // g_appData.skillLogLevel = LoggerBase.LogLevel.ALL;
     });
 

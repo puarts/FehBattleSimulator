@@ -1,10 +1,10 @@
-// Sources/SkillUtil.js
-// Skill.jsから移動した上位レイヤー依存の関数群
-// canRallyForcibly, canRalliedForcibly: Layer 5依存 (NodeEnv, SkillEffectHooks)
-// stealBonusEffects: Unit型メソッド呼び出しを含む
-
-// 注意: 現在はグローバル変数経由で依存を解決しているため、ESMのimportは記述しない。
-// セクション8（不足import追加）で適切なimport文が追加される。
+import { LoggerBase } from './Logger.js';
+import { Support, Weapon, PassiveB } from './SkillConstants.js';
+import { StatusEffectType } from './StatusConstants.js';
+import { getStatusEffectName } from './UnitConstants.js';
+import { getSkillFunc, canRallyForciblyByPlayerFuncMap, canRallyForciblyFuncMap, canRalliedForciblyFuncMap } from './Skill.js';
+import { NodeEnv, getSkillLogLevel } from './SkillEffectEnv.js';
+import { CAN_RALLY_FORCIBLY_HOOKS, CAN_RALLIED_FORCIBLY_HOOKS } from './SkillEffectHooks.js';
 
 function canRallyForciblyByPlayer(unit) {
     return getSkillFunc(unit.support, canRallyForciblyByPlayerFuncMap)?.call(this, unit) ?? false;

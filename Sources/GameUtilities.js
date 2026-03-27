@@ -1,4 +1,8 @@
 import { Query, IterUtil } from './Utilities.js';
+import { g_imageRootPath, g_siteRootPath } from './GlobalDefinitions.js';
+import { EngagedSpecialIcon } from './SkillConstants.js';
+import { UnitGroupType, getStatusEffectName, statusEffectTypeToIconFilePath } from './UnitConstants.js';
+import { DivineVeinType } from './Tile.js';
 
 // Game-specific utility functions moved from Utilities.js (Layer 0 → Layer 3+)
 

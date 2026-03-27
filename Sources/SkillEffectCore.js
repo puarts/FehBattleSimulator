@@ -2,7 +2,8 @@ import { ArrayUtil, Base62, IterUtil, MathUtil, ObjectUtil, SetUtil } from './Ut
 import { LoggerBase } from './Logger.js';
 import { EmblemHero, getStyleTypeName } from './SkillConstants.js';
 import { NodeEnv } from './SkillEffectEnv.js';
-import { getStatusEffectName } from './UnitConstants.js';
+import { getStatusEffectName, Hero } from './UnitConstants.js';
+import { getDivineVeinName } from './Tile.js';
 import { g_appData } from './AppDataGlobal.js';
 
 /** @type {{ funcIdToFunc: Map, registeredSkillIds: Set, funcIdToName: Map } | null} */
@@ -614,7 +615,7 @@ class NumberNode extends SkillEffectNode {
     }
 
     percentage(percentage) {
-        return PERCENTAGE_NODE(this, percentage);
+        return PERCENTAGE_NODE(percentage, this);
     }
 
     /**
@@ -695,6 +696,15 @@ class CollectionNode extends SkillEffectNode {
         return result;
     }
 }
+
+class UniteCollectionsNode extends CollectionNode {
+    evaluate(env) {
+        let collections = this.evaluateChildren(env);
+        return [...new Set(IterUtil.concat(...collections))];
+    }
+}
+
+const UNITE_SPACES_NODE = (...children) => new UniteCollectionsNode(...children);
 
 /**
  * @template {SkillEffectNode} T
@@ -963,6 +973,9 @@ class IntPercentageNumberNode extends NumberNode {
  * @constructor
  */
 const INT_PERCENTAGE_NUMBER_NODE = (n) => new IntPercentageNumberNode(n);
+
+const PERCENTAGE_NODE = (percentage, num) =>
+    MULT_TRUNC_NODE(MULT_NODE(INT_PERCENTAGE_NUMBER_NODE(percentage), 0.01), num);
 
 /**
  * @abstract

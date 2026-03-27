@@ -11,6 +11,7 @@ import { LoggerBase } from './Logger.js';
 import { TileQuery, UnitQuery, getDivineVeinTag, getSpecialChargedImgTag } from './GameUtilities.js';
 import { CellType } from './Cell.js';
 import { canWarpFuncMap, enumerateRangedSpecialTilesFuncMap, enumerateTeleportTilesForAllyFuncMap, enumerateTeleportTilesForUnitFuncMap, getSkillFunc, isWeaponTypeBeast } from './Skill.js';
+import { BattleMapEnv, getSkillLogLevel, AOE_SPECIAL_SPACES_HOOKS } from './BattleMapSkillSupport.js';
 import { g_appData } from './AppDataGlobal.js';
 
 /// @file

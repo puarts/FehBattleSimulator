@@ -8,15 +8,17 @@ import { COLLECTION_NODE, UNIQUE_COLLECTION_NODE, FLATTEN_COLLECTION_NODE, MAP_C
 import { EnsureMinNode, EnsureMaxNode, EnsureMinMaxNode, ENSURE_MAX_MIN_NODE, MULT_ADD_NODE, MULT_MAX_NODE, MULT_ADD_MAX_NODE, ADD_MULT_NODE, ADD_MULT_MAX_NODE, ADD_MAX_NODE, MAX_ADD_NODE, MULT_CEIL_NODE } from './SkillEffectCore.js';
 import { FirstValueNode, UniqueCollectionNode, FlattenCollectionNode, MapCollectionNode, FilterCollectionNode, CountCollectionNode, IntersectCollectionNode, TopNNode, SumNumbersNode, CannotAnyNode, TraceBoolNode, NumThatIsNode, TernaryConditionalNumberNode, UnionSetNode, SetSizeNode } from './SkillEffectCore.js';
 import { EffectNode, XNumberNode, X } from './SkillEffectCore.js';
-import { NodeEnv } from './SkillEffectEnv.js';
-import { ArrayUtil, Base62, GeneratorUtil, IterUtil, MathUtil, SetUtil } from './Utilities.js';
-import { GameMode, NEGATIVE_STATUS_EFFECT_ORDER_MAP, POSITIVE_STATUS_EFFECT_ORDER_MAP, StatusEffectType, StatusIndex } from './StatusConstants.js';
-import { MoveType, statusTypeToString } from './HeroInfoConstants.js';
-import { Special, WeaponType } from './SkillConstants.js';
+import { NodeEnv, getSkillLogLevel, CantoEnv, BattleMapEnv, AtStartOfTurnEnv, AfterCombatEnv } from './SkillEffectEnv.js';
+import { ArrayUtil, Base62, GeneratorUtil, IterUtil, MathUtil, ObjectUtil, SetUtil } from './Utilities.js';
+import { GameMode, NEGATIVE_STATUS_EFFECT_ORDER_MAP, POSITIVE_STATUS_EFFECT_ORDER_MAP, StatFlags, StatusEffectType, StatusIndex, getStatusName } from './StatusConstants.js';
+import { MoveType, statusIndexStr, statusTypeToString } from './HeroInfoConstants.js';
+import { ColorType, Special, StyleType, WeaponType } from './SkillConstants.js';
 import { DefenceStructureBase, OffenceStructureBase, SafetyFence, TrapBase } from './Structures.js';
 import { PartnerLevel, UnitGroupType, getStatusEffectName } from './UnitConstants.js';
 import { DivineVeinType, getDivineVeinName } from './Tile.js';
+import { DamageCalculationUtility, TriangleAdvantage } from './DamageCalculationUtility.js';
 import { LoggerBase } from './Logger.js';
+import { Unit } from './Unit.js';
 import { isMeleeWeaponType, isRangedWeaponType, isWeaponTypeBreath, isWeaponTypeBreathOrBeast, isWeaponTypeTome } from './Skill.js';
 import { g_appData, moveStructureToTrashBoxCallback } from './AppDataGlobal.js';
 
@@ -2402,17 +2404,6 @@ class NumOfTargetsMovingSpacesNode extends PositiveNumberNode {
 
 // 周囲のユニット
 
-class CantoEnv extends NodeEnv {
-    /**
-     * @param {Unit} targetUnit
-     */
-    constructor(targetUnit) {
-        super();
-        this.setSkillOwner(targetUnit).setTarget(targetUnit)
-            .setTextUnit(targetUnit);
-    }
-}
-
 class CantoControlEnv extends NodeEnv {
     /**
      * @param {Unit} targetUnit
@@ -2422,50 +2413,6 @@ class CantoControlEnv extends NodeEnv {
         super();
         this.setSkillOwner(unitThatControlCanto).setTarget(targetUnit)
             .setTextFoe(targetUnit);
-    }
-}
-
-class BattleMapEnv extends NodeEnv {
-    /**
-     * @param {BattleMap} battleMap
-     * @param {Unit} targetUnit
-     */
-    constructor(battleMap, targetUnit) {
-        super();
-        this.setBattleMap(battleMap)
-            .setSkillOwner(targetUnit).setTarget(targetUnit)
-            .setTextUnit(targetUnit);
-    }
-}
-
-class AtStartOfTurnEnv extends NodeEnv {
-    /**
-     * @param {BeginningOfTurnSkillHandler} handler
-     * @param {Unit} targetUnit
-     */
-    constructor(handler, targetUnit) {
-        super();
-        this.phase = NodeEnv.PHASE.AT_START_OF_TURN;
-        this.setBeginningOfTurnSkillHandler(handler).setBattleMap(handler.map)
-            .setSkillOwner(targetUnit).setTarget(targetUnit)
-            .setTextUnit(targetUnit);
-    }
-}
-
-class AfterCombatEnv extends NodeEnv {
-    /**
-     * @param {PostCombatSkillHander} handler
-     * @param {Unit} targetUnit
-     * @param {Unit} enemyUnit
-     * @param {BattleMap} battleMap
-     */
-    constructor(handler, targetUnit, enemyUnit, battleMap) {
-        super();
-        this.phase = NodeEnv.PHASE.AFTER_COMBAT;
-        this.setPostCombatHandler(handler)
-            .setUnitsFromTargetAndEnemyUnit(targetUnit, enemyUnit)
-            .setBattleMap(battleMap)
-            .setTextUnit(targetUnit).setTextFoe(enemyUnit);
     }
 }
 
@@ -8261,13 +8208,6 @@ class IsAnotherActionByAssistActivatedInCurrentTurnOnSkillOwnerTeamNode extends 
 const IS_ANOTHER_ACTION_BY_ASSIST_ACTIVATED_IN_CURRENT_TURN_ON_SKILL_OWNER_TEAM_NODE =
     new IsAnotherActionByAssistActivatedInCurrentTurnOnSkillOwnerTeamNode();
 
-function getSkillLogLevel() {
-    if (typeof g_appData === 'undefined') {
-        return LoggerBase.LogLevel.OFF;
-    }
-    return g_appData?.skillLogLevel ?? LoggerBase.LogLevel.OFF;
-}
-
 class CanActivateAttackerSpecialNode extends BoolNode {
     static {
         Object.assign(this.prototype, GetUnitMixin);
@@ -9775,7 +9715,7 @@ const [
     BONUS_DURING_COMBAT,
     GRANTS_BONUS_DURING_COMBAT,
 ] = makeUnitFieldOperators(
-    Unit.nameOf(unit => unit.spurs),
+    'spurs', // Unit.nameOf(unit => unit.spurs)
     SkillEffectField.Op.ARRAY_ADD,
     `攻撃/速さ/守備/魔防+`
 );
@@ -9801,7 +9741,7 @@ const [
     PENALTY_DURING_COMBAT,
     INFLICTS_PENALTY_DURING_COMBAT,
 ] = makeUnitFieldOperators(
-    Unit.nameOf(unit => unit.spurs),
+    'spurs', // Unit.nameOf(unit => unit.spurs)
     SkillEffectField.Op.ARRAY_SUB,
     `攻撃/速さ/守備/魔防-`
 );
@@ -9830,7 +9770,7 @@ const [
     ,
     NEUTRALIZES_N_PENALTY_EFFECTS,
 ] = makeUnitFieldOperators(
-    (Unit.nameOf(unit => unit.reservedNegativeStatusEffectCountInOrder)),
+    'reservedNegativeStatusEffectCountInOrder', // Unit.nameOf
     SkillEffectField.Op.ADD,
     '',
     (name, n) => `${name}は戦闘中、不利な状態を上位${n}個解除`,
@@ -9872,15 +9812,15 @@ const RE_ENABLES_CANTO = CALL_UNIT_FUNC(
 
 const CANTO_HAS_ALREADY_BEEN_TRIGGERED =
     new GetSkillEffectFieldNode()
-        .setKey(Unit.nameOf(unit => unit.isCantoActivatedInCurrentTurn))
+        .setKey('isCantoActivatedInCurrentTurn') // Unit.nameOf
         .setLogMessage('再移動を発動済みか');
 
 const MOVE_TYPE = new GetSkillEffectFieldNode()
-    .setKey(Unit.nameOf(unit => unit.moveType))
+    .setKey('moveType') // Unit.nameOf
     .setLogMessageFunc((name, n) => `${name}の移動タイプ: ${n}`);
 
 const WEAPON_TYPE = new GetSkillEffectFieldNode()
-    .setKey(Unit.nameOf(unit => unit.weaponType))
+    .setKey('weaponType') // Unit.nameOf
     .setLogMessageFunc((name, n) => `${name}の武器タイプ: ${n}`);
 
 /**
@@ -9888,7 +9828,7 @@ const WEAPON_TYPE = new GetSkillEffectFieldNode()
  * @type {SkillEffectFieldNode}
  */
 const RANGE = new GetSkillEffectFieldNode()
-    .setKey(Unit.nameOf(unit => unit.attackRange))
+    .setKey('attackRange') // Unit.nameOf
     .setLogMessageFunc((name, n) => `${name}の射程: ${n}`);
 
 const ON_MAP = CALL_UNIT_FUNC(

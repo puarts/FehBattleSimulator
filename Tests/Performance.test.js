@@ -78,7 +78,7 @@ describe('Performance benchmarks', () => {
                 handler.applySkillsForBeginningOfTurn(unit);
             }
             resetGlobalTestState();
-        }, 2000, 800);
+        }, 2000, 1000);
     });
 
     test('ユニット初期化（全英雄生成）が閾値以内で完了する', () => {

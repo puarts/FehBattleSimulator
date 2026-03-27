@@ -7,7 +7,6 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'jsdom',
-        setupFiles: ['./vitest.setup.js'],
         // Override top-level root ('Sources') so Vitest resolves Tests/ from project root
         root: './',
         include: ['Tests/**/*.test.js'],
