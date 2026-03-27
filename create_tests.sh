@@ -23,6 +23,7 @@ SOURCE_FILE_NAMES=(
     combat/DamageCalculator
     combat/PostCombatSkillHander
     combat/PerformanceProfile
+    combat/ScopedTileChanger
     combat/DamageCalculatorWrapper
     combat/BeginningOfTurnSkillHandler
     database/SkillDatabase
@@ -67,6 +68,7 @@ TEST_FILE_NAMES=(
     Performance
     TestHelper
     FileSplit
+    ScopedTileChanger
     )
 
 # カテゴリに応じたテストファイル選択

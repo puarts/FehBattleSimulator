@@ -187,6 +187,29 @@ section-01完了後の状態では以下のようになっているはず:
 | `Sources/SummonerDuelsSimulator.html` | loadScriptsにScopedTileChanger追加 |
 | `Tests/ScopedTileChanger.test.js` | 新規作成（テストスタブ） |
 
+## 実装結果
+
+### 作成ファイル
+- `Sources/combat/ScopedTileChanger.js` — DamageCalculatorWrapper.jsから移動、`/* global setUnitToTile */`追加
+- `Tests/ScopedTileChanger.test.js` — シンボル可視性テスト（2テスト）
+
+### 変更ファイル
+- `Sources/combat/DamageCalculatorWrapper.js` — ScopedTileChangerクラス定義を削除
+- `create_tests.sh` — SOURCE_FILE_NAMESにcombat/ScopedTileChanger追加、TEST_FILE_NAMESにScopedTileChanger追加
+- `Deploy.bat` — 3箇所のビルドリストにcombat\ScopedTileChanger追加
+- `Sources/ArenaSimulator.html` — loadScriptsにcombat/ScopedTileChanger.js追加
+- `Sources/AetherRaidSimulator.html` — 同上
+- `Sources/SummonerDuelsSimulator.html` — 同上
+- `Sources/DamageCalculator.html` — 同上
+- `Sources/UnitBuilder.html` — 同上
+
+### テスト結果
+- 全299テストパス（新規2テスト + 既存297テスト）
+- ESLintパス
+
+### 計画からの逸脱
+なし。計画通りに実装完了。
+
 ## ロジック変更禁止の再確認
 
 本ステップでは以下のみが許可される:
