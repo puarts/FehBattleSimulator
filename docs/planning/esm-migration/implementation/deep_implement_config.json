@@ -31,6 +31,10 @@
     "section-04-directory-design": {
       "status": "complete",
       "commit_hash": "4f1c4379"
+    },
+    "section-05-file-relocation": {
+      "status": "complete",
+      "commit_hash": "f3bdc5ba423206cf3448f522a66d6f80344816e5"
     }
   },
   "pre_commit": {

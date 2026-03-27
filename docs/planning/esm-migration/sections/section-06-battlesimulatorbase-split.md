@@ -380,3 +380,31 @@ BattleSimulatorBaseには以下のプライベートメソッドが存在する:
 ### update_skillsブランチとのコンフリクト
 
 `BattleSimulatorBase.js`はスキル実装（SkillImpl系）とは直接的な変更競合が少ない。ただし、新スキルの効果でBattleSimulatorBaseのメソッドが変更される可能性はある。分割作業は集中的に進めてコンフリクト期間を短縮すること。
+
+---
+
+## 実施結果
+
+### 実施範囲
+
+**Step 1（トップレベル関数抽出）のみを実施。** Step 3-8（クラスメソッドのプロトタイプ拡張分離）は以下の理由で別計画に延期:
+- 8000行規模の分離は独立した大型リファクタであり、Phase 2aの範囲を超える
+- BattleSimulatorBase.jsは高リスク領域で、update_skills系の並行開発と相性が悪い
+- プロトタイプ拡張方式は実質的な密結合が残りやすい
+- 次回着手時は1ブロックずつ、テスト観点を先に定義して進めるべき
+
+### 作成ファイル
+
+| ファイル | 内容 | 行数 |
+|---------|------|------|
+| `Sources/app/MapOperations.js` | マップ操作、UI更新、タッチイベント、配置リセットの自由関数群 | 474行 |
+| `Sources/app/SettingsPersistence.js` | 設定のセーブ/ロード/インポート/エクスポート | 117行 |
+
+### 変更されたファイル
+- `Sources/app/BattleSimulatorBase.js` — 628行を削除（12,307行→11,679行）
+- `Deploy.bat` — BF変数とUnitBuilder行に新ファイルを追加（BattleSimulatorBaseの前）
+- 4つのHTMLファイル — loadScripts配列に新ファイルを追加（AetherRaid, Arena, SummonerDuels, UnitBuilder）
+
+### テスト結果
+- 全293テスト パス
+- BattleSimulatorBase自体はcreate_tests.shに含まれていないため、テスト結合対象外
