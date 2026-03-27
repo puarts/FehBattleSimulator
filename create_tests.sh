@@ -22,6 +22,7 @@ SOURCE_FILE_NAMES=(
     combat/DamageCalculationUtility
     combat/DamageCalculator
     combat/PostCombatSkillHander
+    combat/PerformanceProfile
     combat/DamageCalculatorWrapper
     combat/BeginningOfTurnSkillHandler
     database/SkillDatabase
@@ -65,6 +66,7 @@ TEST_FILE_NAMES=(
     DslNode
     Performance
     TestHelper
+    FileSplit
     )
 
 # カテゴリに応じたテストファイル選択

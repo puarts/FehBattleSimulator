@@ -141,20 +141,43 @@ DamageCalculatorWrapper.jsを読み込んでいる5つのHTMLファイルの `lo
 - **前提**: なし（依存なしの最初のステップ）
 - **後続**: Section 02（ScopedTileChanger抽出）がこのセクション完了後に実施される。Section 02ではPerformanceProfileの後、DamageCalculatorWrapperの前にScopedTileChangerを配置するため、本セクションでのロード順序更新が正しく行われていることが前提となる。
 
+## 実装結果
+
+### 作成ファイル
+- `Sources/combat/PerformanceProfile.js` — DamageCalculatorWrapper.js行2-28をそのまま移動
+- `Tests/FileSplit.test.js` — シンボル可視性テスト（4テスト）
+
+### 変更ファイル
+- `Sources/combat/DamageCalculatorWrapper.js` — PerformanceProfileクラス定義を削除
+- `create_tests.sh` — SOURCE_FILE_NAMESにcombat/PerformanceProfile追加、TEST_FILE_NAMESにFileSplit追加
+- `Deploy.bat` — 3箇所のビルドリストにcombat\PerformanceProfile追加
+- `Sources/ArenaSimulator.html` — loadScriptsにcombat/PerformanceProfile.js追加
+- `Sources/AetherRaidSimulator.html` — 同上
+- `Sources/SummonerDuelsSimulator.html` — 同上
+- `Sources/DamageCalculator.html` — 同上
+- `Sources/UnitBuilder.html` — 同上
+
+### テスト結果
+- 全297テストパス（新規4テスト + 既存293テスト）
+- ESLintパス
+
+### 計画からの逸脱
+なし。計画通りに実装完了。
+
 ## チェックリスト
 
-- [ ] 事前チェック3項目の実施
-- [ ] テストコード作成（シンボル可視性テスト）
-- [ ] `Sources/combat/PerformanceProfile.js` 作成（行2-28をそのまま移動）
-- [ ] `Sources/combat/DamageCalculatorWrapper.js` から行2-28を削除
-- [ ] `create_tests.sh` 更新（DamageCalculatorWrapperの直前に追加）
-- [ ] `Deploy.bat` 更新（DamageCalculatorWrapperの直前に追加）
-- [ ] `ArenaSimulator.html` 更新
-- [ ] `DamageCalculator.html` 更新
-- [ ] `UnitBuilder.html` 更新
-- [ ] `AetherRaidSimulator.html` 更新
-- [ ] `SummonerDuelsSimulator.html` 更新
-- [ ] 3系統の相対順序一致確認
-- [ ] `./run_tests.sh` パス
+- [x] 事前チェック3項目の実施
+- [x] テストコード作成（シンボル可視性テスト）
+- [x] `Sources/combat/PerformanceProfile.js` 作成（行2-28をそのまま移動）
+- [x] `Sources/combat/DamageCalculatorWrapper.js` から行2-28を削除
+- [x] `create_tests.sh` 更新（DamageCalculatorWrapperの直前に追加）
+- [x] `Deploy.bat` 更新（DamageCalculatorWrapperの直前に追加）
+- [x] `ArenaSimulator.html` 更新
+- [x] `DamageCalculator.html` 更新
+- [x] `UnitBuilder.html` 更新
+- [x] `AetherRaidSimulator.html` 更新
+- [x] `SummonerDuelsSimulator.html` 更新
+- [x] 3系統の相対順序一致確認
+- [x] `./run_tests.sh` パス
 - [ ] ブラウザsmoke check（DamageCalculator.html、コンソールエラーなし）
-- [ ] コミット
+- [x] コミット
