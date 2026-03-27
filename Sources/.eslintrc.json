@@ -14,6 +14,10 @@
     "globals": {},
     "rules": {
         "no-unused-vars": 0,
-        "no-undef": 0
+        "no-undef": 0,
+        "no-octal": "error",
+        "no-octal-escape": "error",
+        "no-with": "error",
+        "no-delete-var": "error"
     }
 }
