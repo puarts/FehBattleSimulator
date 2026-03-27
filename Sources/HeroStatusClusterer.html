@@ -263,21 +263,21 @@
         $(function () {
             const startTime = Date.now();
             loadScripts([
-                "GlobalDefinitions_Debug.js",
-                "Utilities.js",
-                "Skill.js",
-                "GlobalBattleContext.js",
-                "HeroInfoConstants.js",
-                "HeroInfo.js",
-                "BattleMapElement.js",
-                "UnitConstants.js",
-                "BattleContext.js",
-                "Unit.js",
-                "UnitManager.js",
-                "HeroDatabase.js",
-                "SampleHeroInfos.js",
-                "VueComponents.js",
-                "HeroStatusClustererMain.js",
+                "core/GlobalDefinitions_Debug.js",
+                "core/Utilities.js",
+                "data/Skill.js",
+                "unit/GlobalBattleContext.js",
+                "data/HeroInfoConstants.js",
+                "data/HeroInfo.js",
+                "map/BattleMapElement.js",
+                "data/UnitConstants.js",
+                "unit/BattleContext.js",
+                "unit/Unit.js",
+                "unit/UnitManager.js",
+                "database/HeroDatabase.js",
+                "database/SampleHeroInfos.js",
+                "app/VueComponents.js",
+                "pages/HeroStatusClustererMain.js",
             ], () => {
                 const endTime = Date.now();
                 console.log(`${endTime - startTime} ms to load all scripts`);

@@ -308,3 +308,44 @@ Phase 2aのファイル移動は集中的に実施し、早期完了を目指す
 - 更新された `Deploy.bat`（ファイル名リストのパス更新済み）
 - 更新された `Local.js`（`SKILL_EFFECT_FILES`/`SKILL_IMPL_FILES`のパス更新済み）
 - 移動前後のベースライン比較結果（`All.test.js`サイズ、Deploy.bat出力ハッシュ）
+
+---
+
+## 実施結果
+
+### 実施内容
+
+全10バッチを一括で実施。62ファイルを10ディレクトリに移動し、全パス参照を更新。
+
+#### 移動されたファイル数（ディレクトリ別）
+| ディレクトリ | ファイル数 |
+|-------------|----------|
+| core/ | 5 |
+| data/ | 5 |
+| map/ | 7 |
+| unit/ | 5 |
+| combat/ | 5 |
+| database/ | 5 |
+| skill-dsl/ | 9 |
+| skill-impl/ | 5 |
+| app/ | 8 |
+| pages/ | 8 |
+| **合計** | **62** |
+
+ルート維持: `Local.js`, `TestUtilities.js`（計2ファイル）
+
+#### 更新されたパス参照ファイル
+- `create_tests.sh` — SOURCE_FILE_NAMES にディレクトリプレフィックス追加（ロード順維持）
+- `Sources/Local.js` — SKILL_EFFECT_FILES に `skill-dsl/`、SKILL_IMPL_FILES に `skill-dsl/` + `skill-impl/` プレフィックス追加
+- `Deploy.bat` — ef, im, BF 変数および全ページ個別呼び出しにバックスラッシュ区切りプレフィックス追加（Shift-JISエンコーディング維持）
+- 8 HTMLファイル — additionalScripts/loadScripts 配列のパス更新
+
+#### 計画からの差異
+- **バッチ実行方式**: 計画では10バッチを順次実行し各バッチ後にテストを予定していたが、実際には全バッチを一括実行し最後にテスト確認を実施。ファイル内容は一切変更しないためリスクは低い
+- **GlobalDefinitions_Debug.js**: 計画（ステップ4）ではSources/直下に維持と記載していたが、directory-design.mdの設計に従いcore/に移動。HTMLからはloadScripts経由で読み込まれるため問題なし
+- **Deploy.bat UnitBuilder行**: 元の `, Structures`（カンマ後スペース）を `,map\Structures`（スペースなし）に修正
+
+### テスト結果
+- 全293テスト パス（移動前と同数）
+- ESLint エラーなし
+- git rename検出: 全62ファイルで similarity index 100%
