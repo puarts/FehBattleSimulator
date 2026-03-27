@@ -15,6 +15,7 @@ SOURCE_FILE_NAMES=(
     data/HeroInfo
     data/UnitConstants
     unit/BattleContext
+    unit/UnitContext
     unit/Unit
     unit/UnitManager
     map/BattleMap
@@ -69,6 +70,7 @@ TEST_FILE_NAMES=(
     TestHelper
     FileSplit
     ScopedTileChanger
+    UnitContext
     )
 
 # カテゴリに応じたテストファイル選択

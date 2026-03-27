@@ -184,6 +184,28 @@ refactor(unit): 独立コンテキストクラス群をUnitContext.jsに分離�
 
 ---
 
+## 実装結果
+
+**実施日**: 2026-03-28
+**結果**: 計画通りに完了。全305テストパス（ESLint含む）。
+
+### 実際のファイルパス
+- 新規: `Sources/unit/UnitContext.js` (289行、ESLintコメント含む)
+- 新規: `Tests/UnitContext.test.js` (7テスト)
+- 変更: `Sources/unit/BattleContext.js` (末尾にPrecombatContext追加)
+- 変更: `Sources/unit/Unit.js` (5クラス削除)
+- 変更: `create_tests.sh` (SOURCE_FILE_NAMESとTEST_FILE_NAMES更新)
+- 変更: `Deploy.bat` (4ビルドターゲットすべて更新)
+- 変更: HTML 7ファイル (loadScripts更新)
+
+### 計画からの差異
+- なし。計画通りverbatim移動を実施。
+
+### コードレビュー所見
+- 既存バグ検出: `ActionContext.clear()` 内の `hasThreatensEnemyStatus` 重複代入。今回は未修正（別issueで対応予定）。
+
+---
+
 ## 依存関係
 
 - **前提（Section 02完了）**: ScopedTileChanger 抽出が完了し、`create_tests.sh`/`Deploy.bat`/HTML のロード順序が正しく更新されていること
