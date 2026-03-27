@@ -408,3 +408,4 @@ BattleSimulatorBaseには以下のプライベートメソッドが存在する:
 ### テスト結果
 - 全293テスト パス
 - BattleSimulatorBase自体はcreate_tests.shに含まれていないため、テスト結合対象外
+- **未実施**: 4ページ（AetherRaid, Arena, SummonerDuels, UnitBuilder）のブラウザ手動起動確認。抽出した関数はブラウザ起動経路でのみ使用されるため、テストでは回帰を拾えない。マージ前に手動確認が必須

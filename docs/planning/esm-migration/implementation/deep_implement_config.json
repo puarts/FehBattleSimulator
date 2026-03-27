@@ -35,6 +35,10 @@
     "section-05-file-relocation": {
       "status": "complete",
       "commit_hash": "f3bdc5ba423206cf3448f522a66d6f80344816e5"
+    },
+    "section-06-battlesimulatorbase-split": {
+      "status": "complete",
+      "commit_hash": "ac9ac84bc86db02f80b96cbc75ce53cdc8c9a472"
     }
   },
   "pre_commit": {
