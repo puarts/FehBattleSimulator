@@ -27,6 +27,8 @@ SOURCE_FILE_NAMES=(
     combat/PerformanceProfile
     combat/ScopedTileChanger
     combat/DamageCalculatorWrapper
+    combat/DamageCalculatorWrapper_InitSkillEffectDict_AtkDef
+    combat/DamageCalculatorWrapper_InitSkillEffectDict_Unit
     combat/BeginningOfTurnSkillHandler
     database/SkillDatabase
     database/HeroDatabase

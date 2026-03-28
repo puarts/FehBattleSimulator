@@ -19,6 +19,7 @@ rem ���j�b�g�E���
 set BF=%BF%,data\HeroInfoConstants,data\HeroInfo,data\UnitConstants,unit\BattleContext,unit\UnitContext,unit\Unit,unit\UnitUtility,unit\UnitManager,unit\GlobalBattleContext
 rem �v�Z���W�b�N
 set BF=%BF%,combat\DamageCalculationUtility,combat\DamageCalculator,combat\PostCombatSkillHander,combat\PerformanceProfile,combat\ScopedTileChanger,combat\DamageCalculatorWrapper
+set BF=%BF%,combat\DamageCalculatorWrapper_InitSkillEffectDict_AtkDef,combat\DamageCalculatorWrapper_InitSkillEffectDict_Unit
 set BF=%BF%,combat\BeginningOfTurnSkillHandler
 rem �f�[�^�x�[�X�E�ݒ�
 set BF=%BF%,database\SkillDatabase,database\HeroDatabase,unit\TurnSetting,app\AudioManager,database\AetherRaidDefensePresets

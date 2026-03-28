@@ -100,3 +100,46 @@ describe('DamageCalculatorWrapper split verification', () => {
         });
     });
 });
+
+// Phase 2: InitSkillEffectDict split verification
+
+describe('DamageCalculatorWrapper_InitSkillEffectDict split', () => {
+    test('__init__applySkillEffectForAtkUnitFuncDict exists on prototype', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__init__applySkillEffectForAtkUnitFuncDict).toBe('function');
+    });
+
+    test('__init__applySkillEffectForDefUnitFuncDict exists on prototype', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__init__applySkillEffectForDefUnitFuncDict).toBe('function');
+    });
+
+    test('__init__applySkillEffectForUnitFuncDict exists on prototype', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__init__applySkillEffectForUnitFuncDict).toBe('function');
+    });
+
+    test('__init__applySpecialSkillEffect exists on prototype', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__init__applySpecialSkillEffect).toBe('function');
+    });
+});
+
+describe('DamageCalculatorWrapper dict initialization after split', () => {
+    let calc;
+    beforeAll(() => {
+        calc = new test_DamageCalculator();
+    });
+
+    test('_applySkillEffectForAtkUnitFuncDict has entries after construction', () => {
+        expect(Object.keys(calc.damageCalc._applySkillEffectForAtkUnitFuncDict).length).toBeGreaterThan(0);
+    });
+
+    test('_applySkillEffectForDefUnitFuncDict has entries after construction', () => {
+        expect(Object.keys(calc.damageCalc._applySkillEffectForDefUnitFuncDict).length).toBeGreaterThan(0);
+    });
+
+    test('_applySkillEffectForUnitFuncDict has entries after construction', () => {
+        expect(Object.keys(calc.damageCalc._applySkillEffectForUnitFuncDict).length).toBeGreaterThan(0);
+    });
+
+    test('_applySpecialSkillEffectFuncDict has entries after construction', () => {
+        expect(Object.keys(calc.damageCalc._applySpecialSkillEffectFuncDict).length).toBeGreaterThan(0);
+    });
+});
