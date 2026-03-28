@@ -2,6 +2,8 @@ services:
   feh_bs_test:
     build: .
     tty: true
+    environment:
+      - CI=true
     volumes:
       - ./Sources:/Sources
       - ./Tests:/Tests
