@@ -173,6 +173,35 @@ describe('DamageCalculatorWrapper_Spur split', () => {
     });
 });
 
+// Phase 5: FollowupAndCounter split verification
+
+describe('Phase 5: FollowupAndCounter split', () => {
+    test('canCounterAttack exists as instance method (public API)', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.canCounterAttack).toBe('function');
+    });
+
+    test('getFollowupAttackPriorityForBoth exists as instance method (public API)', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.getFollowupAttackPriorityForBoth).toBe('function');
+    });
+
+    test('followup/counter private methods exist on prototype', () => {
+        const privateMethodNames = [
+            '__examinesCanFollowupAttack',
+            '__examinesCanFollowupAttackForAttacker',
+            '__examinesCanFollowupAttackForDefender',
+            '__examinesCanCounterattackBasically',
+            '__canDisableCounterAttack',
+            '__applyDamageReductionRatio',
+            '__getDamageReductionRatio',
+            '__applyDamageReductionRatioBySpecial',
+            '__calcFixedSpecialAddDamage',
+        ];
+        for (const name of privateMethodNames) {
+            expect(typeof DamageCalculatorWrapper.prototype[name]).toBe('function');
+        }
+    });
+});
+
 describe('DamageCalculatorWrapper dict initialization after split', () => {
     let calc;
     beforeAll(() => {

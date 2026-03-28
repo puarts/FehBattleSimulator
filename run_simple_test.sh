@@ -31,6 +31,11 @@ SOURCE_FILE_NAMES=(
     DamageCalculator
     PostCombatSkillHander
     DamageCalculatorWrapper
+    combat/DamageCalculatorWrapper_InitSkillEffectDict_AtkDef
+    combat/DamageCalculatorWrapper_InitSkillEffectDict_Unit
+    combat/DamageCalculatorWrapper_ApplySkillEffects
+    combat/DamageCalculatorWrapper_Spur
+    combat/DamageCalculatorWrapper_FollowupAndCounter
     BeginningOfTurnSkillHandler
     SkillDatabase
     HeroDatabase

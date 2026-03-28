@@ -6,7 +6,9 @@ This section implements Phase 5 of the DamageCalculatorWrapper.js split plan. It
 
 **Depends on**: Sections 01 through 04 must be completed first. Section 01 adds the `definePrototypeMethods` helper and test infrastructure. Sections 02-04 have already removed other method groups from the core file, so line numbers in the current file will differ from those in the original plan.
 
-**Estimated lines moved**: ~900 lines (the smallest of the split files). Note: `__calcFixedAddDamage` and `#calcFixedAddDamageForSkill` (~590 lines) remain in core due to `#` private constraints.
+**Actual lines moved**: ~1379 lines (new file). Note: `__calcFixedAddDamage` and `#calcFixedAddDamageForSkill` (~590 lines) remain in core due to `#` private constraints.
+
+**Implementation status**: Complete. All 341 tests pass.
 
 ---
 
@@ -178,7 +180,7 @@ combat/DamageCalculatorWrapper_FollowupAndCounter          ← ADD THIS
 
    In each HTML file, add the new script entry after `DamageCalculatorWrapper_Spur` in the `loadScripts()` call or script list.
 
-4. **Other files to check**: `run_simple_test.sh` and `MergeTests.bat` also reference `DamageCalculatorWrapper`. Verify whether they need updating with the same search-based approach used in prior sections.
+4. **Other files updated**: `run_simple_test.sh` and `MergeTests.bat` were updated with all split files from sections 02-05. These had been missed in prior sections; updated here per code review feedback to keep all test entry points in sync.
 
 ### Step 5: Run tests
 
@@ -228,4 +230,5 @@ This commit includes:
 - New file: `Sources/combat/DamageCalculatorWrapper_FollowupAndCounter.js`
 - Modified: `Sources/combat/DamageCalculatorWrapper.js` (methods removed; `__calcFixedAddDamage` and `#calcFixedAddDamageForSkill` remain in core)
 - Modified: `create_tests.sh`, `Deploy.bat`, all HTML files (load order updated)
+- Modified: `run_simple_test.sh`, `MergeTests.bat` (all split files from sections 02-05 added)
 - Modified: `Tests/DamageCalculatorWrapperSplit.test.js` (Phase 5 tests added)
