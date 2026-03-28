@@ -121,6 +121,42 @@ describe('DamageCalculatorWrapper_InitSkillEffectDict split', () => {
     });
 });
 
+// Phase 3: ApplySkillEffects split verification
+
+describe('DamageCalculatorWrapper_ApplySkillEffects split', () => {
+    test('__applySkillEffectForUnit がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__applySkillEffectForUnit).toBe('function');
+    });
+
+    test('____applySkillEffectForUnit がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.____applySkillEffectForUnit).toBe('function');
+    });
+
+    test('__applySkillEffectRelatedToEnemyStatusEffects がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__applySkillEffectRelatedToEnemyStatusEffects).toBe('function');
+    });
+
+    test('__applySkillEffectForUnitAfterCombatStatusFixed がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__applySkillEffectForUnitAfterCombatStatusFixed).toBe('function');
+    });
+
+    test('__applyInvalidationSkillEffect がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__applyInvalidationSkillEffect).toBe('function');
+    });
+
+    test('__applySpecialSkillEffect がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__applySpecialSkillEffect).toBe('function');
+    });
+
+    test('__setSkillEffetToContext がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__setSkillEffetToContext).toBe('function');
+    });
+
+    test('__setBothOfAtkDefSkillEffetToContext がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__setBothOfAtkDefSkillEffetToContext).toBe('function');
+    });
+});
+
 describe('DamageCalculatorWrapper dict initialization after split', () => {
     let calc;
     beforeAll(() => {

@@ -180,7 +180,13 @@ Phase 3 全体で 1 commit とする。コミットメッセージ案:
 refactor(combat): スキル効果適用メソッドをDamageCalculatorWrapper_ApplySkillEffects.jsに分離
 ```
 
-## 推定結果
+## 実装結果
 
-- `DamageCalculatorWrapper_ApplySkillEffects.js`: 約 3,000 行（移動したメソッド群 + ロードガード + definePrototypeMethods ラッパー）
-- コアファイル: Section 02 完了後の約 9,200 行から約 3,000 行削減 → 約 6,200 行に縮小
+- `DamageCalculatorWrapper_ApplySkillEffects.js`: 1,818 行（移動したメソッド群 + ロードガード + definePrototypeMethods ラッパー）
+- コアファイル: Section 02 完了後の 9,292 行から 1,809 行削減 → 7,483 行に縮小
+- テスト: 335 件全パス（ESLint 含む）
+- 移動対象メソッド: 17 メソッド（計画通り）
+
+### 計画との差異
+- `__applySkillEffectForUnitAfterCombatStatusFixed` は計画の ~2,800 行ではなく ~900 行（計画の行数は分割前原本の推定値だった）
+- ファイルサイズは計画の ~3,000 行より小さい 1,818 行となった
