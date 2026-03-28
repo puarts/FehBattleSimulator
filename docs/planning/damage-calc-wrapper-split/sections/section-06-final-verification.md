@@ -149,26 +149,37 @@ After all verifications pass, record the final file sizes and structure. This se
 
 ## Checklist
 
-Use this checklist to track completion:
+- [x] `./run_tests.sh` passes (341 tests green, ESLint clean)
+- [x] Public API names assertion test passes
+- [x] Constructor smoke test passes
+- [x] definePrototypeMethods unit tests pass
+- [x] Core file (`DamageCalculatorWrapper.js`) is 3,488 lines (larger than ~2,500 estimate due to #private methods staying in core, accepted)
+- [x] All split files are within expected size ranges
+- [x] `DamageCalculatorWrapper_InitSkillEffectDict_Unit.js` (6,848 lines) is the only file exceeding 5,000 lines
+- [x] Load order verified in `create_tests.sh`
+- [x] Load order verified in `Deploy.bat` (all 3 lists)
+- [x] Load order verified in all 5 relevant HTML files
+- [x] Load order verified in `run_simple_test.sh` and `MergeTests.bat`
+- [x] All five split files have load guard at top
+- [x] All five split files use `definePrototypeMethods` for method attachment
+- [ ] Browser test: ArenaSimulator.html loads without console errors (manual)
+- [ ] Browser test: Standard combat executes correctly (manual)
+- [ ] Browser test: Followup attack scenario works (manual)
+- [ ] Browser test: Counter attack denial scenario works (manual)
+- [ ] Browser test: Precombat special (AOE) scenario works (manual)
+- [x] Final file sizes and verification results documented
 
-- [ ] `./run_tests.sh` passes (all Jest tests green, ESLint clean)
-- [ ] Public API names assertion test passes (36 public methods unchanged)
-- [ ] Constructor smoke test passes
-- [ ] definePrototypeMethods unit tests pass
-- [ ] Core file (`DamageCalculatorWrapper.js`) is approximately 2,500 lines
-- [ ] All split files are within expected size ranges
-- [ ] `DamageCalculatorWrapper_InitSkillEffectDict_Unit.js` is the only file exceeding 5,000 lines
-- [ ] Load order verified in `create_tests.sh`
-- [ ] Load order verified in `Deploy.bat`
-- [ ] Load order verified in all relevant HTML files
-- [ ] All five split files have load guard at top
-- [ ] All five split files use `definePrototypeMethods` for method attachment
-- [ ] Browser test: ArenaSimulator.html loads without console errors
-- [ ] Browser test: Standard combat executes correctly
-- [ ] Browser test: Followup attack scenario works
-- [ ] Browser test: Counter attack denial scenario works
-- [ ] Browser test: Precombat special (AOE) scenario works
-- [ ] Final file sizes and verification results documented
+## Actual File Sizes
+
+| File | Lines |
+|------|-------|
+| DamageCalculatorWrapper.js (core) | 3,488 |
+| DamageCalculatorWrapper_InitSkillEffectDict_AtkDef.js | 1,029 |
+| DamageCalculatorWrapper_InitSkillEffectDict_Unit.js | 6,848 |
+| DamageCalculatorWrapper_ApplySkillEffects.js | 1,818 |
+| DamageCalculatorWrapper_Spur.js | 2,635 |
+| DamageCalculatorWrapper_FollowupAndCounter.js | 1,379 |
+| **Total** | **17,197** |
 
 ## Troubleshooting
 
