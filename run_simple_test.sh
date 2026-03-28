@@ -1,51 +1,56 @@
 #!/usr/bin/env bash
-# add files
+# add files — create_tests.sh と同じロード順
 SOURCE_FILE_NAMES=(
-    GlobalDefinitions
-    Utilities
-    Logger
-    SkillConstants
-    Skill
-    SkillEffectCore
-    SkillEffectEnv
-    SkillEffect
-    SkillEffectField
-    SkillEffectUnit
-    SkillEffectBattleContext
-    SkillEffectHooks
-    SkillEffectRegistrar
-    BattleMapElement
-    Tile
-    Structures
-    Cell
-    Table
-    HeroInfoConstants
-    HeroInfo
-    UnitConstants
-    BattleContext
-    Unit
-    UnitManager
-    BattleMap
-    GlobalBattleContext
-    DamageCalculationUtility
-    DamageCalculator
-    PostCombatSkillHander
-    DamageCalculatorWrapper
+    core/GlobalDefinitions
+    core/Utilities
+    core/Logger
+    data/SkillConstants
+    data/Skill
+    map/BattleMapElement
+    map/Tile
+    map/Structures
+    map/Cell
+    map/Table
+    data/HeroInfoConstants
+    data/HeroInfo
+    data/UnitConstants
+    unit/BattleContext
+    unit/UnitContext
+    unit/Unit
+    unit/UnitUtility
+    unit/UnitManager
+    map/BattleMap
+    unit/GlobalBattleContext
+    combat/DamageCalculationUtility
+    combat/DamageCalculator
+    combat/PostCombatSkillHander
+    combat/PerformanceProfile
+    combat/ScopedTileChanger
+    combat/DamageCalculatorWrapper
     combat/DamageCalculatorWrapper_InitSkillEffectDict_AtkDef
     combat/DamageCalculatorWrapper_InitSkillEffectDict_Unit
     combat/DamageCalculatorWrapper_ApplySkillEffects
     combat/DamageCalculatorWrapper_Spur
     combat/DamageCalculatorWrapper_FollowupAndCounter
-    BeginningOfTurnSkillHandler
-    SkillDatabase
-    HeroDatabase
-    SampleSkillInfos
-    SampleHeroInfos
-    SkillEffectAliases
-    SkillImpl
-    SkillImpl202408
-    SkillImpl202501
-    SkillImpl202601
+    combat/BeginningOfTurnSkillHandler
+    database/SkillDatabase
+    database/HeroDatabase
+    database/SampleSkillInfos
+    database/SampleHeroInfos
+    skill-dsl/SkillEffectCore
+    skill-dsl/SkillEffectEnv
+    skill-dsl/SkillEffect
+    skill-dsl/SkillEffectField
+    skill-dsl/SkillEffectUnit
+    skill-dsl/SkillEffectBattleContext
+    skill-dsl/SkillEffectHooks
+    skill-dsl/SkillEffectRegistrar
+    skill-dsl/SkillEffectAliases
+    skill-impl/CustomSkill
+    skill-impl/SkillImpl
+    skill-impl/SkillImpl202408
+    skill-impl/SkillImpl202501
+    skill-impl/SkillImpl202601
     TestUtilities
     )
 TEST_UTIL_FILE_NAMES=(
@@ -72,7 +77,7 @@ for name in ${TEST_FILE_NAMES[@]}; do
 done
 
 # Run the test
-npx jest $TARGET_FILE --silent=false --verbose true
+npx jest --testMatch="<rootDir>/$TARGET_FILE" --silent=false --verbose true
 
 # Clean up
 rm $TARGET_FILE
