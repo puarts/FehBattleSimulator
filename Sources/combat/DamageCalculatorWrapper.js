@@ -17139,3 +17139,17 @@ class DamageCalculatorWrapper {
         damageCalcEnv.applySkill('全ての条件決定後', damageCalcEnv.atkUnit, damageCalcEnv.defUnit, applySkill, this);
     }
 }
+
+DamageCalculatorWrapper.definePrototypeMethods = function(methods) {
+    for (const [name, fn] of Object.entries(methods)) {
+        if (Object.prototype.hasOwnProperty.call(DamageCalculatorWrapper.prototype, name)) {
+            throw new Error(`Duplicate prototype method: ${name}`);
+        }
+        Object.defineProperty(DamageCalculatorWrapper.prototype, name, {
+            value: fn,
+            writable: true,
+            configurable: true,
+            enumerable: false,
+        });
+    }
+};

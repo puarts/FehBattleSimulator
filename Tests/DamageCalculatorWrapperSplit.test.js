@@ -1,0 +1,102 @@
+// DamageCalculatorWrapper 分割リファクタリング検証テスト
+
+describe('DamageCalculatorWrapper split verification', () => {
+
+    // --- definePrototypeMethods ヘルパー ---
+
+    describe('definePrototypeMethods helper', () => {
+        const testMethodName = '__test_defineProto_callable';
+
+        afterEach(() => {
+            delete DamageCalculatorWrapper.prototype[testMethodName];
+        });
+
+        test('definePrototypeMethods でメソッドを追加するとインスタンスから呼び出せる', () => {
+            DamageCalculatorWrapper.definePrototypeMethods({
+                [testMethodName]: function() { return 42; },
+            });
+            const calc = new test_DamageCalculator();
+            expect(calc.damageCalc[testMethodName]()).toBe(42);
+        });
+
+        test('追加されたメソッドが non-enumerable である', () => {
+            DamageCalculatorWrapper.definePrototypeMethods({
+                [testMethodName]: function() {},
+            });
+            expect(Object.keys(DamageCalculatorWrapper.prototype)).not.toContain(testMethodName);
+        });
+
+        test('同名メソッドを二重に追加すると Error がスローされる', () => {
+            DamageCalculatorWrapper.definePrototypeMethods({
+                [testMethodName]: function() {},
+            });
+            expect(() => {
+                DamageCalculatorWrapper.definePrototypeMethods({
+                    [testMethodName]: function() {},
+                });
+            }).toThrow('Duplicate prototype method');
+        });
+    });
+
+    // --- constructor smoke test ---
+
+    describe('constructor smoke test', () => {
+        test('DamageCalculatorWrapper がエラーなくインスタンス化できる', () => {
+            expect(() => new test_DamageCalculator()).not.toThrow();
+        });
+
+        test('インスタンスが内部オブジェクトを保持している', () => {
+            const calc = new test_DamageCalculator();
+            expect(calc.damageCalc._damageCalc).toBeDefined();
+            expect(calc.damageCalc._combatHander).toBeDefined();
+            expect(calc.damageCalc.profiler).toBeDefined();
+        });
+    });
+
+    // --- public API names assertion ---
+
+    describe('public API names assertion', () => {
+        test('DamageCalculatorWrapper.prototype が全 public メソッド名を持つ', () => {
+            const expectedPublicMethods = [
+                'clearLog', 'writeLog', 'writeDebugLog',
+                'updateDamageCalculation', 'calcDamageTemporary', 'calcDamage',
+                'calcPreCombatResult', 'calcPrecombatSpecialDamage',
+                'calcPrecombatSpecialResult', 'calcCombatResult',
+                'applyBeastCavalryRefinedSkillEffect',
+                'addFixedDamageByStatus', 'applyFixedValueSkill',
+                'applyDamageReductionByOwnStatus',
+                'canCounterAttack', 'getFollowupAttackPriorityForBoth',
+                'enumerateUnitsInTheSameGroupWithinSpecifiedSpaces',
+                'enumerateUnitsInDifferentGroupWithinSpecifiedSpaces',
+                'enumerateUnitsInTheSameGroupOnMap',
+                'enumerateUnitsInDifferentGroupOnMap',
+                'updateAllUnitSpur', 'updateUnitSpur',
+                'applySkillEffectsAfterAfterBeginningOfCombat',
+                'applySkillEffectsAfterAfterBeginningOfCombatFromAllies',
+                'applySkillEffectAfterConditionDetermined',
+            ];
+            for (const name of expectedPublicMethods) {
+                expect(typeof DamageCalculatorWrapper.prototype[name]).toBe('function');
+            }
+        });
+
+        test('DamageCalculatorWrapper.prototype が全 getter/setter を持つ', () => {
+            const expectedGetters = [
+                'log', 'simpleLog', 'currentTurn', 'isOddTurn',
+                'isEvenTurn', 'isLogEnabled', 'unitManager',
+            ];
+            for (const name of expectedGetters) {
+                const desc = Object.getOwnPropertyDescriptor(DamageCalculatorWrapper.prototype, name);
+                expect(desc).toBeDefined();
+                expect(typeof desc.get).toBe('function');
+            }
+
+            const expectedSetters = ['isLogEnabled'];
+            for (const name of expectedSetters) {
+                const desc = Object.getOwnPropertyDescriptor(DamageCalculatorWrapper.prototype, name);
+                expect(desc).toBeDefined();
+                expect(typeof desc.set).toBe('function');
+            }
+        });
+    });
+});

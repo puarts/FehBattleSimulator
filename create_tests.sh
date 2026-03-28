@@ -73,6 +73,7 @@ TEST_FILE_NAMES=(
     ScopedTileChanger
     UnitContext
     UnitUtility
+    DamageCalculatorWrapperSplit
     )
 
 # カテゴリに応じたテストファイル選択
