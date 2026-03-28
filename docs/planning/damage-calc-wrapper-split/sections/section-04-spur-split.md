@@ -113,7 +113,19 @@ Move the following methods (cut from core, paste into `definePrototypeMethods({.
 | `__applyFormSkill` | 15831 | ~11 lines |
 | `__applyPreUpdateUnitSpurSkillEffects` | 17028 | ~47 lines |
 
-**Total estimated lines moved**: ~2,500 lines
+**追加で移動したヘルパーメソッド**（計画には未記載だが、Spur系メソッドの間に位置し、Spurメソッドからのみ呼ばれるため含めた）:
+
+| Method | 説明 |
+|--------|------|
+| `__countBreakableDefenseStructuresWithoutEnergyOnMap` | 防衛構造物カウント |
+| `__countDefenceStructuresOnMap` | 防衛構造物カウント |
+| `__calcKojosenSpurAmount` | 攻城戦Spur計算 |
+| `__calcBojosenSpurAmount` | 防城戦Spur計算 |
+| `__calcBojosen4SpurAmount` | 防城戦4Spur計算 |
+
+**実装結果**: 2,635 行（計画の ~2,500 行とほぼ一致。追加ヘルパー5つを含む）
+**コアファイル**: 7,483 行 → 4,861 行に縮小
+**テスト**: 338 件全パス（ESLint 含む）
 
 ### Step 3: Syntax conversion for `definePrototypeMethods`
 

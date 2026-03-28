@@ -30,6 +30,7 @@ SOURCE_FILE_NAMES=(
     combat/DamageCalculatorWrapper_InitSkillEffectDict_AtkDef
     combat/DamageCalculatorWrapper_InitSkillEffectDict_Unit
     combat/DamageCalculatorWrapper_ApplySkillEffects
+    combat/DamageCalculatorWrapper_Spur
     combat/BeginningOfTurnSkillHandler
     database/SkillDatabase
     database/HeroDatabase

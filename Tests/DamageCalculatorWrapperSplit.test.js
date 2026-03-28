@@ -157,6 +157,22 @@ describe('DamageCalculatorWrapper_ApplySkillEffects split', () => {
     });
 });
 
+// Phase 4: Spur split verification
+
+describe('DamageCalculatorWrapper_Spur split', () => {
+    test('updateAllUnitSpur がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.updateAllUnitSpur).toBe('function');
+    });
+
+    test('updateUnitSpur がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.updateUnitSpur).toBe('function');
+    });
+
+    test('__updateUnitSpur がインスタンスメソッドとして存在すること', () => {
+        expect(typeof DamageCalculatorWrapper.prototype.__updateUnitSpur).toBe('function');
+    });
+});
+
 describe('DamageCalculatorWrapper dict initialization after split', () => {
     let calc;
     beforeAll(() => {
