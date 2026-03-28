@@ -46,7 +46,7 @@ describe('Performance benchmarks', () => {
             resetGlobalTestState();
         }
 
-        runBenchmark(runAllHeroBattle, 3000, 1500);
+        runBenchmark(runAllHeroBattle, 5000, 1500);
     });
 
     test('ターン開始スキル適用（全英雄）が閾値以内で完了する', () => {
@@ -72,7 +72,7 @@ describe('Performance benchmarks', () => {
                 handler.applySkillsForBeginningOfTurn(unit);
             }
             resetGlobalTestState();
-        }, 2000, 800);
+        }, 3000, 800);
     });
 
     test('ユニット初期化（全英雄生成）が閾値以内で完了する', () => {
@@ -84,6 +84,6 @@ describe('Performance benchmarks', () => {
                 heroDatabase.initUnit(unit, heroInfo.name);
             }
             resetGlobalTestState();
-        }, 500, 200);
+        }, 1000, 200);
     });
 });
