@@ -149,7 +149,7 @@ After all verifications pass, record the final file sizes and structure. This se
 
 ## Checklist
 
-- [x] `./run_tests.sh` passes (341 tests green, ESLint clean)
+- [x] `./run_tests.sh` passes (all tests green, ESLint clean)
 - [x] Public API names assertion test passes
 - [x] Constructor smoke test passes
 - [x] definePrototypeMethods unit tests pass
@@ -159,7 +159,7 @@ After all verifications pass, record the final file sizes and structure. This se
 - [x] Load order verified in `create_tests.sh`
 - [x] Load order verified in `Deploy.bat` (all 3 lists)
 - [x] Load order verified in all 5 relevant HTML files
-- [x] Load order verified in `run_simple_test.sh` and `MergeTests.bat`
+- [x] 分離ファイルのロード順を `run_simple_test.sh` と `MergeTests.bat` に追加済み（ただし `run_simple_test.sh` は分割以前からパスが `Sources/` 直下参照のまま壊れており、本リファクタリングのスコープ外）
 - [x] All five split files have load guard at top
 - [x] All five split files use `definePrototypeMethods` for method attachment
 - [ ] Browser test: ArenaSimulator.html loads without console errors (manual)
