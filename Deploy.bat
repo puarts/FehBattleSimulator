@@ -28,7 +28,7 @@ rem �f�[�^�x�[�X�E�ݒ�
 set BF=%BF%,database\SkillDatabase,database\HeroDatabase,unit\TurnSetting,app\AudioManager,database\AetherRaidDefensePresets
 set BF=%BF%,app\SettingManager,app\AppData
 rem ���C�������EUI
-set BF=%BF%,app\Main_ImageProcessing,app\Main_OriginalAi,app\Main_MouseAndTouch,app\MapOperations,app\SettingsPersistence,app\BattleSimulatorBase,app\VueComponents
+set BF=%BF%,app\Main_ImageProcessing,app\Main_OriginalAi,app\Main_MouseAndTouch,app\MapOperations,app\SettingsPersistence,app\DamageCalcSummary,app\BattleSimulatorBase,app\VueComponents
 
 rem --- 4. �ŏI�I�ȓ��� ---
 set battle_simulator_filenames=%BF%,%battle_simulator_skill_effect_filenames%,%battle_simulator_skill_impl_filenames%
