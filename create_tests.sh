@@ -51,6 +51,7 @@ SOURCE_FILE_NAMES=(
     skill-impl/SkillImpl202408
     skill-impl/SkillImpl202501
     skill-impl/SkillImpl202601
+    app/DamageCalcSummary
     TestUtilities
     )
 TEST_UTIL_FILE_NAMES=(
