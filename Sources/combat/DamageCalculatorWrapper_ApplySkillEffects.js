@@ -689,7 +689,7 @@ DamageCalculatorWrapper.definePrototypeMethods({
                         }
                         break;
                     case Weapon.FangOfFinality:
-                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        if (targetUnit.battleContext.initiatesCombat || this.__isSolo(targetUnit) || damageCalcEnv.calcPotentialDamage) {
                             let count = this.__countAlliesWithinSpecifiedSpaces(enemyUnit, 3) + 1;
                             let spd = targetUnit.getSpdInCombat(enemyUnit);
                             let amount = Math.trunc(spd * (Math.min(count * 10.0, 30.0) / 100.0));
@@ -1157,7 +1157,7 @@ DamageCalculatorWrapper.definePrototypeMethods({
                     case Weapon.VultureBlade:
                     case Weapon.VultureLancePlus:
                     case Weapon.VultureLance:
-                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        if (this.__isSolo(targetUnit) || damageCalcEnv.calcPotentialDamage) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
                             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -1165,7 +1165,7 @@ DamageCalculatorWrapper.definePrototypeMethods({
                         }
                         break;
                     case Weapon.PlegianBowPlus:
-                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        if (this.__isSolo(targetUnit) || damageCalcEnv.calcPotentialDamage) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.defSpur -= 5;
                             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -1173,7 +1173,7 @@ DamageCalculatorWrapper.definePrototypeMethods({
                         }
                         break;
                     case Weapon.PlegianTorchPlus:
-                        if (this.__isSolo(targetUnit) || calcPotentialDamage) {
+                        if (this.__isSolo(targetUnit) || damageCalcEnv.calcPotentialDamage) {
                             enemyUnit.atkSpur -= 5;
                             enemyUnit.resSpur -= 5;
                             enemyUnit.atkSpur -= Math.abs(enemyUnit.atkDebuffTotal);
@@ -1384,7 +1384,7 @@ DamageCalculatorWrapper.definePrototypeMethods({
                         }
                         break;
                     case PassiveC.HokoNoMajin3:
-                        if (!calcPotentialDamage) {
+                        if (!damageCalcEnv.calcPotentialDamage) {
                             if (targetUnit.moveType === MoveType.Infantry
                                 && targetUnit.isPhysicalAttacker()
                             ) {
