@@ -1,14 +1,14 @@
 {
   "note": "FehBattleSimulator JS engine の全列挙スキル網羅地図（生成可否のみ。正しさ検証ではない）",
   "grandTotal": 3131,
-  "ok": 3130,
-  "failed": 1,
+  "ok": 3131,
+  "failed": 0,
   "okRatePercent": 100,
   "perSlot": {
     "weapon": {
       "total": 1505,
-      "ok": 1504,
-      "failed": 1
+      "ok": 1505,
+      "failed": 0
     },
     "special": {
       "total": 192,
@@ -46,18 +46,6 @@
       "failed": 0
     }
   },
-  "topFailureReasons": [
-    {
-      "reason": "atkUnit is not defined",
-      "count": 1
-    }
-  ],
-  "failures": [
-    {
-      "slot": "weapon",
-      "key": "HadoNoSenfu",
-      "id": 947,
-      "reason": "atkUnit is not defined"
-    }
-  ]
+  "topFailureReasons": [],
+  "failures": []
 }
