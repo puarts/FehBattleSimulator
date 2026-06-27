@@ -102,6 +102,9 @@ case "$1" in
   golden)
     SELECTED_TEST_FILES=(GoldenMaster)
     ;;
+  coverage)
+    SELECTED_TEST_FILES=(GoldenCoverage)
+    ;;
   *)
     SELECTED_TEST_FILES=("${TEST_FILE_NAMES[@]}")
     ;;

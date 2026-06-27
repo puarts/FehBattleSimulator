@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CATEGORIES="skill combat dsl infra golden"
+CATEGORIES="skill combat dsl infra golden coverage"
 CATEGORY=""
 
 # 第1引数がカテゴリ名かチェック
