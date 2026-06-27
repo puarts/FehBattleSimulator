@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CATEGORIES="skill combat dsl infra golden conform coverage"
+CATEGORIES="skill combat dsl infra golden conform coverage battery"
 CATEGORY=""
 
 # 第1引数がカテゴリ名かチェック

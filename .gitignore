@@ -7,6 +7,9 @@ All.test.js
 coverage/
 Tools/output/
 
+# ゴールデンマスター: 全件バッテリー出力（大容量・要相談）。保存方針が決まるまで無視。
+Tests/golden/battery-all/
+
 # Samples (local scratch files)
 Sources/samples/
 

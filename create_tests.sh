@@ -105,6 +105,9 @@ case "$1" in
   conform)
     SELECTED_TEST_FILES=(GoldenConformance)
     ;;
+  battery)
+    SELECTED_TEST_FILES=(GoldenBattery)
+    ;;
   coverage)
     SELECTED_TEST_FILES=(GoldenCoverage)
     ;;
