@@ -576,3 +576,101 @@ function test_executeTest(testFunc, isTestTimeLogEnabled = false) {
         console.log(log);
     }
 }
+
+// ===== ゴールデンマスター: 機械可読シナリオの組み立て・実行・照合 =====
+// 生成（GoldenMaster）と検証（GoldenConformance）で同一の組み立てを共有することで、
+// 「保存済みベクタを現エンジンで再現できるか」を厳密に照合できるようにする。
+class GoldenScenario {
+    /**
+     * 機械可読の unitSpec から Unit を組み立てる。
+     * spec 形: { group:'ally'|'enemy', stats:{hp,atk,spd,def,res}, skills:{weapon,special,passiveA..X,support},
+     *           bonuses, penalties, pos:[x,y], hpPercent, specialCount }
+     */
+    static buildUnit(spec) {
+        const group = spec.group === 'enemy' ? UnitGroupType.Enemy : UnitGroupType.Ally;
+        const s = spec.stats || {};
+        let b = UnitBuilder.createDummy(group, {
+            hp: s.hp ?? 50, atk: s.atk ?? 50, spd: s.spd ?? 50, def: s.def ?? 50, res: s.res ?? 50,
+        });
+        const sk = spec.skills || {};
+        if (sk.weapon != null) b = b.withWeapon(sk.weapon);
+        if (sk.support != null) b = b.withSupport(sk.support);
+        if (sk.special != null) b = b.withSpecial(sk.special);
+        if (sk.passiveA != null) b = b.withPassiveA(sk.passiveA);
+        if (sk.passiveB != null) b = b.withPassiveB(sk.passiveB);
+        if (sk.passiveC != null) b = b.withPassiveC(sk.passiveC);
+        if (sk.passiveS != null) b = b.withPassiveS(sk.passiveS);
+        if (sk.passiveX != null) b = b.withPassiveX(sk.passiveX);
+        if (spec.bonuses) b = b.withBonuses(spec.bonuses);
+        if (spec.penalties) b = b.withPenalties(spec.penalties);
+        if (spec.pos) b = b.atPosition(spec.pos[0], spec.pos[1]);
+        if (spec.hpPercent != null) b = b.withHpPercent(spec.hpPercent);
+        if (spec.specialCount != null) b = b.withSpecialCount(spec.specialCount);
+        return b.build();
+    }
+
+    /**
+     * シナリオspec を実行し、フルスナップショットを返す。
+     * spec 形: { attacker, defender, allies:[], foes:[], turn }
+     */
+    static run(spec) {
+        resetGlobalTestState();
+        const attacker = GoldenScenario.buildUnit(spec.attacker);
+        const defender = GoldenScenario.buildUnit(spec.defender);
+        const sb = new BattleScenarioBuilder().withAttacker(attacker).withDefender(defender);
+        for (const a of (spec.allies || [])) sb.addAlly(GoldenScenario.buildUnit(a));
+        for (const f of (spec.foes || [])) sb.addFoe(GoldenScenario.buildUnit(f));
+        if (spec.turn != null) sb.onTurn(spec.turn);
+        const result = sb.execute();
+        return RegressionTestHelper.extractFullCombatSnapshot(result);
+    }
+
+    /**
+     * 期待値と実測値を許容誤差つきで再帰比較し、差分の配列を返す（空なら一致）。
+     * 数値は tol 以内で一致とみなす（Rust f64 等とのズレ対策）。
+     */
+    static compare(expected, actual, tol = 1e-9) {
+        const diffs = [];
+        GoldenScenario._cmp(expected, actual, '', tol, diffs);
+        return diffs;
+    }
+
+    static _cmp(exp, act, p, tol, diffs) {
+        if (exp === null || exp === undefined) {
+            if (act !== exp) diffs.push({ path: p, expected: exp, actual: act });
+            return;
+        }
+        if (typeof exp === 'number') {
+            if (typeof act !== 'number' || Math.abs(exp - act) > tol) {
+                diffs.push({ path: p, expected: exp, actual: act });
+            }
+            return;
+        }
+        if (typeof exp === 'boolean' || typeof exp === 'string') {
+            if (exp !== act) diffs.push({ path: p, expected: exp, actual: act });
+            return;
+        }
+        if (Array.isArray(exp)) {
+            if (!Array.isArray(act) || act.length !== exp.length) {
+                diffs.push({
+                    path: p,
+                    expected: `array(${exp.length})`,
+                    actual: Array.isArray(act) ? `array(${act.length})` : typeof act,
+                });
+                return;
+            }
+            for (let i = 0; i < exp.length; i++) {
+                GoldenScenario._cmp(exp[i], act[i], `${p}[${i}]`, tol, diffs);
+            }
+            return;
+        }
+        // object
+        if (typeof act !== 'object' || act === null) {
+            diffs.push({ path: p, expected: 'object', actual: act });
+            return;
+        }
+        for (const k of Object.keys(exp)) {
+            GoldenScenario._cmp(exp[k], act[k], p ? `${p}.${k}` : k, tol, diffs);
+        }
+    }
+}

@@ -6,19 +6,32 @@
   "description": "防御奥義・ダメージ軽減",
   "input": {
     "attacker": {
-      "base": "dummy(Ally) hp50/atk50/spd50/def50/res50",
-      "equip": {
-        "slot": "special",
-        "skillId": 3570,
-        "name": "重装の双炎"
+      "group": "ally",
+      "stats": {
+        "hp": 50,
+        "atk": 50,
+        "spd": 50,
+        "def": 50,
+        "res": 50
+      },
+      "skills": {
+        "special": 3570
       }
     },
     "defender": {
-      "base": "dummy(Enemy) hp50/atk50/spd50/def50/res50"
+      "group": "enemy",
+      "stats": {
+        "hp": 50,
+        "atk": 50,
+        "spd": 50,
+        "def": 50,
+        "res": 50
+      },
+      "skills": {}
     },
-    "turn": 1,
-    "gameMode": "default",
-    "placement": "auto (attacker col0, defender at attack range)"
+    "allies": [],
+    "foes": [],
+    "turn": 1
   },
   "output": {
     "combatSummary": {

@@ -6,19 +6,32 @@
   "description": "HP>=25% 等の条件で Atk/Spd+9 ほか（条件成立側）",
   "input": {
     "attacker": {
-      "base": "dummy(Ally) hp50/atk50/spd50/def50/res50",
-      "equip": {
-        "slot": "passiveA",
-        "skillId": 3573,
-        "name": "攻速無欠・鬼没"
+      "group": "ally",
+      "stats": {
+        "hp": 50,
+        "atk": 50,
+        "spd": 50,
+        "def": 50,
+        "res": 50
+      },
+      "skills": {
+        "passiveA": 3573
       }
     },
     "defender": {
-      "base": "dummy(Enemy) hp50/atk50/spd50/def50/res50"
+      "group": "enemy",
+      "stats": {
+        "hp": 50,
+        "atk": 50,
+        "spd": 50,
+        "def": 50,
+        "res": 50
+      },
+      "skills": {}
     },
-    "turn": 1,
-    "gameMode": "default",
-    "placement": "auto (attacker col0, defender at attack range)"
+    "allies": [],
+    "foes": [],
+    "turn": 1
   },
   "output": {
     "combatSummary": {

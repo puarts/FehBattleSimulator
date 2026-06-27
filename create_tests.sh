@@ -80,7 +80,7 @@ TEST_FILE_NAMES=(
     UnitContext
     UnitUtility
     DamageCalculatorWrapperSplit
-    GoldenMaster
+    GoldenConformance
     )
 
 # カテゴリに応じたテストファイル選択
@@ -101,6 +101,9 @@ case "$1" in
     ;;
   golden)
     SELECTED_TEST_FILES=(GoldenMaster)
+    ;;
+  conform)
+    SELECTED_TEST_FILES=(GoldenConformance)
     ;;
   coverage)
     SELECTED_TEST_FILES=(GoldenCoverage)

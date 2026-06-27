@@ -39,41 +39,25 @@ function goldenSkillName(skillId) {
     return info ? info.name : `Unknown(${skillId})`;
 }
 
-function buildAttacker(scn) {
-    let b = UnitBuilder.createDummy(UnitGroupType.Ally);
-    switch (scn.kind) {
-        case 'weapon': b = b.withWeapon(scn.skillId); break;
-        case 'passiveA': b = b.withPassiveA(scn.skillId); break;
-        case 'passiveB': b = b.withPassiveB(scn.skillId); break;
-        case 'passiveC': b = b.withPassiveC(scn.skillId); break;
-        case 'special': b = b.withSpecial(scn.skillId); break;
-        default: throw new Error(`未対応の kind: ${scn.kind}`);
-    }
-    return b.build();
-}
+const DEFAULT_STATS = { hp: 50, atk: 50, spd: 50, def: 50, res: 50 };
 
-// 入力シナリオを宣言的に記述（再現に必要な情報のみ。言語非依存）。
-function buildInputDescriptor(scn) {
+// 機械可読・再現可能なシナリオspecを組み立てる（生成と検証で同一）。
+function buildSpec(scn) {
+    const skills = {};
+    skills[scn.kind] = scn.skillId;
     return {
-        attacker: {
-            base: 'dummy(Ally) hp50/atk50/spd50/def50/res50',
-            equip: { slot: scn.kind, skillId: scn.skillId, name: goldenSkillName(scn.skillId) },
-        },
-        defender: { base: 'dummy(Enemy) hp50/atk50/spd50/def50/res50' },
+        attacker: { group: 'ally', stats: { ...DEFAULT_STATS }, skills },
+        defender: { group: 'enemy', stats: { ...DEFAULT_STATS }, skills: {} },
+        allies: [],
+        foes: [],
         turn: 1,
-        gameMode: 'default',
-        placement: 'auto (attacker col0, defender at attack range)',
     };
 }
 
 function runScenario(scn) {
-    const attacker = buildAttacker(scn);
-    const defender = UnitBuilder.createDummy(UnitGroupType.Enemy).build();
-    const result = new BattleScenarioBuilder()
-        .withAttacker(attacker)
-        .withDefender(defender)
-        .execute();
-    return RegressionTestHelper.extractFullCombatSnapshot(result);
+    const spec = buildSpec(scn);
+    const output = GoldenScenario.run(spec);
+    return { spec, output };
 }
 
 describe('Golden Master corpus generation (vertical slice)', () => {
@@ -83,17 +67,17 @@ describe('Golden Master corpus generation (vertical slice)', () => {
 
     for (const scn of GOLDEN_SCENARIOS) {
         test(`generate + determinism: ${scn.label}`, () => {
-            const out1 = runScenario(scn);
+            const run1 = runScenario(scn);
             resetGlobalTestState();
-            const out2 = runScenario(scn);
+            const run2 = runScenario(scn);
 
             // 決定論性: 同入力 → 完全一致
-            expect(out2).toEqual(out1);
+            expect(run2.output).toEqual(run1.output);
 
             // 構造の健全性
-            expect(out1.combatSummary).toBeDefined();
-            expect(Array.isArray(out1.strikes)).toBe(true);
-            expect(typeof out1.combatSummary.atkUnit_normalAttackDamage).toBe('number');
+            expect(run1.output.combatSummary).toBeDefined();
+            expect(Array.isArray(run1.output.strikes)).toBe(true);
+            expect(typeof run1.output.combatSummary.atkUnit_normalAttackDamage).toBe('number');
 
             corpus.push({
                 label: scn.label,
@@ -101,8 +85,8 @@ describe('Golden Master corpus generation (vertical slice)', () => {
                 name: goldenSkillName(scn.skillId),
                 category: scn.kind,
                 description: scn.desc,
-                input: buildInputDescriptor(scn),
-                output: out1,
+                input: run1.spec,
+                output: run1.output,
             });
         });
     }

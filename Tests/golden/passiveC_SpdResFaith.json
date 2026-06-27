@@ -6,19 +6,32 @@
   "description": "PassiveC スキル",
   "input": {
     "attacker": {
-      "base": "dummy(Ally) hp50/atk50/spd50/def50/res50",
-      "equip": {
-        "slot": "passiveC",
-        "skillId": 3577,
-        "name": "速さ魔防の信念"
+      "group": "ally",
+      "stats": {
+        "hp": 50,
+        "atk": 50,
+        "spd": 50,
+        "def": 50,
+        "res": 50
+      },
+      "skills": {
+        "passiveC": 3577
       }
     },
     "defender": {
-      "base": "dummy(Enemy) hp50/atk50/spd50/def50/res50"
+      "group": "enemy",
+      "stats": {
+        "hp": 50,
+        "atk": 50,
+        "spd": 50,
+        "def": 50,
+        "res": 50
+      },
+      "skills": {}
     },
-    "turn": 1,
-    "gameMode": "default",
-    "placement": "auto (attacker col0, defender at attack range)"
+    "allies": [],
+    "foes": [],
+    "turn": 1
   },
   "output": {
     "combatSummary": {
