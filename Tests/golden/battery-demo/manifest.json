@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "scope": "demo",
+  "generatedFrom": "FehBattleSimulator JS engine (golden master battery)",
+  "variants": [
+    "init_baseline",
+    "init_lowhp",
+    "init_with_allies",
+    "defend",
+    "vs_strong_foe"
+  ],
+  "skillCount": 7,
+  "vectorCount": 35,
+  "ok": 35,
+  "failed": 0,
+  "failures": []
+}

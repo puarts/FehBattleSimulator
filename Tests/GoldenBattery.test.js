@@ -14,7 +14,9 @@ const fs = require('fs');
 const path = require('path');
 
 const SCOPE = process.env.GOLDEN_BATTERY_SCOPE || 'demo';
-const OUT_DIR = path.join(process.cwd(), 'Tests', 'golden', `battery-${SCOPE}`);
+// 出力先は GOLDEN_BATTERY_OUT_DIR で差し替え可能（全件は新リポ feh-simulator のフィクスチャへ）。
+const OUT_DIR = process.env.GOLDEN_BATTERY_OUT_DIR
+    || path.join(process.cwd(), 'Tests', 'golden', `battery-${SCOPE}`);
 
 function skillName(id) {
     const info = g_testHeroDatabase.skillDatabase.findSkillInfoByDict(id);
@@ -136,13 +138,20 @@ describe(`Golden battery corpus (scope=${SCOPE})`, () => {
     afterAll(() => {
         if (corpus.length === 0) return;
         fs.mkdirSync(OUT_DIR, { recursive: true });
-        fs.writeFileSync(path.join(OUT_DIR, 'corpus.json'),
+        // フィクスチャ向け: corpus.jsonl（1ベクタ1行）＋ manifest.json（メタデータ）。
+        const jsonl = corpus.map(v => JSON.stringify(v)).join('\n') + '\n';
+        fs.writeFileSync(path.join(OUT_DIR, 'corpus.jsonl'), jsonl, 'utf8');
+        fs.writeFileSync(path.join(OUT_DIR, 'manifest.json'),
             JSON.stringify({
-                version: 1, scope: SCOPE,
+                version: 1,
+                scope: SCOPE,
+                generatedFrom: 'FehBattleSimulator JS engine (golden master battery)',
                 variants: VARIANTS.map(v => v.name),
-                skillCount: skills.length, vectorCount: corpus.length,
-                ok: okCount, failed: failCount, failures,
-                vectors: corpus,
+                skillCount: skills.length,
+                vectorCount: corpus.length,
+                ok: okCount,
+                failed: failCount,
+                failures,
             }, null, 2), 'utf8');
     });
 });
