@@ -80,6 +80,7 @@ TEST_FILE_NAMES=(
     UnitContext
     UnitUtility
     DamageCalculatorWrapperSplit
+    GoldenMaster
     )
 
 # カテゴリに応じたテストファイル選択
@@ -97,6 +98,9 @@ case "$1" in
     ;;
   infra)
     SELECTED_TEST_FILES=(UnitManager SimpleUtility Performance TestHelper)
+    ;;
+  golden)
+    SELECTED_TEST_FILES=(GoldenMaster)
     ;;
   *)
     SELECTED_TEST_FILES=("${TEST_FILE_NAMES[@]}")

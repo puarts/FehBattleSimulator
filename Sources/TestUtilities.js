@@ -343,6 +343,95 @@ class RegressionTestHelper {
             posY: unit.placedTile ? unit.placedTile.posY : null,
         };
     }
+
+    // ---- ゴールデンマスター用のフルスナップショット ----
+    // 既存の extractCombatSnapshot（9フィールド）はそのまま残し、
+    // 言語非依存の正解データ用に戦闘結果＋撃ごとの中間値まで広く取り出す。
+
+    /**
+     * 1撃分（StrikeResult）からプリミティブのみを抽出する。
+     * atkUnit はオブジェクト参照なので含めず、攻撃側かどうかのフラグに正規化する。
+     * @param {StrikeResult} strike
+     * @param {Unit} atkUnit 戦闘の攻撃側ユニット
+     */
+    static extractStrikeSnapshot(strike, atkUnit) {
+        return {
+            strikeCount: strike.currentStrikeCount ?? null,
+            byAttacker: strike.atkUnit === atkUnit,
+            damage: strike.damage ?? null,
+            specialDamage: strike.specialDamage ?? null,
+            damageDealt: strike.damageDealt ?? null,
+            actualDamage: strike.actualDamage ?? null,
+            additionalDamage: strike.additionalDamage ?? null,
+            specialAdditionalDamage: strike.specialAdditionalDamage ?? null,
+            isAttackerSpecialActive: strike.isAttackerSpecialActive ?? null,
+            isDefenderSpecialActive: strike.isDefenderSpecialActive ?? null,
+            isAttackerSpecialReady: strike.isAttackerSpecialReady ?? null,
+            isDefenderSpecialReady: strike.isDefenderSpecialReady ?? null,
+            damageRatio: strike.damageRatio ?? null,
+            potentRatio: strike.potentRatio ?? null,
+            damageReductionRatio: strike.damageReductionRatio ?? null,
+            damageReductionRatios: Array.isArray(strike.damageReductionRatios)
+                ? [...strike.damageReductionRatios] : [],
+            damageReductionValue: strike.damageReductionValue ?? null,
+            reducedDamage: strike.reducedDamage ?? null,
+            isMiracleActivated: strike.isMiracleActivated ?? null,
+            reducesDamageFromFoeToZeroDuringCombat:
+                strike.reducesDamageFromFoeToZeroDuringCombat ?? null,
+        };
+    }
+
+    /**
+     * 戦闘1回（CombatResult）から、言語非依存の正解データを抽出する。
+     * combatSummary（最終結果）＋ strikes[]（撃ごとの順序つき中間値）の2層。
+     * オブジェクト参照（atkTile / skillLogger / damageCalcEnv 等）は含めない。
+     * @param {CombatResult} result
+     */
+    static extractFullCombatSnapshot(result) {
+        const atkUnit = result.atkUnit;
+        const strikeSource = result.damageHistory || [];
+        const strikes = strikeSource.map(
+            s => RegressionTestHelper.extractStrikeSnapshot(s, atkUnit));
+        return {
+            combatSummary: {
+                atkUnit_totalAttackCount: result.atkUnit_totalAttackCount,
+                defUnit_totalAttackCount: result.defUnit_totalAttackCount,
+                atkUnit_actualTotalAttackCount: result.atkUnit_actualTotalAttackCount,
+                defUnit_actualTotalAttackCount: result.defUnit_actualTotalAttackCount,
+                atkUnit_normalAttackDamage: result.atkUnit_normalAttackDamage,
+                defUnit_normalAttackDamage: result.defUnit_normalAttackDamage,
+                atkUnit_specialAttackDamage: result.atkUnit_specialAttackDamage,
+                defUnit_specialAttackDamage: result.defUnit_specialAttackDamage,
+                atkUnit_specialCount: result.atkUnit_specialCount,
+                defUnit_specialCount: result.defUnit_specialCount,
+                atkUnit_atk: result.atkUnit_atk,
+                atkUnit_spd: result.atkUnit_spd,
+                atkUnit_def: result.atkUnit_def,
+                atkUnit_res: result.atkUnit_res,
+                defUnit_atk: result.defUnit_atk,
+                defUnit_spd: result.defUnit_spd,
+                defUnit_def: result.defUnit_def,
+                defUnit_res: result.defUnit_res,
+                atkUnitFollowUpPriorityInc: result.atkUnitFollowUpPriorityInc,
+                atkUnitFollowUpPriorityDec: result.atkUnitFollowUpPriorityDec,
+                defUnitFollowUpPriorityInc: result.defUnitFollowUpPriorityInc,
+                defUnitFollowUpPriorityDec: result.defUnitFollowUpPriorityDec,
+                preCombatDamage: result.preCombatDamage,
+                preCombatDamageWithOverkill: result.preCombatDamageWithOverkill,
+                wasPrecombatSpecialActivated: result.wasPrecombatSpecialActivated,
+                atkUnitDamageToEnemyAfterBeginningOfCombat:
+                    result.atkUnitDamageToEnemyAfterBeginningOfCombat,
+                defUnitDamageToEnemyAfterBeginningOfCombat:
+                    result.defUnitDamageToEnemyAfterBeginningOfCombat,
+                atkRestHp: result.atkRestHp,
+                defRestHp: result.defRestHp,
+                atkMaxHp: result.atkMaxHp ?? null,
+                defMaxHp: result.defMaxHp ?? null,
+                isAlreadyDead: result.isAlreadyDead ?? null,
+            },
+            strikes,
+        };
+    }
 }
 
 class BattleScenarioBuilder {
